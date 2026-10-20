@@ -1,0 +1,31 @@
+{
+ "total_blocks": 5,
+ "timing": "estimate",
+ "clips": [
+  {
+   "index": 0,
+   "status": "ok",
+   "dur": 6.9583
+  },
+  {
+   "index": 1,
+   "status": "ok",
+   "dur": 7.8333
+  },
+  {
+   "index": 2,
+   "status": "ok",
+   "dur": 7.8333
+  },
+  {
+   "index": 3,
+   "status": "ok",
+   "dur": 8.2917
+  },
+  {
+   "index": 4,
+   "status": "ok",
+   "dur": 8.875
+  }
+ ]
+}

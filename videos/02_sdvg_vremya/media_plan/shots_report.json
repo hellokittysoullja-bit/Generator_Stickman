@@ -1,0 +1,115 @@
+{
+ "punch_gap_sec": 15.0,
+ "key_gap_sec": 10.0,
+ "clips": [
+  {
+   "index": 0,
+   "duration": 6.958,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": [
+    "план 0.0-7.0 с без смены: другого плана без разреза рисунка нет"
+   ]
+  },
+  {
+   "index": 1,
+   "duration": 7.833,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ],
+    [
+     2.18,
+     "drift"
+    ],
+    [
+     5.02,
+     "lean"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 2,
+   "duration": 7.833,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": [
+    "план 0.0-7.8 с без смены: другого плана без разреза рисунка нет"
+   ]
+  },
+  {
+   "index": 3,
+   "note": "акцент «двадцать минут» пропущен: лимит рукописных слов"
+  },
+  {
+   "index": 3,
+   "duration": 8.292,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ],
+    [
+     2.36,
+     "drift"
+    ],
+    [
+     5.28,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 4,
+   "duration": 8.875,
+   "views": [
+    [
+     0.0,
+     "lean"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": "видно глазами",
+   "key_at": 0.3,
+   "key_hold_until": 4.11,
+   "accent": null,
+   "notes": []
+  }
+ ]
+}

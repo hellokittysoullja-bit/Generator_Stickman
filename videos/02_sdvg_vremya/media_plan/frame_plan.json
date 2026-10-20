@@ -1,0 +1,273 @@
+{
+ "version": 15,
+ "model": "ds/deepseek-v4-flash",
+ "has_hero": true,
+ "frames": [
+  {
+   "index": 0,
+   "section": "HOOK",
+   "text": "Ты сел на минутку проверить телефон. А когда поднял глаза, за окном уже темно.",
+   "key": "d56823eb3695fb93",
+   "spec": {
+    "focus": "evening vanished while checking the phone",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a person with a phone at a table is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the person lifts their eyes from the phone",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the window outside is dark night",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "the character sits on a chair at a table",
+      "tier": "should"
+     }
+    ],
+    "subject": "a person"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character sits on a chair at a wooden table in the left half of the frame, one phone with a blank glowing screen in one hand, head lifted and turned toward the right, tired surprised face; on the right a big dark window with a crescent moon and no light outside, a wide strip of plain light wall between the character and the window; calm empty space above the table",
+   "zoom": {
+    "object": "the dark window",
+    "word": "темно"
+   },
+   "details": [
+    "the dark window",
+    "the phone with a blank glowing screen"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     7
+    ],
+    "original": "medium shot: the main character sits on a chair at a wooden table, one phone with a blank glowing screen in one hand, head lifted and turned to the side, tired surprised face; behind, a big dark window with a crescent moon and no light outside; the character sits in the left half of the frame, plain light room around, calm empty background on the right"
+   }
+  },
+  {
+   "index": 1,
+   "section": "HOOK",
+   "text": "При СДВГ чувство времени часто работает иначе: есть «сейчас» и «не сейчас», а середины почти нет.",
+   "key": "4e7adbedf0573a4a",
+   "spec": {
+    "focus": "time split into now and not-now with no middle",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a timeline with two clusters of dots is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "a dense cluster of dots sits at the left end of the line",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "a long empty stretch separates the two clusters",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "short arrows point from empty background patches to each part",
+      "tier": "should"
+     }
+    ],
+    "subject": "a timeline"
+   },
+   "kind": "diagram",
+   "hero": false,
+   "labels": [
+    "СЕЙЧАС",
+    "НЕ СЕЙЧАС",
+    "СЕРЕДИНЫ ПОЧТИ НЕТ"
+   ],
+   "picture": "a hand-drawn horizontal line across the middle of the frame: a dense cluster of small dots at the left end, a long empty stretch, another dense cluster of small dots at the right end; a short arrow points at the left cluster, one arrow at the empty stretch, one arrow at the right cluster, each arrow starting from its own wide empty patch of plain background; plain light background",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   },
+   "kept_drawn": true
+  },
+  {
+   "index": 2,
+   "section": "HOOK",
+   "text": "Интересное затягивает так, что часы пролетают незаметно. А скучное тянется, будто его вообще никто не отпустит.",
+   "key": "a7dfcf297fbb9e46",
+   "spec": {
+    "focus": "interesting time flies, boring time crawls",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a person at a desk is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "on the left the character leans eagerly over a puzzle",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "on the right the same character slumps over a blank sheet",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "a clock on the left has blurred spinning hands",
+      "tier": "must"
+     },
+     {
+      "id": "c4",
+      "text": "dust has settled on the right desk",
+      "tier": "should"
+     }
+    ],
+    "subject": "a person"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "split picture with a plain vertical gap in the middle: on the left the main character leans forward over a half-finished jigsaw puzzle on a desk, eyes wide with delight, a round clock with a blank face standing behind; on the right the same main character slumps over a blank sheet of paper, cheek flat on the desk, bored; a thin layer of dust on the right desk; plain light walls",
+   "details": [
+    "the blurred clock hands",
+    "the dust on the desk"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   },
+   "kept_drawn": true
+  },
+  {
+   "index": 3,
+   "section": "HOOK",
+   "text": "Поэтому не жди, что внутренние часы вдруг заработают. Поставь снаружи: таймер на столе, будильник на двадцать минут.",
+   "key": "e69b59b01dbb1660",
+   "spec": {
+    "focus": "put the clock outside instead of waiting for the inner one",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a kitchen timer is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the character presses the timer down on the desk",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "a small alarm clock stands beside the timer",
+      "tier": "should"
+     }
+    ],
+    "subject": "a kitchen timer"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character stands on the floor beside a wooden desk in the left half of the frame, hands at their sides, determined face; on the right side of the desk sit one big round kitchen timer with a blank face and, beside it, a small alarm clock with a blank face; a wide strip of plain light wall between the character and the timer; calm empty space above the desk",
+   "zoom": {
+    "object": "the kitchen timer",
+    "word": "таймер"
+   },
+   "accent": "двадцать минут",
+   "details": [
+    "the dial of the kitchen timer",
+    "the small alarm clock"
+   ],
+   "hero_state": "bright",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     4
+    ],
+    "original": "medium shot: the main character stands on the floor beside a wooden desk in the left half of the frame, hands at their sides, determined face; on the right side of the desk sit one big round kitchen timer and, beside it, a small alarm clock; a wide strip of plain light wall between the character and the timer; calm empty space above the desk"
+   },
+   "kept_drawn": true
+  },
+  {
+   "index": 4,
+   "section": "HOOK",
+   "text": "Пусть время будет видно глазами, а не только чувствами. Так проще вовремя выйти из потока и не потерять весь вечер.",
+   "key": "e9b8314049e4cc1d",
+   "spec": {
+    "focus": "time made visible lets you leave the flow in time",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a big wall clock hangs on the wall",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the character looks up at the clock",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the phone lies face-down on the desk",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "the room is in late evening light",
+      "tier": "should"
+     }
+    ],
+    "subject": "a wall clock"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character sits up straight on a chair at a desk, head raised, looking at one big round wall clock with a blank face on the wall; one hand rests on a phone lying face-down on the desk; warm late evening light through a window; the wall clock in the upper right with a wide calm patch of plain background beside it",
+   "key_thought": "видно глазами",
+   "key_near": "the wall clock",
+   "details": [
+    "the blank face of the wall clock",
+    "the phone lying face-down"
+   ],
+   "hero_state": "golden",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   },
+   "kept_drawn": true
+  }
+ ],
+ "stats": {
+  "planned": 5,
+  "fallback": 0,
+  "cached_chapters": 1,
+  "kept_drawn": 4,
+  "hero_trimmed": 0
+ },
+ "errors": {},
+ "preflight": {
+  "checked": 5,
+  "rewritten": 2,
+  "rejected": 0,
+  "cached_chapters": 0,
+  "errors": {}
+ }
+}
