@@ -36,7 +36,7 @@ BUSY_MARGIN = 26         # поле вокруг куклы в карте зан
 GRAIN_CLIP = (0.93, 1.03)   # зерно бумаги кадра поверх куклы: 10–90-й перцентили фактуры 0.946–1.018 (замер эп.01)
 SHADOW_K = 0.13             # тень под лапами: бумага 250 -> ~217 в центре; пол в кадре эп.01 — 233
 SAT_MIN = 0.5               # насыщенность куклы подгоняется к нарисованным котам эпизода, но не ниже половины
-VERSION = 2
+VERSION = 4
 
 _RIG = None
 _MOD = None
@@ -139,7 +139,14 @@ def place(fr, spec):
         if cands and cands[0][0] <= MAX_BUSY:
             break
     else:
-        return None
+        spot = _free_spot(fr, R, (sx0, sy0, sx1, sy1))
+        if spot is None:
+            return None
+        share, busy_v, side, x0, floor = spot
+        s = share * SH / (ty1 - ty0)
+        cw, ch = (tx1 - tx0) * s, (ty1 - ty0) * s
+        y0 = floor - ch
+        cands = [(busy_v, side, x0)]
     busy_v, side, x0 = cands[0]
     ox, oy = x0 - tx0 * s, y0 - ty0 * s                                # холст = origin + s * риг
     box = [x0, y0, x0 + cw, y0 + ch]
@@ -157,6 +164,40 @@ def place(fr, spec):
     # внутри рамки кота). Кот в покое впечатывается в final_rgb на своё место.
     fr["final_rgb"] = paint_rest(fr["final_rgb"], R, (ox, oy), s)
     return dict(origin=[ox, oy], scale=s, box=box, gaze=gaze, side=side, busy=round(busy_v, 4), share=share)
+
+
+FREE_SPOT_SHARES = (0.46, 0.40, 0.34)
+FREE_SPOT_STEP = 0.04
+FREE_SPOT_MAX_ROW = 0.12   # ни одна строка окна не занята больше чем на эту долю (линия схемы, подпись)
+
+
+def _free_spot(fr, R, subj):
+    """Схема на всю ширину (линия времени, ряд значков) не оставляет места СБОКУ от предмета — кукле
+    ищется самое пустое место на холсте (эп.02, 20.10: кукла нигде не появилась, владелец «не увидел
+    движущегося кота»). Окно скользит по ширине, пол — ниже предмета, лапы в безопасной зоне.
+    Только там, где раньше было None: прежние кадры байт в байт."""
+    SW, SH = fr["SW"], fr["SH"]
+    tx0, ty0, tx1, ty1 = R.tight
+    L, T, Rr, B = placement.SAFE
+    best = None
+    for share in FREE_SPOT_SHARES:
+        s = share * SH / (ty1 - ty0)
+        cw, ch = (tx1 - tx0) * s, (ty1 - ty0) * s
+        for floor in np.arange(B * SH, 0.40 * SH, -0.04 * SH):     # пол — любая высота: кот может сидеть на линии схемы
+            if floor - ch < T * SH:
+                continue
+            y0 = floor - ch
+            x = L * SW
+            while x + cw <= Rr * SW:
+                b = fr["busy"][int(y0):int(floor - 0.015 * SH), int(x):int(x + cw)]
+                v = float(b.mean()) if b.size else 1.0
+                rows = float((b > 0.3).mean(axis=1).max()) if b.size else 1.0   # линия или строка подписи поперёк окна — занято
+                if v <= MAX_BUSY and rows <= FREE_SPOT_MAX_ROW and (best is None or v < best[1] - 1e-9):
+                    best = (share, v, "left" if x + cw / 2 < SW / 2 else "right", float(x), float(floor))
+                x += FREE_SPOT_STEP * SW
+        if best:
+            return best
+    return None
 
 
 def rest_state():

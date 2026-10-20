@@ -101,7 +101,10 @@
     "issues": [],
     "rewritten": false
    },
-   "kept_drawn": true
+   "kept_drawn": true,
+   "hero_live": true,
+   "hero_action": "look",
+   "hero_mood": "curious"
   },
   {
    "index": 2,

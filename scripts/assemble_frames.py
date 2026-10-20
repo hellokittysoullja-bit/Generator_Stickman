@@ -78,6 +78,7 @@ def quantize(durs):
     return out
 
 
+MAX_AVG_VIEW_SEC = 3.6   # средний план на экране не дольше (брендбук 1,2-3,5 с)
 KEY_GAP_SEC = 10.0     # главная мысль карандашом — не чаще раза в 10 с (решение владельца: 1 на 10-30 с)
 WRITE_WORDS_MAX = 3    # брендбук: 1-3 рукописных ключевых слова за WRITE_WINDOW_SEC — мысль и акцент вместе
 WRITE_WINDOW_SEC = 30.0
@@ -356,6 +357,12 @@ def main(video_dir):
     print(f"Планов на экране: {views} на {len(kept)} кадров (в среднем {sum(durs)/max(1, views):.1f} с), "
           f"наездов {sum(1 for c in shot_log if c.get('punch'))}, мыслей карандашом "
           f"{sum(1 for c in shot_log if c.get('key'))}")
+    avg_view = sum(durs)/max(1, views)
+    if avg_view > MAX_AVG_VIEW_SEC:     # 20.10: рамки предметов не нашлись (модель со зрением молчала) — планы по 7-8 с, ролик «пресный»
+        no_obj = [kept[k] + 1 for k, j in enumerate(jobs) if not j["objects"]]
+        print(f"ВНИМАНИЕ: планы в среднем {avg_view:.1f} с (норма до {MAX_AVG_VIEW_SEC} с) — ролик будет статичным. "
+              f"Кадры без рамок предметов: {no_obj or 'нет'}. Дозаполнить: python scripts/objects.py <video_dir> "
+              f"(модель — OBJECTS_MODEL), затем собрать снова.")
     failed = [kept[k] + 1 for k, c in enumerate(clips) if not c]
     with open(os.path.join(mp, "render_manifest.json"), "w", encoding="utf-8") as fh:
         status = {i: {"index": i, "status": "ok" if clips[k] else "failed", "dur": round(durs[k], 4)}
