@@ -121,7 +121,7 @@ def test_key_thought_speeds_up_instead_of_disappearing(tmp_path):
     fr = frame_clip.prepare(str(src), [], [], str(tmp_path), tex=canvas.paper_texture(w=1152, h=648))
     words = [{"word": w, "start": 0.3 + 0.45*i, "end": 0.6 + 0.45*i}
              for i, w in enumerate("поэтому договорись с собой только открыть письмо".split())]
-    p = frame_clip.plan_clip(fr, 4.6, words, key="только открыть")
+    p = frame_clip.plan_clip(fr, 4.4, words, key="только открыть")
     assert p["key_time"] is not None and p["key"]["speed"] > 1.0
     assert any("быстрее" in n for n in p["notes"])
 

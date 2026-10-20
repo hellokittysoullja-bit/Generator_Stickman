@@ -21,6 +21,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import env  # noqa: E402
 
 VERSION = 1
+OBJECTS_MODEL = "ds/deepseek-v4-flash-vision"   # 20.10: qwen3.7-plus на рамках игнорирует выключение рассуждения (2000 токенов в пустоту); DeepSeek vision — 15 с, ~300 токенов
 MIN_AREA, MAX_AREA = 0.002, 0.85
 MIN_INK = 0.03
 PROMPT = """This is a drawing from an explainer film. Find each listed thing in it.
@@ -51,7 +52,7 @@ def suggest_details(gateway, model, img_path, cache_dir=None):
     img = Image.open(img_path).convert("RGB")
     try:
         answer, _u, _p = gateway.chat(model, [{"type": "text", "text": DETAILS_PROMPT}, _image_part(img)],
-                                      200, 1500, reasoning=False)
+                                      600, 1500, reasoning=False)
         m = re.search(r"\{.*\}", answer or "", re.S)
         parts = json.loads(m.group(0)).get("parts") if m else None
     except Exception:  # noqa: BLE001 — без подсказки камера просто без деталей, как раньше
@@ -125,7 +126,7 @@ def locate(gateway, model, img_path, names, cache_dir=None):
     if raw is None:
         items = "\n".join(f"{i}. {n}" for i, n in enumerate(names, 1))
         answer, _u, _p = gateway.chat(model, [{"type": "text", "text": PROMPT.format(items=items)}, _image_part(img)],
-                                      300, 1500, reasoning=False)
+                                      600, 1500, reasoning=False)
         raw = parse(answer, len(names))
         if raw is None:
             return {n: None for n in names}, {n: "модель не вернула рамки" for n in names}
@@ -216,7 +217,7 @@ def main():
     rp = os.path.join(mp, "frames_report.json")
     rep = json.load(open(rp, encoding="utf-8"))
     gw = llm_gateway.Gateway(spend_cap=int(os.environ.get("OBJECTS_MAX_SPEND", "20000")))
-    model = rep.get("judge_model") or os.environ.get("SHOT_JUDGE_MODEL") or "qwen/qwen3.7-plus"
+    model = os.environ.get("OBJECTS_MODEL") or OBJECTS_MODEL
     hero_text = look.load().hero_text
     n = 0
     for r in rep["frames"]:

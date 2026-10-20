@@ -49,7 +49,63 @@
      "defects": null
     }
    },
-   "objects": []
+   "objects": [
+    {
+     "name": "the dark window",
+     "role": "zoom",
+     "word": "темно",
+     "box": [
+      984.6,
+      33.8,
+      1479.2,
+      640.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the phone with a blank glowing screen",
+     "role": "detail",
+     "word": null,
+     "box": [
+      514.6,
+      496.6,
+      629.8,
+      640.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": null,
+     "why": "точка, а не предмет"
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      322.6,
+      337.9,
+      645.1,
+      640.0
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      84.5,
+      337.9,
+      645.1,
+      768.0
+     ],
+     "why": null
+    }
+   ]
   },
   {
    "index": 1,
@@ -125,7 +181,46 @@
      "defects": null
     }
    },
-   "objects": [],
+   "objects": [
+    {
+     "name": "the drawn part that the label «СЕЙЧАС» would describe (what its little arrow points to)",
+     "role": "label:0",
+     "word": "СЕЙЧАС",
+     "box": [
+      191.4,
+      493.2,
+      306.2,
+      575.4
+     ],
+     "why": null
+    },
+    {
+     "name": "the drawn part that the label «НЕ СЕЙЧАС» would describe (what its little arrow points to)",
+     "role": "label:1",
+     "word": "НЕ СЕЙЧАС",
+     "box": [
+      1626.9,
+      493.2,
+      1741.7,
+      575.4
+     ],
+     "why": null
+    },
+    {
+     "name": "the drawn part that the label «СЕРЕДИНЫ ПОЧТИ НЕТ» would describe (what its little arrow points to)",
+     "role": "label:2",
+     "word": "СЕРЕДИНЫ ПОЧТИ НЕТ",
+     "box": null,
+     "why": "точка, а не предмет"
+    },
+    {
+     "name": "a timeline",
+     "role": "subject",
+     "word": null,
+     "box": null,
+     "why": "внутри пустая бумага"
+    }
+   ],
    "labels_fallback": "band"
   },
   {
@@ -158,7 +253,46 @@
      "defects": null
     }
    },
-   "objects": []
+   "objects": [
+    {
+     "name": "the blurred clock hands",
+     "role": "detail",
+     "word": null,
+     "box": null,
+     "why": "не найден"
+    },
+    {
+     "name": "the dust on the desk",
+     "role": "detail",
+     "word": null,
+     "box": null,
+     "why": "не найден"
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      246.8,
+      122.4,
+      781.7,
+      459.0
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      82.3,
+      122.4,
+      781.7,
+      535.5
+     ],
+     "why": null
+    }
+   ]
   },
   {
    "index": 3,
@@ -190,7 +324,92 @@
      "defects": null
     }
    },
-   "objects": []
+   "objects": [
+    {
+     "name": "the kitchen timer",
+     "role": "zoom",
+     "word": "таймер",
+     "box": [
+      921.6,
+      256.0,
+      1336.3,
+      645.1
+     ],
+     "why": null
+    },
+    {
+     "name": "a kitchen timer",
+     "role": "subject",
+     "word": null,
+     "box": [
+      921.6,
+      256.0,
+      1336.3,
+      645.1
+     ],
+     "why": null
+    },
+    {
+     "name": "the dial of the kitchen timer",
+     "role": "detail",
+     "word": null,
+     "box": [
+      921.6,
+      256.0,
+      1336.3,
+      645.1
+     ],
+     "why": null
+    },
+    {
+     "name": "the small alarm clock",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1336.3,
+      491.5,
+      1520.6,
+      645.1
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      122.9,
+      471.0,
+      245.8,
+      614.4
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      307.2,
+      368.6,
+      691.2,
+      716.8
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      61.4,
+      368.6,
+      691.2,
+      921.6
+     ],
+     "why": null
+    }
+   ]
   },
   {
    "index": 4,
@@ -222,7 +441,92 @@
      "defects": null
     }
    },
-   "objects": []
+   "objects": [
+    {
+     "name": "the wall clock",
+     "role": "key_anchor",
+     "word": null,
+     "box": [
+      1019.9,
+      18.8,
+      1421.2,
+      423.4
+     ],
+     "why": null
+    },
+    {
+     "name": "a wall clock",
+     "role": "subject",
+     "word": null,
+     "box": [
+      1019.9,
+      18.8,
+      1421.2,
+      423.4
+     ],
+     "why": null
+    },
+    {
+     "name": "the blank face of the wall clock",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1019.9,
+      18.8,
+      1421.2,
+      423.4
+     ],
+     "why": null
+    },
+    {
+     "name": "the phone lying face-down",
+     "role": "detail",
+     "word": null,
+     "box": [
+      518.3,
+      639.9,
+      819.3,
+      771.6
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      367.8,
+      470.5,
+      468.2,
+      611.6
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      501.6,
+      338.8,
+      836.0,
+      611.6
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      284.2,
+      338.8,
+      869.4,
+      903.4
+     ],
+     "why": null
+    }
+   ]
   }
  ]
 }

@@ -29,7 +29,7 @@ from skimage.morphology import skeletonize
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FONT = os.path.join(ROOT, "assets", "fonts", "Caveat-Variable.ttf")
 WEIGHT = 480
-SPEED_PER_SIZE = 7.0          # px/с на 1 px кегля: ~1.1 с на слово (решение владельца 04.10)
+SPEED_PER_SIZE = 9.5          # px/с на 1 px кегля: ~0.8 с на слово (владелец 20.10: «чуть быстрее»; было 7.0 — 1.1 с)
 STEMS_FIRST = set("ркнжфРКНЖФ")
 LOOP_FIRST = set("дяаДЯА")
 BOWL_START = set("д")         # «∂»: овал против часовой от стыка, потом вверх к завитку
@@ -294,7 +294,7 @@ def pressure(u):
 class Ink:
     """Альфа надписи во времени. Рисует только новые отпечатки (цена кадра не растёт со
     словами); отпечатки текущего кадра — отдельным слоем с затуханием к кончику пера."""
-    def __init__(self, letters, events, H, W, mask=None, tone=0.86, seed=5):
+    def __init__(self, letters, events, H, W, mask=None, tone=0.99, seed=5):
         self.H, self.W, self.ev, self.tone = H, W, events, tone
         if mask is None:
             mask = np.zeros((H, W), np.float32)
@@ -313,7 +313,7 @@ class Ink:
         rng = np.random.default_rng(seed)
         g = ndimage.gaussian_filter(rng.normal(0, 1, self.cov.shape).astype(np.float32), 0.55)
         st = ndimage.gaussian_filter(rng.normal(0, 1, self.cov.shape).astype(np.float32), (0.7, 2.2))
-        self.grain = np.clip(0.93 + 0.05*g/(g.std() + 1e-9) + 0.04*st/(st.std() + 1e-9), 0.72, 1.0)
+        self.grain = np.clip(0.97 + 0.05*g/(g.std() + 1e-9) + 0.04*st/(st.std() + 1e-9), 0.86, 1.0)
         self.t_end = max((e["t1"] for e in events), default=0.0)
 
     def _stamp(self, layer, x, y, r, a):
@@ -346,7 +346,7 @@ class Ink:
                 for j in range(k0, n):
                     y, x = e["path"][j]
                     fade = 1.0 - 0.45*((j - k0)/max(1, n - k0))     # кончик пера светлее
-                    self._stamp(self.front, x, y, self._radius(e, j, N), (0.42 + 0.22*pressure(j/max(1, N - 1)))*fade)
+                    self._stamp(self.front, x, y, self._radius(e, j, N), (0.62 + 0.25*pressure(j/max(1, N - 1)))*fade)
                 self.done[i] = n
             if t >= e["t1"] and not self.closed[i]:                  # штрих готов: форма закрыта целиком
                 for j in range(0, N, 2):

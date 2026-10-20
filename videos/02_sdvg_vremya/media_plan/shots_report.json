@@ -9,6 +9,18 @@
     [
      0.0,
      "drift"
+    ],
+    [
+     1.55,
+     "drift"
+    ],
+    [
+     3.05,
+     "drift"
+    ],
+    [
+     4.6,
+     "drift"
     ]
    ],
    "labels_at": [],
@@ -18,7 +30,9 @@
    "key_hold_until": null,
    "accent": null,
    "notes": [
-    "план 0.0-7.0 с без смены: другого плана без разреза рисунка нет"
+    "наезд на «the dark window»: слово «темно» не прозвучало",
+    "крупный план «the phone with a blank glowing screen» не делается: деталь мелкая даже на пределе зума",
+    "крупный план «the head of a black cartoon cat» не делается: почти совпадает с другим планом"
    ]
   },
   {
@@ -53,6 +67,14 @@
     [
      0.0,
      "drift"
+    ],
+    [
+     2.18,
+     "drift"
+    ],
+    [
+     5.02,
+     "drift"
     ]
    ],
    "labels_at": [],
@@ -62,7 +84,7 @@
    "key_hold_until": null,
    "accent": null,
    "notes": [
-    "план 0.0-7.8 с без смены: другого плана без разреза рисунка нет"
+    "крупный план «the head of a black cartoon cat» не делается: почти совпадает с другим планом"
    ]
   },
   {
@@ -92,7 +114,12 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
-   "notes": []
+   "notes": [
+    "наезд на «the kitchen timer»: слово «таймер» не прозвучало",
+    "крупный план «the dial of the kitchen timer» не делается: почти совпадает с другим планом",
+    "крупный план «the small alarm clock» не делается: почти совпадает с другим планом",
+    "крупный план «the flame on the tip of the tail of a black cartoon cat» не делается: деталь мелкая даже на пределе зума"
+   ]
   },
   {
    "index": 4,
@@ -100,16 +127,28 @@
    "views": [
     [
      0.0,
-     "lean"
+     "drift"
+    ],
+    [
+     3.68,
+     "drift"
+    ],
+    [
+     6.22,
+     "drift"
     ]
    ],
    "labels_at": [],
    "punch": null,
    "key": "видно глазами",
    "key_at": 0.3,
-   "key_hold_until": 4.11,
+   "key_hold_until": 3.68,
    "accent": null,
-   "notes": []
+   "notes": [
+    "крупный план «the blank face of the wall clock» не делается: деталь не помещается в план",
+    "крупный план «the flame on the tip of the tail of a black cartoon cat» не делается: деталь мелкая даже на пределе зума",
+    "крупный план «the head of a black cartoon cat» не делается: почти совпадает с другим планом"
+   ]
   }
  ]
 }
