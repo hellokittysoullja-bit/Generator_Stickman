@@ -679,12 +679,11 @@ FX_COLOR = (110, 170, 40)                  # лаймовый, как в эта�
 FX_BOX = (250, 0, 1120, 600)                # окно эффектов в координатах рига: над головой и по бокам
 
 def _star(a, cx, cy, R, rot=0.0):
-    """Четырёхлучевая звёздочка с вогнутыми сторонами (как в эталоне): внешний радиус R, внутренний 0.27 R."""
-    pts = []
-    for i in range(8):
-        r = R if i % 2 == 0 else R * 0.34
-        ang = rot + i * np.pi / 4 - np.pi / 2
-        pts.append((cx + r * np.cos(ang), cy + r * np.sin(ang)))
+    """Звёздочка как на сайте и у прежнего кота: прямая четырёхлучевая искра «M0 -32 L8 -8 L32 0 …» (внутренние
+    вершины на R/4 по обеим осям), внешний радиус R."""
+    k = R / 32
+    P = [(0, -32), (8, -8), (32, 0), (8, 8), (0, 32), (-8, 8), (-32, 0), (-8, -8)]
+    pts = [(cx + x * k, cy + y * k) for x, y in P]
     cv2.fillPoly(a, [np.round(np.array(pts) * 16).astype(np.int32)], 255, cv2.LINE_AA, shift=4)
 
 def _zed(a, cx, cy, size, shear=0.18):
@@ -694,14 +693,18 @@ def _zed(a, cx, cy, size, shear=0.18):
     pts = np.array([(cx + (x + shear * -y) * h, cy + y * h) for x, y in P])
     cv2.polylines(a, [np.round(pts * 16).astype(np.int32)], False, 255, max(2, int(round(size * 0.16))), cv2.LINE_AA, shift=4)
 
-def _ease_back(u):
-    u = min(max(u, 0.0), 1.0); c1 = 1.70158; c3 = c1 + 1
-    return 1 + c3 * (u - 1) ** 3 + c1 * (u - 1) ** 2
+def _keys3(u, a, b):
+    """easeInOut a -> b -> a за период (как transition ease: "easeInOut" у сайта)."""
+    sm_ = lambda x: float(smooth(np.float32(min(max(x, 0.0), 1.0))))
+    return a + (b - a) * sm_(u / .5) if u < .5 else b + (a - b) * sm_((u - .5) / .5)
 
-STARS = [  # (x, y, радиус, фаза мерцания, период, фаза дрейфа) в координатах рига
-    (330, 205, 46, 0.00, 1.9, 0.0), (905, 150, 21, 0.35, 1.5, 0.4), (1005, 255, 15, 0.7, 1.7, 0.8),
-    (255, 380, 13, 0.55, 1.4, 0.2),
-]
+# Звёздочки — как на сайте (lib/rig/doll.ts naparnik): три искры, пульс 1.4 с (масштаб 0.5 -> 1.15 -> 0.5, прозрачность
+# 0.4 -> 1 -> 0.4) со сдвигом 0.35 с. Места — те же, что у прежнего кота сайта: его рисунок совпадает с этим эталоном по
+# глазам (пересчёт через эталон сайта даёт (298,117), (904,147), (833,16)). Третья опущена до y=42: выше она резалась бы
+# верхом рамки рига.
+STARS = [(300, 120, 0.0), (900, 150, 0.35), (830, 42, 0.7)]   # (x, y, задержка, с)
+STAR_R = 32.0
+STAR_PERIOD = 1.4
 ZS = dict(p0=(865, 205), p1=(985, 25), s0=26, s1=62, period=3.6, n=3)
 
 def fx_layer(kind, t, k, t0):
@@ -710,11 +713,15 @@ def fx_layer(kind, t, k, t0):
     x0, y0, x1, y1 = FX_BOX
     a = np.zeros((y1 - y0, x1 - x0), np.uint8)
     if kind == "stars":
-        pop = _ease_back(k * 1.15)
-        for (x, y, R, ph, per, dph) in STARS:
-            tw = 0.55 + 0.45 * np.sin(np.pi * ((t - t0) / per + ph)) ** 2
-            dy = 4 * np.sin(2 * np.pi * ((t - t0) / 3.1 + dph)); dx = 2.5 * np.sin(2 * np.pi * ((t - t0) / 4.3 + dph))
-            _star(a, x - x0 + dx, y - y0 + dy, max(0.5, R * tw * pop), 0.22 * np.sin(2 * np.pi * ((t - t0) / 5 + ph)))
+        for (x, y, d) in STARS:
+            tt = t - t0 - d
+            if tt < 0: continue
+            u = (tt / STAR_PERIOD) % 1.0
+            al = _keys3(u, 0.4, 1.0) * k
+            if al <= 0.01: continue
+            layer = np.zeros_like(a)
+            _star(layer, x - x0, y - y0, STAR_R * _keys3(u, 0.5, 1.15) * (0.6 + 0.4 * k))
+            a = np.maximum(a, (layer * al).astype(np.uint8))
     elif kind == "zzz":
         z = ZS
         for i in range(z["n"]):
