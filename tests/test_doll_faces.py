@@ -9,8 +9,10 @@ import pytest
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts"))
 import mascot_live as M  # noqa: E402
 
-needs_faces = pytest.mark.skipif(not (M.available() and {"happy", "sleep"} <= M._faces_available()),
-                                 reason="рига или лиц куклы нет на диске")
+needs_faces = pytest.mark.skipif(not (M.available() and "sleep" in M._faces_available()),
+                                 reason="рига или лица сна нет на диске")
+needs_happy = pytest.mark.skipif(not (M.available() and "happy" in M._faces_available()),
+                                 reason="эталона веселого лица нет (снят как брак 21.10, look/README.md)")
 
 
 def _lime(r):
@@ -35,7 +37,7 @@ def test_no_face_state_is_plain_cat():
     assert _rig().bb_for(st) == _rig().bb
 
 
-@needs_faces
+@needs_happy
 def test_happy_changes_only_mouth_and_keeps_eyes_alive():
     base, _ = _frame([], 2.0)
     happy, st = _frame([dict(t=0.3, do="face", name="happy")], 2.0)

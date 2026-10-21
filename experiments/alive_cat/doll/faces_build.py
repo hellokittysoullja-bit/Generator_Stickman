@@ -200,5 +200,8 @@ def sleep_eyes(hero, dy=-22):
 
 if __name__ == "__main__":
     hero = np.asarray(Image.open(HERO).convert("RGB"))
-    happy_mouth(hero); sleep_eyes(hero)
-    print("faces/happy_mouth.npz, faces/sleep_eyes.npz готовы")
+    for fn, src in ((happy_mouth, "happy_src.png"), (sleep_eyes, "sleep_src.png")):
+        if os.path.exists(os.path.join(HERE, "faces", src)):
+            fn(hero)
+        else:
+            print(f"нет faces/{src} — лицо не собирается (эталон снят, см. look/README.md, правило эталонов)")
