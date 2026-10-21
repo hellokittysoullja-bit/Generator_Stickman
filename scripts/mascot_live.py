@@ -36,7 +36,8 @@ BUSY_MARGIN = 26         # поле вокруг куклы в карте зан
 GRAIN_CLIP = (0.93, 1.03)   # зерно бумаги кадра поверх куклы: 10–90-й перцентили фактуры 0.946–1.018 (замер эп.01)
 SHADOW_K = 0.13             # тень под лапами: бумага 250 -> ~217 в центре; пол в кадре эп.01 — 233
 SAT_MIN = 0.5               # насыщенность куклы подгоняется к нарисованным котам эпизода, но не ниже половины
-VERSION = 4
+VERSION = 5
+FACE_FOR_MOOD = {"happy": "happy", "asleep": "sleep"}   # настроение кадра -> лицо куклы (rig faces/): язык + звёздочки, дуги + Z
 
 _RIG = None
 _MOD = None
@@ -63,6 +64,15 @@ def _asset_paths():
     return paths
 
 
+def _faces_available():
+    """Какие лица есть на диске (faces/*.npz рядом с ригом)."""
+    out = set()
+    for face, nm in (("happy", "happy_mouth"), ("sleep", "sleep_eyes")):
+        if os.path.exists(os.path.join(RIG_DIR, "faces", nm + ".npz")):
+            out.add(face)
+    return out
+
+
 def available():
     """Риг на диске целиком и зависимости импортируются."""
     if not enabled() or _asset_paths() is None:
@@ -84,6 +94,10 @@ def signature():
         if p.endswith(".json"):
             h.update(open(p, "rb").read())
     h.update(open(os.path.join(RIG_DIR, "doll_rig.py"), "rb").read())
+    for nm in ("happy_mouth", "sleep_eyes"):
+        fp = os.path.join(RIG_DIR, "faces", nm + ".npz")
+        if os.path.exists(fp):
+            h.update(open(fp, "rb").read())
     h.update(inspect.getsource(sys.modules[__name__]).encode())
     return h.hexdigest()[:12]
 
@@ -285,14 +299,17 @@ def bake_shadow(world, ms, SW, SH, scale=1):
     return np.clip(out, 0, 255).round().astype(world.dtype)
 
 
-def plan_actions(D, words, text, gaze, seed=0, action=None):
+def plan_actions(D, words, text, gaze, seed=0, action=None, mood=None):
     """Движения из самой фразы: смотрит на предмет почти весь кадр (в конце — снова на зрителя),
     вопрос — наклон головы на слове с «?», вторая мысль во фразе — лёгкий наклон в другую
     сторону. action из плана кадра: "paw_on_chest" — поза «лапа у груди» на первые секунды
     (единственная поза в работе; жесты лап владелец отложил 07.10). Фон (моргание, оглядывание,
     ухо, хвост, дыхание) даёт doll_rig.plan сам."""
     acts = []
-    if action == "paw_on_chest" and D >= 1.2:
+    face = FACE_FOR_MOOD.get(mood)
+    if face and D >= 1.0 and face in _faces_available():
+        acts.append(dict(t=0.3 if face == "happy" else 0.2, do="face", name=face))      # держится до конца клипа
+    if action == "paw_on_chest" and D >= 1.2 and not face:
         acts.append(dict(t=0.35, do="paw", dur=float(min(2.4, D - 0.8))))
     if D >= 1.6:
         hold = max(0.6, D - 1.1)
@@ -345,7 +362,7 @@ class Layer:
         if self.flame:
             st["flame"] = self.flame                     # ember/golden из плана кадра; bright — как нарисовано
         rgba = R.frame_rgba(st, t)
-        x0, y0, x1, y1 = R.bb
+        x0, y0, x1, y1 = R.bb_for(st)                                    # при звёздочках и Z окно шире рамки кота
         sub = np.ascontiguousarray(rgba[y0:y1, x0:x1])
         if self.sat < 0.999:                                             # к насыщенности нарисованных котов
             a4 = sub[..., 3:4]; a1 = np.maximum(a4, 1e-3)

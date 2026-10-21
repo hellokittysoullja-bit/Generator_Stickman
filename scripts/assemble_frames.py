@@ -285,7 +285,7 @@ def main(video_dir):
                 print(f"  живая кукла: насыщенность x{doll_look['sat']:.2f} (нарисованные коты эпизода: "
                       f"{[round(v) for v in doll_look['drawn_sat']]})")
             mascot = dict(text=blocks[i]["text"], state=pf.get("hero_state"), action=pf.get("hero_action"), seed=k,
-                          look=doll_look)
+                          mood=pf.get("hero_mood"), look=doll_look)
         jobs.append(dict(src=src, recs=recs, objects=rec.get("objects") or [], work=work, tex=tex_path,
                          seed=k, key=(pf.get("key_thought") or "").strip() or None, words=words, mascot=mascot,
                          accent=(pf.get("accent") or "").strip() or None,

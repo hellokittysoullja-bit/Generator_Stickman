@@ -198,8 +198,9 @@ LIVE_RULE = ('\n  "hero_action" — only with hero true: what the character phys
              'in its paws), "other" (holds, carries, lies, climbs, hides its face, touches or interacts with anything '
              'in any other way). Choose "other" whenever in doubt.\n'
              '  "hero_mood" — only with hero true: the feeling on the character\'s face in your picture, one of "calm", '
-             '"curious", "happy", "relieved", "sad", "afraid", "ashamed", "angry", "tired".')
-LIVE_MOODS = ("calm", "curious", "happy", "relieved")   # что кукла умеет показать лицом (рисунок героя улыбается)
+             '"curious", "happy" (delighted, tongue-out grin), "relieved", "asleep" (dozing, eyes closed), "sad", "afraid", '
+             '"ashamed", "angry", "tired".')
+LIVE_MOODS = ("calm", "curious", "happy", "relieved", "asleep")   # что кукла умеет показать лицом: happy — язык и звёздочки, asleep — дуги и Z
 HERO_MOODS = LIVE_MOODS + ("sad", "afraid", "ashamed", "angry", "tired")
 
 

@@ -214,6 +214,13 @@ class Rig:
             for (mi, mw, mp) in self.M:
                 ww = ndimage.binary_dilation(mw, iterations=8); fr[ww] = self.fur[ww]
             self.poses[name] = dict(fur=fr, alpha=ra, base4=np.dstack([fr, ra]).astype(np.float32))
+        # лица: заплатки из кадров GPT (faces_build.py). Есть файл — состояние доступно, нет — просто не включается
+        self.faces = {}
+        for nm in ("happy_mouth", "sleep_eyes"):
+            fp = os.path.join(base, "faces", nm + ".npz")
+            if os.path.exists(fp):
+                z = np.load(fp)
+                self.faces[nm] = dict(box=tuple(int(v) for v in z["box"]), rgb=z["rgb"].astype(np.float32), a=z["a"].astype(np.float32) / 255)
         # части глаза — только в рамке глаз
         self.eye_bb = []
         for (cx, cy, rx, ry) in self.E:
@@ -490,12 +497,19 @@ class Rig:
             aa = armw[..., 3:4] / 255
             cat = np.dstack([cat[..., :3] * (1 - aa) + armw[..., :3] * aa, np.maximum(cat[..., 3], armw[..., 3])])
         else:
-            cat = self.face4(st["look"], st["lid"], self.base4)
+            fc = st.get("face")
+            if fc and fc[0] == "sleep" and "sleep_eyes" in self.faces and fc[1] > 0.66:
+                cat = self.base4.copy()                                   # глаза закрыты насовсем: мех без глаз, дуги — заплаткой
+            else:
+                lid = st["lid"]
+                if fc and fc[0] == "sleep" and "sleep_eyes" in self.faces: lid = max(lid, float(smooth(min(1., fc[1] * 2.0))))  # сначала веки смыкаются
+                cat = self.face4(st["look"], lid, self.base4)
         pz = st.get("pose")                          # (имя позы, доля 0..1) — смена позы за 2 кадра
         if pz and pz[1] > 0 and pz[0] in self.poses:
             P = self.poses[pz[0]]
             other = self.face4(st["look"], st["lid"], P["base4"])
             k = np.float32(pz[1]); cat = cat * (1 - k) + other * k
+        self._apply_face(cat, st, wave, pz)
         fx0, fy0, fx1, fy1 = r["flame_box"]                                 # огонёк — в своих координатах
         # рамка с запасом на бумагу: в старой рамке кончик пламени (3 px от верха) при сдвиге вверх
         # упирался в её край и срезался плоско (7% кадров), а мех хвоста, пересекающий её бок,
@@ -515,6 +529,20 @@ class Rig:
         if fs in FLAME_STATES and self.flame_state is not None:
             cat[Y0b:Y1b, X0b:X1b] = self._flame_state(cat[Y0b:Y1b, X0b:X1b], fs)
         return cat
+
+    def _apply_face(self, cat, st, wave, pz):
+        """Лицо-эмоция поверх основного: рот с язычком (глаза остаются живыми — взгляд и моргание работают) или дуги
+        закрытых глаз. Только в основной позе: в жесте лапы лицо остаётся прежним."""
+        fc = st.get("face")
+        if not fc or (wave and wave[0] >= .35) or (pz and pz[1] > 0): return
+        name, k = fc
+        key = {"happy": "happy_mouth", "sleep": "sleep_eyes"}.get(name)
+        P = self.faces.get(key)
+        if P is None: return
+        k = float(smooth(min(1., max(0., (k - .4) / .25)))) if name == "sleep" else float(smooth(k))
+        if k <= 0: return
+        x0, y0, x1, y1 = P["box"]; a = (P["a"] * k)[..., None]
+        cat[y0:y1, x0:x1, :3] = cat[y0:y1, x0:x1, :3] * (1 - a) + P["rgb"] * a
 
     def _flame_state(self, reg, fs):
         """Огонёк по состоянию героя: ember — вдвое ниже и притушен (серо-оранжевый), golden — выше и
@@ -631,7 +659,80 @@ class Rig:
         reg[cy, cx] = Pc                                                       # там уже премультиплицировано
         out = np.zeros((self.H, self.W, 4), np.float32)
         out[y0:y1, x0:x1] = reg
+        fx = st.get("fx")
+        if fx:
+            L = fx_layer(fx[0], t, fx[1], fx[2])
+            if L is not None:
+                fx0, fy0, fx1, fy1 = FX_BOX; sub = out[fy0:fy1, fx0:fx1]
+                sub[:] = L + sub * (1 - L[..., 3:4])                 # звёзды позади или поверх? поверх кота: они парят у головы
         return out
+
+    def bb_for(self, st):
+        """Окно кадра, которое сборщик вырезает из frame_rgba: рамка кота, а при эффектах — объединение с окном эффектов."""
+        if not st.get("fx"): return self.bb
+        x0, y0, x1, y1 = self.bb; fx0, fy0, fx1, fy1 = FX_BOX
+        return (min(x0, fx0), min(y0, fy0), max(x1, fx1), max(y1, fy1))
+
+
+# ----------------------------------------------------------------------------- звёздочки и Z (рисуются кодом)
+FX_COLOR = (110, 170, 40)                  # лаймовый, как в эталонных кадрах героя; на кремовой бумаге читается
+FX_BOX = (250, 0, 1120, 600)                # окно эффектов в координатах рига: над головой и по бокам
+
+def _star(a, cx, cy, R, rot=0.0):
+    """Четырёхлучевая звёздочка с вогнутыми сторонами (как в эталоне): внешний радиус R, внутренний 0.27 R."""
+    pts = []
+    for i in range(8):
+        r = R if i % 2 == 0 else R * 0.34
+        ang = rot + i * np.pi / 4 - np.pi / 2
+        pts.append((cx + r * np.cos(ang), cy + r * np.sin(ang)))
+    cv2.fillPoly(a, [np.round(np.array(pts) * 16).astype(np.int32)], 255, cv2.LINE_AA, shift=4)
+
+def _zed(a, cx, cy, size, shear=0.18):
+    """Буква Z одним росчерком: верхняя перекладина, диагональ, нижняя; наклон «от руки», скруглённые концы."""
+    h = size / 2
+    P = [(-1, -1), (1, -1), (-1, 1), (1, 1)]
+    pts = np.array([(cx + (x + shear * -y) * h, cy + y * h) for x, y in P])
+    cv2.polylines(a, [np.round(pts * 16).astype(np.int32)], False, 255, max(2, int(round(size * 0.16))), cv2.LINE_AA, shift=4)
+
+def _ease_back(u):
+    u = min(max(u, 0.0), 1.0); c1 = 1.70158; c3 = c1 + 1
+    return 1 + c3 * (u - 1) ** 3 + c1 * (u - 1) ** 2
+
+STARS = [  # (x, y, радиус, фаза мерцания, период, фаза дрейфа) в координатах рига
+    (330, 205, 46, 0.00, 1.9, 0.0), (905, 150, 21, 0.35, 1.5, 0.4), (1005, 255, 15, 0.7, 1.7, 0.8),
+    (255, 380, 13, 0.55, 1.4, 0.2),
+]
+ZS = dict(p0=(865, 205), p1=(985, 25), s0=26, s1=62, period=3.6, n=3)
+
+def fx_layer(kind, t, k, t0):
+    """Премультиплицированный RGBA (float32 0..1) размером с FX_BOX или None. kind: stars | zzz; k — появление 0..1;
+    t0 — когда эффект включился (Z стартуют с нуля, а не посреди цикла)."""
+    x0, y0, x1, y1 = FX_BOX
+    a = np.zeros((y1 - y0, x1 - x0), np.uint8)
+    if kind == "stars":
+        pop = _ease_back(k * 1.15)
+        for (x, y, R, ph, per, dph) in STARS:
+            tw = 0.55 + 0.45 * np.sin(np.pi * ((t - t0) / per + ph)) ** 2
+            dy = 4 * np.sin(2 * np.pi * ((t - t0) / 3.1 + dph)); dx = 2.5 * np.sin(2 * np.pi * ((t - t0) / 4.3 + dph))
+            _star(a, x - x0 + dx, y - y0 + dy, max(0.5, R * tw * pop), 0.22 * np.sin(2 * np.pi * ((t - t0) / 5 + ph)))
+    elif kind == "zzz":
+        z = ZS
+        for i in range(z["n"]):
+            u = (((t - t0) / z["period"]) - i / z["n"])
+            if u < 0: continue                              # третья Z не появляется раньше срока
+            u %= 1.0
+            alpha = float(smooth(np.float32(u / .18))) * (1 - float(smooth(np.float32((u - .72) / .28)))) * k
+            if alpha <= 0.01: continue
+            x = z["p0"][0] + (z["p1"][0] - z["p0"][0]) * u + 7 * np.sin(2 * np.pi * u * 1.4 + i)
+            y = z["p0"][1] + (z["p1"][1] - z["p0"][1]) * u
+            size = z["s0"] + (z["s1"] - z["s0"]) * float(smooth(np.float32(u)))
+            layer = np.zeros_like(a); _zed(layer, x - x0, y - y0, size)
+            a = np.maximum(a, (layer * alpha).astype(np.uint8))
+    else:
+        return None
+    al = a.astype(np.float32) / 255
+    col = np.array(FX_COLOR, np.float32)
+    return np.concatenate([col * al[..., None], al[..., None]], axis=2)
 
 # ----------------------------------------------------------------- движения
 def key(t, pts, default=0.0):
@@ -676,6 +777,7 @@ def plan(dur, actions, seed=7):
     paws = {"left": ([], []), "right": ([], [])}
     WV = []
     POSE = []
+    FACES = []
     gaze_blinks = []
     for a in actions:
         t0, kind = a["t"], a["do"]
@@ -711,6 +813,8 @@ def plan(dur, actions, seed=7):
         elif kind == "wave":                    # помахать: подъём 0.2 с, n взмахов, опускание
             n = a.get("n", 2); up = .2; per = .42
             WV.append((t0, t0 + up, t0 + up + n * per, t0 + up + n * per + .22, per))
+        elif kind == "face":                    # лицо-эмоция: happy (язык) или sleep (дуги); держится до конца клипа или dur
+            FACES.append((t0, a["name"], a.get("dur"), a.get("fx", True)))
         elif kind == "blink":
             blinks.append(t0)
     # моргания не пачками и не у самой склейки (сравнение 08.10: три смыкания век за 0.62 с перед резом,
@@ -744,12 +848,23 @@ def plan(dur, actions, seed=7):
             if p0 <= t < p1 and (best is None or p0 >= best[0]):  # мгновенная смена позы, последняя начатая главнее
                 best = (p0, name)
         if best: pose = (best[1], 1.0)
-        return dict(pose=pose, squash=squash, wave=wave, look=(key(t, look_x), key(t, look_y)), lid=lid, head=key(t, head), ear=ear,
+        face = fx = None; hd = key(t, head); br = 1 + .012 * np.sin(2 * np.pi * t / 2.6)
+        for (f0, fname, fdur, ffx) in sorted(FACES):
+            if t >= f0 and (fdur is None or t < f0 + fdur + FACE_FADE[fname]):
+                tin = FACE_FADE[fname]
+                k = float(smooth((t - f0) / tin))
+                if fdur is not None and t > f0 + fdur: k = 1 - float(smooth((t - f0 - fdur) / tin))
+                face = (fname, k)
+                if ffx and k > 0.02: fx = ("stars" if fname == "happy" else "zzz", k, f0 + (0.0 if fname == "happy" else .55 * tin))
+                if fname == "sleep":                 # спит: голова опускается, дыхание глубже и реже
+                    hd += -3.4 * k; br = 1 + (.012 + .010 * k) * np.sin(2 * np.pi * t / (2.6 + 1.0 * k))
+        return dict(pose=pose, face=face, fx=fx, squash=squash, wave=wave, look=(key(t, look_x), key(t, look_y)), lid=lid, head=hd, ear=ear,
                     tail=float(4.3 * np.tanh(fbm(np.float32(t / 3.1), 53))) if TAIL_NOISE else 4 * np.sin(2 * np.pi * t / 3.1),
-                    breath=1 + .012 * np.sin(2 * np.pi * t / 2.6),
+                    breath=br,
                     paws={k: (key(t, sorted(v[0])), key(t, sorted(v[1]))) for k, v in paws.items()})
     return state
 
+FACE_FADE = {"happy": .3, "sleep": .7}
 _RIG = None
 _ST = None
 def _work(args):
