@@ -165,16 +165,19 @@ def render_chunk(words, idx, active):
     тень; активное слово — жёлтым (караоке), ключевое — оранжевым. Цвет — единственное отличие слов."""
     f = cap_font(); st = CAP_STROKE; space = f.getlength(" ") + CAP_TRACK * CAP_SIZE
     parts = [(cap_text(words[j]), KEY if "*" in words[j] else (ACTIVE if j == active else WHITE)) for j in idx]
+    fade = [j > active for j in idx]           # ещё не «произнесённые» слова — бледные: группа читается по мере речи
     tw = sum(tracked(f, t) for t, _ in parts) + space * (len(parts) - 1)
     asc, desc = f.getmetrics()
     bw, bh = int(tw + 2 * st + 60), int(asc + desc + 2 * st + 60)
     img = Image.new("RGBA", (bw, bh), (0, 0, 0, 0)); sh = Image.new("RGBA", (bw, bh), (0, 0, 0, 0))
     d, ds = ImageDraw.Draw(img), ImageDraw.Draw(sh)
     x, y = 30 + st, 30 + st
-    for t, col in parts:
+    for (t, col), fd in zip(parts, fade):
+        a = 90 if fd else 255
         for ch in t:
-            ds.text((x, y + CAP_SIZE * 0.07), ch, font=f, fill=(0, 0, 0, 110), stroke_width=st + 2, stroke_fill=(0, 0, 0, 110))
-            d.text((x, y), ch, font=f, fill=col, stroke_width=st, stroke_fill=INK)
+            ds.text((x, y + CAP_SIZE * 0.07), ch, font=f, fill=(0, 0, 0, 110 * a // 255), stroke_width=st + 2,
+                    stroke_fill=(0, 0, 0, 110 * a // 255))
+            d.text((x, y), ch, font=f, fill=col + (a,), stroke_width=st, stroke_fill=INK + (a,))
             x += f.getlength(ch) + CAP_TRACK * CAP_SIZE
         x += space - CAP_TRACK * CAP_SIZE
     sh = sh.filter(ImageFilter.GaussianBlur(CAP_SIZE * 0.10))
@@ -270,6 +273,7 @@ def prepare_src(reel_dir, sources):
 
 # ----------------------------------------------------------------------------- кукла героя
 _DOLL = {}
+DOLL_FPS = 12          # кукла рисуется 12 к/с, как рисованная анимация; камера остаётся 30 к/с (white minimal: Posterize Time 12)
 def doll_frame(t, dur, actions):
     """Живой кот (риг из experiments/alive_cat/doll): RGBA премультиплицированный, координаты рига."""
     if "rig" not in _DOLL:
@@ -532,6 +536,13 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
             if k > 0.05:
                 sc = PH / (h / punch) / 2.0
                 base = motion_blur(base, s["whip"][0] * k * sc * 0.25 * 2.0 * 0.5, s["whip"][1] * k * sc * 0.25)
+        if s.get("zoom_in"):                       # вход наездом: размытие гаснет за 0.15 с (white minimal: blur 30->0)
+            k = 1 - ease_out((t - s["t0"]) / 0.15)
+            if k > 0.05: base = cv2.GaussianBlur(base, (0, 0), 1 + 7 * k)
+        nxt = next((x for x in shots if x["t0"] >= s["t1"] - 1e-6 and x is not s), None)
+        if nxt is not None and nxt.get("whip") and s["t1"] - t < 0.1:   # уходящий кадр смазывается в сторону хлёста
+            k = ease_io(1 - (s["t1"] - t) / 0.1)
+            base = motion_blur(np.roll(base, int(-nxt["whip"][0] * 0.08 * k), axis=1), -nxt["whip"][0] * 0.08 * k, 0)
     else:
         view = None
         base = tex[:PH].copy()
@@ -545,7 +556,7 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
                 src = load_src(reel_dir, part["src"])
                 base = fit_on_paper(base, src, part["region"], part["cy"], part.get("width", 0.94), zs)
         elif kind == "doll":
-            rgba = doll_frame(t, total + 0.5, s["doll_acts"])
+            rgba = doll_frame(math.floor(t * DOLL_FPS) / DOLL_FPS, total + 0.5, s["doll_acts"])   # кукла «на двойках»
             base = paste_doll(base, rgba, W / 2 + shake[0], s.get("cy", PH * 0.55) + shake[1], s.get("h", 900) * zs)
     base = np.ascontiguousarray(base)
 
@@ -558,7 +569,15 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
         if e["kind"] == "write":                    # рукописная надпись на рисунке, пишется ~0.5 с
             im = text_img(e["text"], font(HAND, e.get("size", 120), 700), RED if e.get("red", True) else INK)
             u = (t - e["t"]) / e.get("dur", 0.5)
-            over(base, im, e["x"], e["y"], wipe=min(1.0, u * 1.05), scale=1.0)
+            x, y, sc = e["x"], e["y"], 1.0
+            if view is not None:                    # приклеена к бумаге: едет и растёт вместе с рисунком (наезд, тряска)
+                ev = e.setdefault("_anchor", {}).get(id(s))
+                if ev is None:
+                    vx, vy, vh = shot_view(s, max(e["t"], s["t0"]))
+                    ev = e["_anchor"][id(s)] = ((e["x"] - W / 2) * vh / PH + vx, (e["y"] - PH / 2) * vh / PH + vy, vh)
+                vx, vy, vh = view; k = PH / vh
+                x, y, sc = (ev[0] - vx) * k + W / 2 + shake[0], (ev[1] - vy) * k + PH / 2 + shake[1], ev[2] / vh
+            over(base, im, x, y, wipe=min(1.0, u * 1.05), scale=sc)
         elif e["kind"] == "arrow":
             arrows.append(e)
         elif e["kind"] == "ring" and t - e["t"] < e.get("dur", 1.0) and view is not None:
@@ -583,8 +602,8 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
             ImageDraw.Draw(pad).rounded_rectangle((0, 0, pad.width - 1, pad.height - 1), radius=pad.height // 2,
                                                   fill=(18, 18, 20, 235) if e.get("dark") else (255, 210, 63, 255))
             pad.alpha_composite(im, (20, 5))
-            sc = ease_out_back((t - e["t"]) / 0.22)
-            over(base, pad, e["x"], e["y"], scale=max(0.01, sc))
+            u = (t - e["t"]) / 0.22                     # въезд снизу с торможением, без «прыжка»
+            over(base, pad, e["x"], e["y"] + 16 * (1 - ease_out(u)), alpha=min(1.0, u * 2.5))
 
     # картинка уходит в полосу субтитров мягким краем: одна бумага, без «вклеенного» прямоугольника
     pic = base; base = tex.copy(); f_ = 60
