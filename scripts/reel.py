@@ -163,7 +163,8 @@ def render_chunk(words, idx, active):
     от метрик шрифта, а не от букв: «у/д/щ» не сдвигают группу). Белые буквы, тонкая тёмная обводка, мягкая
     тень; активное слово — жёлтым (караоке), ключевое — оранжевым. Цвет — единственное отличие слов."""
     f = cap_font(); st = CAP_STROKE; space = f.getlength(" ")
-    parts = [(cap_text(words[j]), KEY if "*" in words[j] else (ACTIVE if j == active else WHITE)) for j in idx]
+    parts = [(cap_text(words[j]), (KEY if j <= active else WHITE) if "*" in words[j] else (ACTIVE if j == active else WHITE))
+             for j in idx]                      # ключевое слово вспыхивает оранжевым, когда до него дошло чтение
     fade = [j > active for j in idx]           # ещё не «произнесённые» слова — бледные: группа читается по мере речи
     tw = sum(tracked(f, t) for t, _ in parts) + space * (len(parts) - 1)
     asc, desc = f.getmetrics()
@@ -173,8 +174,8 @@ def render_chunk(words, idx, active):
     x, y = 30 + st, 30 + st
     for (t, col), fd in zip(parts, fade):
         a = 90 if fd else 255
-        ds.text((x, y + CAP_SIZE * 0.07), t, font=f, fill=(0, 0, 0, 110 * a // 255), stroke_width=st + 2,
-                stroke_fill=(0, 0, 0, 110 * a // 255), features=CAP_FEATURES)
+        ds.text((x, y + CAP_SIZE * 0.07), t, font=f, fill=(0, 0, 0, 80 * a // 255), stroke_width=st + 2,
+                stroke_fill=(0, 0, 0, 80 * a // 255), features=CAP_FEATURES)
         d.text((x, y), t, font=f, fill=col + (a,), stroke_width=st, stroke_fill=INK + (a,), features=CAP_FEATURES)
         x += tracked(f, t) + space
     sh = sh.filter(ImageFilter.GaussianBlur(CAP_SIZE * 0.10))
@@ -217,8 +218,34 @@ def sample(src, cx, cy, h, scale_src=2.0, shake=(0, 0), rot=0.0):
     X0, Y0 = cx * scale_src, cy * scale_src
     M = np.array([[ca, -sa, X0 - ca * (W / 2 + shake[0]) + sa * (PH / 2 + shake[1])],
                   [sa, ca, Y0 - sa * (W / 2 + shake[0]) - ca * (PH / 2 + shake[1])]], np.float32)
-    return cv2.warpAffine(src, M, (W, PH), flags=cv2.WARP_INVERSE_MAP | cv2.INTER_LINEAR,
+    return cv2.warpAffine(src, M, (W, PH), flags=cv2.WARP_INVERSE_MAP | cv2.INTER_CUBIC,
                           borderMode=cv2.BORDER_CONSTANT, borderValue=tuple(int(v) for v in PAPER))
+
+# «дорогой» вид (разбор роликов о дорогом монтаже 22.10): мягкая S-кривая (тушь глубже, бумага на месте), лёгкая
+# резкость картинки и живое зерно по всему кадру, сменяется 12 раз в секунду — как бумага рисованной анимации
+_LUT = None
+def grade(img):
+    global _LUT
+    if _LUT is None:
+        x = np.arange(256, dtype=np.float32) / 255.0
+        y = np.where(x < 0.5, 0.5 * (2 * x) ** 1.18, x)                   # тени глубже, светлое (бумага) не трогается
+        _LUT = np.clip(y * 255 + 0.5, 0, 255).astype(np.uint8)
+    return cv2.LUT(img, _LUT)
+
+def sharpen(img, amount=0.35, sigma=1.2):
+    bl = cv2.GaussianBlur(img, (0, 0), sigma)
+    return cv2.addWeighted(img, 1 + amount, bl, -amount, 0)
+
+GRAIN_FPS = 12
+_GRAIN = {}
+def grain(img, t, amp=0.012):
+    k = int(t * GRAIN_FPS) % 6
+    if k not in _GRAIN:
+        rng = np.random.default_rng(100 + k)
+        n = rng.normal(0, 1, (H // 2, W // 2)).astype(np.float32)
+        _GRAIN[k] = cv2.resize(n, (W, H), interpolation=cv2.INTER_LINEAR)[..., None]
+    g = _GRAIN[k][:img.shape[0]]
+    return np.clip(img.astype(np.float32) * (1 + amp * g), 0, 255).astype(np.uint8)
 
 def fit_on_paper(base, src, region, cy, width_frac, scale=1.0, scale_src=2.0, dx=0.0):
     """Кусок рисунка во всю ширину на бумаге (широкая схема, сравнение двух половин)."""
@@ -526,7 +553,7 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
     if kind == "crop":
         src = load_src(reel_dir, s["src"])
         cx, cy, h = shot_view(s, t)
-        base = sample(src, cx, cy, h / punch, shake=shake, rot=rot)
+        base = grade(sharpen(sample(src, cx, cy, h / punch, shake=shake, rot=rot)))
         view = (cx, cy, h / punch)
         if s.get("whip"):
             k = 1 - ease_out((t - s["t0"]) / 0.18)
@@ -593,6 +620,33 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
                     a = math.radians(q * 30); r0, r1 = r * (0.80 if q % 3 else 0.72), r * 0.90
                     cv2.line(base, (int(sx + r0 * math.cos(a)), int(sy + r0 * math.sin(a))),
                              (int(sx + r1 * math.cos(a)), int(sy + r1 * math.sin(a))), INK, 10 if q % 3 == 0 else 6, cv2.LINE_AA)
+        elif e["kind"] == "mark":                   # VOX: слово от руки + жёлтый маркер, проведённый под ним слева направо
+            f = font(HAND, e.get("size", 120), 700)
+            im = text_img(e["text"], f, INK)
+            u = (t - e["t"]) / 0.35
+            if u > 0:
+                mw, mh = int(im.width * 1.02 * min(1.0, ease_out(u))), int(im.height * 0.42)
+                if mw > 4:
+                    mk = Image.new("RGBA", (int(im.width * 1.04), im.height), (0, 0, 0, 0)); dm = ImageDraw.Draw(mk)
+                    y0 = int(im.height * 0.48)
+                    pts = [(0, y0 + 6)] + [(x_, y0 + int(3 * math.sin(x_ * 0.05))) for x_ in range(0, mw, 12)] + \
+                          [(mw, y0 + 4), (mw, y0 + mh), (0, y0 + mh - 4)]
+                    dm.polygon(pts, fill=(255, 205, 50, 200))
+                    over(base, mk.rotate(-2, resample=Image.BICUBIC, expand=False), e["x"], e["y"])
+            over(base, im, e["x"], e["y"], wipe=min(1.0, max(0.0, (t - e["t"] - 0.15) / 0.45)))
+        elif e["kind"] == "circle":                 # VOX: красный круг рисуется от руки по контуру, открытый на конце
+            u = ease_out((t - e["t"]) / 0.45)
+            if view is not None:
+                vx, vy, vh = view; k = PH / vh
+                cx_, cy_ = (e["x"] - vx) * k + W / 2 + shake[0], (e["y"] - vy) * k + PH / 2 + shake[1]
+                rx, ry = e["rx"] * k, e.get("ry", e["rx"]) * k
+            else:
+                cx_, cy_, rx, ry = e["x"], e["y"], e["rx"], e.get("ry", e["rx"])
+            n = max(2, int(64 * u * 1.08))
+            pts = [(int(cx_ + rx * (1 + 0.04 * math.sin(3 * a_)) * math.cos(a_ - 2.2)),
+                    int(cy_ + ry * (1 + 0.04 * math.cos(2 * a_)) * math.sin(a_ - 2.2) - 6 * a_ / (2 * math.pi)))
+                   for a_ in np.linspace(0, 2 * math.pi * 1.08 * u, n)]
+            cv2.polylines(base, [np.array(pts, np.int32)], False, RED, 10, cv2.LINE_AA)
         elif e["kind"] == "badge":                  # плашка-подпись в кадре (бесплатно, ссылка)
             im = text_img(e["text"], font(FONT, e.get("size", 64)), WHITE if e.get("dark") else INK, stroke=0, pad=6)
             pad = Image.new("RGBA", (im.width + 40, im.height + 10), (0, 0, 0, 0))
@@ -607,6 +661,7 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
     base[:PH - f_] = pic[:PH - f_]
     a_ = np.linspace(1, 0, f_, dtype=np.float32)[:, None, None]
     base[PH - f_:PH] = (pic[PH - f_:].astype(np.float32) * a_ + base[PH - f_:PH].astype(np.float32) * (1 - a_)).astype(np.uint8)
+    base = grain(base, t)
     for e in arrows:
         arrow(base, e["p0"], e["p1"], (t - e["t"]) / 0.25)
 
@@ -633,7 +688,7 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
             im = c["imgs"][act]
             u = (t - c["t0"]) / 0.20                  # подъём на 18 px за 200 мс с торможением + проявление за 100 мс;
             dy = 18 * (1 - ease_out(u))                   # без «прыжка» с перелётом и без смены размера
-            over(base, im, CAP_CX, CAP_CY + dy, alpha=min(1.0, u * 2.0))
+            over(base, im, CAP_CX, CAP_CY + dy, alpha=min(1.0, 0.3 + 0.7 * u * 2.0))
     return base
 
 def contact_sheet(reel_dir, shots):
