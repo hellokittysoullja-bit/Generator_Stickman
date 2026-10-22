@@ -36,13 +36,18 @@ W, H, FPS = 1080, 1920, 30
 PAPER = np.array([250, 247, 240], np.float32)          # #FAF7F0, как у длинных роликов (canvas.py)
 FONT = os.path.join(ROOT, "assets", "fonts", "ShantellSans-ExtraBold.ttf")     # надписи в кадре (плашки, часы)
 HAND = os.path.join(ROOT, "assets", "fonts", "Caveat-Variable.ttf")
-CAP_FONT = os.path.join(ROOT, "assets", "fonts", "reels", "Montserrat[wght].ttf")
-CAP_WGHT = 800
-CAP_UPPER = True
-PH = 1300              # картинка — верхние 1300 px; ниже — полоса субтитров на той же бумаге (субтитр не ложится на рисунок)
-CAP_CX, CAP_CY = 500, 1418   # центр субтитра: в полосе 1300-1536 (ниже 1536 — подпись и кнопки Reels), левее колонки кнопок
-CAP_SIZE = 72          # один кегль на весь ролик: группы не прыгают по размеру
+# Субтитры (разбор 11 роликов о субтитрах, 22.10): Inter Display ExtraBold — бесплатная замена Helvetica/SF Pro,
+# самый частый шрифт субтитров в разборах, полная кириллица; регистр как в предложении (капслок кириллицы —
+# широкие кирпичи Ш/Щ/Ж/Ы, капс оставляют для 1-3 акцентов); один кегль и одна базовая линия на весь ролик.
+CAP_FONT = os.path.join(ROOT, "assets", "fonts", "reels", "Inter[opsz,wght].ttf")
+CAP_AXES = {"Weight": 800, "Optical size": 32}
+CAP_UPPER = False
+CAP_TRACK = 0.0       # без трекинга: при обводке -2% сливал буквы (замер на превью 22.10)
+PH = 1100              # картинка — верхние 1100 px; ниже — полоса субтитров на той же бумаге (субтитр не ложится на рисунок)
+CAP_CX, CAP_CY = 500, 1175   # центр полосы субтитров 1100-1250: ниже 1250 (нижние 35%) Reels закрывает подписью и кнопками (Meta 9:16)
+CAP_SIZE = 90          # один кегль на весь ролик: группы не прыгают по размеру
 CAP_MAX_W = 820        # px: от 90 до 910 — правее колонка кнопок Reels
+CAP_STROKE = 6         # тонкая тёмная обводка + мягкая тень (обводка 12% кегля читалась наклейкой)
 WHITE = (255, 255, 255); INK = (18, 18, 20)
 ACTIVE = (255, 210, 63)        # активное слово (караоке) — тёплый жёлтый
 KEY = (255, 138, 31)           # ключевое слово — цвет огонька героя, единственный тёплый цвет бренда
@@ -89,9 +94,16 @@ def tokens(beats):
 def cap_text(w):
     return clean(w).upper() if CAP_UPPER else clean(w)
 
+def cap_font():
+    return font(CAP_FONT, CAP_SIZE, CAP_AXES)
+
+def tracked(f, t):
+    """Ширина строки с трекингом: PIL трекинга не знает, буквы ставятся по одной."""
+    return sum(f.getlength(ch) for ch in t) + CAP_TRACK * CAP_SIZE * max(0, len(t) - 1)
+
 def cap_width(idx, words):
-    f = font(CAP_FONT, CAP_SIZE, CAP_WGHT); st = int(CAP_SIZE * 0.12)
-    return f.getlength(" ".join(cap_text(words[j]) for j in idx)) + 2 * st
+    f = cap_font()
+    return tracked(f, " ".join(cap_text(words[j]) for j in idx)) + 2 * CAP_STROKE
 
 def chunks(words, times):
     """Группы по 1-3 слова, всегда ОДНОЙ строкой одного кегля: обрыв на знаке препинания, на «|», перед
@@ -116,33 +128,37 @@ def chunks(words, times):
 
 _FONTS = {}
 def font(path, size, wght=None):
-    k = (path, size, wght)
+    k = (path, size, json.dumps(wght, sort_keys=True))
     if k not in _FONTS:
         f = ImageFont.truetype(path, size)
         if wght:
+            axes = wght if isinstance(wght, dict) else {"Weight": wght}
             try:
-                f.set_variation_by_axes([wght if a["name"] in (b"Weight", "Weight") else a["default"] for a in f.get_variation_axes()])
+                f.set_variation_by_axes([axes.get(a["name"].decode() if isinstance(a["name"], bytes) else a["name"], a["default"])
+                                         for a in f.get_variation_axes()])
             except Exception: pass                                      # шрифт без осей — как есть
         _FONTS[k] = f
     return _FONTS[k]
 
 def render_chunk(words, idx, active):
-    """RGBA одной группы: одна строка, один кегль. Белые буквы с тёмной обводкой и мягкой тенью, активное
-    слово — жёлтым (караоке), ключевое — оранжевым; цвет — единственное отличие, размер у всех один."""
-    f = font(CAP_FONT, CAP_SIZE, CAP_WGHT)
-    stroke = int(CAP_SIZE * 0.12); space = f.getlength(" ")
+    """RGBA одной группы: одна строка, один кегль, базовая линия на одной высоте у всех групп (высота картинки
+    от метрик шрифта, а не от букв: «у/д/щ» не сдвигают группу). Белые буквы, тонкая тёмная обводка, мягкая
+    тень; активное слово — жёлтым (караоке), ключевое — оранжевым. Цвет — единственное отличие слов."""
+    f = cap_font(); st = CAP_STROKE; space = f.getlength(" ") + CAP_TRACK * CAP_SIZE
     parts = [(cap_text(words[j]), KEY if "*" in words[j] else (ACTIVE if j == active else WHITE)) for j in idx]
-    tw = sum(f.getlength(t) for t, _ in parts) + space * (len(parts) - 1)
+    tw = sum(tracked(f, t) for t, _ in parts) + space * (len(parts) - 1)
     asc, desc = f.getmetrics()
-    bw, bh = int(tw + 2 * stroke + 40), int(asc + desc + 2 * stroke + 40)
+    bw, bh = int(tw + 2 * st + 60), int(asc + desc + 2 * st + 60)
     img = Image.new("RGBA", (bw, bh), (0, 0, 0, 0)); sh = Image.new("RGBA", (bw, bh), (0, 0, 0, 0))
     d, ds = ImageDraw.Draw(img), ImageDraw.Draw(sh)
-    x, y = 20 + stroke, 20 + stroke
+    x, y = 30 + st, 30 + st
     for t, col in parts:
-        ds.text((x, y + CAP_SIZE * 0.06), t, font=f, fill=(0, 0, 0, 140), stroke_width=stroke, stroke_fill=(0, 0, 0, 140))
-        d.text((x, y), t, font=f, fill=col, stroke_width=stroke, stroke_fill=INK)
-        x += f.getlength(t) + space
-    sh = sh.filter(ImageFilter.GaussianBlur(CAP_SIZE * 0.08))
+        for ch in t:
+            ds.text((x, y + CAP_SIZE * 0.07), ch, font=f, fill=(0, 0, 0, 110), stroke_width=st + 2, stroke_fill=(0, 0, 0, 110))
+            d.text((x, y), ch, font=f, fill=col, stroke_width=st, stroke_fill=INK)
+            x += f.getlength(ch) + CAP_TRACK * CAP_SIZE
+        x += space - CAP_TRACK * CAP_SIZE
+    sh = sh.filter(ImageFilter.GaussianBlur(CAP_SIZE * 0.10))
     return Image.alpha_composite(sh, img)
 
 def ease_out_back(u, s=2.2):
@@ -520,7 +536,7 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
                     cv2.line(base, (int(sx + r0 * math.cos(a)), int(sy + r0 * math.sin(a))),
                              (int(sx + r1 * math.cos(a)), int(sy + r1 * math.sin(a))), INK, 10 if q % 3 == 0 else 6, cv2.LINE_AA)
         elif e["kind"] == "badge":                  # плашка-подпись в кадре (бесплатно, ссылка)
-            im = text_img(e["text"], font(FONT, e.get("size", 64)), WHITE if e.get("dark") else INK, stroke=0)
+            im = text_img(e["text"], font(FONT, e.get("size", 64)), WHITE if e.get("dark") else INK, stroke=0, pad=6)
             pad = Image.new("RGBA", (im.width + 40, im.height + 10), (0, 0, 0, 0))
             ImageDraw.Draw(pad).rounded_rectangle((0, 0, pad.width - 1, pad.height - 1), radius=pad.height // 2,
                                                   fill=(18, 18, 20, 235) if e.get("dark") else (255, 210, 63, 255))
@@ -550,16 +566,16 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
         if t < 0.25: sc *= 1 + 1.4 * (1 - ease_out(t / 0.25))          # влетает в кадр с ударом — перебивка ленты
         over(base, im, W / 2, PH * 0.20, scale=sc)
 
-    # субтитры: группа выскакивает (70% -> ~110% -> 100% за 200 мс), активное слово — по времени слова
+    # субтитры: группа въезжает снизу, активное слово — по времени слова
     for c in caps:
         if c["t0"] - 0.0 <= t < c["t1"]:
             act = c["idx"][0]
             for j in c["idx"]:
                 if times[j]["start"] - 0.03 <= t: act = j
             im = c["imgs"][act]
-            u = (t - c["t0"]) / 0.20
-            sc = 0.70 + 0.30 * ease_out_back(u, 3.2)                       # 70% -> ~110% -> 100% за 200 мс
-            over(base, im, CAP_CX, CAP_CY, alpha=min(1.0, u * 3.0), scale=sc)
+            u = (t - c["t0"]) / 0.20                  # подъём на 18 px за 200 мс с торможением + проявление за 100 мс;
+            dy = 18 * (1 - ease_out(u))                   # без «прыжка» с перелётом и без смены размера
+            over(base, im, CAP_CX, CAP_CY + dy, alpha=min(1.0, u * 2.0))
     return base
 
 def contact_sheet(reel_dir, shots):
