@@ -36,13 +36,12 @@ W, H, FPS = 1080, 1920, 30
 PAPER = np.array([250, 247, 240], np.float32)          # #FAF7F0, как у длинных роликов (canvas.py)
 FONT = os.path.join(ROOT, "assets", "fonts", "ShantellSans-ExtraBold.ttf")     # надписи в кадре (плашки, часы)
 HAND = os.path.join(ROOT, "assets", "fonts", "Caveat-Variable.ttf")
-# Субтитры (разбор 11 роликов о субтитрах, 22.10): Inter Display ExtraBold — бесплатная замена Helvetica/SF Pro,
-# самый частый шрифт субтитров в разборах, полная кириллица; регистр как в предложении (капслок кириллицы —
-# широкие кирпичи Ш/Щ/Ж/Ы, капс оставляют для 1-3 акцентов); один кегль и одна базовая линия на весь ролик.
-CAP_FONT = os.path.join(ROOT, "assets", "fonts", "reels", "Inter[opsz,wght].ttf")
-CAP_AXES = {"Weight": 800, "Optical size": 32}
+# Субтитры: Onest Black (OFL, шрифт под кириллицу, близок к Gilroy «дорогих» русских рилсов) — временно, до выбора
+# владельца по листу 16 шрифтов (22.10). Регистр как в предложении; один кегль и одна базовая линия на весь ролик.
+CAP_FONT = os.path.join(ROOT, "assets", "fonts", "reels", "Onest[wght].ttf")
+CAP_AXES = {"Weight": 900}
+CAP_FEATURES = None
 CAP_UPPER = False
-CAP_TRACK = 0.0       # без трекинга: при обводке -2% сливал буквы (замер на превью 22.10)
 PH = 1100              # картинка — верхние 1100 px; ниже — полоса субтитров на той же бумаге (субтитр не ложится на рисунок)
 CAP_CX, CAP_CY = 500, 1175   # центр полосы субтитров 1100-1250: ниже 1250 (нижние 35%) Reels закрывает подписью и кнопками (Meta 9:16)
 CAP_SIZE = 90          # один кегль на весь ролик: группы не прыгают по размеру
@@ -109,11 +108,11 @@ def bare(w):
     return clean(w).strip("«»\"'.,:;!?…—- ").lower()
 
 def cap_font():
-    return font(CAP_FONT, CAP_SIZE, CAP_AXES)
+    return font(CAP_FONT, CAP_SIZE, CAP_AXES, raqm=True)
 
 def tracked(f, t):
-    """Ширина строки с трекингом: PIL трекинга не знает, буквы ставятся по одной."""
-    return sum(f.getlength(ch) for ch in t) + CAP_TRACK * CAP_SIZE * max(0, len(t) - 1)
+    """Ширина слова с контекстными заменами шрифта (calt): трекинга нет, слово меряется целиком."""
+    return f.getlength(t, features=CAP_FEATURES)
 
 def cap_width(idx, words):
     f = cap_font()
@@ -146,10 +145,10 @@ def chunks(words, times):
     return res
 
 _FONTS = {}
-def font(path, size, wght=None):
-    k = (path, size, json.dumps(wght, sort_keys=True))
+def font(path, size, wght=None, raqm=False):
+    k = (path, size, json.dumps(wght, sort_keys=True), raqm)
     if k not in _FONTS:
-        f = ImageFont.truetype(path, size)
+        f = ImageFont.truetype(path, size, layout_engine=ImageFont.Layout.RAQM if raqm else None)
         if wght:
             axes = wght if isinstance(wght, dict) else {"Weight": wght}
             try:
@@ -163,7 +162,7 @@ def render_chunk(words, idx, active):
     """RGBA одной группы: одна строка, один кегль, базовая линия на одной высоте у всех групп (высота картинки
     от метрик шрифта, а не от букв: «у/д/щ» не сдвигают группу). Белые буквы, тонкая тёмная обводка, мягкая
     тень; активное слово — жёлтым (караоке), ключевое — оранжевым. Цвет — единственное отличие слов."""
-    f = cap_font(); st = CAP_STROKE; space = f.getlength(" ") + CAP_TRACK * CAP_SIZE
+    f = cap_font(); st = CAP_STROKE; space = f.getlength(" ")
     parts = [(cap_text(words[j]), KEY if "*" in words[j] else (ACTIVE if j == active else WHITE)) for j in idx]
     fade = [j > active for j in idx]           # ещё не «произнесённые» слова — бледные: группа читается по мере речи
     tw = sum(tracked(f, t) for t, _ in parts) + space * (len(parts) - 1)
@@ -174,12 +173,10 @@ def render_chunk(words, idx, active):
     x, y = 30 + st, 30 + st
     for (t, col), fd in zip(parts, fade):
         a = 90 if fd else 255
-        for ch in t:
-            ds.text((x, y + CAP_SIZE * 0.07), ch, font=f, fill=(0, 0, 0, 110 * a // 255), stroke_width=st + 2,
-                    stroke_fill=(0, 0, 0, 110 * a // 255))
-            d.text((x, y), ch, font=f, fill=col + (a,), stroke_width=st, stroke_fill=INK + (a,))
-            x += f.getlength(ch) + CAP_TRACK * CAP_SIZE
-        x += space - CAP_TRACK * CAP_SIZE
+        ds.text((x, y + CAP_SIZE * 0.07), t, font=f, fill=(0, 0, 0, 110 * a // 255), stroke_width=st + 2,
+                stroke_fill=(0, 0, 0, 110 * a // 255), features=CAP_FEATURES)
+        d.text((x, y), t, font=f, fill=col + (a,), stroke_width=st, stroke_fill=INK + (a,), features=CAP_FEATURES)
+        x += tracked(f, t) + space
     sh = sh.filter(ImageFilter.GaussianBlur(CAP_SIZE * 0.10))
     return Image.alpha_composite(sh, img)
 
