@@ -42,8 +42,9 @@ CAP_FONT = os.path.join(ROOT, "assets", "fonts", "reels", "Onest[wght].ttf")
 CAP_AXES = {"Weight": 900}
 CAP_FEATURES = None
 CAP_UPPER = False
-PH = 1100              # картинка — верхние 1100 px; ниже — полоса субтитров на той же бумаге (субтитр не ложится на рисунок)
-CAP_CX, CAP_CY = 500, 1175   # центр полосы субтитров 1100-1250: ниже 1250 (нижние 35%) Reels закрывает подписью и кнопками (Meta 9:16)
+PH = 1100              # картинка — верхние PH px (reel.json: picture_h); ниже — полоса субтитров на той же бумаге
+CAP_CX, CAP_CY = 500, 1175   # центр полосы субтитров = PH + 75 (полоса 150 px, субтитр не ложится на рисунок)
+BASE_PH = 1100         # под эту высоту написаны экранные координаты reel.json (cy кадров fit/doll, y пометок, часы)
 CAP_SIZE = 90          # один кегль на весь ролик: группы не прыгают по размеру
 CAP_MAX_W = 820        # px: от 90 до 910 — правее колонка кнопок Reels
 CAP_STROKE = 6         # тонкая тёмная обводка + мягкая тень (обводка 12% кегля читалась наклейкой)
@@ -435,10 +436,54 @@ def sfx(name):
 
 
 # ----------------------------------------------------------------------------- сборка
+def layout(spec):
+    """Высота картинки из reel.json. 22.10, владелец: «в рилсах столько воздуха не оставляют» — при PH 1100 нижние 35%
+    были пустой бумагой. Разбор 31 ролика (Restream): интерфейс Shorts/TikTok закрывает нижние 350–400 px, поэтому
+    картинка до 1420, полоса субтитров 1420–1570, внизу 350 px под подпись и кнопки. Окна кадров (h в пикселях
+    исходника) растут на view_scale — по умолчанию PH/1100, тот же охват по ширине, рисунка больше по высоте;
+    экранные координаты фраз (cy, h куклы, y пометок) пересчитываются из 1100 в PH."""
+    global PH, CAP_CY
+    PH = int(spec.get("picture_h", BASE_PH)); CAP_CY = PH + 75
+    k = PH / BASE_PH; vk = spec.get("view_scale", k)
+    if k == 1 and vk == 1: return
+    for b in spec["beats"]:
+        for s in b["shots"]:
+            for key in ("from", "to"):
+                if key in s: s[key] = [s[key][0], s[key][1], s[key][2] * vk]
+            for key in ("cy", "h"):
+                if key in s and s.get("kind") in ("fit", "doll"): s[key] = s[key] * k
+        for e in b.get("fx", []):
+            if e["kind"] in ("write", "mark", "badge") and "y" in e: e["y"] = e["y"] * k
+
+def ink_rows(reel_dir, name):
+    """Верх и низ рисунка исходника (в координатах исходного кадра): строки, где туши больше 0.5% ширины."""
+    g = load_src(reel_dir, name).mean(axis=2)
+    rows = np.where((g < 200).mean(axis=1) > 0.005)[0]
+    return (rows[0] / 2.0, rows[-1] / 2.0) if len(rows) else (0.0, g.shape[0] / 2.0)
+
+def fill_windows(reel_dir, spec):
+    """Окно не уходит ниже рисунка: высокая картинка (PH 1420) с окнами старых пропорций показывала под столом пустую
+    бумагу — тот же «воздух», что был в нижних 35% экрана, только внутри картинки. Окно поднимается, пока его низ не
+    ляжет на нижнюю линию рисунка (+2% воздуха); выше верха рисунка не уходит — тогда окно сжимается (наезд)."""
+    for b in spec["beats"]:
+        for s in b["shots"]:
+            if "src" not in s or s.get("kind") in ("fit", "stack", "doll"): continue
+            top, bot = ink_rows(reel_dir, s["src"])
+            for key in ("from", "to"):
+                if key not in s: continue
+                cx, cy, h = s[key]; pad = 0.02 * h
+                if cy + h / 2 > bot + pad:
+                    cy = bot + pad - h / 2
+                    if cy - h / 2 < top - pad:
+                        h = (bot - top) + 2 * pad; cy = (top + bot) / 2
+                s[key] = [cx, cy, h]
+
 def build(reel_dir, sheet=False, preview=False):
     spec = json.load(open(os.path.join(reel_dir, "reel.json"), encoding="utf8"))
+    layout(spec)
     beats = spec["beats"]
     prepare_src(reel_dir, spec.get("sources", {}))
+    if spec.get("fill_ink"): fill_windows(reel_dir, spec)
     words, spans = tokens(beats)
     al = os.path.join(reel_dir, "alignment.json")
     if os.path.exists(al):
