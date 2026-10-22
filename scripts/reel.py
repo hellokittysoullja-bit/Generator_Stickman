@@ -236,6 +236,21 @@ def sharpen(img, amount=0.35, sigma=1.2):
     bl = cv2.GaussianBlur(img, (0, 0), sigma)
     return cv2.addWeighted(img, 1 + amount, bl, -amount, 0)
 
+_BOIL = {}
+def boil(img, t, amp=0.8):
+    """«Кипение» линии рисунка: смещение до ~0.8 px по 4 картам шума, 12 раз в секунду — как рисованная анимация
+    (разбор 22.10: Grubbe, Yum Yum — 8-12 рисунков в секунду). Только картинка, не субтитры."""
+    k = int(t * GRAIN_FPS) % 4
+    h, w = img.shape[:2]
+    if (k, h) not in _BOIL:
+        rng = np.random.default_rng(300 + k)
+        dx = cv2.resize(rng.normal(0, 1, (h // 60 + 2, w // 60 + 2)).astype(np.float32), (w, h), interpolation=cv2.INTER_CUBIC)
+        dy = cv2.resize(rng.normal(0, 1, (h // 60 + 2, w // 60 + 2)).astype(np.float32), (w, h), interpolation=cv2.INTER_CUBIC)
+        X, Y = np.meshgrid(np.arange(w, dtype=np.float32), np.arange(h, dtype=np.float32))
+        _BOIL[(k, h)] = (X + amp * dx, Y + amp * dy)
+    mx, my = _BOIL[(k, h)]
+    return cv2.remap(img, mx, my, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
+
 GRAIN_FPS = 12
 _GRAIN = {}
 def grain(img, t, amp=0.012):
@@ -402,7 +417,10 @@ def sfx(name):
         p = subprocess.run(["ffmpeg", "-v", "error", "-i", os.path.join(SFX_DIR, f), "-ac", "2", "-ar", str(SR), "-f", "f32le", "-"],
                            capture_output=True, check=True)
         x = np.frombuffer(p.stdout, np.float32).reshape(-1, 2).copy()
-        _SFX[name] = x * (10 ** (peak_db / 20) / max(1e-6, float(np.abs(x).max())))
+        x = x * (10 ** (peak_db / 20) / max(1e-6, float(np.abs(x).max())))
+        f = int(0.01 * SR)                          # края 10 мс: звук не начинается щелчком
+        x[:f] *= np.linspace(0, 1, f)[:, None]; x[-f:] *= np.linspace(1, 0, f)[:, None]
+        _SFX[name] = x
     return _SFX[name]
 
 
@@ -519,6 +537,7 @@ def shot_view(s, t):
     d = max(1e-3, s["t1"] - s["t0"]); u = (t - s["t0"]) / d
     if s.get("ease") == "out": u = ease_out(u)
     elif s.get("ease") == "io": u = ease_io(u)
+    elif s.get("ease") == "in": u = min(max(u, 0.0), 1.0) ** 2.2   # разгон к склейке: картинка нарастает вместе с riser
     f, to = s["from"], s.get("to", s["from"])
     cx, cy, h = (lerp(f[i], to[i], u) for i in range(3))
     # хлёст в начале плана: окно прилетает из сдвига (whip), 0.18 с с торможением
@@ -528,7 +547,7 @@ def shot_view(s, t):
         cx += dx * k; cy += dy * k
     # быстрый наезд/отъезд в начале плана (zoom-in transition)
     if s.get("zoom_in"):
-        k = 1 - ease_out((t - s["t0"]) / 0.22)
+        k = 1 - ease_out((t - s["t0"]) / 0.30)       # 0.3 с с торможением (разбор: 11-15 кадров, ease-out)
         h *= 1 + s["zoom_in"] * k
     return cx, cy, h
 
@@ -554,6 +573,9 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
     if kind == "crop":
         src = load_src(reel_dir, s["src"])
         cx, cy, h = shot_view(s, t)
+        # второй слой камеры: медленный поворот до 0.5° поверх дрейфа, на соседних планах в разные стороны
+        sign = 1 if int(s["t0"] * 10) % 2 else -1
+        rot += s.get("rot_drift", 0.5) * sign * ((t - s["t0"]) / max(1e-3, s["t1"] - s["t0"]) - 0.5)
         base = grade(sharpen(sample(src, cx, cy, h / punch, shake=shake, rot=rot)))
         view = (cx, cy, h / punch)
         if s.get("whip"):
@@ -562,7 +584,7 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
                 sc = PH / (h / punch) / 2.0
                 base = motion_blur(base, s["whip"][0] * k * sc * 0.25 * 2.0 * 0.5, s["whip"][1] * k * sc * 0.25)
         if s.get("zoom_in"):                       # вход наездом: размытие гаснет за 0.15 с (white minimal: blur 30->0)
-            k = 1 - ease_out((t - s["t0"]) / 0.15)
+            k = 1 - ease_out((t - s["t0"]) / 0.25)
             if k > 0.05: base = cv2.GaussianBlur(base, (0, 0), 1 + 7 * k)
         nxt = next((x for x in shots if x["t0"] >= s["t1"] - 1e-6 and x is not s), None)
         if nxt is not None and nxt.get("whip") and s["t1"] - t < 0.1:   # уходящий кадр смазывается в сторону хлёста
@@ -583,7 +605,19 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
         elif kind == "doll":
             rgba = doll_frame(math.floor(t * DOLL_FPS) / DOLL_FPS, total + 0.5, s["doll_acts"])   # кукла «на двойках»
             base = paste_doll(base, rgba, W / 2 + shake[0], s.get("cy", PH * 0.55) + shake[1], s.get("h", 900) * zs)
-    base = np.ascontiguousarray(base)
+    base = np.ascontiguousarray(boil(base, t)) if kind != "doll" else np.ascontiguousarray(base)
+    for e in events:                                # прожектор: всё, кроме главного, темнеет до 25% (Golden «darken all but focus»)
+        if e["kind"] == "spot" and s["t0"] <= e["t"] <= t < s["t1"]:
+            u = ease_out((t - e["t"]) / 0.25)
+            if view is not None:
+                vx, vy, vh = view; k = PH / vh
+                sx, sy, r = (e["x"] - vx) * k + W / 2, (e["y"] - vy) * k + PH / 2, e["r"] * k
+            else:
+                sx, sy, r = e["x"], e["y"], e["r"]
+            Y, X = np.ogrid[:PH, :W]
+            d = np.sqrt((X - sx) ** 2 + (Y - sy) ** 2)
+            m = np.clip((d - r) / (r * 1.2), 0, 1).astype(np.float32)[..., None] * 0.25 * u
+            base = (base.astype(np.float32) * (1 - m)).astype(np.uint8)
 
     # накладки фраз (в координатах картинки 1080xPH)
     arrows = []
@@ -687,7 +721,7 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
             for j in c["idx"]:
                 if times[j]["start"] - 0.03 <= t: act = j
             im = c["imgs"][act]
-            u = (t - c["t0"]) / 0.20                  # подъём на 18 px за 200 мс с торможением + проявление за 100 мс;
+            u = (t - c["t0"]) / 0.25                  # подъём на 18 px за 250 мс с торможением + проявление;
             dy = 18 * (1 - ease_out(u))                   # без «прыжка» с перелётом и без смены размера
             over(base, im, CAP_CX, CAP_CY + dy, alpha=min(1.0, 0.3 + 0.7 * u * 2.0))
     return base
@@ -716,8 +750,10 @@ def mix_audio(path, total, shots, events, spec, voiced=False):
     """Звук рилса: хлёсткие склейки — swoosh пиком на склейку (J-cut звука: звук приходит раньше картинки),
     события фраз (sfx) — пиком на слово, riser — началом сразу после фразы-хука. Больше ничего."""
     n = int((total + 0.2) * SR); tr = np.zeros((n, 2), np.float32)
-    def put(name, t, align="peak"):
-        x = sfx(name); t0 = t - (SFX[name][1] if align == "peak" else 0.0)
+    placed = []
+    def put(name, t, align="peak", gain_db=0.0):
+        x = sfx(name) * (10 ** (gain_db / 20)); t0 = t - (SFX[name][1] if align == "peak" else 0.0)
+        placed.append(t0 + SFX[name][1])
         i = int(t0 * SR)
         if i < 0: x = x[-i:]; i = 0
         m = min(len(x), n - i)
@@ -729,6 +765,12 @@ def mix_audio(path, total, shots, events, spec, voiced=False):
             put(sh["sound"], sh["t0"])
     for e in events:
         if e["kind"] == "sfx": put(e["name"], e["t"], e.get("align", "peak"))
+    # тихий свист на наезд и вход наездом (на 7 дБ тише хлёста), если рядом (1 с) уже не звучит другой звук
+    soft = [sh["t0"] for k, sh in enumerate(shots) if k and sh.get("zoom_in") and not sh.get("sound")] + \
+           [e["t"] for e in events if e["kind"] == "punch"]
+    for tt in sorted(soft):
+        if all(abs(tt - p) > 1.0 for p in placed):
+            put("swoosh", tt, gain_db=-7.0)
     if voiced: tr *= 10 ** (VOICE_SFX_TRIM_DB / 20)
     peak = float(np.abs(tr).max())
     if peak > 0.89: tr *= 0.89 / peak                 # наложение двух звуков не клипует: пик не выше -1 dBFS
