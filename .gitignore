@@ -19,3 +19,9 @@ videos/*/media_plan/*.jpg
 videos/*/final_preview*.mp4
 videos/*/subtitles.srt
 videos/*/chapters.txt
+# рилс: увеличенные исходники и промежуточные файлы пересобираются scripts/reel.py
+videos/*/reel/src/
+videos/*/reel/reel_video.mp4
+videos/*/reel/reel_audio.wav
+videos/*/reel/reel_preview*.mp4
+videos/*/reel/shots_sheet.jpg
