@@ -210,16 +210,23 @@ def paper_tex(seed=5):
     n = n / (np.abs(n).max() + 1e-6)
     return np.clip(PAPER[None, None] * (1 + 0.025 * n[..., None]), 0, 255).astype(np.uint8)
 
-def sample(src, cx, cy, h, scale_src=2.0, shake=(0, 0), rot=0.0):
-    """Окно (cx, cy, высота h) в координатах ИСХОДНОГО кадра -> картинка 1080xPH. Края за картинкой — бумага."""
+def sample(src, cx, cy, h, scale_src=2.0, shake=(0, 0), rot=0.0, boil_t=None):
+    """Окно (cx, cy, высота h) в координатах ИСХОДНОГО кадра -> картинка 1080xPH. Края за картинкой — бумага.
+    boil_t — «кипение» линии в том же проходе выборки: второй проход (remap поверх готового кадра) мылил рисунок —
+    замер 22.10, v7: резкость готового рилса −11% к v6, сам второй проход на кадре f1 −46%."""
     s = h * scale_src / PH
     a = math.radians(rot)
     ca, sa = math.cos(a) * s, math.sin(a) * s
     X0, Y0 = cx * scale_src, cy * scale_src
     M = np.array([[ca, -sa, X0 - ca * (W / 2 + shake[0]) + sa * (PH / 2 + shake[1])],
                   [sa, ca, Y0 - sa * (W / 2 + shake[0]) - ca * (PH / 2 + shake[1])]], np.float32)
-    return cv2.warpAffine(src, M, (W, PH), flags=cv2.WARP_INVERSE_MAP | cv2.INTER_CUBIC,
-                          borderMode=cv2.BORDER_CONSTANT, borderValue=tuple(int(v) for v in PAPER))
+    paper = tuple(int(v) for v in PAPER)
+    if boil_t is None:
+        return cv2.warpAffine(src, M, (W, PH), flags=cv2.WARP_INVERSE_MAP | cv2.INTER_CUBIC,
+                              borderMode=cv2.BORDER_CONSTANT, borderValue=paper)
+    X, Y = boil_maps(boil_t, PH, W)
+    return cv2.remap(src, M[0, 0] * X + M[0, 1] * Y + M[0, 2], M[1, 0] * X + M[1, 1] * Y + M[1, 2], cv2.INTER_CUBIC,
+                     borderMode=cv2.BORDER_CONSTANT, borderValue=paper)
 
 # «дорогой» вид (разбор роликов о дорогом монтаже 22.10): мягкая S-кривая (тушь глубже, бумага на месте), лёгкая
 # резкость картинки и живое зерно по всему кадру, сменяется 12 раз в секунду — как бумага рисованной анимации
@@ -237,19 +244,22 @@ def sharpen(img, amount=0.35, sigma=1.2):
     return cv2.addWeighted(img, 1 + amount, bl, -amount, 0)
 
 _BOIL = {}
-def boil(img, t, amp=0.8):
+def boil_maps(t, h, w, amp=0.8):
     """«Кипение» линии рисунка: смещение до ~0.8 px по 4 картам шума, 12 раз в секунду — как рисованная анимация
     (разбор 22.10: Grubbe, Yum Yum — 8-12 рисунков в секунду). Только картинка, не субтитры."""
     k = int(t * GRAIN_FPS) % 4
-    h, w = img.shape[:2]
-    if (k, h) not in _BOIL:
+    if (k, h, w, amp) not in _BOIL:
         rng = np.random.default_rng(300 + k)
         dx = cv2.resize(rng.normal(0, 1, (h // 60 + 2, w // 60 + 2)).astype(np.float32), (w, h), interpolation=cv2.INTER_CUBIC)
         dy = cv2.resize(rng.normal(0, 1, (h // 60 + 2, w // 60 + 2)).astype(np.float32), (w, h), interpolation=cv2.INTER_CUBIC)
         X, Y = np.meshgrid(np.arange(w, dtype=np.float32), np.arange(h, dtype=np.float32))
-        _BOIL[(k, h)] = (X + amp * dx, Y + amp * dy)
-    mx, my = _BOIL[(k, h)]
-    return cv2.remap(img, mx, my, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
+        _BOIL[(k, h, w, amp)] = (X + amp * dx, Y + amp * dy)
+    return _BOIL[(k, h, w, amp)]
+
+def boil(img, t, amp=0.8):
+    """То же кипение отдельным проходом — для кадров, собранных на бумаге (fit/stack), где выборка не одна."""
+    mx, my = boil_maps(t, *img.shape[:2], amp=amp)
+    return cv2.remap(img, mx, my, cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
 
 GRAIN_FPS = 12
 _GRAIN = {}
@@ -576,14 +586,14 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
         # второй слой камеры: медленный поворот до 0.5° поверх дрейфа, на соседних планах в разные стороны
         sign = 1 if int(s["t0"] * 10) % 2 else -1
         rot += s.get("rot_drift", 0.5) * sign * ((t - s["t0"]) / max(1e-3, s["t1"] - s["t0"]) - 0.5)
-        base = grade(sharpen(sample(src, cx, cy, h / punch, shake=shake, rot=rot)))
+        base = grade(sharpen(sample(src, cx, cy, h / punch, shake=shake, rot=rot, boil_t=t)))
         view = (cx, cy, h / punch)
         if s.get("whip"):
             k = 1 - ease_out((t - s["t0"]) / 0.18)
             if k > 0.05:
                 sc = PH / (h / punch) / 2.0
                 base = motion_blur(base, s["whip"][0] * k * sc * 0.25 * 2.0 * 0.5, s["whip"][1] * k * sc * 0.25)
-        if s.get("zoom_in"):                       # вход наездом: размытие гаснет за 0.15 с (white minimal: blur 30->0)
+        if s.get("zoom_in"):                       # вход наездом: размытие гаснет за 0.25 с (white minimal: blur 30->0)
             k = 1 - ease_out((t - s["t0"]) / 0.25)
             if k > 0.05: base = cv2.GaussianBlur(base, (0, 0), 1 + 7 * k)
         nxt = next((x for x in shots if x["t0"] >= s["t1"] - 1e-6 and x is not s), None)
@@ -605,7 +615,7 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
         elif kind == "doll":
             rgba = doll_frame(math.floor(t * DOLL_FPS) / DOLL_FPS, total + 0.5, s["doll_acts"])   # кукла «на двойках»
             base = paste_doll(base, rgba, W / 2 + shake[0], s.get("cy", PH * 0.55) + shake[1], s.get("h", 900) * zs)
-    base = np.ascontiguousarray(boil(base, t)) if kind != "doll" else np.ascontiguousarray(base)
+    base = np.ascontiguousarray(boil(base, t)) if kind in ("fit", "stack") else np.ascontiguousarray(base)
     for e in events:                                # прожектор: всё, кроме главного, темнеет до 25% (Golden «darken all but focus»)
         if e["kind"] == "spot" and s["t0"] <= e["t"] <= t < s["t1"]:
             u = ease_out((t - e["t"]) / 0.25)
