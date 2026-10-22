@@ -486,7 +486,8 @@ def build(reel_dir, sheet=False, preview=False):
     vid = os.path.join(reel_dir, "reel_preview.mp4" if preview else "reel_video.mp4")
     fps = 15 if preview else FPS
     ff = subprocess.Popen(["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}",
-                           "-r", str(fps), "-i", "-", "-c:v", "libx264", "-preset", "medium", "-crf", "17",
+                           "-r", str(fps), "-i", "-", "-c:v", "libx264", "-preset", "slow", "-crf", "19",
+                           "-maxrate", "9M", "-bufsize", "18M",        # зерно жмётся плохо: потолок ~9 Мбит/с, Reels всё равно пережмёт
                            "-pix_fmt", "yuv420p", vid], stdin=subprocess.PIPE)
     n = int(total * fps)
     for fi in range(n):
