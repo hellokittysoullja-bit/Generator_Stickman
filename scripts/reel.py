@@ -158,14 +158,14 @@ def font(path, size, wght=None, raqm=False):
         _FONTS[k] = f
     return _FONTS[k]
 
-def render_chunk(words, idx, active):
+def render_chunk(words, idx, active, fade_ahead=True):
     """RGBA одной группы: одна строка, один кегль, базовая линия на одной высоте у всех групп (высота картинки
     от метрик шрифта, а не от букв: «у/д/щ» не сдвигают группу). Белые буквы, тонкая тёмная обводка, мягкая
     тень; активное слово — жёлтым (караоке), ключевое — оранжевым. Цвет — единственное отличие слов."""
     f = cap_font(); st = CAP_STROKE; space = f.getlength(" ")
     parts = [(cap_text(words[j]), (KEY if j <= active else WHITE) if "*" in words[j] else (ACTIVE if j == active else WHITE))
              for j in idx]                      # ключевое слово вспыхивает оранжевым, когда до него дошло чтение
-    fade = [j > active for j in idx]           # ещё не «произнесённые» слова — бледные: группа читается по мере речи
+    fade = [fade_ahead and j > active for j in idx]   # ещё не «произнесённые» слова — бледные: группа читается по мере речи
     tw = sum(tracked(f, t) for t, _ in parts) + space * (len(parts) - 1)
     asc, desc = f.getmetrics()
     bw, bh = int(tw + 2 * st + 60), int(asc + desc + 2 * st + 60)
@@ -501,8 +501,11 @@ def build(reel_dir, sheet=False, preview=False):
     for e in events:                                  # удержание накладки — только пока идут планы того же рода
         e["kind_of_shot"] = next((x.get("kind", "crop") for x in reversed(shots) if x["t0"] <= e["t"] + CUT_LEAD), "crop")
     caps = chunks(words, times)
+    # текст хука стоит с первого кадра целиком, без въезда и бледных слов (разбор 22.10: heyDominik, Jenny Hoyos —
+    # пролистывание в первые 0.5 с — «не понял, о чём», поэтому хук читается сразу; подсветка слов идёт как обычно)
+    caps[0]["t0"] = 0.0; caps[0]["still"] = True
     for c in caps:
-        c["imgs"] = {j: render_chunk(words, c["idx"], j) for j in c["idx"]}
+        c["imgs"] = {j: render_chunk(words, c["idx"], j, fade_ahead=not c.get("still")) for j in c["idx"]}
 
     if sheet:
         return contact_sheet(reel_dir, shots)
@@ -734,7 +737,7 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
             for j in c["idx"]:
                 if times[j]["start"] - 0.03 <= t: act = j
             im = c["imgs"][act]
-            u = (t - c["t0"]) / 0.25                  # подъём на 18 px за 250 мс с торможением + проявление;
+            u = 1.0 if c.get("still") else (t - c["t0"]) / 0.25   # подъём на 18 px за 250 мс с торможением + проявление;
             dy = 18 * (1 - ease_out(u))                   # без «прыжка» с перелётом и без смены размера
             over(base, im, CAP_CX, CAP_CY + dy, alpha=min(1.0, 0.3 + 0.7 * u * 2.0))
     return base
