@@ -34,11 +34,15 @@ sys.path.insert(0, os.path.join(ROOT, "scripts"))
 
 W, H, FPS = 1080, 1920, 30
 PAPER = np.array([250, 247, 240], np.float32)          # #FAF7F0, как у длинных роликов (canvas.py)
-FONT = os.path.join(ROOT, "assets", "fonts", "ShantellSans-ExtraBold.ttf")
+FONT = os.path.join(ROOT, "assets", "fonts", "ShantellSans-ExtraBold.ttf")     # надписи в кадре (плашки, часы)
 HAND = os.path.join(ROOT, "assets", "fonts", "Caveat-Variable.ttf")
-CAP_Y = 0.665          # центр субтитра: над нижними 20% (кнопки и подпись Reels), в средних 60% экрана
-CAP_SIZE = 100         # px на ширине 1080: ~8.5% ширины, читается с телефона на вытянутой руке
-CAP_MAX_W = 0.80       # правые 12% — колонка кнопок Reels
+CAP_FONT = os.path.join(ROOT, "assets", "fonts", "reels", "Montserrat[wght].ttf")
+CAP_WGHT = 800
+CAP_UPPER = True
+PH = 1300              # картинка — верхние 1300 px; ниже — полоса субтитров на той же бумаге (субтитр не ложится на рисунок)
+CAP_CX, CAP_CY = 500, 1418   # центр субтитра: в полосе 1300-1536 (ниже 1536 — подпись и кнопки Reels), левее колонки кнопок
+CAP_SIZE = 72          # один кегль на весь ролик: группы не прыгают по размеру
+CAP_MAX_W = 820        # px: от 90 до 910 — правее колонка кнопок Reels
 WHITE = (255, 255, 255); INK = (18, 18, 20)
 ACTIVE = (255, 210, 63)        # активное слово (караоке) — тёплый жёлтый
 KEY = (255, 138, 31)           # ключевое слово — цвет огонька героя, единственный тёплый цвет бренда
@@ -82,22 +86,25 @@ def tokens(beats):
 
 
 # ----------------------------------------------------------------------------- субтитры
+def cap_text(w):
+    return clean(w).upper() if CAP_UPPER else clean(w)
+
+def cap_width(idx, words):
+    f = font(CAP_FONT, CAP_SIZE, CAP_WGHT); st = int(CAP_SIZE * 0.12)
+    return f.getlength(" ".join(cap_text(words[j]) for j in idx)) + 2 * st
+
 def chunks(words, times):
-    """Группы по 1-3 слова: обрыв на знаке препинания, на «|», на ключевом слове (оно идёт одно или
-    со служебным словом перед ним), не длиннее ~16 знаков — одна строка крупного кегля."""
+    """Группы по 1-3 слова, всегда ОДНОЙ строкой одного кегля: обрыв на знаке препинания, на «|», перед
+    словом, которое не влезает в CAP_MAX_W (группа не переносится и не уменьшается — делится)."""
     out, cur = [], []
     def flush():
         if cur: out.append(list(cur)); cur.clear()
     for i, w in enumerate(words):
-        raw = w
-        if raw.startswith("|"): flush()
-        key = "*" in raw
-        if key and len(cur) >= 2 and "*" not in words[cur[-1]]: flush()
+        if w.startswith("|"): flush()
+        if cur and cap_width(cur + [i], words) > CAP_MAX_W: flush()
         cur.append(i)
-        text = " ".join(clean(words[j]) for j in cur)
-        end_punct = re.search(r"[.,:?!…—]»?\*?$", clean(raw) + ("*" if raw.endswith("*") else ""))
-        nxt_key = i + 1 < len(words) and "*" in words[i + 1] and not end_punct
-        if len(cur) >= 3 or len(text) >= 14 or end_punct or (key and len(cur) >= 2 and not nxt_key):
+        end_punct = re.search(r"[.,:?!…—]»?\*?$", clean(w) + ("*" if w.endswith("*") else ""))
+        if len(cur) >= 3 or end_punct:
             flush()
     flush()
     res = []
@@ -113,47 +120,29 @@ def font(path, size, wght=None):
     if k not in _FONTS:
         f = ImageFont.truetype(path, size)
         if wght:
-            try: f.set_variation_by_axes([wght])
+            try:
+                f.set_variation_by_axes([wght if a["name"] in (b"Weight", "Weight") else a["default"] for a in f.get_variation_axes()])
             except Exception: pass                                      # шрифт без осей — как есть
         _FONTS[k] = f
     return _FONTS[k]
 
-def render_chunk(words, idx, active, size=CAP_SIZE):
-    """RGBA одной группы: белые буквы с толстой тёмной обводкой и мягкой тенью (читается на любом
-    рисунке), активное слово — жёлтым, ключевое — оранжевым и на 18% крупнее. Перенос на 2 строки,
-    если шире CAP_MAX_W."""
-    parts = []
-    for j in idx:
-        w = words[j]; key = "*" in w
-        s = int(size * (1.18 if key else 1.0))
-        col = KEY if key else (ACTIVE if j == active else WHITE)
-        parts.append((clean(w).upper() if key else clean(w), font(FONT, s), col, j == active))
-    stroke = int(size * 0.11)
-    space = int(size * 0.28)
-    widths = [p[1].getbbox(p[0], stroke_width=stroke)[2] - p[1].getbbox(p[0], stroke_width=stroke)[0] for p in parts]
-    lines, cur, cw = [], [], 0
-    for p, w in zip(parts, widths):
-        if cur and cw + space + w > W * CAP_MAX_W: lines.append(cur); cur, cw = [], 0
-        cur.append((p, w)); cw += (space if len(cur) > 1 else 0) + w
-    lines.append(cur)
-    lh = int(size * 1.22)
-    bw = int(max(sum(w for _, w in L) + space * (len(L) - 1) for L in lines)) + 2 * stroke + 40
-    bh = lh * len(lines) + 2 * stroke + 60
-    img = Image.new("RGBA", (bw, bh), (0, 0, 0, 0))
-    sh = Image.new("RGBA", (bw, bh), (0, 0, 0, 0))
+def render_chunk(words, idx, active):
+    """RGBA одной группы: одна строка, один кегль. Белые буквы с тёмной обводкой и мягкой тенью, активное
+    слово — жёлтым (караоке), ключевое — оранжевым; цвет — единственное отличие, размер у всех один."""
+    f = font(CAP_FONT, CAP_SIZE, CAP_WGHT)
+    stroke = int(CAP_SIZE * 0.12); space = f.getlength(" ")
+    parts = [(cap_text(words[j]), KEY if "*" in words[j] else (ACTIVE if j == active else WHITE)) for j in idx]
+    tw = sum(f.getlength(t) for t, _ in parts) + space * (len(parts) - 1)
+    asc, desc = f.getmetrics()
+    bw, bh = int(tw + 2 * stroke + 40), int(asc + desc + 2 * stroke + 40)
+    img = Image.new("RGBA", (bw, bh), (0, 0, 0, 0)); sh = Image.new("RGBA", (bw, bh), (0, 0, 0, 0))
     d, ds = ImageDraw.Draw(img), ImageDraw.Draw(sh)
-    y = 30 + stroke
-    for L in lines:
-        lw = sum(w for _, w in L) + space * (len(L) - 1)
-        x = (bw - lw) / 2
-        for (txt, f, col, _act), w in L:
-            asc = f.getbbox(txt, stroke_width=stroke)
-            yy = y + (lh - (asc[3] - asc[1])) / 2 - asc[1] - lh * 0.05
-            ds.text((x - asc[0], yy + size * 0.07), txt, font=f, fill=(0, 0, 0, 120), stroke_width=stroke, stroke_fill=(0, 0, 0, 120))
-            d.text((x - asc[0], yy), txt, font=f, fill=col, stroke_width=stroke, stroke_fill=INK)
-            x += w + space
-        y += lh
-    sh = sh.filter(ImageFilter.GaussianBlur(size * 0.09))
+    x, y = 20 + stroke, 20 + stroke
+    for t, col in parts:
+        ds.text((x, y + CAP_SIZE * 0.06), t, font=f, fill=(0, 0, 0, 140), stroke_width=stroke, stroke_fill=(0, 0, 0, 140))
+        d.text((x, y), t, font=f, fill=col, stroke_width=stroke, stroke_fill=INK)
+        x += f.getlength(t) + space
+    sh = sh.filter(ImageFilter.GaussianBlur(CAP_SIZE * 0.08))
     return Image.alpha_composite(sh, img)
 
 def ease_out_back(u, s=2.2):
@@ -173,7 +162,7 @@ def ease_io(u):
 _SRC = {}
 def load_src(reel_dir, name):
     if name not in _SRC:
-        p = os.path.join(reel_dir, "src", name + ".png")
+        p = os.path.join(reel_dir, "src", name + "_c.png")
         _SRC[name] = np.asarray(Image.open(p).convert("RGB"))
     return _SRC[name]
 
@@ -185,18 +174,15 @@ def paper_tex(seed=5):
     n = n / (np.abs(n).max() + 1e-6)
     return np.clip(PAPER[None, None] * (1 + 0.025 * n[..., None]), 0, 255).astype(np.uint8)
 
-def crop_box(cx, cy, h, aspect=W / H):
-    return cx - h * aspect / 2, cy - h / 2, h
-
 def sample(src, cx, cy, h, scale_src=2.0, shake=(0, 0), rot=0.0):
-    """Окно (cx, cy, высота h) в координатах ИСХОДНОГО кадра -> 1080x1920. Края за картинкой — бумага."""
-    s = h * scale_src / H
+    """Окно (cx, cy, высота h) в координатах ИСХОДНОГО кадра -> картинка 1080xPH. Края за картинкой — бумага."""
+    s = h * scale_src / PH
     a = math.radians(rot)
     ca, sa = math.cos(a) * s, math.sin(a) * s
     X0, Y0 = cx * scale_src, cy * scale_src
-    M = np.array([[ca, -sa, X0 - ca * (W / 2 + shake[0]) + sa * (H / 2 + shake[1])],
-                  [sa, ca, Y0 - sa * (W / 2 + shake[0]) - ca * (H / 2 + shake[1])]], np.float32)
-    return cv2.warpAffine(src, M, (W, H), flags=cv2.WARP_INVERSE_MAP | cv2.INTER_LINEAR,
+    M = np.array([[ca, -sa, X0 - ca * (W / 2 + shake[0]) + sa * (PH / 2 + shake[1])],
+                  [sa, ca, Y0 - sa * (W / 2 + shake[0]) - ca * (PH / 2 + shake[1])]], np.float32)
+    return cv2.warpAffine(src, M, (W, PH), flags=cv2.WARP_INVERSE_MAP | cv2.INTER_LINEAR,
                           borderMode=cv2.BORDER_CONSTANT, borderValue=tuple(int(v) for v in PAPER))
 
 def fit_on_paper(base, src, region, cy, width_frac, scale=1.0, scale_src=2.0, dx=0.0):
@@ -212,7 +198,7 @@ def fit_on_paper(base, src, region, cy, width_frac, scale=1.0, scale_src=2.0, dx
     m = np.ones((h_, w_), np.float32); f = max(4, int(min(h_, w_) * 0.06))
     ramp = np.linspace(0, 1, f, dtype=np.float32)
     m[:f] *= ramp[:, None]; m[-f:] *= ramp[::-1, None]; m[:, :f] *= ramp[None]; m[:, -f:] *= ramp[None, ::-1]
-    X0, Y0 = max(0, px), max(0, py); X1, Y1 = min(W, px + w_), min(H, py + h_)
+    X0, Y0 = max(0, px), max(0, py); X1, Y1 = min(W, px + w_), min(base.shape[0], py + h_)
     if X1 <= X0 or Y1 <= Y0: return base
     sub = piece[Y0 - py:Y1 - py, X0 - px:X1 - px].astype(np.float32)
     mm = m[Y0 - py:Y1 - py, X0 - px:X1 - px, None]
@@ -236,6 +222,15 @@ def prepare_src(reel_dir, sources):
             b[y:] = np.median(b[y - 100:y].reshape(-1, 3), axis=0).astype(np.uint8)
         Image.fromarray(b).save(out)
         print(f"  исходник {name}: {a.shape[1]}x{a.shape[0]} -> {b.shape[1]}x{b.shape[0]}")
+    for name in sources:                               # бумага кадра -> ровный крем, как у длинных роликов (canvas.retint):
+        out = os.path.join(reel_dir, "src", name + "_c.png")   # иначе белая бумага схемы читалась швом с полосой субтитров
+        if os.path.exists(out): continue
+        import canvas
+        a = np.asarray(Image.open(os.path.join(reel_dir, "src", name + ".png")).convert("RGB"), np.float32)
+        col, share = canvas.paper_color(a)
+        if share >= canvas.PAPER_MIN_SHARE: a = canvas.retint(a, col)
+        Image.fromarray(np.clip(a, 0, 255).astype(np.uint8)).save(out)
+        print(f"  бумага {name}: {col.round().tolist()} -> крем (доля бумаги по краю {share:.2f})")
 
 
 # ----------------------------------------------------------------------------- кукла героя
@@ -264,11 +259,11 @@ def paste_doll(base, rgba, cx, cy, h):
     rh, rw = reg.shape[:2]
     px, py = int(cx - rw / 2), int(cy - rh / 2)
     # тень
-    sh = np.zeros((H, W), np.float32)
+    BH = base.shape[0]; sh = np.zeros((BH, W), np.float32)
     cv2.ellipse(sh, (int(cx - rw * 0.02), int(py + rh * 0.985)), (int(rw * 0.30), int(rh * 0.035)), 0, 0, 360, 1.0, -1)
     sh = cv2.GaussianBlur(sh, (0, 0), 14) * 0.22
     b = base.astype(np.float32) * (1 - sh[..., None])
-    X0, Y0 = max(0, px), max(0, py); X1, Y1 = min(W, px + rw), min(H, py + rh)
+    X0, Y0 = max(0, px), max(0, py); X1, Y1 = min(W, px + rw), min(BH, py + rh)
     sub = reg[Y0 - py:Y1 - py, X0 - px:X1 - px]
     a = np.clip(sub[..., 3:4], 0, 1)
     b[Y0:Y1, X0:X1] = np.clip(sub[..., :3], 0, 255) + b[Y0:Y1, X0:X1] * (1 - a)
@@ -294,7 +289,7 @@ def over(base, im, cx, cy, alpha=1.0, scale=1.0, wipe=1.0):
         f = min(18, cut)
         if f > 0: al[:, cut - f:cut] *= np.linspace(1, 0, f, dtype=np.float32)[None, :, None]
     px, py = int(cx - a.shape[1] / 2), int(cy - a.shape[0] / 2)
-    X0, Y0 = max(0, px), max(0, py); X1, Y1 = min(W, px + a.shape[1]), min(H, py + a.shape[0])
+    X0, Y0 = max(0, px), max(0, py); X1, Y1 = min(W, px + a.shape[1]), min(base.shape[0], py + a.shape[0])
     if X1 <= X0 or Y1 <= Y0: return base
     s = a[Y0 - py:Y1 - py, X0 - px:X1 - px]; m = al[Y0 - py:Y1 - py, X0 - px:X1 - px]
     base[Y0:Y1, X0:X1] = (s[..., :3] * m + base[Y0:Y1, X0:X1] * (1 - m)).astype(np.uint8)
@@ -325,108 +320,26 @@ def arrow(base, p0, p1, u, color=RED, th=12):
 
 
 # ----------------------------------------------------------------------------- звук
+# Только звуки владельца (assets/sfx/reels, решение 22.10): синтезированные свисты, щелчки на субтитрах,
+# тики и музыка-заглушка звучали дёшево. Пик звука — момент, который должен совпасть со склейкой.
 SR = 48000
+SFX_DIR = os.path.join(ROOT, "assets", "sfx", "reels")
+SFX = {   # файл, где пик (с), громкость пика (dBFS) — без голоса звук не нормализуется, громкость задана тут
+    "riser": ("riser_metallic.mp3", 1.65, -7.0),       # интрига: стартует сразу после фразы-хука
+    "swoosh": ("swoosh.mp3", 0.35, -10.0),             # хлёсткий переход
+    "swoosh_deep": ("swoosh_deep_low.wav", 0.70, -8.0),  # большой переход, смена части ролика
+    "oof": ("oof.mp3", 0.10, -9.0),                    # «провал» — смешная неудача героя
+}
+_SFX = {}
 
-def _env(n, a, r):
-    e = np.ones(n, np.float32)
-    na, nr = int(a * SR), int(r * SR)
-    if na: e[:na] = np.linspace(0, 1, na)
-    if nr: e[-nr:] *= np.linspace(1, 0, nr) ** 2
-    return e
-
-def sfx_whoosh(dur=0.32, seed=1):
-    from scipy.signal import butter, sosfilt
-    rng = np.random.default_rng(seed); n = int(dur * SR)
-    x = rng.normal(0, 1, n).astype(np.float32); out = np.zeros(n, np.float32)
-    blk = 512
-    for i in range(0, n, blk):
-        u = i / n; fc = 400 + 3200 * math.sin(math.pi * u) ** 1.5
-        sos = butter(2, [fc * 0.6, fc * 1.4], btype="band", fs=SR, output="sos")
-        out[i:i + blk] = sosfilt(sos, x[max(0, i - 2048):i + blk])[-len(out[i:i + blk]):]
-    e = np.sin(np.pi * np.linspace(0, 1, n)) ** 2
-    return (out * e / (np.abs(out).max() + 1e-6) * 0.55).astype(np.float32)
-
-def sfx_pop(f0=760, f1=320, dur=0.07):
-    n = int(dur * SR); t = np.arange(n) / SR
-    f = f1 + (f0 - f1) * np.exp(-t * 60)
-    ph = 2 * np.pi * np.cumsum(f) / SR
-    return (np.sin(ph) * np.exp(-t * 55) * 0.42).astype(np.float32)
-
-def sfx_tick(f=2300, dur=0.04, amp=0.28, seed=2):
-    n = int(dur * SR); t = np.arange(n) / SR
-    rng = np.random.default_rng(seed)
-    x = np.sin(2 * np.pi * f * t) * np.exp(-t * 180) + rng.normal(0, 1, n) * np.exp(-t * 700) * 0.4
-    return (x * amp).astype(np.float32)
-
-def sfx_ring(dur=1.1):
-    n = int(dur * SR); t = np.arange(n) / SR
-    x = sum(np.sin(2 * np.pi * f * t) * a for f, a in ((2350, 1.0), (3140, .5), (4710, .3), (1180, .25)))
-    trem = 0.5 + 0.5 * np.sign(np.sin(2 * np.pi * 17 * t))          # молоточек будильника
-    return (x * trem * _env(n, 0.005, 0.25) * 0.16).astype(np.float32)
-
-def sfx_boom(dur=0.6):
-    n = int(dur * SR); t = np.arange(n) / SR
-    f = 42 + 70 * np.exp(-t * 14)
-    x = np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t * 6)
-    return (np.tanh(x * 1.6) * 0.55).astype(np.float32)
-
-def sfx_riser(dur):
-    """Нарастание под гонку часов: шум с поднимающейся полосой и громкостью, обрывается в удар."""
-    from scipy.signal import butter, sosfilt
-    rng = np.random.default_rng(9); n = int(dur * SR)
-    x = rng.normal(0, 1, n).astype(np.float32); out = np.zeros(n, np.float32); blk = 1024
-    for i in range(0, n, blk):
-        u = i / n; fc = 500 + 4500 * u ** 1.6
-        sos = butter(2, [fc * 0.7, fc * 1.3], btype="band", fs=SR, output="sos")
-        out[i:i + blk] = sosfilt(sos, x[max(0, i - 4096):i + blk])[-len(out[i:i + blk]):]
-    t = np.arange(n) / SR
-    tone = np.sin(2 * np.pi * np.cumsum(220 + 660 * (t / dur) ** 2) / SR) * 0.25
-    return ((out / (np.abs(out).max() + 1e-6) * 0.6 + tone) * (t / dur) ** 2 * 0.5).astype(np.float32)
-
-def sfx_chime():
-    n = int(1.8 * SR); t = np.arange(n) / SR
-    out = np.zeros(n, np.float32)
-    for k, f in enumerate((1046.5, 1568.0)):                     # до и соль второй октавы
-        d = int(k * 0.11 * SR); tt = t[: n - d]
-        v = sum(np.sin(2 * np.pi * f * m * tt) * a for m, a in ((1, 1), (2.76, .3), (5.4, .12))) * np.exp(-tt * 3.2)
-        out[d:] += v
-    return (out * 0.18).astype(np.float32)
-
-def sfx_scribble(dur=0.5, seed=4):
-    from scipy.signal import butter, sosfilt
-    rng = np.random.default_rng(seed); n = int(dur * SR)
-    x = rng.normal(0, 1, n).astype(np.float32)
-    x = sosfilt(butter(2, [1800, 6500], btype="band", fs=SR, output="sos"), x)
-    strokes = 0.35 + 0.65 * np.abs(np.sin(2 * np.pi * 7.5 * np.arange(n) / SR + rng.uniform(0, 3)))
-    return (x / (np.abs(x).max() + 1e-6) * strokes * _env(n, .02, .08) * 0.20).astype(np.float32)
-
-def music_bed(total, bpm=96):
-    """Подложка-заглушка до выбора трека (в Reels трек кладут из библиотеки приложения — трендовый звук
-    даёт охват): тёплые аккорды Am-F-C-G мягкими синусами и тихий тик часов на каждую долю — тема ролика."""
-    n = int(total * SR)
-    out = np.zeros(n, np.float32)
-    beat = 60 / bpm; bar = beat * 4
-    chords = [(220.0, 261.6, 329.6), (174.6, 220.0, 261.6), (130.8, 164.8, 196.0), (196.0, 246.9, 293.7)]
-    for k in range(int(total / bar) + 1):
-        a = int(k * bar * SR); b = min(n, int((k + 1) * bar * SR) + int(0.4 * SR))
-        if a >= n: break
-        tt = np.arange(b - a) / SR
-        env = (1 - np.exp(-tt * 6)) * np.exp(-tt * 0.35)
-        for f in chords[k % 4]:
-            out[a:b] += (np.sin(2 * np.pi * f * tt) + 0.25 * np.sin(4 * np.pi * f * tt)) * env * 0.035
-        bass = chords[k % 4][0] / 2
-        for q in range(4):
-            qa = a + int(q * beat * SR)
-            if qa >= n: break
-            m = min(n - qa, int(0.35 * SR)); tq = np.arange(m) / SR
-            out[qa:qa + m] += np.sin(2 * np.pi * bass * tq) * np.exp(-tq * 7) * 0.09
-    tick = sfx_tick(amp=0.05)
-    k = 0
-    while k * beat < total:
-        i = int(k * beat * SR); m = min(len(tick), n - i)
-        out[i:i + m] += tick[:m] * (1.0 if k % 2 == 0 else 0.6)
-        k += 1
-    return out
+def sfx(name):
+    if name not in _SFX:
+        f, _, peak_db = SFX[name]
+        p = subprocess.run(["ffmpeg", "-v", "error", "-i", os.path.join(SFX_DIR, f), "-ac", "2", "-ar", str(SR), "-f", "f32le", "-"],
+                           capture_output=True, check=True)
+        x = np.frombuffer(p.stdout, np.float32).reshape(-1, 2).copy()
+        _SFX[name] = x * (10 ** (peak_db / 20) / max(1e-6, float(np.abs(x).max())))
+    return _SFX[name]
 
 
 # ----------------------------------------------------------------------------- сборка
@@ -464,18 +377,13 @@ def build(reel_dir, sheet=False, preview=False):
     for a, b in zip(shots, shots[1:]): a["t1"] = b["t0"]
     shots[-1]["t1"] = total
     # события внутри фраз: наезд, тряска, стрелка, надпись — привязаны к слову
-    def wt(b_idx, k):
-        return times[spans[b_idx][0] + k]["start"]
+    def wt(b_idx, k, after=False):
+        w = times[spans[b_idx][0] + k]
+        return w["end"] if after else w["start"]
     events = []
     for bi, b in enumerate(beats):
-        for e in b.get("fx", []):
-            events.append(dict(e, t=wt(bi, e.get("at", 0)) + e.get("dt", 0.0), beat=bi))
-    for e in events:                                  # окна музыки: тишина после слова, приглушение на фразе
-        if e["kind"] == "silence_after":
-            k = spans[e["beat"]][0] + e.get("at", 0)
-            e["t"], e["t1"] = times[k]["end"], times[k + 1]["start"] + 0.05
-        if e["kind"] == "duck":
-            e["t1"] = times[spans[e["beat"]][1] - 1]["end"]
+        for e in b.get("fx", []):                     # after: от конца слова (riser — сразу после фразы-хука)
+            events.append(dict(e, t=wt(bi, e.get("at", 0), e.get("after", False)) + e.get("dt", 0.0), beat=bi))
     for e in events:                                  # удержание накладки — только пока идут планы того же рода
         e["kind_of_shot"] = next((x.get("kind", "crop") for x in reversed(shots) if x["t0"] <= e["t"] + CUT_LEAD), "crop")
     caps = chunks(words, times)
@@ -503,7 +411,7 @@ def build(reel_dir, sheet=False, preview=False):
     ff.stdin.close(); ff.wait()
 
     wav = os.path.join(reel_dir, "reel_audio.wav")
-    mix_audio(wav, total, shots, events, caps, spec, voiced)
+    mix_audio(wav, total, shots, events, spec)
     out = os.path.join(reel_dir, "reel_preview_av.mp4" if preview else "reel.mp4")
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", vid, "-i", wav, "-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
                     "-shortest", "-movflags", "+faststart", out], check=True)
@@ -564,26 +472,27 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
         if s.get("whip"):
             k = 1 - ease_out((t - s["t0"]) / 0.18)
             if k > 0.05:
-                sc = H / (h / punch) / 2.0
+                sc = PH / (h / punch) / 2.0
                 base = motion_blur(base, s["whip"][0] * k * sc * 0.25 * 2.0 * 0.5, s["whip"][1] * k * sc * 0.25)
     else:
         view = None
-        base = tex.copy()
+        base = tex[:PH].copy()
         d = max(1e-3, s["t1"] - s["t0"]); u = (t - s["t0"]) / d
         zs = lerp(s.get("zoom", (1.0, 1.06))[0], s.get("zoom", (1.0, 1.06))[1], u) * punch
         if kind == "fit":
             src = load_src(reel_dir, s["src"])
-            base = fit_on_paper(base, src, s["region"], s.get("cy", H * 0.42) + shake[1], s.get("width", 0.96), zs, dx=shake[0])
+            base = fit_on_paper(base, src, s["region"], s.get("cy", PH * 0.5) + shake[1], s.get("width", 0.96), zs, dx=shake[0])
         elif kind == "stack":
             for part in s["parts"]:
                 src = load_src(reel_dir, part["src"])
                 base = fit_on_paper(base, src, part["region"], part["cy"], part.get("width", 0.94), zs)
         elif kind == "doll":
             rgba = doll_frame(t, total + 0.5, s["doll_acts"])
-            base = paste_doll(base, rgba, W / 2 + shake[0], s.get("cy", H * 0.43) + shake[1], s.get("h", 900) * zs)
+            base = paste_doll(base, rgba, W / 2 + shake[0], s.get("cy", PH * 0.55) + shake[1], s.get("h", 900) * zs)
     base = np.ascontiguousarray(base)
 
-    # накладки фраз
+    # накладки фраз (в координатах картинки 1080xPH)
+    arrows = []
     for e in events:
         held = e.get("hold") and e["t"] <= t < e["t"] + e["hold"] and kind == e.get("kind_of_shot", kind)
         if not (s["t0"] - 0.01 <= e["t"] <= t < s["t1"] + 0.01 or held):
@@ -593,13 +502,13 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
             u = (t - e["t"]) / e.get("dur", 0.5)
             over(base, im, e["x"], e["y"], wipe=min(1.0, u * 1.05), scale=1.0)
         elif e["kind"] == "arrow":
-            arrow(base, e["p0"], e["p1"], (t - e["t"]) / 0.25)
+            arrows.append(e)
         elif e["kind"] == "ring" and t - e["t"] < e.get("dur", 1.0) and view is not None:
-            vx, vy, vh = view; k = H / vh
-            ring_lines(base, (e["x"] - vx) * k + W / 2 + shake[0], (e["y"] - vy) * k + H / 2 + shake[1], e["r"] * k, t)
+            vx, vy, vh = view; k = PH / vh
+            ring_lines(base, (e["x"] - vx) * k + W / 2 + shake[0], (e["y"] - vy) * k + PH / 2 + shake[1], e["r"] * k, t)
         elif e["kind"] == "hands" and view is not None:   # стрелки на пустом циферблате: «время снова видно»
-            vx, vy, vh = view; k = H / vh
-            sx, sy = (e["x"] - vx) * k + W / 2, (e["y"] - vy) * k + H / 2; r = e["r"] * k
+            vx, vy, vh = view; k = PH / vh
+            sx, sy = (e["x"] - vx) * k + W / 2, (e["y"] - vy) * k + PH / 2; r = e["r"] * k
             u = (t - e["t"]) / 0.35
             for ang, ln, th in ((-60, 0.48, 22), (55, 0.72, 15)):           # часовая на ~10, минутная на ~2
                 a = math.radians(ang - 90); L = r * ln * ease_out(u)
@@ -619,6 +528,14 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
             sc = ease_out_back((t - e["t"]) / 0.22)
             over(base, pad, e["x"], e["y"], scale=max(0.01, sc))
 
+    # картинка уходит в полосу субтитров мягким краем: одна бумага, без «вклеенного» прямоугольника
+    pic = base; base = tex.copy(); f_ = 60
+    base[:PH - f_] = pic[:PH - f_]
+    a_ = np.linspace(1, 0, f_, dtype=np.float32)[:, None, None]
+    base[PH - f_:PH] = (pic[PH - f_:].astype(np.float32) * a_ + base[PH - f_:PH].astype(np.float32) * (1 - a_)).astype(np.uint8)
+    for e in arrows:
+        arrow(base, e["p0"], e["p1"], (t - e["t"]) / 0.25)
+
     # часы хука: время «летит» 23:55 -> 03:12, на последнем слове встаёт с ударом
     if hook_clock and t < hook_clock["t1"] + 0.9:
         t0c, t1c = hook_clock["t0"], hook_clock["t1"]
@@ -631,9 +548,9 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
         sc = 1.0 + (0.18 * (1 - ease_out((t - t1c) / 0.25)) if landed else 0.0)
         im = text_img(txt, font(FONT, 190), KEY if landed else WHITE, stroke=16, stroke_fill=INK)
         if t < 0.25: sc *= 1 + 1.4 * (1 - ease_out(t / 0.25))          # влетает в кадр с ударом — перебивка ленты
-        over(base, im, W / 2, H * 0.17, scale=sc)
+        over(base, im, W / 2, PH * 0.20, scale=sc)
 
-    # субтитры: группа выскакивает (0.85 -> 1.06 -> 1.0 за 160 мс), активное слово — по времени слова
+    # субтитры: группа выскакивает (70% -> ~110% -> 100% за 200 мс), активное слово — по времени слова
     for c in caps:
         if c["t0"] - 0.0 <= t < c["t1"]:
             act = c["idx"][0]
@@ -642,9 +559,7 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
             im = c["imgs"][act]
             u = (t - c["t0"]) / 0.20
             sc = 0.70 + 0.30 * ease_out_back(u, 3.2)                       # 70% -> ~110% -> 100% за 200 мс
-            over(base, im, W / 2 - W * 0.03, H * CAP_Y, alpha=min(1.0, u * 3.0), scale=sc)
-    if t > total - 0.35:                            # последние кадры — без затемнения: петля в начало
-        pass
+            over(base, im, CAP_CX, CAP_CY, alpha=min(1.0, u * 3.0), scale=sc)
     return base
 
 def contact_sheet(reel_dir, shots):
@@ -667,48 +582,28 @@ def place(track, x, t, gain=1.0):
     m = min(len(x), len(track) - i)
     if m > 0: track[i:i + m] += x[:m] * gain
 
-def mix_audio(path, total, shots, events, caps, spec, voiced):
-    n = int((total + 0.2) * SR); tr = np.zeros(n, np.float32)
-    if spec.get("music", True):
-        mus = music_bed(total + 0.2)
-        env = np.ones(n, np.float32)
-        for e in events:                            # тишина — контраст громкое/тихое; приглушение — «тихий момент»
-            if e["kind"] in ("silence_after", "duck"):
-                a, b = int(e["t"] * SR), int(e["t1"] * SR); r = int(0.06 * SR)
-                g = 0.0 if e["kind"] == "silence_after" else e.get("gain", 0.35)
-                env[a:b] = np.minimum(env[a:b], g)
-                env[max(0, a - r):a] = np.minimum(env[max(0, a - r):a], np.linspace(1, g, len(env[max(0, a - r):a])))
-                env[b:b + r] = np.minimum(env[b:b + r], np.linspace(g, 1, len(env[b:b + r])))
-        tr += mus[:n] * env
-    # J-cut звука: свист перехода начинается за 0.12 с до склейки и пиком попадает на неё
-    for k, s in enumerate(shots):
-        if k == 0: continue
-        if s.get("whip") or s.get("zoom_in"):
-            place(tr, sfx_whoosh(0.32, seed=k), s["t0"] - 0.16, 0.9)
+def mix_audio(path, total, shots, events, spec):
+    """Звук рилса: хлёсткие склейки — swoosh пиком на склейку (J-cut звука: звук приходит раньше картинки),
+    события фраз (sfx) — пиком на слово, riser — началом сразу после фразы-хука. Больше ничего."""
+    n = int((total + 0.2) * SR); tr = np.zeros((n, 2), np.float32)
+    def put(name, t, align="peak"):
+        x = sfx(name); t0 = t - (SFX[name][1] if align == "peak" else 0.0)
+        i = int(t0 * SR)
+        if i < 0: x = x[-i:]; i = 0
+        m = min(len(x), n - i)
+        if m > 0: tr[i:i + m] += x[:m]
+    for k, sh in enumerate(shots):
+        if k and sh.get("whip") and sh.get("sound", "swoosh"):
+            put(sh.get("sound", "swoosh"), sh["t0"])
+        elif k and sh.get("sound"):
+            put(sh["sound"], sh["t0"])
     for e in events:
-        if e["kind"] == "punch": place(tr, sfx_pop(f0=600, f1=240), e["t"], 0.7)
-        if e["kind"] == "shake": place(tr, sfx_boom(), e["t"], 0.9)
-        if e["kind"] == "ring": place(tr, sfx_ring(e.get("dur", 1.0) + 0.3), e["t"], 1.0)   # L-cut: звон тянется через склейку
-        if e["kind"] == "write": place(tr, sfx_scribble(e.get("dur", 0.5)), e["t"], 1.0)
-        if e["kind"] == "chime": place(tr, sfx_chime(), e["t"], 1.0)
-        if e["kind"] == "badge": place(tr, sfx_pop(1200, 700, 0.05), e["t"], 0.6)
-        if e["kind"] == "ticks":
-            k = 0
-            while k * e.get("every", 0.25) < e.get("dur", 2.0):
-                place(tr, sfx_tick(2300 if k % 2 == 0 else 1700), e["t"] + k * e.get("every", 0.25), e.get("gain", 1.0)); k += 1
-    clk = spec.get("clock")
-    if clk:                                         # удар на влёте часов в 0 с, нарастание до остановки на 03:12
-        place(tr, sfx_boom(0.5), 0.0, 0.8)
-        place(tr, sfx_riser(max(0.3, clk["t1"] - 0.15)), 0.15, 0.7)
-    if not voiced:                                  # немой рилс: тихий щелчок на каждую новую группу субтитров
-        for c in caps: place(tr, sfx_pop(1500, 900, 0.025), c["t0"], 0.18)
-    tr *= 0.89 / max(1e-6, float(np.abs(tr).max()))           # пик -1 dBFS; громкость по LUFS — у мастера ниже
+        if e["kind"] == "sfx": put(e["name"], e["t"], e.get("align", "peak"))
+    peak = float(np.abs(tr).max())
+    if peak > 0.89: tr *= 0.89 / peak                 # наложение двух звуков не клипует: пик не выше -1 dBFS
     pcm = (np.clip(tr, -1, 1) * 32767).astype(np.int16)
     with wave.open(path, "wb") as w:
-        w.setnchannels(1); w.setsampwidth(2); w.setframerate(SR); w.writeframes(pcm.tobytes())
-    tmp = path.replace(".wav", "_ln.wav")
-    subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", path, "-af", "loudnorm=I=-16:TP=-1.5:LRA=11", "-ar", str(SR), tmp], check=True)
-    os.replace(tmp, path)
+        w.setnchannels(2); w.setsampwidth(2); w.setframerate(SR); w.writeframes(pcm.tobytes())
 
 def write_srt(path, caps, words):
     def ts(x):
