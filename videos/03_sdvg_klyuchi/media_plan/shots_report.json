@@ -1,0 +1,161 @@
+{
+ "punch_gap_sec": 15.0,
+ "key_gap_sec": 10.0,
+ "clips": [
+  {
+   "index": 0,
+   "note": "акцент «опаздываешь» пропущен: лимит рукописных слов"
+  },
+  {
+   "index": 0,
+   "duration": 7.5,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ],
+    [
+     1.83,
+     "drift"
+    ],
+    [
+     3.33,
+     "drift"
+    ],
+    [
+     5.53,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": [
+    "крупный план «the round clock face without numerals» не делается: деталь мелкая даже на пределе зума",
+    "крупный план «the flame on the tip of the tail of a black cartoon cat» не делается: деталь мелкая даже на пределе зума",
+    "крупный план «the head of a black cartoon cat» не делается: почти совпадает с другим планом"
+   ]
+  },
+  {
+   "index": 1,
+   "duration": 8.375,
+   "views": [
+    [
+     0.0,
+     "assemble"
+    ],
+    [
+     3.15,
+     "drift"
+    ],
+    [
+     6.01,
+     "drift"
+    ]
+   ],
+   "labels_at": [
+    0.35,
+    1.25,
+    2.15
+   ],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": [
+    "подпись «РАБОЧАЯ ПАМЯТЬ» без своего слова — по очереди",
+    "подпись «НОВАЯ МЫСЛЬ» без своего слова — по очереди",
+    "подпись «СТАРАЯ МЫСЛЬ» без своего слова — по очереди",
+    "крупный план «the falling cube» не делается: деталь мелкая даже на пределе зума",
+    "крупный план «the thin table legs» не делается: почти совпадает с другим планом"
+   ]
+  },
+  {
+   "index": 2,
+   "duration": 6.583,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ],
+    [
+     3.42,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": [
+    "наезд на «the bunch of keys»: слово «ключи» не прозвучало",
+    "крупный план «the phone with a blank glowing screen» не делается: деталь мелкая даже на пределе зума",
+    "крупный план «the flame on the tip of the tail of a black cartoon cat» не делается: деталь мелкая даже на пределе зума"
+   ]
+  },
+  {
+   "index": 3,
+   "duration": 7.458,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ],
+    [
+     4.11,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": "постоянный дом",
+   "key_at": 0.3,
+   "key_hold_until": 4.11,
+   "accent": null,
+   "notes": [
+    "крупный план «the hook with the hanging bag» не делается: разрезал бы голову или тело героя",
+    "крупный план «the flame on the tip of the tail of a black cartoon cat» не делается: деталь мелкая даже на пределе зума",
+    "план 0.0-4.1 с без смены: другого плана без разреза рисунка нет"
+   ]
+  },
+  {
+   "index": 4,
+   "note": "главная мысль «где живут» пропущена: прошлая 7.2 с назад"
+  },
+  {
+   "index": 4,
+   "duration": 8.583,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ],
+    [
+     3.1,
+     "drift"
+    ],
+    [
+     5.83,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": [
+    "крупный план «the bunch of keys above the bowl» не делается: деталь мелкая даже на пределе зума",
+    "крупный план «the cloth bag under the arm» не делается: разрезал бы голову или тело героя",
+    "крупный план «the head of a black cartoon cat» не делается: деталь не помещается в план"
+   ]
+  }
+ ]
+}

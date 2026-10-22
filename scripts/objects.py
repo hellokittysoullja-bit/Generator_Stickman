@@ -20,7 +20,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import env  # noqa: E402
 
-VERSION = 1
+VERSION = 2          # 2: рамки на квадрате (labels.square_for_vision), кэш v1 — доли исходника
 OBJECTS_MODEL = "ds/deepseek-v4-flash-vision"   # 20.10: qwen3.7-plus на рамках игнорирует выключение рассуждения (2000 токенов в пустоту); DeepSeek vision — 15 с, ~300 токенов
 MIN_AREA, MAX_AREA = 0.002, 0.85
 MIN_INK = 0.03
@@ -112,8 +112,9 @@ def check(img, box):
 def locate(gateway, model, img_path, names, cache_dir=None):
     """{имя: рамка в пикселях или None}, плюс {имя: причина отказа}."""
     from PIL import Image
-    from labels import _image_part
+    from labels import _image_part, square_for_vision
     img = Image.open(img_path).convert("RGB")
+    sq, to_px = square_for_vision(img)
     digest = hashlib.sha256(open(img_path, "rb").read()).hexdigest()
     key = hashlib.sha256(f"{VERSION}|{model}|{names}|{digest}".encode()).hexdigest()[:20]
     cp = os.path.join(cache_dir, f"objects_{key}.json") if cache_dir else None
@@ -125,7 +126,7 @@ def locate(gateway, model, img_path, names, cache_dir=None):
             raw = None
     if raw is None:
         items = "\n".join(f"{i}. {n}" for i, n in enumerate(names, 1))
-        answer, _u, _p = gateway.chat(model, [{"type": "text", "text": PROMPT.format(items=items)}, _image_part(img)],
+        answer, _u, _p = gateway.chat(model, [{"type": "text", "text": PROMPT.format(items=items)}, _image_part(sq)],
                                       600, 1500, reasoning=False)
         raw = parse(answer, len(names))
         if raw is None:
@@ -133,14 +134,13 @@ def locate(gateway, model, img_path, names, cache_dir=None):
         if cp:
             os.makedirs(cache_dir, exist_ok=True)
             json.dump({k: v for k, v in raw.items()}, open(cp, "w", encoding="utf-8"))
-    w, h = img.size
     boxes, why = {}, {}
     for i, n in enumerate(names, 1):
         b = raw.get(i)
         if b is None:
             boxes[n], why[n] = None, "не найден"
             continue
-        px = (b[0]*w/1000, b[1]*h/1000, b[2]*w/1000, b[3]*h/1000)
+        px = to_px(b)
         bad = check(img, px)
         boxes[n], why[n] = (None, bad) if bad else ([round(v, 1) for v in px], None)
     return boxes, why

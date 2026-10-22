@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "measured_at": "2026-10-22T18:04:36",
+  "video": "final.mp4",
+  "peak_ratio": 4.0,
+  "match_window_sec": 0.6,
+  "limits": [
+    "диссолв может не дать пика — низкое покрытие это ОТСУТСТВИЕ измерения, а не доказательство точности",
+    "квантование детектора — один кадр",
+    "порог пика выведен из локального фона самого материала",
+    "ложный пик на контрастном Ken Burns попадает в unmatched_detected"
+  ],
+  "phrase_lock": false,
+  "detected_cuts": 13,
+  "silence_spans": 2,
+  "cuts_in_silence_share": 1.0,
+  "expected_cuts": 0,
+  "verdict": "no_reference",
+  "note": "нет phrase_timeline.json с онсетами речи — дрейф измерить нечем; ось «рез в тишине» выше всё равно посчитана"
+}

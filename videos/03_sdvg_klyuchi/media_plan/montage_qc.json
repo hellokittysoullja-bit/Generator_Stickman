@@ -1,0 +1,321 @@
+{
+ "schema_version": 1,
+ "measured_at": "2026-10-22T18:04:42",
+ "video": "final.mp4",
+ "spec": "docs/MONTAGE_SPEC.md",
+ "limits": [
+  "скорость камеры — по окнам 0.25 с, перебор масштаба ±1.5%: диссолвы и окна со склейкой выброшены",
+  "no_signal — отсутствие измерения, не успех",
+  "пороги со статусом hypothesis не блокируют до калибровки на живых роликах"
+ ],
+ "checks": {
+  "plan_max_sec": {
+   "value": 3.4170000000000016,
+   "threshold": 3.5416666666666665,
+   "op": "<=",
+   "level": "block",
+   "status": "calibrated",
+   "state": "ok"
+  },
+  "plan_len_cv": {
+   "value": 0.25116027329328106,
+   "threshold": 0.25,
+   "op": ">=",
+   "level": "warn",
+   "status": "hypothesis",
+   "state": "ok"
+  },
+  "plan_near_equal_share": {
+   "value": 0.07692307692307693,
+   "threshold": 0.3,
+   "op": "<=",
+   "level": "warn",
+   "status": "hypothesis",
+   "state": "ok"
+  },
+  "frozen_share": {
+   "value": 0.02142857142857143,
+   "threshold": 0.05,
+   "op": "<=",
+   "level": "warn",
+   "status": "hypothesis",
+   "state": "ok"
+  },
+  "speed_max_over_mean": {
+   "value": 1.0242591272456592,
+   "threshold": 1.25,
+   "op": "<=",
+   "level": "warn",
+   "status": "hypothesis",
+   "state": "ok"
+  },
+  "direction_flips_excess": {
+   "value": null,
+   "threshold": 0,
+   "op": "<=",
+   "level": "warn",
+   "status": "hypothesis",
+   "state": "no_signal"
+  },
+  "cut_luma_jump": {
+   "value": 40.10739149305556,
+   "threshold": 12.0,
+   "op": "<=",
+   "level": "warn",
+   "status": "hypothesis",
+   "state": "violation"
+  },
+  "cut_paper_de": {
+   "value": 1.1120156049728394,
+   "threshold": 2.0,
+   "op": "<=",
+   "level": "warn",
+   "status": "hypothesis",
+   "state": "ok"
+  },
+  "cuts_unconfirmed": {
+   "value": 0,
+   "threshold": 0,
+   "op": "<=",
+   "level": "warn",
+   "status": "hypothesis",
+   "state": "ok"
+  },
+  "cut_attention_shift": {
+   "value": 0.2657003700733185,
+   "threshold": 0.25,
+   "op": "<=",
+   "level": "warn",
+   "status": "hypothesis",
+   "state": "violation"
+  },
+  "sharpness_cv": {
+   "value": 0.01674130991895549,
+   "threshold": 0.1,
+   "op": "<=",
+   "level": "warn",
+   "status": "hypothesis",
+   "state": "ok"
+  },
+  "hook_first_cut_sec": {
+   "value": 1.8333333333333333,
+   "threshold": 2.0,
+   "op": "<=",
+   "level": "warn",
+   "status": "hypothesis",
+   "state": "ok"
+  },
+  "hook_plan_len_sec": {
+   "value": 1.833,
+   "threshold": [
+    1.2,
+    2.0
+   ],
+   "op": "range",
+   "level": "warn",
+   "status": "hypothesis",
+   "state": "ok"
+  },
+  "hook_voice_onset_sec": {
+   "value": 22.7621,
+   "threshold": 0.3,
+   "op": "<=",
+   "level": "warn",
+   "status": "hypothesis",
+   "state": "violation"
+  },
+  "cuts_in_silence_share": {
+   "value": 1.0,
+   "threshold": 0.7,
+   "op": ">=",
+   "level": "block",
+   "status": "calibrated",
+   "state": "ok"
+  }
+ },
+ "blocks": [],
+ "warnings": [
+  "cut_luma_jump",
+  "cut_attention_shift",
+  "hook_voice_onset_sec"
+ ],
+ "no_signal": [
+  "direction_flips_excess"
+ ],
+ "measured": {
+  "plan_max_sec": 3.4170000000000016,
+  "plan_len_cv": 0.25116027329328106,
+  "plan_near_equal_share": 0.07692307692307693,
+  "plans": 14,
+  "plan_mean_sec": 2.75,
+  "writing_plans": 1,
+  "frozen_share": 0.02142857142857143,
+  "speed_max_over_mean": 1.0242591272456592,
+  "plans_measured": 14,
+  "plans_total": 14,
+  "direction_flips_excess": null,
+  "pictures_measured": 0,
+  "cut_luma_jump": 40.10739149305556,
+  "cut_luma_jump_median": 15.88610677083335,
+  "cut_attention_shift": 0.2657003700733185,
+  "cuts": 13,
+  "sharpness_cv": 0.01674130991895549,
+  "hook_first_cut_sec": 1.8333333333333333,
+  "hook_plan_len_sec": 1.833,
+  "hook_voice_onset_sec": 22.7621,
+  "hook_plans": 2,
+  "cut_paper_de": 1.1120156049728394,
+  "cut_paper_de_median": 0.7994728088378906,
+  "cuts_unconfirmed": 0,
+  "cuts_extra_by_scenedetect": 0,
+  "cuts_in_silence_share": 1.0
+ },
+ "per_plan": [
+  {
+   "frozen": 0.0,
+   "ratio": 1.0221252812966375,
+   "static": false
+  },
+  {
+   "frozen": 0.0,
+   "ratio": 1.0155400383593287,
+   "static": false
+  },
+  {
+   "frozen": 0.0,
+   "ratio": 1.0179419819321176,
+   "static": false
+  },
+  {
+   "frozen": 0.0,
+   "ratio": 1.02023214924647,
+   "static": false
+  },
+  {
+   "frozen": 0.3,
+   "ratio": 2.538766968743773,
+   "static": false
+  },
+  {
+   "frozen": 0.0,
+   "ratio": 1.022514223333545,
+   "static": false
+  },
+  {
+   "frozen": 0.0,
+   "ratio": 1.0107860072072492,
+   "static": false
+  },
+  {
+   "frozen": 0.0,
+   "ratio": 1.033008076769597,
+   "static": false
+  },
+  {
+   "frozen": 0.0,
+   "ratio": 1.0260040311577736,
+   "static": false
+  },
+  {
+   "frozen": 0.0,
+   "ratio": 1.066813149713504,
+   "static": false
+  },
+  {
+   "frozen": 0.0,
+   "ratio": 1.029390628432027,
+   "static": false
+  },
+  {
+   "frozen": 0.0,
+   "ratio": 1.0405736422398737,
+   "static": false
+  },
+  {
+   "frozen": 0.0,
+   "ratio": 1.0193848059615362,
+   "static": false
+  },
+  {
+   "frozen": 0.0,
+   "ratio": 1.0310343103528763,
+   "static": false
+  }
+ ],
+ "plans": [
+  [
+   0.0,
+   1.833
+  ],
+  [
+   1.833,
+   3.333
+  ],
+  [
+   3.333,
+   5.542
+  ],
+  [
+   5.542,
+   7.5
+  ],
+  [
+   7.5,
+   10.667
+  ],
+  [
+   10.667,
+   13.542
+  ],
+  [
+   13.542,
+   15.875
+  ],
+  [
+   15.875,
+   19.292
+  ],
+  [
+   19.292,
+   22.458
+  ],
+  [
+   22.458,
+   26.583
+  ],
+  [
+   26.583,
+   29.917
+  ],
+  [
+   29.917,
+   33.042
+  ],
+  [
+   33.042,
+   35.75
+  ],
+  [
+   35.75,
+   38.5
+  ]
+ ],
+ "cuts": [
+  1.833,
+  3.333,
+  5.542,
+  7.5,
+  10.667,
+  13.542,
+  15.875,
+  19.292,
+  22.458,
+  26.583,
+  29.917,
+  33.042,
+  35.75
+ ],
+ "qc_seconds": 28.2,
+ "video_seconds": 38.5,
+ "verdict": "warnings"
+}

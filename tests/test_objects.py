@@ -48,7 +48,8 @@ def test_locate_returns_pixels_and_caches(tmp_path):
     im = Image.new("RGB", (1000, 500), (250, 250, 245))
     ImageDraw.Draw(im).rectangle((100, 100, 300, 300), fill=(30, 30, 30))
     im.save(p)
-    gw = FakeGW('{"boxes": {"1": [90, 180, 310, 620], "2": [600, 600, 700, 700]}}')
+    # модель видит рисунок 1000x500 посередине квадрата 1000x1000 (поля по 250 сверху и снизу)
+    gw = FakeGW('{"boxes": {"1": [90, 340, 310, 560], "2": [600, 600, 700, 700]}}')
     recs = objects.objects_for(gw, "m", str(p), {"zoom": {"object": "box", "word": "ящик"},
                                                  "spec": {"subject": "sky"}}, None, str(tmp_path))
     assert recs[0]["role"] == "zoom" and recs[0]["box"] == [90.0, 90.0, 310.0, 310.0]
@@ -75,3 +76,16 @@ def test_details_and_the_smoking_tail_are_searched_with_the_hero_head():
     assert roles["hero_head"] == f"the head of {hero}"            # голову крупный план детали не режет
     plain = objects.wanted({"kind": "scene", "hero": False, "spec": {"subject": "a ball"}}, hero)
     assert not any(r in ("detail", "hero_head") for _n, r, _w in plain)
+
+
+def test_the_model_sees_a_square_so_width_and_height_shares_cannot_be_mixed_up():
+    """Эп.03 22.10: на рисунке 3:2 DeepSeek vision отдавал y в масштабе ширины (4 вызова из 4), и все рамки
+    сжимались к верху. Модель получает квадрат с полями цвета фона; рамка переводится обратно в пиксели."""
+    import labels
+    im = Image.new("RGB", (1500, 1000), (250, 250, 245))
+    ImageDraw.Draw(im).rectangle((600, 700, 900, 900), fill=(30, 30, 30))
+    sq, to_px = labels.square_for_vision(im)
+    assert sq.size == (1500, 1500) and sq.getpixel((10, 10)) == (250, 250, 245)
+    assert sq.getpixel((750, 250 + 800)) == (30, 30, 30)                    # рисунок посередине квадрата
+    assert to_px((400, 1050 / 1.5, 600, 1150 / 1.5)) == (600, 800, 900, 900)
+    assert to_px((0, 0, 1000, 1000)) == (0, 0, 1500, 1000)                  # поля обрезаются до рисунка

@@ -109,3 +109,37 @@ def test_hero_ears_are_not_described():
     assert "hero_ears_described" not in fp.issues(dict(f, hero=False, picture="a rabbit with long ears sits on "
                                                        "the grass beside a fence, plain light background around, "
                                                        "one carrot lying at its feet on the grass"), HERO)
+
+
+def test_rewritten_picture_takes_its_judge_checks_along(tmp_path):
+    """Эп.03 22.10: предпроверка переписала «второй кубик сталкивает первый» в «кубик лежит под столом», а
+    обязательное утверждение для судьи осталось глаголом — годный кадр получил бы «нет» (weak)."""
+    import frame_planner
+    f = frame(spec={"focus": "x", "claims": [
+        {"id": "core", "text": "one envelope is visible", "tier": "must"},
+        {"id": "c1", "text": "the main character walks around the envelope", "tier": "must"},
+        {"id": "c2", "text": "the desk is wooden", "tier": "should"},
+        {"id": frame_planner.LIVE_NOFIG_ID, "text": frame_planner.LIVE_NOFIG_TEXT, "tier": "must"}]})
+    new = ("medium shot: the main character stands on the floor beside a desk with one envelope on it, a worn "
+           "ring of paw prints around the desk, tail raised; plain light background around them")
+    gw = FakeGateway(json.dumps({"n": 1, "ok": False, "faults": [1], "picture": new, "checks": {
+        "c1": "a worn ring of paw prints circles the desk",
+        "c2": "ok",                                            # слишком коротко — не берётся
+        "c9": "an unknown check id is ignored here",
+        frame_planner.LIVE_NOFIG_ID: "a cat may be in the picture"}}))
+    fp.check_chapter([f], gw, "m", str(tmp_path), HERO)
+    assert "CHECKS: core: one envelope is visible; c1: the main character walks" in gw.prompt
+    assert frame_planner.LIVE_NOFIG_ID + ":" not in gw.prompt
+    texts = {c["id"]: c["text"] for c in f["spec"]["claims"]}
+    assert texts["c1"] == "a worn ring of paw prints circles the desk"
+    assert texts["c2"] == "the desk is wooden" and texts[frame_planner.LIVE_NOFIG_ID] == frame_planner.LIVE_NOFIG_TEXT
+    assert f["preflight"]["checks_original"] == {"c1": "the main character walks around the envelope"}
+    assert [c["tier"] for c in f["spec"]["claims"]] == ["must", "must", "should", "must"]
+
+
+def test_checks_stay_when_the_rewrite_is_refused(tmp_path):
+    f = frame(spec={"focus": "x", "claims": [{"id": "c1", "text": "the envelope lies on the desk", "tier": "must"}]})
+    gw = FakeGateway(json.dumps({"n": 1, "ok": False, "faults": [4], "picture": "a cat",
+                                 "checks": {"c1": "a cat is visible in the picture"}}))
+    fp.check_chapter([f], gw, "m", str(tmp_path), HERO)
+    assert f["preflight"]["rejected"] and f["spec"]["claims"][0]["text"] == "the envelope lies on the desk"

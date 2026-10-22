@@ -235,3 +235,17 @@ def test_second_opinion_on_cuts_and_paper_tone(tmp_path):
     assert m["cut_paper_de"] > mq.CUT_PAPER_DE_MAX                      # кремовая -> жёлтая: видно
     same = mq.paper_tone_jumps(vid, [2.0], 24.0)
     assert same["cut_paper_de"] < 0.5                                  # жёлтая -> та же жёлтая: шум сжатия
+
+
+def test_a_prop_held_by_the_hero_is_not_a_licence_for_a_headless_torso():
+    """Эп.03 22.10: сумка под мышкой лежит в рамке героя, и её крупный план прошёл как «деталь тела» — 2.7 с
+    туловища без головы. Огонёк на кончике хвоста по-прежнему режет героя законно."""
+    busy, objs, ox = _scene()
+    SH, SW = busy.shape
+    bag = (230 + ox, 450, 400 + ox, 600)                     # в рамке героя, на туловище
+    tip = (205 + ox, 650, 245 + ox, 700)                     # кончик тела внизу слева — как огонёк хвоста
+    ok = shots.make_view_ok(busy, objs, camera.window(754, 424, 1508, SW, SH))
+    torso = camera.window(315 + ox, 560, 520, SW, SH)        # туловище целиком, голова выше окна
+    assert not ok(torso, bag, ink=False)
+    tail = camera.window(225 + ox, 700, 300, SW, SH)         # краешек тела вокруг кончика
+    assert ok(tail, tip, ink=False)

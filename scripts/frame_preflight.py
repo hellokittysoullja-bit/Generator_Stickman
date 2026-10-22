@@ -18,7 +18,11 @@
      описания с ошибкой. Переписанное принимается, только если прошло ту же
      проверку формы, что и ответ планировщика (validate_frame), сохранило
      предмет наезда и место мысли и не нарушает правил кода — иначе остаётся
-     прежнее описание с пометкой.
+     прежнее описание с пометкой. Вместе с описанием модель переписывает
+     проверки судьи (spec.claims), которых новый рисунок больше не показывает:
+     эп.03 22.10 — «второй кубик сталкивает первый» стал «кубик лежит под столом»,
+     а обязательное утверждение осталось глаголом, и судья ответил бы «нет»
+     годному кадру (статус weak, при IMAGE_ROUNDS=2 — платная перерисовка).
 
 Ответы модели кэшируются по содержимому вопроса (media_plan/frame_preflight_cache).
 Итог по кадру — поле "preflight" в плане: {"issues", "rewritten", "original"}."""
@@ -27,11 +31,12 @@ import json
 import os
 import re
 
-PREFLIGHT_VERSION = 6
+PREFLIGHT_VERSION = 7
 CACHE_DIR_NAME = "frame_preflight_cache"
 MAX_TOKENS = 12000      # модель рассуждает до ответа, сам ответ короткий
 EST_PROMPT_TOKENS = 2000
 MIN_WORDS, MAX_WORDS = 20, 90
+CHECK_MIN_WORDS, CHECK_MAX_WORDS = 3, 40
 
 BIG_RE = re.compile(r"\b(huge|giant|enormous|massive|large|big|oversized|fills? (?:the|most of the) (?:whole )?frame)\b",
                     re.I)
@@ -105,9 +110,11 @@ CHECKLIST = """You check picture descriptions written for an image model before 
 10. A second image idea stacked on the first (a heavy brain chained to a boulder that also has a burning fuse): keep the one that carries the line, drop the extra prop.
 Keep everything else unchanged: the meaning of the line, the framing, the objects listed in KEEP, 30-80 words, plain English, no words about drawing style. Never add anything to draw that the line does not need.
 
+CHECKS are what a judge will later verify on the finished picture. When you rewrite a description, also rewrite every check that your new description no longer shows (a motion you turned into a state, a figure or prop you removed, a place you changed) so that it states what the new picture shows, keeping its meaning; leave out the checks that are still true.
+
 For EVERY numbered frame answer one JSON object on its own line:
 {{"n": 1, "ok": true}}  — nothing to fix;
-{{"n": 2, "ok": false, "faults": [1, 7], "picture": "<the full rewritten description>"}}.
+{{"n": 2, "ok": false, "faults": [1, 7], "picture": "<the full rewritten description>", "checks": {{"c1": "<the rewritten check>"}}}}.
 No other text.
 
 Frames:
@@ -130,6 +137,9 @@ def chapter_prompt(frames, hero_text=None):
             lines.append(f"   KEEP BIG: {zoom}")
         if keep:
             lines.append("   KEEP (name exactly as written): " + "; ".join(keep))
+        checks = _checks(f)
+        if checks:
+            lines.append("   CHECKS: " + "; ".join(f"{c['id']}: {c['text']}" for c in checks))
         known = issues(f, hero_text)
         if known:
             lines.append("   Already found: " + ", ".join(known))
@@ -139,8 +149,17 @@ def chapter_prompt(frames, hero_text=None):
     return CHECKLIST.format(hero=hero, frames="\n\n".join(rows))
 
 
+def _checks(frame):
+    """Проверки судьи, которые предпроверка может переписать. Запрет фигур на кадре куклы — правило
+    кода (frame_planner.live_hero_pass), не формулировка модели: его модель не трогает."""
+    import frame_planner
+    return [c for c in ((frame.get("spec") or {}).get("claims") or [])
+            if c.get("id") and c.get("text") and c.get("id") != frame_planner.LIVE_NOFIG_ID]
+
+
 def parse(raw, count):
-    """{номер: (ok, faults, picture)} из строк JSON; мусор пропускается."""
+    """{номер: (ok, faults, picture, checks)} из строк JSON; мусор пропускается.
+    checks — {id проверки: новый текст}, только строки."""
     import frame_planner
     out = {}
     for obj in frame_planner.json_objects(raw or ""):
@@ -153,7 +172,9 @@ def parse(raw, count):
         ok = obj.get("ok") is True
         faults = [x for x in (obj.get("faults") or []) if isinstance(x, (int, str))][:9]
         pic = " ".join(str(obj.get("picture") or "").split())
-        out[n] = (ok, faults, pic)
+        raw_checks = obj.get("checks") if isinstance(obj.get("checks"), dict) else {}
+        checks = {str(k): " ".join(v.split()) for k, v in raw_checks.items() if isinstance(v, str) and v.strip()}
+        out[n] = (ok, faults, pic, checks)
     return out
 
 
@@ -219,7 +240,7 @@ def check_chapter(frames, gateway, model, cache_dir, hero_text=None):
     except Exception as e:  # noqa: BLE001 — без проверки кадр остаётся как спланирован
         stats["error"] = f"{type(e).__name__}: {e}"[:200]
         return stats
-    for n, (ok, faults, pic) in parse(raw, len(todo)).items():
+    for n, (ok, faults, pic, checks) in parse(raw, len(todo)).items():
         f = todo[n - 1]
         pf = f["preflight"]
         if ok or not pic:
@@ -233,7 +254,24 @@ def check_chapter(frames, gateway, model, cache_dir, hero_text=None):
         pf.update(rewritten=True, original=f["picture"], issues=issues(dict(f, picture=new), hero_text))
         f["picture"] = new
         stats["rewritten"] += 1
+        old_checks = rewrite_checks(f, checks)
+        if old_checks:
+            pf["checks_original"] = old_checks
     return stats
+
+
+def rewrite_checks(frame, checks):
+    """Переписать проверки судьи по ответу модели (на месте). Только известные id, только годной
+    длины, запрет фигур кадра куклы — никогда. Возвращает {id: прежний текст} переписанных."""
+    allowed = {c["id"]: c for c in _checks(frame)}
+    old = {}
+    for cid, text in checks.items():
+        c = allowed.get(cid)
+        if c is None or text == c["text"] or not CHECK_MIN_WORDS <= len(text.split()) <= CHECK_MAX_WORDS:
+            continue
+        old[cid] = c["text"]
+        c["text"] = text
+    return old
 
 
 def run(frames, gateway, model, cache_dir, hero_text=None, workers=4):

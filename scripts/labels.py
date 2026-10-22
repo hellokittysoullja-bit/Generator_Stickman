@@ -45,7 +45,7 @@ EDGE_VISUAL = 0.015   # там, где наезд не режет: текст в
 # от кадра к кадру. Меньше потолка — только если текст не влезает в место.
 SIZE_CAPTION = 0.075
 SIZE_DIAGRAM = 0.045
-LOCATE_VERSION = 1
+LOCATE_VERSION = 2       # 2: модель видит рисунок на квадрате (square_for_vision)
 # Версия вёрстки подписей: меняет готовый кадр, но не картинку модели —
 # входит в отпечаток кадра генератора, не в ключ кэша картинок (правка
 # вёрстки перекладывает подписи на уже оплаченные картинки бесплатно).
@@ -195,6 +195,27 @@ def _image_part(img, max_side=1024):
     return {"type": "image_url", "image_url": {"url": "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode()}}
 
 
+def square_for_vision(img):
+    """(квадратная картинка, перевод рамки из тысячных долей квадрата в пиксели исходника).
+    Рисунок встаёт посередине, поля — цвет его фона. Замер 22.10, эп.03 кадр 5 (3:2, список из 7 предметов,
+    DeepSeek vision): на исходнике 4 вызова из 4 отдали y в масштабе ширины — рамки сжаты к верху в 2/3,
+    IoU миски 0, камера сочла все детали мелкими, и кадр простоял 8.6 с одним планом; на квадрате те же
+    4 вызова — IoU миски 0.85-0.91, кота 0.94-0.96. На квадрате доли ширины и высоты совпадают."""
+    from PIL import Image
+    img = img.convert("RGB")
+    w, h = img.size
+    side = max(w, h)
+    ox, oy = (side - w) // 2, (side - h) // 2
+    sq = Image.new("RGB", (side, side), background_color(img))
+    sq.paste(img, (ox, oy))
+
+    def to_px(b):
+        x1, y1, x2, y2 = (v * side / 1000 for v in b)
+        return (min(w, max(0.0, x1 - ox)), min(h, max(0.0, y1 - oy)),
+                min(w, max(0.0, x2 - ox)), min(h, max(0.0, y2 - oy)))
+    return sq, to_px
+
+
 def parse_boxes(answer, n):
     m = re.search(r"\{.*\}", answer or "", re.S)
     if not m:
@@ -224,13 +245,15 @@ def locate(gateway, model, img, labels, picture, cache_path=None):
             pass
     items = "\n".join(f"{i}. «{lab}»" for i, lab in enumerate(labels, 1))
     text = LOCATE_PROMPT.format(n=len(labels), items=f"The picture: {picture}\nLabels:\n{items}")
-    answer, _u, _p = gateway.chat(model, [{"type": "text", "text": text}, _image_part(img)], 300, 1500, reasoning=False)
+    sq, to_px = square_for_vision(img)
+    answer, _u, _p = gateway.chat(model, [{"type": "text", "text": text}, _image_part(sq)], 300, 1500, reasoning=False)
     boxes = parse_boxes(answer, len(labels))
     if boxes is None:
         return None
+    px = {k: tuple(round(v) for v in to_px(b)) for k, b in boxes.items()}
     w, h = img.size
-    px = {k: (round(b[0] * w / 1000), round(b[1] * h / 1000), round(b[2] * w / 1000), round(b[3] * h / 1000))
-          for k, b in boxes.items()}
+    if any(b[2] - b[0] < 30 * w / 1000 or b[3] - b[1] < 20 * h / 1000 for b in px.values()):
+        return None                       # рамка на полях квадрата, а не на рисунке — места нет
     if cache_path:
         with open(cache_path, "w", encoding="utf-8") as f:
             json.dump(px, f)
@@ -254,6 +277,8 @@ def _inside_safe(box, w, h):
 MIN_FRAME_SIZE_SHARE = 0.6   # мельче — кадр в перерисовку, а не мелкий шрифт на экране
 GROW_STEP = 0.015      # шаг расширения тесной рамки, доля кадра
 GROW_MAX = (0.40, 0.25)   # рамка не шире 40% и не выше 25% кадра — подпись остаётся у своей стрелки
+SHED_KEEP = 0.55       # отступая от рисунка, рамка сохраняет не меньше этой доли ширины и высоты
+SHED_PAD = 0.005       # зазор между отступившей рамкой и рисунком, доля ширины кадра
 
 
 def _fitted_size(box, text, size_cap, h, pad=0.06):
@@ -299,6 +324,34 @@ def _grow(img, box, text, size_cap, others):
             x1, y1, x2, y2 = cand
             grew = True
     return (x1, y1, x2, y2)
+
+
+def _shed(img, box):
+    """Рамка, задевшая рисунок краем, отступает от него: из четырёх срезов «весь рисунок рамки остался по
+    ту сторону» берётся тот, что оставляет рамку больше. Живой кадр эп.03 22.10: модель со зрением
+    положила место под «СТАРАЯ МЫСЛЬ» на хвост стрелки, и схема ушла в полосу внизу — стрелки показывали в
+    пустоту. Рисунок посреди рамки (любой срез оставляет меньше SHED_KEEP ширины или высоты) — рамка как
+    есть: отказ решает проверка пустоты, как раньше."""
+    import numpy as np
+    if ink_share(img, box) <= MAX_INK_SHARE:
+        return box
+    pad = max(1, round(SHED_PAD * img.size[0]))
+    min_w, min_h = (box[2] - box[0]) * SHED_KEEP, (box[3] - box[1]) * SHED_KEEP
+    cur = box
+    for _ in range(4):
+        if ink_share(img, cur) <= MAX_INK_SHARE:
+            return cur
+        x1, y1, x2, y2 = cur
+        a = np.asarray(img.convert("RGB").crop(cur), dtype=np.int16)
+        med = np.median(a.reshape(-1, 3), axis=0)
+        ys, xs = np.nonzero(np.abs(a - med).sum(axis=2) > 90)        # тот же порог, что у ink_share
+        cands = [(x1 + int(xs.max()) + 1 + pad, y1, x2, y2), (x1, y1, x1 + int(xs.min()) - pad, y2),
+                 (x1, y1 + int(ys.max()) + 1 + pad, x2, y2), (x1, y1, x2, y1 + int(ys.min()) - pad)]
+        cands = [c for c in cands if c[2] - c[0] >= min_w and c[3] - c[1] >= min_h]
+        if not cands:
+            return box
+        cur = max(cands, key=lambda c: (c[2] - c[0]) * (c[3] - c[1]))
+    return cur if ink_share(img, cur) <= MAX_INK_SHARE else box
 
 
 def _overlap(a, b):
@@ -400,7 +453,7 @@ def compose(img_path, out_path, frame, gateway=None, model=None, cache_dir=None,
             if boxes is None:
                 return False, "модель не вернула рамки под подписи"
         cap = SIZE_CAPTION if frame.get("kind") == "caption" else SIZE_DIAGRAM
-        safe = {k: _inside_safe(boxes[k], w, h) for k in boxes}
+        safe = {k: _shed(img, _inside_safe(boxes[k], w, h)) for k in boxes}
         grown = {}
         for k in range(1, len(labels) + 1):
             others = [safe[j] for j in safe if j != k] + list(grown.values())

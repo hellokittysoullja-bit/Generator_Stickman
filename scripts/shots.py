@@ -36,6 +36,9 @@ HEAD_MAX_BOTTOM = 0.82  # голова героя в плане — целико
                         # подбородок на 0.98 и 1.03 высоты окна в среднем плане, лицо под плеером
 BODY_CROSS_MAX = 0.05   # окно захватывает больше этой доли ЧЕРНИЛ героя без головы в кадре — «обрубок» (эп.01: туловище без
                         # головы в правом верхнем углу плана конверта, 2.5 с)
+DETAIL_BODY_MAX = 0.25    # деталь в рамке героя (огонёк хвоста) режет героя законно, пока в окне не больше этой доли его
+                          # чернил: рамка героя включает и то, что он держит, — крупный план сумки под мышкой дал туловище
+                          # без головы на 2.7 с (эп.03 22.10, 0.59). Замер 29 планов эп.01-03: других таких нет
 DETAIL_TIGHT_FILL = 0.5   # деталь внутри головы режет голову вокруг себя, только если сама занимает не меньше половины кадра —
                           # осознанный макро-план (глаза), а не лицо со срезанным подбородком
 WRITE_LEAD_SEC = 0.3      # склейка перед письмом — не позже чем за столько до первого штриха
@@ -140,7 +143,9 @@ def make_view_ok(busy, objects, wide, text_boxes=()):
             elif camera.overlap_share(win, kb) > HEAD_SLIVER:
                 return False
         for hb in hero_boxes:
-            if db is not None and camera.inside(db, hb):
+            # деталь в голове (глаза) уже решена правилами головы выше; в теле — режет, пока окно не туловище
+            if db is not None and camera.inside(db, hb) and (any(camera.inside(db, kb) for kb in head_boxes)
+                                                             or hero_ink_share(win, hb) <= DETAIL_BODY_MAX):
                 continue
             if camera.inside(hb, win) or hero_ink_share(win, hb) <= BODY_CROSS_MAX:
                 continue

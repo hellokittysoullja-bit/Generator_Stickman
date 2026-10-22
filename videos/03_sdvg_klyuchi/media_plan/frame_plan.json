@@ -1,0 +1,270 @@
+{
+ "version": 15,
+ "model": "ds/deepseek-v4-flash",
+ "has_hero": true,
+ "frames": [
+  {
+   "index": 0,
+   "section": "HOOK",
+   "text": "Ключи были в руке минуту назад. А теперь ты перерыл всю квартиру и уже опаздываешь.",
+   "key": "db2217f384873943",
+   "spec": {
+    "focus": "keys gone, flat ransacked, and you are late",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a person kneeling among scattered belongings is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the person kneels on the floor with a sofa cushion held raised in one paw, the other paw at its forehead",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "a pulled-out drawer lies tipped on the floor with its contents spilled",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "a round clock face without numerals hangs on the wall",
+      "tier": "should"
+     }
+    ],
+    "subject": "a person"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character kneels on the floor in a ransacked hallway, one paw holding a sofa cushion raised up, the other paw pressed to its forehead; a pulled-out drawer lies tipped on the floor with its contents spilled around it; a round clock face without numerals hangs on the wall behind; the character kneels in the left half of the frame, plain light wall on the right",
+   "accent": "опаздываешь",
+   "details": [
+    "the pulled-out drawer on the floor",
+    "the round clock face without numerals",
+    "the lifted sofa cushion"
+   ],
+   "hero_state": "ember",
+   "hero_mood": "tired",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   },
+   "kept_drawn": true
+  },
+  {
+   "index": 1,
+   "section": "HOOK",
+   "text": "При СДВГ рабочая память часто похожа на маленький столик: новая мысль приходит и сталкивает с него старую.",
+   "key": "1caf0da80e0f8b91",
+   "spec": {
+    "focus": "working memory as a tiny table that gets cleared",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a small table with a cube on it is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "one cube sits on the tabletop at the edge and a second cube falls in mid-air below the edge",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the table is small with thin legs",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "the first cube falls in mid-air below the table edge",
+      "tier": "should"
+     }
+    ],
+    "subject": "a small table"
+   },
+   "kind": "diagram",
+   "hero": false,
+   "labels": [
+    "РАБОЧАЯ ПАМЯТЬ",
+    "НОВАЯ МЫСЛЬ",
+    "СТАРАЯ МЫСЛЬ"
+   ],
+   "picture": "hand-drawn diagram: a small round table with four thin legs in the middle of the frame; one dark cube sits on the tabletop pushed to its very edge; a second dark cube tips over that edge and hangs in mid-air just below it, two short motion lines beside it; three wide empty patches of plain background, each with a short hand-drawn arrow pointing at the table, at the cube on the tabletop and at the falling cube; plain light background",
+   "details": [
+    "the falling cube",
+    "the thin table legs"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   },
+   "kept_drawn": true
+  },
+  {
+   "index": 2,
+   "section": "HOOK",
+   "text": "Ты положил ключи, пока думал о сообщении, и мозг просто не записал, куда.",
+   "key": "7f81f14018aa951f",
+   "spec": {
+    "focus": "keys set down absent-mindedly while the mind is on a message",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a bunch of keys is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the bunch of keys lies alone on a shelf, away from the character",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the character holds a phone with a blank glowing screen and looks at it, not at the keys",
+      "tier": "must"
+     }
+    ],
+    "subject": "a bunch of keys"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the bunch of keys lies on a narrow wooden shelf on the wall in the left half of the frame, drawn large, plain light wall around it; the main character stands on the floor in the right half, one phone with a blank glowing screen held in both paws, eyes fixed on the phone, body turned away from the keys; a clear gap of plain wall between the keys and the character",
+   "zoom": {
+    "object": "the bunch of keys",
+    "word": "ключи"
+   },
+   "details": [
+    "the bunch of keys",
+    "the phone with a blank glowing screen"
+   ],
+   "hero_state": "ember",
+   "hero_mood": "calm",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   },
+   "kept_drawn": true
+  },
+  {
+   "index": 3,
+   "section": "HOOK",
+   "text": "Поэтому не тренируй память, а дай вещам постоянный дом: миска у двери, крючок для сумки.",
+   "key": "f01750fc79e753a3",
+   "spec": {
+    "focus": "a fixed home for things instead of memory training",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a small bowl on a shelf by the door is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "a hook on the wall holds a hanging cloth bag",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the main character points at the bowl and at the hook",
+      "tier": "should"
+     },
+     {
+      "id": "c3",
+      "text": "the front door is closed behind the shelf",
+      "tier": "should"
+     }
+    ],
+    "subject": "a bowl"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character stands in a hallway beside a low wooden shelf by the front door, one paw pointing at a small round bowl on the shelf, the other paw pointing at a hook on the wall where a cloth bag hangs; the closed front door behind; a calm empty patch of plain wall above the shelf; the character in the left half of the frame",
+   "key_thought": "постоянный дом",
+   "key_near": "the small round bowl",
+   "details": [
+    "the small round bowl",
+    "the hook with the hanging bag"
+   ],
+   "hero_state": "bright",
+   "hero_mood": "calm",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   },
+   "kept_drawn": true
+  },
+  {
+   "index": 4,
+   "section": "HOOK",
+   "text": "Вошёл — ключи сразу в миску, даже если руки заняты. Тогда искать не придётся: они лежат там, где живут.",
+   "key": "19cf995e21d84b9c",
+   "spec": {
+    "focus": "keys dropped straight into the bowl on arrival",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a bunch of keys is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the keys hang in mid-air just above the bowl, one paw held open above them",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "a cloth bag is tucked under the character's other arm",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "the character stands in the open doorway",
+      "tier": "should"
+     }
+    ],
+    "subject": "a bunch of keys"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character stands in the open doorway with a cloth bag tucked under one arm, one paw held open above a small round bowl on a low shelf by the door, the bunch of keys in mid-air just above the bowl; a relieved grin on its face; a calm empty patch of plain wall above the bowl; the character in the right half of the frame",
+   "key_thought": "где живут",
+   "key_near": "the small round bowl",
+   "details": [
+    "the bunch of keys above the bowl",
+    "the cloth bag under the arm"
+   ],
+   "hero_state": "golden",
+   "hero_mood": "relieved",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   },
+   "kept_drawn": true
+  }
+ ],
+ "stats": {
+  "planned": 5,
+  "fallback": 0,
+  "cached_chapters": 1,
+  "kept_drawn": 5,
+  "hero_trimmed": 0,
+  "hero_live": 0
+ },
+ "errors": {},
+ "preflight": {
+  "checked": 5,
+  "rewritten": 0,
+  "rejected": 0,
+  "cached_chapters": 0,
+  "errors": {}
+ }
+}

@@ -55,10 +55,10 @@ def test_busy_bottom_asks_the_vision_model_and_refuses_drawing_under_text(tmp_pa
             return json.dumps({"boxes": {"1": self.box}}), {}, 0
 
     ok, info = labels.compose(str(raw), str(tmp_path / "a.png"), {"kind": "caption", "labels": ["ЖИВ"]},
-                              VLM([100, 100, 600, 400]), "m")
+                              VLM([100, 275, 600, 444]), "m")      # тысячные доли квадрата 1920x1920
     assert ok and info[0]["box"][1] < 500                      # легла в пустое место сверху
     ok, why = labels.compose(str(raw), str(tmp_path / "b.png"), {"kind": "caption", "labels": ["ЖИВ"]},
-                             VLM([0, 800, 1000, 1000]), "m")
+                             VLM([0, 669, 1000, 781]), "m")
     assert not ok and "не пустое" in why                        # на рисунок — не ставим
 
 
@@ -90,3 +90,30 @@ def test_model_patch_under_a_label_is_flattened_but_the_rest_of_the_drawing_is_n
     assert np.abs(out[100, 1000] - bg).max() <= 1               # пятна нет
     assert tuple(out[500, 350]) == (250, 250, 248)              # экран не тронут
     assert tuple(out[100, 200]) == (30, 30, 30)                 # линия не тронута
+
+
+def test_place_that_touches_an_arrow_tail_steps_off_it_instead_of_failing(tmp_path):
+    """Эп.03 22.10: место под «СТАРАЯ МЫСЛЬ» модель положила на хвост стрелки — схема ушла в полосу, стрелки
+    показывали в пустоту. Рамка, задевшая рисунок краем, отступает от него; рисунок посреди — отказ, как был."""
+    raw = tmp_path / "arrow.png"
+    im = Image.new("RGB", (1531, 1027), (250, 250, 246))
+    d = ImageDraw.Draw(im)
+    d.line([(1100, 640), (1180, 720)], fill=(200, 30, 30), width=8)       # хвост стрелки у левого края места
+    d.line([(1290, 220), (1330, 340)], fill=(0, 0, 0), width=8)           # рисунок посреди второго места
+    im.save(raw)
+
+    class VLM:
+        def __init__(self, box):
+            self.box = box
+
+        def chat(self, *a, **k):
+            return json.dumps({"boxes": {"1": self.box}}), {}, 0
+
+    ok, info = labels.compose(str(raw), str(tmp_path / "a.png"), {"kind": "diagram", "labels": ["СТАРАЯ МЫСЛЬ"]},
+                              VLM([700, 567, 950, 634]), "m")      # доли квадрата 1531: (1072, 616)-(1454, 719) px
+    assert ok, info
+    x1, y1, x2, y2 = info[0]["box"]
+    assert x1 > 1100 and labels.ink_share(Image.open(raw).convert("RGB"), (x1, y1, x2, y2)) <= labels.MAX_INK_SHARE
+    ok, why = labels.compose(str(raw), str(tmp_path / "b.png"), {"kind": "diagram", "labels": ["СТАРАЯ МЫСЛЬ"]},
+                             VLM([784, 299, 927, 399]), "m")
+    assert not ok and "не пустое" in why
