@@ -511,6 +511,9 @@ def build(reel_dir, sheet=False, preview=False):
     hook_clock = spec.get("clock")
     if hook_clock:                                   # часы хука привязаны к словам: [фраза, слово]
         spec["clock"] = hook_clock = dict(hook_clock, t0=wt(*hook_clock["from_word"]), t1=wt(*hook_clock["to_word"]))
+        hook_clock["t_end"] = hook_clock["t1"] + 0.9
+        if hook_clock.get("hide_on_cut"):            # часы уходят вместе со своим планом, а не висят над следующим
+            hook_clock["t_end"] = min([s["t0"] for s in shots if s["t0"] > hook_clock["t1"]] + [hook_clock["t_end"]])
     vid = os.path.join(reel_dir, "reel_preview.mp4" if preview else "reel_video.mp4")
     fps = 15 if preview else FPS
     ff = subprocess.Popen(["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}",
@@ -711,7 +714,7 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
         arrow(base, e["p0"], e["p1"], (t - e["t"]) / 0.25)
 
     # часы хука: время «летит» 23:55 -> 03:12, на последнем слове встаёт с ударом
-    if hook_clock and t < hook_clock["t1"] + 0.9:
+    if hook_clock and t < hook_clock["t_end"]:
         t0c, t1c = hook_clock["t0"], hook_clock["t1"]
         u = min(1.0, max(0.0, (t - t0c) / (t1c - t0c)))
         m0, m1 = hook_clock["from_min"], hook_clock["to_min"]
@@ -721,8 +724,8 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
         landed = t >= t1c
         sc = 1.0 + (0.18 * (1 - ease_out((t - t1c) / 0.25)) if landed else 0.0)
         im = text_img(txt, font(FONT, 190), KEY if landed else WHITE, stroke=16, stroke_fill=INK)
-        if t < 0.25: sc *= 1 + 1.4 * (1 - ease_out(t / 0.25))          # влетает в кадр с ударом — перебивка ленты
-        over(base, im, W / 2, PH * 0.20, scale=sc)
+        if t < 0.25: sc *= 1 + 0.6 * (1 - ease_out(t / 0.25))   # влёт с ударом; при 2.4x первый кадр резал цифры
+        over(base, im, W / 2, PH * 0.27, scale=sc)   # ниже верхних 14% — там шапка Reels
 
     # субтитры: группа въезжает снизу, активное слово — по времени слова
     for c in caps:
