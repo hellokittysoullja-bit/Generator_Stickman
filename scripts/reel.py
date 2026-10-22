@@ -91,8 +91,22 @@ def tokens(beats):
 
 
 # ----------------------------------------------------------------------------- субтитры
+# служебные слова не заканчивают группу: «в / тетради», «не / открыл» читаются обрывком (StudioBinder: не рвать
+# синтаксические пары; предлог, частица, союз уходят в следующую группу вместе со своим словом)
+CLITICS = {"в", "во", "на", "с", "со", "к", "ко", "по", "о", "об", "от", "до", "из", "у", "за", "для", "при", "без",
+           "и", "а", "но", "не", "ни", "что", "как", "это", "то", "же", "ли", "бы", "его", "её", "их", "мой", "твой", "твоей"}
+CAP_CPS = 17.0         # знаков в секунду на группу — потолок чтения (StudioBinder: 17)
+CAP_MIN_SEC = 0.5      # группа на экране не меньше полсекунды
+
 def cap_text(w):
-    return clean(w).upper() if CAP_UPPER else clean(w)
+    """Слово для субтитра: без точек и запятых в конце (Pakalin: знаки препинания удешевляют субтитр);
+    «?», «!», «…» и тире остаются — они несут смысл."""
+    t = clean(w).rstrip(".,;:")
+    if t.endswith("»") and t[:-1].endswith((".", ",")): t = t[:-1].rstrip(".,") + "»"
+    return t.upper() if CAP_UPPER else t
+
+def bare(w):
+    return clean(w).strip("«»\"'.,:;!?…—- ").lower()
 
 def cap_font():
     return font(CAP_FONT, CAP_SIZE, CAP_AXES)
@@ -111,13 +125,18 @@ def chunks(words, times):
     out, cur = [], []
     def flush():
         if cur: out.append(list(cur)); cur.clear()
+    def flush_keep_clitic():                         # служебное слово в конце группы уходит в следующую
+        if len(cur) >= 2 and bare(words[cur[-1]]) in CLITICS:
+            last = cur.pop(); flush(); cur.append(last)
+        else:
+            flush()
     for i, w in enumerate(words):
         if w.startswith("|"): flush()
-        if cur and cap_width(cur + [i], words) > CAP_MAX_W: flush()
+        if cur and cap_width(cur + [i], words) > CAP_MAX_W: flush_keep_clitic()
         cur.append(i)
         end_punct = re.search(r"[.,:?!…—]»?\*?$", clean(w) + ("*" if w.endswith("*") else ""))
-        if len(cur) >= 3 or end_punct:
-            flush()
+        if end_punct: flush()
+        elif len(cur) >= 3: flush_keep_clitic()
     flush()
     res = []
     for k, c in enumerate(out):
@@ -346,6 +365,7 @@ SFX = {   # файл, где пик (с), громкость пика (dBFS) —
     "swoosh_deep": ("swoosh_deep_low.wav", 0.70, -8.0),  # большой переход, смена части ролика
     "oof": ("oof.mp3", 0.10, -9.0),                    # «провал» — смешная неудача героя
 }
+VOICE_SFX_TRIM_DB = -7.0   # с озвучкой (-14 LUFS) звуки на 7 дБ тише: свист -17, riser -14 — под голосом, не поверх
 _SFX = {}
 
 def sfx(name):
@@ -376,6 +396,28 @@ def build(reel_dir, sheet=False, preview=False):
     lead = spec.get("lead_in", 0.0)                  # перебивка до первого слова: сначала остановить, потом смысл (vidIQ)
     if lead:
         times = [dict(w, start=w["start"] + lead, end=w["end"] + lead) for w in times]
+    if not voiced:                                    # фраза ждёт пика звука: «Психолог…» встаёт на пик riser, пауза — нарастание
+        for bi, b in enumerate(beats):
+            if not b.get("after_sfx"): continue
+            src_bi, src_e = next((j, e) for j, bb in enumerate(beats) for e in bb.get("fx", [])
+                                 if e["kind"] == "sfx" and e["name"] == b["after_sfx"])
+            w = times[spans[src_bi][0] + src_e.get("at", 0)]
+            t_sfx = (w["end"] if src_e.get("after") else w["start"]) + src_e.get("dt", 0.0)
+            peak = t_sfx + (SFX[b["after_sfx"]][1] if src_e.get("align") == "start" else 0.0)
+            shift = peak - times[spans[bi][0]]["start"] + CUT_LEAD
+            if shift > 0:
+                times = times[:spans[bi][0]] + [dict(x, start=x["start"] + shift, end=x["end"] + shift) for x in times[spans[bi][0]:]]
+    if not voiced:                                    # немой рилс: темп — скорость чтения, а не диктора
+        for _ in range(3):
+            for c in chunks(words, times):
+                txt = " ".join(cap_text(words[j]) for j in c["idx"])
+                need = max(CAP_MIN_SEC, len(txt) / CAP_CPS)
+                k_next = c["idx"][-1] + 1
+                if k_next >= len(times): continue
+                have = times[k_next]["start"] - times[c["idx"][0]]["start"]
+                if have < need:
+                    d = need - have
+                    times = times[:k_next] + [dict(x, start=x["start"] + d, end=x["end"] + d) for x in times[k_next:]]
     total = times[-1]["end"] + spec.get("tail", 0.5)
 
     # кадрирования: у фразы shots=[{at: номер слова во фразе, ...}]; начало плана = начало слова - CUT_LEAD
@@ -427,7 +469,7 @@ def build(reel_dir, sheet=False, preview=False):
     ff.stdin.close(); ff.wait()
 
     wav = os.path.join(reel_dir, "reel_audio.wav")
-    mix_audio(wav, total, shots, events, spec)
+    mix_audio(wav, total, shots, events, spec, voiced)
     out = os.path.join(reel_dir, "reel_preview_av.mp4" if preview else "reel.mp4")
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", vid, "-i", wav, "-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
                     "-shortest", "-movflags", "+faststart", out], check=True)
@@ -598,7 +640,7 @@ def place(track, x, t, gain=1.0):
     m = min(len(x), len(track) - i)
     if m > 0: track[i:i + m] += x[:m] * gain
 
-def mix_audio(path, total, shots, events, spec):
+def mix_audio(path, total, shots, events, spec, voiced=False):
     """Звук рилса: хлёсткие склейки — swoosh пиком на склейку (J-cut звука: звук приходит раньше картинки),
     события фраз (sfx) — пиком на слово, riser — началом сразу после фразы-хука. Больше ничего."""
     n = int((total + 0.2) * SR); tr = np.zeros((n, 2), np.float32)
@@ -615,6 +657,7 @@ def mix_audio(path, total, shots, events, spec):
             put(sh["sound"], sh["t0"])
     for e in events:
         if e["kind"] == "sfx": put(e["name"], e["t"], e.get("align", "peak"))
+    if voiced: tr *= 10 ** (VOICE_SFX_TRIM_DB / 20)
     peak = float(np.abs(tr).max())
     if peak > 0.89: tr *= 0.89 / peak                 # наложение двух звуков не клипует: пик не выше -1 dBFS
     pcm = (np.clip(tr, -1, 1) * 32767).astype(np.int16)
