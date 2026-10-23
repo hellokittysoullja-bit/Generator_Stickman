@@ -413,12 +413,9 @@ def arrow(base, p0, p1, u, color=RED, th=12):
 # тики и музыка-заглушка звучали дёшево. Пик звука — момент, который должен совпасть со склейкой.
 SR = 48000
 SFX_DIR = os.path.join(ROOT, "assets", "sfx", "reels")
-SFX = {   # файл, где пик (с), громкость пика (dBFS) — без голоса звук не нормализуется, громкость задана тут
-    "riser": ("riser_metallic.mp3", 1.65, -7.0),       # интрига: стартует сразу после фразы-хука
-    "swoosh": ("swoosh.mp3", 0.35, -10.0),             # хлёсткий переход
-    "swoosh_deep": ("swoosh_deep_low.wav", 0.70, -8.0),  # большой переход, смена части ролика
-    "oof": ("oof.mp3", 0.10, -9.0),                    # «провал» — смешная неудача героя
-}
+# библиотека звуков владельца с описаниями «что значит и когда ставить» — assets/sfx/reels/library.json
+SFX_LIB = {k: v for k, v in json.load(open(os.path.join(SFX_DIR, "library.json"), encoding="utf8")).items() if not k.startswith("_")}
+SFX = {k: (v["file"], v["peak_sec"], v["level_db"]) for k, v in SFX_LIB.items()}   # файл, пик (с), громкость пика (dBFS)
 VOICE_SFX_TRIM_DB = -7.0   # с озвучкой (-14 LUFS) звуки на 7 дБ тише: свист -17, riser -14 — под голосом, не поверх
 _SFX = {}
 

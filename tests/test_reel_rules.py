@@ -27,9 +27,11 @@ def test_approved_ep02_reel_passes():
 
 
 def test_only_owner_sounds_and_no_music():
-    assert set(reel.SFX) == {"riser", "swoosh", "swoosh_deep", "oof"}
-    for f, _peak, _db in reel.SFX.values():
-        assert os.path.exists(os.path.join(reel.SFX_DIR, f))
+    assert {"riser", "swoosh", "swoosh_deep", "oof"} <= set(reel.SFX)
+    for name, v in reel.SFX_LIB.items():          # у каждого звука библиотеки — файл и описание «что значит, когда ставить»
+        assert os.path.exists(os.path.join(reel.SFX_DIR, v["file"])), name
+        for key in ("sound", "meaning", "use", "avoid", "peak_sec", "level_db"):
+            assert v.get(key) not in (None, ""), (name, key)
     assert broken(lambda s: s["beats"][3].setdefault("fx", []).append({"kind": "sfx", "name": "tick"}))
     assert broken(lambda s: s.__setitem__("music", "track.mp3"))
 
