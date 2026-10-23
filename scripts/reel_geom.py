@@ -22,6 +22,11 @@ SLIVER_MIN_PX = 250        # и обрывок заметен: ≥ 250 точе�
 HERO_BLOB_SHARE = 0.02     # большое пятно (кот вместе с мебелью): у него обрывком считаются и тонкие кончики усов —
 THIN_MIN_PX = 40           # от 40 точек (усы у края крупного плана таймера — 68, v14 и v15, найдено глазами 23.10)
 BLOB_MIN_SHARE = 0.004     # пятна меньше 0.4 % исходника (крошки, штрихи бумаги) не считаются предметами
+MACRO_FILL = 0.10          # пятно — главное в окне (самое крупное и ≥ 10 % окна): это крупный план части большой фигуры,
+                           # а не обрывок (рилс эп.01: искра на мозге, а мозг, цепь, глыба и кот — одно пятно, в окне 3 %
+                           # его, но 15 % окна). Калибровка 23.10: все 6 обрывков v12/v14 — не самые крупные и ≤ 1 % окна
+MACRO_SPAN = 0.5           # и видимая часть раскинута хотя бы на половину окна по обеим осям: сплошная полоса предмета у
+                           # края (тест: «кот» полосой 15 % ширины) — обрывок, даже если она самая крупная
 INK_GRAY = 165             # туша и тени рисунка темнее этого на кремовой бумаге
 DOLL_EDGE_PX = 4           # тушь куклы ближе 4 px к краю кадра — обрывок хвоста или усов
 OVERLAY_INK_SHARE = 0.03   # под рамкой надписи больше 3 % туши рисунка — надпись на рисунке
@@ -65,10 +70,16 @@ def cut_blobs(lab, area, rect):
     if X1 <= X0 or Y1 <= Y0:
         return []
     ids, cnt = np.unique(lab[Y0:Y1, X0:X1], return_counts=True)
+    win = (Y1 - Y0) * (X1 - X0)
+    top = max(((c, i) for i, c in zip(ids, cnt) if i), default=(0, 0))[1]
     out = []
     for i, c in zip(ids, cnt):
         if not i or area[i] <= BLOB_MIN_SHARE * total:
             continue
+        if i == top and c >= MACRO_FILL * win:        # главное в окне и раскинуто по нему (а не полоса у края)
+            ys, xs = np.nonzero(lab[Y0:Y1, X0:X1] == i)
+            if np.ptp(xs) >= MACRO_SPAN * (X1 - X0) and np.ptp(ys) >= MACRO_SPAN * (Y1 - Y0):
+                continue
         share = c / area[i]; big = area[i] > HERO_BLOB_SHARE * total
         if share < SLIVER_SHARE and c >= (THIN_MIN_PX if big else SLIVER_MIN_PX):
             out.append((int(i), int(c), share, False))

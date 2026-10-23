@@ -309,3 +309,65 @@ def test_geometry_catches_slivers_dolls_and_text_on_drawing(tmp_path):
     assert reel_geom.overlay_on_drawing(reel, str(d), ok, on_cat)
     on_paper = [dict(on_cat[0], y=150)]
     assert reel_geom.overlay_on_drawing(reel, str(d), ok, on_paper) == []
+
+
+def test_geometry_macro_of_big_figure_is_not_a_sliver(tmp_path):
+    """Рилс эп.01 (23.10): крупный план искры на мозге — мозг, цепь, глыба и кот одно пятно, в окне 3 % его. Это не обрывок,
+    если пятно главное в окне и раскинуто по нему; сплошная полоса того же пятна у края — по-прежнему обрывок."""
+    import numpy as np
+    from PIL import Image
+    import reel_geom
+    d = tmp_path / "reel"; (d / "src").mkdir(parents=True)
+    img = np.full((1600, 2400, 3), 245, np.uint8)
+    img[100:1500, 100:2300:6] = 30                      # огромная «фигура» штриховкой во весь рисунок
+    img[100:1500:6, 100:2300] = 30
+    Image.fromarray(img).save(d / "src" / "macro_c.png")
+    reel.layout({"beats": [], "picture_h": 1380})
+    macro = [dict(t0=0.0, t1=2.0, src="macro", kind="crop", **{"from": [600, 400, 200]})]   # окно целиком внутри фигуры
+    assert reel_geom.slivers(reel, str(d), macro) == []
+    reel_geom._INK.clear()
+
+
+def test_fill_windows_keeps_push_in_when_window_taller_than_drawing(tmp_path):
+    """Рилс эп.01: окна 710/666 выше рисунка сжимались к 530/528 — наезд пропадал, 9 % неподвижных кадров."""
+    import numpy as np
+    from PIL import Image
+    d = tmp_path / "reel"; (d / "src").mkdir(parents=True)
+    img = np.full((1600, 2400, 3), 245, np.uint8); img[400:1200, 600:1400] = 30   # рисунок 400 точек кадра в высоту
+    Image.fromarray(img).save(d / "src" / "short_c.png")
+    sp = {"beats": [{"text": "a", "shots": [{"src": "short", "from": [500, 400, 700], "to": [500, 400, 650]}]}]}
+    reel.fill_windows(str(d), sp)
+    s = sp["beats"][0]["shots"][0]
+    assert s["to"][2] / s["from"][2] < 0.95                  # наезд сохранён
+    assert s["from"][2] <= 400 * 1.05
+
+
+def test_load_src_cache_is_per_reel(tmp_path):
+    import numpy as np
+    from PIL import Image
+    for k, v in (("a", 10), ("b", 200)):
+        (tmp_path / k / "src").mkdir(parents=True)
+        Image.fromarray(np.full((8, 8, 3), v, np.uint8)).save(tmp_path / k / "src" / "f1_c.png")
+    assert reel.load_src(str(tmp_path / "a"), "f1")[0, 0, 0] == 10
+    assert reel.load_src(str(tmp_path / "b"), "f1")[0, 0, 0] == 200
+
+
+def test_draft_reads_own_drawings_of_the_reel(tmp_path):
+    import reel_draft
+    p = tmp_path / "reel_script.txt"
+    p.write_text("@f6 = gen/r1_phone.png\nТри дня. *Письмо*.  @f1\nОткрываешь почту.  @f6\n", encoding="utf8")
+    extra = {}
+    beats = reel_draft.parse(str(p), extra)
+    assert extra == {"f6": "gen/r1_phone.png"} and [b["src"] for b in beats] == ["f1", "f6"]
+
+
+def test_cover_opens_counters_filled_by_outline():
+    """Обложка эп.01: обводка залила просветы «в» двумя чёрными точками."""
+    import numpy as np
+    from PIL import Image
+    import reel_publish
+    a = np.zeros((60, 60, 4), np.uint8)
+    a[10:50, 10:50] = (255, 255, 255, 255)                  # белая буква
+    a[25:35, 25:35] = (0, 0, 0, 255)                        # просвет, целиком залитый обводкой
+    out = np.asarray(reel_publish.open_counters(Image.fromarray(a)))
+    assert out[30, 30, 3] == 0 and out[15, 15, 3] == 255

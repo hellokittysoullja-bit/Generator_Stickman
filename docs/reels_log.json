@@ -51,5 +51,90 @@
     "site_visits_utm": null
    }
   }
+ },
+ {
+  "reel": "videos/01_sdvg_pismo/reel",
+  "version": "v1",
+  "date": "2026-10-23",
+  "status": "кандидат (ждёт владельца)",
+  "first_words": "3 дня",
+  "hook_type": "число",
+  "structure": "число-контраст (3 дня / 5 минут) → бытовая сцена → открытая петля «хитрость на две минуты» → механизм (стыд липнет) → авторитет по имени → интерес против важности картинкой → смешной провал с телефоном → ре-хук → приём без сайта → продолжение само → честный предел → пересылка → петля",
+  "devices": [
+   "число-контраст в хуке",
+   "кольцо следов вокруг письма",
+   "открытая петля с обещанием приёма",
+   "письмо в кляксах",
+   "искра против глыбы",
+   "авторитет по имени",
+   "провал с телефоном",
+   "немая пауза перед провалом",
+   "oof на провале",
+   "свой рисунок под фразу",
+   "песочные часы двух минут",
+   "огонёк разгорается",
+   "живая кукла",
+   "честный предел продукта",
+   "приём без сайта до призыва",
+   "петля на рисунок начала"
+  ],
+  "published": null,
+  "after_publish": {
+   "note": "вписывает владелец вручную из статистики Instagram; эталон меняется по этим числам, а не только по reel_metrics",
+   "24h": {
+    "views": null,
+    "skip_rate_3s": null,
+    "avg_watch_s": null,
+    "likes_per_reach": null,
+    "shares_per_reach": null,
+    "non_follower_share": null,
+    "site_visits_utm": null
+   },
+   "7d": {
+    "views": null,
+    "skip_rate_3s": null,
+    "avg_watch_s": null,
+    "likes_per_reach": null,
+    "shares_per_reach": null,
+    "non_follower_share": null,
+    "site_visits_utm": null
+   }
+  },
+  "own_drawings": {
+   "count": 2,
+   "model": "cx/gpt-image-2 medium 1536x1024",
+   "spent": 281250,
+   "files": [
+    "videos/01_sdvg_pismo/reel/gen/r1_phone.png",
+    "videos/01_sdvg_pismo/reel/gen/r2_hourglass.png"
+   ]
+  },
+  "metrics_vs_reference": {
+   "frozen_share": [
+    0.001,
+    0.004
+   ],
+   "sharpness": [
+    1721.2,
+    2398.9
+   ],
+   "edge_p95": [
+    164.5,
+    170.4
+   ],
+   "ink_share": [
+    0.196,
+    0.316
+   ],
+   "longest_silence_s": [
+    3.8,
+    4.3
+   ],
+   "length_s": [
+    41.6,
+    46.3
+   ],
+   "cta_s": "≈34.6"
+  }
  }
 ]

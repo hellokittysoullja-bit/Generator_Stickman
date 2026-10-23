@@ -9,6 +9,8 @@
 
 `*слово*` — ключевое (оранжевое, на нём наезд), `|` — разрыв группы субтитров, `@fN` — какой кадр эпизода под
 фразой (без метки — тот же, что у прошлой фразы). Кадры эпизода берутся из `../frames/00N.png` как f1, f2, ...
+Свои рисунки рилса (дорисованные под фразы, чтобы рилс не был нарезкой одних и тех же кадров эпизода) — строкой
+`@f6 = gen/r1_phone.png` (путь от папки рилса).
 
 Программа делает всё механическое, что раньше писалось руками и тратило токены, — по правилам reel_rules:
 riser с нулевой секунды и раскрытие на его пике; окна кадрирования по пятнам туши на рисунке (общий план → крупнее →
@@ -37,11 +39,15 @@ SHOT_SPLIT_SEC = 2.8       # фраза длиннее — второй план
 PUNCH_EVERY = 2            # наезд на ключевом слове — через фразу, а не на каждой (акцент на всём = ни на чём)
 
 
-def parse(path):
+def parse(path, extra=None):
     beats = []
     for line in open(path, encoding="utf8"):
         line = line.strip()
         if not line or line.startswith("#"): continue
+        m = re.match(r"@(f\d+)\s*=\s*(\S+)$", line)
+        if m:                                           # свой рисунок рилса: @f6 = gen/r1_phone.png
+            if extra is not None: extra[m.group(1)] = m.group(2)
+            continue
         m = re.search(r"\s@(f\d+)\s*$", line)
         src = m.group(1) if m else None
         text = line[:m.start()].strip() if m else line
@@ -98,9 +104,10 @@ def ink_views(img):
 
 
 def draft(reel_dir):
-    lines = parse(os.path.join(reel_dir, "reel_script.txt"))
+    extra = {}
+    lines = parse(os.path.join(reel_dir, "reel_script.txt"), extra)
     srcs = sorted({b["src"] for b in lines}, key=lambda s: int(s[1:]))
-    sources = {s: {"frame": f"../frames/{int(s[1:]):03d}.png"} for s in srcs}
+    sources = {s: {"frame": extra.get(s, f"../frames/{int(s[1:]):03d}.png")} for s in srcs}
     reel.prepare_src(reel_dir, sources)
     views = {s: ink_views(reel.load_src(reel_dir, s)) for s in srcs}
     used = {s: 0 for s in srcs}
@@ -116,7 +123,7 @@ def draft(reel_dir):
         v = next_view(b["src"])
         shot = {"at": 0, "src": b["src"], "from": v, "to": [v[0], v[1], round(v[2] * 0.94, 1)]}
         if b["src"] != prev_src and bi > 0: shot["zoom_in"] = 0.3
-        elif bi > 0: shot["whip"] = [-560 if bi % 2 else 560, 0]
+        elif bi > 0: shot["whip"] = [-560, 0]           # одна сторона хлёста на ролик (правило 180°, check_spec)
         shots = [shot]
         if dur > SHOT_SPLIT_SEC and n > 3:
             v2 = next_view(b["src"])

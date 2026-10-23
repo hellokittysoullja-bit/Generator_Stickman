@@ -200,10 +200,11 @@ def ease_io(u):
 # ----------------------------------------------------------------------------- картинка
 _SRC = {}
 def load_src(reel_dir, name):
-    if name not in _SRC:
+    key = (os.path.abspath(reel_dir), name)          # не только имя: f3 двух рилсов в одном процессе — разные рисунки
+    if key not in _SRC:
         p = os.path.join(reel_dir, "src", name + "_c.png")
-        _SRC[name] = np.asarray(Image.open(p).convert("RGB"))
-    return _SRC[name]
+        _SRC[key] = np.asarray(Image.open(p).convert("RGB"))
+    return _SRC[key]
 
 def paper_tex(seed=5):
     """Фактура бумаги ±2.5%: тот же крем, что у длинных роликов, но не мёртвая заливка."""
@@ -520,6 +521,11 @@ def fill_windows(reel_dir, spec):
         for s in b["shots"]:
             if "src" not in s or s.get("kind") in ("fit", "stack", "doll"): continue
             top, bot = ink_rows(reel_dir, s["src"])
+            hs = [s[k][2] for k in ("from", "to") if k in s]
+            cap = (bot - top) * 1.04                    # окно выше рисунка: from и to сжимались к одной высоте и план стоял
+            if max(hs) > cap:                           # (рилс эп.01: 710/666 -> 530/528, 9 % неподвижных кадров) — сжать
+                for k in ("from", "to"):                # пару одним множителем, наезд сохраняется
+                    if k in s: s[k] = [s[k][0], s[k][1], s[k][2] * cap / max(hs)]
             for key in ("from", "to"):
                 if key not in s: continue
                 cx, cy, h = s[key]; pad = 0.02 * h

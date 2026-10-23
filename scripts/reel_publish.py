@@ -34,6 +34,22 @@ def utm_link(brand, reel_dir, version):
     return f"{base}{'&' if '?' in base else '?'}{q}"
 
 
+def open_counters(t):
+    """Обводка жирного шрифта заливает узкие внутренние просветы букв («в» в «висит» — две чёрные точки, обложка эп.01).
+    Просвет, залитый обводкой целиком (внутри белой буквы, без прозрачных точек), снова делается прозрачным; просвет, где
+    обводка оставила дырку («о», «е» на обложке v15), не трогается — обложка эталона та же байт в байт."""
+    import cv2
+    a = np.asarray(t).copy()
+    fill = (a[..., 3] > 128) & (a[..., :3].min(axis=2) > 200)
+    n, lab = cv2.connectedComponents((~fill).astype(np.uint8), connectivity=4)
+    edge = set(np.unique(np.r_[lab[0], lab[-1], lab[:, 0], lab[:, -1]]))
+    for i in range(1, n):
+        if i in edge: continue
+        m = lab == i
+        if a[..., 3][m].min() > 200: a[..., 3][m] = 0
+    return Image.fromarray(a)
+
+
 def cover(reel_dir, text, out):
     """Первый кадр рилса без субтитра (полоса закрыта бумагой) + текст обложки шрифтом субтитров в зоне сетки."""
     video = os.path.join(reel_dir, "reel.mp4")
@@ -46,8 +62,13 @@ def cover(reel_dir, text, out):
     ph = rep.get("picture_h", 1380)
     a[ph:] = a[ph - 3:ph - 1].mean(axis=(0, 1)).astype(np.uint8)
     im = Image.fromarray(a).convert("RGBA")
-    f = reel.font(reel.CAP_FONT, 130, reel.CAP_AXES, raqm=True)
-    t = reel.text_img(text, f, reel.WHITE, stroke=9, stroke_fill=(0, 0, 0), pad=20)
+    size = 130
+    while True:                                    # текст в ширину кадра с боковыми зонами (рилс эп.01: «Письмо висит 3 дня»
+        f = reel.font(reel.CAP_FONT, size, reel.CAP_AXES, raqm=True)       # на 130 вылез за оба края)
+        t = reel.text_img(text, f, reel.WHITE, stroke=9, stroke_fill=(0, 0, 0), pad=20)
+        if t.width <= 1080 - 2 * reel_rules.SAFE_SIDE or size <= 70: break
+        size -= 6
+    t = open_counters(t)
     y = min(ph + 40, GRID_Y1 - t.height - 20)
     im.alpha_composite(t, ((1080 - t.width) // 2, y))
     im.convert("RGB").save(out, quality=92)
