@@ -659,6 +659,11 @@
        "name": "happy"
       },
       {
+       "t": 0.0,
+       "do": "flame",
+       "state": "bright"
+      },
+      {
        "t": 1.4,
        "do": "flame",
        "state": "golden"
