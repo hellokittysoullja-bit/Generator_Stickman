@@ -828,7 +828,7 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
         elif kind == "doll":
             td = math.floor((t - s["doll_t0"]) * DOLL_FPS) / DOLL_FPS + DOLL_LIFE_PHASE              # кукла «на двойках»
             rgba = doll_frame(td, total - s["doll_t0"] + DOLL_LIFE_PHASE + 0.5, s["doll_acts"])
-            base = paste_doll(base, rgba, W / 2 + shake[0], s.get("cy", PH * 0.55) + shake[1], s.get("h", 900) * zs)
+            base = paste_doll(base, rgba, s.get("cx", W / 2) + shake[0], s.get("cy", PH * 0.55) + shake[1], s.get("h", 900) * zs)
     base = np.ascontiguousarray(boil(base, t)) if kind in ("fit", "stack") else np.ascontiguousarray(base)
     for e in events:                                # прожектор: всё, кроме главного, темнеет до 25% (Golden «darken all but focus»)
         if e["kind"] == "spot" and s["t0"] <= e["t"] <= t < s["t1"]:
