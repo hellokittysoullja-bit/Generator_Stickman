@@ -228,3 +228,13 @@ def test_writing_budget_and_arc():                              # план 04 п
     assert any("разрядки" in w for w in reel_rules.warnings(two_r, [], 40.0))
     ends_minus = {"beats": [dict(text="a", arc="t", charge="+"), dict(text="b", arc="r", charge="-")]}
     assert any("кончается" in w for w in reel_rules.warnings(ends_minus, [], 40.0))
+
+
+def test_new_look_flags_draw_only_when_on():                    # план 04 п.1.20–1.22: по флагу, по умолчанию выключено
+    import numpy as np
+    a = np.full((400, 600, 3), 245, np.uint8); b = a.copy(); c = a.copy()
+    reel.arrow(a, (500, 50), (100, 350), 1.0)
+    reel.arrow(b, (500, 50), (100, 350), 1.0, dash_t=0.3, u_head=1.0)
+    assert (a < 200).sum() > (b < 200).sum() > 0                 # пунктир — меньше туши, но стрелка есть
+    reel.pen_tip(c, 300, 200, 200)
+    assert (c < 120).sum() > 0 and not ((c[..., 0].astype(int) - c[..., 2].astype(int)) > 30).any()   # серый, не тёплый

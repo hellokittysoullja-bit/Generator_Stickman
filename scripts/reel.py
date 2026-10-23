@@ -420,17 +420,42 @@ def ring_lines(base, cx, cy, r, t, color=INK):
         cv2.line(base, p0, p1, color, 9, cv2.LINE_AA)
     return base
 
-def arrow(base, p0, p1, u, color=RED, th=12):
-    """Рисованная стрелка, растёт по u (0..1)."""
+def arrow(base, p0, p1, u, color=RED, th=12, dash_t=None, u_head=None):
+    """Рисованная стрелка, растёт по u (0..1). dash_t — бегущий пунктир (сцена не замирает, п.1.22): фаза 120 px/с;
+    u_head — головка дорисовывается своим временем (на 2–3 кадра позже древка, вторичное движение)."""
     u = ease_out(u)
     if u <= 0: return base
     x = p0[0] + (p1[0] - p0[0]) * u; y = p0[1] + (p1[1] - p0[1]) * u
-    cv2.line(base, (int(p0[0]), int(p0[1])), (int(x), int(y)), color, th, cv2.LINE_AA)
-    if u > 0.85:
+    if dash_t is None:
+        cv2.line(base, (int(p0[0]), int(p0[1])), (int(x), int(y)), color, th, cv2.LINE_AA)
+    else:
+        L = math.hypot(x - p0[0], y - p0[1]); dx, dy = (x - p0[0]) / max(L, 1e-6), (y - p0[1]) / max(L, 1e-6)
+        d0 = -((dash_t * 120.0) % 56.0)
+        while d0 < L:
+            a0, a1 = max(0.0, d0), min(L, d0 + 34.0)
+            if a1 > a0:
+                cv2.line(base, (int(p0[0] + dx * a0), int(p0[1] + dy * a0)), (int(p0[0] + dx * a1), int(p0[1] + dy * a1)),
+                         color, th, cv2.LINE_AA)
+            d0 += 56.0
+    if (u if u_head is None else ease_out(u_head)) > 0.85:
         ang = math.atan2(p1[1] - p0[1], p1[0] - p0[0])
         for s in (-1, 1):
             a2 = ang + math.pi + s * 0.5
             cv2.line(base, (int(x), int(y)), (int(x + 48 * math.cos(a2)), int(y + 48 * math.sin(a2))), color, th, cv2.LINE_AA)
+    return base
+
+
+def pen_tip(base, x, y, h):
+    """Кончик карандаша у головы штриха: графитовый грифель и серый корпус под 35°, тень — ничего тёплого."""
+    k = h / 200.0; ang = math.radians(-35)
+    tip = np.array([x, y]); d = np.array([math.cos(ang), math.sin(ang)])
+    n = np.array([-d[1], d[0]])
+    cone = tip + d * 46 * k; end = tip + d * 260 * k
+    body = np.array([cone + n * 15 * k, end + n * 15 * k, end - n * 15 * k, cone - n * 15 * k], np.int32)
+    cv2.fillConvexPoly(base, body, (92, 92, 98), cv2.LINE_AA)
+    cv2.fillConvexPoly(base, np.array([tip, cone + n * 15 * k, cone - n * 15 * k], np.int32), (200, 200, 200), cv2.LINE_AA)
+    cv2.fillConvexPoly(base, np.array([tip, tip + d * 16 * k + n * 5 * k, tip + d * 16 * k - n * 5 * k], np.int32),
+                       (40, 40, 44), cv2.LINE_AA)
     return base
 
 
@@ -831,7 +856,11 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
         elif kind == "doll":
             td = math.floor((t - s["doll_t0"]) * DOLL_FPS) / DOLL_FPS + DOLL_LIFE_PHASE              # кукла «на двойках»
             rgba = doll_frame(td, total - s["doll_t0"] + DOLL_LIFE_PHASE + 0.5, s["doll_acts"])
-            base = paste_doll(base, rgba, s.get("cx", W / 2) + shake[0], s.get("cy", PH * 0.55) + shake[1], s.get("h", 900) * zs)
+            ey = 0.0
+            if s.get("enter", {}).get("kind") == "drop":   # кукла падает на пол с отскоком (п.1.20), а не возникает
+                eu = (t - s["t0"]) / s["enter"].get("dur", 0.5)
+                ey = -(1.0 - ease_out_back(eu, s=1.7)) * PH * 0.22 if eu < 1.0 else 0.0
+            base = paste_doll(base, rgba, s.get("cx", W / 2) + shake[0], s.get("cy", PH * 0.55) + shake[1] + ey, s.get("h", 900) * zs)
     base = np.ascontiguousarray(boil(base, t)) if kind in ("fit", "stack") else np.ascontiguousarray(base)
     for e in events:                                # прожектор: всё, кроме главного, темнеет до 25% (Golden «darken all but focus»)
         if e["kind"] == "spot" and s["t0"] <= e["t"] <= t < s["t1"]:
@@ -863,7 +892,11 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
                     ev = e["_anchor"][id(s)] = ((e["x"] - W / 2) * vh / PH + vx, (e["y"] - PH / 2) * vh / PH + vy, vh)
                 vx, vy, vh = view; k = PH / vh
                 x, y, sc = (ev[0] - vx) * k + W / 2 + shake[0], (ev[1] - vy) * k + PH / 2 + shake[1], ev[2] / vh
+            if e.get("pop"):                         # пружина появления 70 → 110 → 100 % за ~12 кадров (п.1.22)
+                sc *= 0.7 + 0.3 * ease_out_back((t - e["t"]) / 0.4, s=4.0)
             over(base, im, x, y, wipe=min(1.0, u * 1.05), scale=sc)
+            if e.get("pen") and 0.0 < u * 1.05 < 1.0:  # карандаш виден, пока пишет (п.1.21): графит, не тёплое дерево
+                pen_tip(base, x - im.width * sc / 2 + im.width * sc * u * 1.05, y + im.height * sc * 0.18, im.height * sc)
         elif e["kind"] == "arrow":
             arrows.append(e)
         elif e["kind"] == "ring" and t - e["t"] < e.get("dur", 1.0) and view is not None:
@@ -894,8 +927,10 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
                     pts = [(0, y0 + 6)] + [(x_, y0 + int(3 * math.sin(x_ * 0.05))) for x_ in range(0, mw, 12)] + \
                           [(mw, y0 + 4), (mw, y0 + mh), (0, y0 + mh - 4)]
                     dm.polygon(pts, fill=(255, 205, 50, 200))
+                    if e.get("soft"): mk = mk.filter(ImageFilter.GaussianBlur(6))   # мягкий край маркера ~15 px (п.1.22)
                     over(base, mk.rotate(-2, resample=Image.BICUBIC, expand=False), e["x"], e["y"])
-            over(base, im, e["x"], e["y"], wipe=min(1.0, max(0.0, (t - e["t"] - 0.15) / 0.45)))
+            msc = 0.7 + 0.3 * ease_out_back((t - e["t"]) / 0.4, s=4.0) if e.get("pop") else 1.0
+            over(base, im, e["x"], e["y"], wipe=min(1.0, max(0.0, (t - e["t"] - 0.15) / 0.45)), scale=msc)
         elif e["kind"] == "circle":                 # VOX: красный круг рисуется от руки по контуру, открытый на конце
             u = ease_out((t - e["t"]) / 0.45)
             if view is not None:
@@ -925,7 +960,10 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
     base[PH - f_:PH] = (pic[PH - f_:].astype(np.float32) * a_ + base[PH - f_:PH].astype(np.float32) * (1 - a_)).astype(np.uint8)
     base = grain(base, t)
     for e in arrows:
-        arrow(base, e["p0"], e["p1"], (t - e["t"]) / 0.25)
+        if e.get("dash"):
+            arrow(base, e["p0"], e["p1"], (t - e["t"]) / 0.25, dash_t=t - e["t"], u_head=(t - e["t"] - 0.08) / 0.25)
+        else:
+            arrow(base, e["p0"], e["p1"], (t - e["t"]) / 0.25)
 
     # часы хука: время «летит» 23:55 -> 03:12, на последнем слове встаёт с ударом
     if hook_clock and t < hook_clock["t_end"]:
