@@ -30,6 +30,7 @@ MAX_SRC_CHANGES_30S = 10   # смен рисунка за любые 30 с (Lang
 CAP_HOLD_PAD = 0.6         # субтитр стоит не дольше чтения + 0.6 с (Szarkowska 2018, Stern 2024), v12 — максимум +0.47
 CTA_BEFORE_END = 5.0       # призыв начинается не позже чем за 5 с до конца (финал — зона ухода: Dashlet, NSDI 2023)
 LATE_ZONE, LATE_SHOT_SEC = 0.8, 2.0   # гипотеза: в последних 20 % планы ≤ 2 с (предупреждение, не запрет)
+ONE_MOTION_SEC = 0.2       # гипотеза: старты движений (наезд, хлёст, пометка, жест куклы) не ближе 0.2 с
 PUNCH_MIN_GAP = 3.0        # гипотеза: наезды ближе 3 с обесценивают друг друга (Дмитрык: лишние крупные ослабляют следующие)
 LONG_WORD_SYLLABLES = 4    # в первых трёх фразах слова не длиннее 4 слогов (тест незнакомца; предупреждение)
 # Безопасные зоны экрана 1080×1920 (Meta/Restream): верх 14 % — шапка Reels, низ 400 px — подпись и кнопки, бока 70 px,
@@ -192,6 +193,39 @@ def check_timeline(shots, events, sfx_peaks, caps=None, total=None):
     return err
 
 
+SOUND_MAX = {"swoosh_deep": 3, "oof": 2, "riser": 2}   # «появление важного» и «провал» обесцениваются повтором
+SOUND_REPEAT_SEC = 4.0     # один и тот же звук не ближе 4 с (кроме swoosh на хлёсте и тихих свистов наезда)
+SOUND_DENSE_WIN, SOUND_DENSE_MAX = 0.5, 2   # не больше двух звуков в 0.5 с (Мёрч, «2,5 слоя»): предупреждение
+
+
+def check_sounds(plan):
+    """Звуки по reel.sound_plan: лимиты повторов (library.json, поле avoid) и одинаковые звуки подряд."""
+    err = []
+    for name, mx in SOUND_MAX.items():
+        n = sum(p["name"] == name for p in plan)
+        if n > mx:
+            err.append(f"звук «{name}» {n} раз > {mx}: повтор обесценивает смысл звука (library.json, avoid)")
+    loud = [p for p in plan if not p.get("soft")]
+    by = {}
+    for p in loud:
+        by.setdefault(p["name"], []).append(p)
+    for name, ps in by.items():
+        ps = sorted(ps, key=lambda p: p["peak"])
+        for a, b in zip(ps, ps[1:]):
+            if b["peak"] - a["peak"] < SOUND_REPEAT_SEC and not (name == "swoosh" and (a.get("whip") or b.get("whip"))):
+                err.append(f"«{name}» на {a['peak']:.2f} и {b['peak']:.2f} с — ближе {SOUND_REPEAT_SEC} с: повтор слышен")
+    return err
+
+
+def sound_warnings(plan):
+    pk = sorted(p["peak"] for p in plan)
+    for i, t in enumerate(pk):
+        n = sum(t <= q < t + SOUND_DENSE_WIN for q in pk[i:])
+        if n > SOUND_DENSE_MAX:
+            return [f"{n} звука за {SOUND_DENSE_WIN} с с {t:.2f} с — звук спорит с текстом, разведите"]
+    return []
+
+
 def check_overlays(boxes):
     """Рукописные надписи и маркер (boxes — [(фраза, текст, x0, y0, x1, y1)] по туши, в пикселях экрана 1080×1920)
     целиком в безопасной зоне: не под шапкой Reels, не под подписью, не у края и не под колонкой кнопок."""
@@ -224,6 +258,14 @@ def syllables(w):
 def warnings(spec, shots, total, events=()):
     """Гипотезы без доказанного порога — печатаются, рендер не останавливают."""
     out = []
+    starts = [(e["t"], e["kind"]) for e in events if e.get("kind") in ("punch", "write", "mark", "circle", "arrow")]
+    starts += [(s["t0"], "вход наездом" if s.get("zoom_in") else "хлёст") for s in shots[1:] if s.get("zoom_in") or s.get("whip")]
+    starts += [(s["t0"] + a["t"], "жест куклы") for s in shots if s.get("kind") == "doll"
+               for a in s.get("actions", []) if a.get("do") in ("tilt", "look", "pose", "paw")]
+    starts.sort()
+    for (t1, k1), (t2, k2) in zip(starts, starts[1:]):    # Mital, Smith, Henderson: держит одно движущееся
+        if t2 - t1 < ONE_MOTION_SEC:
+            out.append(f"{k1} {t1:.2f} и {k2} {t2:.2f} с — два движения сразу: разведите на {ONE_MOTION_SEC} с")
     pt = sorted(e["t"] for e in events if e.get("kind") == "punch")
     for a, b in zip(pt, pt[1:]):
         if b - a < PUNCH_MIN_GAP:

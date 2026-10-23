@@ -196,3 +196,23 @@ def test_thirty_degree_rule():                                  # план 04 п
     assert any("почти одинаковы" in e for e in reel_rules.check_timeline([a, b], riser, peaks))
     assert not any("почти одинаковы" in e for e in reel_rules.check_timeline([a, dict(b, jump=True)], riser, peaks))
     assert not any("почти одинаковы" in e for e in reel_rules.check_timeline([a, dict(b, **{"from": [1031, 440, 480]})], riser, peaks))
+
+
+def test_sound_limits_and_one_motion():                         # план 04 п.1.11, 1.13
+    def p(name, t, **k):
+        return dict(name=name, t=t, peak=t, **k)
+    assert reel_rules.check_sounds([p("riser", 1.65), p("swoosh_deep", 12.0), p("oof", 25.0), p("swoosh", 40.0)]) == []
+    assert reel_rules.check_sounds([p("oof", 10.0), p("oof", 20.0), p("oof", 30.0)])             # провал трижды
+    assert reel_rules.check_sounds([p("swoosh_deep", 10.0), p("swoosh_deep", 12.5)])              # повтор через 2.5 с
+    assert reel_rules.check_sounds([p("swoosh", 10.0, whip=True), p("swoosh", 11.0)]) == []       # хлёст — можно
+    assert reel_rules.sound_warnings([p("swoosh", 5.0), p("oof", 5.2), p("riser", 5.4)])
+    shots = [dict(t0=0.0, t1=2.0), dict(t0=2.0, t1=4.0, kind="doll", actions=[dict(t=0.1, do="tilt")])]
+    assert reel_rules.warnings({"beats": []}, shots, 10.0, [dict(kind="punch", t=2.05)])
+    assert not reel_rules.warnings({"beats": []}, shots, 10.0, [dict(kind="punch", t=1.8)])
+
+
+def test_sound_plan_matches_mixer_order():
+    shots = [dict(t0=0.0), dict(t0=2.0, whip=[-560, 0]), dict(t0=5.0, zoom_in=0.3), dict(t0=9.0, sound="swoosh_deep")]
+    plan = reel.sound_plan(shots, [dict(kind="sfx", name="riser", t=0.0, align="start"), dict(kind="punch", t=12.5)])
+    assert [x["name"] for x in plan] == ["swoosh", "swoosh_deep", "riser", "swoosh", "swoosh"]
+    assert plan[0]["whip"] and plan[0]["pan"] == 0.3 and plan[3]["soft"] and plan[3]["gain_db"] == -7.0

@@ -610,7 +610,8 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     rule_errs += reel_rules.check_timeline(shots, events, {k: v[1] for k, v in SFX.items()}, caps_txt, total)
     rule_errs += reel_rules.check_overlays(overlay_boxes(events, shots))
     rule_errs += reel_rules.check_cta(spec, [times[i0]["start"] for i0, _ in spans], total)
-    for w in reel_rules.warnings(spec, shots, total, events):
+    rule_errs += reel_rules.check_sounds(sound_plan(shots, events))
+    for w in reel_rules.warnings(spec, shots, total, events) + reel_rules.sound_warnings(sound_plan(shots, events)):
         print("  ⚠ " + w)
     if rule_errs:
         print("ПРАВИЛА РИЛСА (docs/REELS_PLAYBOOK.md):\n" + "\n".join("  ✗ " + e for e in rule_errs))
@@ -972,44 +973,55 @@ def place(track, x, t, gain=1.0):
     m = min(len(x), len(track) - i)
     if m > 0: track[i:i + m] += x[:m] * gain
 
-def mix_audio(path, total, shots, events, spec, voiced=False):
-    """Звук рилса: хлёсткие склейки — swoosh пиком на склейку (J-cut звука: звук приходит раньше картинки),
-    события фраз (sfx) — пиком на слово, riser — началом сразу после фразы-хука. Больше ничего."""
-    n = int((total + 0.2) * SR); tr = np.zeros((n, 2), np.float32)
-    placed, count = [], {}
-    def put(name, t, align="peak", gain_db=0.0, pan=0.0):
-        """Повтор одного звука — каждый чуть другой (разбор 23.10: Gaku Lange, Marketing Demons — одинаковый свист
-        «15 раз» слышен): скорость/высота по кругу 1.00 / 0.95 / 1.05 / 0.97 / 1.03, это тот же звук владельца, не
-        чужой; панорама — по направлению хлёста. Первое появление звука — как в файле."""
-        x = sfx(name) * (10 ** (gain_db / 20))
+SWOOSH_RATES = (1.0, 0.95, 1.05, 0.97, 1.03)
+
+def sound_plan(shots, events):
+    """Все звуки рилса по порядку: [{name, t, align, gain_db, pan, peak, soft, whip}] — одна правда для микшера и для
+    правил (reel_rules.check_sounds): хлёсткие склейки — swoosh пиком на склейку (J-cut), звуки планов, события фраз,
+    тихий свист на наезд. Громкость по смыслу — `gain_db` у события или плана в reel.json (по умолчанию 0)."""
+    plan, placed, count = [], [], {}
+    def add(name, t, align="peak", gain_db=0.0, pan=0.0, soft=False, whip=False):
         k = count.get(name, 0); count[name] = k + 1
-        rate = (1.0, 0.95, 1.05, 0.97, 1.03)[k % 5] if name in ("swoosh", "swoosh_deep") else 1.0
-        if rate != 1.0:
-            src_t = np.arange(int(len(x) / rate)) * rate
-            x = np.stack([np.interp(src_t, np.arange(len(x)), x[:, ch]) for ch in (0, 1)], axis=1).astype(np.float32)
-        if pan:
-            x = x * np.array([math.cos((pan + 1) * math.pi / 4), math.sin((pan + 1) * math.pi / 4)], np.float32) * math.sqrt(2)
+        rate = SWOOSH_RATES[k % 5] if name in ("swoosh", "swoosh_deep") else 1.0
         pk = SFX[name][1] / rate
-        t0 = t - (pk if align == "peak" else 0.0)
-        placed.append(t0 + pk)
-        i = int(t0 * SR)
-        if i < 0: x = x[-i:]; i = 0
-        m = min(len(x), n - i)
-        if m > 0: tr[i:i + m] += x[:m]
+        peak = t if align == "peak" else t + pk
+        placed.append(peak)
+        plan.append(dict(name=name, t=t, align=align, gain_db=gain_db, pan=pan, rate=rate, peak=peak, soft=soft, whip=whip))
     for k, sh in enumerate(shots):
         if k and sh.get("whip") and sh.get("sound", "swoosh"):        # кадр едет справа — звук справа налево
-            put(sh.get("sound", "swoosh"), sh["t0"], pan=0.3 if sh["whip"][0] < 0 else -0.3)
+            add(sh.get("sound", "swoosh"), sh["t0"], gain_db=sh.get("gain_db", 0.0), pan=0.3 if sh["whip"][0] < 0 else -0.3, whip=True)
         elif k and sh.get("sound"):
-            put(sh["sound"], sh["t0"])
+            add(sh["sound"], sh["t0"], gain_db=sh.get("gain_db", 0.0))
     for e in events:
-        if e["kind"] == "sfx": put(e["name"], e["t"], e.get("align", "peak"))
+        if e["kind"] == "sfx": add(e["name"], e["t"], e.get("align", "peak"), gain_db=e.get("gain_db", 0.0))
     # тихий свист на наезд и вход наездом (на 7 дБ тише хлёста), если рядом (1 с) уже не звучит другой звук
     soft = [sh["t0"] for k, sh in enumerate(shots) if k and sh.get("zoom_in") and not sh.get("sound")] + \
            [e["t"] for e in events if e["kind"] == "punch"]
     soft_done = []
     for tt in sorted(soft):                           # и не чаще раза в 3 с: эталон v11 — три тихих свиста через 1.5 с
         if all(abs(tt - p) > 1.0 for p in placed) and all(abs(tt - q) > 3.0 for q in soft_done):
-            put("swoosh", tt, gain_db=-7.0); soft_done.append(tt)
+            add("swoosh", tt, gain_db=-7.0, soft=True); soft_done.append(tt)
+    return plan
+
+def mix_audio(path, total, shots, events, spec, voiced=False):
+    """Звук рилса по sound_plan. Повтор одного звука — каждый чуть другой (разбор 23.10: Gaku Lange, Marketing
+    Demons — одинаковый свист «15 раз» слышен): скорость/высота по кругу 1.00 / 0.95 / 1.05 / 0.97 / 1.03, это тот же
+    звук владельца, не чужой; панорама — по направлению хлёста. Первое появление звука — как в файле."""
+    n = int((total + 0.2) * SR); tr = np.zeros((n, 2), np.float32)
+    for p in sound_plan(shots, events):
+        x = sfx(p["name"]) * (10 ** (p["gain_db"] / 20)); rate = p["rate"]
+        if rate != 1.0:
+            src_t = np.arange(int(len(x) / rate)) * rate
+            x = np.stack([np.interp(src_t, np.arange(len(x)), x[:, ch]) for ch in (0, 1)], axis=1).astype(np.float32)
+        if p["pan"]:
+            pan = p["pan"]
+            x = x * np.array([math.cos((pan + 1) * math.pi / 4), math.sin((pan + 1) * math.pi / 4)], np.float32) * math.sqrt(2)
+        pk = SFX[p["name"]][1] / rate
+        t0 = p["t"] - (pk if p["align"] == "peak" else 0.0)
+        i = int(t0 * SR)
+        if i < 0: x = x[-i:]; i = 0
+        m = min(len(x), n - i)
+        if m > 0: tr[i:i + m] += x[:m]
     if voiced: tr *= 10 ** (VOICE_SFX_TRIM_DB / 20)
     peak = float(np.abs(tr).max())
     if peak > 0.89: tr *= 0.89 / peak                 # наложение двух звуков не клипует: пик не выше -1 dBFS
