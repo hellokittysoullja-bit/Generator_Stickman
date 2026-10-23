@@ -443,8 +443,8 @@ def layout(spec):
     исходника) растут на view_scale — по умолчанию PH/1100, тот же охват по ширине, рисунка больше по высоте;
     экранные координаты фраз (cy, h куклы, y пометок) пересчитываются из 1100 в PH."""
     global PH, CAP_CY
-    PH = int(spec.get("picture_h", BASE_PH)); CAP_CY = PH + 75
-    k = PH / BASE_PH; vk = spec.get("view_scale", k)
+    PH = int(spec.get("picture_h", 1420)); CAP_CY = PH + 75     # 1420 — одобрено владельцем 22.10, по умолчанию
+    k = PH / BASE_PH; vk = spec.get("view_scale", round(1.0 + (k - 1.0) * 0.42, 2))   # 1420 -> 1.12: рисунок крупнее, бока целы
     if k == 1 and vk == 1: return
     for b in spec["beats"]:
         for s in b["shots"]:
@@ -478,12 +478,14 @@ def fill_windows(reel_dir, spec):
                         h = (bot - top) + 2 * pad; cy = (top + bot) / 2
                 s[key] = [cx, cy, h]
 
-def build(reel_dir, sheet=False, preview=False):
+def build(reel_dir, sheet=False, preview=False, force=False):
     spec = json.load(open(os.path.join(reel_dir, "reel.json"), encoding="utf8"))
+    import reel_rules                                  # правила рилса кодом: хук, riser с 0 с, звуки владельца, планы ≤ 3 с
+    rule_errs = reel_rules.check_spec(spec, set(SFX))
     layout(spec)
     beats = spec["beats"]
     prepare_src(reel_dir, spec.get("sources", {}))
-    if spec.get("fill_ink"): fill_windows(reel_dir, spec)
+    if spec.get("fill_ink", True): fill_windows(reel_dir, spec)
     words, spans = tokens(beats)
     al = os.path.join(reel_dir, "alignment.json")
     if os.path.exists(al):
@@ -545,6 +547,11 @@ def build(reel_dir, sheet=False, preview=False):
             events.append(dict(e, t=wt(bi, e.get("at", 0), e.get("after", False)) + e.get("dt", 0.0), beat=bi))
     for e in events:                                  # удержание накладки — только пока идут планы того же рода
         e["kind_of_shot"] = next((x.get("kind", "crop") for x in reversed(shots) if x["t0"] <= e["t"] + CUT_LEAD), "crop")
+    rule_errs += reel_rules.check_timeline(shots, events, {k: v[1] for k, v in SFX.items()})
+    if rule_errs:
+        print("ПРАВИЛА РИЛСА (docs/REELS_PLAYBOOK.md):\n" + "\n".join("  ✗ " + e for e in rule_errs))
+        if not force:
+            raise SystemExit("не рендерю: исправьте reel.json (или --force, если нарушение осознанное)")
     caps = chunks(words, times)
     # текст хука стоит с первого кадра целиком, без въезда и бледных слов (разбор 22.10: heyDominik, Jenny Hoyos —
     # пролистывание в первые 0.5 с — «не понял, о чём», поэтому хук читается сразу; подсветка слов идёт как обычно)
@@ -852,5 +859,6 @@ if __name__ == "__main__":
     ap.add_argument("reel_dir")
     ap.add_argument("--sheet", action="store_true")
     ap.add_argument("--preview", action="store_true", help="15 к/с — быстро посмотреть монтаж")
+    ap.add_argument("--force", action="store_true", help="рендерить, даже если нарушены правила рилса")
     a = ap.parse_args()
-    build(a.reel_dir, sheet=a.sheet, preview=a.preview)
+    build(a.reel_dir, sheet=a.sheet, preview=a.preview, force=a.force)
