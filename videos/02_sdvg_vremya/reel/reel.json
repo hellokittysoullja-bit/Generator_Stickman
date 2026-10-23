@@ -694,8 +694,5 @@
    "fx": []
   }
  ],
- "lead_in": 0.25,
- "picture_h": 1420,
- "view_scale": 1.12,
- "fill_ink": true
+ "lead_in": 0.25
 }

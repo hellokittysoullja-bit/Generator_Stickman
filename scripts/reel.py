@@ -437,12 +437,12 @@ def sfx(name):
 def layout(spec):
     """Высота картинки из reel.json. 22.10, владелец: «в рилсах столько воздуха не оставляют» — при PH 1100 нижние 35%
     были пустой бумагой. Разбор 31 ролика (Restream): интерфейс Shorts/TikTok закрывает нижние 350–400 px, поэтому
-    картинка до 1420, полоса субтитров 1420–1570, внизу 350 px под подпись и кнопки. Окна кадров (h в пикселях
+    картинка до 1380 (23.10: при 1420 низ букв ложился на край 400 px интерфейса), полоса субтитров 1380–1530, внизу 390 px. Окна кадров (h в пикселях
     исходника) растут на view_scale — по умолчанию PH/1100, тот же охват по ширине, рисунка больше по высоте;
     экранные координаты фраз (cy, h куклы, y пометок) пересчитываются из 1100 в PH."""
     global PH, CAP_CY
-    PH = int(spec.get("picture_h", 1420)); CAP_CY = PH + 75     # 1420 — одобрено владельцем 22.10, по умолчанию
-    k = PH / BASE_PH; vk = spec.get("view_scale", round(1.0 + (k - 1.0) * 0.42, 2))   # 1420 -> 1.12: рисунок крупнее, бока целы
+    PH = int(spec.get("picture_h", 1380)); CAP_CY = PH + 75     # 1380: низ букв субтитров выше 400 px интерфейса (лист 23.10)
+    k = PH / BASE_PH; vk = spec.get("view_scale", round(1.0 + (k - 1.0) * 0.42, 2))   # 1380 -> 1.11: рисунок крупнее, бока целы
     if k == 1 and vk == 1: return
     for b in spec["beats"]:
         for s in b["shots"]:
@@ -460,7 +460,7 @@ def ink_rows(reel_dir, name):
     return (rows[0] / 2.0, rows[-1] / 2.0) if len(rows) else (0.0, g.shape[0] / 2.0)
 
 def fill_windows(reel_dir, spec):
-    """Окно не уходит ниже рисунка: высокая картинка (PH 1420) с окнами старых пропорций показывала под столом пустую
+    """Окно не уходит ниже рисунка: высокая картинка (PH 1380) с окнами старых пропорций показывала под столом пустую
     бумагу — тот же «воздух», что был в нижних 35% экрана, только внутри картинки. Окно поднимается, пока его низ не
     ляжет на нижнюю линию рисунка (+2% воздуха); выше верха рисунка не уходит — тогда окно сжимается (наезд)."""
     for b in spec["beats"]:
@@ -582,6 +582,9 @@ def build(reel_dir, sheet=False, preview=False, force=False):
                                   text=" ".join(clean(words[j]) for j in c["idx"])) for c in caps]),
               open(os.path.join(reel_dir, "reel_report.json"), "w", encoding="utf8"), ensure_ascii=False, indent=1)
     write_srt(os.path.join(reel_dir, "reel.srt"), caps, words)
+    if not preview:
+        import reel_proof                              # лист проверки: один кадр-лист вместо десятка кадров
+        print("  лист проверки:", reel_proof.proof(reel_dir))
     print(f"Готово. Файл: {out} ({total:.1f} с, планов {len(shots)}, групп субтитров {len(caps)})")
     return out
 

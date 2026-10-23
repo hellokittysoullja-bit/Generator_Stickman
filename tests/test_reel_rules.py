@@ -62,9 +62,9 @@ def test_timeline_rules():
 def test_approved_values_are_defaults():
     s = {"beats": [{"text": "a", "shots": [{"src": "f1", "from": [0, 0, 100]}]}]}
     reel.layout(copy.deepcopy(s))
-    assert reel.PH == 1420 and reel.CAP_CY == 1495
+    assert reel.PH == 1380 and reel.CAP_CY == 1455
     s2 = copy.deepcopy(s); reel.layout(s2)
-    assert abs(s2["beats"][0]["shots"][0]["from"][2] - 112.0) < 1e-6          # view_scale 1.12 по умолчанию
+    assert abs(s2["beats"][0]["shots"][0]["from"][2] - 111.0) < 1e-6          # view_scale 1.11 по умолчанию
     reel.layout({"beats": [], "picture_h": 1100})                              # вернуть модуль как был
 
 

@@ -12,7 +12,7 @@ FIRST_CUT_SEC = 2.0        # первая склейка в первые 2 с �
 HOOK_MAX_CHARS = 30        # первая фраза читается за ~1.3–1.8 с при 17 знаках в секунду
 RISER_START_MAX = 0.05     # riser звучит с нулевой секунды (владелец 22.10), а не после хука
 RISER_PEAK_ON_CUT = 0.10   # пик riser — на склейке (Clumzzy: riser — ожидание перед раскрытием)
-MIN_PICTURE_H = 1400       # владелец 22.10: «столько воздуха в рилсах не оставляют» — при 1100 низ был пуст
+MIN_PICTURE_H = 1360       # владелец 22.10: «столько воздуха в рилсах не оставляют» — при 1100 низ был пуст
 MAX_FROZEN_SHARE = 0.05    # доля почти неподвижных кадров готового файла (reel_metrics.py), v9 — 0.025
 
 
@@ -48,7 +48,7 @@ def check_spec(spec, sfx_names):
             err.append('riser должен начинаться с 0 с: {"at": 0, "align": "start", "dt": -lead_in}')
     if beats[1].get("after_sfx") != "riser":
         err.append('вторая фраза должна вставать на пик riser: "after_sfx": "riser"')
-    if spec.get("picture_h", 1420) < MIN_PICTURE_H:
+    if spec.get("picture_h", 1380) < MIN_PICTURE_H:
         err.append(f"picture_h {spec.get('picture_h')} < {MIN_PICTURE_H}: низ экрана будет пустой бумагой")
     first = next((s for s in beats[0]["shots"] if "src" in s), None)
     last = next((s for s in beats[-1]["shots"] if "src" in s), None)
