@@ -448,8 +448,8 @@ class Generator:
             # где на рисунке предмет наезда и главный предмет — для камеры сборки
             try:
                 import objects
-                rec["objects"] = objects.objects_for(self.jgw, os.environ.get('OBJECTS_MODEL') or objects.OBJECTS_MODEL, p, frame, self.look.hero_text,
-                                                     self.judge_cache)
+                model = os.environ.get('OBJECTS_MODEL') or objects.OBJECTS_MODEL
+                rec["objects"] = objects.objects_for(self.jgw, model, p, frame, self.look.hero_text, self.judge_cache)
             except Exception as e:  # noqa: BLE001 — без рамок камера просто не наезжает
                 rec["objects"] = []
                 rec["objects_error"] = f"{type(e).__name__}: {e}"[:200]

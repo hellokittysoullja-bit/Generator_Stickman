@@ -72,8 +72,29 @@ def test_segment_cache_key_sees_only_what_the_shot_shows():
     shots = [dict(t0=0.0, t1=2.0, src="f1", **{"from": [1, 1, 100]}), dict(t0=2.0, t1=4.0, src="f1", **{"from": [2, 2, 100]}),
              dict(t0=4.0, t1=12.0, src="f1", **{"from": [3, 3, 100]}), dict(t0=12.0, t1=14.0, src="f1", **{"from": [4, 4, 100]})]
     ev = [dict(kind="punch", t=1.0, amt=0.1), dict(kind="punch", t=13.0, amt=0.1)]
-    key = lambda e: reel.segment_key("/nonexistent", 30, 0, 60, 0, shots, e, [], [], [], None, 14.0, "v")
+    def key(e):
+        return reel.segment_key("/nonexistent", 30, 0, 60, 0, shots, e, [], [], [], None, 14.0, "v")
     base = key(ev)
     assert key([dict(ev[0], amt=0.2), ev[1]]) != base          # своё событие поменялось — план перерисуется
     assert key([ev[0], dict(ev[1], amt=0.2)]) == base          # событие через 12 с — план из кэша
     assert key([dict(ev[0], _anchor={1: 2}), ev[1]]) == base   # служебное поле рендера ключ не меняет
+
+
+def test_draft_parses_script_and_windows_do_not_cut_drawing(tmp_path):
+    import numpy as np
+    import reel_draft
+    p = tmp_path / "reel_script.txt"
+    p.write_text("Ты не *ленишься*.  @f1\nТы не видишь *время*.  @f2\nА дело не начато.\n", encoding="utf8")
+    beats = reel_draft.parse(str(p))
+    assert [b["src"] for b in beats] == ["f1", "f2", "f2"] and beats[0]["text"] == "Ты не *ленишься*."
+    img = np.full((1696, 2528, 3), 250, np.uint8)            # два «предмета» на бумаге, как в кадре эпизода (src ×2)
+    img[500:1300, 300:900] = 20; img[400:1200, 1700:2300] = 20
+    views = reel_draft.ink_views(img)
+    assert len(views) >= 2
+    for cx, _cy, h in views[1:]:                              # окна по предметам: край окна не идёт по туши
+        k = reel_draft.reel.W / reel_draft.reel.PH * 1.11
+        w = h * k
+        for x in (cx - w / 2, cx + w / 2):
+            xs = int(x * 2)
+            if 0 <= xs < img.shape[1]:
+                assert (img[:, max(0, xs - 2):xs + 3] < 200).mean() < 0.05
