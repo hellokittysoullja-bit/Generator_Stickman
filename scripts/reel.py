@@ -43,6 +43,7 @@ CAP_FONT = os.path.join(ROOT, "assets", "fonts", "reels", "Onest[wght].ttf")
 CAP_AXES = {"Weight": 900}
 CAP_FEATURES = None
 CAP_UPPER = False
+VIEW_K = 1.0           # view_scale после layout(): подсказки окон печатаются в координатах reel.json
 PH = 1100              # картинка — верхние PH px (reel.json: picture_h); ниже — полоса субтитров на той же бумаге
 CAP_CX, CAP_CY = 500, 1175   # центр полосы субтитров = PH + 75 (полоса 150 px, субтитр не ложится на рисунок)
 BASE_PH = 1100         # под эту высоту написаны экранные координаты reel.json (cy кадров fit/doll, y пометок, часы)
@@ -491,9 +492,10 @@ def layout(spec):
     внизу 390 px. Окна кадров (h в пикселях исходника) растут на view_scale — по умолчанию 1.11: рисунок крупнее,
     бока целы, рисунка больше по высоте;
     экранные координаты фраз (cy, h куклы, y пометок) пересчитываются из 1100 в PH."""
-    global PH, CAP_CY
+    global PH, CAP_CY, VIEW_K
     PH = int(spec.get("picture_h", 1380)); CAP_CY = PH + 75     # 1380: низ букв субтитров выше 400 px интерфейса (лист 23.10)
     k = PH / BASE_PH; vk = spec.get("view_scale", round(1.0 + (k - 1.0) * 0.42, 2))   # 1380 -> 1.11: рисунок крупнее, бока целы
+    VIEW_K = vk
     if k == 1 and vk == 1: return
     for b in spec["beats"]:
         for s in b["shots"]:
@@ -635,6 +637,8 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     rule_errs += reel_rules.check_timeline(shots, events, {k: v[1] for k, v in SFX.items()}, caps_txt, total)
     rule_errs += reel_rules.check_overlays(overlay_boxes(events, shots))
     rule_errs += reel_rules.check_cta(spec, [times[i0]["start"] for i0, _ in spans], total)
+    import reel_geom                                  # до рендера: обрывки у краёв, кукла шире кадра, надпись на рисунке
+    rule_errs += reel_geom.check(sys.modules[__name__], reel_dir, shots, events)
     rule_errs += reel_rules.check_knowledge(spec)                 # знания базы: маркетинг, воронка, бренд — у каждой фразы
     rule_errs += reel_rules.knowledge_timing(spec, [times[i0]["start"] for i0, _ in spans], total)
     rule_errs += reel_rules.check_sounds(sound_plan(shots, events))

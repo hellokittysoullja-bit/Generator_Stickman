@@ -284,3 +284,28 @@ def test_publish_kit_and_variant(tmp_path):
     sv = json.load(open(os.path.join(v, "reel.json"), encoding="utf8"))
     assert sv["beats"][0]["text"] == "Это не лень. Это время." and sv["passport"]["variant_of"]
     assert reel_rules.check_spec(sv, SFX) == []
+
+
+def test_geometry_catches_slivers_dolls_and_text_on_drawing(tmp_path):
+    """reel_geom (23.10): то, что в v12–v14 находилось только глазами после рендера, ловится до рендера."""
+    import numpy as np
+    from PIL import Image
+    import reel_geom
+    d = tmp_path / "reel"; (d / "src").mkdir(parents=True)
+    img = np.full((1600, 2400, 3), 245, np.uint8)
+    img[200:1400, 100:900] = 30                         # большой «кот» слева (в координатах окна x 50–450)
+    img[500:900, 1500:1900] = 30                        # «часы» справа (x 750–950)
+    Image.fromarray(img).save(d / "src" / "geomtest_c.png")
+    (d / "reel.json").write_text('{"sources": {}}', encoding="utf8")
+    reel.layout({"beats": [], "picture_h": 1380})
+    clean = [dict(t0=0.0, t1=2.0, src="geomtest", kind="crop", **{"from": [850, 350, 300]})]
+    edge = [dict(t0=0.0, t1=2.0, src="geomtest", kind="crop", **{"from": [570, 350, 400]})]   # край окна задевает «кота»
+    assert reel_geom.slivers(reel, str(d), clean) == []
+    assert reel_geom.slivers(reel, str(d), edge)
+    big = [dict(t0=0.0, t1=2.0, kind="doll", h=1000, cy=700, zoom=[1.0, 1.04])]
+    ok = [dict(t0=0.0, t1=2.0, kind="doll", h=600, cx=515, cy=700, zoom=[1.0, 1.04])]
+    assert reel_geom.doll_fit(reel, big, []) and reel_geom.doll_fit(reel, ok, []) == []
+    on_cat = [dict(kind="write", text="Напарник", x=540, y=500, size=150, t=0.5, dur=0.5, beat=0, kind_of_shot="doll")]
+    assert reel_geom.overlay_on_drawing(reel, str(d), ok, on_cat)
+    on_paper = [dict(on_cat[0], y=150)]
+    assert reel_geom.overlay_on_drawing(reel, str(d), ok, on_paper) == []
