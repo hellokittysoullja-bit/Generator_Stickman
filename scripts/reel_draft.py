@@ -137,7 +137,9 @@ def draft(reel_dir):
     first = beats[0]["shots"][0]
     beats[-1]["shots"][0].update(src=first["src"], **{"from": first["to"], "to": first["from"]})
     beats[-1]["shots"][0].pop("whip", None); beats[-1]["shots"][0]["zoom_in"] = 0.25
-    spec = {"title": lines[0]["text"], "rate": 1.15, "lead_in": 0.25, "tail": 0.2, "sources": sources, "beats": beats,
+    passport = {"hook_type": "", "structure": "", "devices": []}   # заполняет агент: reel_rules сверит с docs/reels_log.json
+    spec = {"title": lines[0]["text"], "rate": 1.15, "lead_in": 0.25, "tail": 0.45, "sources": sources, "passport": passport,
+            "beats": beats,
             "_draft": "черновик reel_draft.py: звуки по смыслу, окна под слова, пометки и кукла — руками"}
     out = os.path.join(reel_dir, "reel.json")
     if os.path.exists(out): os.replace(out, out + ".bak")

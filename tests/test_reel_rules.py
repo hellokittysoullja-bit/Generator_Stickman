@@ -119,3 +119,17 @@ def test_caption_rules_on_timeline():
     across = good[:1] + [dict(t0=1.65, t1=4.6, text="при СДВГ")] + [dict(good[2], t0=4.6)]
     assert reel_rules.check_timeline(shots, riser, peaks, across, total=5.6)        # субтитр через склейку 4.0
     assert reel_rules.check_timeline(shots, riser, peaks, good, total=4.5)          # «Настоящих» 0.5 с — не дочитать
+
+
+def test_passport_blocks_template_reels():
+    log = json.load(open(os.path.join(ROOT, "docs", "reels_log.json"), encoding="utf8"))
+    ep02 = spec()
+    assert reel_rules.check_passport(ep02, log, "videos/02_sdvg_vremya/reel") == []       # сам себе не шаблон
+    new = copy.deepcopy(ep02)
+    assert reel_rules.check_passport(new, log, "videos/03_new/reel")                      # тот же хук и приёмы
+    new["passport"]["hook_type"] = "вопрос"
+    new["beats"][0]["text"] = "Сколько раз за день ты говоришь «потом»?"
+    new["passport"]["devices"] = ["раскадровка дня", "счётчик", "хлёст", "пауза", "кукла машет", "эхо в призыве"]
+    assert reel_rules.check_passport(new, log, "videos/03_new/reel") == []                # другой хук, другие приёмы
+    del new["passport"]
+    assert reel_rules.check_passport(new, log, "videos/03_new/reel")                      # без паспорта нельзя

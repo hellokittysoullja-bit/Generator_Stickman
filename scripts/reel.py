@@ -505,6 +505,9 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     spec = json.load(open(os.path.join(reel_dir, "reel.json"), encoding="utf8"))
     import reel_rules                                  # правила рилса кодом: хук, riser с 0 с, звуки владельца, планы ≤ 3 с
     rule_errs = reel_rules.check_spec(spec, set(SFX))
+    log_p = os.path.join(ROOT, "docs", "reels_log.json")           # против шаблона: паспорт против прошлых рилсов
+    rule_errs += reel_rules.check_passport(spec, json.load(open(log_p, encoding="utf8")) if os.path.exists(log_p) else [],
+                                           os.path.relpath(reel_dir, ROOT))
     layout(spec)
     beats = spec["beats"]
     prepare_src(reel_dir, spec.get("sources", {}))

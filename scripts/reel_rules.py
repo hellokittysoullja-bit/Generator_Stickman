@@ -5,6 +5,7 @@
 
     python scripts/reel_rules.py videos/NN/reel     # проверить reel.json без рендера
 """
+import os
 import re
 
 MAX_SHOT_SEC = 3.0         # план не дольше 3 с (разбор роликов о Reels: смена картинки каждые 2–3 с)
@@ -18,6 +19,38 @@ READ_CPS, READ_PAD = 17.0, 0.3   # дочитать группу: знаки / 1
 ACCENT_KINDS = ("punch", "shake", "spot", "circle")   # акцент — только на ключевом слове, не на предлоге
 CLITICS = {"в", "во", "на", "с", "со", "к", "ко", "по", "о", "об", "от", "до", "из", "у", "за", "для", "при", "без",
            "и", "а", "но", "не", "ни", "же", "ли", "бы", "что", "как", "это", "то", "он", "она", "ты", "я", "мы"}
+
+
+# Против шаблона (владелец 23.10: «чтобы агент не делал шаблонно»): у каждого рилса паспорт — тип хука, схема,
+# приёмы; журнал прошлых рилсов — docs/reels_log.json. Типы хуков — из базы знаний (01_hook_script_retention.md).
+HOOK_TYPES = ("диссонанс", "вопрос", "число", "POV", "середина истории", "что если", "термин", "ошибка/запрет",
+              "желаемый результат", "сравнение", "секрет/закулисье", "абсурд", "прямое обращение к узнаванию")
+MAX_DEVICE_OVERLAP = 0.5   # приёмы нового рилса совпадают с прошлым не больше чем наполовину
+
+
+def check_passport(spec, log, reel_dir=""):
+    """Паспорт рилса против журнала: тип хука и первые слова не как у предыдущего рилса, приёмы не те же."""
+    err = []
+    pp = spec.get("passport")
+    if not pp:
+        return ["нет паспорта рилса (passport: hook_type, structure, devices) — без него не проверить шаблонность"]
+    if pp.get("hook_type") not in HOOK_TYPES:
+        err.append(f"тип хука «{pp.get('hook_type')}» — не из списка {HOOK_TYPES}")
+    if len(pp.get("devices", [])) < 5:
+        err.append("в паспорте меньше 5 приёмов — опишите, чем этот рилс держит")
+    prev = [r for r in log if os.path.normpath(r.get("reel", "")) != os.path.normpath(reel_dir)]
+    if prev:
+        last = prev[-1]
+        if pp.get("hook_type") == last.get("hook_type"):
+            err.append(f"тип хука «{pp['hook_type']}» как у прошлого рилса ({last['reel']}): смените тип хука")
+        first = " ".join(clean(spec["beats"][0]["text"]).split()[:2]).lower()
+        if any(first == r.get("first_words", "").lower() for r in prev):
+            err.append(f"рилс начинается теми же словами «{first}», что прошлый: хук станет узнаваемым шаблоном")
+        a, b = set(pp.get("devices", [])), set(last.get("devices", []))
+        if a and len(a & b) / len(a) > MAX_DEVICE_OVERLAP:
+            err.append(f"приёмы совпадают с прошлым рилсом на {len(a & b) / len(a):.0%} (> {MAX_DEVICE_OVERLAP:.0%}): "
+                       f"общие — {sorted(a & b)}")
+    return err
 
 
 def clean(text):
@@ -110,6 +143,8 @@ if __name__ == "__main__":
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import reel
     spec = json.load(open(os.path.join(sys.argv[1], "reel.json"), encoding="utf8"))
-    errs = check_spec(spec, set(reel.SFX))
+    log_p = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docs", "reels_log.json")
+    log = json.load(open(log_p, encoding="utf8")) if os.path.exists(log_p) else []
+    errs = check_spec(spec, set(reel.SFX)) + check_passport(spec, log, os.path.relpath(sys.argv[1]))
     print("\n".join("✗ " + e for e in errs) or "✓ reel.json по правилам (тайминг проверит reel.py при рендере)")
     sys.exit(1 if errs else 0)
