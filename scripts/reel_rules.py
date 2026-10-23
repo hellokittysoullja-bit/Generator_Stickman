@@ -236,6 +236,15 @@ BRAND_PATH = os.path.join(ROOT_DIR, "docs", "reels_brand.json")
 SKIP_MIN_CHARS = 15
 SHAME_WORDS = (r"\bсоберись", r"\bперестань", r"возьми себя в руки", r"\bхватит ныть", r"\bлентя[йи]",
                r"вот почему ты вс[её] срываешь")
+# Волна 8 (23.10, docs/reels_knowledge/08_deep_persuasion_funnel.md): давление включает реактивность (мета-анализы
+# 2025–2026, r ≈ .20) — призыв без «обязательно», «срочно», «успей», «должен»; закреп «напиши 1 / 2» — дословно пример
+# приманки вовлечения из правил Instagram 2024; смысловые петли не реже раза в 12 с (Kallaway 20–30 с — мнение, берём строже
+# с запасом); у рилса-серии — название и номер серии (персонаж-сериал: System1/IPA, Duolingo).
+CONTROL_WORDS = (r"\bобязательно\b", r"\bсрочно\b", r"\bуспей", r"\bнемедленно\b", r"\bты должн", r"\bвы должн",
+                 r"\bнужно перейти", r"\bпереходи прямо", r"\bне упусти")
+BAIT_PATTERNS = (r"напиши\s*[«\"']?\d", r"пиши\s*[«\"']?\d", r"\b1\b[^.]{0,40}\b2\b.{0,20}(напиши|пиши|ставь)",
+                 r"(напиши|пиши|ставь)[^.]{0,30}\b1\b[^.]{0,40}\b2\b", r"ставь\s*[+❤🔥]")
+LOOP_GAP_MAX = 12.5        # с: между смысловыми петлями (passport.knowledge.meaning_loops) и от начала до первой
 COVER_MAX_WORDS, COVER_MAX_CHARS = 4, 24
 CAPTION_HEAD = 125         # Instagram показывает ~125 знаков подписи до «ещё»: ключевая фраза ниши — в них
 LENGTH_WORK_SEC = 40.0     # рабочая вилка 20–40 с (07 §8 п.35, мнение) — предупреждение
@@ -299,6 +308,20 @@ def check_knowledge(spec, checklist=None, brand=None):
         if bad:
             err.append(f"{where}: фраза {v!r} нарушает «{rule}» (призыв — {cta}, продукт — {br})")
     low = " ".join(clean(b["text"]).lower() for b in beats)
+    for pat in CONTROL_WORDS:
+        m = re.search(pat, low)
+        if m:
+            err.append(f"давящее слово «{m.group(0)}» — включает реактивность: зритель делает наоборот (08 §1, мета-анализы "
+                       "реактивности); призыв — как выбор («захочешь — …»)")
+    pin = pp.get("pinned_comment") or brand.get("pinned_comment_default") or ""
+    for pat in BAIT_PATTERNS:
+        if re.search(pat, pin.lower()):
+            err.append(f"закреплённый комментарий «{pin[:60]}…» — приманка вовлечения («напиши цифру»): пример из правил "
+                       "Instagram о снижении показов (08 §2); нужен открытый вопрос о зрителе")
+            break
+    ser = pp.get("series")
+    if ser is not None and not (isinstance(ser, dict) and ser.get("name") and ser.get("episode")):
+        err.append('серия рилса: "series": {"name": …, "episode": N} — название и номер (08 §2, персонаж-сериал)')
     for pat in SHAME_WORDS:
         m = re.search(pat, low)
         if m:
@@ -341,14 +364,25 @@ def check_knowledge(spec, checklist=None, brand=None):
 
 
 def knowledge_timing(spec, beat_t0, total):
-    """Ре-хук стоит на 35–60 % ролика (по рассчитанному времени фраз)."""
-    v = ((spec.get("passport") or {}).get("knowledge") or {}).get("re_hook")
-    bs = _beats_of(v)
+    """Ре-хук стоит на 35–60 % ролика; смысловые петли (meaning_loops) — не реже раза в LOOP_GAP_MAX с от начала до
+    призыва (по рассчитанному времени фраз)."""
+    kn = (spec.get("passport") or {}).get("knowledge") or {}
+    err = []
+    bs = _beats_of(kn.get("re_hook"))
     if bs and bs[0] < len(beat_t0):
         share = beat_t0[bs[0]] / total
         if not 0.35 <= share <= 0.60:
-            return [f"ре-хук (фраза {bs[0]}) на {share:.0%} ролика — нужно 35–60 % (01: Kallaway, heyDominik)"]
-    return []
+            err.append(f"ре-хук (фраза {bs[0]}) на {share:.0%} ролика — нужно 35–60 % (01: Kallaway, heyDominik)")
+    loops = sorted(set(b for b in _beats_of(kn.get("meaning_loops")) if b < len(beat_t0)))
+    if loops:
+        cta = (spec.get("passport") or {}).get("cta_beat")
+        end = beat_t0[cta] if cta is not None and cta < len(beat_t0) else total
+        ts = [0.0] + [beat_t0[b] for b in loops] + [end]
+        for a, b in zip(ts, ts[1:]):
+            if b - a > LOOP_GAP_MAX + 0.02:
+                err.append(f"смысловых петель нет {b - a:.1f} с ({a:.1f}–{b:.1f} с) > {LOOP_GAP_MAX}: новый вопрос, поворот "
+                           "или обещание — чаще (08 §3)")
+    return err
 
 
 def check_overlays(boxes):

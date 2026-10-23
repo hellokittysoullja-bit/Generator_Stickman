@@ -255,8 +255,8 @@ def test_knowledge_checklist_blocks_reel_without_marketing():  # владеле�
     assert len(reel_rules.check_knowledge(s6)) >= 2                              # нет ключевой фразы ниши, мало хэштегов
     s7 = copy.deepcopy(s); s7["passport"]["hook_variants"] = s7["passport"]["hook_variants"][:1]
     assert any("вариантов хука" in e for e in reel_rules.check_knowledge(s7))
-    assert reel_rules.knowledge_timing(s, [0.0] * 9 + [21.0] + [0.0] * 7, 45.0) == []
-    assert reel_rules.knowledge_timing(s, [0.0] * 9 + [35.0] + [0.0] * 7, 45.0)   # ре-хук на 78 % — поздно
+    assert not any("ре-хук" in e for e in reel_rules.knowledge_timing(s, [0.0] * 9 + [21.0] + [0.0] * 7, 45.0))
+    assert any("ре-хук" in e for e in reel_rules.knowledge_timing(s, [0.0] * 9 + [35.0] + [0.0] * 7, 45.0))  # 78 % — поздно
 
 
 def test_draft_carries_knowledge_todo(tmp_path):
@@ -371,3 +371,31 @@ def test_cover_opens_counters_filled_by_outline():
     a[25:35, 25:35] = (0, 0, 0, 255)                        # просвет, целиком залитый обводкой
     out = np.asarray(reel_publish.open_counters(Image.fromarray(a)))
     assert out[30, 30, 3] == 0 and out[15, 15, 3] == 255
+
+
+def test_wave8_persuasion_rules():
+    """Волна 8 (23.10): давящие слова, закреп-приманка «напиши 1/2», серия без номера, смысловые петли реже 12 с."""
+    s = spec()
+    assert reel_rules.check_knowledge(s) == []
+    bad = copy.deepcopy(s); bad["beats"][15]["text"] = "Обязательно переходи по ссылке, *успей*."
+    assert any("давящее" in e for e in reel_rules.check_knowledge(bad))
+    bait = copy.deepcopy(s); bait["passport"]["pinned_comment"] = "Напиши 1 — есть диагноз, 2 — нет"
+    assert any("приманка" in e for e in reel_rules.check_knowledge(bait))
+    ok = copy.deepcopy(s); ok["passport"]["pinned_comment"] = "Какое дело висит у тебя дольше всех?"
+    assert not any("приманка" in e for e in reel_rules.check_knowledge(ok))
+    ser = copy.deepcopy(s); ser["passport"]["series"] = {"name": "Кот и дела"}
+    assert any("серия" in e for e in reel_rules.check_knowledge(ser))
+    todo = copy.deepcopy(s); todo["passport"]["knowledge"].pop("if_then_cta")
+    assert any("if_then_cta" in e for e in reel_rules.check_knowledge(todo))
+    t0 = [i * 2.5 for i in range(len(s["beats"]))]
+    lp = copy.deepcopy(s); lp["passport"]["knowledge"]["meaning_loops"] = [1, 12]
+    assert any("петель" in e for e in reel_rules.knowledge_timing(lp, t0, 45.0))
+    lp["passport"]["knowledge"]["meaning_loops"] = [1, 5, 9, 13]
+    assert not any("петель" in e for e in reel_rules.knowledge_timing(lp, t0, 45.0))
+
+
+def test_ep01_reel_v2_passes_all_rules():
+    p = os.path.join(ROOT, "videos", "01_sdvg_pismo", "reel", "reel.json")
+    s = json.load(open(p, encoding="utf8"))
+    assert reel_rules.check_spec(s, SFX) == [] and reel_rules.check_knowledge(s) == []
+    assert s["passport"]["series"]["episode"] == 1
