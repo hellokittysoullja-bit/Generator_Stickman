@@ -501,6 +501,33 @@ def fill_windows(reel_dir, spec):
                         h = (bot - top) + 2 * pad; cy = (top + bot) / 2
                 s[key] = [cx, cy, h]
 
+def overlay_boxes(events, shots=()):
+    """Рамки рукописных надписей и маркера по туши, в пикселях экрана (картинка начинается с y = 0): для безопасных зон.
+    Надпись приклеена к бумаге и едет с наездом плана, поэтому рамка — объединение по всему времени, пока она видна."""
+    out = []
+    for e in events:
+        if e["kind"] not in ("write", "mark"):
+            continue
+        im = text_img(e["text"], font(HAND, e.get("size", 120), 700), INK)
+        gx0, gy0, gx1, gy1 = im.getchannel("A").getbbox()
+        ox, oy = e["x"] - im.width / 2, e["y"] - im.height / 2
+        box = [ox + gx0, oy + gy0, ox + gx1, oy + gy1]
+        end = e["t"] + max(e.get("dur", 0.5), e.get("hold") or 0.0)
+        for s in shots if e["kind"] == "write" else ():
+            a0, a1 = max(e["t"], s["t0"]), min(end, s["t1"])
+            started_here = s["t0"] - 0.01 <= e["t"] < s["t1"]
+            if a1 <= a0 or "from" not in s or s.get("kind", "crop") != "crop" or \
+                    not (started_here or e.get("kind_of_shot", "crop") == "crop"):   # удержание — только в планах того же рода
+                continue
+            vx0, vy0, vh0 = shot_view(s, a0)
+            for tt in np.linspace(a0, a1 - 1e-3, 8):
+                vx, vy, vh = shot_view(s, tt); k = vh0 / vh
+                for px, py in ((box[0], box[1]), (box[2], box[3])):
+                    qx, qy = (px - W / 2) * k + W / 2 + (vx0 - vx) * PH / vh, (py - PH / 2) * k + PH / 2 + (vy0 - vy) * PH / vh
+                    box = [min(box[0], qx), min(box[1], qy), max(box[2], qx), max(box[3], qy)]
+        out.append((e.get("beat"), e["text"], *box))
+    return out
+
 def build(reel_dir, sheet=False, preview=False, force=False):
     spec = json.load(open(os.path.join(reel_dir, "reel.json"), encoding="utf8"))
     import reel_rules                                  # правила рилса кодом: хук, riser с 0 с, звуки владельца, планы ≤ 3 с
@@ -576,6 +603,10 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     caps_txt = [dict(t0=c["t0"], t1=c["t1"], text=" ".join(cap_text(words[j]) for j in c["idx"])) for c in chunks(words, times)]
     caps_txt[0]["t0"] = 0.0                            # хук стоит с первого кадра (still)
     rule_errs += reel_rules.check_timeline(shots, events, {k: v[1] for k, v in SFX.items()}, caps_txt, total)
+    rule_errs += reel_rules.check_overlays(overlay_boxes(events, shots))
+    rule_errs += reel_rules.check_cta(spec, [times[i0]["start"] for i0, _ in spans], total)
+    for w in reel_rules.warnings(spec, shots, total):
+        print("  ⚠ " + w)
     if rule_errs:
         print("ПРАВИЛА РИЛСА (docs/REELS_PLAYBOOK.md):\n" + "\n".join("  ✗ " + e for e in rule_errs))
         if not force:
@@ -606,7 +637,9 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     out = os.path.join(reel_dir, "reel_preview_av.mp4" if preview else "reel.mp4")
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", vid, "-i", wav, "-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
                     "-shortest", "-movflags", "+faststart", out], check=True)
-    json.dump(dict(total=total, voiced=voiced, words=times,
+    json.dump(dict(total=total, voiced=voiced, picture_h=PH, words=times,
+                   events=[dict(kind=e["kind"], t=round(e["t"], 3), beat=e.get("beat"), **({"name": e["name"]} if e.get("name") else {}))
+                           for e in sorted(events, key=lambda e: e["t"])],
                    shots=[dict(t0=round(s["t0"], 3), t1=round(s["t1"], 3), kind=s.get("kind", "crop"), src=s.get("src")) for s in shots],
                    captions=[dict(t0=round(c["t0"], 3), t1=round(c["t1"], 3),
                                   text=" ".join(clean(words[j]) for j in c["idx"])) for c in caps]),

@@ -22,6 +22,28 @@
    "огонёк разгорается",
    "эхо хука в призыве",
    "петля на рисунок начала"
-  ]
+  ],
+  "published": null,
+  "after_publish": {
+   "note": "вписывает владелец вручную из статистики Instagram; эталон меняется по этим числам, а не только по reel_metrics",
+   "24h": {
+    "views": null,
+    "skip_rate_3s": null,
+    "avg_watch_s": null,
+    "likes_per_reach": null,
+    "shares_per_reach": null,
+    "non_follower_share": null,
+    "site_visits_utm": null
+   },
+   "7d": {
+    "views": null,
+    "skip_rate_3s": null,
+    "avg_watch_s": null,
+    "likes_per_reach": null,
+    "shares_per_reach": null,
+    "non_follower_share": null,
+    "site_visits_utm": null
+   }
+  }
  }
 ]

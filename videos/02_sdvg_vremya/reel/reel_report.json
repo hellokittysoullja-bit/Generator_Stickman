@@ -1,6 +1,7 @@
 {
  "total": 43.369372549019616,
  "voiced": false,
+ "picture_h": 1380,
  "words": [
   {
    "word": "Ты",
@@ -521,6 +522,117 @@
    "word": "Настоящих.",
    "start": 42.519372549019614,
    "end": 42.91937254901961
+  }
+ ],
+ "events": [
+  {
+   "kind": "sfx",
+   "t": 0.0,
+   "beat": 0,
+   "name": "riser"
+  },
+  {
+   "kind": "spot",
+   "t": 2.474,
+   "beat": 1
+  },
+  {
+   "kind": "punch",
+   "t": 4.21,
+   "beat": 2
+  },
+  {
+   "kind": "punch",
+   "t": 7.887,
+   "beat": 3
+  },
+  {
+   "kind": "shake",
+   "t": 7.887,
+   "beat": 3
+  },
+  {
+   "kind": "spot",
+   "t": 12.039,
+   "beat": 5
+  },
+  {
+   "kind": "write",
+   "t": 13.79,
+   "beat": 6
+  },
+  {
+   "kind": "punch",
+   "t": 18.085,
+   "beat": 7
+  },
+  {
+   "kind": "punch",
+   "t": 19.667,
+   "beat": 8
+  },
+  {
+   "kind": "circle",
+   "t": 21.531,
+   "beat": 9
+  },
+  {
+   "kind": "spot",
+   "t": 21.531,
+   "beat": 9
+  },
+  {
+   "kind": "ring",
+   "t": 22.327,
+   "beat": 9
+  },
+  {
+   "kind": "shake",
+   "t": 22.327,
+   "beat": 9
+  },
+  {
+   "kind": "sfx",
+   "t": 24.522,
+   "beat": 10,
+   "name": "oof"
+  },
+  {
+   "kind": "sfx",
+   "t": 28.553,
+   "beat": 12,
+   "name": "riser"
+  },
+  {
+   "kind": "punch",
+   "t": 33.443,
+   "beat": 13
+  },
+  {
+   "kind": "write",
+   "t": 33.943,
+   "beat": 14
+  },
+  {
+   "kind": "arrow",
+   "t": 39.206,
+   "beat": 15
+  },
+  {
+   "kind": "sfx",
+   "t": 39.206,
+   "beat": 15,
+   "name": "swoosh"
+  },
+  {
+   "kind": "mark",
+   "t": 39.936,
+   "beat": 15
+  },
+  {
+   "kind": "write",
+   "t": 40.386,
+   "beat": 15
   }
  ],
  "shots": [

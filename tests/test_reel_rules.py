@@ -111,7 +111,7 @@ def test_caption_rules_on_timeline():
     peaks = {k: v[1] for k, v in reel.SFX.items()}
     shots = [dict(t0=0.0, t1=1.65), dict(t0=1.65, t1=4.0), dict(t0=4.0, t1=6.0)]
     riser = [dict(kind="sfx", name="riser", align="start", t=0.0)]
-    good = [dict(t0=0.0, t1=1.65, text="Ты не ленишься"), dict(t0=1.65, t1=4.0, text="Ты не видишь"),
+    good = [dict(t0=0.0, t1=1.65, text="Ты не ленишься"), dict(t0=1.65, t1=4.0, text="Ты не видишь время совсем никогда"),
             dict(t0=4.0, t1=5.0, text="Настоящих")]
     assert reel_rules.check_timeline(shots, riser, peaks, good, total=5.0) == []
     long_hook = [dict(good[0], text="Ты вовсе не ленишься, ты просто устал")] + good[1:]
@@ -133,3 +133,50 @@ def test_passport_blocks_template_reels():
     assert reel_rules.check_passport(new, log, "videos/03_new/reel") == []                # другой хук, другие приёмы
     del new["passport"]
     assert reel_rules.check_passport(new, log, "videos/03_new/reel")                      # без паспорта нельзя
+
+
+def test_stop_words_and_accent_shift():                       # план 04 п.1.3, п.1.24
+    assert broken(lambda s: s["beats"][14].__setitem__("text", "«Напарник» вылечит прокрастинацию навсегда."))
+    assert broken(lambda s: s["beats"][2].__setitem__("text", "Шок: так бывает при *СДВГ*. И без диагноза тоже."))
+    def shift(s):                                              # наезд на соседнее с ключевым слово
+        b = next(b for b in s["beats"] if b["text"].startswith("Интересное"))
+        b["fx"][0]["at"] = 3
+    assert broken(shift)
+    def mixed_whips(s):
+        s["beats"][6]["shots"][1]["whip"] = [560, 0]
+    assert broken(mixed_whips)
+
+
+def test_passport_needs_goal():                                # план 04 п.1.29
+    log = json.load(open(os.path.join(ROOT, "docs", "reels_log.json"), encoding="utf8"))
+    s = spec(); del s["passport"]["goal"]
+    assert reel_rules.check_passport(s, log, "videos/02_sdvg_vremya/reel")
+
+
+def test_overlays_in_safe_zone_and_cta_before_end():           # план 04 п.1.25, п.1.1
+    assert reel_rules.check_overlays([(14, "Напарник", 207, 280, 885, 430)]) == []
+    assert reel_rules.check_overlays([(14, "Напарник", 207, 202, 885, 376)])        # v12 до 23.10: под шапкой Reels
+    assert reel_rules.check_overlays([(15, "бесплатно", 600, 900, 950, 1000)])      # под колонкой кнопок
+    s = spec()
+    assert reel_rules.check_cta(s, [0.0] * 15 + [36.7, 41.1], 43.4) == []
+    assert reel_rules.check_cta(s, [0.0] * 15 + [39.5, 41.1], 43.4)                 # призыв за 3.9 с до конца
+    s["passport"].pop("cta_beat")
+    assert reel_rules.check_cta(s, [0.0] * 17, 43.4)
+
+
+def test_timeline_min_shot_and_src_changes():                  # план 04 п.1.24
+    peaks = {k: v[1] for k, v in reel.SFX.items()}
+    riser = [dict(kind="sfx", name="riser", align="start", t=0.0)]
+    short = [dict(t0=0.0, t1=1.65, src="a"), dict(t0=1.65, t1=2.1, src="b"), dict(t0=2.1, t1=4.0, src="a")]
+    assert reel_rules.check_timeline(short, riser, peaks)                           # план 0.45 с
+    many = [dict(t0=0.0, t1=1.65, src="a")] + [dict(t0=1.65 + i * 1.5, t1=3.15 + i * 1.5, src="ab"[i % 2]) for i in range(12)]
+    assert any("смен рисунка" in e for e in reel_rules.check_timeline(many, riser, peaks))
+
+
+def test_overlay_box_follows_paper_zoom():
+    ev = [dict(kind="write", text="?", x=540, y=300, size=200, t=0.0, dur=0.3, beat=0)]
+    still = [dict(t0=0.0, t1=2.0, src="f", **{"from": [500, 500, 600]})]
+    zoom = [dict(t0=0.0, t1=2.0, src="f", **{"from": [500, 500, 600], "to": [500, 500, 400]})]
+    reel.layout({"beats": [], "picture_h": 1380})
+    b0 = reel.overlay_boxes(ev, still)[0]; b1 = reel.overlay_boxes(ev, zoom)[0]
+    assert b1[3] < b0[3] and b1[4] - b1[2] > b0[4] - b0[2]       # наезд уносит надпись вверх и растит её
