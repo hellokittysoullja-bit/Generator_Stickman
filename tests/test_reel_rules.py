@@ -186,3 +186,13 @@ def test_close_punches_warn():                                 # план 04 п.
     ev = [dict(kind="punch", t=18.0), dict(kind="punch", t=19.6)]
     assert reel_rules.warnings({"beats": []}, [], 40.0, ev)
     assert not reel_rules.warnings({"beats": []}, [], 40.0, [ev[0], dict(kind="punch", t=23.0)])
+
+
+def test_thirty_degree_rule():                                  # план 04 п.1.9
+    peaks = {k: v[1] for k, v in reel.SFX.items()}
+    riser = [dict(kind="sfx", name="riser", align="start", t=0.0)]
+    a = dict(t0=0.0, t1=1.65, src="f4", **{"from": [1031, 440, 738], "to": [1031, 440, 700]})
+    b = dict(t0=1.65, t1=3.0, src="f4", **{"from": [1031, 440, 560]})
+    assert any("почти одинаковы" in e for e in reel_rules.check_timeline([a, b], riser, peaks))
+    assert not any("почти одинаковы" in e for e in reel_rules.check_timeline([a, dict(b, jump=True)], riser, peaks))
+    assert not any("почти одинаковы" in e for e in reel_rules.check_timeline([a, dict(b, **{"from": [1031, 440, 480]})], riser, peaks))

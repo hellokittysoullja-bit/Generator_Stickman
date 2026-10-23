@@ -5,6 +5,7 @@
 
     python scripts/reel_rules.py videos/NN/reel     # проверить reel.json без рендера
 """
+import math
 import os
 import re
 
@@ -23,6 +24,7 @@ CLITICS = {"в", "во", "на", "с", "со", "к", "ко", "по", "о", "об
 
 # Против шаблона (владелец 23.10: «чтобы агент не делал шаблонно»): у каждого рилса паспорт — тип хука, схема,
 # приёмы; журнал прошлых рилсов — docs/reels_log.json. Типы хуков — из базы знаний (01_hook_script_retention.md).
+STEP_MIN, STEP_SHIFT = 1.4, 0.33   # правило 30° (Бордуэлл): соседние окна одного рисунка — ×1.4 или сдвиг на треть окна
 MIN_SHOT_SEC = 0.7         # план короче 0.7 с не читается (плейбук; v12 минимум 0.706)
 MAX_SRC_CHANGES_30S = 10   # смен рисунка за любые 30 с (Lang 1999: перегрузка содержания), v12 — 9
 CAP_HOLD_PAD = 0.6         # субтитр стоит не дольше чтения + 0.6 с (Szarkowska 2018, Stern 2024), v12 — максимум +0.47
@@ -165,6 +167,13 @@ def check_timeline(shots, events, sfx_peaks, caps=None, total=None):
         n = sum(c0 <= c < c0 + 30.0 for c in changes)
         if n > MAX_SRC_CHANGES_30S:
             err.append(f"{n} смен рисунка за 30 с с {c0:.1f} с > {MAX_SRC_CHANGES_30S}: перегрузка, держите рисунок дольше"); break
+    for a, b in zip(shots, shots[1:]):                # правило 30°: соседние окна одного рисунка — на ступень
+        if a.get("src") and a.get("src") == b.get("src") and "from" in a and "from" in b and not b.get("jump"):
+            pa, pb = a.get("to", a["from"]), b["from"]
+            ratio = pb[2] / pa[2]; shift = math.hypot(pb[0] - pa[0], pb[1] - pa[1])
+            if 1 / STEP_MIN < ratio < STEP_MIN and shift < STEP_SHIFT * max(pa[2], pb[2]):
+                err.append(f"склейка {b['t0']:.2f} с: окна одного рисунка {a['src']} почти одинаковы (×{ratio:.2f}, сдвиг "
+                           f"{shift:.0f}) — скачок; крупнее/мельче хотя бы в {STEP_MIN} раза или \"jump\": true")
     for s in shots[:-1]:
         if s["t1"] - s["t0"] < MIN_SHOT_SEC - 0.02:
             err.append(f"план {s['t0']:.2f}–{s['t1']:.2f} с — {s['t1'] - s['t0']:.2f} с < {MIN_SHOT_SEC}: не успеть прочитать")
