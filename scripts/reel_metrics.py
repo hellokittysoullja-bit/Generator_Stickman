@@ -5,7 +5,8 @@
     python scripts/reel_metrics.py --at 18.5 videos/NN/reel # что на экране и в звуке в эту секунду (провал на графике)
 
 frozen_share — доля кадров, где картинка почти не меняется (без склеек); motion_median — средняя смена пикселей
-кадр к кадру; sharpness — дисперсия вторых разностей (кипение линий вторым проходом снижало её на 11%);
+кадр к кадру; sharpness — медиана по всем кадрам дисперсии вторых разностей (кипение линий вторым проходом снижало её на 11%;
+до 23.10 бралась по каждому 15-му кадру — от фазы выборки число гуляло на ±5 %, больше любого порога);
 silence_share / longest_silence_s — тишина звука (<-50 dB по 100 мс); sound_events — отдельные звуки (>-30 dB);
 true_peak_db / lufs_i / lra — громкость мастера по ebur128 (true peak выше −1 dBTP — клиппинг на телефоне).
 Картинка меряется по своей высоте (`picture_h` из reel_report.json, по умолчанию 1380): до 23.10 прибор резал 1420 px
@@ -48,7 +49,7 @@ def loudness(p):
 def measure(p, ph=1380):
     a = frames(p, ph); d = np.abs(np.diff(a, axis=0)).mean(axis=(1, 2))
     moving = d[d <= 6]
-    lap = [np.var(np.diff(f, 2, axis=0)) + np.var(np.diff(f, 2, axis=1)) for f in a[::15]]
+    lap = [np.var(np.diff(f, 2, axis=0)) + np.var(np.diff(f, 2, axis=1)) for f in a]   # все кадры: по каждому 15-му ±5 % от фазы
     x = audio(p); w = 1600
     db = 20 * np.log10(np.array([np.sqrt(np.mean(x[i:i + w] ** 2)) for i in range(0, len(x) - w, w)]) + 1e-9)
     run = best = 0

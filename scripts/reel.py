@@ -325,6 +325,7 @@ def prepare_src(reel_dir, sources):
 # ----------------------------------------------------------------------------- кукла героя
 _DOLL = {}
 DOLL_FPS = 12          # кукла рисуется 12 к/с, как рисованная анимация; камера остаётся 30 к/с (white minimal: Posterize Time 12)
+DOLL_LIFE_PHASE = 400 / DOLL_FPS   # с какого места плана жизни (seed 11) кукла начинает: как в одобренном v12 (33.3 с)
 def doll_frame(t, dur, actions):
     """Живой кот (риг из experiments/alive_cat/doll): RGBA премультиплицированный, координаты рига."""
     if "rig" not in _DOLL:
@@ -585,9 +586,13 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     shots.sort(key=lambda s: s["t0"])
     shots[0]["t0"] = 0.0                              # перебивка до первого слова идёт на первом плане, а не в пустоту
     # кукла живёт по общему времени ролика: смена плана с куклой не перезапускает моргание и лицо
-    doll_acts = [dict(a, t=a["t"] + s["t0"]) for s in shots if s.get("kind") == "doll" for a in s.get("actions", [])]
+    # и по своим часам, которые идут с первого появления: правка фраз до куклы не меняет её моргания и взгляды
+    # (23.10: пауза 0.5 с во фразе 5 сдвинула куклу по фоновому плану жизни — другой отрезок, другие движения)
+    doll_first = min([s["t0"] for s in shots if s.get("kind") == "doll"] or [0.0])
+    doll_acts = [dict(a, t=a["t"] + s["t0"] - doll_first + DOLL_LIFE_PHASE)
+                 for s in shots if s.get("kind") == "doll" for a in s.get("actions", [])]
     for s in shots:
-        if s.get("kind") == "doll": s["doll_acts"] = doll_acts
+        if s.get("kind") == "doll": s["doll_acts"] = doll_acts; s["doll_t0"] = doll_first
     for a, b in zip(shots, shots[1:]): a["t1"] = b["t0"]
     shots[-1]["t1"] = total
     # события внутри фраз: наезд, тряска, стрелка, надпись — привязаны к слову
@@ -821,7 +826,8 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
                 src = load_src(reel_dir, part["src"])
                 base = fit_on_paper(base, src, part["region"], part["cy"], part.get("width", 0.94), zs)
         elif kind == "doll":
-            rgba = doll_frame(math.floor(t * DOLL_FPS) / DOLL_FPS, total + 0.5, s["doll_acts"])   # кукла «на двойках»
+            td = math.floor((t - s["doll_t0"]) * DOLL_FPS) / DOLL_FPS + DOLL_LIFE_PHASE              # кукла «на двойках»
+            rgba = doll_frame(td, total - s["doll_t0"] + DOLL_LIFE_PHASE + 0.5, s["doll_acts"])
             base = paste_doll(base, rgba, W / 2 + shake[0], s.get("cy", PH * 0.55) + shake[1], s.get("h", 900) * zs)
     base = np.ascontiguousarray(boil(base, t)) if kind in ("fit", "stack") else np.ascontiguousarray(base)
     for e in events:                                # прожектор: всё, кроме главного, темнеет до 25% (Golden «darken all but focus»)
