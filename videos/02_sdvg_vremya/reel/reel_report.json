@@ -567,11 +567,6 @@
    "beat": 7
   },
   {
-   "kind": "punch",
-   "t": 20.167,
-   "beat": 8
-  },
-  {
    "kind": "circle",
    "t": 22.031,
    "beat": 9

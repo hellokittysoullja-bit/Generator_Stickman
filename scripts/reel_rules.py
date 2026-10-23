@@ -28,6 +28,7 @@ MAX_SRC_CHANGES_30S = 10   # смен рисунка за любые 30 с (Lang
 CAP_HOLD_PAD = 0.6         # субтитр стоит не дольше чтения + 0.6 с (Szarkowska 2018, Stern 2024), v12 — максимум +0.47
 CTA_BEFORE_END = 5.0       # призыв начинается не позже чем за 5 с до конца (финал — зона ухода: Dashlet, NSDI 2023)
 LATE_ZONE, LATE_SHOT_SEC = 0.8, 2.0   # гипотеза: в последних 20 % планы ≤ 2 с (предупреждение, не запрет)
+PUNCH_MIN_GAP = 3.0        # гипотеза: наезды ближе 3 с обесценивают друг друга (Дмитрык: лишние крупные ослабляют следующие)
 LONG_WORD_SYLLABLES = 4    # в первых трёх фразах слова не длиннее 4 слогов (тест незнакомца; предупреждение)
 # Безопасные зоны экрана 1080×1920 (Meta/Restream): верх 14 % — шапка Reels, низ 400 px — подпись и кнопки, бока 70 px,
 # правая колонка кнопок x > 930 ниже 45 % высоты. Рукописные надписи и маркер — целиком внутри.
@@ -211,9 +212,13 @@ def syllables(w):
     return len(re.findall(r"[аеёиоуыэюяaeiouy]", w.lower()))
 
 
-def warnings(spec, shots, total):
+def warnings(spec, shots, total, events=()):
     """Гипотезы без доказанного порога — печатаются, рендер не останавливают."""
     out = []
+    pt = sorted(e["t"] for e in events if e.get("kind") == "punch")
+    for a, b in zip(pt, pt[1:]):
+        if b - a < PUNCH_MIN_GAP:
+            out.append(f"наезды на {a:.2f} и {b:.2f} с — ближе {PUNCH_MIN_GAP} с: второй слабее, оставьте сильнейший")
     for s in shots:
         if s["t0"] >= LATE_ZONE * total and s["t1"] - s["t0"] > LATE_SHOT_SEC + 0.02:
             out.append(f"финал: план {s['t0']:.2f}–{s['t1']:.2f} с длиннее {LATE_SHOT_SEC} с — в последних 20 % уходят чаще")

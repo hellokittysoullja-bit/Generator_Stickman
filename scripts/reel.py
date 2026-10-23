@@ -610,7 +610,7 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     rule_errs += reel_rules.check_timeline(shots, events, {k: v[1] for k, v in SFX.items()}, caps_txt, total)
     rule_errs += reel_rules.check_overlays(overlay_boxes(events, shots))
     rule_errs += reel_rules.check_cta(spec, [times[i0]["start"] for i0, _ in spans], total)
-    for w in reel_rules.warnings(spec, shots, total):
+    for w in reel_rules.warnings(spec, shots, total, events):
         print("  ⚠ " + w)
     if rule_errs:
         print("ПРАВИЛА РИЛСА (docs/REELS_PLAYBOOK.md):\n" + "\n".join("  ✗ " + e for e in rule_errs))

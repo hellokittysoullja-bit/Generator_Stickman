@@ -180,3 +180,9 @@ def test_overlay_box_follows_paper_zoom():
     reel.layout({"beats": [], "picture_h": 1380})
     b0 = reel.overlay_boxes(ev, still)[0]; b1 = reel.overlay_boxes(ev, zoom)[0]
     assert b1[3] < b0[3] and b1[4] - b1[2] > b0[4] - b0[2]       # наезд уносит надпись вверх и растит её
+
+
+def test_close_punches_warn():                                 # план 04 п.1.5 (гипотеза — предупреждение)
+    ev = [dict(kind="punch", t=18.0), dict(kind="punch", t=19.6)]
+    assert reel_rules.warnings({"beats": []}, [], 40.0, ev)
+    assert not reel_rules.warnings({"beats": []}, [], 40.0, [ev[0], dict(kind="punch", t=23.0)])
