@@ -255,9 +255,41 @@ def syllables(w):
     return len(re.findall(r"[аеёиоуыэюяaeiouy]", w.lower()))
 
 
+HAND_WORDS_MAX, HAND_WIN = 3, 7.0   # рукописных слов не больше 3 за 7 с (п.1.15), два текста не в одни 0.5 с
+ARCS, CHARGES = ("t", "r"), ("+", "-", "−")
+
+
+def check_writing(events, shots):
+    """Рукописный текст до первой склейки — ошибка: хук работает одной картинкой и одним субтитром (п.1.15)."""
+    cut = shots[1]["t0"] if len(shots) > 1 else 9e9
+    return [f"рукописное «{e['text']}» на {e['t']:.2f} с — до первой склейки {cut:.2f} с: в хуке один текст — субтитр"
+            for e in events if e.get("kind") in ("write", "mark") and e["t"] < cut - 0.01]
+
+
 def warnings(spec, shots, total, events=()):
     """Гипотезы без доказанного порога — печатаются, рендер не останавливают."""
     out = []
+    hand = sorted((e["t"], e["text"]) for e in events if e.get("kind") in ("write", "mark"))
+    for i, (t, _) in enumerate(hand):
+        n = sum(len(clean(x).split()) for tt, x in hand[i:] if tt < t + HAND_WIN)
+        if n > HAND_WORDS_MAX:
+            out.append(f"рукописных слов {n} за {HAND_WIN:.0f} с с {t:.2f} с > {HAND_WORDS_MAX}: читать некогда (п.1.15)"); break
+    for (t1, x1), (t2, x2) in zip(hand, hand[1:]):
+        if t2 - t1 < 0.5:
+            out.append(f"«{x1}» и «{x2}» начаты через {t2 - t1:.2f} с: два текста сразу (п.1.15)")
+    beats = spec.get("beats", [])
+    arcs = [b.get("arc") for b in beats]; ch = [b.get("charge") for b in beats]
+    if any(arcs):                                       # кривая «напряжение — разрядка» (п.1.23), если размечена
+        for i, (a, b) in enumerate(zip(arcs, arcs[1:])):
+            if a == b == "r":
+                out.append(f"фразы {i} и {i + 1} — две разрядки подряд: напряжение падает (п.1.23)")
+        run = 1
+        for i in range(1, len(ch)):
+            run = run + 1 if ch[i] and ch[i] == ch[i - 1] else 1
+            if run > 2:
+                out.append(f"фразы {i - 2}–{i} — три подряд со знаком «{ch[i]}»: качели ценности замерли (п.1.23)")
+        if ch and ch[-1] not in ("+", None):
+            out.append("рилс кончается на «−»: конец на «+» (п.1.23)")
     starts = [(e["t"], e["kind"]) for e in events if e.get("kind") in ("punch", "write", "mark", "circle", "arrow")]
     starts += [(s["t0"], "вход наездом" if s.get("zoom_in") else "хлёст") for s in shots[1:] if s.get("zoom_in") or s.get("whip")]
     starts += [(s["t0"] + a["t"], "жест куклы") for s in shots if s.get("kind") == "doll"

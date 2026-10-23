@@ -216,3 +216,15 @@ def test_sound_plan_matches_mixer_order():
     plan = reel.sound_plan(shots, [dict(kind="sfx", name="riser", t=0.0, align="start"), dict(kind="punch", t=12.5)])
     assert [x["name"] for x in plan] == ["swoosh", "swoosh_deep", "riser", "swoosh", "swoosh"]
     assert plan[0]["whip"] and plan[0]["pan"] == 0.3 and plan[3]["soft"] and plan[3]["gain_db"] == -7.0
+
+
+def test_writing_budget_and_arc():                              # план 04 п.1.15, 1.23
+    shots = [dict(t0=0.0, t1=1.65), dict(t0=1.65, t1=4.0)]
+    assert reel_rules.check_writing([dict(kind="write", text="?", t=0.5)], shots)
+    assert not reel_rules.check_writing([dict(kind="write", text="?", t=2.0)], shots)
+    many = [dict(kind="mark", text="бесплатно", t=10.0), dict(kind="write", text="без карты и регистрации", t=10.4)]
+    assert len(reel_rules.warnings({"beats": []}, [], 40.0, many)) == 2
+    two_r = {"beats": [dict(text="a", arc="t", charge="+"), dict(text="b", arc="r", charge="-"), dict(text="c", arc="r", charge="+")]}
+    assert any("разрядки" in w for w in reel_rules.warnings(two_r, [], 40.0))
+    ends_minus = {"beats": [dict(text="a", arc="t", charge="+"), dict(text="b", arc="r", charge="-")]}
+    assert any("кончается" in w for w in reel_rules.warnings(ends_minus, [], 40.0))

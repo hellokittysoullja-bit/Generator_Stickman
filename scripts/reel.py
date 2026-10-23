@@ -611,6 +611,7 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     rule_errs += reel_rules.check_overlays(overlay_boxes(events, shots))
     rule_errs += reel_rules.check_cta(spec, [times[i0]["start"] for i0, _ in spans], total)
     rule_errs += reel_rules.check_sounds(sound_plan(shots, events))
+    rule_errs += reel_rules.check_writing(events, shots)
     for w in reel_rules.warnings(spec, shots, total, events) + reel_rules.sound_warnings(sound_plan(shots, events)):
         print("  ⚠ " + w)
     if rule_errs:
