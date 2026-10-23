@@ -785,7 +785,8 @@
    "t0": 37.646,
    "t1": 39.039,
    "kind": "doll",
-   "src": null
+   "src": null,
+   "closeup": true
   },
   {
    "t0": 39.039,

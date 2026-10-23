@@ -716,7 +716,8 @@
        "state": "golden"
       }
      ],
-     "cx": 770
+     "cx": 770,
+     "closeup": true
     },
     {
      "at": 4,

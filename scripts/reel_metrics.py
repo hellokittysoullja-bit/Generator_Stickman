@@ -81,6 +81,23 @@ def tempo(report):
                 accent_repeats=repeats)
 
 
+def doll_edges(video, report, ph=1380):
+    """Кукла не обрывается краем кадра: тушь куклы у левого/правого края (3 px) в любом из 8 кадров плана — обрывок
+    хвоста или усов (23.10: наезд твиста резал хвост, большая кукла v12 выходила за оба края). Осознанный крупный план
+    помечается в плане куклы `"closeup": true` и не проверяется."""
+    out = []
+    for s in report["shots"]:
+        if s["kind"] != "doll" or s.get("closeup"):
+            continue
+        for t in np.linspace(s["t0"] + 0.05, s["t1"] - 0.05, 8):
+            r = subprocess.run(['ffmpeg', '-v', 'error', '-ss', f'{t:.3f}', '-i', video, '-frames:v', '1', '-vf',
+                                f'crop=1080:{ph}:0:0,format=gray', '-f', 'rawvideo', '-'], capture_output=True).stdout
+            a = np.frombuffer(r, np.uint8).reshape(ph, 1080)[int(ph * 0.2):ph - 10]
+            if (a[:, :3] < 150).sum() > 3 or (a[:, -3:] < 150).sum() > 3:
+                out.append(f"кукла {s['t0']:.2f}–{s['t1']:.2f} с обрывается краем кадра на {t:.2f} с"); break
+    return out
+
+
 def at(report, t):
     """Что на экране и в звуке в секунду t: план, субтитр, звуки и фраза — чтобы провал графика удержания читался."""
     sh = next((s for s in report["shots"] if s["t0"] <= t < s["t1"]), report["shots"][-1])
@@ -107,7 +124,7 @@ def run(arg):
     if os.path.isdir(arg):
         rep = json.load(open(os.path.join(arg, "reel_report.json"), encoding="utf8"))
         m = measure(os.path.join(arg, "reel.mp4"), rep.get("picture_h", 1380)); tp = tempo(rep)
-        return dict(m, tempo=tp, warnings=warnings(m, tp))
+        return dict(m, tempo=tp, warnings=warnings(m, tp) + doll_edges(os.path.join(arg, "reel.mp4"), rep, rep.get("picture_h", 1380)))
     m = measure(arg)
     return dict(m, warnings=warnings(m))
 

@@ -645,7 +645,8 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     json.dump(dict(total=total, voiced=voiced, picture_h=PH, words=times,
                    events=[dict(kind=e["kind"], t=round(e["t"], 3), beat=e.get("beat"), **({"name": e["name"]} if e.get("name") else {}))
                            for e in sorted(events, key=lambda e: e["t"])],
-                   shots=[dict(t0=round(s["t0"], 3), t1=round(s["t1"], 3), kind=s.get("kind", "crop"), src=s.get("src")) for s in shots],
+                   shots=[dict(t0=round(s["t0"], 3), t1=round(s["t1"], 3), kind=s.get("kind", "crop"), src=s.get("src"),
+                              **({"closeup": True} if s.get("closeup") else {})) for s in shots],
                    captions=[dict(t0=round(c["t0"], 3), t1=round(c["t1"], 3),
                                   text=" ".join(clean(words[j]) for j in c["idx"])) for c in caps]),
               open(os.path.join(reel_dir, "reel_report.json"), "w", encoding="utf8"), ensure_ascii=False, indent=1)
