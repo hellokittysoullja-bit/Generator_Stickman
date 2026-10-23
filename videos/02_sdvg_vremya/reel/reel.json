@@ -546,6 +546,15 @@
       1.05
      ]
     }
+   ],
+   "fx": [
+    {
+     "kind": "sfx",
+     "name": "riser",
+     "at": 8,
+     "align": "start",
+     "dt": -1.717
+    }
    ]
   },
   {
@@ -609,28 +618,6 @@
    "text": "*«Напарник»* — кот рядом, пока ты делаешь дело.",
    "shots": [
     {
-     "at": 0,
-     "kind": "doll",
-     "cy": 800,
-     "h": 540,
-     "zoom": [
-      1.0,
-      1.04
-     ],
-     "actions": [
-      {
-       "t": 0.1,
-       "do": "face",
-       "name": "happy"
-      },
-      {
-       "t": 2.0,
-       "do": "flame",
-       "state": "golden"
-      }
-     ]
-    },
-    {
      "at": 1,
      "kind": "doll",
      "cy": 800,
@@ -638,6 +625,18 @@
      "zoom": [
       1.0,
       1.04
+     ],
+     "actions": [
+      {
+       "t": 0.0,
+       "do": "face",
+       "name": "happy"
+      },
+      {
+       "t": 1.4,
+       "do": "flame",
+       "state": "golden"
+      }
      ]
     }
    ],
@@ -733,6 +732,11 @@
      "dur": 0.5,
      "red": false,
      "hold": 2.2
+    },
+    {
+     "kind": "sfx",
+     "name": "swoosh",
+     "at": 7
     }
    ]
   },

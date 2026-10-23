@@ -367,16 +367,22 @@ def paste_doll(base, rgba, cx, cy, h):
 # ----------------------------------------------------------------------------- накладки
 _CLOCK = {}
 def clock_img(txt, fill):
-    """Часы хука: каждая цифра в ячейке ширины самой широкой цифры, по центру ячейки. В Shantell «1» — 89 px,
-    «5» — 120, остальные — 133: строка «23:55 → 03:12» центрировалась заново и плясала до ±22 px (замер 23.10)."""
+    """Часы хука: каждая цифра в ячейке ширины самой широкой цифры (по самому знаку, без полей картинки), по центру
+    ячейки. В Shantell «1» — 89 px, «5» — 120, остальные — 133: строка «23:55 → 03:12» центрировалась заново и
+    плясала до ±22 px (замер 23.10). Первая версия брала ячейку вместе с полями и разводила цифры («0 3 : 1 2»)."""
     f = font(FONT, 190)
+    def glyph(ch, col):
+        im = text_img(ch, f, col, stroke=16, stroke_fill=INK)
+        return im.crop(im.getbbox() or (0, 0, im.width, im.height)), im.height
     if "cell" not in _CLOCK:
-        _CLOCK["cell"] = max(text_img(d, f, WHITE, stroke=16, stroke_fill=INK).width for d in "0123456789")
-    cell = _CLOCK["cell"]; parts = [text_img(ch, f, fill, stroke=16, stroke_fill=INK) for ch in txt]
-    widths = [cell if ch.isdigit() else p.width for ch, p in zip(txt, parts)]
-    out = Image.new("RGBA", (sum(widths), max(p.height for p in parts)), (0, 0, 0, 0)); x = 0
-    for p, w in zip(parts, widths):
-        out.alpha_composite(p, (x + (w - p.width) // 2, 0)); x += w
+        _CLOCK["cell"] = max(glyph(d, WHITE)[0].width for d in "0123456789")
+    cell, gap = _CLOCK["cell"], -6                     # обводки соседних цифр чуть сходятся, как в наборе
+    parts = [glyph(ch, fill) for ch in txt]
+    widths = [cell if ch.isdigit() else g.width for ch, (g, _h) in zip(txt, parts)]
+    H_ = max(h for _g, h in parts)
+    out = Image.new("RGBA", (sum(widths) + gap * (len(txt) - 1) + 40, H_), (0, 0, 0, 0)); x = 20
+    for (g, _h), w in zip(parts, widths):
+        out.alpha_composite(g, (x + (w - g.width) // 2, (H_ - g.height) // 2)); x += w + gap
     return out
 
 def text_img(txt, f, fill, stroke=0, stroke_fill=None, pad=20):
@@ -888,6 +894,7 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
         sc = 1.0 + (0.18 * (1 - ease_out((t - t1c) / 0.25)) if landed else 0.0)
         im = clock_img(txt, KEY if landed else WHITE)
         if t < 0.25: sc *= 1 + 0.6 * (1 - ease_out(t / 0.25))   # влёт с ударом; при 2.4x первый кадр резал цифры
+        sc = min(sc, (W - 40) / im.width)             # влёт с увеличением не режет цифры краями кадра
         over(base, im, W / 2, PH * 0.27, scale=sc)   # ниже верхних 14% — там шапка Reels
 
     # субтитры: группа въезжает снизу, активное слово — по времени слова
