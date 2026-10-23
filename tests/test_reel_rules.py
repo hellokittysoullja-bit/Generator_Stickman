@@ -66,3 +66,14 @@ def test_approved_values_are_defaults():
     s2 = copy.deepcopy(s); reel.layout(s2)
     assert abs(s2["beats"][0]["shots"][0]["from"][2] - 112.0) < 1e-6          # view_scale 1.12 по умолчанию
     reel.layout({"beats": [], "picture_h": 1100})                              # вернуть модуль как был
+
+
+def test_segment_cache_key_sees_only_what_the_shot_shows():
+    shots = [dict(t0=0.0, t1=2.0, src="f1", **{"from": [1, 1, 100]}), dict(t0=2.0, t1=4.0, src="f1", **{"from": [2, 2, 100]}),
+             dict(t0=4.0, t1=12.0, src="f1", **{"from": [3, 3, 100]}), dict(t0=12.0, t1=14.0, src="f1", **{"from": [4, 4, 100]})]
+    ev = [dict(kind="punch", t=1.0, amt=0.1), dict(kind="punch", t=13.0, amt=0.1)]
+    key = lambda e: reel.segment_key("/nonexistent", 30, 0, 60, 0, shots, e, [], [], [], None, 14.0, "v")
+    base = key(ev)
+    assert key([dict(ev[0], amt=0.2), ev[1]]) != base          # своё событие поменялось — план перерисуется
+    assert key([ev[0], dict(ev[1], amt=0.2)]) == base          # событие через 12 с — план из кэша
+    assert key([dict(ev[0], _anchor={1: 2}), ev[1]]) == base   # служебное поле рендера ключ не меняет

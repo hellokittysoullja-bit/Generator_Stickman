@@ -17,6 +17,7 @@ LISTOPADOV, Яковлева, vidIQ, Isaac):
 Тайминг слов: alignment.json (озвучка, [{word,start,end}]) или оценка по слогам — тогда это немой рилс.
 """
 import argparse
+import hashlib
 import json
 import math
 import os
@@ -568,17 +569,7 @@ def build(reel_dir, sheet=False, preview=False, force=False):
             hook_clock["t_end"] = min([s["t0"] for s in shots if s["t0"] > hook_clock["t1"]] + [hook_clock["t_end"]])
     vid = os.path.join(reel_dir, "reel_preview.mp4" if preview else "reel_video.mp4")
     fps = 15 if preview else FPS
-    ff = subprocess.Popen(["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}",
-                           "-r", str(fps), "-i", "-", "-c:v", "libx264", "-preset", "slow", "-crf", "19",
-                           "-maxrate", "9M", "-bufsize", "18M",        # зерно жмётся плохо: потолок ~9 Мбит/с, Reels всё равно пережмёт
-                           "-pix_fmt", "yuv420p", vid], stdin=subprocess.PIPE)
-    n = int(total * fps)
-    for fi in range(n):
-        t = fi / fps
-        frame = render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock, total)
-        ff.stdin.write(frame.tobytes())
-        if fi % 60 == 0: print(f"  кадр {fi}/{n}", flush=True)
-    ff.stdin.close(); ff.wait()
+    render_video(reel_dir, vid, fps, total, shots, events, caps, words, times, tex, hook_clock)
 
     wav = os.path.join(reel_dir, "reel_audio.wav")
     mix_audio(wav, total, shots, events, spec, voiced)
@@ -593,6 +584,78 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     write_srt(os.path.join(reel_dir, "reel.srt"), caps, words)
     print(f"Готово. Файл: {out} ({total:.1f} с, планов {len(shots)}, групп субтитров {len(caps)})")
     return out
+
+X264 = ["-c:v", "libx264", "-preset", "slow", "-crf", "19",
+        "-maxrate", "9M", "-bufsize", "18M",        # зерно жмётся плохо: потолок ~9 Мбит/с, Reels всё равно пережмёт
+        "-pix_fmt", "yuv420p"]
+
+def _code_sig():
+    """Подпись кода картинки: правка reel.py, библиотеки звуков или рига куклы перерисовывает все планы."""
+    h = hashlib.md5()
+    for p in (os.path.abspath(__file__), os.path.join(SFX_DIR, "library.json"),
+              os.path.join(ROOT, "experiments", "alive_cat", "doll", "doll_rig.py"),
+              os.path.join(ROOT, "experiments", "alive_cat", "doll", "rig.json")):
+        if os.path.exists(p): h.update(open(p, "rb").read())
+    return h.hexdigest()
+
+_MD5 = {}
+def _file_md5(p):
+    """По содержимому, не по времени файла: копия папки или пересборка того же исходника кэш не сбрасывает."""
+    st = os.stat(p); k = (p, st.st_size, st.st_mtime_ns)
+    if k not in _MD5: _MD5[k] = hashlib.md5(open(p, "rb").read()).hexdigest()
+    return _MD5[k]
+
+def _plain(x):
+    """Без служебных полей (`_anchor` меняется при рендере) и без ссылки плана на фразу."""
+    if isinstance(x, dict): return {k: _plain(v) for k, v in sorted(x.items()) if not k.startswith("_") and k != "beat"}
+    if isinstance(x, (list, tuple)): return [_plain(v) for v in x]
+    return x
+
+def segment_key(reel_dir, fps, n0, n1, i, shots, events, caps, words, times, hook_clock, total, code_sig):
+    """Всё, от чего зависят кадры n0..n1 плана i: сам план и соседи (хлёст смазывает оба края склейки), события,
+    которые могут быть видны (накладки держатся до 6 с), субтитры, часы хука, исходники, код. Совпал ключ — кадры
+    те же, план берётся из кэша без рендера."""
+    t0, t1 = n0 / fps, n1 / fps
+    srcs = sorted({x["src"] for x in shots[max(0, i - 1):i + 2] if "src" in x})
+    src_sig = [(s_, _file_md5(p_)) for s_ in srcs
+               for p_ in [os.path.join(reel_dir, "src", s_ + "_c.png")] if os.path.exists(p_)]
+    ev = [e for e in events if t0 - 7.0 <= e["t"] <= t1 + 0.5]
+    cp = [dict(c0=c["t0"], c1=c["t1"], words=[words[j] for j in c["idx"]], still=c.get("still"),
+               at=[round(times[j]["start"], 4) for j in c["idx"]])
+          for c in caps if c["t0"] < t1 + 0.5 and c["t1"] > t0 - 0.5]
+    hc = hook_clock if hook_clock and hook_clock["t0"] < t1 and hook_clock["t_end"] > t0 else None
+    blob = json.dumps(_plain(dict(v=code_sig, fps=fps, n=[n0, n1], shots=shots[max(0, i - 1):i + 2], ev=ev, caps=cp,
+                                  clock=hc, total=round(total, 4), src=src_sig, ph=PH)), sort_keys=True, default=str)
+    return hashlib.md5(blob.encode()).hexdigest()[:16]
+
+def render_video(reel_dir, vid, fps, total, shots, events, caps, words, times, tex, hook_clock):
+    """Видео планами с кэшем (23.10, по решению владельца «ускорить без потери качества»): каждый план — свой файл
+    x264 с теми же настройками, ключ — всё, от чего зависят его кадры (`segment_key`); поменяли одну фразу —
+    перерисовываются только её планы и соседи, остальное склеивается из кэша без перекодирования (concat, -c copy).
+    Каждый кусок начинается с ключевого кадра; качество задаёт тот же CRF, что и у цельного прохода."""
+    cache = os.path.join(reel_dir, ".cache"); os.makedirs(cache, exist_ok=True)
+    n = int(total * fps); code_sig = _code_sig()
+    starts = [int(math.ceil(s["t0"] * fps - 1e-6)) for s in shots] + [n]
+    segs, used, made = [], set(), 0
+    for i in range(len(shots)):
+        n0, n1 = max(0, starts[i]), min(n, starts[i + 1])
+        if n1 <= n0: continue
+        key = segment_key(reel_dir, fps, n0, n1, i, shots, events, caps, words, times, hook_clock, total, code_sig)
+        path = os.path.join(cache, f"seg_{fps}_{key}.mp4"); used.add(os.path.basename(path)); segs.append(path)
+        if os.path.exists(path): continue
+        tmp = path + ".part.mp4"
+        ff = subprocess.Popen(["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}",
+                               "-r", str(fps), "-i", "-", *X264, tmp], stdin=subprocess.PIPE)
+        for fi in range(n0, n1):
+            ff.stdin.write(render_frame(reel_dir, fi / fps, shots, events, caps, words, times, tex, hook_clock, total).tobytes())
+        ff.stdin.close(); ff.wait(); os.replace(tmp, path); made += 1
+        print(f"  план {i + 1}/{len(shots)}: кадры {n0}–{n1 - 1}", flush=True)
+    print(f"  планов перерисовано {made}, из кэша {len(segs) - made}")
+    lst = os.path.join(cache, "concat.txt")
+    open(lst, "w").write("".join(f"file '{os.path.basename(p)}'\n" for p in segs))
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "concat", "-safe", "0", "-i", lst, "-c", "copy", vid], check=True)
+    for f in os.listdir(cache):                       # кэш не растёт: держим только куски этой сборки
+        if f.startswith(f"seg_{fps}_") and f not in used: os.remove(os.path.join(cache, f))
 
 def lerp(a, b, u):
     return a + (b - a) * u
