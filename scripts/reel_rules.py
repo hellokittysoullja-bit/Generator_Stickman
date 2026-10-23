@@ -14,6 +14,10 @@ RISER_START_MAX = 0.05     # riser звучит с нулевой секунды
 RISER_PEAK_ON_CUT = 0.10   # пик riser — на склейке (Clumzzy: riser — ожидание перед раскрытием)
 MIN_PICTURE_H = 1360       # владелец 22.10: «столько воздуха в рилсах не оставляют» — при 1100 низ был пуст
 MAX_FROZEN_SHARE = 0.05    # доля почти неподвижных кадров готового файла (reel_metrics.py), v9 — 0.025
+READ_CPS, READ_PAD = 17.0, 0.3   # дочитать группу: знаки / 17 + 0.3 с (StudioBinder 17 зн/с; разбор 189 роликов 23.10)
+ACCENT_KINDS = ("punch", "shake", "spot", "circle")   # акцент — только на ключевом слове, не на предлоге
+CLITICS = {"в", "во", "на", "с", "со", "к", "ко", "по", "о", "об", "от", "до", "из", "у", "за", "для", "при", "без",
+           "и", "а", "но", "не", "ни", "же", "ли", "бы", "что", "как", "это", "то", "он", "она", "ты", "я", "мы"}
 
 
 def clean(text):
@@ -50,6 +54,14 @@ def check_spec(spec, sfx_names):
         err.append('вторая фраза должна вставать на пик riser: "after_sfx": "riser"')
     if spec.get("picture_h", 1380) < MIN_PICTURE_H:
         err.append(f"picture_h {spec.get('picture_h')} < {MIN_PICTURE_H}: низ экрана будет пустой бумагой")
+    for i, b in enumerate(beats):                     # эп.02 v11: наезд стоял на «при», а не на «СДВГ» (замер 23.10)
+        words = [w for w in clean(b["text"]).split() if w not in ("—", "–", "-")]
+        for e in b.get("fx", []):
+            k = e.get("at", 0)
+            if e.get("kind") in ACCENT_KINDS and k < len(words):
+                w = re.sub(r"[^\w-]", "", words[k].lower())
+                if w in CLITICS:
+                    err.append(f"фраза {i}: {e['kind']} на служебном слове «{words[k]}» — акцент ставится на ключевое")
     first = next((s for s in beats[0]["shots"] if "src" in s), None)
     last = next((s for s in beats[-1]["shots"] if "src" in s), None)
     if first and last and first["src"] != last["src"]:
@@ -57,9 +69,25 @@ def check_spec(spec, sfx_names):
     return err
 
 
-def check_timeline(shots, events, sfx_peaks):
-    """Правила по рассчитанному таймингу: длина планов, первая склейка, пик riser на склейке."""
+def check_timeline(shots, events, sfx_peaks, caps=None, total=None):
+    """Правила по рассчитанному таймингу: длина планов, первая склейка, пик riser на склейке; с субтитрами (caps —
+    [{t0, t1, text}]) ещё: хук дочитывается до первой склейки, группа субтитров не идёт через склейку, последняя
+    группа успевает прочитаться."""
     err = []
+    cuts = [s["t0"] for s in shots[1:]]
+    if caps:
+        need = len(caps[0]["text"]) / READ_CPS + READ_PAD
+        if cuts and need > cuts[0] + 0.02:
+            err.append(f"хук «{caps[0]['text']}» читается {need:.2f} с, а склейка на {cuts[0]:.2f} с: короче хук")
+        for c in caps:
+            for k in cuts:
+                if c["t0"] + 0.05 < k < c["t1"] - 0.05:
+                    err.append(f"субтитр «{c['text']}» ({c['t0']:.2f}–{c['t1']:.2f} с) идёт через склейку {k:.2f} с:"
+                               " план на начало группы или «|» перед словом склейки")
+        if total is not None:
+            last = caps[-1]; need = len(last["text"]) / READ_CPS + READ_PAD
+            if total - last["t0"] < need - 0.02:
+                err.append(f"последний субтитр «{last['text']}» стоит {total - last['t0']:.2f} с, нужно {need:.2f}: больше tail")
     for s in shots:
         d = s["t1"] - s["t0"]
         if d > MAX_SHOT_SEC + 0.02:

@@ -332,10 +332,14 @@ def doll_frame(t, dur, actions):
         import doll_rig
         _DOLL["mod"] = doll_rig
         _DOLL["rig"] = doll_rig.Rig(os.path.join(ROOT, "experiments", "alive_cat", "doll", "rig.json"))
-    key = (dur, json.dumps(actions))
+    flames = sorted((a["t"], a["state"]) for a in actions if a.get("do") == "flame")
+    acts = [a for a in actions if a.get("do") != "flame"]
+    key = (dur, json.dumps(acts))
     if _DOLL.get("key") != key:
-        _DOLL["st"] = _DOLL["mod"].plan(dur, actions, seed=11); _DOLL["key"] = key
+        _DOLL["st"] = _DOLL["mod"].plan(dur, acts, seed=11); _DOLL["key"] = key
     st = _DOLL["st"](t)
+    fl = [s_ for t_, s_ in flames if t_ <= t]          # огонёк: «тлеет — застрял», «золотой — шаг сделан» (look/hero_states)
+    if fl and fl[-1] in ("ember", "golden"): st = dict(st, flame=fl[-1])
     return _DOLL["rig"].frame_rgba(st, t)
 
 def paste_doll(base, rgba, cx, cy, h):
@@ -361,6 +365,20 @@ def paste_doll(base, rgba, cx, cy, h):
 
 
 # ----------------------------------------------------------------------------- накладки
+_CLOCK = {}
+def clock_img(txt, fill):
+    """Часы хука: каждая цифра в ячейке ширины самой широкой цифры, по центру ячейки. В Shantell «1» — 89 px,
+    «5» — 120, остальные — 133: строка «23:55 → 03:12» центрировалась заново и плясала до ±22 px (замер 23.10)."""
+    f = font(FONT, 190)
+    if "cell" not in _CLOCK:
+        _CLOCK["cell"] = max(text_img(d, f, WHITE, stroke=16, stroke_fill=INK).width for d in "0123456789")
+    cell = _CLOCK["cell"]; parts = [text_img(ch, f, fill, stroke=16, stroke_fill=INK) for ch in txt]
+    widths = [cell if ch.isdigit() else p.width for ch, p in zip(txt, parts)]
+    out = Image.new("RGBA", (sum(widths), max(p.height for p in parts)), (0, 0, 0, 0)); x = 0
+    for p, w in zip(parts, widths):
+        out.alpha_composite(p, (x + (w - p.width) // 2, 0)); x += w
+    return out
+
 def text_img(txt, f, fill, stroke=0, stroke_fill=None, pad=20):
     bb = f.getbbox(txt, stroke_width=stroke)
     im = Image.new("RGBA", (bb[2] - bb[0] + 2 * pad, bb[3] - bb[1] + 2 * pad), (0, 0, 0, 0))
@@ -527,7 +545,7 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     for b, (i0, _i1) in zip(beats, spans):
         for s in b["shots"]:
             k = i0 + s.get("at", 0)
-            shots.append(dict(s, t0=max(0.0, times[k]["start"] - (CUT_LEAD if k else 0)), beat=b))
+            shots.append(dict(s, t0=max(0.0, times[k]["start"] - (CUT_LEAD if k else 0)), beat=b, bi=beats.index(b)))
     shots.sort(key=lambda s: s["t0"])
     shots[0]["t0"] = 0.0                              # перебивка до первого слова идёт на первом плане, а не в пустоту
     # кукла живёт по общему времени ролика: смена плана с куклой не перезапускает моргание и лицо
@@ -546,7 +564,9 @@ def build(reel_dir, sheet=False, preview=False, force=False):
             events.append(dict(e, t=wt(bi, e.get("at", 0), e.get("after", False)) + e.get("dt", 0.0), beat=bi))
     for e in events:                                  # удержание накладки — только пока идут планы того же рода
         e["kind_of_shot"] = next((x.get("kind", "crop") for x in reversed(shots) if x["t0"] <= e["t"] + CUT_LEAD), "crop")
-    rule_errs += reel_rules.check_timeline(shots, events, {k: v[1] for k, v in SFX.items()})
+    caps_txt = [dict(t0=c["t0"], t1=c["t1"], text=" ".join(cap_text(words[j]) for j in c["idx"])) for c in chunks(words, times)]
+    caps_txt[0]["t0"] = 0.0                            # хук стоит с первого кадра (still)
+    rule_errs += reel_rules.check_timeline(shots, events, {k: v[1] for k, v in SFX.items()}, caps_txt, total)
     if rule_errs:
         print("ПРАВИЛА РИЛСА (docs/REELS_PLAYBOOK.md):\n" + "\n".join("  ✗ " + e for e in rule_errs))
         if not force:
@@ -591,7 +611,10 @@ def build(reel_dir, sheet=False, preview=False, force=False):
 
 X264 = ["-c:v", "libx264", "-preset", "slow", "-crf", "19",
         "-maxrate", "9M", "-bufsize", "18M",        # зерно жмётся плохо: потолок ~9 Мбит/с, Reels всё равно пережмёт
-        "-pix_fmt", "yuv420p"]
+        "-pix_fmt", "yuv420p",
+        "-threads", "1"]   # VBV (maxrate) в несколько потоков x264 недетерминирован: тот же кадр через трубу давал разный
+                           # поток от темпа подачи (замер 23.10: 3 подачи — 3 файла; без VBV или в 1 поток — один файл).
+                           # Параллелим по планам (render_video), каждому кодеку — один поток: детерминизм без потерь.
 
 def _code_sig():
     """Подпись кода картинки: правка reel.py, библиотеки звуков или рига куклы перерисовывает все планы."""
@@ -632,6 +655,25 @@ def segment_key(reel_dir, fps, n0, n1, i, shots, events, caps, words, times, hoo
                                   clock=hc, total=round(total, 4), src=src_sig, ph=PH)), sort_keys=True, default=str)
     return hashlib.md5(blob.encode()).hexdigest()[:16]
 
+_JOB = None
+def _init_job(job):
+    """Состояние сборки для процесса-рисовальщика: планы, события, субтитры и раскладка (PH из reel.json)."""
+    global _JOB, PH, CAP_CY
+    _JOB = job[:10]; PH, CAP_CY = job[10], job[11]
+
+def _render_segment(job):
+    """Один план в свой файл. Кадр зависит только от времени и плана (кэши кипения, зерна, куклы — по времени), поэтому
+    план, отрисованный в другом процессе, побайтно тот же, что в одном процессе (сверено 23.10, md5 кусков)."""
+    i, n0, n1, path = job
+    reel_dir, fps, shots, events, caps, words, times, tex, hook_clock, total = _JOB
+    tmp = path + ".part.mp4"
+    ff = subprocess.Popen(["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}",
+                           "-r", str(fps), "-i", "-", *X264, tmp], stdin=subprocess.PIPE)
+    for fi in range(n0, n1):
+        ff.stdin.write(render_frame(reel_dir, fi / fps, shots, events, caps, words, times, tex, hook_clock, total).tobytes())
+    ff.stdin.close(); ff.wait(); os.replace(tmp, path)
+    return f"  план {i + 1}/{len(shots)}: кадры {n0}–{n1 - 1}"
+
 def render_video(reel_dir, vid, fps, total, shots, events, caps, words, times, tex, hook_clock):
     """Видео планами с кэшем (23.10, по решению владельца «ускорить без потери качества»): каждый план — свой файл
     x264 с теми же настройками, ключ — всё, от чего зависят его кадры (`segment_key`); поменяли одну фразу —
@@ -640,21 +682,23 @@ def render_video(reel_dir, vid, fps, total, shots, events, caps, words, times, t
     cache = os.path.join(reel_dir, ".cache"); os.makedirs(cache, exist_ok=True)
     n = int(total * fps); code_sig = _code_sig()
     starts = [int(math.ceil(s["t0"] * fps - 1e-6)) for s in shots] + [n]
-    segs, used, made = [], set(), 0
+    segs, used, todo = [], set(), []
     for i in range(len(shots)):
         n0, n1 = max(0, starts[i]), min(n, starts[i + 1])
         if n1 <= n0: continue
         key = segment_key(reel_dir, fps, n0, n1, i, shots, events, caps, words, times, hook_clock, total, code_sig)
         path = os.path.join(cache, f"seg_{fps}_{key}.mp4"); used.add(os.path.basename(path)); segs.append(path)
-        if os.path.exists(path): continue
-        tmp = path + ".part.mp4"
-        ff = subprocess.Popen(["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}",
-                               "-r", str(fps), "-i", "-", *X264, tmp], stdin=subprocess.PIPE)
-        for fi in range(n0, n1):
-            ff.stdin.write(render_frame(reel_dir, fi / fps, shots, events, caps, words, times, tex, hook_clock, total).tobytes())
-        ff.stdin.close(); ff.wait(); os.replace(tmp, path); made += 1
-        print(f"  план {i + 1}/{len(shots)}: кадры {n0}–{n1 - 1}", flush=True)
-    print(f"  планов перерисовано {made}, из кэша {len(segs) - made}")
+        if not os.path.exists(path): todo.append((i, n0, n1, path))
+    job = (reel_dir, fps, shots, events, caps, words, times, tex, hook_clock, total, PH, CAP_CY)
+    jobs = max(1, min(int(os.environ.get("REEL_JOBS", os.cpu_count() or 1)), len(todo)))
+    if jobs > 1:                                      # планы независимы: каждый — свой процесс и свой файл x264
+        import multiprocessing as mp                  # spawn, не fork: fork при живых потоках OpenCV вешал процессы
+        with mp.get_context("spawn").Pool(jobs, initializer=_init_job, initargs=(job,)) as pool:   # (замер 23.10)
+            for msg in pool.imap_unordered(_render_segment, todo): print(msg, flush=True)
+    else:
+        _init_job(job)
+        for t in todo: print(_render_segment(t), flush=True)
+    print(f"  планов перерисовано {len(todo)}, из кэша {len(segs) - len(todo)}, процессов {jobs}")
     lst = os.path.join(cache, "concat.txt")
     open(lst, "w").write("".join(f"file '{os.path.basename(p)}'\n" for p in segs))
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "concat", "-safe", "0", "-i", lst, "-c", "copy", vid], check=True)
@@ -706,7 +750,7 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
         src = load_src(reel_dir, s["src"])
         cx, cy, h = shot_view(s, t)
         # второй слой камеры: медленный поворот до 0.5° поверх дрейфа, на соседних планах в разные стороны
-        sign = 1 if int(s["t0"] * 10) % 2 else -1
+        sign = 1 if s.get("bi", 0) % 2 else -1   # одно направление на фразу (мысль): Tim Runia; правило длинного ролика
         rot += s.get("rot_drift", 0.5) * sign * ((t - s["t0"]) / max(1e-3, s["t1"] - s["t0"]) - 0.5)
         base = grade(sharpen(sample(src, cx, cy, h / punch, shake=shake, rot=rot, boil_t=t)))
         view = (cx, cy, h / punch)
@@ -842,7 +886,7 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
         txt = f"{mins // 60:02d}:{mins % 60:02d}"
         landed = t >= t1c
         sc = 1.0 + (0.18 * (1 - ease_out((t - t1c) / 0.25)) if landed else 0.0)
-        im = text_img(txt, font(FONT, 190), KEY if landed else WHITE, stroke=16, stroke_fill=INK)
+        im = clock_img(txt, KEY if landed else WHITE)
         if t < 0.25: sc *= 1 + 0.6 * (1 - ease_out(t / 0.25))   # влёт с ударом; при 2.4x первый кадр резал цифры
         over(base, im, W / 2, PH * 0.27, scale=sc)   # ниже верхних 14% — там шапка Reels
 
@@ -882,17 +926,29 @@ def mix_audio(path, total, shots, events, spec, voiced=False):
     """Звук рилса: хлёсткие склейки — swoosh пиком на склейку (J-cut звука: звук приходит раньше картинки),
     события фраз (sfx) — пиком на слово, riser — началом сразу после фразы-хука. Больше ничего."""
     n = int((total + 0.2) * SR); tr = np.zeros((n, 2), np.float32)
-    placed = []
-    def put(name, t, align="peak", gain_db=0.0):
-        x = sfx(name) * (10 ** (gain_db / 20)); t0 = t - (SFX[name][1] if align == "peak" else 0.0)
-        placed.append(t0 + SFX[name][1])
+    placed, count = [], {}
+    def put(name, t, align="peak", gain_db=0.0, pan=0.0):
+        """Повтор одного звука — каждый чуть другой (разбор 23.10: Gaku Lange, Marketing Demons — одинаковый свист
+        «15 раз» слышен): скорость/высота по кругу 1.00 / 0.95 / 1.05 / 0.97 / 1.03, это тот же звук владельца, не
+        чужой; панорама — по направлению хлёста. Первое появление звука — как в файле."""
+        x = sfx(name) * (10 ** (gain_db / 20))
+        k = count.get(name, 0); count[name] = k + 1
+        rate = (1.0, 0.95, 1.05, 0.97, 1.03)[k % 5] if name in ("swoosh", "swoosh_deep") else 1.0
+        if rate != 1.0:
+            src_t = np.arange(int(len(x) / rate)) * rate
+            x = np.stack([np.interp(src_t, np.arange(len(x)), x[:, ch]) for ch in (0, 1)], axis=1).astype(np.float32)
+        if pan:
+            x = x * np.array([math.cos((pan + 1) * math.pi / 4), math.sin((pan + 1) * math.pi / 4)], np.float32) * math.sqrt(2)
+        pk = SFX[name][1] / rate
+        t0 = t - (pk if align == "peak" else 0.0)
+        placed.append(t0 + pk)
         i = int(t0 * SR)
         if i < 0: x = x[-i:]; i = 0
         m = min(len(x), n - i)
         if m > 0: tr[i:i + m] += x[:m]
     for k, sh in enumerate(shots):
-        if k and sh.get("whip") and sh.get("sound", "swoosh"):
-            put(sh.get("sound", "swoosh"), sh["t0"])
+        if k and sh.get("whip") and sh.get("sound", "swoosh"):        # кадр едет справа — звук справа налево
+            put(sh.get("sound", "swoosh"), sh["t0"], pan=0.3 if sh["whip"][0] < 0 else -0.3)
         elif k and sh.get("sound"):
             put(sh["sound"], sh["t0"])
     for e in events:
@@ -900,9 +956,10 @@ def mix_audio(path, total, shots, events, spec, voiced=False):
     # тихий свист на наезд и вход наездом (на 7 дБ тише хлёста), если рядом (1 с) уже не звучит другой звук
     soft = [sh["t0"] for k, sh in enumerate(shots) if k and sh.get("zoom_in") and not sh.get("sound")] + \
            [e["t"] for e in events if e["kind"] == "punch"]
-    for tt in sorted(soft):
-        if all(abs(tt - p) > 1.0 for p in placed):
-            put("swoosh", tt, gain_db=-7.0)
+    soft_done = []
+    for tt in sorted(soft):                           # и не чаще раза в 3 с: эталон v11 — три тихих свиста через 1.5 с
+        if all(abs(tt - p) > 1.0 for p in placed) and all(abs(tt - q) > 3.0 for q in soft_done):
+            put("swoosh", tt, gain_db=-7.0); soft_done.append(tt)
     if voiced: tr *= 10 ** (VOICE_SFX_TRIM_DB / 20)
     peak = float(np.abs(tr).max())
     if peak > 0.89: tr *= 0.89 / peak                 # наложение двух звуков не клипует: пик не выше -1 dBFS

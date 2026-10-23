@@ -14,7 +14,7 @@ import cv2
 import numpy as np
 
 TILE_W, TILE_H, COLS = 180, 320, 9
-TOP_SAFE, BOTTOM_UI = 0.14, 400 / 1920
+TOP_SAFE, BOTTOM_UI, RIGHT_UI = 0.14, 400 / 1920, 930 / 1080
 
 
 def frame_at(video, t):
@@ -45,6 +45,8 @@ def proof(reel_dir):
         y0, y1 = int(TILE_H * TOP_SAFE), int(TILE_H * (1 - BOTTOM_UI))
         for y in (y0, y1):
             for x in range(0, TILE_W, 8): cv2.line(im, (x, y), (x + 4, y), (60, 60, 230), 1)
+        xr = int(TILE_W * RIGHT_UI)                     # правая колонка кнопок Reels (лайк, комментарий, «отправить»)
+        for y in range(int(TILE_H * 0.45), y1, 8): cv2.line(im, (xr, y), (xr, y + 4), (60, 60, 230), 1)
         cv2.rectangle(im, (0, TILE_H - 18), (TILE_W, TILE_H), (0, 0, 0), -1)
         cv2.putText(im, label[:30], (3, TILE_H - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.36, (255, 255, 255), 1, cv2.LINE_AA)
         tiles.append(im)

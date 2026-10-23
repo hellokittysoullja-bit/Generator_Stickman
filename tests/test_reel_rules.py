@@ -98,3 +98,24 @@ def test_draft_parses_script_and_windows_do_not_cut_drawing(tmp_path):
             xs = int(x * 2)
             if 0 <= xs < img.shape[1]:
                 assert (img[:, max(0, xs - 2):xs + 3] < 200).mean() < 0.05
+
+
+def test_accent_not_on_function_word():
+    def put_punch_on_pri(s):
+        b = next(b for b in s["beats"] if b["text"].startswith("Так часто"))
+        b["fx"] = [{"kind": "punch", "at": 3, "amt": 0.12}]          # «при» — эталон v11 стоял ровно так
+    assert broken(put_punch_on_pri)
+
+
+def test_caption_rules_on_timeline():
+    peaks = {k: v[1] for k, v in reel.SFX.items()}
+    shots = [dict(t0=0.0, t1=1.65), dict(t0=1.65, t1=4.0), dict(t0=4.0, t1=6.0)]
+    riser = [dict(kind="sfx", name="riser", align="start", t=0.0)]
+    good = [dict(t0=0.0, t1=1.65, text="Ты не ленишься"), dict(t0=1.65, t1=4.0, text="Ты не видишь"),
+            dict(t0=4.0, t1=5.0, text="Настоящих")]
+    assert reel_rules.check_timeline(shots, riser, peaks, good, total=5.0) == []
+    long_hook = [dict(good[0], text="Ты вовсе не ленишься, ты просто устал")] + good[1:]
+    assert reel_rules.check_timeline(shots, riser, peaks, long_hook, total=5.0)     # хук не дочитан до склейки
+    across = good[:1] + [dict(t0=1.65, t1=4.6, text="при СДВГ")] + [dict(good[2], t0=4.6)]
+    assert reel_rules.check_timeline(shots, riser, peaks, across, total=5.6)        # субтитр через склейку 4.0
+    assert reel_rules.check_timeline(shots, riser, peaks, good, total=4.5)          # «Настоящих» 0.5 с — не дочитать
