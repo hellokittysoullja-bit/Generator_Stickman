@@ -59,7 +59,8 @@ def check_passport(spec, log, reel_dir=""):
         err.append(f"тип хука «{pp.get('hook_type')}» — не из списка {HOOK_TYPES}")
     if len(pp.get("devices", [])) < 5:
         err.append("в паспорте меньше 5 приёмов — опишите, чем этот рилс держит")
-    prev = [r for r in log if os.path.normpath(r.get("reel", "")) != os.path.normpath(reel_dir)]
+    parent = os.path.normpath(pp.get("variant_of", "")) if pp.get("variant_of") else None   # вариант для пробных Reels
+    prev = [r for r in log if os.path.normpath(r.get("reel", "")) not in (os.path.normpath(reel_dir), parent)]
     if prev:
         last = prev[-1]
         if pp.get("hook_type") == last.get("hook_type"):
@@ -226,6 +227,130 @@ def sound_warnings(plan):
     return []
 
 
+# Знания базы, которые обязан применить каждый рилс (владелец 23.10: «не вижу, чтобы во всех новых рилсах автоматически
+# использовались все эти знания»): docs/reels_knowledge/apply_checklist.json. Как сделать пункт — решает рилс; рендер не
+# начнётся, пока у каждого пункта в passport.knowledge нет номера фразы или отказа с причиной.
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CHECKLIST_PATH = os.path.join(ROOT_DIR, "docs", "reels_knowledge", "apply_checklist.json")
+BRAND_PATH = os.path.join(ROOT_DIR, "docs", "reels_brand.json")
+SKIP_MIN_CHARS = 15
+SHAME_WORDS = (r"\bсоберись", r"\bперестань", r"возьми себя в руки", r"\bхватит ныть", r"\bлентя[йи]",
+               r"вот почему ты вс[её] срываешь")
+COVER_MAX_WORDS, COVER_MAX_CHARS = 4, 24
+CAPTION_HEAD = 125         # Instagram показывает ~125 знаков подписи до «ещё»: ключевая фраза ниши — в них
+LENGTH_WORK_SEC = 40.0     # рабочая вилка 20–40 с (07 §8 п.35, мнение) — предупреждение
+
+
+def load_json(p, default):
+    import json
+    return json.load(open(p, encoding="utf8")) if os.path.exists(p) else default
+
+
+def brand_beat(spec, brand):
+    name = (brand or {}).get("brand", "")
+    return next((i for i, b in enumerate(spec.get("beats", [])) if name and name.lower() in clean(b["text"]).lower()), None)
+
+
+def _beats_of(v):
+    if isinstance(v, bool):
+        return []
+    if isinstance(v, int):
+        return [v]
+    if isinstance(v, list):
+        return [x for x in v if isinstance(x, int) and not isinstance(x, bool)]
+    if isinstance(v, dict):
+        return [x for k, x in v.items() if k != "skip" and isinstance(x, int) and not isinstance(x, bool)]
+    return []
+
+
+def check_knowledge(spec, checklist=None, brand=None):
+    """Каждый пункт чек-листа знаний закрыт в паспорте фразой или отказом с причиной; пункты kind=code — проверка кодом."""
+    checklist = checklist if checklist is not None else load_json(CHECKLIST_PATH, {"items": []})
+    brand = brand if brand is not None else load_json(BRAND_PATH, {})
+    pp = spec.get("passport") or {}; kn = pp.get("knowledge") or {}
+    beats = spec.get("beats", []); n = len(beats); cta = pp.get("cta_beat"); br = brand_beat(spec, brand)
+    err = []
+    for it in checklist.get("items", []):
+        if it["kind"] != "beat":
+            continue
+        v = kn.get(it["id"])
+        where = f"знание «{it['id']}» ({it['title']}; {it['source']})"
+        if v is None or v == "TODO":
+            err.append(f"{where}: в passport.knowledge нет ни номера фразы, ни отказа с причиной"); continue
+        if isinstance(v, dict) and "skip" in v:
+            if len(str(v["skip"]).strip()) < SKIP_MIN_CHARS:
+                err.append(f"{where}: отказ без причины — напишите, почему здесь не к месту")
+            continue
+        bs = _beats_of(v)
+        if not bs or any(not 0 <= b < n for b in bs):
+            err.append(f"{where}: {v!r} — не номер фразы 0…{n - 1}"); continue
+        for f in it.get("fields", []):
+            if not isinstance(v, dict) or f not in v:
+                err.append(f"{where}: нужны поля {it['fields']}")
+        rule = it.get("check", "")
+        lo, hi = min(bs), max(bs)
+        bad = ((rule == "beat == 0" and lo != 0) or
+               (rule == "beat < cta" and cta is not None and lo >= cta) or
+               (rule == "beat <= cta" and cta is not None and lo > cta) or
+               (rule == "beat >= cta" and cta is not None and hi < cta) or
+               (rule == "beat < brand" and br is not None and lo >= br) or
+               (rule.startswith("authority") and isinstance(v, dict) and "loss" in v and "authority" in v
+                and not 1 <= v["authority"] - v["loss"] <= 2))
+        if bad:
+            err.append(f"{where}: фраза {v!r} нарушает «{rule}» (призыв — {cta}, продукт — {br})")
+    low = " ".join(clean(b["text"]).lower() for b in beats)
+    for pat in SHAME_WORDS:
+        m = re.search(pat, low)
+        if m:
+            err.append(f"стыдящее повеление «{m.group(0)}» — зритель с СДВГ слышит упрёк (07 §8 п.33, правила Meta)")
+    labels = pp.get("labels")
+    if labels is None:
+        err.append('в паспорте нет "labels" — терминов-ярлыков рилса (не больше двух, 07 §8 п.18)')
+    elif len(labels) > 2:
+        err.append(f"ярлыков {len(labels)} > 2: третий термин «нарочно усложняет» (07 §8 п.18)")
+    cover = (pp.get("cover") or {}).get("text", "")
+    if not cover:
+        err.append('в паспорте нет "cover": {"text": …} — обложка = первый рисунок + ясный текст (07 §8 п.11)')
+    elif len(cover.split()) > COVER_MAX_WORDS or len(cover) > COVER_MAX_CHARS:
+        err.append(f"текст обложки «{cover}» длиннее {COVER_MAX_WORDS} слов / {COVER_MAX_CHARS} знаков: в сетке не читается")
+    cap = pp.get("caption", "")
+    if not cap:
+        err.append('в паспорте нет "caption" — подписи с ключевой фразой ниши и 3–5 хэштегами (07 §8 п.24)')
+    else:
+        tags = re.findall(r"#\w+", cap)
+        if not any(k.lower() in cap[:CAPTION_HEAD].lower() for k in brand.get("niche_keywords", [])):
+            err.append(f"в первых {CAPTION_HEAD} знаках подписи нет ключевой фразы ниши {brand.get('niche_keywords')}")
+        if not 3 <= len(tags) <= brand.get("max_hashtags", 5):
+            err.append(f"хэштегов {len(tags)}: нужно 3–{brand.get('max_hashtags', 5)}")
+    if not (pp.get("pinned_comment") or brand.get("pinned_comment_default")):
+        err.append("нет закреплённого комментария (passport.pinned_comment или brand.pinned_comment_default)")
+    hv = pp.get("hook_variants") or []
+    hook = clean(beats[0]["text"]) if beats else ""
+    if not 3 <= len(hv) <= 5:
+        err.append(f"вариантов хука {len(hv)}: нужно 3–5 для пробных Reels (07 §8 п.3)")
+    lib = load_json(os.path.join(ROOT_DIR, "assets", "sfx", "reels", "library.json"), {})
+    peak = (lib.get("riser") or {}).get("peak_sec", 1.65)
+    for v in hv:                                    # вариант дочитывается до пика riser — до первой склейки (тот же расчёт,
+        need = len(clean(v)) / READ_CPS + READ_PAD  # что check_timeline для хука); длиннее — склейка уедет за 2 с
+        if len(clean(v)) > HOOK_MAX_CHARS or need > peak + 0.02:
+            mx = int((peak - READ_PAD) * READ_CPS)
+            err.append(f"вариант хука «{v}» читается {need:.2f} с > пика riser {peak} с: короче (≤ {mx} знаков)")
+    if len({clean(v).lower() for v in hv} | {hook.lower()}) != len(hv) + 1:
+        err.append("варианты хука повторяют друг друга или сам хук")
+    return err
+
+
+def knowledge_timing(spec, beat_t0, total):
+    """Ре-хук стоит на 35–60 % ролика (по рассчитанному времени фраз)."""
+    v = ((spec.get("passport") or {}).get("knowledge") or {}).get("re_hook")
+    bs = _beats_of(v)
+    if bs and bs[0] < len(beat_t0):
+        share = beat_t0[bs[0]] / total
+        if not 0.35 <= share <= 0.60:
+            return [f"ре-хук (фраза {bs[0]}) на {share:.0%} ролика — нужно 35–60 % (01: Kallaway, heyDominik)"]
+    return []
+
+
 def check_overlays(boxes):
     """Рукописные надписи и маркер (boxes — [(фраза, текст, x0, y0, x1, y1)] по туши, в пикселях экрана 1080×1920)
     целиком в безопасной зоне: не под шапкой Reels, не под подписью, не у края и не под колонкой кнопок."""
@@ -298,6 +423,8 @@ def warnings(spec, shots, total, events=()):
     for (t1, k1), (t2, k2) in zip(starts, starts[1:]):    # Mital, Smith, Henderson: держит одно движущееся
         if t2 - t1 < ONE_MOTION_SEC:
             out.append(f"{k1} {t1:.2f} и {k2} {t2:.2f} с — два движения сразу: разведите на {ONE_MOTION_SEC} с")
+    if total > LENGTH_WORK_SEC:
+        out.append(f"рилс {total:.1f} с > {LENGTH_WORK_SEC:.0f}: каждую фразу сверх вилки проверить сжатием (07 §8 п.35)")
     pt = sorted(e["t"] for e in events if e.get("kind") == "punch")
     for a, b in zip(pt, pt[1:]):
         if b - a < PUNCH_MIN_GAP:
@@ -321,6 +448,6 @@ if __name__ == "__main__":
     spec = json.load(open(os.path.join(sys.argv[1], "reel.json"), encoding="utf8"))
     log_p = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docs", "reels_log.json")
     log = json.load(open(log_p, encoding="utf8")) if os.path.exists(log_p) else []
-    errs = check_spec(spec, set(reel.SFX)) + check_passport(spec, log, os.path.relpath(sys.argv[1]))
+    errs = check_spec(spec, set(reel.SFX)) + check_passport(spec, log, os.path.relpath(sys.argv[1])) + check_knowledge(spec)
     print("\n".join("✗ " + e for e in errs) or "✓ reel.json по правилам (тайминг проверит reel.py при рендере)")
     sys.exit(1 if errs else 0)

@@ -138,6 +138,12 @@ def draft(reel_dir):
     beats[-1]["shots"][0].update(src=first["src"], **{"from": first["to"], "to": first["from"]})
     beats[-1]["shots"][0].pop("whip", None); beats[-1]["shots"][0]["zoom_in"] = 0.25
     passport = {"hook_type": "", "structure": "", "devices": []}   # заполняет агент: reel_rules сверит с docs/reels_log.json
+    # знания базы (маркетинг, воронка, бренд, удержание): у каждого пункта — номер фразы или {"skip": "причина"};
+    # пока стоит TODO, reel.py не рендерит (docs/reels_knowledge/apply_checklist.json)
+    items = reel_rules.load_json(reel_rules.CHECKLIST_PATH, {"items": []})["items"]
+    passport["knowledge"] = {it["id"]: "TODO" for it in items if it["kind"] == "beat"}
+    passport.update({"goal": {"question": "TODO", "emotion": "TODO"}, "cta_beat": len(lines) - 2, "labels": [],
+                     "cover": {"text": ""}, "caption": "", "hook_variants": []})
     spec = {"title": lines[0]["text"], "rate": 1.15, "lead_in": 0.25, "tail": 0.45, "sources": sources, "passport": passport,
             "beats": beats,
             "_draft": "черновик reel_draft.py: звуки по смыслу, окна под слова, пометки и кукла — руками"}

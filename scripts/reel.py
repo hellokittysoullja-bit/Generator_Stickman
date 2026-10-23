@@ -635,6 +635,8 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     rule_errs += reel_rules.check_timeline(shots, events, {k: v[1] for k, v in SFX.items()}, caps_txt, total)
     rule_errs += reel_rules.check_overlays(overlay_boxes(events, shots))
     rule_errs += reel_rules.check_cta(spec, [times[i0]["start"] for i0, _ in spans], total)
+    rule_errs += reel_rules.check_knowledge(spec)                 # знания базы: маркетинг, воронка, бренд — у каждой фразы
+    rule_errs += reel_rules.knowledge_timing(spec, [times[i0]["start"] for i0, _ in spans], total)
     rule_errs += reel_rules.check_sounds(sound_plan(shots, events))
     rule_errs += reel_rules.check_writing(events, shots)
     for w in reel_rules.warnings(spec, shots, total, events) + reel_rules.sound_warnings(sound_plan(shots, events)):
@@ -681,6 +683,8 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     if not preview:
         import reel_proof                              # лист проверки: один кадр-лист вместо десятка кадров
         print("  лист проверки:", reel_proof.proof(reel_dir))
+        import reel_publish                            # комплект публикации: обложка, подпись, UTM, комментарий, варианты хука
+        print("  комплект публикации:", reel_publish.publish(reel_dir))
     print(f"Готово. Файл: {out} ({total:.1f} с, планов {len(shots)}, групп субтитров {len(caps)})")
     return out
 

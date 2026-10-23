@@ -1,0 +1,29 @@
+{
+ "_about": "Знания базы, которые КАЖДЫЙ рилс обязан применить. reel_rules.check_knowledge не даёт рендерить рилс, пока в паспорте (passport.knowledge) у каждого пункта нет номера фразы, где он сделан, или отказа с причиной (\"skip\": \"почему здесь не к месту\", не короче 15 знаков). Пункты kind=code проверяет сам код. Новый пункт сюда добавляется вместе с тестом; номера источников — разделы файлов docs/reels_knowledge/. Это не шаблон: КАК сделать пункт — решает рилс; обязательно только не забыть о нём.",
+ "items": [
+  {"id": "pain_hook", "kind": "beat", "title": "Хук снимает вину или бьёт в боль аудитории (снятие вины, «ты думаешь X — нет»)", "check": "beat == 0", "source": "07 §8 п.2 (A/B 24,4 % и 23,6 %); владелец 22.10"},
+  {"id": "loss_then_authority", "kind": "beat", "title": "Боль-потеря и сразу авторитет по имени (соседние фразы)", "check": "authority in loss+1..loss+2", "fields": ["loss", "authority"], "source": "07 §8 п.4 (Bose +45 % / +60 %, Чалдини 1WSwzyPq2oE)"},
+  {"id": "relatable_specifics", "kind": "beat", "title": "2–3 конкретных проверяемых признака бытовыми словами, без терминов", "source": "07 §8 п.9 (Хормози Mst4hreQYl0; Spencer Pawliw -aYVQZ5-CE4)"},
+  {"id": "open_loop", "kind": "beat", "title": "Открытая петля в первой трети: обещание ответа", "check": "beat < cta", "source": "01; Зейгарник / Loewenstein (06)"},
+  {"id": "re_hook", "kind": "beat", "title": "Ре-хук в середине (35–60 % ролика)", "check": "timing", "source": "01 (Kallaway, heyDominik)"},
+  {"id": "one_analogy", "kind": "beat", "title": "Одна бытовая аналогия механизма — картинкой, не словом", "source": "07 §8 п.19 (DecodingYT PvWWKx1KeNE)"},
+  {"id": "show_emotion", "kind": "beat", "title": "Эмоция показана (огонёк, поза, пауза), а не названа словом", "source": "07 §8 п.16 (Philipp Humm hNuAv-42jzY)"},
+  {"id": "self_irony_before_product", "kind": "beat", "title": "Самоирония или смешной провал раньше продукта — продукт не читается рекламой", "check": "beat < brand", "source": "07 §8 п.28 (Чалдини/Кавасаки 1WSwzyPq2oE)"},
+  {"id": "loop_closed_before_cta", "kind": "beat", "title": "Ответ на вопрос хука звучит до призыва", "check": "beat < cta", "source": "07 §8 п.30 (Spencer Pawliw, Matt Gray)"},
+  {"id": "value_before_ask", "kind": "beat", "title": "Приём, который работает и без сайта, — раньше призыва (взаимность)", "check": "beat < cta", "source": "07 §8 п.1 (шарики +25 %, пробы +42 %; Хормози Mst4hreQYl0)"},
+  {"id": "honest_limit", "kind": "beat", "title": "Честный предел продукта до призыва («не лечит, просто рядом»)", "check": "beat <= cta", "source": "07 §8 п.6 (Чалдини; Хормози mUpty7tscJo); защита от правил о медицинских обещаниях (06)"},
+  {"id": "share_trigger", "kind": "beat", "title": "Причина переслать (защитить себя, «это про тебя»)", "source": "06 (Моссери: пересылки — главный сигнал); 07 §8 п.22"},
+  {"id": "micro_step_cta", "kind": "beat", "title": "Призыв — самый лёгкий шаг (минуты, один шаг), не «переходи и регистрируйся»", "check": "beat >= cta", "source": "07 §8 п.5 (Фридман и Фрейзер: 76 % против 16,7 %)"},
+  {"id": "cta_reason_now", "kind": "beat", "title": "Призыв: ясно → действие → причина сейчас", "source": "07 §8 п.10 (Хормози)"},
+  {"id": "loop_end", "kind": "code", "title": "Финал на рисунке начала (петля)", "source": "01 (Стас Маар 7LastmaOyKc); check_spec"},
+  {"id": "no_shame_imperatives", "kind": "code", "title": "Без стыдящих повелений («соберись», «перестань», «возьми себя в руки»)", "source": "07 §8 п.33, §Г; правила Meta о негативном самовосприятии (06)"},
+  {"id": "stop_words", "kind": "code", "title": "Без сенсаций, медицинских обещаний и ложного дефицита", "source": "07 §8 п.12; 04 п.1.3"},
+  {"id": "labels_max_two", "kind": "code", "title": "Не больше двух терминов-ярлыков на рилс (passport.labels)", "source": "07 §8 п.18 (DecodingYT TQ7kuoNcni0)"},
+  {"id": "cover", "kind": "code", "title": "Обложка = первый рисунок + ясный текст до 4 слов (passport.cover)", "source": "07 §8 п.11 (MrBeast, Mark Rober, Mike Shake)"},
+  {"id": "caption_seo", "kind": "code", "title": "Подпись: ключевая фраза ниши в начале, 3–5 хэштегов (passport.caption)", "source": "07 §8 п.24 (Modern Millie 7Eiqe_sShQg; данные Meta)"},
+  {"id": "pinned_comment", "kind": "code", "title": "Закреплённый комментарий: опрос + причина перейти", "source": "07 §8 п.26 (Хормози dMZ-n2KSlxE; Kallaway)"},
+  {"id": "hook_variants", "kind": "code", "title": "3–5 вариантов хука для пробных Reels (passport.hook_variants)", "source": "07 §8 п.3 (Modern Millie: 90 % подписчиков с двух роликов из 75)"},
+  {"id": "utm_link", "kind": "code", "title": "Ссылка с UTM этого рилса — мерить переходы, а не просмотры", "source": "07 §8 п.7 (Хормози 21flGkcZO3A: топ-6 по просмотрам — 0 продаж)"},
+  {"id": "length", "kind": "code", "title": "Длина 20–40 с; длиннее — каждую фразу сверх проверить сжатием (предупреждение)", "source": "07 §8 п.35 [мнение]"}
+ ]
+}

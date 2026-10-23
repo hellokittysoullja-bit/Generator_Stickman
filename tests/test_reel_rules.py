@@ -238,3 +238,49 @@ def test_new_look_flags_draw_only_when_on():                    # план 04 п
     assert (a < 200).sum() > (b < 200).sum() > 0                 # пунктир — меньше туши, но стрелка есть
     reel.pen_tip(c, 300, 200, 200)
     assert (c < 120).sum() > 0 and not ((c[..., 0].astype(int) - c[..., 2].astype(int)) > 30).any()   # серый, не тёплый
+
+
+def test_knowledge_checklist_blocks_reel_without_marketing():  # владелец 23.10: знания — в каждом рилсе, а не в справочнике
+    s = spec()
+    assert reel_rules.check_knowledge(s) == []                                   # эп.02 закрывает все пункты
+    s2 = copy.deepcopy(s); del s2["passport"]["knowledge"]["honest_limit"]
+    assert any("honest_limit" in e for e in reel_rules.check_knowledge(s2))     # пункт забыт — не рендерится
+    s3 = copy.deepcopy(s); s3["passport"]["knowledge"]["value_before_ask"] = {"skip": "нет"}
+    assert any("без причины" in e for e in reel_rules.check_knowledge(s3))      # отказ без причины не принимается
+    s4 = copy.deepcopy(s); s4["passport"]["knowledge"]["value_before_ask"] = 16
+    assert any("value_before_ask" in e for e in reel_rules.check_knowledge(s4)) # приём после призыва — не взаимность
+    s5 = copy.deepcopy(s); s5["beats"][6]["text"] = "Соберись и сделай."
+    assert any("стыдящее" in e for e in reel_rules.check_knowledge(s5))
+    s6 = copy.deepcopy(s); s6["passport"]["caption"] = "Просто ролик #кот"
+    assert len(reel_rules.check_knowledge(s6)) >= 2                              # нет ключевой фразы ниши, мало хэштегов
+    s7 = copy.deepcopy(s); s7["passport"]["hook_variants"] = s7["passport"]["hook_variants"][:1]
+    assert any("вариантов хука" in e for e in reel_rules.check_knowledge(s7))
+    assert reel_rules.knowledge_timing(s, [0.0] * 9 + [21.0] + [0.0] * 7, 45.0) == []
+    assert reel_rules.knowledge_timing(s, [0.0] * 9 + [35.0] + [0.0] * 7, 45.0)   # ре-хук на 78 % — поздно
+
+
+def test_draft_carries_knowledge_todo(tmp_path):
+    import reel_draft
+    p = tmp_path / "reel_script.txt"
+    p.write_text("Ты не *ленишься*.  @f1\nТы не видишь *время*.  @f5\nНачни с пяти минут.  @f1\n", encoding="utf8")
+    items = reel_rules.load_json(reel_rules.CHECKLIST_PATH, {"items": []})["items"]
+    stub = {it["id"]: "TODO" for it in items if it["kind"] == "beat"}
+    errs = reel_rules.check_knowledge({"beats": reel_draft.parse(str(p)), "passport": {"knowledge": stub}})
+    assert sum("passport.knowledge" in e for e in errs) == len(stub)          # черновик не пройдёт, пока TODO
+
+
+def test_publish_kit_and_variant(tmp_path):
+    import shutil
+    import reel_publish
+    import reel_variant
+    d = tmp_path / "reel"; d.mkdir()
+    for f in ("reel.json", "reel_report.json"):
+        shutil.copy(os.path.join(os.path.dirname(EP02), f), d / f)
+    out = reel_publish.publish(str(d))
+    txt = open(out, encoding="utf8").read()
+    assert "utm_campaign=" in txt
+    assert "Честный предел" in txt and "#сдвг" in txt
+    v = reel_variant.make(os.path.dirname(EP02), "Это не лень. Это время.", name=str(tmp_path / "v1"))
+    sv = json.load(open(os.path.join(v, "reel.json"), encoding="utf8"))
+    assert sv["beats"][0]["text"] == "Это не лень. Это время." and sv["passport"]["variant_of"]
+    assert reel_rules.check_spec(sv, SFX) == []
