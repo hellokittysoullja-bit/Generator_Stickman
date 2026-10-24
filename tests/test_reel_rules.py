@@ -214,8 +214,9 @@ def test_sound_limits_and_one_motion():                         # план 04 п
 def test_sound_plan_matches_mixer_order():
     shots = [dict(t0=0.0), dict(t0=2.0, whip=[-560, 0]), dict(t0=5.0, zoom_in=0.3), dict(t0=9.0, sound="swoosh_deep")]
     plan = reel.sound_plan(shots, [dict(kind="sfx", name="riser", t=0.0, align="start"), dict(kind="punch", t=12.5)])
-    assert [x["name"] for x in plan] == ["swoosh", "swoosh_deep", "riser", "swoosh", "swoosh"]
+    assert [x["name"] for x in plan][:5] == ["swoosh", "swoosh_deep", "riser", "swoosh", "swoosh"]
     assert plan[0]["whip"] and plan[0]["pan"] == 0.3 and plan[3]["soft"] and plan[3]["gain_db"] == -7.0
+    assert [(x["name"], x["t"]) for x in plan[5:]] == [("swoosh", 0.0)]   # переход 24.10: удар на первом кадре
 
 
 def test_writing_budget_and_arc():                              # план 04 п.1.15, 1.23
