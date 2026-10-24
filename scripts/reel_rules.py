@@ -5,6 +5,7 @@
 
     python scripts/reel_rules.py videos/NN/reel     # проверить reel.json без рендера
 """
+import json
 import math
 import os
 import re
@@ -195,6 +196,75 @@ def check_hook(spec, log=(), reel_dir=""):
         if any(re.search(r"\bшапк", clean(b["text"]).lower()) for b in beats):
             err.append("кодовое слово и «шапка профиля» сразу: два пути — человек выбирает не выбирать (09 §21.16)")
     return err
+
+
+# Матрица применения (24.10, владелец: «обязан применять всё до единого»): каждый приём документа волны 9 — запись в
+# docs/reels_knowledge/apply_matrix.jsonl; scope "reel" решается в каждом рилсе стандарта ≥ 10 — номером фразы, местом
+# вне ролика (подпись, закреп, обложка, личка, бот) или отказом с причиной; одинаковая отговорка — не больше трёх раз.
+MATRIX_PATH = os.path.join(AUDIENCE_DIR, "apply_matrix.jsonl")
+MATRIX_STANDARD = 10
+MATRIX_WHERE = ("caption", "pinned", "cover", "hook_variants", "dm", "bot", "site", "channel", "comments", "series")
+SKIP_REPEAT_MAX = 3
+
+
+def load_matrix(path=MATRIX_PATH):
+    if not os.path.exists(path):
+        return []
+    return [json.loads(x) for x in open(path, encoding="utf8") if x.strip()]
+
+
+def check_matrix(spec, matrix=None):
+    """Каждый приём матрицы с областью «reel» — решён в passport.matrix этого рилса (стандарт ≥ 10)."""
+    pp = spec.get("passport") or {}
+    if (pp.get("standard") or 0) < MATRIX_STANDARD:
+        return []
+    matrix = load_matrix() if matrix is None else matrix
+    dec = pp.get("matrix") or {}
+    n = len(spec.get("beats", [])); ncand = len((pp.get("hook") or {}).get("candidates") or [])
+    err, reasons = [], {}
+    for it in matrix:
+        if it.get("scope") != "reel":
+            continue
+        v, where = dec.get(it["id"]), f"приём {it['id']} «{it['title']}»"
+        if v is None:
+            err.append(f"{where}: нет решения в passport.matrix — {it.get('ask') or 'где применён?'}"); continue
+        if isinstance(v, dict) and "skip" in v:
+            r = str(v["skip"]).strip()
+            if len(r) < SKIP_MIN_CHARS:
+                err.append(f"{where}: отказ без причины")
+            reasons.setdefault(r.lower(), []).append(it["id"]); continue
+        if isinstance(v, dict) and "candidate" in v:
+            if not (isinstance(v["candidate"], int) and 0 <= v["candidate"] < ncand):
+                err.append(f"{where}: кандидат хука {v['candidate']!r} — не номер в passport.hook.candidates (0…{ncand - 1})")
+            continue
+        if isinstance(v, dict) and "where" in v:
+            if v["where"] not in MATRIX_WHERE or len(str(v.get("how", "")).strip()) < SKIP_MIN_CHARS:
+                err.append(f"{where}: вне ролика — {{\"where\": одно из {MATRIX_WHERE}, \"how\": что именно сделано}}")
+            continue
+        bs = _beats_of(v)
+        if not bs or any(not 0 <= b < n for b in bs):
+            err.append(f"{where}: {v!r} — не номер фразы 0…{n - 1}, не кандидат хука, не место и не отказ")
+    for r, ids in reasons.items():
+        if len(ids) > SKIP_REPEAT_MAX:
+            err.append(f"одна и та же отговорка «{r[:60]}» у {len(ids)} приёмов ({', '.join(ids[:6])}…): причина — своя "
+                       f"у каждого, не больше {SKIP_REPEAT_MAX} раз")
+    return err
+
+
+def matrix_coverage(spec, matrix=None):
+    """Сколько приёмов «reel» применено во фразах, вне ролика, кандидатом хука и сколько отказов — для отчёта."""
+    matrix = load_matrix() if matrix is None else matrix
+    dec = (spec.get("passport") or {}).get("matrix") or {}
+    out = {"beat": 0, "where": 0, "candidate": 0, "skip": 0, "none": 0}
+    for it in matrix:
+        if it.get("scope") != "reel":
+            continue
+        v = dec.get(it["id"])
+        k = ("none" if v is None else "skip" if isinstance(v, dict) and "skip" in v else
+             "candidate" if isinstance(v, dict) and "candidate" in v else "where" if isinstance(v, dict) and "where" in v
+             else "beat")
+        out[k] += 1
+    return out
 
 
 def clean(text):
@@ -606,6 +676,6 @@ if __name__ == "__main__":
     log_p = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docs", "reels_log.json")
     log = json.load(open(log_p, encoding="utf8")) if os.path.exists(log_p) else []
     errs = (check_spec(spec, set(reel.SFX)) + check_passport(spec, log, os.path.relpath(sys.argv[1])) + check_knowledge(spec)
-            + check_hook(spec, log, os.path.relpath(sys.argv[1])))
+            + check_hook(spec, log, os.path.relpath(sys.argv[1])) + check_matrix(spec))
     print("\n".join("✗ " + e for e in errs) or "✓ reel.json по правилам (тайминг проверит reel.py при рендере)")
     sys.exit(1 if errs else 0)

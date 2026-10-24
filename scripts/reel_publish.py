@@ -113,6 +113,11 @@ def publish(reel_dir):
           for i, v in enumerate(pp.get("hook_variants", []))] + [""]
     if pp.get("alt_final"):
         L += ["## Второй финал (07 §8 п.10)", pp["alt_final"], ""]
+    if (pp.get("standard") or 0) >= reel_rules.MATRIX_STANDARD:
+        cv = reel_rules.matrix_coverage(spec)
+        L += ["## Матрица применения (docs/reels_knowledge/apply_matrix.jsonl)",
+              f"Приёмов «каждый рилс»: во фразах {cv['beat']}, вне ролика {cv['where']}, кандидатом хука {cv['candidate']}, "
+              f"отказ с причиной {cv['skip']}, без решения {cv['none']}. Решения — `passport.matrix` в reel.json.", ""]
     L += ["## Знания базы в этом рилсе", "| знание | где | фраза |", "|---|---|---|"]
     kn = pp.get("knowledge") or {}
     for it in checklist.get("items", []):

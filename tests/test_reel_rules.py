@@ -503,3 +503,28 @@ def test_reading_push_keeps_riser_cut(tmp_path):               # эп.01 v3: х�
     finally:
         reel.contact_sheet = orig
     assert abs(got["cut"] - reel.SFX["riser"][1]) <= reel_rules.RISER_PEAK_ON_CUT
+
+
+def test_matrix_gate():                                         # 24.10: каждый приём базы решён в рилсе стандарта 10
+    m = [{"id": "H001", "title": "парадокс внутри боли", "scope": "reel", "ask": "Где?"},
+         {"id": "B001", "title": "снять вину до объяснения", "scope": "reel"},
+         {"id": "V001", "title": "склейка на слово", "scope": "global", "status": "код"},
+         {"id": "X001", "title": "выдуманный дефицит", "scope": "forbidden"}]
+    s = spec(); s["passport"]["standard"] = 9
+    assert reel_rules.check_matrix(s, m) == []                  # стандарт 9 и раньше — без матрицы
+    s = _w9(spec()); s["passport"]["standard"] = 10
+    e = reel_rules.check_matrix(s, m)
+    assert len(e) == 2 and all("нет решения" in x for x in e)   # global и forbidden в рилсе не решаются
+    s["passport"]["matrix"] = {"H001": {"candidate": 0}, "B001": 4}
+    assert reel_rules.check_matrix(s, m) == []
+    s["passport"]["matrix"]["B001"] = {"skip": "коротко"}
+    assert "без причины" in " ".join(reel_rules.check_matrix(s, m))
+    s["passport"]["matrix"]["B001"] = {"where": "caption", "how": "в подписи первой строкой"}
+    assert reel_rules.check_matrix(s, m) == []
+    s["passport"]["matrix"]["B001"] = 99
+    assert "не номер фразы" in " ".join(reel_rules.check_matrix(s, m))
+    many = [{"id": f"B{i:03d}", "title": "x", "scope": "reel"} for i in range(5)]
+    s["passport"]["matrix"] = {f"B{i:03d}": {"skip": "не подходит этому рилсу вообще"} for i in range(5)}
+    assert "одна и та же отговорка" in " ".join(reel_rules.check_matrix(s, many))
+    cv = reel_rules.matrix_coverage(s, many)
+    assert cv["skip"] == 5 and cv["none"] == 0
