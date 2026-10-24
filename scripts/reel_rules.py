@@ -436,6 +436,7 @@ COVERAGE_NEED_HOW = ("F", "B", "D")  # страх → чем снят, убеж�
 COVERAGE_LINKS_IN_REEL = (4, 10)   # связок §6 во фразах: 12 §6 — «в одном рилсе 4–6» главных, две-три могут делить одну
                                    # фразу (честный предел + «плохо, НО хорошо»); владелец 24.10 (вечер): «не надо городить
                                    # всё подряд, самое эффективное» — v7/v8 с 33 связками вышли на 73 с воды
+TEXT_MAX_HARD = 600                 # потолок даже со словом владельца (~45 с)
 TEXT_MAX_CHARS = 520               # текст рилса на ~40 с: при 14–15 знаках в секунду плюс паузы (владелец: «40 секунд и всё»)
 
 
@@ -513,8 +514,11 @@ def check_coverage(spec, log=(), reel_dir="", items=None):
     if items and any(i[0] == "L" for i in items) and not lo <= len(in_reel) <= hi:
         err.append(f"связок во фразах {len(in_reel)}: нужно {lo}–{hi} самых сильных (12 §6), остальные — вокруг рилса или отказ")
     chars = sum(len(clean(b.get("text", ""))) for b in spec.get("beats", []))
-    if chars > TEXT_MAX_CHARS:
-        err.append(f"текст рилса {chars} знаков > {TEXT_MAX_CHARS} (~40 с): вода, сократить до самого сильного")
+    tm = pp.get("text_max") or {}                      # владелец разрешил длиннее (24.10: «43 секунды не страшно»)
+    limit = min(int(tm.get("chars", TEXT_MAX_CHARS)), TEXT_MAX_HARD) if len(str(tm.get("owner", ""))) >= 10 else TEXT_MAX_CHARS
+    if chars > limit:
+        err.append(f"текст рилса {chars} знаков > {limit} (~40 с): вода, сократить до самого сильного"
+                   + ("" if limit > TEXT_MAX_CHARS else " (длиннее — только словом владельца: passport.text_max {chars, owner})"))
     for r, ids in reasons.items():
         if len(ids) > SKIP_REPEAT_MAX:
             err.append(f"одна отговорка «{r[:60]}» у {len(ids)} пунктов ({', '.join(ids[:6])}…): причина — своя у каждого")

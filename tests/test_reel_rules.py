@@ -734,3 +734,15 @@ def test_voice_segments_follow_phrase_shifts():               # голос Lumea
     cut = (0.9 + 1.5) / 2                                                       # граница — середина тишины
     assert abs(segs[0]["s1"] - cut) < 1e-9 and abs(segs[1]["s0"] - cut) < 1e-9
     assert abs(segs[1]["dst"] - (cut - 0.2)) < 1e-9 and segs[1]["s1"] is None
+
+
+def test_text_limit_rises_only_with_owner_word():            # владелец 24.10: «43 секунды не страшно» — только явно
+    EP01 = os.path.join(ROOT, "videos", "01_sdvg_pismo", "reel", "reel.json")
+    s = json.load(open(EP01, encoding="utf8"))
+    long = lambda e: [x for x in e if "знаков >" in x]
+    assert not long(reel_rules.check_coverage(s))                                  # 582 знака со словом владельца
+    t = copy.deepcopy(s); t["passport"].pop("text_max")
+    assert long(reel_rules.check_coverage(t))                                      # без слова — 520
+    t = copy.deepcopy(s); t["passport"]["text_max"] = {"chars": 900, "owner": "владелец разрешил всё"}
+    t["beats"][0]["text"] += " " + "слово " * 60
+    assert long(reel_rules.check_coverage(t))                                      # потолок 600 даже со словом
