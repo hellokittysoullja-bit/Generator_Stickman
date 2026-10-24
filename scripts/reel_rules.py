@@ -212,6 +212,41 @@ def check_hook(spec, log=(), reel_dir=""):
 # вне ролика (подпись, закреп, обложка, личка, бот) или отказом с причиной; одинаковая отговорка — не больше трёх раз.
 MATRIX_PATH = os.path.join(AUDIENCE_DIR, "apply_matrix.jsonl")
 MATRIX_STANDARD = 10
+HOOK_LAYERS = ("verbal", "text", "visual", "audio", "caption")   # пять слоёв хука (правило владельца 24.10)
+HOOK_C3 = ("context", "clarity", "curiosity")                       # 3C: «это про меня», «понятно о чём», «что дальше?»
+HOOK_LAYERS_STANDARD = 12
+
+
+def check_hook_layers(spec):
+    """Хук — система из пяти слоёв, работающих одновременно (голос, текст на экране, кадр, звук, первая строка подписи),
+    и проходит 3C: контекст («это про меня»), ясность («понятно, о чём»), любопытство («что дальше?»). Правило владельца
+    24.10 (CLAUDE.md, рилсы п.0). Каждый слой и каждое C описаны в паспорте; что можно проверить по reel.json — проверено."""
+    pp = spec.get("passport") or {}
+    if (pp.get("standard") or 0) < HOOK_LAYERS_STANDARD:
+        return []
+    hk = pp.get("hook") or {}
+    lay, c3, err = hk.get("layers") or {}, hk.get("c3") or {}, []
+    for k in HOOK_LAYERS:
+        if len(str(lay.get(k, "")).strip()) < 5:
+            err.append(f"хук: слой «{k}» не описан в passport.hook.layers — хук это пять слоёв сразу: verbal (первая фраза), "
+                       "text (текст на экране), visual (действие/предмет/эмоция в кадре 0), audio (голос, пауза, резкий звук), "
+                       "caption (первая строка подписи продолжает интригу)")
+    for k in HOOK_C3:
+        if len(str(c3.get(k, "")).strip()) < 5:
+            err.append(f"хук: 3C «{k}» не описан в passport.hook.c3 — context «это про меня», clarity «понятно, о чём», "
+                       "curiosity «дико интересно, что дальше»")
+    beats = spec.get("beats") or []
+    b0 = beats[0] if beats else {}
+    if b0 and not (any(e.get("kind") == "sfx" for e in b0.get("fx", [])) or b0.get("gaps")):
+        err.append("хук: нет аудиослоя — ни звука, ни паузы во фразе 0")
+    if b0 and not b0.get("shots"):
+        err.append("хук: нет визуального слоя — у фразы 0 нет кадра")
+    cap, first = str(pp.get("caption", "")), str(lay.get("caption", "")).strip()
+    if first and not _norm(cap).startswith(_norm(first)):
+        err.append("хук: слой caption — не первая строка подписи: в ленте видно только начало подписи")
+    return err
+
+
 MATRIX_WHERE = ("caption", "pinned", "cover", "hook_variants", "dm", "bot", "site", "channel", "comments", "series")
 SKIP_REPEAT_MAX = 3
 
@@ -997,7 +1032,7 @@ if __name__ == "__main__":
     log_p = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docs", "reels_log.json")
     log = json.load(open(log_p, encoding="utf8")) if os.path.exists(log_p) else []
     errs = (check_spec(spec, set(reel.SFX)) + check_passport(spec, log, os.path.relpath(sys.argv[1])) + check_knowledge(spec)
-            + check_hook(spec, log, os.path.relpath(sys.argv[1])) + check_matrix(spec)
+            + check_hook(spec, log, os.path.relpath(sys.argv[1])) + check_hook_layers(spec) + check_matrix(spec)
             + check_coverage(spec, log, os.path.relpath(sys.argv[1])) + check_human(spec)
             + check_inventory(spec, log, os.path.relpath(sys.argv[1])))
     print("\n".join("✗ " + e for e in errs) or "✓ reel.json по правилам (тайминг проверит reel.py при рендере)")

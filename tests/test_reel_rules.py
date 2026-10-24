@@ -127,7 +127,7 @@ def test_passport_blocks_template_reels():
     assert reel_rules.check_passport(ep02, log, "videos/02_sdvg_vremya/reel") == []       # сам себе не шаблон
     new = copy.deepcopy(ep02)
     assert reel_rules.check_passport(new, log, "videos/03_new/reel")                      # тот же хук и приёмы
-    new["passport"]["hook_type"] = "вопрос"
+    new["passport"]["hook_type"] = next(t for t in reel_rules.HOOK_TYPES if t != log[-1].get("hook_type"))  # не как у последнего
     new["beats"][0]["text"] = "Сколько раз за день ты говоришь «потом»?"
     new["passport"]["devices"] = ["раскадровка дня", "счётчик", "хлёст", "пауза", "кукла машет", "эхо в призыве"]
     assert reel_rules.check_passport(new, log, "videos/03_new/reel") == []                # другой хук, другие приёмы
@@ -693,3 +693,19 @@ def test_after_sfx_takes_nearest_sound_not_first():           # эп.01 v6: вт
              {"text": "в", "fx": [{"kind": "sfx", "name": "riser", "at": 0, "tag": 2}]}, {"text": "г", "after_sfx": "riser"}]
     assert reel.after_sfx_source(beats, 1)[0] == 0
     assert reel.after_sfx_source(beats, 3) == (2, beats[2]["fx"][0])
+
+
+def test_hook_needs_five_layers_and_3c():                    # правило владельца 24.10: хук — пять слоёв и 3C
+    EP01 = os.path.join(ROOT, "videos", "01_sdvg_pismo", "reel", "reel.json")
+    s = json.load(open(EP01, encoding="utf8"))
+    assert reel_rules.check_hook_layers(s) == []
+    for k in reel_rules.HOOK_LAYERS + reel_rules.HOOK_C3:
+        t = copy.deepcopy(s); h = t["passport"]["hook"]
+        (h["layers"] if k in reel_rules.HOOK_LAYERS else h["c3"]).pop(k)
+        assert any(f"«{k}»" in e for e in reel_rules.check_hook_layers(t)), k
+    t = copy.deepcopy(s); t["passport"]["caption"] = "Другая первая строка. " + t["passport"]["caption"]
+    assert any("caption" in e for e in reel_rules.check_hook_layers(t))       # слой подписи — её первая строка
+    t = copy.deepcopy(s); t["beats"][0]["fx"] = []; t["beats"][0].pop("gaps", None)
+    assert any("аудиослоя" in e for e in reel_rules.check_hook_layers(t))
+    t = copy.deepcopy(s); t["passport"]["standard"] = 11
+    assert reel_rules.check_hook_layers(t) == []                              # старые рилсы не ломаются
