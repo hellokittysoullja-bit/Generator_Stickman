@@ -380,7 +380,10 @@ COVERAGE_GROUPS = {"L": "связка 12 §6", "S": "шаг формулы 12 §
                    "B": "убеждение 09 §8.3", "D": "желание 09 §9.1"}
 COVERAGE_NO_SKIP = ("S",)          # скелет рилса не пропускается
 COVERAGE_NEED_HOW = ("F", "B", "D")  # страх → чем снят, убеждение → как развёрнуто, желание → как дано завуалированно
-COVERAGE_SKIP_SHARE = 0.5          # гипотеза: больше половины группы отказом — стратегия не использована
+COVERAGE_LINKS_IN_REEL = (4, 10)   # связок §6 во фразах: 12 §6 — «в одном рилсе 4–6» главных, две-три могут делить одну
+                                   # фразу (честный предел + «плохо, НО хорошо»); владелец 24.10 (вечер): «не надо городить
+                                   # всё подряд, самое эффективное» — v7/v8 с 33 связками вышли на 73 с воды
+TEXT_MAX_CHARS = 520               # текст рилса на ~40 с: при 14–15 знаках в секунду плюс паузы (владелец: «40 секунд и всё»)
 
 
 def _section(text, start, stop):
@@ -411,7 +414,8 @@ def strategy_items(strategy=STRATEGY_PATH, audience=AUDIENCE_DOC):
 
 
 def check_coverage(spec, log=(), reel_dir="", items=None):
-    """Каждый пункт стратегии решён в passport.coverage; новый рилс — не ниже стандарта 11."""
+    """Каждый пункт стратегии решён в passport.coverage (ничего не забыто), но во фразах — только 4–8 сильнейших связок
+    и текст на ~40 с (ничего лишнего); новый рилс — не ниже стандарта 11."""
     pp = spec.get("passport") or {}
     std = pp.get("standard") or 0
     if std < COVERAGE_STANDARD:
@@ -425,7 +429,7 @@ def check_coverage(spec, log=(), reel_dir="", items=None):
     items = strategy_items() if items is None else items
     cov = pp.get("coverage") or {}
     n = len(spec.get("beats", []))
-    err, skips, reasons = [], {}, {}
+    err, reasons = [], {}
     for iid, title in items.items():
         g = iid[0]
         v, where = cov.get(iid), f"{COVERAGE_GROUPS[g]} {iid} «{title[:60]}»"
@@ -438,7 +442,6 @@ def check_coverage(spec, log=(), reel_dir="", items=None):
                 err.append(f"{where}: шаг формулы не пропускается — он есть в каждом рилсе")
             elif len(r) < SKIP_MIN_CHARS:
                 err.append(f"{where}: отказ без причины")
-            skips[g] = skips.get(g, 0) + 1
             reasons.setdefault(r.lower(), []).append(iid)
             continue
         how = str(v.get("how", "")).strip() if isinstance(v, dict) else ""
@@ -451,10 +454,14 @@ def check_coverage(spec, log=(), reel_dir="", items=None):
             err.append(f"{where}: {v!r} — не номер фразы 0…{n - 1}, не место и не отказ")
         elif g in COVERAGE_NEED_HOW and len(how) < SKIP_MIN_CHARS:
             err.append(f"{where}: {{\"beats\": [...], \"how\": ...}} — чем снят страх, как развёрнуто убеждение, как дано желание")
-    for g, k in skips.items():
-        total = sum(1 for i in items if i[0] == g)
-        if total and k / total > COVERAGE_SKIP_SHARE:
-            err.append(f"{COVERAGE_GROUPS[g].split()[0]}: отказов {k} из {total} > {COVERAGE_SKIP_SHARE:.0%} — стратегия не использована")
+    in_reel = [i for i in items if i[0] == "L" and _beats_of(cov.get(i).get("beats") if isinstance(cov.get(i), dict)
+                                                           else cov.get(i))]
+    lo, hi = COVERAGE_LINKS_IN_REEL
+    if items and any(i[0] == "L" for i in items) and not lo <= len(in_reel) <= hi:
+        err.append(f"связок во фразах {len(in_reel)}: нужно {lo}–{hi} самых сильных (12 §6), остальные — вокруг рилса или отказ")
+    chars = sum(len(clean(b.get("text", ""))) for b in spec.get("beats", []))
+    if chars > TEXT_MAX_CHARS:
+        err.append(f"текст рилса {chars} знаков > {TEXT_MAX_CHARS} (~40 с): вода, сократить до самого сильного")
     for r, ids in reasons.items():
         if len(ids) > SKIP_REPEAT_MAX:
             err.append(f"одна отговорка «{r[:60]}» у {len(ids)} пунктов ({', '.join(ids[:6])}…): причина — своя у каждого")

@@ -598,22 +598,31 @@ def test_coverage_items_come_from_documents():                  # 24.10: спи�
     assert it["L1"].startswith("Парадокс") and it["S1"] == "Хук-парадокс" and it["R7"].startswith("Поймать в моменте")
 
 
-def test_coverage_gate():                                       # 24.10: ни один пункт стратегии нельзя молча пропустить
-    items = {"L1": "парадокс", "S1": "хук", "F1": "вдруг ленивый", "D1": "рядом"}
+def test_coverage_gate():                                       # 24.10: ни один пункт не забыт, но в рилсе — только сильнейшие
+    items = {"L1": "парадокс", "L2": "переворот", "L3": "довод", "L4": "если ты", "L5": "мечта",
+             "S1": "хук", "F1": "вдруг ленивый", "D1": "рядом"}
     s = _std11(["a", "b", "c"])
     e = reel_rules.check_coverage(s, items=items)
-    assert len(e) == 4 and all("нет решения" in x for x in e)
-    s["passport"]["coverage"] = {"L1": 0, "S1": {"skip": "рилс короткий, не влезло"}, "F1": [1], "D1": {"where": "site", "how": "кот"}}
+    assert sum("нет решения" in x for x in e) == 8
+    s["passport"]["coverage"] = {"L1": 0, "L2": 1, "L3": 2, "L4": 2, "L5": {"skip": "мечта и стыд — в следующей серии"},
+                                 "S1": {"skip": "рилс короткий, не влезло"}, "F1": [1], "D1": {"where": "site", "how": "кот"}}
     e = reel_rules.check_coverage(s, items=items)
     assert any("шаг формулы не пропускается" in x for x in e)   # скелет обязателен
     assert any("чем снят страх" in x for x in e)                # страх без «how» — не решён
     assert any("вне ролика" in x for x in e)                    # «how» короче 15 знаков
-    s["passport"]["coverage"] = {"L1": 0, "S1": [0], "F1": {"beats": [1, 2], "how": "фраза 2 снимает: ленивые себя не грызут"},
-                                 "D1": {"where": "site", "how": "кот просит посидеть с ним на сайте"}}
+    s["passport"]["coverage"].update({"S1": [0], "F1": {"beats": [1, 2], "how": "фраза 2 снимает: ленивые себя не грызут"},
+                                      "D1": {"where": "site", "how": "кот просит посидеть с ним на сайте"}})
     assert reel_rules.check_coverage(s, items=items) == []
-    many = {f"L{i}": "x" for i in range(1, 5)}
-    s["passport"]["coverage"] = {k: {"skip": f"не подходит к теме письма, номер {k}"} for k in many}
-    assert any("стратегия не использована" in x for x in reel_rules.check_coverage(s, items=many))
+    s["passport"]["coverage"].update({"L3": {"skip": "не подходит к письму, другой сюжет"}})
+    assert any("связок во фразах 3" in x for x in reel_rules.check_coverage(s, items=items))   # меньше 4 — слабо
+    many = {f"L{i}": "x" for i in range(1, 13)}
+    s["passport"]["coverage"] = {k: 0 for k in many}
+    assert any("связок во фразах 12" in x for x in reel_rules.check_coverage(s, items=many))   # больше 10 — вода (v7: 33)
+    s["passport"]["coverage"] = {k: 0 if k in ("L1", "L2", "L3", "L4") else {"skip": f"отложено в серию, пункт {k}"}
+                                 for k in many}
+    assert reel_rules.check_coverage(s, items=many) == []       # отказов сколько угодно, но у каждого своя причина
+    s["beats"] = [{"text": "слово " * 120}]
+    assert any("знаков" in x for x in reel_rules.check_coverage(s, items=many))                 # текст длиннее ~40 с
 
 
 def test_new_reel_must_be_standard_11():                        # 24.10: старым стандартом новый рилс не обойти
