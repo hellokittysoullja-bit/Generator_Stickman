@@ -747,3 +747,14 @@ def test_text_limit_rises_only_with_owner_word():            # владелец 
     t = copy.deepcopy(s); t["passport"]["text_max"] = {"chars": 900, "owner": "владелец разрешил всё"}
     t["beats"][0]["text"] += " " + "слово " * 60
     assert long(reel_rules.check_coverage(t))                                      # потолок 600 даже со словом
+
+
+def test_every_cut_is_heard():                               # владелец 24.10: на каждой новой картинке — звук
+    shots = [dict(t0=0.0, src="f1"), dict(t0=1.7, src="f2"), dict(t0=3.4, src="f2", zoom_in=0.2), dict(t0=5.0, src="f3")]
+    events = [dict(kind="sfx", name="oof", t=5.05)]                                  # смысловой звук рядом со склейкой
+    plan = reel.sound_plan(shots, events)
+    assert reel_rules.check_cut_sounds(plan, shots) == []
+    names = {round(p["peak"], 2): p["name"] for p in plan}
+    assert names[1.7] in ("swoosh", "fast_whoosh") and names[3.4] in ("swoosh", "fast_whoosh")
+    assert not any(abs(p["peak"] - 5.0) < 0.3 and p["name"] != "oof" for p in plan)   # смысловой не дублируется свистом
+    assert reel_rules.check_cut_sounds([], shots)                                   # без звуков — ошибка на каждой склейке

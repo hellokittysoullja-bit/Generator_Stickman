@@ -529,6 +529,188 @@
    "end": 42.20666666666667
   }
  ],
+ "sounds": [
+  {
+   "name": "swoosh",
+   "peak": 0.0,
+   "gain_db": -4.0,
+   "soft": true
+  },
+  {
+   "name": "riser",
+   "peak": 1.65,
+   "gain_db": 0.0,
+   "soft": false
+  },
+  {
+   "name": "typing",
+   "peak": 2.277,
+   "gain_db": -4.0,
+   "soft": false
+  },
+  {
+   "name": "fast_whoosh",
+   "peak": 3.89,
+   "gain_db": -2.0,
+   "soft": true
+  },
+  {
+   "name": "swoosh",
+   "peak": 5.49,
+   "gain_db": -7.0,
+   "soft": true
+  },
+  {
+   "name": "fast_whoosh",
+   "peak": 6.77,
+   "gain_db": -8.0,
+   "soft": true
+  },
+  {
+   "name": "swoosh",
+   "peak": 8.85,
+   "gain_db": -4.0,
+   "soft": true
+  },
+  {
+   "name": "fast_whoosh",
+   "peak": 10.13,
+   "gain_db": -8.0,
+   "soft": true
+  },
+  {
+   "name": "fast_whoosh",
+   "peak": 12.53,
+   "gain_db": -8.0,
+   "soft": true
+  },
+  {
+   "name": "fast_whoosh",
+   "peak": 14.37,
+   "gain_db": -2.0,
+   "soft": true
+  },
+  {
+   "name": "swoosh",
+   "peak": 15.57,
+   "gain_db": -7.0,
+   "soft": true
+  },
+  {
+   "name": "swoosh",
+   "peak": 17.47,
+   "gain_db": -4.0,
+   "soft": true
+  },
+  {
+   "name": "fast_whoosh",
+   "peak": 18.537,
+   "gain_db": -2.0,
+   "soft": true
+  },
+  {
+   "name": "fast_glitch",
+   "peak": 19.077,
+   "gain_db": 0.0,
+   "soft": false
+  },
+  {
+   "name": "swoosh",
+   "peak": 20.33,
+   "gain_db": -4.0,
+   "soft": true
+  },
+  {
+   "name": "keyboard_soft",
+   "peak": 22.157,
+   "gain_db": 0.0,
+   "soft": false
+  },
+  {
+   "name": "oof",
+   "peak": 23.797,
+   "gain_db": 0.0,
+   "soft": false
+  },
+  {
+   "name": "swoosh_deep",
+   "peak": 24.57,
+   "gain_db": 0.0,
+   "soft": false
+  },
+  {
+   "name": "typing",
+   "peak": 24.637,
+   "gain_db": -4.0,
+   "soft": false
+  },
+  {
+   "name": "fast_whoosh",
+   "peak": 26.41,
+   "gain_db": -8.0,
+   "soft": true
+  },
+  {
+   "name": "riser",
+   "peak": 28.007,
+   "gain_db": 0.0,
+   "soft": false
+  },
+  {
+   "name": "level_up",
+   "peak": 28.957,
+   "gain_db": 0.0,
+   "soft": false
+  },
+  {
+   "name": "fast_whoosh",
+   "peak": 29.61,
+   "gain_db": -8.0,
+   "soft": true
+  },
+  {
+   "name": "swoosh_deep",
+   "peak": 30.41,
+   "gain_db": 0.0,
+   "soft": false
+  },
+  {
+   "name": "fast_whoosh",
+   "peak": 31.93,
+   "gain_db": -8.0,
+   "soft": true
+  },
+  {
+   "name": "fast_whoosh",
+   "peak": 34.01,
+   "gain_db": -8.0,
+   "soft": true
+  },
+  {
+   "name": "fast_whoosh",
+   "peak": 35.41,
+   "gain_db": -8.0,
+   "soft": true
+  },
+  {
+   "name": "fast_whoosh",
+   "peak": 37.13,
+   "gain_db": -8.0,
+   "soft": true
+  },
+  {
+   "name": "fast_whoosh",
+   "peak": 39.85,
+   "gain_db": -8.0,
+   "soft": true
+  },
+  {
+   "name": "swoosh",
+   "peak": 41.42,
+   "gain_db": 0.0,
+   "soft": false
+  }
+ ],
  "events": [
   {
    "kind": "sfx",

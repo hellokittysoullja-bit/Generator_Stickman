@@ -730,6 +730,7 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     rule_errs += reel_rules.check_knowledge(spec)                 # знания базы: маркетинг, воронка, бренд — у каждой фразы
     rule_errs += reel_rules.knowledge_timing(spec, [times[i0]["start"] for i0, _ in spans], total)
     rule_errs += reel_rules.check_sounds(sound_plan(shots, events))
+    rule_errs += reel_rules.check_cut_sounds(sound_plan(shots, events), shots, CUT_SOUND_NEAR)
     rule_errs += reel_rules.check_writing(events, shots)
     for w in reel_rules.warnings(spec, shots, total, events) + reel_rules.sound_warnings(sound_plan(shots, events)):
         print("  ⚠ " + w)
@@ -764,6 +765,8 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", vid, "-i", wav, "-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
                     "-shortest", "-movflags", "+faststart", out], check=True)
     json.dump(dict(total=total, voiced=voiced, picture_h=PH, words=times,
+                   sounds=[dict(name=p["name"], peak=round(p["peak"], 3), gain_db=p["gain_db"], soft=p["soft"])
+                           for p in sorted(sound_plan(shots, events), key=lambda p: p["peak"])],
                    events=[dict(kind=e["kind"], t=round(e["t"], 3), beat=e.get("beat"), **({"name": e["name"]} if e.get("name") else {}))
                            for e in sorted(events, key=lambda e: e["t"])],
                    shots=[dict(t0=round(s["t0"], 3), t1=round(s["t1"], 3), kind=s.get("kind", "crop"), src=s.get("src"),
@@ -1111,6 +1114,7 @@ def place(track, x, t, gain=1.0):
     if m > 0: track[i:i + m] += x[:m] * gain
 
 SWOOSH_RATES = (1.0, 0.95, 1.05, 0.97, 1.03)
+CUT_SOUND_NEAR = 0.35      # склейка «озвучена», если пик звука ближе 0.35 с
 
 def sound_plan(shots, events):
     """Все звуки рилса по порядку: [{name, t, align, gain_db, pan, peak, soft, whip}] — одна правда для микшера и для
@@ -1119,7 +1123,7 @@ def sound_plan(shots, events):
     plan, placed, count = [], [], {}
     def add(name, t, align="peak", gain_db=0.0, pan=0.0, soft=False, whip=False):
         k = count.get(name, 0); count[name] = k + 1
-        rate = SWOOSH_RATES[k % 5] if name in ("swoosh", "swoosh_deep") else 1.0
+        rate = SWOOSH_RATES[k % 5] if name in ("swoosh", "swoosh_deep", "fast_whoosh") else 1.0
         pk = SFX[name][1] / rate
         peak = t if align == "peak" else t + pk
         placed.append(peak)
@@ -1138,6 +1142,21 @@ def sound_plan(shots, events):
     for tt in sorted(soft):                           # и не чаще раза в 3 с: эталон v11 — три тихих свиста через 1.5 с
         if all(abs(tt - p) > 1.0 for p in placed) and all(abs(tt - q) > 3.0 for q in soft_done):
             add("swoosh", tt, gain_db=-7.0, soft=True); soft_done.append(tt)
+    # звук перехода на каждой склейке (владелец 24.10: «на новой картинке свуш, там другой свуш» — склейка без звука
+    # проваливается): новая картинка — свист, по очереди обычный и короткий, разной скорости; тот же рисунок ближе —
+    # тихий короткий свист. Не ставится, если рядом (CUT_SOUND_NEAR) уже звучит смысловой звук.
+    alt = 0
+    for k, sh in enumerate(shots):
+        t = sh["t0"]
+        if any(abs(t - p) <= CUT_SOUND_NEAR for p in placed):
+            continue
+        prev = shots[k - 1] if k else None
+        new_pic = prev is None or (sh.get("src") or sh.get("kind")) != (prev.get("src") or prev.get("kind"))
+        if new_pic:
+            name = ("swoosh", "fast_whoosh")[alt % 2]; alt += 1
+            add(name, t, gain_db=-4.0 if name == "swoosh" else -2.0, soft=True, whip=True)
+        else:
+            add("fast_whoosh", t, gain_db=-8.0, soft=True)
     return plan
 
 def voice_segments(reel_dir, nat, times):

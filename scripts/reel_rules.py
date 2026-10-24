@@ -742,6 +742,14 @@ def check_sounds(plan):
     return err
 
 
+def check_cut_sounds(plan, shots, near=0.35):
+    """Каждая склейка слышна (владелец 24.10: «не должно быть тишины, на новой картинке свуш»): у каждой смены плана
+    есть пик звука ближе near секунд — смысловой или переходный."""
+    peaks = [p["peak"] for p in plan]
+    return [f"склейка {s['t0']:.2f} с без звука: переход проваливается (свист, короткий свист или смысловой звук)"
+            for s in shots[1:] if not any(abs(s["t0"] - q) <= near for q in peaks)]
+
+
 def sound_warnings(plan):
     pk = sorted(p["peak"] for p in plan)
     for i, t in enumerate(pk):
