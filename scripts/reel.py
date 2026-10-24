@@ -569,6 +569,8 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     log_p = os.path.join(ROOT, "docs", "reels_log.json")           # против шаблона: паспорт против прошлых рилсов
     rule_errs += reel_rules.check_passport(spec, json.load(open(log_p, encoding="utf8")) if os.path.exists(log_p) else [],
                                            os.path.relpath(reel_dir, ROOT))
+    rule_errs += reel_rules.check_hook(spec, json.load(open(log_p, encoding="utf8")) if os.path.exists(log_p) else [],
+                                       os.path.relpath(reel_dir, ROOT))      # волна 9: паспорт хука (стандарт 9)
     layout(spec)
     beats = spec["beats"]
     prepare_src(reel_dir, spec.get("sources", {}))
@@ -597,6 +599,7 @@ def build(reel_dir, sheet=False, preview=False, force=False):
             shift = peak - times[spans[bi][0]]["start"] + CUT_LEAD
             if shift > 0:
                 times = times[:spans[bi][0]] + [dict(x, start=x["start"] + shift, end=x["end"] + shift) for x in times[spans[bi][0]:]]
+    anchors = sorted(spans[bi][0] for bi, b in enumerate(beats) if b.get("after_sfx"))
     if not voiced:                                    # немой рилс: темп — скорость чтения, а не диктора
         for _ in range(3):
             for c in chunks(words, times):
@@ -607,7 +610,13 @@ def build(reel_dir, sheet=False, preview=False, force=False):
                 have = times[k_next]["start"] - times[c["idx"][0]]["start"]
                 if have < need:
                     d = need - have
-                    times = times[:k_next] + [dict(x, start=x["start"] + d, end=x["end"] + d) for x in times[k_next:]]
+                    # фраза на пике звука (after_sfx) уже стоит позже, чем нужно чтению, — сдвиг до неё уходит в этот
+                    # запас и не уводит склейку с пика (эп.01 v3: хук в две группы уводил первую склейку на 1.88 с)
+                    a = next((x for x in anchors if x > k_next), None)
+                    if k_next not in anchors and a is not None and times[a - 1]["end"] + d <= times[a]["start"]:
+                        times = times[:k_next] + [dict(x, start=x["start"] + d, end=x["end"] + d) for x in times[k_next:a]] + times[a:]
+                    else:
+                        times = times[:k_next] + [dict(x, start=x["start"] + d, end=x["end"] + d) for x in times[k_next:]]
     total = times[-1]["end"] + spec.get("tail", 0.5)
 
     # кадрирования: у фразы shots=[{at: номер слова во фразе, ...}]; начало плана = начало слова - CUT_LEAD

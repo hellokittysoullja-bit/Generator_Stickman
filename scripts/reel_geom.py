@@ -204,6 +204,21 @@ def overlay_on_drawing(reel, reel_dir, shots, events):
                 X1, Y1 = min(X1, ink.shape[1]), min(Y1, ink.shape[0])
                 if X1 > X0 and Y1 > Y0:
                     share = float(ink[Y0:Y1, X0:X1].mean())
+            elif kind == "fit":                  # рисунок по ширине (fit_on_paper): эп.01 v3 — «КОТ» лёг коту на глаз,
+                _, _, ink = ink_blobs(reel, reel_dir, s["src"])     # а fit-планы проверка не смотрела
+                rx0, ry0, rx1, ry1 = s["region"]
+                z = s.get("zoom", (1.0, 1.06))
+                u = min(1.0, max(0.0, (max(e["t"], s["t0"]) - s["t0"]) / max(1e-3, s["t1"] - s["t0"])))
+                tw = reel.W * s.get("width", 0.96) * (z[0] + (z[1] - z[0]) * u)
+                th = tw * (ry1 - ry0) / (rx1 - rx0)
+                px, py = reel.W / 2 - tw / 2, s.get("cy", reel.PH * 0.5) - th / 2
+                kx, ky = (rx1 - rx0) / tw, (ry1 - ry0) / th          # экран -> кадр; сетка ¼ исходника = кадр / 2
+                gx0, gx1 = (rx0 + (bx0 - px) * kx) / 2, (rx0 + (bx1 - px) * kx) / 2
+                gy0, gy1 = (ry0 + (by0 - py) * ky) / 2, (ry0 + (by1 - py) * ky) / 2
+                X0, Y0 = int(max(gx0, rx0 / 2)), int(max(gy0, ry0 / 2))
+                X1, Y1 = int(min(gx1, rx1 / 2, ink.shape[1])), int(min(gy1, ry1 / 2, ink.shape[0]))
+                if X1 > X0 and Y1 > Y0:
+                    share = float(ink[Y0:Y1, X0:X1].mean()) * (X1 - X0) * (Y1 - Y0) / max(1e-6, (gx1 - gx0) * (gy1 - gy0))
             if share > OVERLAY_INK_SHARE:
                 err.append(f"надпись «{e['text']}» ({e['t']:.2f} с) лежит на рисунке плана {s['t0']:.2f}–{s['t1']:.2f} с: "
                            f"под ней {share:.0%} туши. На чистую бумагу (сдвиг x/y) или короче hold, чтобы не уходила в чужой план")

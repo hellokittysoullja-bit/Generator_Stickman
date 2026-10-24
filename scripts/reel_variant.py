@@ -38,15 +38,27 @@ def make(reel_dir, hook, first=None, name=None):
     if first:
         src, win = first.split(":"); cx, cy, h = (float(x) for x in win.split(","))
         b0["shots"][0].update({"src": src, "from": [cx, cy, h], "to": [cx, cy, h * 0.92]})
+        last = next((s for s in reversed(spec["beats"][-1].get("shots", [])) if "src" in s), None)
+        if last is not None and last["src"] != src:    # петля: финал на рисунке начала — и у варианта с другим кадром
+            keep = {k: last[k] for k in ("at", "sound") if k in last}
+            last.clear(); last.update(keep, src=src, **{"from": [cx, cy, h * 0.92], "to": [cx, cy, h]})
     pp = spec.setdefault("passport", {})
     pp["variant_of"] = parent
-    pp["hook_variants"] = [old.replace("*", "")] + [v for v in pp.get("hook_variants", []) if v != hook.replace("*", "")][:4]
+    txt = lambda v: v.get("text", "") if isinstance(v, dict) else v           # noqa: E731 — варианты волны 9: {"text", "first"}
+    pp["hook_variants"] = [old.replace("*", "")] + [v for v in pp.get("hook_variants", [])
+                                                    if txt(v) != hook.replace("*", "")][:4]
     json.dump(spec, open(os.path.join(name, "reel.json"), "w", encoding="utf8"), ensure_ascii=False, indent=1)
     return name
 
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("reel_dir"); ap.add_argument("--hook", required=True); ap.add_argument("--first"); ap.add_argument("--name")
+    ap.add_argument("reel_dir"); ap.add_argument("--hook"); ap.add_argument("--first"); ap.add_argument("--name")
+    ap.add_argument("--variant", type=int, help="номер варианта из passport.hook_variants, с 1 (текст и первый кадр оттуда)")
     a = ap.parse_args()
+    if a.variant is not None:
+        v = json.load(open(os.path.join(a.reel_dir, "reel.json"), encoding="utf8"))["passport"]["hook_variants"][a.variant - 1]
+        a.hook, a.first = (v["text"], v.get("first")) if isinstance(v, dict) else (v, a.first)
+    if not a.hook:
+        ap.error("нужен --hook или --variant")
     print(make(a.reel_dir, a.hook, a.first, a.name))

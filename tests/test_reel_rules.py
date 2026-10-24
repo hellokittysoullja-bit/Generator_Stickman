@@ -46,7 +46,7 @@ def test_hook_rules():
 
 def test_layout_and_loop():
     assert broken(lambda s: s.__setitem__("picture_h", 1100))
-    assert broken(lambda s: s["beats"][-1]["shots"][0].__setitem__("src", "f4"))
+    assert broken(lambda s: s["beats"][-1]["shots"][-1].__setitem__("src", "f4"))   # последний кадр ролика — не начало
 
 
 def test_timeline_rules():
@@ -399,3 +399,107 @@ def test_ep01_reel_v2_passes_all_rules():
     s = json.load(open(p, encoding="utf8"))
     assert reel_rules.check_spec(s, SFX) == [] and reel_rules.check_knowledge(s) == []
     assert s["passport"]["series"]["episode"] == 1
+
+
+def _w9(s):                                                     # минимальный паспорт хука стандарта 9 на рилсе эп.02
+    pp = s["passport"]
+    pp["standard"] = 9
+    cands = [s["beats"][0]["text"].replace("*", "")] + [f"Кандидат хука номер {i}" for i in range(20)]
+    pp["hook"] = {"who": "кто откладывает и винит себя", "pain": "листает вместо дела",
+                  "audience_quote": {"text": "Хотел делать дела - а тут как раз новое видео", "likes": 1000,
+                                     "video": "EJNSe9OPWkU"},
+                  "blame_off": "это не лень", "lever": [7, 3],
+                  "payoff": {"promise": "как начать прямо сейчас", "tease": 1, "pay": len(s["beats"]) - 1},
+                  "first_frame": {"event": "кот листает телефон", "object": "телефон", "focus_points": 3},
+                  "candidates": [{"text": c, "score": 5} for c in cands]}
+    pp["hook_variants"] = [{"text": "Листаешь вместо дела.", "first": "f1:600,400,500"},
+                           {"text": "Это не лень. Стена.", "first": "f3:600,400,500"}, "Третий вариант хука"]
+    return s
+
+
+def test_wave9_hook_passport():                                 # 09 §6, §22: паспорт хука — кодом, для стандарта 9
+    assert reel_rules.check_hook(spec()) == []                 # прежние рилсы (эталон v15) — без изменений
+    s = _w9(spec())
+    assert reel_rules.check_hook(s) == [], reel_rules.check_hook(s)
+
+    def errs(fn, log=()):
+        x = _w9(spec()); fn(x); return " ".join(reel_rules.check_hook(x, list(log)))
+    assert "не найдена в комментариях" in errs(lambda x: x["passport"]["hook"]["audience_quote"].update(text="выдумка автора про лень"))
+    assert "lever" in errs(lambda x: x["passport"]["hook"].update(lever=17))
+    assert "как у прошлого рилса" in errs(lambda x: None, [{"reel": "videos/99/reel", "lever": 7}])
+    assert "не в первых двух" in errs(lambda x: x["passport"]["hook"]["payoff"].update(tease=4))
+    assert "не в последних 40" in errs(lambda x: x["passport"]["hook"]["payoff"].update(pay=2))
+    assert "фокусных точек" in errs(lambda x: x["passport"]["hook"]["first_frame"].update(focus_points=5))
+    assert "решение" in errs(lambda x: x["beats"][0]["shots"].insert(0, {"kind": "doll", "at": 0}))
+    assert "кандидатов хука" in errs(lambda x: x["passport"]["hook"].update(candidates=x["passport"]["hook"]["candidates"][:5]))
+    assert "не из списка кандидатов" in errs(lambda x: x["beats"][0].update(text="Совсем другой *хук*."))
+    assert "другим первым кадром" in errs(lambda x: x["passport"].update(hook_variants=["a", "b", "c"]))
+    assert "blame_off" in errs(lambda x: x["passport"]["hook"].pop("blame_off"))
+
+    def early_cta(x):
+        x["beats"][3]["text"] = "Напиши мне *слово*."
+    assert "один призыв" in errs(early_cta)
+
+    def kw(x):
+        x["passport"]["keyword"] = {"word": "КОТ", "delivers": "ссылку на сессию"}
+        x["beats"][x["passport"]["cta_beat"]]["text"] = "Напиши *КОТ* — пришлю, где я сижу."
+    assert errs(kw) == ""
+    assert "кодового слова" in errs(lambda x: (kw(x), x["beats"][x["passport"]["cta_beat"]].update(text="Пиши мне.")))
+
+    def kw_and_bio(x):
+        kw(x); x["beats"][-1]["text"] = "Ссылка в шапке."
+    assert "шапка профиля" in errs(kw_and_bio)
+    assert not [e for e in reel_rules.check_knowledge(s) if "вариант" in e]   # варианты-словари читаются как текст
+
+
+def test_variant_from_wave9_dict(tmp_path):                     # пробный вариант берёт текст и первый кадр из паспорта
+    import reel_variant
+    d = tmp_path / "reel"; d.mkdir()
+    s = _w9(spec()); json.dump(s, open(d / "reel.json", "w", encoding="utf8"), ensure_ascii=False)
+    out = reel_variant.make(str(d), "Листаешь вместо дела.", "f1:600,400,500")
+    v = json.load(open(os.path.join(out, "reel.json"), encoding="utf8"))
+    assert v["beats"][0]["shots"][0]["src"] == "f1" and v["passport"]["variant_of"]
+    assert all(reel_rules.variant_text(x) != "Листаешь вместо дела." for x in v["passport"]["hook_variants"])
+    assert not [e for e in reel_rules.check_hook(v) if "другим первым кадром" in e]
+
+
+def test_text_on_fit_shot_is_caught(tmp_path):                 # эп.01 v3: «КОТ» лёг коту на глаз — fit-планы не смотрелись
+    import numpy as np
+    from PIL import Image
+    import reel_geom
+    d = tmp_path / "reel"; (d / "src").mkdir(parents=True)
+    img = np.full((1600, 2400, 3), 245, np.uint8)
+    img[100:1000, 600:1800] = 30                        # «кот» в верхней половине рисунка (кадр 1200×800: x 300–900, y 50–500)
+    Image.fromarray(img).save(d / "src" / "fittest_c.png")
+    (d / "reel.json").write_text('{"sources": {}}', encoding="utf8")
+    reel.layout({"beats": [], "picture_h": 1380})
+    fit = [dict(t0=0.0, t1=2.0, src="fittest", kind="fit", region=[0, 0, 1200, 800], cy=560, width=1.0, zoom=[1.0, 1.0])]
+    on_cat = [dict(kind="write", text="КОТ", x=540, y=420, size=230, t=0.5, dur=0.5)]
+    assert reel_geom.overlay_on_drawing(reel, str(d), fit, on_cat)
+    assert reel_geom.overlay_on_drawing(reel, str(d), fit, [dict(on_cat[0], y=1150)]) == []
+
+
+def test_variant_with_new_first_frame_keeps_loop(tmp_path):    # конец = начало и у пробного варианта
+    import reel_variant
+    d = tmp_path / "reel"; d.mkdir()
+    json.dump(spec(), open(d / "reel.json", "w", encoding="utf8"), ensure_ascii=False)
+    out = reel_variant.make(str(d), "Это не лень. Время.", "f3:600,400,500")
+    v = json.load(open(os.path.join(out, "reel.json"), encoding="utf8"))
+    assert not [e for e in reel_rules.check_spec(v, SFX) if "петля" in e]
+
+
+def test_reading_push_keeps_riser_cut(tmp_path):               # эп.01 v3: хук в две группы уводил склейку с пика riser
+    import shutil
+    d = tmp_path / "reel"; shutil.copytree(os.path.join(ROOT, "videos", "01_sdvg_pismo", "reel", "src"), d / "src")
+    s = json.load(open(os.path.join(ROOT, "videos", "01_sdvg_pismo", "reel", "reel.json"), encoding="utf8"))
+    s["sources"] = {k: {"frame": os.path.join(ROOT, "videos", "01_sdvg_pismo", "reel", v["frame"])} for k, v in s["sources"].items()}
+    s["fill_ink"] = False
+    json.dump(s, open(d / "reel.json", "w", encoding="utf8"), ensure_ascii=False)
+    got = {}
+    orig = reel.contact_sheet
+    reel.contact_sheet = lambda rd, shots: got.setdefault("cut", shots[1]["t0"])
+    try:
+        reel.build(str(d), sheet=True, force=True)
+    finally:
+        reel.contact_sheet = orig
+    assert abs(got["cut"] - reel.SFX["riser"][1]) <= reel_rules.RISER_PEAK_ON_CUT

@@ -75,6 +75,128 @@ def check_passport(spec, log, reel_dir=""):
     return err
 
 
+# Волна 9 (23.10, docs/reels_knowledge/09_hooks_funnels_audience.md §3, §6, §10, §21–§22): паспорт хука — для рилсов
+# "passport.standard" >= 9; прежние рилсы (эталон v15 и раньше) судятся своими правилами.
+HOOK_STANDARD = 9
+HOOK_CANDIDATES_MIN = 20     # §3.7: 20–30 кандидатов по разным формулам → оценка → три пробных Reels
+LEVERS = range(1, 17)        # 16 глубинных рычагов §10
+HOOK_FOCUS_MAX = 3           # §3.1: ≤ 3 фокусные точки первого кадра
+AUDIENCE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docs", "reels_knowledge")
+# §21.16–17: один призыв в конце — в теле рилса до cta_beat призывных слов нет; кодовое слово заменяет «шапку профиля» (§4)
+CTA_WORDS = (r"\bнапиши", r"\bподпиш", r"\bссылк", r"\bшапк", r"\bперейди", r"\bпереходи", r"\bжми\b", r"\bсохрани")
+
+
+def _norm(t):
+    return re.sub(r"[^\w]+", " ", str(t).lower().replace("ё", "е")).strip()
+
+
+_corpus = {}
+
+
+def audience_corpus():
+    """Все дословные комментарии зрителей, собранные волной 9 (карты raw9/audience и разделы §8–§9 документа 09)."""
+    if "t" not in _corpus:
+        parts = []
+        for root, _, files in os.walk(os.path.join(AUDIENCE_DIR, "raw9", "audience")):
+            parts += [open(os.path.join(root, f), encoding="utf8").read() for f in sorted(files) if f.endswith(".md")]
+        doc = os.path.join(AUDIENCE_DIR, "09_hooks_funnels_audience.md")
+        if os.path.exists(doc):
+            parts.append(open(doc, encoding="utf8").read())
+        _corpus["t"] = "\n".join(parts)
+        _corpus["n"] = _norm(_corpus["t"])
+    return _corpus
+
+
+def variant_text(v):
+    return v.get("text", "") if isinstance(v, dict) else v
+
+
+def check_hook(spec, log=(), reel_dir=""):
+    """Паспорт хука волны 9: для кого, боль, цитата аудитории (сверяется с её комментариями), снятие вины или
+    переворот убеждения, обещание и выплата, первый кадр — событие без ответа, рычаг §10, 20+ кандидатов, варианты
+    с другим первым кадром, один призыв, кодовое слово вместо «шапки профиля»."""
+    pp = spec.get("passport") or {}
+    if (pp.get("standard") or 0) < HOOK_STANDARD:
+        return []
+    beats = spec.get("beats", [])
+    hk = pp.get("hook")
+    if not isinstance(hk, dict):
+        return ['стандарт 9: нет "passport.hook" — who, pain, audience_quote, blame_off/belief, payoff, first_frame, lever, '
+                'candidates (09 §6, §22)']
+    err = []
+    for f in ("who", "pain"):
+        if len(str(hk.get(f, "")).strip()) < 5:
+            err.append(f"паспорт хука: «{f}» пусто — для кого рилс и какая боль названа (09 §3.3)")
+    if not (str(hk.get("blame_off", "")).strip() or str(hk.get("belief", "")).strip()):
+        err.append("паспорт хука: нет ни blame_off (снятие вины), ни belief (переворачиваемое убеждение) — разрыв хука (09 §1.7)")
+    q = hk.get("audience_quote") or {}
+    if not (q.get("text") and q.get("video") and isinstance(q.get("likes"), int)):
+        err.append('паспорт хука: audience_quote — {"text": дословно, "likes": N, "video": id} из комментариев (09 §3.2)')
+    else:
+        c = audience_corpus()
+        if _norm(q["text"]) not in c["n"]:
+            err.append(f"цитата аудитории «{q['text'][:50]}» не найдена в комментариях волны 9 (raw9/audience, 09 §8–§9): "
+                       "хук берётся из их слов, не из головы")
+        elif q["video"] not in c["t"]:
+            err.append(f"id ролика цитаты «{q['video']}» не найден в картах аудитории")
+    lv = hk.get("lever")
+    levers = lv if isinstance(lv, list) else [lv]
+    if not levers or any(x not in LEVERS for x in levers):
+        err.append(f"паспорт хука: lever {lv!r} — номер рычага 1–16 из 09 §10 (первый — главный)")
+    else:
+        prev = [r for r in log if r.get("lever") is not None
+                and os.path.normpath(r.get("reel", "")) != os.path.normpath(reel_dir)
+                and os.path.normpath(r.get("reel", "")) != os.path.normpath(pp.get("variant_of", "") or "-")]
+        if prev and prev[-1]["lever"] == levers[0]:
+            err.append(f"главный рычаг {levers[0]} — как у прошлого рилса ({prev[-1]['reel']}): смените рычаг (09 §22)")
+    pay = hk.get("payoff") or {}
+    n = len(beats)
+    if not (pay.get("promise") and isinstance(pay.get("tease"), int) and isinstance(pay.get("pay"), int)):
+        err.append('паспорт хука: payoff — {"promise": что обещано, "tease": фраза 0–1, "pay": фраза выплаты} (09 §1.8, §21.3)')
+    else:
+        if not 0 <= pay["tease"] <= 1:
+            err.append(f"обещание развязки (фраза {pay['tease']}) — не в первых двух фразах: хук в три ступени (09 §21.3)")
+        if not (0 <= pay["pay"] < n and pay["pay"] >= n * 0.6):
+            err.append(f"выплата обещания (фраза {pay['pay']}) — не в последних 40 % рилса: хук не выплачен (09 §1.8)")
+    ff = hk.get("first_frame") or {}
+    if not (ff.get("event") and ff.get("object")):
+        err.append('паспорт хука: first_frame — {"event": что происходит в кадре 0, "object": предмет боли, '
+                   '"focus_points": ≤3} (09 §3.1)')
+    elif not isinstance(ff.get("focus_points"), int) or ff["focus_points"] > HOOK_FOCUS_MAX:
+        err.append(f"первый кадр: фокусных точек {ff.get('focus_points')!r} — нужно ≤ {HOOK_FOCUS_MAX} (09 §1.3)")
+    first = (beats[0].get("shots") or [{}])[0] if beats else {}
+    if first.get("kind") == "doll" or ff.get("shows_solution"):
+        err.append("первый кадр показывает решение (кот рядом): ответ в кадре 0 — смотреть дальше незачем (09 §21.1)")
+    cands = hk.get("candidates") or []
+    texts = [_norm(variant_text(x)) for x in cands]
+    if len(set(texts)) < HOOK_CANDIDATES_MIN:
+        err.append(f"кандидатов хука {len(set(texts))} < {HOOK_CANDIDATES_MIN}: процедура 20–30 кандидатов по разным "
+                   "формулам → оценка (09 §3.7)")
+    elif beats and _norm(clean(beats[0]["text"])) not in texts:
+        err.append("хук рилса не из списка кандидатов: выбор не прошёл оценку (09 §3.7)")
+    hv = pp.get("hook_variants") or []
+    if not pp.get("variant_of") and sum(1 for v in hv if isinstance(v, dict) and v.get("first")) < 2:
+        err.append('пробные варианты хука: минимум два с другим первым кадром {"text", "first": "fN:cx,cy,h"} — '
+                   "замену одного текста Instagram считает дублем (09 §1.11, §21.6)")
+    cta = pp.get("cta_beat")
+    if isinstance(cta, int):
+        for i, b in enumerate(beats[:cta]):
+            low = clean(b["text"]).lower()
+            m = next((re.search(p, low) for p in CTA_WORDS if re.search(p, low)), None)
+            if m:
+                err.append(f"фраза {i}: призыв «{m.group(0)}» до фразы призыва {cta}: один призыв — в конце (09 §21.16–17)")
+    kw = pp.get("keyword")
+    if kw is not None:
+        word = str((kw or {}).get("word", "")).strip()
+        if not (word and (kw or {}).get("delivers")):
+            err.append('кодовое слово: {"word": …, "delivers": что придёт в личку} — слово прямо называет выдачу (09 §4)')
+        elif isinstance(cta, int) and 0 <= cta < n and word.lower() not in clean(beats[cta]["text"]).lower():
+            err.append(f"кодового слова «{word}» нет в фразе призыва {cta}")
+        if any(re.search(r"\bшапк", clean(b["text"]).lower()) for b in beats):
+            err.append("кодовое слово и «шапка профиля» сразу: два пути — человек выбирает не выбирать (09 §21.16)")
+    return err
+
+
 def clean(text):
     return re.sub(r"\s+", " ", text.replace("*", "").replace("|", "")).strip()
 
@@ -134,7 +256,7 @@ def check_spec(spec, sfx_names):
         err.append("хлёсты «вперёд по сюжету» в разные стороны: одна сторона на ролик (правило 180°), "
                    "обратный — с \"whip_back\": true")
     first = next((s for s in beats[0]["shots"] if "src" in s), None)
-    last = next((s for s in beats[-1]["shots"] if "src" in s), None)
+    last = next((s for s in reversed(beats[-1]["shots"]) if "src" in s), None)   # последний кадр ролика, не первый план фразы
     if first and last and first["src"] != last["src"]:
         err.append(f"петля: финал на {last['src']}, а начало на {first['src']} — конец = начало")
     return err
@@ -353,6 +475,7 @@ def check_knowledge(spec, checklist=None, brand=None):
         err.append(f"вариантов хука {len(hv)}: нужно 3–5 для пробных Reels (07 §8 п.3)")
     lib = load_json(os.path.join(ROOT_DIR, "assets", "sfx", "reels", "library.json"), {})
     peak = (lib.get("riser") or {}).get("peak_sec", 1.65)
+    hv = [variant_text(v) for v in hv]
     for v in hv:                                    # вариант дочитывается до пика riser — до первой склейки (тот же расчёт,
         need = len(clean(v)) / READ_CPS + READ_PAD  # что check_timeline для хука); длиннее — склейка уедет за 2 с
         if len(clean(v)) > HOOK_MAX_CHARS or need > peak + 0.02:
@@ -482,6 +605,7 @@ if __name__ == "__main__":
     spec = json.load(open(os.path.join(sys.argv[1], "reel.json"), encoding="utf8"))
     log_p = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docs", "reels_log.json")
     log = json.load(open(log_p, encoding="utf8")) if os.path.exists(log_p) else []
-    errs = check_spec(spec, set(reel.SFX)) + check_passport(spec, log, os.path.relpath(sys.argv[1])) + check_knowledge(spec)
+    errs = (check_spec(spec, set(reel.SFX)) + check_passport(spec, log, os.path.relpath(sys.argv[1])) + check_knowledge(spec)
+            + check_hook(spec, log, os.path.relpath(sys.argv[1])))
     print("\n".join("✗ " + e for e in errs) or "✓ reel.json по правилам (тайминг проверит reel.py при рендере)")
     sys.exit(1 if errs else 0)
