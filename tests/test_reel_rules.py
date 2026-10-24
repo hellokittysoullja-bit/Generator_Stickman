@@ -739,7 +739,8 @@ def test_voice_segments_follow_phrase_shifts():               # голос Lumea
 def test_text_limit_rises_only_with_owner_word():            # владелец 24.10: «43 секунды не страшно» — только явно
     EP01 = os.path.join(ROOT, "videos", "01_sdvg_pismo", "reel", "reel.json")
     s = json.load(open(EP01, encoding="utf8"))
-    long = lambda e: [x for x in e if "знаков >" in x]
+    def long(e):
+        return [x for x in e if "знаков >" in x]
     assert not long(reel_rules.check_coverage(s))                                  # 582 знака со словом владельца
     t = copy.deepcopy(s); t["passport"].pop("text_max")
     assert long(reel_rules.check_coverage(t))                                      # без слова — 520
