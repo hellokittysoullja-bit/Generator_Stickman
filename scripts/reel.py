@@ -651,7 +651,7 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     caps_txt = [dict(t0=c["t0"], t1=c["t1"], text=" ".join(cap_text(words[j]) for j in c["idx"])) for c in chunks(words, times)]
     caps_txt[0]["t0"] = 0.0                            # хук стоит с первого кадра (still)
     rule_errs += reel_rules.check_timeline(shots, events, {k: v[1] for k, v in SFX.items()}, caps_txt, total)
-    rule_errs += reel_rules.check_overlays(overlay_boxes(events, shots))
+    rule_errs += reel_rules.check_overlays(overlay_boxes(events, shots), PH)
     rule_errs += reel_rules.check_cta(spec, [times[i0]["start"] for i0, _ in spans], total)
     import reel_geom                                  # до рендера: обрывки у краёв, кукла шире кадра, надпись на рисунке
     rule_errs += reel_geom.check(sys.modules[__name__], reel_dir, shots, events)

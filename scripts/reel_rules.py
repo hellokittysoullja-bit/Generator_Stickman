@@ -597,12 +597,14 @@ def knowledge_timing(spec, beat_t0, total):
     return err
 
 
-def check_overlays(boxes):
+def check_overlays(boxes, picture_h=None):
     """Рукописные надписи и маркер (boxes — [(фраза, текст, x0, y0, x1, y1)] по туши, в пикселях экрана 1080×1920)
-    целиком в безопасной зоне: не под шапкой Reels, не под подписью, не у края и не под колонкой кнопок."""
+    целиком в безопасной зоне: не под шапкой Reels, не под подписью, не у края и не под колонкой кнопок; и не в полосе
+    субтитров ниже картинки (эп.01 v4: «Прости, долго» ушло под субтитры — y задан под 1100 и пересчитался в 1405)."""
     err = []
     for i, txt, x0, y0, x1, y1 in boxes:
         where = []
+        if picture_h and y1 > picture_h: where.append(f"низ {y1:.0f} > {picture_h} — в полосе субтитров (y в reel.json — под 1100)")
         if y0 < SAFE_TOP: where.append(f"верх {y0:.0f} < {SAFE_TOP} (шапка Reels)")
         if y1 > SAFE_BOTTOM: where.append(f"низ {y1:.0f} > {SAFE_BOTTOM} (подпись и кнопки)")
         if x0 < SAFE_SIDE or x1 > 1080 - SAFE_SIDE: where.append(f"x {x0:.0f}–{x1:.0f} у края экрана")
