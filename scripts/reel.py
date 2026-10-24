@@ -419,6 +419,19 @@ def text_img(txt, f, fill, stroke=0, stroke_fill=None, pad=20):
     ImageDraw.Draw(im).text((pad - bb[0], pad - bb[1]), txt, font=f, fill=fill, stroke_width=stroke, stroke_fill=stroke_fill)
     return im
 
+def strike(base, im, cx, cy, sc, u):
+    """Линия от руки поперёк надписи: идёт слева направо за ~0.28 с, чуть вверх и с дрожью пера, выходит за края слова."""
+    if u <= 0: return
+    gx0, gy0, gx1, gy1 = im.getchannel("A").getbbox()
+    x0 = cx + (gx0 - im.width / 2) * sc; x1 = cx + (gx1 - im.width / 2) * sc
+    ym = cy + ((gy0 + gy1) / 2 - im.height / 2) * sc
+    ext = 0.08 * (x1 - x0); x0 -= ext; x1 += ext
+    xe = x0 + (x1 - x0) * min(1.0, ease_out(u))
+    xs = np.linspace(x0, xe, max(2, int((xe - x0) / 6)))
+    ys = ym + 0.06 * (gy1 - gy0) * sc - (xs - x0) * 0.06 + 3 * np.sin((xs - x0) * 0.045)
+    cv2.polylines(base, [np.stack([xs, ys], 1).astype(np.int32)], False, RED, max(6, int(0.11 * (gy1 - gy0) * sc)),
+                  cv2.LINE_AA)
+
 def over(base, im, cx, cy, alpha=1.0, scale=1.0, wipe=1.0):
     """RGBA PIL поверх кадра; wipe — доля ширины, открытая слева направо (письмо «от руки»)."""
     if scale != 1.0:
@@ -587,6 +600,23 @@ def overlay_boxes(events, shots=()):
         out.append((e.get("beat"), e["text"], *box))
     return out
 
+def after_sfx_source(beats, bi):
+    """Звук, на пик которого встаёт фраза bi (after_sfx): ближайший такой звук в этой фразе или раньше. Раньше брался
+    первый в ролике — второй riser (эп.01 v6, раскрытие «две строчки») вставал на пик riser хука, то есть никуда."""
+    name = beats[bi]["after_sfx"]
+    return next((j, e) for j in range(bi, -1, -1) for e in reversed(beats[j].get("fx", []))
+                if e["kind"] == "sfx" and e["name"] == name)
+
+def hook_split_errors(words, times, spans):
+    """Хук — одна группа субтитров с первого кадра. Шире строки (CAP_MAX_W) chunks делит его молча, и первые полсекунды
+    видно полхука (эп.01 v6: «„Тебе» отдельно, 984 px при 860) — это ошибка рилса, а не раскладки субтитров."""
+    first = next(iter(chunks(words, times)), None)
+    n = spans[0][1] - spans[0][0]
+    if first is None or len(first["idx"]) >= n:
+        return []
+    return [f"хук «{' '.join(clean(w) for w in words[:n])}» не влезает в одну строку субтитров "
+            f"({cap_width(list(range(n)), words)} px > {CAP_MAX_W}): короче или без лишнего слова"]
+
 def build(reel_dir, sheet=False, preview=False, force=False):
     spec = json.load(open(os.path.join(reel_dir, "reel.json"), encoding="utf8"))
     import reel_rules                                  # правила рилса кодом: хук, riser с 0 с, звуки владельца, планы ≤ 3 с
@@ -622,8 +652,7 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     if not voiced:                                    # фраза ждёт пика звука: «Психолог…» встаёт на пик riser, пауза — нарастание
         for bi, b in enumerate(beats):
             if not b.get("after_sfx"): continue
-            src_bi, src_e = next((j, e) for j, bb in enumerate(beats) for e in bb.get("fx", [])
-                                 if e["kind"] == "sfx" and e["name"] == b["after_sfx"])
+            src_bi, src_e = after_sfx_source(beats, bi)
             w = times[spans[src_bi][0] + src_e.get("at", 0)]
             t_sfx = (w["end"] if src_e.get("after") else w["start"]) + src_e.get("dt", 0.0)
             peak = t_sfx + (SFX[b["after_sfx"]][1] if src_e.get("align") == "start" else 0.0)
@@ -676,10 +705,13 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     for bi, b in enumerate(beats):
         for e in b.get("fx", []):                     # after: от конца слова (riser — сразу после фразы-хука)
             events.append(dict(e, t=wt(bi, e.get("at", 0), e.get("after", False)) + e.get("dt", 0.0), beat=bi))
+            if "strike_at" in e:                      # зачёркивание: только если поле задано в reel.json
+                events[-1]["strike_t"] = wt(bi, e["strike_at"]) + e.get("strike_dt", 0.0)
     for e in events:                                  # удержание накладки — только пока идут планы того же рода
         e["kind_of_shot"] = next((x.get("kind", "crop") for x in reversed(shots) if x["t0"] <= e["t"] + CUT_LEAD), "crop")
     caps_txt = [dict(t0=c["t0"], t1=c["t1"], text=" ".join(cap_text(words[j]) for j in c["idx"])) for c in chunks(words, times)]
     caps_txt[0]["t0"] = 0.0                            # хук стоит с первого кадра (still)
+    rule_errs += hook_split_errors(words, times, spans)
     rule_errs += reel_rules.check_timeline(shots, events, {k: v[1] for k, v in SFX.items()}, caps_txt, total)
     rule_errs += reel_rules.check_overlays(overlay_boxes(events, shots), PH)
     rule_errs += reel_rules.check_cta(spec, [times[i0]["start"] for i0, _ in spans], total)
@@ -951,6 +983,8 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
             over(base, im, x, y, wipe=min(1.0, u * 1.05), scale=sc)
             if e.get("pen") and 0.0 < u * 1.05 < 1.0:  # карандаш виден, пока пишет (п.1.21): графит, не тёплое дерево
                 pen_tip(base, x - im.width * sc / 2 + im.width * sc * u * 1.05, y + im.height * sc * 0.18, im.height * sc)
+            if e.get("strike_t") is not None and t >= e["strike_t"]:   # зачёркнуто от руки на слове (Aeovisuals,
+                strike(base, im, x, y, sc, (t - e["strike_t"]) / 0.28)     # 07 §8.32): старый ярлык перечёркнут, не стёрт
         elif e["kind"] == "arrow":
             arrows.append(e)
         elif e["kind"] == "ring" and t - e["t"] < e.get("dur", 1.0) and view is not None:

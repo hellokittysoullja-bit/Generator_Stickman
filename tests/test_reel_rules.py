@@ -643,3 +643,53 @@ def test_new_reel_must_be_standard_11():                        # 24.10: ста�
     v4["beats"][0]["text"] = "Новый хук про письмо."
     assert any("стандартом 10" in x for x in reel_rules.check_coverage(v4, log, "videos/01_sdvg_pismo/reel"))
     assert reel_rules.check_coverage(spec(), log, "videos/02_sdvg_vremya/reel") == []   # эталон v15 — тоже
+
+
+def test_inventory_phrase_decision_needs_proof():             # 24.10, владелец: «из стольких источников — один пример?»
+    inv = [{"id": "Itest01", "line": 1, "title": "приём", "scope": "reel"}]   # v5: 955 голых номеров фраз, ноль правок
+    beats = [{"text": "«Тебе просто *плевать*.»", "shots": [{"src": "f6"}], "fx": []},
+             {"text": "Кому плевать, вокруг писем не *ходит*.", "shots": [{"src": "f1"}],
+              "fx": [{"kind": "write", "text": "плевать", "strike_at": 4}], "gaps": [[5, 0.6]]}]
+
+    def errs(dec):
+        s = {"beats": beats, "passport": {"standard": 12, "inventory": {"Itest01": dec}}}
+        return reel_rules.check_inventory(s, inventory=inv, matrix=[])
+    assert errs(1) and "голый номер" in errs(1)[0]
+    assert errs({"beats": [1], "quote": "вокруг писем не ходит"}) == []
+    assert errs({"beats": [1], "quote": "Вокруг писем, не ходит!"}) == []        # регистр и знаки не важны
+    assert errs({"beats": [0], "quote": "вокруг писем"})                          # цитата из другой фразы — нет
+    assert errs({"beats": [1], "quote": "две минуты"})                            # выдуманная цитата — нет
+    assert errs({"beats": [1], "evidence": "fx:strike"}) == []
+    assert errs({"beats": [1], "evidence": "gaps"}) == []
+    assert errs({"beats": [0], "evidence": "fx:strike"})                          # зачёркивания во фразе 0 нет
+    assert errs({"beats": [0], "evidence": "shot:f6"}) == []
+    assert errs({"beats": [0], "evidence": "shot:f3"})
+
+
+def test_strike_is_opt_in_and_draws_over_word():               # 24.10: зачёркивание от руки — только если поле задано
+    import numpy as np
+    im = reel.text_img("плевать", reel.font(reel.HAND, 120, 700), reel.INK)
+    base = np.full((600, 1080, 3), 245, np.uint8)
+    reel.strike(base, im, 540, 300, 1.0, 0.0)
+    assert (base == 245).all()                                  # u = 0: ещё ничего не нарисовано
+    reel.strike(base, im, 540, 300, 1.0, 1.0)
+    red = (base[..., 0] > 180) & (base[..., 1] < 90)
+    xs = np.where(red.any(axis=0))[0]
+    assert red.sum() > 500 and xs[-1] - xs[0] > im.getchannel("A").getbbox()[2] - im.getchannel("A").getbbox()[0]
+
+
+def test_hook_that_does_not_fit_one_line_is_an_error():        # эп.01 v6: «„Тебе просто плевать.“» 984 px — делился молча
+    def errs(text):
+        words = (text + " А ты третий день думаешь.").split()
+        times = [dict(start=i * 0.3, end=i * 0.3 + 0.25) for i in range(len(words))]
+        n = len(text.split())
+        return reel.hook_split_errors(words, times, [(0, n), (n, len(words))])
+    assert errs("«Тебе просто *плевать*.»")
+    assert errs("«Тебе *плевать*.»") == []
+
+
+def test_after_sfx_takes_nearest_sound_not_first():           # эп.01 v6: второй riser вёл раскрытие к пику первого
+    beats = [{"text": "а", "fx": [{"kind": "sfx", "name": "riser", "at": 0}]}, {"text": "б", "after_sfx": "riser"},
+             {"text": "в", "fx": [{"kind": "sfx", "name": "riser", "at": 0, "tag": 2}]}, {"text": "г", "after_sfx": "riser"}]
+    assert reel.after_sfx_source(beats, 1)[0] == 0
+    assert reel.after_sfx_source(beats, 3) == (2, beats[2]["fx"][0])

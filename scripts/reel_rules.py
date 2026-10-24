@@ -532,6 +532,9 @@ def check_inventory(spec, log=(), reel_dir="", inventory=None, matrix=None):
         bs = _beats_of(v.get("beats") if isinstance(v, dict) else v)
         if not bs or any(not 0 <= b < n for b in bs):
             err.append(f"{where}: {v!r} — не номер фразы 0…{n - 1}, не место, не код, не ссылка и не отказ")
+        else:
+            e = _inventory_proof(v, bs, spec.get("beats", []))
+            if e: err.append(f"{where}: {e}")
     for r, ids in reasons.items():
         if len(ids) > SKIP_REPEAT_MAX:
             err.append(f"одна отговорка «{r[:60]}» у {len(ids)} пунктов инвентаря ({', '.join(ids[:5])}…): причина — своя")
@@ -726,6 +729,35 @@ def load_json(p, default):
 def brand_beat(spec, brand):
     name = (brand or {}).get("brand", "")
     return next((i for i, b in enumerate(spec.get("beats", [])) if name and name.lower() in clean(b["text"]).lower()), None)
+
+
+def _norm_q(t):
+    return re.sub(r"\s+", " ", re.sub(r"[«»\"'.,:;!?…]", "", clean(t))).strip().lower()
+
+
+def _inventory_proof(v, bs, beats):
+    """Решение «во фразе» доказывается (рилс эп.01 v5: 955 голых номеров фраз без единой правки сценария — владелец
+    назвал это бумагой): "quote" — слова, которые стоят в этой фразе дословно, или "evidence" — событие кадра или звука
+    этой фразы: "fx:<вид или звук>" (fx:strike — зачёркивание), "shot:<рисунок или вид плана>", "gaps"."""
+    if not isinstance(v, dict) or not (v.get("quote") or v.get("evidence")):
+        return (f"{v!r} — голый номер фразы: нужно {{\"beats\": [N], \"quote\": слова этой фразы}} или "
+                "\"evidence\": \"fx:…\" / \"shot:…\" / \"gaps\" — чем именно фраза делает приём")
+    if v.get("quote"):
+        q = _norm_q(v["quote"])
+        if len(q) < 2 or not any(q in _norm_q(beats[b]["text"]) for b in bs):
+            return f"цитата «{v['quote']}» не стоит дословно во фразе {bs}"
+        return ""
+    kind, _, name = str(v["evidence"]).partition(":")
+    for b in bs:
+        bb = beats[b]
+        if kind == "gaps" and bb.get("gaps"):
+            return ""
+        if kind == "fx" and any(name in (e.get("kind"), e.get("name")) or (name == "strike" and "strike_at" in e)
+                                for e in bb.get("fx", [])):
+            return ""
+        if kind == "shot" and any(name in (s.get("src"), s.get("kind"), s.get("sound")) for s in bb.get("shots", [])):
+            return ""
+    return f"доказательства «{v['evidence']}» нет во фразе {bs}"
 
 
 def _beats_of(v):
