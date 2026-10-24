@@ -395,7 +395,8 @@ def check_timeline(shots, events, sfx_peaks, caps=None, total=None):
     return err
 
 
-SOUND_MAX = {"swoosh_deep": 3, "oof": 2, "riser": 2}   # «появление важного» и «провал» обесцениваются повтором
+SOUND_MAX = {"swoosh_deep": 3, "oof": 2, "riser": 2,   # «появление важного» и «провал» обесцениваются повтором
+             "shock": 1, "level_up": 2, "fast_glitch": 3, "typing": 2}   # звуки владельца 24.10 (library.json: avoid)
 SOUND_REPEAT_SEC = 4.0     # один и тот же звук не ближе 4 с (кроме swoosh на хлёсте и тихих свистов наезда)
 SOUND_DENSE_WIN, SOUND_DENSE_MAX = 0.5, 2   # не больше двух звуков в 0.5 с (Мёрч, «2,5 слоя»): предупреждение
 
