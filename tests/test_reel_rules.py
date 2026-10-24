@@ -545,3 +545,12 @@ def test_keyword_caption_and_engagement_bait():                 # 24.10, сли�
     assert "приманка удержания" in " ".join(reel_rules.check_knowledge(s))
     s = spec(); s["passport"]["pinned_comment"] = "Поставь лайк, если узнал себя"
     assert "приманка удержания" in " ".join(reel_rules.check_knowledge(s))
+
+
+def test_matrix_b_stop_phrases_and_rhythm():                    # 24.10, матрица B: затёртые фразы, «вы», ровный ритм
+    for txt in ("Вы не поверите, что *было*.", "Итак, *начнём*.", "Купи *курс*.", "Вам это *знакомо*?"):
+        assert broken(lambda s, t=txt: s["beats"][3].update(text=t)), txt
+    s = spec()
+    for i in range(3):
+        s["beats"][i + 3]["text"] = "Ровно двадцать знаков."
+    assert any("одной длины" in w for w in reel_rules.warnings(s, [], 30.0))
