@@ -709,3 +709,28 @@ def test_hook_needs_five_layers_and_3c():                    # правило в
     assert any("аудиослоя" in e for e in reel_rules.check_hook_layers(t))
     t = copy.deepcopy(s); t["passport"]["standard"] = 11
     assert reel_rules.check_hook_layers(t) == []                              # старые рилсы не ломаются
+
+
+def test_call_to_comment_is_always_there():                  # владелец 24.10: призыв в комментарии — в каждом рилсе
+    EP01 = os.path.join(ROOT, "videos", "01_sdvg_pismo", "reel", "reel.json")
+    s = json.load(open(EP01, encoding="utf8")); k = s["passport"]["cta_beat"]
+    s["beats"][k]["text"] = "Напиши в комментах, что у тебя вызывает такой *ступор*."
+    assert reel_rules.check_call_to_comment(s) == []
+    t = copy.deepcopy(s); t["beats"][k]["text"] = "Можешь посидеть со мной. Это бесплатно."
+    assert reel_rules.check_call_to_comment(t)                                   # тёплая фраза без призыва — ошибка
+    t = copy.deepcopy(s); del t["passport"]["cta_beat"]
+    assert reel_rules.check_call_to_comment(t)                                   # призыва нет — ошибка
+    t = copy.deepcopy(s); t["passport"]["standard"] = 11
+    assert reel_rules.check_call_to_comment(t) == []                             # старые рилсы не ломаются
+
+
+def test_voice_segments_follow_phrase_shifts():               # голос Lumean режется по фразам и встаёт на их новые места
+    nat = [dict(start=0.0, end=0.4), dict(start=0.5, end=0.9), dict(start=1.5, end=1.9), dict(start=2.0, end=2.3)]
+    times = [dict(w, start=w["start"] + 0.12, end=w["end"] + 0.12) for w in nat[:2]] + \
+            [dict(w, start=w["start"] - 0.2, end=w["end"] - 0.2) for w in nat[2:]]   # перебивка + подтяжка к пику riser
+    segs = reel.voice_segments("x", nat, times)
+    assert len(segs) == 2
+    assert segs[0]["s0"] == 0.0 and abs(segs[0]["dst"] - 0.12) < 1e-9
+    cut = (0.9 + 1.5) / 2                                                       # граница — середина тишины
+    assert abs(segs[0]["s1"] - cut) < 1e-9 and abs(segs[1]["s0"] - cut) < 1e-9
+    assert abs(segs[1]["dst"] - (cut - 0.2)) < 1e-9 and segs[1]["s1"] is None

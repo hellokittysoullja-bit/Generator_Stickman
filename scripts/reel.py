@@ -626,6 +626,7 @@ def build(reel_dir, sheet=False, preview=False, force=False):
                                            os.path.relpath(reel_dir, ROOT))
     rule_errs += reel_rules.check_hook(spec, json.load(open(log_p, encoding="utf8")) if os.path.exists(log_p) else [],
                                        os.path.relpath(reel_dir, ROOT))      # волна 9: паспорт хука (стандарт 9)
+    rule_errs += reel_rules.check_call_to_comment(spec)    # призыв в комментарии — всегда
     rule_errs += reel_rules.check_hook_layers(spec)    # хук: пять слоёв и 3C (правило владельца 24.10)
     rule_errs += reel_rules.check_matrix(spec)          # матрица: каждый приём базы решён в этом рилсе (стандарт 10)
     rule_errs += reel_rules.check_coverage(spec, json.load(open(log_p, encoding="utf8")) if os.path.exists(log_p) else [],
@@ -639,18 +640,25 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     if spec.get("fill_ink", True): fill_windows(reel_dir, spec)
     words, spans = tokens(beats)
     al = os.path.join(reel_dir, "alignment.json")
+    vw = os.path.join(reel_dir, "voice", "words.json")   # голос Lumean (reel_voice.py): фразы раскладываются здесь
+    nat = None                                       # естественное время слов в дорожке голоса — откуда резать куски
     if os.path.exists(al):
         times = json.load(open(al, encoding="utf8")); voiced = True
         assert len(times) == len(words), f"alignment: {len(times)} слов, в сценарии {len(words)}"
     else:
-        times = estimate_times([clean(w) for w in words], rate=spec.get("rate", 1.0)); voiced = False
+        if os.path.exists(vw):
+            nat = json.load(open(vw, encoding="utf8")); voiced = True
+            assert len(nat) == len(words), f"голос: {len(nat)} слов, в сценарии {len(words)} — озвучить заново (reel_voice.py)"
+            times = [dict(w) for w in nat]
+        else:
+            times = estimate_times([clean(w) for w in words], rate=spec.get("rate", 1.0)); voiced = False
         for b, (i0, _i1) in zip(beats, spans):        # немая пауза после слова (стоп-кадр с тишиной, Runia)
             for k, sec in b.get("gaps", []):
                 times = times[:i0 + k + 1] + [dict(w, start=w["start"] + sec, end=w["end"] + sec) for w in times[i0 + k + 1:]]
     lead = spec.get("lead_in", 0.0)                  # перебивка до первого слова: сначала остановить, потом смысл (vidIQ)
     if lead:
         times = [dict(w, start=w["start"] + lead, end=w["end"] + lead) for w in times]
-    if not voiced:                                    # фраза ждёт пика звука: «Психолог…» встаёт на пик riser, пауза — нарастание
+    if not voiced or nat:                             # фраза ждёт пика звука: «Психолог…» встаёт на пик riser, пауза — нарастание
         for bi, b in enumerate(beats):
             if not b.get("after_sfx"): continue
             src_bi, src_e = after_sfx_source(beats, bi)
@@ -658,7 +666,8 @@ def build(reel_dir, sheet=False, preview=False, force=False):
             t_sfx = (w["end"] if src_e.get("after") else w["start"]) + src_e.get("dt", 0.0)
             peak = t_sfx + (SFX[b["after_sfx"]][1] if src_e.get("align") == "start" else 0.0)
             shift = peak - times[spans[bi][0]]["start"] + CUT_LEAD
-            if shift > 0:
+            k0 = spans[bi][0]                         # голос: фраза может и подтянуться к пику, если не налезает на прошлую
+            if shift > 0 or (nat and k0 and times[k0 - 1]["end"] + 0.05 <= times[k0]["start"] + shift):
                 times = times[:spans[bi][0]] + [dict(x, start=x["start"] + shift, end=x["end"] + shift) for x in times[spans[bi][0]:]]
     anchors = sorted(spans[bi][0] for bi, b in enumerate(beats) if b.get("after_sfx"))
     if not voiced:                                    # немой рилс: темп — скорость чтения, а не диктора
@@ -750,7 +759,7 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     render_video(reel_dir, vid, fps, total, shots, events, caps, words, times, tex, hook_clock)
 
     wav = os.path.join(reel_dir, "reel_audio.wav")
-    mix_audio(wav, total, shots, events, spec, voiced)
+    mix_audio(wav, total, shots, events, spec, voiced, voice_segments(reel_dir, nat, times) if nat else None)
     out = os.path.join(reel_dir, "reel_preview_av.mp4" if preview else "reel.mp4")
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", vid, "-i", wav, "-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
                     "-shortest", "-movflags", "+faststart", out], check=True)
@@ -1131,7 +1140,21 @@ def sound_plan(shots, events):
             add("swoosh", tt, gain_db=-7.0, soft=True); soft_done.append(tt)
     return plan
 
-def mix_audio(path, total, shots, events, spec, voiced=False):
+def voice_segments(reel_dir, nat, times):
+    """Куски дорожки голоса и куда их ставить: слова с одинаковым сдвигом (раскладка фраз: пик riser, немые паузы,
+    перебивка) идут одним куском; граница куска — середина тишины между словами в исходной дорожке."""
+    path = os.path.join(reel_dir, "voice", "voice.wav")
+    segs, a = [], 0
+    for k in range(1, len(nat) + 1):
+        d0 = times[a]["start"] - nat[a]["start"]
+        if k < len(nat) and abs((times[k]["start"] - nat[k]["start"]) - d0) < 1e-6:
+            continue
+        s0 = 0.0 if a == 0 else (nat[a - 1]["end"] + nat[a]["start"]) / 2
+        s1 = None if k == len(nat) else (nat[k - 1]["end"] + nat[k]["start"]) / 2
+        segs.append(dict(src=path, s0=s0, s1=s1, dst=s0 + d0)); a = k
+    return segs
+
+def mix_audio(path, total, shots, events, spec, voiced=False, voice=None):
     """Звук рилса по sound_plan. Повтор одного звука — каждый чуть другой (разбор 23.10: Gaku Lange, Marketing
     Demons — одинаковый свист «15 раз» слышен): скорость/высота по кругу 1.00 / 0.95 / 1.05 / 0.97 / 1.03, это тот же
     звук владельца, не чужой; панорама — по направлению хлёста. Первое появление звука — как в файле."""
@@ -1151,6 +1174,17 @@ def mix_audio(path, total, shots, events, spec, voiced=False):
         m = min(len(x), n - i)
         if m > 0: tr[i:i + m] += x[:m]
     if voiced: tr *= 10 ** (VOICE_SFX_TRIM_DB / 20)
+    for seg in voice or ():                           # голос по кускам на свои места; края 10 мс без щелчков
+        p = subprocess.run(["ffmpeg", "-v", "error", "-i", seg["src"], "-ac", "2", "-ar", str(SR), "-f", "f32le", "-"],
+                           capture_output=True, check=True)
+        x = np.frombuffer(p.stdout, np.float32).reshape(-1, 2)
+        x = x[int(seg["s0"] * SR):(int(seg["s1"] * SR) if seg["s1"] is not None else len(x))].copy()
+        f = min(int(0.01 * SR), len(x) // 2)
+        if f: x[:f] *= np.linspace(0, 1, f)[:, None]; x[-f:] *= np.linspace(1, 0, f)[:, None]
+        i = int(seg["dst"] * SR)
+        if i < 0: x = x[-i:]; i = 0
+        m = min(len(x), n - i)
+        if m > 0: tr[i:i + m] += x[:m]
     peak = float(np.abs(tr).max())
     if peak > 0.89: tr *= 0.89 / peak                 # наложение двух звуков не клипует: пик не выше -1 dBFS
     pcm = (np.clip(tr, -1, 1) * 32767).astype(np.int16)

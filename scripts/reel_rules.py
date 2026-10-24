@@ -247,6 +247,24 @@ def check_hook_layers(spec):
     return err
 
 
+CTA_COMMENT_RE = r"\bнапиши\b.*\bкоммент"
+
+
+def check_call_to_comment(spec):
+    """Призыв есть всегда (владелец 24.10): фраза passport.cta_beat просит написать в комментариях о себе («Напиши в
+    комментах, что у тебя вызывает ступор»). На любой комментарий — автоличка, дальше бот и сайт (20_funnel/02 §1.1)."""
+    pp = spec.get("passport") or {}
+    if (pp.get("standard") or 0) < HOOK_LAYERS_STANDARD:
+        return []
+    beats, k = spec.get("beats") or [], pp.get("cta_beat")
+    if not isinstance(k, int) or not 0 <= k < len(beats):
+        return ["призыва нет: passport.cta_beat — номер фразы «Напиши в комментах, …» (призыв обязателен в каждом рилсе)"]
+    if not re.search(CTA_COMMENT_RE, clean(beats[k]["text"]).lower()):
+        return [f"фраза призыва {k} не зовёт в комментарии: нужен вопрос о себе «Напиши в комментах, …» "
+                "(на любой комментарий — автоличка → бот/сайт)"]
+    return []
+
+
 MATRIX_WHERE = ("caption", "pinned", "cover", "hook_variants", "dm", "bot", "site", "channel", "comments", "series")
 SKIP_REPEAT_MAX = 3
 
@@ -1032,7 +1050,8 @@ if __name__ == "__main__":
     log_p = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docs", "reels_log.json")
     log = json.load(open(log_p, encoding="utf8")) if os.path.exists(log_p) else []
     errs = (check_spec(spec, set(reel.SFX)) + check_passport(spec, log, os.path.relpath(sys.argv[1])) + check_knowledge(spec)
-            + check_hook(spec, log, os.path.relpath(sys.argv[1])) + check_hook_layers(spec) + check_matrix(spec)
+            + check_hook(spec, log, os.path.relpath(sys.argv[1])) + check_hook_layers(spec) + check_call_to_comment(spec)
+            + check_matrix(spec)
             + check_coverage(spec, log, os.path.relpath(sys.argv[1])) + check_human(spec)
             + check_inventory(spec, log, os.path.relpath(sys.argv[1])))
     print("\n".join("✗ " + e for e in errs) or "✓ reel.json по правилам (тайминг проверит reel.py при рендере)")
