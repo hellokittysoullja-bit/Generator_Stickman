@@ -627,6 +627,7 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     rule_errs += reel_rules.check_hook(spec, json.load(open(log_p, encoding="utf8")) if os.path.exists(log_p) else [],
                                        os.path.relpath(reel_dir, ROOT))      # волна 9: паспорт хука (стандарт 9)
     rule_errs += reel_rules.check_call_to_comment(spec)    # призыв в комментарии — всегда
+    rule_errs += reel_rules.check_brand_and_face(spec)     # имя бренда и эмоция куклы не теряются
     rule_errs += reel_rules.check_hook_layers(spec)    # хук: пять слоёв и 3C (правило владельца 24.10)
     rule_errs += reel_rules.check_matrix(spec)          # матрица: каждый приём базы решён в этом рилсе (стандарт 10)
     rule_errs += reel_rules.check_coverage(spec, json.load(open(log_p, encoding="utf8")) if os.path.exists(log_p) else [],
@@ -732,6 +733,7 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     rule_errs += reel_rules.check_sounds(sound_plan(shots, events))
     rule_errs += reel_rules.check_cut_sounds(sound_plan(shots, events), shots, CUT_SOUND_NEAR)
     rule_errs += reel_rules.check_writing(events, shots)
+    rule_errs += reel_rules.check_written_read(events, shots)  # дописанное слово не срезано склейкой
     for w in reel_rules.warnings(spec, shots, total, events) + reel_rules.sound_warnings(sound_plan(shots, events)):
         print("  ⚠ " + w)
     if rule_errs:

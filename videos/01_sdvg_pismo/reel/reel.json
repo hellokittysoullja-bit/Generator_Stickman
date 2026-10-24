@@ -16130,11 +16130,46 @@
        "state": "golden"
       },
       {
-       "t": 1.1,
+       "t": 0.0,
+       "do": "face",
+       "name": "happy"
+      },
+      {
+       "t": 1.6,
        "do": "look",
        "x": 0.5,
        "y": 0.2,
        "dur": 0.8
+      }
+     ]
+    },
+    {
+     "at": 15,
+     "kind": "doll",
+     "cy": 580,
+     "h": 1150,
+     "cx": 770,
+     "closeup": true,
+     "zoom": [
+      1.0,
+      1.05
+     ],
+     "actions": [
+      {
+       "t": 0.0,
+       "do": "flame",
+       "state": "golden"
+      },
+      {
+       "t": 0.0,
+       "do": "face",
+       "name": "happy"
+      },
+      {
+       "t": 0.3,
+       "do": "tilt",
+       "deg": -5,
+       "dur": 0.9
       }
      ]
     },
@@ -16155,7 +16190,12 @@
        "state": "golden"
       },
       {
-       "t": 1.1,
+       "t": 0.0,
+       "do": "face",
+       "name": "happy"
+      },
+      {
+       "t": 0.6,
        "do": "look",
        "x": 0.5,
        "y": 0.2,
@@ -16166,16 +16206,27 @@
    ],
    "fx": [
     {
+     "kind": "write",
+     "at": 8,
+     "text": "Напарник",
+     "x": 540,
+     "y": 420,
+     "size": 200,
+     "dur": 0.6,
+     "pen": true,
+     "red": false,
+     "hold": 1.0,
+     "dt": 0.15
+    },
+    {
      "kind": "mark",
      "at": 18,
-     "after": true,
-     "dt": 0.3,
      "text": "бесплатно",
      "x": 540,
      "y": 300,
      "size": 170,
      "dur": 0.6,
-     "hold": 1.2
+     "hold": 1.0
     }
    ],
    "gaps": [

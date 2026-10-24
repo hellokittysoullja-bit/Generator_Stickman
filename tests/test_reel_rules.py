@@ -759,3 +759,30 @@ def test_every_cut_is_heard():                               # владелец 
     assert names[1.7] in ("swoosh", "fast_whoosh") and names[3.4] in ("swoosh", "fast_whoosh")
     assert not any(abs(p["peak"] - 5.0) < 0.3 and p["name"] != "oof" for p in plan)   # смысловой не дублируется свистом
     assert reel_rules.check_cut_sounds([], shots)                                   # без звуков — ошибка на каждой склейке
+
+
+def test_brand_and_doll_face_are_not_lost():                   # владелец 24.10: в v5 пропали «Напарник» и весёлое лицо
+    EP01 = os.path.join(ROOT, "videos", "01_sdvg_pismo", "reel", "reel.json")
+    s = json.load(open(EP01, encoding="utf8"))
+    assert reel_rules.check_brand_and_face(s, "Напарник") == []
+    t = copy.deepcopy(s)
+    for b in t["beats"]:
+        b["fx"] = [f for f in b.get("fx", []) if "Напарник" not in f.get("text", "")]
+    assert any("Напарник" in e for e in reel_rules.check_brand_and_face(t, "Напарник"))      # имени нет — ошибка
+    t = copy.deepcopy(s)
+    for b in t["beats"]:
+        for sh in b.get("shots", []):
+            sh["actions"] = [a for a in sh.get("actions", []) if a.get("do") != "face"]
+    assert any("эмоци" in e for e in reel_rules.check_brand_and_face(t, "Напарник"))         # кукла без лица — ошибка
+    t["passport"]["standard"] = 11
+    assert reel_rules.check_brand_and_face(t, "Напарник") == []                               # старые рилсы не ломаются
+
+
+def test_written_word_is_not_cut_by_a_splice():                # v11: «бесплатно» начиналось за 0,3 с до склейки
+    shots = [dict(t0=35.85, t1=38.57, kind="doll"), dict(t0=38.57, t1=40.06, kind="doll"), dict(t0=40.06, t1=41.3, kind="crop")]
+    late = [dict(kind="mark", text="бесплатно", t=39.737, dur=0.6, hold=1.2)]
+    assert reel_rules.check_written_read(late, shots)                                        # как было в v11 — ошибка
+    on_word = [dict(kind="mark", text="бесплатно", t=38.84, dur=0.6, hold=1.0)]
+    assert reel_rules.check_written_read(on_word, shots) == []                               # на само слово — годно
+    through = [dict(kind="write", text="Напарник", t=38.0, dur=0.6, hold=1.0)]               # держится через план того же рода
+    assert reel_rules.check_written_read(through, shots) == []

@@ -265,6 +265,47 @@ def check_call_to_comment(spec):
     return []
 
 
+def check_brand_and_face(spec, brand=None):
+    """Имя и тёплая эмоция не теряются при переписывании (владелец 24.10: в v5 пропали рукописное «Напарник» и весёлое
+    лицо куклы — без решения, просто не перенесены). Имя бренда — в тексте или рукописной надписью; если в рилсе есть
+    кукла, хотя бы на одном её плане — лицо с эмоцией (`face`), а не только наклон и взгляд."""
+    pp = spec.get("passport") or {}
+    if (pp.get("standard") or 0) < HOOK_LAYERS_STANDARD:
+        return []
+    if brand is None:
+        brand = json.load(open(BRAND_PATH, encoding="utf8")).get("brand") if os.path.exists(BRAND_PATH) else None
+    beats, errs = spec.get("beats") or [], []
+    said = [clean(b["text"]) for b in beats] + [f.get("text", "") for b in beats for f in b.get("fx", [])
+                                                 if f.get("kind") in ("write", "mark")]
+    if brand and not any(brand.lower()[:-1] in x.lower() for x in said):
+        errs.append(f"имени «{brand}» нет ни в тексте, ни рукописной надписью: зритель не узнает, кто это")
+    dolls = [s for b in beats for s in b.get("shots", []) if s.get("kind") == "doll"]
+    if dolls and not any(a.get("do") == "face" for s in dolls for a in s.get("actions", [])):
+        errs.append("кукла без эмоции: ни на одном её плане нет лица (`face`, например happy со звёздочками)")
+    return errs
+
+
+HAND_READ_MIN = 0.5     # дописанное слово стоит целиком хотя бы полсекунды до склейки, иначе его не прочесть
+
+
+def check_written_read(events, shots, read_min=HAND_READ_MIN):
+    """Рукописное слово не срезается склейкой (v11: «бесплатно» начинало писаться за 0,3 с до склейки и пропадало
+    недописанным). Надпись держится, пока идут планы того же рода, поэтому видна до конца этой серии планов."""
+    errs = []
+    for e in events:
+        if e.get("kind") not in ("write", "mark"):
+            continue
+        i = max((k for k, x in enumerate(shots) if x["t0"] <= e["t"] + 1e-6), default=0)
+        kind, j = shots[i].get("kind", "crop"), i
+        while j + 1 < len(shots) and shots[j + 1].get("kind", "crop") == kind:
+            j += 1
+        shown = min(shots[j]["t1"], e["t"] + e.get("dur", 0.6) + e.get("hold", 9e9)) - (e["t"] + e.get("dur", 0.6))
+        if shown < read_min:
+            errs.append(f"рукописное «{e.get('text')}» на {e['t']:.2f} с стоит дописанным {max(shown, 0):.2f} с "
+                        f"< {read_min} до склейки {shots[j]['t1']:.2f} с: начать раньше (на само слово) или сдвинуть склейку")
+    return errs
+
+
 MATRIX_WHERE = ("caption", "pinned", "cover", "hook_variants", "dm", "bot", "site", "channel", "comments", "series")
 SKIP_REPEAT_MAX = 3
 
@@ -1063,6 +1104,7 @@ if __name__ == "__main__":
     log = json.load(open(log_p, encoding="utf8")) if os.path.exists(log_p) else []
     errs = (check_spec(spec, set(reel.SFX)) + check_passport(spec, log, os.path.relpath(sys.argv[1])) + check_knowledge(spec)
             + check_hook(spec, log, os.path.relpath(sys.argv[1])) + check_hook_layers(spec) + check_call_to_comment(spec)
+            + check_brand_and_face(spec)
             + check_matrix(spec)
             + check_coverage(spec, log, os.path.relpath(sys.argv[1])) + check_human(spec)
             + check_inventory(spec, log, os.path.relpath(sys.argv[1])))
