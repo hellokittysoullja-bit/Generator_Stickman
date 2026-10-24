@@ -47,8 +47,9 @@ VIEW_K = 1.0           # view_scale после layout(): подсказки ок
 PH = 1100              # картинка — верхние PH px (reel.json: picture_h); ниже — полоса субтитров на той же бумаге
 CAP_CX, CAP_CY = 500, 1175   # центр полосы субтитров = PH + 75 (полоса 150 px, субтитр не ложится на рисунок)
 BASE_PH = 1100         # под эту высоту написаны экранные координаты reel.json (cy кадров fit/doll, y пометок, часы)
-CAP_SIZE = 90          # один кегль на весь ролик: группы не прыгают по размеру
-CAP_MAX_W = 820        # px: от 90 до 910 — правее колонка кнопок Reels
+CAP_SIZE = 76          # один кегль на весь ролик; 90 → 76 (24.10): при 90 в строку влезало ~15 знаков и треть групп была
+                      # из одного слова, владелец: «удобнее по два-три слова» (замер на эп.01 v4: одиночных 21 → 4)
+CAP_MAX_W = 860        # px: от 70 до 930 — правее колонка кнопок Reels (~150 px у правого края)
 CAP_STROKE = 6         # тонкая тёмная обводка + мягкая тень (обводка 12% кегля читалась наклейкой)
 WHITE = (255, 255, 255); INK = (18, 18, 20)
 ACTIVE = (255, 210, 63)        # активное слово (караоке) — тёплый жёлтый
@@ -121,24 +122,45 @@ def cap_width(idx, words):
     f = cap_font()
     return tracked(f, " ".join(cap_text(words[j]) for j in idx)) + 2 * CAP_STROKE
 
+CAP_SENT_END = r"[.?!…]»?\*?$"     # жёсткий обрыв группы — только конец предложения и «|»
+CAP_SOFT_END = r"[,:;—]»?\*?$"     # запятая и двоеточие — желательное место границы, но не обрыв
+
+def _split_segment(seg, words):
+    """Отрезок предложения → группы по 2–3 слова (владелец 24.10: «по одному слову неудобно, по два-три»).
+    Число групп — наименьшее, при котором каждая не длиннее 3 слов и влезает в CAP_MAX_W; длины ровные
+    (4 → 2+2, 5 → 3+2, 7 → 3+2+2), одиночная группа остаётся только у отрезка из одного слова. Граница
+    сдвигается на запятую рядом и никогда не стоит после служебного слова («в / тетради»)."""
+    n = len(seg)
+    if n <= 1: return [list(seg)]
+    def fits(a, b): return b - a <= 3 and (b - a == 1 or cap_width(list(seg[a:b]), words) <= CAP_MAX_W)
+    def cost(a, b):                                   # штраф одной группы seg[a:b]
+        c = 0.0
+        if b - a == 1: c += 10                          # одиночное слово — только если иначе не влезает
+        if b < n and bare(words[seg[b - 1]]) in CLITICS: c += 6     # «в / тетради» — обрывок
+        if b < n and not re.search(CAP_SOFT_END, clean(words[seg[b - 1]])): c += 0.5   # граница не на запятой
+        return c
+    best = [(0.0, 0)] + [(float("inf"), 0)] * n          # (штраф, число групп) до позиции i; меньше групп — лучше
+    back = [0] * (n + 1)
+    for b in range(1, n + 1):
+        for a in range(max(0, b - 3), b):
+            if best[a][0] == float("inf") or not fits(a, b): continue
+            cand = (best[a][0] + cost(a, b) + 1.0, best[a][1] + 1)   # +1 за группу: длинные группы предпочтительнее
+            if cand < best[b]: best[b] = cand; back[b] = a
+    groups, b = [], n
+    while b > 0:
+        a = back[b]; groups.append(list(seg[a:b])); b = a
+    return groups[::-1]
+
 def chunks(words, times):
-    """Группы по 1-3 слова, всегда ОДНОЙ строкой одного кегля: обрыв на знаке препинания, на «|», перед
-    словом, которое не влезает в CAP_MAX_W (группа не переносится и не уменьшается — делится)."""
-    out, cur = [], []
+    """Группы по 2-3 слова, всегда ОДНОЙ строкой одного кегля. Обрыв — только конец предложения и «|»;
+    внутри предложения группы ровные (см. `_split_segment`), группа не переносится и не уменьшается — делится."""
+    out, seg = [], []
     def flush():
-        if cur: out.append(list(cur)); cur.clear()
-    def flush_keep_clitic():                         # служебное слово в конце группы уходит в следующую
-        if len(cur) >= 2 and bare(words[cur[-1]]) in CLITICS:
-            last = cur.pop(); flush(); cur.append(last)
-        else:
-            flush()
+        if seg: out.extend(_split_segment(seg, words)); seg.clear()
     for i, w in enumerate(words):
         if w.startswith("|"): flush()
-        if cur and cap_width(cur + [i], words) > CAP_MAX_W: flush_keep_clitic()
-        cur.append(i)
-        end_punct = re.search(r"[.,:?!…—]»?\*?$", clean(w) + ("*" if w.endswith("*") else ""))
-        if end_punct: flush()
-        elif len(cur) >= 3: flush_keep_clitic()
+        seg.append(i)
+        if re.search(CAP_SENT_END, clean(w) + ("*" if w.endswith("*") else "")): flush()
     flush()
     res = []
     for k, c in enumerate(out):
@@ -572,6 +594,9 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     rule_errs += reel_rules.check_hook(spec, json.load(open(log_p, encoding="utf8")) if os.path.exists(log_p) else [],
                                        os.path.relpath(reel_dir, ROOT))      # волна 9: паспорт хука (стандарт 9)
     rule_errs += reel_rules.check_matrix(spec)          # матрица: каждый приём базы решён в этом рилсе (стандарт 10)
+    rule_errs += reel_rules.check_coverage(spec, json.load(open(log_p, encoding="utf8")) if os.path.exists(log_p) else [],
+                                           os.path.relpath(reel_dir, ROOT))  # стратегия: каждый пункт решён (стандарт 11)
+    rule_errs += reel_rules.check_human(spec)           # человеческий текст: без тире и рваной парцелляции (стандарт 11)
     layout(spec)
     beats = spec["beats"]
     prepare_src(reel_dir, spec.get("sources", {}))

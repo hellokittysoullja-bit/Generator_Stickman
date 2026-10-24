@@ -276,6 +276,191 @@ def matrix_coverage(spec, matrix=None):
     return out
 
 
+# Человеческий текст (24.10, владелец: «никакой нейросетевой фигни: длинные тире в каждом предложении, сильная
+# парцелляция»). Правила и источники — docs/reels_knowledge/14_human_text.md: жёсткие запреты humanizer-ru (MIT,
+# ilyautov), Wikipedia «Signs of AI writing», 26 карточек живой речи raw13. Ошибка, а не предупреждение: стандарт ≥ 11.
+HUMAN_STANDARD = 11
+PARCEL_WORDS = 2          # «предложение» из 1–2 слов с точкой — осколок («Неделю. Одна строчка.»)
+PARCEL_MAX = 2            # осколков на весь текст рилса — не больше двух и никогда два подряд
+NEG_PAIR_MAX = 1          # «Не X. А Y» / «Не X. Не Y» — один раз (12 §5: только против подозрения зрителя о себе)
+ANAPHORA_RUN = 3          # три предложения подряд с одного слова — машинная тройка
+DASH_RE = re.compile(r"(?<!\d)\s*[—–]\s*(?!\d)|\s-\s")   # тире вне диапазона «3–5» и дефис с пробелами
+AI_PHRASES = (r"не просто\b[^.?!]{0,50},\s*а\b", r"\bне только\b[^.?!]*\bно и\b", r"\bстоит отметить",
+              r"\bважно (понимать|помнить|отметить|знать)", r"\bданн(ый|ая|ое|ые|ого|ой|ую)\b", r"\bявляется\b",
+              r"\bтаким образом\b", r"\bподводя итог", r"\bпогрузимся", r"\bдавай(те)? разбер[её]мся",
+              r"раскрыть (свой )?потенциал", r"на новый уровень", r"\bв современном мире", r"\bв мире, где",
+              r"\bиграет (важную|ключевую) роль", r"\bключ к\b", r"\bмагия\b", r"\bпутешестви",
+              r"\bсамое интересное\b", r"\bи вот (главное|секрет)\b", r"\b(секрет|суть|правда|фишка) (прост[аы]?|в том)\s*:",
+              r"\b(главное|секрет|суть|ответ)\s*:", r"\bты имеешь право\b", r"\bв рамках\b", r"\bв целях\b")
+SELF_ANSWER_RE = re.compile(r"\?\s*(Потому что|Ответ|Всё просто|Просто потому|Дело в том)", re.I)
+
+
+def _sentences(text):
+    """Предложения текста по . ! ? …; кавычки и разметка рилса сняты."""
+    t = clean(text).replace("«", "").replace("»", "").replace('"', "")
+    return [x.strip() for x in re.split(r"(?<=[.!?…])\s+", t) if x.strip()]
+
+
+def _words(s):
+    return re.findall(r"[\w-]+", s)
+
+
+def human_issues(texts):
+    """Признаки машинного текста в списке строк (фразы рилса подряд). Список (где, что) — пусто, если текст живой."""
+    out, sents = [], []
+    for i, t in enumerate(texts):
+        tc = clean(t)
+        if DASH_RE.search(tc):
+            out.append((i, f"тире в «{tc[:50]}»: перестроить фразу, запятая или двоеточие (14 §1.1)"))
+        low = tc.lower()
+        for rx in AI_PHRASES:
+            m = re.search(rx, low)
+            if m:
+                out.append((i, f"«{m.group(0)}» — оборот нейросети (14 §1.3), сказать прямо"))
+        if SELF_ANSWER_RE.search(tc):
+            out.append((i, f"«{tc[:50]}»: вопрос и сам себе ответ «Зачем? Потому что» (14 §1.4)"))
+        sents += [(i, s) for s in _sentences(t)]
+    short = [k for k, (_, s) in enumerate(sents) if len(_words(s)) <= PARCEL_WORDS and not s.endswith("?")]
+    for a, b in zip(short, short[1:]):
+        if b == a + 1:
+            out.append((sents[b][0], f"«{sents[a][1]} {sents[b][1]}» — два осколка подряд: рваная парцелляция (14 §1.2), "
+                                    "склеить в одну фразу через «и», «поэтому», запятую"))
+    if len(short) > PARCEL_MAX:
+        out.append((sents[short[PARCEL_MAX]][0], f"осколков из 1–{PARCEL_WORDS} слов с точкой {len(short)} > {PARCEL_MAX}: "
+                    f"{', '.join('«' + sents[k][1] + '»' for k in short)} (14 §1.2)"))
+    neg = 0
+    for (_, s1), (i2, s2) in zip(sents, sents[1:]):
+        if re.match(r"(не|это не)\b", s1, re.I) and re.match(r"(а|не|это)\b", s2, re.I):
+            neg += 1
+            if neg > NEG_PAIR_MAX:
+                out.append((i2, f"«{s1} {s2}» — ещё одно «Не X. А Y» (уже {neg} раз, можно {NEG_PAIR_MAX}): сказать Y прямо (14 §1.3)"))
+    run = 1
+    for k in range(1, len(sents)):
+        w0, w1 = (_words(sents[k - 1][1]) or [""])[0].lower(), (_words(sents[k][1]) or [""])[0].lower()
+        run = run + 1 if w0 and w0 == w1 else 1
+        if run == ANAPHORA_RUN:
+            out.append((sents[k][0], f"три предложения подряд с «{w1}»: машинная тройка (14 §1.5)"))
+    return out
+
+
+def reel_texts(spec):
+    """Всё, что читает зритель: фразы рилса подряд, затем подпись, закреп, обложка, варианты хука."""
+    beats = [b.get("text", "") for b in spec.get("beats", [])]
+    pp = spec.get("passport") or {}
+    extra = []
+    for k in ("cover", "caption", "pinned_comment", "hook_variants"):
+        v = pp.get(k)
+        for x in (v if isinstance(v, list) else [v]):
+            if isinstance(x, dict):
+                x = x.get("text") or x.get("hook") or ""
+            if isinstance(x, str) and x.strip():
+                extra.append((k, x))
+    return beats, extra
+
+
+def check_human(spec):
+    """Текст рилса — человеческой речью (стандарт ≥ 11): ни тире, ни рваной парцелляции, ни оборотов нейросети."""
+    if ((spec.get("passport") or {}).get("standard") or 0) < HUMAN_STANDARD:
+        return []
+    beats, extra = reel_texts(spec)
+    err = [f"фраза {i}: {m}" for i, m in human_issues(beats)]
+    for k, x in extra:
+        err += [f"{k}: {m}" for _, m in human_issues([x]) if "осколк" not in m]   # подпись и обложка — не речь кота
+    return err
+
+
+# Полное использование стратегии (24.10, владелец: «чтобы ты не мог не использовать все, чтобы не мог что-то
+# пропустить»; CLAUDE.md, рилсы, п.11). Список берётся из самих документов при каждой проверке — правка документа
+# сразу становится требованием: 40 связок 12 §6, 9 шагов формулы 12 §5, 16 рычагов 09 §10, страхи 09 §8.2,
+# убеждения 09 §8.3, желания 09 §9.1. Каждый пункт решён в passport.coverage: номер фразы, место вокруг рилса или отказ.
+COVERAGE_STANDARD = 11
+STRATEGY_PATH = os.path.join(AUDIENCE_DIR, "12_strategy.md")
+AUDIENCE_DOC = os.path.join(AUDIENCE_DIR, "09_hooks_funnels_audience.md")
+COVERAGE_GROUPS = {"L": "связка 12 §6", "S": "шаг формулы 12 §5", "R": "рычаг 09 §10", "F": "страх 09 §8.2",
+                   "B": "убеждение 09 §8.3", "D": "желание 09 §9.1"}
+COVERAGE_NO_SKIP = ("S",)          # скелет рилса не пропускается
+COVERAGE_NEED_HOW = ("F", "B", "D")  # страх → чем снят, убеждение → как развёрнуто, желание → как дано завуалированно
+COVERAGE_SKIP_SHARE = 0.5          # гипотеза: больше половины группы отказом — стратегия не использована
+
+
+def _section(text, start, stop):
+    a = text.find(start)
+    if a < 0:
+        return ""
+    b = text.find(stop, a + len(start))
+    return text[a:b if b > 0 else None]
+
+
+def strategy_items(strategy=STRATEGY_PATH, audience=AUDIENCE_DOC):
+    """{id: название} всех пунктов стратегии и аудитории, вынутых из документов."""
+    st = open(strategy, encoding="utf8").read() if os.path.exists(strategy) else ""
+    au = open(audience, encoding="utf8").read() if os.path.exists(audience) else ""
+    out = {}
+    for m in re.finditer(r"^(\d+)\. \*\*(.+?)\*\*", _section(st, "\n## 6.", "\n## 7."), re.M):
+        out[f"L{m.group(1)}"] = m.group(2).strip(" .")
+    for k, m in enumerate(re.finditer(r"^\|[^|\n]+\|\s*\*\*(.+?)\*\*", _section(st, "\n## 5.", "\n## 6."), re.M), 1):
+        out[f"S{k}"] = m.group(1)
+    for m in re.finditer(r"^### (\d+)\. (.+)$", _section(au, "\n## 10.", "\n## 11."), re.M):
+        out[f"R{m.group(1)}"] = m.group(2)
+    for g, rx in (("F", r"^#### С(\d+)\. (.+)$"), ("B", r"^#### У(\d+)\. (.+)$")):
+        for m in re.finditer(rx, au, re.M):
+            out[f"{g}{m.group(1)}"] = m.group(2)
+    for m in re.finditer(r"^#### (\d+)\. (.+)$", _section(au, "\n### 9.1.", "\n### 9.2."), re.M):
+        out[f"D{m.group(1)}"] = m.group(2)
+    return out
+
+
+def check_coverage(spec, log=(), reel_dir="", items=None):
+    """Каждый пункт стратегии решён в passport.coverage; новый рилс — не ниже стандарта 11."""
+    pp = spec.get("passport") or {}
+    std = pp.get("standard") or 0
+    if std < COVERAGE_STANDARD:
+        first = " ".join(clean(spec["beats"][0]["text"]).split()[:2]).lower() if spec.get("beats") else ""
+        old = any(os.path.normpath(r.get("reel", "")) == os.path.normpath(reel_dir or "")
+                  and r.get("first_words", "").lower() == first for r in log)
+        if reel_dir and not old:
+            return [f"новый рилс со стандартом {std}: нужен \"standard\": {COVERAGE_STANDARD} — человеческий текст (14) и "
+                    "решение по каждому пункту стратегии в passport.coverage (CLAUDE.md, рилсы, п.11–12)"]
+        return []
+    items = strategy_items() if items is None else items
+    cov = pp.get("coverage") or {}
+    n = len(spec.get("beats", []))
+    err, skips, reasons = [], {}, {}
+    for iid, title in items.items():
+        g = iid[0]
+        v, where = cov.get(iid), f"{COVERAGE_GROUPS[g]} {iid} «{title[:60]}»"
+        if v is None:
+            err.append(f"{where}: нет решения в passport.coverage (номер фразы, {{\"where\", \"how\"}} или {{\"skip\"}})")
+            continue
+        if isinstance(v, dict) and "skip" in v:
+            r = str(v["skip"]).strip()
+            if g in COVERAGE_NO_SKIP:
+                err.append(f"{where}: шаг формулы не пропускается — он есть в каждом рилсе")
+            elif len(r) < SKIP_MIN_CHARS:
+                err.append(f"{where}: отказ без причины")
+            skips[g] = skips.get(g, 0) + 1
+            reasons.setdefault(r.lower(), []).append(iid)
+            continue
+        how = str(v.get("how", "")).strip() if isinstance(v, dict) else ""
+        if isinstance(v, dict) and "where" in v:
+            if v["where"] not in MATRIX_WHERE or len(how) < SKIP_MIN_CHARS:
+                err.append(f"{where}: вне ролика — {{\"where\": одно из {MATRIX_WHERE}, \"how\": что именно сделано}}")
+            continue
+        bs = _beats_of(v.get("beats") if isinstance(v, dict) else v)
+        if not bs or any(not 0 <= b < n for b in bs):
+            err.append(f"{where}: {v!r} — не номер фразы 0…{n - 1}, не место и не отказ")
+        elif g in COVERAGE_NEED_HOW and len(how) < SKIP_MIN_CHARS:
+            err.append(f"{where}: {{\"beats\": [...], \"how\": ...}} — чем снят страх, как развёрнуто убеждение, как дано желание")
+    for g, k in skips.items():
+        total = sum(1 for i in items if i[0] == g)
+        if total and k / total > COVERAGE_SKIP_SHARE:
+            err.append(f"{COVERAGE_GROUPS[g].split()[0]}: отказов {k} из {total} > {COVERAGE_SKIP_SHARE:.0%} — стратегия не использована")
+    for r, ids in reasons.items():
+        if len(ids) > SKIP_REPEAT_MAX:
+            err.append(f"одна отговорка «{r[:60]}» у {len(ids)} пунктов ({', '.join(ids[:6])}…): причина — своя у каждого")
+    return err
+
+
 def clean(text):
     return re.sub(r"\s+", " ", text.replace("*", "").replace("|", "")).strip()
 
@@ -703,6 +888,7 @@ if __name__ == "__main__":
     log_p = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docs", "reels_log.json")
     log = json.load(open(log_p, encoding="utf8")) if os.path.exists(log_p) else []
     errs = (check_spec(spec, set(reel.SFX)) + check_passport(spec, log, os.path.relpath(sys.argv[1])) + check_knowledge(spec)
-            + check_hook(spec, log, os.path.relpath(sys.argv[1])) + check_matrix(spec))
+            + check_hook(spec, log, os.path.relpath(sys.argv[1])) + check_matrix(spec)
+            + check_coverage(spec, log, os.path.relpath(sys.argv[1])) + check_human(spec))
     print("\n".join("✗ " + e for e in errs) or "✓ reel.json по правилам (тайминг проверит reel.py при рендере)")
     sys.exit(1 if errs else 0)

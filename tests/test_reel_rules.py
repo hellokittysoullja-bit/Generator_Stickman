@@ -554,3 +554,72 @@ def test_matrix_b_stop_phrases_and_rhythm():                    # 24.10, мат�
     for i in range(3):
         s["beats"][i + 3]["text"] = "Ровно двадцать знаков."
     assert any("одной длины" in w for w in reel_rules.warnings(s, [], 30.0))
+
+
+def test_captions_two_three_words():
+    """Владелец 24.10: субтитры по 2–3 слова, а не по одному. Одиночная группа — только у предложения из одного
+    слова; запятая — не обрыв; группа не кончается предлогом."""
+    words = "Чем дольше молчишь, тем длиннее кажется извинение. Там правда ничего страшного не было. Неделю.".split()
+    times = [dict(start=i * 0.3, end=i * 0.3 + 0.25) for i in range(len(words))]
+    groups = [[words[j] for j in c["idx"]] for c in reel.chunks(words, times)]
+    assert all(2 <= len(g) <= 3 for g in groups[:-1]), groups
+    assert groups[-1] == ["Неделю."]
+    assert not any(reel.bare(g[-1]) in reel.CLITICS for g in groups), groups
+
+
+EP01 = os.path.join(ROOT, "videos", "01_sdvg_pismo", "reel", "reel.json")
+
+
+def _std11(beats):
+    return {"beats": [{"text": t} for t in beats], "passport": {"standard": 11}}
+
+
+def test_human_text_catches_machine_style():                   # 24.10, владелец: тире и рваная парцелляция — нейросеть
+    v4 = json.load(open(EP01, encoding="utf8"))                 # v4 — текст, который владелец назвал нейросетевым
+    v4["passport"]["standard"] = 11
+    e = reel_rules.check_human(v4)
+    assert any("тире" in x for x in e) and any("осколк" in x for x in e) and any("Не X. А Y" in x for x in e)
+    for bad, sign in (("Это сложно — но можно.", "тире"), ("Не просто кот, а напарник.", "не просто"),
+                      ("Зачем? Потому что страшно.", "Потому что"), ("Важно понимать, что это не лень.", "важно"),
+                      ("Секрет прост: начни.", "секрет"), ("Я сижу. Я жду. Я молчу.", "три предложения")):
+        assert any(sign.lower() in x.lower() for x in reel_rules.check_human(_std11([bad]))), bad
+    assert reel_rules.check_human(_std11(["Две минуты.", "Одна строчка."]))      # осколки через фразы — тоже подряд
+    live = ["Мне написали в понедельник, а сейчас пятница, и я всё ещё не открыл.",
+            "Там же ничего такого, просто «как дела», но открыть страшнее, чем сдать отчёт.",
+            "С 3–5 минут начать легче, поэтому я сажусь рядом."]
+    assert reel_rules.check_human(_std11(live)) == []           # длинные живые фразы и числовой диапазон проходят
+    assert reel_rules.check_human({"beats": [{"text": "А это — нет."}], "passport": {"standard": 10}}) == []
+
+
+def test_coverage_items_come_from_documents():                  # 24.10: список берётся из 12 и 09, а не вписан в код
+    it = reel_rules.strategy_items()
+    n = {g: sum(1 for k in it if k[0] == g) for g in reel_rules.COVERAGE_GROUPS}
+    assert n == {"L": 40, "S": 9, "R": 16, "F": 10, "B": 15, "D": 15}
+    assert it["L1"].startswith("Парадокс") and it["S1"] == "Хук-парадокс" and it["R7"].startswith("Поймать в моменте")
+
+
+def test_coverage_gate():                                       # 24.10: ни один пункт стратегии нельзя молча пропустить
+    items = {"L1": "парадокс", "S1": "хук", "F1": "вдруг ленивый", "D1": "рядом"}
+    s = _std11(["a", "b", "c"])
+    e = reel_rules.check_coverage(s, items=items)
+    assert len(e) == 4 and all("нет решения" in x for x in e)
+    s["passport"]["coverage"] = {"L1": 0, "S1": {"skip": "рилс короткий, не влезло"}, "F1": [1], "D1": {"where": "site", "how": "кот"}}
+    e = reel_rules.check_coverage(s, items=items)
+    assert any("шаг формулы не пропускается" in x for x in e)   # скелет обязателен
+    assert any("чем снят страх" in x for x in e)                # страх без «how» — не решён
+    assert any("вне ролика" in x for x in e)                    # «how» короче 15 знаков
+    s["passport"]["coverage"] = {"L1": 0, "S1": [0], "F1": {"beats": [1, 2], "how": "фраза 2 снимает: ленивые себя не грызут"},
+                                 "D1": {"where": "site", "how": "кот просит посидеть с ним на сайте"}}
+    assert reel_rules.check_coverage(s, items=items) == []
+    many = {f"L{i}": "x" for i in range(1, 5)}
+    s["passport"]["coverage"] = {k: {"skip": f"не подходит к теме письма, номер {k}"} for k in many}
+    assert any("стратегия не использована" in x for x in reel_rules.check_coverage(s, items=many))
+
+
+def test_new_reel_must_be_standard_11():                        # 24.10: старым стандартом новый рилс не обойти
+    log = json.load(open(os.path.join(ROOT, "docs", "reels_log.json"), encoding="utf8"))
+    v4 = json.load(open(EP01, encoding="utf8"))
+    assert reel_rules.check_coverage(v4, log, "videos/01_sdvg_pismo/reel") == []   # v4 в журнале — пересобирается
+    v4["beats"][0]["text"] = "Новый хук про письмо."
+    assert any("стандартом 10" in x for x in reel_rules.check_coverage(v4, log, "videos/01_sdvg_pismo/reel"))
+    assert reel_rules.check_coverage(spec(), log, "videos/02_sdvg_vremya/reel") == []   # эталон v15 — тоже
