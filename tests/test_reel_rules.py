@@ -567,7 +567,18 @@ def test_captions_two_three_words():
     assert not any(reel.bare(g[-1]) in reel.CLITICS for g in groups), groups
 
 
-EP01 = os.path.join(ROOT, "videos", "01_sdvg_pismo", "reel", "reel.json")
+def test_hook_caption_is_one_group():                           # эп.01 v5: хук резался на две группы по 2 слова —
+    words = "Тебе же *плевать*, да? Он так думает, |а ты неделю боишься.".split()   # первый кадр показывал полхука
+    times = [dict(start=i * 0.3, end=i * 0.3 + 0.25) for i in range(len(words))]
+    groups = [[words[j] for j in c["idx"]] for c in reel.chunks(words, times)]
+    assert groups[0] == ["Тебе", "же", "*плевать*,", "да?"], groups
+    assert all(len(g) <= 3 for g in groups[1:]), groups
+    wide = "Он решил: тебе *плевать*. А ты молчишь.".split()           # шире строки (913 > 860 px) — делится,
+    groups = [[wide[j] for j in c["idx"]] for c in reel.chunks(wide, times)]   # а не вылезает под кнопки Reels
+    assert all(reel.cap_width(c["idx"], wide) <= reel.CAP_MAX_W for c in reel.chunks(wide, times)), groups
+
+
+EP01 = os.path.join(ROOT, "tests", "fixtures", "reel_ep01_v4.json")   # v4 — текст, отклонённый владельцем (рилс уже v5)
 
 
 def _std11(beats):

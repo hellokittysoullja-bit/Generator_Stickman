@@ -155,8 +155,11 @@ def chunks(words, times):
     """Группы по 2-3 слова, всегда ОДНОЙ строкой одного кегля. Обрыв — только конец предложения и «|»;
     внутри предложения группы ровные (см. `_split_segment`), группа не переносится и не уменьшается — делится."""
     out, seg = [], []
-    def flush():
-        if seg: out.extend(_split_segment(seg, words)); seg.clear()
+    def flush():                                   # хук (первое предложение) — одной группой, если влезает в строку:
+        if not seg: return                         # текст хука стоит с первого кадра целиком (эп.01 v5 резался на два)
+        if not out and len(seg) > 1 and cap_width(list(seg), words) <= CAP_MAX_W: out.append(list(seg))
+        else: out.extend(_split_segment(seg, words))
+        seg.clear()
     for i, w in enumerate(words):
         if w.startswith("|"): flush()
         seg.append(i)
@@ -597,6 +600,8 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     rule_errs += reel_rules.check_coverage(spec, json.load(open(log_p, encoding="utf8")) if os.path.exists(log_p) else [],
                                            os.path.relpath(reel_dir, ROOT))  # стратегия: каждый пункт решён (стандарт 11)
     rule_errs += reel_rules.check_human(spec)           # человеческий текст: без тире и рваной парцелляции (стандарт 11)
+    rule_errs += reel_rules.check_inventory(spec, json.load(open(log_p, encoding="utf8")) if os.path.exists(log_p) else [],
+                                            os.path.relpath(reel_dir, ROOT))   # весь инвентарь базы (стандарт 12)
     layout(spec)
     beats = spec["beats"]
     prepare_src(reel_dir, spec.get("sources", {}))

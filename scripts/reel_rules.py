@@ -468,6 +468,76 @@ def check_coverage(spec, log=(), reel_dir="", items=None):
     return err
 
 
+# Инвентарь всей базы (24.10, владелец: «я обязан все эти расшифровки применять… чтобы каждый рилс без этого не
+# делался»). docs/reels_knowledge/inventory_matrix.jsonl собирает scripts/inventory_matrix.py из 20_funnel/01_inventory.md
+# (3 205 приёмов из 400+ расшифровок и документов). Каждый пункт scope "reel" решён в passport.inventory рилса
+# стандарта ≥ 12: номер фразы, {"where", "how"} вне ролика, {"by_code": что делает код}, {"same_as": номер уже решённого
+# пункта матрицы или инвентаря} или {"skip": своя причина}. Новый рилс ниже стандарта 12 не рендерится.
+INVENTORY_PATH = os.path.join(AUDIENCE_DIR, "inventory_matrix.jsonl")
+INVENTORY_STANDARD = 12
+BY_CODE_RE = re.compile(r"reel(_rules|_geom|_publish|_draft)?\.py|reel_rules\.|reel\.|reel_geom\.|library\.json|"
+                        r"reel_metrics|check_\w+", re.I)
+
+
+def load_inventory(path=INVENTORY_PATH):
+    if not os.path.exists(path):
+        return []
+    return [json.loads(x) for x in open(path, encoding="utf8") if x.strip()]
+
+
+def check_inventory(spec, log=(), reel_dir="", inventory=None, matrix=None):
+    """Каждый приём инвентаря с областью «reel» решён в passport.inventory (стандарт ≥ 12); новый рилс — не ниже 12."""
+    pp = spec.get("passport") or {}
+    std = pp.get("standard") or 0
+    if std < INVENTORY_STANDARD:
+        first = " ".join(clean(spec["beats"][0]["text"]).split()[:2]).lower() if spec.get("beats") else ""
+        old = any(os.path.normpath(r.get("reel", "")) == os.path.normpath(reel_dir or "")
+                  and r.get("first_words", "").lower() == first for r in log)
+        if reel_dir and not old:
+            return [f"новый рилс со стандартом {std}: нужен \"standard\": {INVENTORY_STANDARD} — решение по каждому приёму "
+                    "инвентаря всей базы в passport.inventory (CLAUDE.md, рилсы, п.16)"]
+        return []
+    inventory = load_inventory() if inventory is None else inventory
+    matrix_ids = {m["id"] for m in (load_matrix() if matrix is None else matrix)}
+    inv_ids = {i["id"] for i in inventory}
+    dec = pp.get("inventory") or {}
+    n = len(spec.get("beats", []))
+    err, reasons = [], {}
+    for it in inventory:
+        if it.get("scope") != "reel":
+            continue
+        v, where = dec.get(it["id"]), f"инвентарь {it['id']} (строка {it['line']}) «{it['title'][:70]}»"
+        if v is None:
+            err.append(f"{where}: нет решения в passport.inventory"); continue
+        if isinstance(v, dict) and "skip" in v:
+            r = str(v["skip"]).strip()
+            if len(r) < SKIP_MIN_CHARS:
+                err.append(f"{where}: отказ без причины")
+            reasons.setdefault(r.lower(), []).append(it["id"]); continue
+        if isinstance(v, dict) and "by_code" in v:
+            if not BY_CODE_RE.search(str(v["by_code"])):
+                err.append(f"{where}: by_code должен называть, какой код это делает (reel.py, reel_rules.check_…)")
+            continue
+        if isinstance(v, dict) and "same_as" in v:
+            if v["same_as"] not in matrix_ids | inv_ids:
+                err.append(f"{where}: same_as {v['same_as']!r} — не номер матрицы и не номер инвентаря")
+            elif v["same_as"] in inv_ids and not isinstance(dec.get(v["same_as"]), (int, list)) \
+                    and "beats" not in (dec.get(v["same_as"]) or {}):
+                pass                                    # ссылка на решённый не фразой пункт допустима
+            continue
+        if isinstance(v, dict) and "where" in v:
+            if v["where"] not in MATRIX_WHERE or len(str(v.get("how", "")).strip()) < SKIP_MIN_CHARS:
+                err.append(f"{where}: вне ролика — {{\"where\": одно из {MATRIX_WHERE}, \"how\": что именно сделано}}")
+            continue
+        bs = _beats_of(v.get("beats") if isinstance(v, dict) else v)
+        if not bs or any(not 0 <= b < n for b in bs):
+            err.append(f"{where}: {v!r} — не номер фразы 0…{n - 1}, не место, не код, не ссылка и не отказ")
+    for r, ids in reasons.items():
+        if len(ids) > SKIP_REPEAT_MAX:
+            err.append(f"одна отговорка «{r[:60]}» у {len(ids)} пунктов инвентаря ({', '.join(ids[:5])}…): причина — своя")
+    return err
+
+
 def clean(text):
     return re.sub(r"\s+", " ", text.replace("*", "").replace("|", "")).strip()
 
@@ -896,6 +966,7 @@ if __name__ == "__main__":
     log = json.load(open(log_p, encoding="utf8")) if os.path.exists(log_p) else []
     errs = (check_spec(spec, set(reel.SFX)) + check_passport(spec, log, os.path.relpath(sys.argv[1])) + check_knowledge(spec)
             + check_hook(spec, log, os.path.relpath(sys.argv[1])) + check_matrix(spec)
-            + check_coverage(spec, log, os.path.relpath(sys.argv[1])) + check_human(spec))
+            + check_coverage(spec, log, os.path.relpath(sys.argv[1])) + check_human(spec)
+            + check_inventory(spec, log, os.path.relpath(sys.argv[1])))
     print("\n".join("✗ " + e for e in errs) or "✓ reel.json по правилам (тайминг проверит reel.py при рендере)")
     sys.exit(1 if errs else 0)
