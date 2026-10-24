@@ -443,6 +443,8 @@ def test_wave9_hook_passport():                                 # 09 §6, §22: 
     def kw(x):
         x["passport"]["keyword"] = {"word": "КОТ", "delivers": "ссылку на сессию"}
         x["beats"][x["passport"]["cta_beat"]]["text"] = "Напиши *КОТ* — пришлю, где я сижу."
+        x["passport"]["caption"] = "СДВГ и дела. Напиши КОТ в комментариях. #сдвг #прокрастинация #дела"
+        x["passport"]["pinned_comment"] = "Какое дело висит дольше всех?"
     assert errs(kw) == ""
     assert "кодового слова" in errs(lambda x: (kw(x), x["beats"][x["passport"]["cta_beat"]].update(text="Пиши мне.")))
 
@@ -528,3 +530,18 @@ def test_matrix_gate():                                         # 24.10: каж�
     assert "одна и та же отговорка" in " ".join(reel_rules.check_matrix(s, many))
     cv = reel_rules.matrix_coverage(s, many)
     assert cv["skip"] == 5 and cv["none"] == 0
+
+
+def test_keyword_caption_and_engagement_bait():                 # 24.10, слияние матрицы: пробелы, найденные в коде
+    s = _w9(spec())
+    s["passport"]["keyword"] = {"word": "КОТ", "delivers": "ссылку на сессию"}
+    s["beats"][s["passport"]["cta_beat"]]["text"] = "Напиши *КОТ* — пришлю, где я сижу."
+    s["passport"]["caption"] = "СДВГ и дела. Напиши КОТ — пришлю. #сдвг #прокрастинация #дела"
+    assert not [e for e in reel_rules.check_hook(s) if "подпис" in e or "caption" in e]
+    s["passport"]["caption"] = "СДВГ и дела. Ссылка в шапке. #сдвг #прокрастинация #дела"
+    e = " ".join(reel_rules.check_hook(s))
+    assert "caption" in e and "нет кодового слова" in e
+    s = spec(); s["beats"][3]["text"] = "Досмотри до *конца*."
+    assert "приманка удержания" in " ".join(reel_rules.check_knowledge(s))
+    s = spec(); s["passport"]["pinned_comment"] = "Поставь лайк, если узнал себя"
+    assert "приманка удержания" in " ".join(reel_rules.check_knowledge(s))

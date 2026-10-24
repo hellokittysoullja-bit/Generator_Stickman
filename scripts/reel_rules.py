@@ -100,9 +100,10 @@ def audience_corpus():
         parts = []
         for root, _, files in os.walk(os.path.join(AUDIENCE_DIR, "raw9", "audience")):
             parts += [open(os.path.join(root, f), encoding="utf8").read() for f in sorted(files) if f.endswith(".md")]
-        doc = os.path.join(AUDIENCE_DIR, "09_hooks_funnels_audience.md")
-        if os.path.exists(doc):
-            parts.append(open(doc, encoding="utf8").read())
+        for name in ("09_hooks_funnels_audience.md", "10_insider_map.md"):   # 10 — карта «только для своих»
+            doc = os.path.join(AUDIENCE_DIR, name)
+            if os.path.exists(doc):
+                parts.append(open(doc, encoding="utf8").read())
         _corpus["t"] = "\n".join(parts)
         _corpus["n"] = _norm(_corpus["t"])
     return _corpus
@@ -195,6 +196,11 @@ def check_hook(spec, log=(), reel_dir=""):
             err.append(f"кодового слова «{word}» нет в фразе призыва {cta}")
         if any(re.search(r"\bшапк", clean(b["text"]).lower()) for b in beats):
             err.append("кодовое слово и «шапка профиля» сразу: два пути — человек выбирает не выбирать (09 §21.16)")
+        for name in ("caption", "pinned_comment"):
+            if re.search(r"\bшапк", str(pp.get(name, "")).lower()):
+                err.append(f"{name}: «шапка профиля» при кодовом слове — один путь к сайту, через слово (09 §4)")
+            if word and name == "caption" and word.lower() not in str(pp.get(name, "")).lower():
+                err.append(f"в подписи нет кодового слова «{word}»: кто не досмотрел до призыва, найдёт его там (09 §4)")
     return err
 
 
@@ -434,6 +440,10 @@ SHAME_WORDS = (r"\bсоберись", r"\bперестань", r"возьми с
 # с запасом); у рилса-серии — название и номер серии (персонаж-сериал: System1/IPA, Duolingo).
 CONTROL_WORDS = (r"\bобязательно\b", r"\bсрочно\b", r"\bуспей", r"\bнемедленно\b", r"\bты должн", r"\bвы должн",
                  r"\bнужно перейти", r"\bпереходи прямо", r"\bне упусти")
+# Приманки удержания и вовлечения (09 §19: «досмотри до конца», «поставь лайк» — минус к лайкам и доверию; Instagram режет
+# «просьбы о реакции») — во фразах, подписи и закрепе.
+ENGAGEMENT_BAIT = (r"досмотри", r"до конца ролика", r"\bставь лайк", r"\bпоставь лайк", r"\bлайкни", r"\bподписывайся",
+                   r"\bжми сердечко")
 BAIT_PATTERNS = (r"напиши\s*[«\"']?\d", r"пиши\s*[«\"']?\d", r"\b1\b[^.]{0,40}\b2\b.{0,20}(напиши|пиши|ставь)",
                  r"(напиши|пиши|ставь)[^.]{0,30}\b1\b[^.]{0,40}\b2\b", r"ставь\s*[+❤🔥]")
 LOOP_GAP_MAX = 12.5        # с: между смысловыми петлями (passport.knowledge.meaning_loops) и от начала до первой
@@ -511,6 +521,12 @@ def check_knowledge(spec, checklist=None, brand=None):
             err.append(f"закреплённый комментарий «{pin[:60]}…» — приманка вовлечения («напиши цифру»): пример из правил "
                        "Instagram о снижении показов (08 §2); нужен открытый вопрос о зрителе")
             break
+    texts = [("фраза", clean(b["text"]).lower()) for b in beats] + [("подпись", str(pp.get("caption", "")).lower()),
+                                                                   ("закреп", str(pp.get("pinned_comment", "")).lower())]
+    for where, x in texts:
+        m = next((re.search(q, x) for q in ENGAGEMENT_BAIT if re.search(q, x)), None)
+        if m:
+            err.append(f"{where}: «{m.group(0)}» — приманка удержания/реакции: портит доверие, Instagram режет охват (09 §19)")
     ser = pp.get("series")
     if ser is not None and not (isinstance(ser, dict) and ser.get("name") and ser.get("episode")):
         err.append('серия рилса: "series": {"name": …, "episode": N} — название и номер (08 §2, персонаж-сериал)')
