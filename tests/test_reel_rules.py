@@ -942,3 +942,31 @@ def test_montage_like_sample_doll_at_end_drawings_accents():
     assert any("рисунков" in e for e in reel_rules.check_montage(spec, few, events, total))
     assert any("акцентов" in e for e in reel_rules.check_montage(spec, shots, events[:3], total))
     assert reel_rules.check_montage({"passport": {"standard": 13}}, early, [], total) == []   # старые — своими правилами
+
+
+def test_whooshes_not_back_to_back():
+    """26.10, владелец: «не супер часто свуши, тук-тук-тук» — переходные свисты не ближе 1.5 с друг к другу, свист новой
+    картинки важнее свиста того же рисунка ближе; склейка без свиста из-за этого не считается проваленной."""
+    assert reel_rules.WHOOSH_GAP == 1.5
+    shots = [dict(t0=0.0, src="f1"), dict(t0=0.8, src="f1"), dict(t0=1.6, src="f2"), dict(t0=2.4, src="f2"),
+             dict(t0=3.2, src="f3"), dict(t0=4.0, src="f3"), dict(t0=6.0, src="f3")]
+    plan = reel.sound_plan(shots, [])
+    wh = sorted(p["peak"] for p in plan if p["name"] in reel_rules.WHOOSHES)
+    assert all(b - a >= reel_rules.WHOOSH_GAP for a, b in zip(wh, wh[1:]))
+    assert 1.6 in wh and 3.2 in wh and 6.0 in wh             # новые картинки и одинокая склейка — со свистом
+    assert reel_rules.check_whoosh_gap(plan) == []
+    assert reel_rules.check_cut_sounds(plan, shots) == []
+    hand = [dict(name="swoosh", peak=1.0), dict(name="fast_whoosh", peak=1.9)]
+    assert reel_rules.check_whoosh_gap(hand)
+
+
+def test_spots_only_on_key_word_and_not_in_a_row():
+    """26.10, владелец: «чуть меньше затемнений… в ненужных местах не надо зря затемнять» — прожектор только на ключевом
+    слове фразы и не чаще раза в 5 с."""
+    spec = {"passport": {"standard": 15}, "beats": [
+        dict(text="Дело висит, а ты *устаёшь*.", fx=[dict(kind="spot", at=4)]),
+        dict(text="Это как стакан на *руке*.", fx=[dict(kind="spot", at=2)])]}
+    errs = reel_rules.check_spots(spec, [dict(kind="spot", t=1.0), dict(kind="spot", t=3.0)])
+    assert any("«стакан»" in e for e in errs) and any("ближе" in e for e in errs)
+    assert not any("«устаёшь" in e for e in errs)
+    assert reel_rules.check_spots(dict(spec, passport={"standard": 14}), []) == []   # готовые рилсы 25.10 не трогаем

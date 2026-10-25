@@ -32,6 +32,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "scripts"))
+import reel_rules  # noqa: E402  (после пути к scripts)
 
 W, H, FPS = 1080, 1920, 30
 PAPER = np.array([250, 247, 240], np.float32)          # #FAF7F0, как у длинных роликов (canvas.py)
@@ -767,6 +768,8 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     rule_errs += reel_rules.knowledge_timing(spec, [times[i0]["start"] for i0, _ in spans], total)
     rule_errs += reel_rules.check_sounds(sound_plan(shots, events))
     rule_errs += reel_rules.check_cut_sounds(sound_plan(shots, events), shots, CUT_SOUND_NEAR)
+    rule_errs += reel_rules.check_whoosh_gap(sound_plan(shots, events))
+    rule_errs += reel_rules.check_spots(spec, events)
     rule_errs += reel_rules.check_writing(events, shots)
     rule_errs += reel_rules.check_written_read(events, shots)  # дописанное слово не срезано склейкой
     for w in reel_rules.warnings(spec, shots, total, events) + reel_rules.sound_warnings(sound_plan(shots, events)):
@@ -1200,6 +1203,7 @@ def place(track, x, t, gain=1.0):
 
 SWOOSH_RATES = (1.0, 0.95, 1.05, 0.97, 1.03)
 CUT_SOUND_NEAR = 0.35      # склейка «озвучена», если пик звука ближе 0.35 с
+WHOOSHES, WHOOSH_GAP = reel_rules.WHOOSHES, reel_rules.WHOOSH_GAP   # свист от свиста не ближе 1.5 с (владелец 26.10)
 
 def sound_plan(shots, events):
     """Все звуки рилса по порядку: [{name, t, align, gain_db, pan, peak, soft, whip}] — одна правда для микшера и для
@@ -1225,24 +1229,31 @@ def sound_plan(shots, events):
     soft = [sh["t0"] for k, sh in enumerate(shots) if k and sh.get("zoom_in") and not sh.get("sound")] + \
            [e["t"] for e in events if e["kind"] == "punch"]
     soft_done = []
+    def whoosh_free(t):                               # свист не ближе WHOOSH_GAP к другому свисту (владелец 26.10)
+        return all(abs(t - p["peak"]) >= WHOOSH_GAP for p in plan if p["name"] in WHOOSHES)
     for tt in sorted(soft):                           # и не чаще раза в 3 с: эталон v11 — три тихих свиста через 1.5 с
-        if all(abs(tt - p) > 1.0 for p in placed) and all(abs(tt - q) > 3.0 for q in soft_done):
+        if all(abs(tt - p) > 1.0 for p in placed) and all(abs(tt - q) > 3.0 for q in soft_done) and whoosh_free(tt):
             add("swoosh", tt, gain_db=SOFT_DB["zoom"], soft=True); soft_done.append(tt)
     # звук перехода на каждой склейке (владелец 24.10: «на новой картинке свуш, там другой свуш» — склейка без звука
     # проваливается): новая картинка — свист, по очереди обычный и короткий, разной скорости; тот же рисунок ближе —
     # тихий короткий свист. Не ставится, если рядом (CUT_SOUND_NEAR) уже звучит смысловой звук.
-    alt = 0
+    # Свисты не «тук-тук-тук» (владелец 26.10: «не супер часто свуши… не надо прям быстро»): между свистами не меньше
+    # WHOOSH_GAP; сначала свист новой картинки, склейка того же рисунка ближе уступает, если рядом уже свистело.
+    cuts = []
     for k, sh in enumerate(shots):
-        t = sh["t0"]
-        if any(abs(t - p) <= CUT_SOUND_NEAR for p in placed):
-            continue
         prev = shots[k - 1] if k else None
         new_pic = prev is None or (sh.get("src") or sh.get("kind")) != (prev.get("src") or prev.get("kind"))
-        if new_pic:
+        cuts.append((not new_pic, sh["t0"]))
+    alt = 0
+    for same, t in sorted(cuts):
+        if any(abs(t - p) <= CUT_SOUND_NEAR for p in placed) or not whoosh_free(t):
+            continue
+        if not same:
             name = ("swoosh", "fast_whoosh")[alt % 2]; alt += 1
             add(name, t, gain_db=SOFT_DB["new_picture"], soft=True, whip=True)
         else:
             add("fast_whoosh", t, gain_db=SOFT_DB["same_picture"], soft=True)
+    plan.sort(key=lambda p: p["peak"])
     return plan
 
 def voice_segments(reel_dir, nat, times):

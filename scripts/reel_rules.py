@@ -831,6 +831,9 @@ MIN_DRAWINGS = 6            # разных рисунков в рилсе: в о
 ACCENT_PER_10S = 4.0        # акцентов на 10 с: в образце ~6 (входы наездом, удары-наезды, тряска, прожектор, круг,
 ACCENT_KINDS_MIN = 5        # пометки, стрелка), у нас было ~2; видов — не меньше пяти («всех чуть-чуть», владелец)
 ACCENT_EVENT_KINDS = ("punch", "shake", "spot", "circle", "arrow", "write", "mark")
+SPOT_GAP = 5.0              # затемнение не чаще раза в 5 с и только на ключевом слове (владелец 26.10; было до 1.6 с подряд)
+WHOOSHES = ("swoosh", "fast_whoosh")
+WHOOSH_GAP = 1.5            # свист от свиста не ближе 1.5 с (владелец 26.10: «сделай 1,5 секунды, минимальный промежуток»)
 
 
 def check_montage(spec, shots, events, total):
@@ -959,10 +962,43 @@ def check_sounds(plan):
 
 def check_cut_sounds(plan, shots, near=0.35):
     """Каждая склейка слышна (владелец 24.10: «не должно быть тишины, на новой картинке свуш»): у каждой смены плана
-    есть пик звука ближе near секунд — смысловой или переходный."""
+    есть пик звука ближе near секунд — смысловой или переходный. Исключение (владелец 26.10: «не супер часто свуши»):
+    склейка, где свист пропущен, потому что другой звучал меньше WHOOSH_GAP назад, — она не проваливается."""
     peaks = [p["peak"] for p in plan]
+    wh = [p["peak"] for p in plan if p["name"] in WHOOSHES]
     return [f"склейка {s['t0']:.2f} с без звука: переход проваливается (свист, короткий свист или смысловой звук)"
-            for s in shots[1:] if not any(abs(s["t0"] - q) <= near for q in peaks)]
+            for s in shots[1:] if not any(abs(s["t0"] - q) <= near for q in peaks)
+            and not any(abs(s["t0"] - q) < WHOOSH_GAP for q in wh)]
+
+
+def check_whoosh_gap(plan):
+    """Свисты не подряд (владелец 26.10: «если идёт свуш и прям сразу свуш… не надо супер прям подряд»): пики swoosh и
+    fast_whoosh не ближе WHOOSH_GAP. Тихие переходные reel.sound_plan сам пропускает; ловится то, что поставлено руками."""
+    wh = sorted((p["peak"], p["name"]) for p in plan if p["name"] in WHOOSHES)
+    return [f"свист «{b[1]}» на {b[0]:.2f} с через {b[0] - a[0]:.2f} с после «{a[1]}» — свисты подряд «тук-тук»: "
+            f"не ближе {WHOOSH_GAP} с (уберите звук у одного или разведите)"
+            for a, b in zip(wh, wh[1:]) if b[0] - a[0] < WHOOSH_GAP - 0.02]
+
+
+def check_spots(spec, events):
+    """Затемнение (spot) — по делу, а не везде, где можно (владелец 26.10: «чуть меньше затемнений… в ненужных местах
+    не надо зря затемнять»): только на ключевом слове фразы (*слово*) и не чаще раза в SPOT_GAP секунд. Для новых
+    рилсов (стандарт ≥ 15): готовые три рилса 25.10 владелец велел не переделывать."""
+    if ((spec.get("passport") or {}).get("standard") or 0) < 15:
+        return []
+    err = []
+    for i, b in enumerate(spec["beats"]):
+        marked = [("*" in w) for w in b["text"].replace("|", "").split() if w not in ("—", "–", "-")]
+        words = [w for w in clean(b["text"]).split() if w not in ("—", "–", "-")]
+        for e in b.get("fx", []):
+            k = e.get("at", 0)
+            if e.get("kind") == "spot" and k < len(marked) and not marked[k]:
+                err.append(f"фраза {i}: затемнение на «{words[k]}» — не ключевое слово: затемнять только главное (*слово*)")
+    ts = sorted(e["t"] for e in events if e.get("kind") == "spot")
+    for a, b in zip(ts, ts[1:]):
+        if b - a < SPOT_GAP:
+            err.append(f"затемнения на {a:.2f} и {b:.2f} с — ближе {SPOT_GAP} с: одно лишнее")
+    return err
 
 
 def sound_warnings(plan):

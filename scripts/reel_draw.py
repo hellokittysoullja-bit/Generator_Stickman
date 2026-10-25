@@ -24,7 +24,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MODEL, SIZE, QUALITY, PRICE = "cx/gpt-image-2", "1536x1024", "medium", 140625
+MODEL, SIZE, QUALITY, PRICE = "cx/gpt-image-2", "1024x1792", "medium", 164063   # 9:16 — рисунки рилсов вертикальные (владелец 26.10)
 
 
 def data_url(p):
