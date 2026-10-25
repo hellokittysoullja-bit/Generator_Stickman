@@ -970,3 +970,23 @@ def test_spots_only_on_key_word_and_not_in_a_row():
     assert any("«стакан»" in e for e in errs) and any("ближе" in e for e in errs)
     assert not any("«устаёшь" in e for e in errs)
     assert reel_rules.check_spots(dict(spec, passport={"standard": 14}), []) == []   # готовые рилсы 25.10 не трогаем
+
+
+def test_mindful_accents_why_and_rare_circles():
+    """26.10, владелец: «кружочки на каждом ненужном и нужном месте… осознанность включи вообще везде» — у каждого
+    выделения есть причина, кругов не больше двух на рилс и не ближе 8 с, только на ключевом слове."""
+    why = "показать, что именно этот предмет — ловушка"
+    spec = {"passport": {"standard": 16}, "beats": [
+        dict(text="Хотел помыть *полы*.", fx=[dict(kind="punch", at=2, why=why)], shots=[]),
+        dict(text="И пошёл за *тряпкой*.", fx=[dict(kind="circle", at=3, why=why)], shots=[dict(at=0, zoom_in=0.1)]),
+        dict(text="А потом полил *цветы*.", fx=[dict(kind="circle", at=1), dict(kind="spot", at=3, why=why),
+                                             dict(kind="shake", at=3, why=why)], shots=[])]}
+    ev = [dict(kind="circle", t=3.0), dict(kind="circle", t=6.0), dict(kind="circle", t=20.0)]
+    errs = reel_rules.check_mindful(spec, ev)
+    assert any("без \"why\"" in e and "circle" in e for e in errs)            # круг без причины
+    assert any("вход наездом" in e for e in errs)                            # вход наездом без причины
+    assert any("«потом»" in e for e in errs)                                 # круг не на ключевом слове
+    assert any("выделений 3" in e for e in errs) and any("круг и затемнение" in e for e in errs)
+    assert any("кругов 3" in e for e in errs) and any("ближе 8.0" in e for e in errs)
+    assert not any("фраза 0" in e for e in errs)                              # удар с причиной — годен
+    assert reel_rules.check_mindful(dict(spec, passport={"standard": 15}), ev) == []

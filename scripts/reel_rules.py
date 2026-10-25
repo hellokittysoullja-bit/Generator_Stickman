@@ -1001,6 +1001,48 @@ def check_spots(spec, events):
     return err
 
 
+MINDFUL_STANDARD = 16       # осознанные акценты (владелец 26.10): у каждого — причина, круги редко и только на главном
+CIRCLE_MAX, CIRCLE_GAP = 2, 8.0   # кругов на рилс и промежуток между ними (было 3–4 на рилс, на «стакан», «телефон»…)
+EMPHASIS = ("punch", "shake", "spot", "circle")
+EMPHASIS_PER_BEAT = 2       # больше двух выделений в одной фразе — «всё важно», значит ничего (кроме хука: там их ≥ 2)
+WHY_MIN = 12                # «why» — словами, зачем это здесь, а не «акцент»
+
+
+def check_mindful(spec, events):
+    """Осознанность везде (владелец 26.10: «кружочки на каждом ненужном и нужном месте… осознанность включи вообще
+    везде»): у каждого выделения (удар, тряска, затемнение, круг, стрелка, пометка, вход наездом, хлёст) в reel.json
+    есть "why" — что оно говорит зрителю в эту секунду; круг — только на ключевом слове, не больше CIRCLE_MAX на рилс и
+    не ближе CIRCLE_GAP; круг и затемнение не в одной фразе; в фразе не больше EMPHASIS_PER_BEAT выделений."""
+    if ((spec.get("passport") or {}).get("standard") or 0) < MINDFUL_STANDARD:
+        return []
+    err = []
+    for i, b in enumerate(spec["beats"]):
+        marked = [("*" in w) for w in b["text"].replace("|", "").split() if w not in ("—", "–", "-")]
+        words = [w for w in clean(b["text"]).split() if w not in ("—", "–", "-")]
+        fx = [e for e in b.get("fx", []) if e.get("kind") in ACCENT_EVENT_KINDS and not e.get("anchor")]
+        for e in fx:
+            if len(str(e.get("why", "")).strip()) < WHY_MIN:
+                err.append(f"фраза {i}: {e['kind']} без \"why\" — зачем он здесь, что говорит зрителю в эту секунду")
+            k = e.get("at", 0)
+            if e["kind"] == "circle" and k < len(marked) and not marked[k]:
+                err.append(f"фраза {i}: круг на «{words[k]}» — не ключевое слово: обводить только главное (*слово*)")
+        for s in b.get("shots", []):
+            if (s.get("zoom_in") or s.get("whip")) and len(str(s.get("why", "")).strip()) < WHY_MIN:
+                err.append(f"фраза {i}: {'хлёст' if s.get('whip') else 'вход наездом'} на слове {s.get('at', 0)} без \"why\"")
+        kinds = [e["kind"] for e in fx if e["kind"] in EMPHASIS]
+        if i and len(kinds) > EMPHASIS_PER_BEAT:
+            err.append(f"фраза {i}: выделений {len(kinds)} ({', '.join(kinds)}) > {EMPHASIS_PER_BEAT}: оставьте главное")
+        if "circle" in kinds and "spot" in kinds:
+            err.append(f"фраза {i}: круг и затемнение в одной фразе — двойное выделение одного и того же, оставьте одно")
+    cs = sorted(e["t"] for e in events if e.get("kind") == "circle")
+    if len(cs) > CIRCLE_MAX:
+        err.append(f"кругов {len(cs)} > {CIRCLE_MAX} на рилс: круг — редкое «смотри сюда», а не украшение")
+    for a, b in zip(cs, cs[1:]):
+        if b - a < CIRCLE_GAP:
+            err.append(f"круги на {a:.2f} и {b:.2f} с — ближе {CIRCLE_GAP} с: один лишний")
+    return err
+
+
 def sound_warnings(plan):
     pk = sorted(p["peak"] for p in plan)
     for i, t in enumerate(pk):
