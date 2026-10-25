@@ -1253,7 +1253,6 @@ def sound_plan(shots, events):
             add(name, t, gain_db=SOFT_DB["new_picture"], soft=True, whip=True)
         else:
             add("fast_whoosh", t, gain_db=SOFT_DB["same_picture"], soft=True)
-    plan.sort(key=lambda p: p["peak"])
     return plan
 
 def voice_segments(reel_dir, nat, times):
