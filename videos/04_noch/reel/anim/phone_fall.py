@@ -232,18 +232,6 @@ def phone_pose(t, T, Lr):
     return pos, ang, thick, u
 
 
-def phone_on_b(T, Lr, shape):
-    """Где лежит телефон на Б (маска): твёрдый — при сжатии морды сдвигается целиком, не гнётся (лист 25.10)."""
-    if "phone_b" not in Lr:
-        pos, ang, thick, _ = phone_pose(T["hit"] - 1e-4, T, Lr)
-        L = Lr["phone"]; ones = anim.Layer(np.full_like(L.rgb, 255.0), L.a, L.pivot)
-        cv = np.zeros(shape, np.float32)
-        ones.draw(cv, pos, ang - Lr["ang_a"], 1.0, thick, axis=Lr["ang_a"])
-        m = cv2.dilate((cv[..., 0] > 60).astype(np.uint8), np.ones((13, 13), np.uint8)).astype(np.float32)
-        Lr["phone_b"] = cv2.GaussianBlur(m, (0, 0), 3)
-    return Lr["phone_b"]
-
-
 def bags(t):
     """Мешки под глазами проступают за первые полсекунды: ночь, не спит (на двойках — это рисунок)."""
     return 0.35 + 0.65 * anim.EASE_OUT(anim.on_twos(t) / 0.6)
@@ -275,14 +263,11 @@ def frame(t, ctx):
         return img, cam
     # удар и после: рисунок Б
     th = t - T["hit"]
-    def squash(tt):                  # удар и первый отскок на единицах, дальше на двойках; задержка 2 кадра
-        h_ = tt - T["hit"]
-        if h_ < 0: return 0.0
-        q = h_ if h_ < 0.2 else anim.on_twos(h_)
-        return 0.07 * anim.spring(max(0.0, q - 2 / 30), freq=4.5, damping=0.32)
-    img = d["B"].astype(np.float32)                    # морда сминается под телефоном, уши догоняют, объём держится
-    img = anim.squash_follow(img, Lr["head"], (HEAD["center"][0], HEAD["base_y"]), squash, t, lag=0.10,
-                             focus=tuple(int(v) for v in B_PHONE["center"]), rigid=[phone_on_b(T, Lr, img.shape)])
+    tq = th if th < 0.2 else anim.on_twos(th)          # удар и первый отскок на единицах, дальше на двойках
+    s = anim.spring(max(0.0, tq - 2 / 30), freq=4.5, damping=0.32)   # задержка на ударе: 2 кадра покоя
+    img = d["B"].astype(np.float32)
+    if abs(s) > 0.002:
+        img = anim.squash_region(img, Lr["head"], HEAD["base_y"], HEAD["center"][0], 1 - 0.07 * s, 1 + 0.045 * s)
     flash = math.exp(-th / 0.09) if th >= 0 else 0.0   # вспышка экрана: свет на морде и стене
     if flash > 0.02:
         g = np.zeros(img.shape[:2], np.float32)

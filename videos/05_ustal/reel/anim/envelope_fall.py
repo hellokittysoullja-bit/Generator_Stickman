@@ -179,14 +179,10 @@ def frame(t, ctx):
         return img, cam
     th = t - T["hit"]
     tq = th if th < 0.2 else anim.on_twos(th)
-    def squash(tt):
-        h_ = tt - T["hit"]
-        if h_ < 0: return 0.0
-        q = h_ if h_ < 0.2 else anim.on_twos(h_)
-        return 0.09 * anim.spring(max(0.0, q - 2 / 30), freq=4.0, damping=0.3)
-    img = anim.eye_bags(d["Bc"].astype(np.float32), EYES_B, 1.0)   # сплющило под конвертом: голова и хвост догоняют
-    img = anim.squash_follow(img, Lr["body"], (BODY["center"][0], FLOOR_Y), squash, t, lag=0.12,
-                             focus=(int(home[0]), int(home[1])), rigid=[d["env_a"]])   # конверт — твёрдый, не гнётся
+    s = anim.spring(max(0.0, tq - 2 / 30), freq=4.0, damping=0.3)
+    img = anim.eye_bags(d["Bc"].astype(np.float32), EYES_B, 1.0)
+    if abs(s) > 0.002:
+        img = anim.squash_region(img, Lr["body"], FLOOR_Y, BODY["center"][0], 1 - 0.09 * s, 1 + 0.05 * s)
     tp = anim.on_twos(max(0.0, th - 1 / 30))                # пыль: вылетает из-под боков, растёт, уходит, тает
     if tp < 0.7:
         g = anim.EASE_OUT(tp / 0.35)
