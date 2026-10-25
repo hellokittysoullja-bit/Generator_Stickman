@@ -38,6 +38,7 @@ import math
 import os
 import threading
 import time
+import sys
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -544,6 +545,11 @@ class Gateway:
                 self.failures += 1
                 self.empty_answers += 1
             raise EmptyAnswer(f"{model}: ответ без картинок")
+        try:                                     # библиотека оригиналов (library/cat): каждая картинка генерации
+            import cat_library
+            cat_library.capture(images, model, prompt, size, quality, price)
+        except Exception as e:                   # оплаченная картинка важнее библиотеки
+            print(f"  библиотека оригиналов: {e}", file=sys.stderr)
         return images, price
 
     def summary(self):

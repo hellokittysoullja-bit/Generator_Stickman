@@ -17,8 +17,8 @@ def _isolate_from_real_dotenv(monkeypatch):
     # исходном репозитории — тест платно ходил в шлюз).
     for k in ("LLM_GATEWAY_API_KEY", "GEMINI_API_KEY", "ELEVENLABS_API_KEY", "LUMEAN_API_KEY"):
         monkeypatch.setenv(k, "")
-    for k in ("SHOT_JUDGE", "IMAGE_GENERATION", "CAPTION_SCREEN", "RESEARCH_ROUND"):
-        monkeypatch.setenv(k, "0")
+    for k in ("SHOT_JUDGE", "IMAGE_GENERATION", "CAPTION_SCREEN", "RESEARCH_ROUND", "CAT_LIBRARY"):
+        monkeypatch.setenv(k, "0")          # CAT_LIBRARY: поддельные картинки тестов не попадают в library/cat
     # .env рабочей копии в тесты не попадает вовсе: сборщик зовёт env.load_env() в main(), и после первого
     # такого теста HERO_MAX_SHARE/HERO_MAX_RUN из .env жили в процессе до конца прогона — два теста
     # планировщика падали только в полном прогоне (08.10, когда .env появился в контейнере)

@@ -1,0 +1,94 @@
+# Библиотека оригиналов: кот и всё, что сгенерировано
+
+Картинок: **44**, 59 МБ. Оригиналы — `originals/` байт в байт, как пришли из модели (PNG без пересжатия); `thumbs/` — превью для этой страницы; `catalog.json` — промпт, модель, цена, где используется.
+
+Пополняется сама: каждая генерация через шлюз (`llm_gateway.Gateway.image`) кладёт картинку сюда, включая забракованные варианты. Собрать уже лежащее в репозитории: `python scripts/cat_library.py --scan`.
+
+## герой: состояние (3)
+
+| превью | оригинал | где | промпт |
+|---|---|---|---|
+| ![](thumbs/2026-10-21_look_states_hero-happy-tongue_bfcc03bb.jpg) | [2026-10-21_look_states_hero-happy-tongue_bfcc03bb.png](originals/2026-10-21_look_states_hero-happy-tongue_bfcc03bb.png)<br>1270×938, 2026-10-21 | `look/states/hero-happy-tongue.png (удалён из репозитория)` |  |
+| ![](thumbs/2026-10-21_look_states_hero-neutral_cc2c8725.jpg) | [2026-10-21_look_states_hero-neutral_cc2c8725.png](originals/2026-10-21_look_states_hero-neutral_cc2c8725.png)<br>890×685, 2026-10-21 | `look/states/hero-neutral.png` |  |
+| ![](thumbs/2026-10-21_look_states_hero-sleep-arcs_fa6294c3.jpg) | [2026-10-21_look_states_hero-sleep-arcs_fa6294c3.png](originals/2026-10-21_look_states_hero-sleep-arcs_fa6294c3.png)<br>1293×965, 2026-10-21 | `look/states/hero-sleep-arcs.png` |  |
+
+## герой: эталон (1)
+
+| превью | оригинал | где | промпт |
+|---|---|---|---|
+| ![](thumbs/2026-10-07_look_hero_95243e7a.jpg) | [2026-10-07_look_hero_95243e7a.png](originals/2026-10-07_look_hero_95243e7a.png)<br>1264×848, 2026-10-07 | `look/hero.png` |  |
+
+## кадр эпизода (10)
+
+| превью | оригинал | где | промпт |
+|---|---|---|---|
+| ![](thumbs/2026-10-20_videos_01_sdvg_pismo_frames_001_bf2c59a4.jpg) | [2026-10-20_videos_01_sdvg_pismo_frames_001_bf2c59a4.png](originals/2026-10-20_videos_01_sdvg_pismo_frames_001_bf2c59a4.png)<br>1264×848, 2026-10-20 | `videos/01_sdvg_pismo/frames/001.png` | Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, col… |
+| ![](thumbs/2026-10-20_videos_01_sdvg_pismo_frames_002_f1cbda02.jpg) | [2026-10-20_videos_01_sdvg_pismo_frames_002_f1cbda02.png](originals/2026-10-20_videos_01_sdvg_pismo_frames_002_f1cbda02.png)<br>1264×848, 2026-10-20 | `videos/01_sdvg_pismo/frames/002.png` | medium shot: the main character stands holding its own head, a large brain drawn above it with a tiny glowing spark on one side and a massive dark boulder chained to the other side, the character straining under the weig… |
+| ![](thumbs/2026-10-20_videos_01_sdvg_pismo_frames_003_274b368a.jpg) | [2026-10-20_videos_01_sdvg_pismo_frames_003_274b368a.png](originals/2026-10-20_videos_01_sdvg_pismo_frames_003_274b368a.png)<br>1264×848, 2026-10-20 | `videos/01_sdvg_pismo/frames/003.png` | Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, col… |
+| ![](thumbs/2026-10-20_videos_01_sdvg_pismo_frames_004_91a321a2.jpg) | [2026-10-20_videos_01_sdvg_pismo_frames_004_91a321a2.png](originals/2026-10-20_videos_01_sdvg_pismo_frames_004_91a321a2.png)<br>1264×848, 2026-10-20 | `videos/01_sdvg_pismo/frames/004.png` | Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, col… |
+| ![](thumbs/2026-10-20_videos_01_sdvg_pismo_frames_005_8d288020.jpg) | [2026-10-20_videos_01_sdvg_pismo_frames_005_8d288020.png](originals/2026-10-20_videos_01_sdvg_pismo_frames_005_8d288020.png)<br>1264×848, 2026-10-20 | `videos/01_sdvg_pismo/frames/005.png` | Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, col… |
+| ![](thumbs/2026-10-20_videos_02_sdvg_vremya_frames_001_f008509c.jpg) | [2026-10-20_videos_02_sdvg_vremya_frames_001_f008509c.png](originals/2026-10-20_videos_02_sdvg_vremya_frames_001_f008509c.png)<br>1536×1024, 2026-10-20 | `videos/02_sdvg_vremya/frames/001.png` | Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, col… |
+| ![](thumbs/2026-10-20_videos_02_sdvg_vremya_frames_002_c465cc76.jpg) | [2026-10-20_videos_02_sdvg_vremya_frames_002_c465cc76.png](originals/2026-10-20_videos_02_sdvg_vremya_frames_002_c465cc76.png)<br>1914×822, 2026-10-20 | `videos/02_sdvg_vremya/frames/002.png` | Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. SCENE: a hand-drawn horizontal line across the middle of the frame: a den… |
+| ![](thumbs/2026-10-20_videos_02_sdvg_vremya_frames_003_6235af10.jpg) | [2026-10-20_videos_02_sdvg_vremya_frames_003_6235af10.png](originals/2026-10-20_videos_02_sdvg_vremya_frames_003_6235af10.png)<br>2057×765, 2026-10-20 | `videos/02_sdvg_vremya/frames/003.png` | Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, col… |
+| ![](thumbs/2026-10-20_videos_02_sdvg_vremya_frames_004_f22b41a9.jpg) | [2026-10-20_videos_02_sdvg_vremya_frames_004_f22b41a9.png](originals/2026-10-20_videos_02_sdvg_vremya_frames_004_f22b41a9.png)<br>1536×1024, 2026-10-20 | `videos/02_sdvg_vremya/frames/004.png` | Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, col… |
+| ![](thumbs/2026-10-20_videos_02_sdvg_vremya_frames_005_c430181c.jpg) | [2026-10-20_videos_02_sdvg_vremya_frames_005_c430181c.png](originals/2026-10-20_videos_02_sdvg_vremya_frames_005_c430181c.png)<br>1672×941, 2026-10-20 | `videos/02_sdvg_vremya/frames/005.png` | Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, col… |
+
+## кукла: лицо (3)
+
+| превью | оригинал | где | промпт |
+|---|---|---|---|
+| ![](thumbs/2026-10-21_experiments_alive_cat_doll_faces_happy_src_3cc40e40.jpg) | [2026-10-21_experiments_alive_cat_doll_faces_happy_src_3cc40e40.png](originals/2026-10-21_experiments_alive_cat_doll_faces_happy_src_3cc40e40.png)<br>1355×1017, 2026-10-21 | `experiments/alive_cat/doll/faces/happy_src.png`<br>`/tmp/nap/design/mascot/png/happy-tongue.png` |  |
+| ![](thumbs/2026-10-21_experiments_alive_cat_doll_faces_happy_src_old_e6ba8d4a.jpg) | [2026-10-21_experiments_alive_cat_doll_faces_happy_src_old_e6ba8d4a.png](originals/2026-10-21_experiments_alive_cat_doll_faces_happy_src_old_e6ba8d4a.png)<br>1531×1027, 2026-10-21 | `experiments/alive_cat/doll/faces/happy_src.png (прежняя версия)` |  |
+| ![](thumbs/2026-10-21_experiments_alive_cat_doll_faces_sleep_src_87a03f53.jpg) | [2026-10-21_experiments_alive_cat_doll_faces_sleep_src_87a03f53.png](originals/2026-10-21_experiments_alive_cat_doll_faces_sleep_src_87a03f53.png)<br>1531×1027, 2026-10-21 | `experiments/alive_cat/doll/faces/sleep_src.png` |  |
+
+## кукла: поза (9)
+
+| превью | оригинал | где | промпт |
+|---|---|---|---|
+| ![](thumbs/2026-10-07_experiments_alive_cat_doll_assets_hero_noleg_lef_fc77f652.jpg) | [2026-10-07_experiments_alive_cat_doll_assets_hero_noleg_lef_fc77f652.png](originals/2026-10-07_experiments_alive_cat_doll_assets_hero_noleg_lef_fc77f652.png)<br>1264×848, 2026-10-07 | `experiments/alive_cat/doll/assets/hero_noleg_left.png` |  |
+| ![](thumbs/2026-10-07_experiments_alive_cat_doll_assets_hero_paw_up_4277766f.jpg) | [2026-10-07_experiments_alive_cat_doll_assets_hero_paw_up_4277766f.png](originals/2026-10-07_experiments_alive_cat_doll_assets_hero_paw_up_4277766f.png)<br>1264×848, 2026-10-07 | `experiments/alive_cat/doll/assets/hero_paw_up.png`<br>`experiments/alive_cat/doll/beckon.png` |  |
+| ![](thumbs/2026-10-07_experiments_alive_cat_doll_assets_hero_point_rig_5b46e5f4.jpg) | [2026-10-07_experiments_alive_cat_doll_assets_hero_point_rig_5b46e5f4.png](originals/2026-10-07_experiments_alive_cat_doll_assets_hero_point_rig_5b46e5f4.png)<br>1264×848, 2026-10-07 | `experiments/alive_cat/doll/assets/hero_point_right.png`<br>`experiments/alive_cat/doll/point.png` |  |
+| ![](thumbs/2026-10-07_experiments_alive_cat_doll_assets_hero_reach_lef_0dc37440.jpg) | [2026-10-07_experiments_alive_cat_doll_assets_hero_reach_lef_0dc37440.png](originals/2026-10-07_experiments_alive_cat_doll_assets_hero_reach_lef_0dc37440.png)<br>1264×848, 2026-10-07 | `experiments/alive_cat/doll/assets/hero_reach_left_v3_fixed.png` |  |
+| ![](thumbs/2026-10-07_experiments_alive_cat_doll_assets_hero_reach_lef_963c87a0.jpg) | [2026-10-07_experiments_alive_cat_doll_assets_hero_reach_lef_963c87a0.png](originals/2026-10-07_experiments_alive_cat_doll_assets_hero_reach_lef_963c87a0.png)<br>1264×848, 2026-10-07 | `experiments/alive_cat/doll/assets/hero_reach_left.png` |  |
+| ![](thumbs/2026-10-07_experiments_alive_cat_doll_assets_hero_reach_lef_acc59d60.jpg) | [2026-10-07_experiments_alive_cat_doll_assets_hero_reach_lef_acc59d60.png](originals/2026-10-07_experiments_alive_cat_doll_assets_hero_reach_lef_acc59d60.png)<br>1264×848, 2026-10-07 | `experiments/alive_cat/doll/assets/hero_reach_left_v2.png` |  |
+| ![](thumbs/2026-10-07_experiments_alive_cat_doll_assets_hero_reach_lef_f362e617.jpg) | [2026-10-07_experiments_alive_cat_doll_assets_hero_reach_lef_f362e617.png](originals/2026-10-07_experiments_alive_cat_doll_assets_hero_reach_lef_f362e617.png)<br>1264×848, 2026-10-07 | `experiments/alive_cat/doll/assets/hero_reach_left_v3.png` |  |
+| ![](thumbs/2026-10-07_experiments_alive_cat_doll_assets_hero_wave_9da89b40.jpg) | [2026-10-07_experiments_alive_cat_doll_assets_hero_wave_9da89b40.png](originals/2026-10-07_experiments_alive_cat_doll_assets_hero_wave_9da89b40.png)<br>1264×848, 2026-10-07 | `experiments/alive_cat/doll/assets/hero_wave.png` |  |
+| ![](thumbs/2026-10-07_experiments_alive_cat_doll_assets_hero_wave_raw_e9e10a2d.jpg) | [2026-10-07_experiments_alive_cat_doll_assets_hero_wave_raw_e9e10a2d.png](originals/2026-10-07_experiments_alive_cat_doll_assets_hero_wave_raw_e9e10a2d.png)<br>1264×848, 2026-10-07 | `experiments/alive_cat/doll/assets/hero_wave_raw.png` |  |
+
+## образец стиля (2)
+
+| превью | оригинал | где | промпт |
+|---|---|---|---|
+| ![](thumbs/2026-10-07_look_style_1_desk_1c1c5a17.jpg) | [2026-10-07_look_style_1_desk_1c1c5a17.jpg](originals/2026-10-07_look_style_1_desk_1c1c5a17.jpg)<br>1264×848, 2026-10-07 | `look/style/1_desk.png` |  |
+| ![](thumbs/2026-10-07_look_style_2_objects_3fa15648.jpg) | [2026-10-07_look_style_2_objects_3fa15648.jpg](originals/2026-10-07_look_style_2_objects_3fa15648.jpg)<br>1264×848, 2026-10-07 | `look/style/2_objects.png` |  |
+
+## предмет (1)
+
+| превью | оригинал | где | промпт |
+|---|---|---|---|
+| ![](thumbs/2026-10-07_experiments_alive_cat_doll_assets_envelope_98b79707.jpg) | [2026-10-07_experiments_alive_cat_doll_assets_envelope_98b79707.png](originals/2026-10-07_experiments_alive_cat_doll_assets_envelope_98b79707.png)<br>304×107, 2026-10-07 | `experiments/alive_cat/doll/assets/envelope.png` |  |
+
+## рисунок рилса (13)
+
+| превью | оригинал | где | промпт |
+|---|---|---|---|
+| ![](thumbs/2026-10-23_videos_01_sdvg_pismo_reel_gen_r1_phone_041f0ab1.jpg) | [2026-10-23_videos_01_sdvg_pismo_reel_gen_r1_phone_041f0ab1.png](originals/2026-10-23_videos_01_sdvg_pismo_reel_gen_r1_phone_041f0ab1.png)<br>1531×1027, 2026-10-23 | `videos/01_sdvg_pismo/reel/gen/r1_phone.png` | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
+| ![](thumbs/2026-10-23_videos_01_sdvg_pismo_reel_gen_r2_hourglass_2b638ebd.jpg) | [2026-10-23_videos_01_sdvg_pismo_reel_gen_r2_hourglass_2b638ebd.png](originals/2026-10-23_videos_01_sdvg_pismo_reel_gen_r2_hourglass_2b638ebd.png)<br>1531×1027, 2026-10-23 | `videos/01_sdvg_pismo/reel/gen/r2_hourglass.png` | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
+| ![](thumbs/2026-10-25_videos_03_lenivyi_reel_gen_g1_hands_cb7f8c5c.jpg) | [2026-10-25_videos_03_lenivyi_reel_gen_g1_hands_cb7f8c5c.png](originals/2026-10-25_videos_03_lenivyi_reel_gen_g1_hands_cb7f8c5c.png)<br>1531×1027, 2026-10-25 | `videos/03_lenivyi/reel/gen/g1_hands.png` | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
+| ![](thumbs/2026-10-25_videos_03_lenivyi_reel_gen_g2_tail_62fcfcc3.jpg) | [2026-10-25_videos_03_lenivyi_reel_gen_g2_tail_62fcfcc3.png](originals/2026-10-25_videos_03_lenivyi_reel_gen_g2_tail_62fcfcc3.png)<br>1531×1027, 2026-10-25 | `videos/03_lenivyi/reel/gen/g2_tail.png` | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
+| ![](thumbs/2026-10-25_videos_04_noch_reel_gen_n1_bed_top_23dfeefb.jpg) | [2026-10-25_videos_04_noch_reel_gen_n1_bed_top_23dfeefb.png](originals/2026-10-25_videos_04_noch_reel_gen_n1_bed_top_23dfeefb.png)<br>1531×1027, 2026-10-25 | `videos/04_noch/reel/gen/n1_bed_top.png` | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
+| ![](thumbs/2026-10-25_videos_04_noch_reel_gen_n2_dawn_692a9d44.jpg) | [2026-10-25_videos_04_noch_reel_gen_n2_dawn_692a9d44.png](originals/2026-10-25_videos_04_noch_reel_gen_n2_dawn_692a9d44.png)<br>1531×1027, 2026-10-25 | `videos/04_noch/reel/gen/n2_dawn.png` | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
+| ![](thumbs/2026-10-25_videos_04_noch_reel_gen_n3_lamp_island_49e4bac4.jpg) | [2026-10-25_videos_04_noch_reel_gen_n3_lamp_island_49e4bac4.png](originals/2026-10-25_videos_04_noch_reel_gen_n3_lamp_island_49e4bac4.png)<br>1531×1027, 2026-10-25 | `videos/04_noch/reel/gen/n3_lamp_island.png` | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
+| ![](thumbs/2026-10-25_videos_04_noch_reel_gen_n4_tea_day_05d2094a.jpg) | [2026-10-25_videos_04_noch_reel_gen_n4_tea_day_05d2094a.png](originals/2026-10-25_videos_04_noch_reel_gen_n4_tea_day_05d2094a.png)<br>1254×1254, 2026-10-25 | `videos/04_noch/reel/gen/n4_tea_day.png` | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
+| ![](thumbs/2026-10-25_videos_04_noch_reel_gen_n5_bed_side_bc498c2b.jpg) | [2026-10-25_videos_04_noch_reel_gen_n5_bed_side_bc498c2b.png](originals/2026-10-25_videos_04_noch_reel_gen_n5_bed_side_bc498c2b.png)<br>1531×1027, 2026-10-25 | `videos/04_noch/reel/gen/n5_bed_side.png` | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
+| ![](thumbs/2026-10-25_videos_05_ustal_reel_gen_u1_floor_9396085a.jpg) | [2026-10-25_videos_05_ustal_reel_gen_u1_floor_9396085a.png](originals/2026-10-25_videos_05_ustal_reel_gen_u1_floor_9396085a.png)<br>1531×1027, 2026-10-25 | `videos/05_ustal/reel/gen/u1_floor.png` | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
+| ![](thumbs/2026-10-25_videos_05_ustal_reel_gen_u2_glass_a5d52a39.jpg) | [2026-10-25_videos_05_ustal_reel_gen_u2_glass_a5d52a39.png](originals/2026-10-25_videos_05_ustal_reel_gen_u2_glass_a5d52a39.png)<br>1254×1254, 2026-10-25 | `videos/05_ustal/reel/gen/u2_glass.png` | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
+| ![](thumbs/2026-10-25_videos_05_ustal_reel_gen_u3_glass_down_6d36416f.jpg) | [2026-10-25_videos_05_ustal_reel_gen_u3_glass_down_6d36416f.png](originals/2026-10-25_videos_05_ustal_reel_gen_u3_glass_down_6d36416f.png)<br>1536×1024, 2026-10-25 | `videos/05_ustal/reel/gen/u3_glass_down.png` | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
+| ![](thumbs/2026-10-25_videos_05_ustal_reel_gen_u3_glass_down_raw_dc2c616a.jpg) | [2026-10-25_videos_05_ustal_reel_gen_u3_glass_down_raw_dc2c616a.png](originals/2026-10-25_videos_05_ustal_reel_gen_u3_glass_down_raw_dc2c616a.png)<br>1536×1024, 2026-10-25 | `videos/05_ustal/reel/gen/u3_glass_down_raw.png` |  |
+
+## эталон сайта (2)
+
+| превью | оригинал | где | промпт |
+|---|---|---|---|
+| ![](thumbs/2026-10-25_neutral_2fe4c340.jpg) | [2026-10-25_neutral_2fe4c340.png](originals/2026-10-25_neutral_2fe4c340.png)<br>1347×987, 2026-10-25 | `/tmp/nap/design/mascot/png/neutral.png` |  |
+| ![](thumbs/2026-10-25_sleep-arcs_394130b3.jpg) | [2026-10-25_sleep-arcs_394130b3.png](originals/2026-10-25_sleep-arcs_394130b3.png)<br>1098×877, 2026-10-25 | `/tmp/nap/design/mascot/png/sleep-arcs.png` |  |

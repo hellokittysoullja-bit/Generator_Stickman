@@ -1,0 +1,785 @@
+[
+ {
+  "file": "2026-10-07_experiments_alive_cat_doll_assets_envelope_98b79707.png",
+  "sha256": "98b79707f30239b52c5896f47d7cd517b6f1fff6c3e890c3e19df8c43d264fa6",
+  "bytes": 51276,
+  "size": [
+   304,
+   107
+  ],
+  "date": "2026-10-07",
+  "kind": "предмет",
+  "used_in": [
+   "experiments/alive_cat/doll/assets/envelope.png"
+  ],
+  "origin": "ассет пилота куклы",
+  "prompt": null,
+  "model": null,
+  "price": null
+ },
+ {
+  "file": "2026-10-07_experiments_alive_cat_doll_assets_hero_noleg_lef_fc77f652.png",
+  "sha256": "fc77f652614623ce07f1a44816d6e4ce2ccd4925a1dbe9aa42a11be99c349552",
+  "bytes": 562546,
+  "size": [
+   1264,
+   848
+  ],
+  "date": "2026-10-07",
+  "kind": "кукла: поза",
+  "used_in": [
+   "experiments/alive_cat/doll/assets/hero_noleg_left.png"
+  ],
+  "origin": "GPT-Image-2 (позы рига)",
+  "prompt": null,
+  "model": null,
+  "price": null
+ },
+ {
+  "file": "2026-10-07_experiments_alive_cat_doll_assets_hero_paw_up_4277766f.png",
+  "sha256": "4277766fb0695cdfaba9fcfc64d63d8008e6c72661c6247592088371d72d8161",
+  "bytes": 686636,
+  "size": [
+   1264,
+   848
+  ],
+  "date": "2026-10-07",
+  "kind": "кукла: поза",
+  "used_in": [
+   "experiments/alive_cat/doll/assets/hero_paw_up.png",
+   "experiments/alive_cat/doll/beckon.png"
+  ],
+  "origin": "GPT-Image-2 (позы рига)",
+  "prompt": null,
+  "model": null,
+  "price": null
+ },
+ {
+  "file": "2026-10-07_experiments_alive_cat_doll_assets_hero_point_rig_5b46e5f4.png",
+  "sha256": "5b46e5f451456a5dd92821d6fd10443a137d8f90d43553e26481946567f0ca83",
+  "bytes": 694891,
+  "size": [
+   1264,
+   848
+  ],
+  "date": "2026-10-07",
+  "kind": "кукла: поза",
+  "used_in": [
+   "experiments/alive_cat/doll/assets/hero_point_right.png",
+   "experiments/alive_cat/doll/point.png"
+  ],
+  "origin": "GPT-Image-2 (позы рига)",
+  "prompt": null,
+  "model": null,
+  "price": null
+ },
+ {
+  "file": "2026-10-07_experiments_alive_cat_doll_assets_hero_reach_lef_0dc37440.png",
+  "sha256": "0dc374400520a91d0021b4e5d1e130a7ed0b2ee55e5b38ce390b8611df5aec71",
+  "bytes": 672124,
+  "size": [
+   1264,
+   848
+  ],
+  "date": "2026-10-07",
+  "kind": "кукла: поза",
+  "used_in": [
+   "experiments/alive_cat/doll/assets/hero_reach_left_v3_fixed.png"
+  ],
+  "origin": "GPT-Image-2 (позы рига)",
+  "prompt": null,
+  "model": null,
+  "price": null
+ },
+ {
+  "file": "2026-10-07_experiments_alive_cat_doll_assets_hero_reach_lef_963c87a0.png",
+  "sha256": "963c87a01d94e7439ca7e552c322bbfcfa254f5530360b866ace53c5115e2994",
+  "bytes": 712201,
+  "size": [
+   1264,
+   848
+  ],
+  "date": "2026-10-07",
+  "kind": "кукла: поза",
+  "used_in": [
+   "experiments/alive_cat/doll/assets/hero_reach_left.png"
+  ],
+  "origin": "GPT-Image-2 (позы рига)",
+  "prompt": null,
+  "model": null,
+  "price": null
+ },
+ {
+  "file": "2026-10-07_experiments_alive_cat_doll_assets_hero_reach_lef_acc59d60.png",
+  "sha256": "acc59d609e2ba7895329b299c22843e34ad22adcb54505fcba3dd52cb549ccfe",
+  "bytes": 691988,
+  "size": [
+   1264,
+   848
+  ],
+  "date": "2026-10-07",
+  "kind": "кукла: поза",
+  "used_in": [
+   "experiments/alive_cat/doll/assets/hero_reach_left_v2.png"
+  ],
+  "origin": "GPT-Image-2 (позы рига)",
+  "prompt": null,
+  "model": null,
+  "price": null
+ },
+ {
+  "file": "2026-10-07_experiments_alive_cat_doll_assets_hero_reach_lef_f362e617.png",
+  "sha256": "f362e6174fdb5591e11ec757c1874d08db20efe738159fc0cf8e0c3efc841903",
+  "bytes": 689826,
+  "size": [
+   1264,
+   848
+  ],
+  "date": "2026-10-07",
+  "kind": "кукла: поза",
+  "used_in": [
+   "experiments/alive_cat/doll/assets/hero_reach_left_v3.png"
+  ],
+  "origin": "GPT-Image-2 (позы рига)",
+  "prompt": null,
+  "model": null,
+  "price": null
+ },
+ {
+  "file": "2026-10-07_experiments_alive_cat_doll_assets_hero_wave_9da89b40.png",
+  "sha256": "9da89b40cced7e8c077263bca9c078222ed2278486d2716ec73b2e9e59309f4f",
+  "bytes": 722321,
+  "size": [
+   1264,
+   848
+  ],
+  "date": "2026-10-07",
+  "kind": "кукла: поза",
+  "used_in": [
+   "experiments/alive_cat/doll/assets/hero_wave.png"
+  ],
+  "origin": "GPT-Image-2 (позы рига)",
+  "prompt": null,
+  "model": null,
+  "price": null
+ },
+ {
+  "file": "2026-10-07_experiments_alive_cat_doll_assets_hero_wave_raw_e9e10a2d.png",
+  "sha256": "e9e10a2df8f8ed9fca1e5d5ef2b3b6ef9ab30967741336dfd62e7301c79ef0be",
+  "bytes": 727958,
+  "size": [
+   1264,
+   848
+  ],
+  "date": "2026-10-07",
+  "kind": "кукла: поза",
+  "used_in": [
+   "experiments/alive_cat/doll/assets/hero_wave_raw.png"
+  ],
+  "origin": "GPT-Image-2 (позы рига)",
+  "prompt": null,
+  "model": null,
+  "price": null
+ },
+ {
+  "file": "2026-10-07_look_hero_95243e7a.png",
+  "sha256": "95243e7a4e2cddc4a2b5e4cc3d48672aac30097804dbc2ef83f3d31ba18f26df",
+  "bytes": 564244,
+  "size": [
+   1264,
+   848
+  ],
+  "date": "2026-10-07",
+  "kind": "герой: эталон",
+  "used_in": [
+   "look/hero.png"
+  ],
+  "origin": "референс героя",
+  "prompt": null,
+  "model": null,
+  "price": null
+ },
+ {
+  "file": "2026-10-07_look_style_1_desk_1c1c5a17.jpg",
+  "sha256": "1c1c5a174c18bf61523a54948fa5e7962d5c1114ed325daa12a3e0873b6fab09",
+  "bytes": 297216,
+  "size": [
+   1264,
+   848
+  ],
+  "date": "2026-10-07",
+  "kind": "образец стиля",
+  "used_in": [
+   "look/style/1_desk.png"
+  ],
+  "origin": "образец стиля",
+  "prompt": null,
+  "model": null,
+  "price": null
+ },
+ {
+  "file": "2026-10-07_look_style_2_objects_3fa15648.jpg",
+  "sha256": "3fa15648aaccc5ac71f534afb43a3a8da613351e3389a5da68267b727c38a7af",
+  "bytes": 511553,
+  "size": [
+   1264,
+   848
+  ],
+  "date": "2026-10-07",
+  "kind": "образец стиля",
+  "used_in": [
+   "look/style/2_objects.png"
+  ],
+  "origin": "образец стиля",
+  "prompt": null,
+  "model": null,
+  "price": null
+ },
+ {
+  "file": "2026-10-20_videos_01_sdvg_pismo_frames_001_bf2c59a4.png",
+  "sha256": "bf2c59a437b61cf99d2a2f7cc4799acbffdce88ddc341da59cfb8bf89fafbcad",
+  "bytes": 1045480,
+  "size": [
+   1264,
+   848
+  ],
+  "date": "2026-10-20",
+  "kind": "кадр эпизода",
+  "used_in": [
+   "videos/01_sdvg_pismo/frames/001.png"
+  ],
+  "origin": "Gemini 3.1 Flash Image (кадры длинных роликов)",
+  "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: wide shot: the main character stands on the floor beside one unopened white envelope, head down, looking at it; the envelope is large, in the centre of the lower half of the frame; one closed ring of dark worn paw prints circles the envelope, with a trodden groove along the ring; plain light background. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "model": "ag/gemini-3.1-flash-image",
+  "price": null
+ },
+ {
+  "file": "2026-10-20_videos_01_sdvg_pismo_frames_002_f1cbda02.png",
+  "sha256": "f1cbda021593514a5cbf99b507cd4c826df36e1fdd5a92a77373ae5354d39f42",
+  "bytes": 1022705,
+  "size": [
+   1264,
+   848
+  ],
+  "date": "2026-10-20",
+  "kind": "кадр эпизода",
+  "used_in": [
+   "videos/01_sdvg_pismo/frames/002.png"
+  ],
+  "origin": "Gemini 3.1 Flash Image (кадры длинных роликов)",
+  "prompt": "medium shot: the main character stands holding its own head, a large brain drawn above it with a tiny glowing spark on one side and a massive dark boulder chained to the other side, the character straining under the weight, eyes squeezed shut; the brain and boulder fill the upper half of the frame, plain light background. The main character is the character in reference image 3: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. No text, letters, numbers, digits, symbols, logos or signs anywhere in the image. Keep the main subject well inside the frame, away from the edges. Draw it in exactly the drawing style of reference images 1-2: the same line work, colors, shading and simplicity. Take only the style from them, not their content or characters.",
+  "model": "ag/gemini-3.1-flash-image",
+  "price": null
+ },
+ {
+  "file": "2026-10-20_videos_01_sdvg_pismo_frames_003_274b368a.png",
+  "sha256": "274b368a30bdf9b30fe90395b347449b30d1d697d63830558d2b9f8a90fef514",
+  "bytes": 886656,
+  "size": [
+   1264,
+   848
+  ],
+  "date": "2026-10-20",
+  "kind": "кадр эпизода",
+  "used_in": [
+   "videos/01_sdvg_pismo/frames/003.png"
+  ],
+  "origin": "Gemini 3.1 Flash Image (кадры длинных роликов)",
+  "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot: the main character sits on the floor beside one large white envelope covered in dark sticky blobs, eyes wide, one paw raised to its face, body leaning away from the envelope; the envelope is large in the right half of the frame, the character in the left half, a clear gap of plain background between them; plain light background. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "model": "ag/gemini-3.1-flash-image",
+  "price": null
+ },
+ {
+  "file": "2026-10-20_videos_01_sdvg_pismo_frames_004_91a321a2.png",
+  "sha256": "91a321a2ccdfd1bacd1c7fef1da7c20bd02d6dd0f7bb182a83e89a6e2a9b39c8",
+  "bytes": 1082877,
+  "size": [
+   1264,
+   848
+  ],
+  "date": "2026-10-20",
+  "kind": "кадр эпизода",
+  "used_in": [
+   "videos/01_sdvg_pismo/frames/004.png"
+  ],
+  "origin": "Gemini 3.1 Flash Image (кадры длинных роликов)",
+  "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot: the main character sits on the floor, one paw lifting the flap of one open white envelope; the flap is folded back and a folded letter sticks half out of the envelope; the character's face calm and determined; the envelope is large in the right half of the frame with plain light background around it; calm empty background above the envelope. the flame on the tip of the main character's tail burns big and bright orange. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the the open envelope is the biggest single object in the picture, its whole outline visible, with plain empty background around it. The main character and the the open envelope sit side by side with a clear gap of plain background between them; neither touches or covers the other. Keep a calm area of plain empty background next to the the open envelope, about a third of the image, for handwriting added later. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "model": "ag/gemini-3.1-flash-image",
+  "price": null
+ },
+ {
+  "file": "2026-10-20_videos_01_sdvg_pismo_frames_005_8d288020.png",
+  "sha256": "8d288020e6738da1a1878092278d7156b8820f889804d5978359629b5f4a8eee",
+  "bytes": 1131453,
+  "size": [
+   1264,
+   848
+  ],
+  "date": "2026-10-20",
+  "kind": "кадр эпизода",
+  "used_in": [
+   "videos/01_sdvg_pismo/frames/005.png"
+  ],
+  "origin": "Gemini 3.1 Flash Image (кадры длинных роликов)",
+  "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot: the main character sits on a chair beside a small wooden table, holding one open letter in both paws and reading it, a small smile; the opened envelope with its flap folded back lies on the table beside the character; a short trail of paw prints leads across the floor from the left edge of the frame to the chair; plain light background. the flame on the tip of the main character's tail burns tall and golden with small bright sparks flying off it. the flame on the tip of the main character's tail burns tall and golden with small bright sparks flying off it. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "model": "ag/gemini-3.1-flash-image",
+  "price": null
+ },
+ {
+  "file": "2026-10-20_videos_02_sdvg_vremya_frames_001_f008509c.png",
+  "sha256": "f008509c10e1f5cdfd21a289f0d339936309defc806c54569137f85934fc5356",
+  "bytes": 1991898,
+  "size": [
+   1536,
+   1024
+  ],
+  "date": "2026-10-20",
+  "kind": "кадр эпизода",
+  "used_in": [
+   "videos/02_sdvg_vremya/frames/001.png"
+  ],
+  "origin": "Gemini 3.1 Flash Image (кадры длинных роликов)",
+  "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot: the main character sits on a chair at a wooden table in the left half of the frame, one phone with a blank glowing screen in one hand, head lifted and turned toward the right, tired surprised face; on the right a big dark window with a crescent moon and no light outside, a wide strip of plain light wall between the character and the window; calm empty space above the table. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the the dark window is the biggest single object in the picture, its whole outline visible, with plain empty background around it. The main character and the the dark window sit side by side with a clear gap of plain background between them; neither touches or covers the other. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "model": "cx/gpt-image-2",
+  "price": null
+ },
+ {
+  "file": "2026-10-20_videos_02_sdvg_vremya_frames_002_c465cc76.png",
+  "sha256": "c465cc76042a97e735923fea775a26e66cc0531e36bf4f8e39df14ac1f8a9d90",
+  "bytes": 940049,
+  "size": [
+   1914,
+   822
+  ],
+  "date": "2026-10-20",
+  "kind": "кадр эпизода",
+  "used_in": [
+   "videos/02_sdvg_vremya/frames/002.png"
+  ],
+  "origin": "Gemini 3.1 Flash Image (кадры длинных роликов)",
+  "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. SCENE: a hand-drawn horizontal line across the middle of the frame: a dense cluster of small dots at the left end, a long empty stretch, another dense cluster of small dots at the right end; a short arrow points at the left cluster, one arrow at the empty stretch, one arrow at the right cluster, each arrow starting from its own wide empty patch of plain background; plain light background. The diagram is drawn by hand like the rest of the film: ink lines with soft watercolor washes, small drawn objects and figures instead of flat icons, no clean vector graphics. Leave exactly 3 wide empty patches of plain background, one next to each labelled part, each big enough for a word in large letters (about a fifth of the image wide) and well away from the image edges, each with a short hand-drawn arrow to its part. The patches are the very same background as around them: no lighter fill, glow, shading, box or outline. Draw every arrow in red. The whole background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "model": "cx/gpt-image-2",
+  "price": null
+ },
+ {
+  "file": "2026-10-20_videos_02_sdvg_vremya_frames_003_6235af10.png",
+  "sha256": "6235af10ea81a2c4d602a8d45f822cb2a7b15e7f79946759056bbd3fcea329df",
+  "bytes": 1966883,
+  "size": [
+   2057,
+   765
+  ],
+  "date": "2026-10-20",
+  "kind": "кадр эпизода",
+  "used_in": [
+   "videos/02_sdvg_vremya/frames/003.png"
+  ],
+  "origin": "Gemini 3.1 Flash Image (кадры длинных роликов)",
+  "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: split picture with a plain vertical gap in the middle: on the left the main character leans forward over a half-finished jigsaw puzzle on a desk, eyes wide with delight, a round clock with a blank face standing behind; on the right the same main character slumps over a blank sheet of paper, cheek flat on the desk, bored; a thin layer of dust on the right desk; plain light walls. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "model": "cx/gpt-image-2",
+  "price": null
+ },
+ {
+  "file": "2026-10-20_videos_02_sdvg_vremya_frames_004_f22b41a9.png",
+  "sha256": "f22b41a9c872d6b5e9f16ded7766b23522b6ee04ea27afb4ef7bfdc4d35b4615",
+  "bytes": 1995064,
+  "size": [
+   1536,
+   1024
+  ],
+  "date": "2026-10-20",
+  "kind": "кадр эпизода",
+  "used_in": [
+   "videos/02_sdvg_vremya/frames/004.png"
+  ],
+  "origin": "Gemini 3.1 Flash Image (кадры длинных роликов)",
+  "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot: the main character stands on the floor beside a wooden desk in the left half of the frame, hands at their sides, determined face; on the right side of the desk sit one big round kitchen timer with a blank face and, beside it, a small alarm clock with a blank face; a wide strip of plain light wall between the character and the timer; calm empty space above the desk. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the the kitchen timer is the biggest single object in the picture, its whole outline visible, with plain empty background around it. The main character and the the kitchen timer sit side by side with a clear gap of plain background between them; neither touches or covers the other. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "model": "cx/gpt-image-2",
+  "price": null
+ },
+ {
+  "file": "2026-10-20_videos_02_sdvg_vremya_frames_005_c430181c.png",
+  "sha256": "c430181cc0527026047b94f61b67bd9a3583413e6c2e3cea296ed8397cd18fcc",
+  "bytes": 2089591,
+  "size": [
+   1672,
+   941
+  ],
+  "date": "2026-10-20",
+  "kind": "кадр эпизода",
+  "used_in": [
+   "videos/02_sdvg_vremya/frames/005.png"
+  ],
+  "origin": "Gemini 3.1 Flash Image (кадры длинных роликов)",
+  "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot: the main character sits up straight on a chair at a desk, head raised, looking at one big round wall clock with a blank face on the wall; one hand rests on a phone lying face-down on the desk; warm late evening light through a window; the wall clock in the upper right with a wide calm patch of plain background beside it. the flame on the tip of the main character's tail burns tall and golden with small bright sparks flying off it. LAYOUT: the main character is drawn big, at least a third of the image height. Keep a calm area of plain empty background next to the the wall clock, about a third of the image, for handwriting added later. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "model": "cx/gpt-image-2",
+  "price": null
+ },
+ {
+  "file": "2026-10-21_experiments_alive_cat_doll_faces_happy_src_3cc40e40.png",
+  "sha256": "3cc40e40958d4212fe0e5426a6d7b323fe1d851adc42d63cf4bdf6146d44c292",
+  "bytes": 1329055,
+  "size": [
+   1355,
+   1017
+  ],
+  "date": "2026-10-21",
+  "kind": "кукла: лицо",
+  "used_in": [
+   "experiments/alive_cat/doll/faces/happy_src.png",
+   "/tmp/nap/design/mascot/png/happy-tongue.png"
+  ],
+  "origin": "исходник лица рига",
+  "prompt": null,
+  "model": null,
+  "price": null
+ },
+ {
+  "file": "2026-10-21_experiments_alive_cat_doll_faces_happy_src_old_e6ba8d4a.png",
+  "sha256": "e6ba8d4a0384616f6f9cdc3253646b94934a1af251bcfc5288190c6be778bc10",
+  "bytes": 1310908,
+  "size": [
+   1531,
+   1027
+  ],
+  "date": "2026-10-21",
+  "kind": "кукла: лицо",
+  "used_in": [
+   "experiments/alive_cat/doll/faces/happy_src.png (прежняя версия)"
+  ],
+  "origin": "исходник лица рига"
+ },
+ {
+  "file": "2026-10-21_experiments_alive_cat_doll_faces_sleep_src_87a03f53.png",
+  "sha256": "87a03f5342458515b7be195049d02cafddda489fb2c3976b26d147ec5845ef6d",
+  "bytes": 1215361,
+  "size": [
+   1531,
+   1027
+  ],
+  "date": "2026-10-21",
+  "kind": "кукла: лицо",
+  "used_in": [
+   "experiments/alive_cat/doll/faces/sleep_src.png"
+  ],
+  "origin": "исходник лица рига",
+  "prompt": null,
+  "model": null,
+  "price": null
+ },
+ {
+  "file": "2026-10-21_look_states_hero-happy-tongue_bfcc03bb.png",
+  "sha256": "bfcc03bb76cf9d22735b6436b609bef6a0bb327da30c0092cfbdb3dfc4b2b299",
+  "bytes": 1192414,
+  "size": [
+   1270,
+   938
+  ],
+  "date": "2026-10-21",
+  "kind": "герой: состояние",
+  "used_in": [
+   "look/states/hero-happy-tongue.png (удалён из репозитория)"
+  ],
+  "origin": "эталон состояния героя"
+ },
+ {
+  "file": "2026-10-21_look_states_hero-neutral_cc2c8725.png",
+  "sha256": "cc2c87254f40bbcb7ff91e44eb73ad805d2d5574385f2b45463de769f3cd0708",
+  "bytes": 645227,
+  "size": [
+   890,
+   685
+  ],
+  "date": "2026-10-21",
+  "kind": "герой: состояние",
+  "used_in": [
+   "look/states/hero-neutral.png"
+  ],
+  "origin": "эталон состояния героя",
+  "prompt": null,
+  "model": null,
+  "price": null
+ },
+ {
+  "file": "2026-10-21_look_states_hero-sleep-arcs_fa6294c3.png",
+  "sha256": "fa6294c3f9a3ab23e216aee47c99e736575fae28c69b68bcdd25efab4682d87d",
+  "bytes": 1085484,
+  "size": [
+   1293,
+   965
+  ],
+  "date": "2026-10-21",
+  "kind": "герой: состояние",
+  "used_in": [
+   "look/states/hero-sleep-arcs.png"
+  ],
+  "origin": "эталон состояния героя",
+  "prompt": null,
+  "model": null,
+  "price": null
+ },
+ {
+  "file": "2026-10-23_videos_01_sdvg_pismo_reel_gen_r1_phone_041f0ab1.png",
+  "sha256": "041f0ab1c9c82c111030420c68488bbee86f2d035615ac67c3b7205f7ea25dc5",
+  "bytes": 1770664,
+  "size": [
+   1531,
+   1027
+  ],
+  "date": "2026-10-23",
+  "kind": "рисунок рилса",
+  "used_in": [
+   "videos/01_sdvg_pismo/reel/gen/r1_phone.png"
+  ],
+  "origin": "GPT-Image-2 medium (scripts/reel_draw.py)",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot: the main character sits on the floor in the left half of the frame, holding one phone in both front paws and smiling, absorbed in the phone's blank glowing screen; its body and face are turned away from one closed white envelope that lies flat on the floor in the right part of the frame, ignored; the flame on the tip of the main character's tail is tiny and dim, a small smouldering ember with a thin wisp of grey smoke. LAYOUT: the main character is the biggest object, its whole outline visible; the main character and the envelope sit side by side with a clear gap of plain background between them; neither touches or covers the other. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "model": "cx/gpt-image-2",
+  "price": null
+ },
+ {
+  "file": "2026-10-23_videos_01_sdvg_pismo_reel_gen_r2_hourglass_2b638ebd.png",
+  "sha256": "2b638ebd9d7897515b0bb9f5b465b907bd0ca5eed838621f4806c9bf0e7ebd6f",
+  "bytes": 1988515,
+  "size": [
+   1531,
+   1027
+  ],
+  "date": "2026-10-23",
+  "kind": "рисунок рилса",
+  "used_in": [
+   "videos/01_sdvg_pismo/reel/gen/r2_hourglass.png"
+  ],
+  "origin": "GPT-Image-2 medium (scripts/reel_draw.py)",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot: the main character sits on the floor, calm, with a small relaxed smile, setting down one small sand hourglass on the floor with one paw; the hourglass stands between the character and one open white envelope with a folded letter sticking half out of it; the sand has just started to run, the top half still almost full; the flame on the tip of the main character's tail burns medium and bright orange. LAYOUT: the hourglass is drawn large and clear, its whole outline visible; the main character, the hourglass and the envelope stand side by side in one row with clear gaps of plain background between them; none touches or covers another. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "model": "cx/gpt-image-2",
+  "price": null
+ },
+ {
+  "file": "2026-10-25_neutral_2fe4c340.png",
+  "sha256": "2fe4c340ffe2ccea23fab8c9c0c221fdc543cf5f34be2ddcc8235822fd6ad8e9",
+  "bytes": 1296133,
+  "size": [
+   1347,
+   987
+  ],
+  "date": "2026-10-25",
+  "kind": "эталон сайта",
+  "used_in": [
+   "/tmp/nap/design/mascot/png/neutral.png"
+  ],
+  "origin": "сайт «Напарник»"
+ },
+ {
+  "file": "2026-10-25_sleep-arcs_394130b3.png",
+  "sha256": "394130b3fb2180e590a6066700ec7a88bec57ef661ec5a699c6d87011432be30",
+  "bytes": 956776,
+  "size": [
+   1098,
+   877
+  ],
+  "date": "2026-10-25",
+  "kind": "эталон сайта",
+  "used_in": [
+   "/tmp/nap/design/mascot/png/sleep-arcs.png"
+  ],
+  "origin": "сайт «Напарник»"
+ },
+ {
+  "file": "2026-10-25_videos_03_lenivyi_reel_gen_g1_hands_cb7f8c5c.png",
+  "sha256": "cb7f8c5ce2022a7c2bd7c16f55c3760ec09ed86b8d43882bc3ddb4393746b1bf",
+  "bytes": 2060196,
+  "size": [
+   1531,
+   1027
+  ],
+  "date": "2026-10-25",
+  "kind": "рисунок рилса",
+  "used_in": [
+   "videos/03_lenivyi/reel/gen/g1_hands.png"
+  ],
+  "origin": "GPT-Image-2 medium (scripts/reel_draw.py)",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: worm's-eye view from floor level, the camera lies on the floor looking slightly up: the main character crouches small at the bottom centre of the frame, pressed low to the floor, head pulled down into its shoulders, eyes wide and glossy, looking up in fear; three large adult human hands drawn in plain grey ink lines reach down from the top edge, the upper left and the upper right, and each index finger points straight down at the main character; the flame on the tip of the main character's tail is a tiny dim ember with a thin wisp of grey smoke. LAYOUT: the main character's whole outline is visible in the lower middle; the three hands converge toward it in the central third of the frame; a clear gap of plain background stays between the fingertips and the main character; nothing touches it. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "model": "cx/gpt-image-2",
+  "price": 140625
+ },
+ {
+  "file": "2026-10-25_videos_03_lenivyi_reel_gen_g2_tail_62fcfcc3.png",
+  "sha256": "62fcfcc375dd971f3f63eef7f466daff0435450a61c10ca106846905799ccf5b",
+  "bytes": 2662707,
+  "size": [
+   1531,
+   1027
+  ],
+  "date": "2026-10-25",
+  "kind": "рисунок рилса",
+  "used_in": [
+   "videos/03_lenivyi/reel/gen/g2_tail.png"
+  ],
+  "origin": "GPT-Image-2 medium (scripts/reel_draw.py)",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: night, a quiet bedroom in soft blue-grey shadow with one small window and a thin crescent moon in its upper corner: the main character sits alone on a plain bed, hunched, holding its own tail in both front paws and nibbling the fur of the tail just below the flame, worried eyes looking down; the flame on the tip of its tail is a tiny dim ember with a thin wisp of grey smoke, close to its mouth. LAYOUT: the main character is the biggest object in the centre of the frame, its whole outline visible; the window is small and far from the main character. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "model": "cx/gpt-image-2",
+  "price": 140625
+ },
+ {
+  "file": "2026-10-25_videos_04_noch_reel_gen_n1_bed_top_23dfeefb.png",
+  "sha256": "23dfeefb55fcab9fa6723e3928966eb43e833c5a09a7fe84f5387ee1dceea5a3",
+  "bytes": 2446028,
+  "size": [
+   1531,
+   1027
+  ],
+  "date": "2026-10-25",
+  "kind": "рисунок рилса",
+  "used_in": [
+   "videos/04_noch/reel/gen/n1_bed_top.png"
+  ],
+  "origin": "GPT-Image-2 medium (scripts/reel_draw.py)",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: bird's-eye view straight down from the ceiling: a dark bedroom at night in deep blue-grey shadow; the main character lies on its back in the middle of a plain bed under a blanket, holding one phone above its face with both front paws; the phone's blank glowing screen lights its face in cold pale light; its eyes are wide open, tired and glassy, with dark circles; the flame on the tip of its tail is a tiny dim ember with a thin wisp of grey smoke. LAYOUT: the main character and the phone are the biggest objects in the centre of the frame, whole outline visible; the rest of the bed fades into shadow. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "model": "cx/gpt-image-2",
+  "price": 140625
+ },
+ {
+  "file": "2026-10-25_videos_04_noch_reel_gen_n2_dawn_692a9d44.png",
+  "sha256": "692a9d44fbc21fa78b066bd84a664b8c4d26dd0adb3fcf5b89816948df894afc",
+  "bytes": 2370097,
+  "size": [
+   1531,
+   1027
+  ],
+  "date": "2026-10-25",
+  "kind": "рисунок рилса",
+  "used_in": [
+   "videos/04_noch/reel/gen/n2_dawn.png"
+  ],
+  "origin": "GPT-Image-2 medium (scripts/reel_draw.py)",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: a bedroom at dawn, pale light coming through one window where the sky is turning light: the main character sits slumped against the pillow on a plain bed, still holding one phone with a blank glowing screen, eyes half closed and exhausted, head drooping; the flame on the tip of its tail is a tiny dim ember. LAYOUT: the main character is the biggest object, whole outline visible, on the left half; the window with the dawn sky is on the right half with a clear gap between them. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "model": "cx/gpt-image-2",
+  "price": 140625
+ },
+ {
+  "file": "2026-10-25_videos_04_noch_reel_gen_n3_lamp_island_49e4bac4.png",
+  "sha256": "49e4bac432b5cffb69add8c70c961df48fc9903c800bebb75a4c2f09942f55d0",
+  "bytes": 2577722,
+  "size": [
+   1531,
+   1027
+  ],
+  "date": "2026-10-25",
+  "kind": "рисунок рилса",
+  "used_in": [
+   "videos/04_noch/reel/gen/n3_lamp_island.png"
+  ],
+  "origin": "GPT-Image-2 medium (scripts/reel_draw.py)",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: night: one small round pool of warm lamp light on a dark floor; inside the light the main character sits wrapped in a blanket, calm, with a small relieved smile, holding one phone with a blank screen loosely in its paws; outside the light, far away in the grey darkness around it, stand the dim grey shapes of daytime things: a stack of papers, one envelope, a cup, a round wall clock without numbers. LAYOUT: the main character in its pool of light is the biggest object in the centre, whole outline visible; the grey daytime things are small and far from it at the edges of the darkness. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "model": "cx/gpt-image-2",
+  "price": 140625
+ },
+ {
+  "file": "2026-10-25_videos_04_noch_reel_gen_n4_tea_day_05d2094a.png",
+  "sha256": "05d2094a5b44b8bc6717e17330e3c9a9f70e0f7bbdc8dcf3ea90eb2c562b4a39",
+  "bytes": 2232000,
+  "size": [
+   1254,
+   1254
+  ],
+  "date": "2026-10-25",
+  "kind": "рисунок рилса",
+  "used_in": [
+   "videos/04_noch/reel/gen/n4_tea_day.png"
+  ],
+  "origin": "GPT-Image-2 medium (scripts/reel_draw.py)",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: daytime, bright soft daylight from one window: the main character sits on a windowsill with one cup of tea in both paws, eyes closed, calm and content, enjoying a quiet pause; the flame on the tip of its tail burns medium and bright orange. LAYOUT: the main character is the biggest object, whole outline visible, in the centre; plain wall around. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "model": "cx/gpt-image-2",
+  "price": 140625
+ },
+ {
+  "file": "2026-10-25_videos_04_noch_reel_gen_n5_bed_side_bc498c2b.png",
+  "sha256": "bc498c2b2fe1c20a2ed8af9150a98595b5de22838e8cf4728d9cf45775d9d334",
+  "bytes": 2226382,
+  "size": [
+   1531,
+   1027
+  ],
+  "date": "2026-10-25",
+  "kind": "рисунок рилса",
+  "used_in": [
+   "videos/04_noch/reel/gen/n5_bed_side.png"
+  ],
+  "origin": "GPT-Image-2 medium (scripts/reel_draw.py)",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: side view at mattress level in a dark bedroom at night in deep blue-grey shadow: the main character lies on its back on a pillow under a blanket, holding one phone up above its face with both front paws, arms stretched up; the phone's screen faces down toward the main character's face, so the phone is seen from its thin side edge and its plain back, never its screen; only the phone's cold pale glow falls down onto the main character's face and eyes; its eyes are wide open, tired and glassy; the flame on the tip of its tail is a tiny dim ember with a thin wisp of grey smoke. LAYOUT: the main character's head and the phone above it are the biggest objects in the centre of the frame, whole outline visible; a clear gap of air between the phone and the face; the bed and blanket fill the lower part. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "model": "cx/gpt-image-2",
+  "price": 140625
+ },
+ {
+  "file": "2026-10-25_videos_05_ustal_reel_gen_u1_floor_9396085a.png",
+  "sha256": "9396085a0c9f78a2438f0159eaaf3e32c8223319eaaf8cff9b9fdbd382884975",
+  "bytes": 1855991,
+  "size": [
+   1531,
+   1027
+  ],
+  "date": "2026-10-25",
+  "kind": "рисунок рилса",
+  "used_in": [
+   "videos/05_ustal/reel/gen/u1_floor.png"
+  ],
+  "origin": "GPT-Image-2 medium (scripts/reel_draw.py)",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: very low angle at floor level, close: the main character lies flat on its belly on a plain floor like a melted puddle, all four legs spread, chin on the floor, completely exhausted, eyes half closed and dull; the flame on the tip of its tail is a tiny dim ember with a thin wisp of grey smoke; one closed white envelope lies on the floor far behind it, small and out of focus. LAYOUT: the main character is the biggest object in the lower middle, whole outline visible; the envelope is small in the background with a clear gap between them. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "model": "cx/gpt-image-2",
+  "price": 140625
+ },
+ {
+  "file": "2026-10-25_videos_05_ustal_reel_gen_u2_glass_a5d52a39.png",
+  "sha256": "a5d52a394b8210245e47a4dc5ef910af7967d2673f5ec7ae241170cb2147db89",
+  "bytes": 2177018,
+  "size": [
+   1254,
+   1254
+  ],
+  "date": "2026-10-25",
+  "kind": "рисунок рилса",
+  "used_in": [
+   "videos/05_ustal/reel/gen/u2_glass.png"
+  ],
+  "origin": "GPT-Image-2 medium (scripts/reel_draw.py)",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: the main character stands on a plain floor holding one full glass of water straight out at arm's length with one front paw; the paw trembles with small shake lines, the character strains with gritted teeth and a drop of sweat on its forehead, the water surface is level and full to the brim; the flame on the tip of its tail is small and dim. LAYOUT: the main character and the glass are side by side with a small gap, both whole and large in the centre of the frame. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "model": "cx/gpt-image-2",
+  "price": 140625
+ },
+ {
+  "file": "2026-10-25_videos_05_ustal_reel_gen_u3_glass_down_6d36416f.png",
+  "sha256": "6d36416f7cf3963a9e7b308e13849a5648de0c9c33d136ebc1aec9fcd64630a9",
+  "bytes": 1932458,
+  "size": [
+   1536,
+   1024
+  ],
+  "date": "2026-10-25",
+  "kind": "рисунок рилса",
+  "used_in": [
+   "videos/05_ustal/reel/gen/u3_glass_down.png"
+  ],
+  "origin": "GPT-Image-2 medium (scripts/reel_draw.py)",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: the main character has just set one full glass of water down on a plain small table and lets go of it; it exhales with relief, eyes closed, a small happy smile, shoulders relaxed; the flame on the tip of its tail burns medium and bright orange. LAYOUT: the main character and the table with the glass stand side by side with a clear gap of plain background between them, both whole and large in the frame. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "model": "cx/gpt-image-2",
+  "price": 140625
+ },
+ {
+  "file": "2026-10-25_videos_05_ustal_reel_gen_u3_glass_down_raw_dc2c616a.png",
+  "sha256": "dc2c616a4c2de51a1ed796e813e3a7d05454288f15ad0f879393ce3ec649d515",
+  "bytes": 2173503,
+  "size": [
+   1536,
+   1024
+  ],
+  "date": "2026-10-25",
+  "kind": "рисунок рилса",
+  "used_in": [
+   "videos/05_ustal/reel/gen/u3_glass_down_raw.png"
+  ],
+  "origin": "GPT-Image-2 medium (scripts/reel_draw.py)",
+  "prompt": null,
+  "model": null,
+  "price": null
+ }
+]
