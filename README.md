@@ -5,7 +5,7 @@
 | рилс | длина | скачать |
 |---|---|---|
 | «Тебя звали ленивым» | 36.8 с | [03_lenivyi.mp4](https://github.com/hellokittysoullja-bit/Generator_Stickman/raw/reels/03_lenivyi.mp4) |
-| «Опять не спишь?» | 35.4 с | [04_noch.mp4](https://github.com/hellokittysoullja-bit/Generator_Stickman/raw/reels/04_noch.mp4) |
+| «Опять не спишь?» | 35.2 с | [04_noch.mp4](https://github.com/hellokittysoullja-bit/Generator_Stickman/raw/reels/04_noch.mp4) |
 | «Лежал и устал» | 35.2 с | [05_ustal.mp4](https://github.com/hellokittysoullja-bit/Generator_Stickman/raw/reels/05_ustal.mp4) |
 
-1080×1920, 30 к/с, голос Daniel. Удар кота — прежний (одобренный), звук по роли от голоса, резкий наезд на слово-развязку.
+1080×1920, 30 к/с, голос Daniel. Картинка 60–1500 px (сверху полоса бумаги), удар кота — прежний (одобренный), звук по роли от голоса, резкий наезд на слово-развязку; в «ночи» «И если» на 1.50 с.
