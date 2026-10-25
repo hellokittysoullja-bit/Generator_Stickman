@@ -39,3 +39,25 @@ def transfer(beats, MAP, QUOTE, ncand):
 def save(path, spec):
     json.dump(spec, open(path, "w", encoding="utf8"), ensure_ascii=False, indent=1)
     print("ok", path, "фраз", len(spec["beats"]), "знаков", sum(len(R.clean(x["text"])) for x in spec["beats"]))
+
+def perm(P):
+    """Перестановка номеров фраз (старый -> новый) для полей паспорта: вставили фразу или убрали — номера в покрытии,
+    знаниях, переносе матрицы и паспорте хука переезжают одной функцией, а не правкой каждого поля руками."""
+    def m(v):
+        if isinstance(v, bool): return v
+        if isinstance(v, int): return P[v]
+        if isinstance(v, list) and v and all(isinstance(x, int) and not isinstance(x, bool) for x in v):
+            return sorted({P[x] for x in v})
+        if isinstance(v, dict) and "beats" in v: return dict(v, beats=sorted({P[x] for x in v["beats"]}))
+        return v
+    return m
+
+def apply_perm(passport, P):
+    m = perm(P)
+    passport["coverage"] = {k: m(v) for k, v in passport["coverage"].items()}
+    passport["knowledge"] = {k: ({kk: m(vv) for kk, vv in v.items()} if k == "cta_reason_now" else m(v))
+                             for k, v in passport["knowledge"].items()}
+    po = passport["hook"]["payoff"]; po["tease"], po["pay"] = m(po["tease"]), m(po["pay"])
+    passport["cta_beat"] = m(passport["cta_beat"])
+    if "rehook" in passport["hook"]: passport["hook"]["rehook"] = m(passport["hook"]["rehook"])
+    return passport

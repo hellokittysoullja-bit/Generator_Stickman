@@ -817,3 +817,32 @@ def test_dark_night_background_is_not_paper():                 # рилс 25.10:
     assert share >= canvas.PAPER_MIN_SHARE and not canvas.is_paper(col, share)
     paper = np.full((200, 300, 3), 238, np.float32); paper[80:120, 130:170] = 20
     assert canvas.is_paper(*canvas.paper_color(paper))
+
+
+def test_hook_moves_inside_the_drawing(tmp_path):
+    """Стандарт 14 (владелец 25.10): движение внутри рисунка (сцена anim.py), голос и удар с 0 с, якорь 2–4 слова,
+    повторный хук не позже 4.2 с; якорь не считается «вторым текстом» и «надписью на рисунке»."""
+    import reel_rules as R
+    (tmp_path / "anim").mkdir(); (tmp_path / "anim" / "drop.py").write_text("")
+    good = {"lead_in": 0.0, "passport": {"standard": 14, "hook": {"rehook": 1}},
+            "beats": [{"text": "Лежал и *устал*.", "shots": [{"src": "fa", "anim": "drop"}],
+                       "fx": [{"kind": "sfx", "name": "fast_whoosh", "at": 0, "align": "start"},
+                              {"kind": "mark", "anchor": True, "text": "Груз несделанного", "at": 0}]},
+                      {"text": "И отдых тут не поможет.", "shots": [{"src": "f2"}]}]}
+    assert R.check_hook_motion(good, [], "videos/x/reel", str(tmp_path)) == []
+    import copy
+    bad = copy.deepcopy(good); bad["beats"][0]["shots"][0].pop("anim")
+    assert any("без движения" in e for e in R.check_hook_motion(bad, [], "videos/x/reel", str(tmp_path)))
+    bad = copy.deepcopy(good); bad["lead_in"] = 0.12
+    assert any("lead_in" in e for e in R.check_hook_motion(bad, [], "videos/x/reel", str(tmp_path)))
+    bad = copy.deepcopy(good); bad["beats"][0]["fx"] = bad["beats"][0]["fx"][1:]
+    assert any("удара звука" in e for e in R.check_hook_motion(bad, [], "videos/x/reel", str(tmp_path)))
+    bad = copy.deepcopy(good); bad["beats"][0]["fx"][1]["text"] = "Лежал и устал"
+    assert any("повторяет голос" in e for e in R.check_hook_motion(bad, [], "videos/x/reel", str(tmp_path)))
+    bad = copy.deepcopy(good); bad["passport"]["hook"] = {}
+    assert any("повторного хука" in e for e in R.check_hook_motion(bad, [], "videos/x/reel", str(tmp_path)))
+    old = copy.deepcopy(good); old["passport"]["standard"] = 13
+    assert any("стандартом 13" in e for e in R.check_hook_motion(old, [], "videos/x/reel", str(tmp_path)))
+    assert R.rehook_timing(good, [0.0, 1.7]) == [] and R.rehook_timing(good, [0.0, 4.6])
+    ev = [{"kind": "mark", "anchor": True, "text": "Груз несделанного", "t": 0.0}]
+    assert R.check_writing(ev, [{"t0": 0.0}, {"t0": 1.65}]) == []

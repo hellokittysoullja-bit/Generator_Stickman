@@ -228,6 +228,170 @@ def squash_region(img, mask, base_y, cx, sy, sx):
     return cv2.remap(img, mx, my, cv2.INTER_CUBIC, borderMode=cv2.BORDER_REFLECT)
 
 
+# ----------------------------------------------------------------------------- подготовка слоёв (быстро, без ручной возни)
+def grid(img, box, path, zoom=3, step=20):
+    """Кроп рисунка с сеткой — снимать координаты глазом. Подписи сетки — в координатах РИСУНКА (не кропа):
+    каждые 100 px яркая линия и число. Так угол предмета читается сразу, без пересчёта «зум, сдвиг»."""
+    from PIL import Image, ImageDraw
+    x0, y0, x1, y1 = box
+    im = Image.fromarray(np.clip(img[y0:y1, x0:x1], 0, 255).astype(np.uint8)).resize(((x1 - x0) * zoom, (y1 - y0) * zoom), Image.LANCZOS)
+    d = ImageDraw.Draw(im)
+    for x in range((x0 // step + 1) * step, x1, step):
+        X = (x - x0) * zoom; major = x % 100 == 0
+        d.line([(X, 0), (X, im.height)], fill=(255, 0, 0) if major else (255, 170, 170), width=2 if major else 1)
+        if major: d.text((X + 3, 3), str(x), fill=(255, 0, 0))
+    for y in range((y0 // step + 1) * step, y1, step):
+        Y = (y - y0) * zoom; major = y % 100 == 0
+        d.line([(0, Y), (im.width, Y)], fill=(255, 0, 0) if major else (255, 170, 170), width=2 if major else 1)
+        if major: d.text((3, Y + 3), str(y), fill=(255, 0, 0))
+    im.save(path)
+    return path
+
+
+def ink_objects(img, box=None, min_area=4000, paper_l=225, close=9):
+    """Нарисованное на бумаге — отдельными масками (связные куски не бумаги, внутри залиты): руки, предметы.
+    Для рисунка на бумаге это вырезание без ручной разметки. Возвращает список масок uint8 по убыванию площади."""
+    L = cv2.cvtColor(np.clip(img, 0, 255).astype(np.uint8), cv2.COLOR_RGB2LAB)[..., 0]
+    # фон — самый большой связный кусок бумаги; всё остальное — предметы. Порог «светлее paper_l» сам по себе
+    # не годится: блики на руках светлее бумаги по порогу и выходят к краю листа (первая версия — маски с дырами)
+    paper = (L >= paper_l).astype(np.uint8)
+    n, lab, st, _ = cv2.connectedComponentsWithStats(paper, connectivity=4)
+    bg = lab == 1 + np.argmax(st[1:, cv2.CC_STAT_AREA]) if n > 1 else np.zeros_like(paper, bool)
+    m = (~bg).astype(np.uint8)
+    if box is not None:
+        keep = np.zeros_like(m); x0, y0, x1, y1 = box; keep[y0:y1, x0:x1] = 1; m &= keep
+    m = cv2.morphologyEx(m, cv2.MORPH_CLOSE, np.ones((close, close), np.uint8))
+    cs, _ = cv2.findContours(m, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    out = []
+    for c in sorted(cs, key=cv2.contourArea, reverse=True):
+        if cv2.contourArea(c) < min_area: break
+        k = np.zeros_like(m); cv2.drawContours(k, [c], -1, 1, -1); out.append(k)
+    return out
+
+
+def cut_polygon(img, poly, grow=25, sure=13, iters=6):
+    """Предмет по грубому многоугольнику (снятому по grid): GrabCut уточняет край, контур тушью остаётся предмету.
+    Возвращает маску uint8 во весь рисунок (один связный кусок)."""
+    poly = np.float32(poly)
+    H, W = img.shape[:2]
+    x0, y0 = max(0, int(poly[:, 0].min()) - 3 * grow), max(0, int(poly[:, 1].min()) - 3 * grow)
+    x1, y1 = min(W, int(poly[:, 0].max()) + 3 * grow), min(H, int(poly[:, 1].max()) + 3 * grow)
+    crop = np.clip(img[y0:y1, x0:x1], 0, 255).astype(np.uint8)
+    m = np.zeros(crop.shape[:2], np.uint8); cv2.fillPoly(m, [np.int32(poly - [x0, y0])], 1)
+    gc = np.full(m.shape, cv2.GC_BGD, np.uint8)
+    gc[cv2.dilate(m, np.ones((grow, grow), np.uint8)) > 0] = cv2.GC_PR_BGD
+    gc[m > 0] = cv2.GC_PR_FGD
+    gc[cv2.erode(m, np.ones((sure, sure), np.uint8)) > 0] = cv2.GC_FGD
+    cv2.grabCut(cv2.cvtColor(crop, cv2.COLOR_RGB2BGR), gc, None, np.zeros((1, 65)), np.zeros((1, 65)), iters, cv2.GC_INIT_WITH_MASK)
+    ph = np.isin(gc, (cv2.GC_FGD, cv2.GC_PR_FGD)).astype(np.uint8)
+    n, lab, st, _ = cv2.connectedComponentsWithStats(ph)
+    if n > 1: ph = (lab == 1 + np.argmax(st[1:, cv2.CC_STAT_AREA])).astype(np.uint8)
+    out = np.zeros((H, W), np.uint8); out[y0:y1, x0:x1] = ph
+    return out
+
+
+def _nfill(img, valid, sig):
+    v = valid.astype(np.float32)
+    num = cv2.GaussianBlur(img * v[..., None], (0, 0), sig); den = cv2.GaussianBlur(v, (0, 0), sig)[..., None]
+    return num / np.maximum(den, 1e-6), den[..., 0]
+
+
+def fill_hole(img, hole, valid=None, sigs=(10, 25, 60), grain_from=None, feather=5):
+    """Фон на месте вырезанного предмета: гладкое продолжение соседнего фона (нормированная свёртка по `valid` —
+    только свой фон, без контуров и соседних предметов) + зерно рисунка с чистого места `grain_from` (dy, dx:
+    сдвиг, откуда брать зерно; по умолчанию — выше дыры на её высоту; "noise" — шумом силы соседнего фона, когда
+    чистого места рядом нет; (0, 0) НЕЛЬЗЯ — дыра возьмёт своё же зерно и в ней проступят контуры предмета-призрака,
+    замер 25.10 на руках хука 1). На бумаге и на гладкой стене этого хватает;
+    LaMa на тёмной стене давала пятна и полосы (замер 25.10). Возвращает новую картинку float32."""
+    img = img.astype(np.float32)
+    hole = hole.astype(bool)
+    if valid is None:
+        L = cv2.cvtColor(np.clip(img, 0, 255).astype(np.uint8), cv2.COLOR_RGB2LAB)[..., 0]
+        valid = (L > np.percentile(L[~hole], 30)) & ~hole            # светлое — фон, тёмное — контуры и предметы
+    valid = valid & ~hole
+    out, _ = _nfill(img, valid, sigs[-1])
+    for s_ in reversed(sigs[:-1]):
+        f, d = _nfill(img, valid, s_); out = np.where((d > 0.15)[..., None], f, out)
+    hf = img - cv2.GaussianBlur(img, (0, 0), 2.5)
+    if grain_from == "noise":                         # зерно шумом той же силы, что у чистого фона рядом
+        sd = float(hf[valid].std()) if valid.any() else 2.0
+        rng = np.random.default_rng(7)
+        nz = cv2.GaussianBlur(rng.normal(0, 1, img.shape[:2]).astype(np.float32), (0, 0), 0.8)
+        out = out + (nz / (nz.std() + 1e-6) * sd)[..., None]
+    else:                                             # зерно с чистого места: (dy, dx) — строка y берёт y - dy
+        if grain_from is None:
+            grain_from = (int(cv2.boundingRect(hole.astype(np.uint8))[3] * 1.3), 0)
+        out = out + np.roll(hf, grain_from, axis=(0, 1))
+    a = cv2.GaussianBlur(hole.astype(np.float32), (0, 0), feather)[..., None] if feather else hole[..., None].astype(np.float32)
+    return img * (1 - a) + out * a
+
+
+def paper_like(img):
+    """Бумага рисунка -> крем рилса тем же способом, что prepare_src в reel.py (иначе сцена на другой бумаге)."""
+    import canvas
+    col, share = canvas.paper_color(img)
+    return canvas.retint(img, col) if canvas.is_paper(col, share) else img
+
+
+def sheet(frame_fn, ctx, ts, crop, path, width=480):
+    """Проверочный лист сцены: кадры в моменты ts (кроп рисунка x0, y0, x1, y1), подписи времени. Смотреть его
+    ДО рендера рилса — рендер дороже в 20 раз."""
+    from PIL import Image
+    x0, y0, x1, y1 = crop
+    tiles = []
+    for t in ts:
+        img, cam = frame_fn(t, ctx)
+        c = np.clip(img[y0:y1, x0:x1], 0, 255).astype(np.uint8)
+        c = cv2.resize(c, (width, int(width * (y1 - y0) / (x1 - x0))))
+        cv2.putText(c, f"{t:.2f}", (8, 28), 0, 0.8, (220, 0, 0), 2)
+        tiles.append(c)
+    cols = 4
+    while len(tiles) % cols: tiles.append(np.full_like(tiles[0], 255))
+    rows = [np.concatenate(tiles[i:i + cols], 1) for i in range(0, len(tiles), cols)]
+    Image.fromarray(np.concatenate(rows, 0)).save(path)
+    return path
+
+
+# ----------------------------------------------------------------------------- детали на рисунке (усталость, страх)
+def eye_bags(img, eyes, k, color=(118, 92, 138), line=(28, 22, 34)):
+    """Мешки под глазами: акварельный полумесяц под глазом и тонкая дуга тушью по его низу; проявляются с k (0..1).
+    eyes — [(cx, y_низа_глаза, полуширина_глаза)] в координатах картинки (снять по anim.grid). Кот чёрный, поэтому
+    полумесяц — светлее шерсти (лиловый, обычным смешиванием): тёмный мешок умножением на чёрной шерсти не виден."""
+    if k <= 0.01:
+        return img
+    h, w = img.shape[:2]
+    m = np.zeros((h, w), np.float32); ln = np.zeros((h, w), np.float32)
+    for cx, yb, hw in eyes:
+        outer = np.zeros((h, w), np.float32); inner = np.zeros((h, w), np.float32)
+        cv2.ellipse(outer, (int(cx), int(yb - 0.05 * hw)), (int(hw * 0.80), int(hw * 0.42)), 0, 0, 180, 1.0, -1, cv2.LINE_AA)
+        cv2.ellipse(inner, (int(cx), int(yb - 0.22 * hw)), (int(hw * 0.92), int(hw * 0.36)), 0, 0, 180, 1.0, -1, cv2.LINE_AA)
+        m = np.maximum(m, np.clip(outer - inner, 0, 1))
+        cv2.ellipse(ln, (int(cx), int(yb - 0.05 * hw)), (int(hw * 0.74), int(hw * 0.40)), 0, 25, 155, 1.0,
+                    max(2, int(hw * 0.045)), cv2.LINE_AA)
+    m = cv2.GaussianBlur(m, (0, 0), max(2.0, eyes[0][2] * 0.05)) * 0.6 * k
+    ln = cv2.GaussianBlur(ln, (0, 0), 1.0) * k
+    out = img * (1 - m[..., None]) + np.float32(color) * m[..., None]
+    return out * (1 - ln[..., None]) + np.float32(line) * ln[..., None]
+
+
+def sweat_drop(img, p, t, size=40, fall=120, life=0.9, color=(140, 190, 235)):
+    """Капля пота: появляется у виска, набухает и стекает вниз с ускорением; t — от появления."""
+    if not 0 <= t < life:
+        return img
+    u = t / life
+    x, y = p[0], p[1] + fall * gravity(clamp01((u - 0.3) / 0.7))
+    r = size * (0.5 + 0.5 * EASE_OUT(clamp01(u / 0.3)))
+    img = img.copy()
+    pts = np.int32([(x, y - r * 1.6), (x + r * 0.8, y), (x, y + r), (x - r * 0.8, y)])
+    cv2.ellipse(img, (int(x), int(y)), (int(r * 0.8), int(r)), 0, 0, 360, color, -1, cv2.LINE_AA)
+    cv2.fillPoly(img, [pts[[0, 1, 3]]], color, cv2.LINE_AA)
+    cv2.ellipse(img, (int(x), int(y)), (int(r * 0.8), int(r)), 0, -20, 200, (30, 30, 34), max(2, int(r * 0.12)), cv2.LINE_AA)
+    cv2.line(img, tuple(pts[0]), tuple(pts[1]), (30, 30, 34), max(2, int(r * 0.12)), cv2.LINE_AA)
+    cv2.line(img, tuple(pts[0]), tuple(pts[3]), (30, 30, 34), max(2, int(r * 0.12)), cv2.LINE_AA)
+    cv2.circle(img, (int(x - r * 0.3), int(y - r * 0.2)), max(2, int(r * 0.15)), (250, 250, 255), -1, cv2.LINE_AA)
+    return img
+
+
 _SCENES = {}
 
 

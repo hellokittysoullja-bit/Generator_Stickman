@@ -564,7 +564,8 @@ def fill_windows(reel_dir, spec):
     for b in spec["beats"]:
         for s in b["shots"]:
             if "src" not in s or s.get("kind") in ("fit", "stack", "doll"): continue
-            if s.get("anim"): continue                  # сцена с движением: предмет прилетает из-за рисунка — окно её
+            if s.get("anim") or s.get("keep_window"): continue   # сцена с движением (предмет прилетает из-за рисунка)
+                                                    # или план, где автор сознательно оставляет воздух (широкий низкий рисунок)
             top, bot = ink_rows(reel_dir, s["src"])
             hs = [s[k][2] for k in ("from", "to") if k in s]
             cap = (bot - top) * 1.04                    # окно выше рисунка: from и to сжимались к одной высоте и план стоял
@@ -638,6 +639,8 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     rule_errs += reel_rules.check_hook_steal(spec, json.load(open(log_p, encoding="utf8")) if os.path.exists(log_p) else [],
                                              os.path.relpath(reel_dir, ROOT))   # хук ворует внимание (стандарт 13)
     rule_errs += reel_rules.check_hook_layers(spec)    # хук: пять слоёв и 3C (правило владельца 24.10)
+    rule_errs += reel_rules.check_hook_motion(spec, json.load(open(log_p, encoding="utf8")) if os.path.exists(log_p) else [],
+                                              os.path.relpath(reel_dir, ROOT), reel_dir)   # движение в рисунке (стандарт 14)
     rule_errs += reel_rules.check_matrix(spec)          # матрица: каждый приём базы решён в этом рилсе (стандарт 10)
     rule_errs += reel_rules.check_coverage(spec, json.load(open(log_p, encoding="utf8")) if os.path.exists(log_p) else [],
                                            os.path.relpath(reel_dir, ROOT))  # стратегия: каждый пункт решён (стандарт 11)
@@ -739,6 +742,7 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     rule_errs += reel_rules.check_timeline(shots, events, {k: v[1] for k, v in SFX.items()}, caps_txt, total)
     rule_errs += reel_rules.check_overlays(overlay_boxes(events, shots), PH)
     rule_errs += reel_rules.check_cta(spec, [times[i0]["start"] for i0, _ in spans], total)
+    rule_errs += reel_rules.rehook_timing(spec, [times[i0]["start"] for i0, _ in spans])
     import reel_geom                                  # до рендера: обрывки у краёв, кукла шире кадра, надпись на рисунке
     rule_errs += reel_geom.check(sys.modules[__name__], reel_dir, shots, events)
     rule_errs += reel_rules.check_knowledge(spec)                 # знания базы: маркетинг, воронка, бренд — у каждой фразы

@@ -267,6 +267,8 @@ def hook_effects(b0):
         f, t = s.get("from"), s.get("to")
         if f and t and f[2] and abs(t[2] - f[2]) / f[2] >= HOOK_PUSH_MIN: out.add("push")
         if s.get("kind") == "doll" and s.get("actions"): out.add("doll")
+        if s.get("anim"):                         # сцена движения (скилл reel-anim): предмет движется в рисунке, и её
+            out.update({"anim", "snap"})          # камера по рецепту начинает резким наездом SNAP — два эффекта сразу
     for e in b0.get("fx") or []:
         if e.get("kind") in ("shake", "punch", "spot", "circle"): out.add(e["kind"])
     return out
@@ -297,6 +299,67 @@ def check_hook_steal(spec, log=(), reel_dir=""):
                    f"≥ {HOOK_STEAL_EFFECTS_MIN} одновременно: вход хлёстом или наездом, сильный наезд (≥ 15 %), тряска, "
                    "удар, прожектор, круг — не один эффект")
     return err
+
+
+HOOK_MOTION_STANDARD = 14
+ANCHOR_WORDS = (2, 4)        # якорь хука: 2–4 слова рукой на жёлтом маркере, не повторяет голос
+REHOOK_MAX_SEC = 4.2         # повторный хук — на 3–4 с: ломает очевидное решение («и если просто убрать телефон…»)
+
+
+def check_hook_motion(spec, log=(), reel_dir="", abs_dir=None):
+    """Стандарт хука 25.10 (одобрен владельцем): движение ВНУТРИ рисунка, а не только камера (план хука — сцена
+    anim.py, скилл reel-anim); голос с 0 с (lead_in 0) и удар звука на 0; якорь — 2–4 слова от руки с первого кадра;
+    повторный хук passport.hook.rehook — номер фразы, она начинается не позже REHOOK_MAX_SEC (время — в build)."""
+    pp = spec.get("passport") or {}
+    std = pp.get("standard") or 0
+    beats = spec.get("beats") or []
+    if std < HOOK_MOTION_STANDARD:
+        first = " ".join(clean(beats[0]["text"]).split()[:2]).lower() if beats else ""
+        old = any(os.path.normpath(r.get("reel", "")) == os.path.normpath(reel_dir or "")
+                  and r.get("first_words", "").lower() == first for r in log)
+        if reel_dir and not old:
+            return [f"новый рилс со стандартом {std}: нужен \"standard\": {HOOK_MOTION_STANDARD} — движение внутри рисунка "
+                    "в хуке (сцена anim.py), голос и удар с 0 с, якорь, повторный хук (скилл reel-anim)"]
+        return []
+    if not beats:
+        return ["нет фраз"]
+    err, b0 = [], beats[0]
+    s0 = (b0.get("shots") or [{}])[0]
+    if not s0.get("anim"):
+        err.append("хук: первый план без движения внутри рисунка — нужен \"anim\": \"<сцена>\" (скилл reel-anim; "
+                   "«сильное движение, а не только эффект камеры», владелец 25.10)")
+    elif (abs_dir or reel_dir) and not os.path.exists(os.path.join(abs_dir or reel_dir, "anim", s0["anim"] + ".py")):
+        err.append(f"хук: сцены anim/{s0['anim']}.py нет в папке рилса")
+    if (spec.get("lead_in") or 0.0) > 0.01:
+        err.append(f"хук: lead_in {spec['lead_in']} — голос начинается с 0 с, перебивки нет")
+    if not any(e.get("kind") == "sfx" and e.get("at", 0) == 0 and abs(e.get("dt", 0.0)) < 0.01 and e.get("align") == "start"
+               for e in b0.get("fx") or []):
+        err.append("хук: нет удара звука на 0 с — sfx с \"at\": 0, \"align\": \"start\", без dt (fast_whoosh)")
+    anchors = [e for e in b0.get("fx") or [] if e.get("kind") == "mark" and e.get("anchor")]
+    if not anchors:
+        err.append("хук: нет якоря — {\"kind\": \"mark\", \"anchor\": true, \"text\": 2–4 слова, \"at\": 0}")
+    for e in anchors:
+        n = len(clean(e.get("text", "")).split())
+        if not ANCHOR_WORDS[0] <= n <= ANCHOR_WORDS[1]:
+            err.append(f"якорь «{e.get('text')}»: {n} слов, нужно {ANCHOR_WORDS[0]}–{ANCHOR_WORDS[1]}")
+        if e.get("at", 0) != 0 or abs(e.get("dt", 0.0)) > 0.01:
+            err.append(f"якорь «{e.get('text')}» не с первого кадра: \"at\": 0 без dt")
+        said = {w.lower() for w in clean(b0["text"]).replace("?", " ").replace(".", " ").split()}
+        if {w.lower() for w in clean(e.get("text", "")).split()} <= said:
+            err.append(f"якорь «{e.get('text')}» повторяет голос — он дополняет фразу, а не дублирует")
+    k = (pp.get("hook") or {}).get("rehook")
+    if not isinstance(k, int) or not 1 <= k < len(beats):
+        err.append("хук: нет повторного хука — passport.hook.rehook: номер фразы на 3–4 с, ломает очевидное решение")
+    return err
+
+
+def rehook_timing(spec, starts):
+    """Повторный хук начинается не позже REHOOK_MAX_SEC (starts — начала фраз в секундах ролика)."""
+    pp = spec.get("passport") or {}
+    k = (pp.get("hook") or {}).get("rehook")
+    if (pp.get("standard") or 0) < HOOK_MOTION_STANDARD or not isinstance(k, int) or not 0 < k < len(starts):
+        return []
+    return [f"повторный хук (фраза {k}) на {starts[k]:.2f} с > {REHOOK_MAX_SEC} с — сократите хук"] if starts[k] > REHOOK_MAX_SEC else []
 
 
 CTA_COMMENT_RE = r"\bнапиши\b.*\bкоммент"
@@ -1089,7 +1152,8 @@ def check_writing(events, shots):
     """Рукописный текст до первой склейки — ошибка: хук работает одной картинкой и одним субтитром (п.1.15)."""
     cut = shots[1]["t0"] if len(shots) > 1 else 9e9
     return [f"рукописное «{e['text']}» на {e['t']:.2f} с — до первой склейки {cut:.2f} с: в хуке один текст — субтитр"
-            for e in events if e.get("kind") in ("write", "mark") and e["t"] < cut - 0.01]
+            for e in events if e.get("kind") in ("write", "mark") and e["t"] < cut - 0.01
+            and not e.get("anchor")]       # якорь хука (стандарт 14) — осознанный второй текст: 2–4 слова, не голос
 
 
 def warnings(spec, shots, total, events=()):

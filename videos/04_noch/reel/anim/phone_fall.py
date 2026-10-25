@@ -35,6 +35,7 @@ PALM_EDGE = [(2001, 530), (1984, 566), (1970, 604), (1960, 640), (1957, 656)]   
 PIVOT = (2084, 598)               # правая лапа держит конец телефона: вокруг неё он кренится (×2)
 B_PHONE = dict(center=(641.7 * 2, 449.3 * 2), angle=-13.8, thick=57 / 41)   # где и как телефон лежит на Б
 HEAD = dict(center=(1240, 880), axes=(470, 420), base_y=1200)               # морда на Б (×2): сжатие на ударе
+EYES_A = [(1115, 1108, 108), (1430, 948, 96)]   # глаза на А (×2): центр, низ, полуширина — под ними мешки (ночь)
 
 _L = None
 
@@ -231,6 +232,11 @@ def phone_pose(t, T, Lr):
     return pos, ang, thick, u
 
 
+def bags(t):
+    """Мешки под глазами проступают за первые полсекунды: ночь, не спит (на двойках — это рисунок)."""
+    return 0.35 + 0.65 * anim.EASE_OUT(anim.on_twos(t) / 0.6)
+
+
 def frame(t, ctx):
     """Картинка исходника (×2) и поправка камеры в момент t ролика."""
     Lr = layers(); d = Lr["d"]; T = timing(ctx)
@@ -240,11 +246,12 @@ def frame(t, ctx):
     if t < T["hit"]:
         pos, ang, thick, u = phone_pose(t, T, Lr)
         if u is None:                                  # телефон в лапах: свет экрана на стене как нарисован
-            img = d["clean"].astype(np.float32)
+            img = anim.eye_bags(d["clean"].astype(np.float32), EYES_A, bags(t))
             Lr["phone"].draw(img, pos, ang - Lr["ang_a"])
             Lr["toes"].draw(img, Lr["toes"].home())
             return img, cam
-        img = d["clean"].astype(np.float32) * (1 - d["dim"].astype(np.float32)[..., None] * u)
+        img = anim.eye_bags(d["clean"].astype(np.float32), EYES_A, bags(t))
+        img *= 1 - d["dim"].astype(np.float32)[..., None] * u
         lt = Lr["light"]                               # свет экрана едет с телефоном и гаснет на стене
         lt_img = np.zeros_like(img); lt.draw(lt_img, pos, ang - Lr["ang_a"])
         img += lt_img * u

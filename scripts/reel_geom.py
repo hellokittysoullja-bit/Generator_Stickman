@@ -177,6 +177,8 @@ def overlay_on_drawing(reel, reel_dir, shots, events):
     for e in events:
         if e["kind"] not in ("write", "mark"):
             continue
+        if e.get("anchor"):                  # якорь хука — на жёлтом маркере, читается и на рисунке (стандарт 14)
+            continue
         im = reel.text_img(e["text"], reel.font(reel.HAND, e.get("size", 120), 700), reel.INK)
         gx0, gy0, gx1, gy1 = im.getchannel("A").getbbox()
         bx0, by0 = e["x"] - im.width / 2 + gx0, e["y"] - im.height / 2 + gy0

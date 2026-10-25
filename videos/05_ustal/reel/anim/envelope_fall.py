@@ -31,6 +31,8 @@ FUR_OVER_ENV = [(600, 626), (690, 598), (800, 584), (1000, 584), (1100, 604), (1
 SMALL_ENV = (1170 * 2, 535 * 2, 1420 * 2, 620 * 2)       # маленький конверт на А (x0, y0, x1, y1)
 PUFFS = [(150 * 2, 690 * 2, 330 * 2, 800 * 2), (1185 * 2, 640 * 2, 1350 * 2, 750 * 2)]   # облачка пыли на Б
 FLOOR_Y = 830 * 2
+EYES_A = [(1290, 1580, 140), (1780, 1525, 130)]        # глаза на А (×2): центр, низ, полуширина — мешки усталости
+EYES_B = [(1330, 1545, 120), (1810, 1540, 120)]        # зажмуренные глаза на Б
 DROP = 1150                                            # путь конверта до спины (×2): начинает чуть выше кадра
 PUFF_SHIFT = [(400, 40), (-300, 60)]                   # облачка ближе к коту: вертикальный кадр уже рисунка
 BODY = dict(center=(1320, 1380), axes=(1150, 420))      # кот с конвертом на Б: сплющивается от пола
@@ -157,7 +159,7 @@ def frame(t, ctx):
     env = Lr["env"]; home = env.home()
     if t < T["hit"]:
         tq = anim.on_twos(t)
-        img = d["A"].astype(np.float32)
+        img = anim.eye_bags(d["A"].astype(np.float32), EYES_A, 0.3 + 0.7 * anim.EASE_OUT(tq / T["hit"]))
         br = 0.006 * math.sin(2 * math.pi * 0.7 * tq)       # дыхание усталого кота, на двойках
         img = anim.squash_region(img, Lr["body"], FLOOR_Y, BODY["center"][0], 1 + br, 1 - br * 0.4)
         # тень того, что падает: темнее и меньше по мере приближения
@@ -178,7 +180,7 @@ def frame(t, ctx):
     th = t - T["hit"]
     tq = th if th < 0.2 else anim.on_twos(th)
     s = anim.spring(max(0.0, tq - 2 / 30), freq=4.0, damping=0.3)
-    img = d["Bc"].astype(np.float32)
+    img = anim.eye_bags(d["Bc"].astype(np.float32), EYES_B, 1.0)
     if abs(s) > 0.002:
         img = anim.squash_region(img, Lr["body"], FLOOR_Y, BODY["center"][0], 1 - 0.09 * s, 1 + 0.05 * s)
     tp = anim.on_twos(max(0.0, th - 1 / 30))                # пыль: вылетает из-под боков, растёт, уходит, тает
