@@ -525,11 +525,21 @@
   {
    "name": "swoosh",
    "role": "whoosh",
+   "peak": 5.77,
+   "soft": true,
+   "gain_db": -5.0,
+   "vs_voice_db": -17.1,
+   "with_overlap_db": -17.1,
+   "target_db": -17.0
+  },
+  {
+   "name": "swoosh",
+   "role": "whoosh",
    "peak": 7.01,
    "soft": true,
    "gain_db": -3.0,
-   "vs_voice_db": -15.1,
-   "with_overlap_db": -15.1,
+   "vs_voice_db": -15.0,
+   "with_overlap_db": -15.0,
    "target_db": -15.0
   },
   {
@@ -573,19 +583,29 @@
    "target_db": -18.0
   },
   {
-   "name": "swoosh_deep",
-   "role": "impact",
+   "name": "swoosh",
+   "role": "whoosh",
    "peak": 16.85,
-   "soft": false,
-   "gain_db": 0.0,
-   "vs_voice_db": -8.0,
-   "with_overlap_db": -8.0,
-   "target_db": -8.0
+   "soft": true,
+   "gain_db": -5.0,
+   "vs_voice_db": -17.1,
+   "with_overlap_db": -17.1,
+   "target_db": -17.0
   },
   {
    "name": "fast_whoosh",
    "role": "whoosh",
-   "peak": 18.61,
+   "peak": 18.13,
+   "soft": true,
+   "gain_db": -6.0,
+   "vs_voice_db": -18.0,
+   "with_overlap_db": -18.0,
+   "target_db": -18.0
+  },
+  {
+   "name": "fast_whoosh",
+   "role": "whoosh",
+   "peak": 19.45,
    "soft": true,
    "gain_db": -6.0,
    "vs_voice_db": -18.0,
@@ -618,9 +638,19 @@
    "peak": 23.89,
    "soft": true,
    "gain_db": -6.0,
-   "vs_voice_db": -18.0,
-   "with_overlap_db": -18.0,
+   "vs_voice_db": -18.1,
+   "with_overlap_db": -18.1,
    "target_db": -18.0
+  },
+  {
+   "name": "swoosh",
+   "role": "whoosh",
+   "peak": 25.557,
+   "soft": true,
+   "gain_db": -5.0,
+   "vs_voice_db": -17.1,
+   "with_overlap_db": -17.1,
+   "target_db": -17.0
   },
   {
    "name": "level_up",
@@ -638,14 +668,24 @@
    "peak": 28.53,
    "soft": true,
    "gain_db": -6.0,
-   "vs_voice_db": -18.1,
-   "with_overlap_db": -18.1,
+   "vs_voice_db": -18.0,
+   "with_overlap_db": -18.0,
    "target_db": -18.0
   },
   {
    "name": "fast_whoosh",
    "role": "whoosh",
    "peak": 29.61,
+   "soft": true,
+   "gain_db": -6.0,
+   "vs_voice_db": -18.0,
+   "with_overlap_db": -18.0,
+   "target_db": -18.0
+  },
+  {
+   "name": "fast_whoosh",
+   "role": "whoosh",
+   "peak": 31.17,
    "soft": true,
    "gain_db": -6.0,
    "vs_voice_db": -18.0,
@@ -703,14 +743,24 @@
    "beat": 1
   },
   {
-   "kind": "shake",
-   "t": 15.877,
+   "kind": "spot",
+   "t": 6.357,
+   "beat": 2
+  },
+  {
+   "kind": "spot",
+   "t": 7.957,
+   "beat": 3
+  },
+  {
+   "kind": "circle",
+   "t": 11.877,
    "beat": 4
   },
   {
-   "kind": "write",
-   "t": 17.147,
-   "beat": 5
+   "kind": "shake",
+   "t": 15.877,
+   "beat": 4
   },
   {
    "kind": "sfx",
@@ -719,10 +769,30 @@
    "name": "riser"
   },
   {
+   "kind": "spot",
+   "t": 19.957,
+   "beat": 5
+  },
+  {
+   "kind": "circle",
+   "t": 21.877,
+   "beat": 6
+  },
+  {
+   "kind": "punch",
+   "t": 25.557,
+   "beat": 7
+  },
+  {
    "kind": "sfx",
    "t": 26.637,
    "beat": 7,
    "name": "level_up"
+  },
+  {
+   "kind": "write",
+   "t": 26.887,
+   "beat": 7
   }
  ],
  "shots": [
@@ -746,6 +816,12 @@
   },
   {
    "t0": 4.53,
+   "t1": 5.77,
+   "kind": "crop",
+   "src": "f1"
+  },
+  {
+   "t0": 5.77,
    "t1": 7.01,
    "kind": "crop",
    "src": "f1"
@@ -782,16 +858,21 @@
   },
   {
    "t0": 16.85,
-   "t1": 18.61,
-   "kind": "doll",
-   "src": null
+   "t1": 18.13,
+   "kind": "crop",
+   "src": "f7"
   },
   {
-   "t0": 18.61,
+   "t0": 18.13,
+   "t1": 19.45,
+   "kind": "crop",
+   "src": "f7"
+  },
+  {
+   "t0": 19.45,
    "t1": 20.77,
-   "kind": "doll",
-   "src": null,
-   "closeup": true
+   "kind": "crop",
+   "src": "f7"
   },
   {
    "t0": 20.77,
@@ -825,10 +906,16 @@
   },
   {
    "t0": 29.61,
-   "t1": 32.29,
+   "t1": 31.17,
    "kind": "doll",
    "src": null,
    "closeup": true
+  },
+  {
+   "t0": 31.17,
+   "t1": 32.29,
+   "kind": "doll",
+   "src": null
   },
   {
    "t0": 32.29,
