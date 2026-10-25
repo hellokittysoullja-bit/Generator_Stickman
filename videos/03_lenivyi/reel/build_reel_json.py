@@ -49,7 +49,7 @@ beats = [
                   cx=540, cy=640, h=1000, closeup=True)],
       fx=[]),
  dict(text="Я перестал ждать сил |и начинал, когда рядом кто-то молча делал *своё*.",
-      shots=[dict(at=0, src="f5", **{"from": [994, 519, 620]}, to=[970, 551, 560]),
+      shots=[dict(at=0, src="f5", **{"from": [994, 519, 640]}, to=[970, 551, 580]),
              doll(6, 540, 780, 640, [dict(t=0.0, do="flame", state="golden"), dict(t=0.0, do="face", name="happy"),
                                      dict(t=0.9, do="look", x=0.5, y=0.2, dur=0.8)])],
       fx=[dict(kind="sfx", name="riser", at=0, align="start", dt=-1.72), dict(kind="sfx", name="level_up", at=11)]),

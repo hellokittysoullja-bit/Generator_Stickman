@@ -14,7 +14,7 @@ import cv2
 import numpy as np
 
 TILE_W, TILE_H, COLS = 180, 320, 9
-TOP_SAFE, BOTTOM_UI, RIGHT_UI, SIDE = 0.14, 400 / 1920, 930 / 1080, 70 / 1080
+TOP_SAFE, BOTTOM_UI, RIGHT_UI, SIDE = 0.14, 360 / 1920, 930 / 1080, 70 / 1080   # низ 360 px — владелец 25.10
 
 
 def frame_at(video, t):
