@@ -18,5 +18,6 @@ ignore = [
 "scripts/labels.py" = ["E501"]           # тексты заданий модели — одной строкой
 "scripts/objects.py" = ["E501"]
 "scripts/writeon.py" = ["B023"]          # замыкание move() зовётся внутри той же итерации
+"scripts/reel_review.py" = ["E501"]     # страница HTML+JS одной строкой на правило — разметка, не код Python
 "experiments/**" = ["E501", "E741", "B023", "B007", "E402", "E731"]
 "experiments/alive_cat/doll/rotdemo.py" = ["F821"]   # имена приходят из exec(rotleg.py) — демо-скрипт, так и задуман
