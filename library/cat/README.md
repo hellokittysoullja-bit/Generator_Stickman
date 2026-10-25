@@ -1,8 +1,15 @@
 # Библиотека оригиналов: кот и всё, что сгенерировано
 
-Картинок: **44**, 59 МБ. Оригиналы — `originals/` байт в байт, как пришли из модели (PNG без пересжатия); `thumbs/` — превью для этой страницы; `catalog.json` — промпт, модель, цена, где используется.
+Картинок: **46**, 63 МБ. Оригиналы — `originals/` байт в байт, как пришли из модели (PNG без пересжатия); `thumbs/` — превью для этой страницы; `catalog.json` — промпт, модель, цена, где используется.
 
 Пополняется сама: каждая генерация через шлюз (`llm_gateway.Gateway.image`) кладёт картинку сюда, включая забракованные варианты. Собрать уже лежащее в репозитории: `python scripts/cat_library.py --scan`.
+
+## генерация (2)
+
+| превью | оригинал | где | промпт |
+|---|---|---|---|
+| ![](thumbs/2026-10-25_gen_cx_gpt-image-2_1462d865.jpg) | [2026-10-25_gen_cx_gpt-image-2_1462d865.png](originals/2026-10-25_gen_cx_gpt-image-2_1462d865.png)<br>1531×1027, 2026-10-25 | ../../../tmp/claude-0/-home-user-Generator-Stickman/7605bd81-268a-5536-b1b7-f9696ca784cb/scratchpad/hookproto/pose_b.py | Image 1 is a finished frame of an animation. Draw the very next key frame of the same shot: exactly the same camera angle, framing, scale, room, bed or floor, background, colors, line work, paper and lighting as image 1,… |
+| ![](thumbs/2026-10-25_gen_cx_gpt-image-2_2e233aa5.jpg) | [2026-10-25_gen_cx_gpt-image-2_2e233aa5.png](originals/2026-10-25_gen_cx_gpt-image-2_2e233aa5.png)<br>1531×1027, 2026-10-25 | ../../../tmp/claude-0/-home-user-Generator-Stickman/7605bd81-268a-5536-b1b7-f9696ca784cb/scratchpad/hookproto/pose_b.py | Image 1 is a finished frame of an animation. Draw the very next key frame of the same shot: exactly the same camera angle, framing, scale, room, bed or floor, background, colors, line work, paper and lighting as image 1,… |
 
 ## герой: состояние (3)
 
