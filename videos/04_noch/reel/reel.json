@@ -54,7 +54,8 @@
      "kind": "sfx",
      "name": "riser",
      "at": 0,
-     "align": "start"
+     "align": "start",
+     "dt": -0.45
     },
     {
      "kind": "sfx",

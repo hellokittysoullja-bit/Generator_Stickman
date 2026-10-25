@@ -62,9 +62,10 @@ def test_timeline_rules():
 def test_approved_values_are_defaults():
     s = {"beats": [{"text": "a", "shots": [{"src": "f1", "from": [0, 0, 100]}]}]}
     reel.layout(copy.deepcopy(s))
-    assert reel.PH == 1380 and reel.CAP_CY == 1455
+    # владелец 25.10: картинка чуть ниже — сверху 60 px бумаги, внизу меньше (было: 0–1380, субтитры 1455)
+    assert reel.PIC_TOP == 60 and reel.PH == 1360 and reel.CAP_CY == 1495
     s2 = copy.deepcopy(s); reel.layout(s2)
-    assert abs(s2["beats"][0]["shots"][0]["from"][2] - 111.0) < 1e-6          # view_scale 1.11 по умолчанию
+    assert abs(s2["beats"][0]["shots"][0]["from"][2] - 110.0) < 1e-6          # view_scale 1.10 при 1360 (было 1.11 при 1380)
     reel.layout({"beats": [], "picture_h": 1100})                              # вернуть модуль как был
 
 
@@ -911,3 +912,13 @@ def test_hard_punch_zooms_to_its_focus():
     ev = [dict(kind="punch", t=1.0, style="cut", amt=0.22, hold=0.45, focus=[765, 700])]
     assert reel.punch_focus(ev, s, 1.2) == [765, 700]
     assert reel.punch_focus(ev, s, 0.9) is None and reel.punch_focus(ev, s, 1.5) is None
+
+
+def test_dead_pause_after_hook_is_an_error():
+    """Ночь 25.10: голос хука кончился на 0.80, следующая фраза ждала пика riser до 1.72 — 0.9 с пустоты в начале."""
+    times = [dict(start=0.0, end=0.32), dict(start=0.36, end=0.40), dict(start=0.48, end=0.80), dict(start=1.72, end=1.80)]
+    beats = [dict(fx=[dict(kind="sfx", name="riser", at=0, align="start")]), dict()]
+    err = reel_rules.check_hook_gap(times, [(0, 3), (3, 4)], beats)
+    assert err and '"dt": -0.57' in err[0]
+    times[3] = dict(start=1.15, end=1.25)
+    assert reel_rules.check_hook_gap(times, [(0, 3), (3, 4)], beats) == []

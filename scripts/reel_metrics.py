@@ -24,8 +24,8 @@ WINDOW_SEC = 30.0          # окно для «смен рисунка» и «п
 MAX_SRC_CHANGES = 10       # смен рисунка за любые 30 с (Lang 1999: перегрузка после ~10 смен содержания за 30 с)
 
 
-def frames(p, ph=1380):
-    r = subprocess.run(['ffmpeg', '-v', 'error', '-i', p, '-vf', f'crop=1080:{ph}:0:0,scale=270:{ph // 4},format=gray',
+def frames(p, ph=1380, top=0):
+    r = subprocess.run(['ffmpeg', '-v', 'error', '-i', p, '-vf', f'crop=1080:{ph}:0:{top},scale=270:{ph // 4},format=gray',
                         '-f', 'rawvideo', '-'], capture_output=True)
     return np.frombuffer(r.stdout, np.uint8).reshape(-1, ph // 4, 270).astype(np.float32)
 
@@ -46,8 +46,8 @@ def loudness(p):
     return dict(true_peak_db=num('Peak'), lufs_i=num(r'\bI'), lra=num('LRA'))
 
 
-def measure(p, ph=1380):
-    a = frames(p, ph); d = np.abs(np.diff(a, axis=0)).mean(axis=(1, 2))
+def measure(p, ph=1380, top=0):
+    a = frames(p, ph, top); d = np.abs(np.diff(a, axis=0)).mean(axis=(1, 2))
     moving = d[d <= 6]
     lap = [np.var(np.diff(f, 2, axis=0)) + np.var(np.diff(f, 2, axis=1)) for f in a]   # все кадры: по каждому 15-му ±5 % от фазы
     x = audio(p); w = 1600
@@ -81,7 +81,7 @@ def tempo(report):
                 accent_repeats=repeats)
 
 
-def doll_edges(video, report, ph=1380):
+def doll_edges(video, report, ph=1380, top=0):
     """Кукла не обрывается краем кадра: тушь куклы у левого/правого края (3 px) в любом из 8 кадров плана — обрывок
     хвоста или усов (23.10: наезд твиста резал хвост, большая кукла v12 выходила за оба края). Осознанный крупный план
     помечается в плане куклы `"closeup": true` и не проверяется."""
@@ -91,7 +91,7 @@ def doll_edges(video, report, ph=1380):
             continue
         for t in np.linspace(s["t0"] + 0.05, s["t1"] - 0.05, 8):
             r = subprocess.run(['ffmpeg', '-v', 'error', '-ss', f'{t:.3f}', '-i', video, '-frames:v', '1', '-vf',
-                                f'crop=1080:{ph}:0:0,format=gray', '-f', 'rawvideo', '-'], capture_output=True).stdout
+                                f'crop=1080:{ph}:0:{top},format=gray', '-f', 'rawvideo', '-'], capture_output=True).stdout
             a = np.frombuffer(r, np.uint8).reshape(ph, 1080)[int(ph * 0.2):ph - 10]
             if (a[:, :3] < 150).sum() > 3 or (a[:, -3:] < 150).sum() > 3:
                 out.append(f"кукла {s['t0']:.2f}–{s['t1']:.2f} с обрывается краем кадра на {t:.2f} с"); break
@@ -123,8 +123,9 @@ def warnings(m, tp=None):
 def run(arg):
     if os.path.isdir(arg):
         rep = json.load(open(os.path.join(arg, "reel_report.json"), encoding="utf8"))
-        m = measure(os.path.join(arg, "reel.mp4"), rep.get("picture_h", 1380)); tp = tempo(rep)
-        return dict(m, tempo=tp, warnings=warnings(m, tp) + doll_edges(os.path.join(arg, "reel.mp4"), rep, rep.get("picture_h", 1380)))
+        ph, top = rep.get("picture_h", 1380), rep.get("picture_top", 0)     # 25.10: картинка с 60 px от верха
+        m = measure(os.path.join(arg, "reel.mp4"), ph, top); tp = tempo(rep)
+        return dict(m, tempo=tp, warnings=warnings(m, tp) + doll_edges(os.path.join(arg, "reel.mp4"), rep, ph, top))
     m = measure(arg)
     return dict(m, warnings=warnings(m))
 

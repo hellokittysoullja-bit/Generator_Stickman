@@ -22,7 +22,7 @@ beats = [
  dict(text="Опять не *спишь*?",
       shots=[dict(at=0, src="fa", anim="phone_fall", **{"from": [800, 400, 700]}, to=[700, 445, 660])],
       fx=[dict(kind="sfx", name="fast_whoosh", at=0, align="start"),
-          dict(kind="sfx", name="riser", at=0, align="start"),
+          dict(kind="sfx", name="riser", at=0, align="start", dt=-0.45),   # пик на 1.20: «спишь?» дочитано, пауза 0.4 с, а не 0.9
           dict(kind="sfx", name="oof", at=2, dt=0.07),
           dict(kind="mark", anchor=True, text="Это не телефон", at=0, speed=2.0, x=540, y=248, size=88)]),
  dict(text="И если просто убрать телефон, |станет только *хуже*.", after_sfx="riser",

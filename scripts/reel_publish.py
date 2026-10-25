@@ -59,7 +59,7 @@ def cover(reel_dir, text, out):
         return None
     a = np.frombuffer(raw, np.uint8).reshape(1920, 1080, 3).copy()
     rep = json.load(open(os.path.join(reel_dir, "reel_report.json"), encoding="utf8"))
-    ph = rep.get("picture_h", 1380)
+    ph = rep.get("picture_top", 0) + rep.get("picture_h", 1380)   # низ картинки на экране (25.10: сверху 60 px бумаги)
     a[ph:] = a[ph - 3:ph - 1].mean(axis=(0, 1)).astype(np.uint8)
     im = Image.fromarray(a).convert("RGBA")
     size = 130

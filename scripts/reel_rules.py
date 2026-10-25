@@ -15,6 +15,10 @@ FIRST_CUT_SEC = 2.0        # первая склейка в первые 2 с �
 HOOK_MAX_CHARS = 30        # первая фраза читается за ~1.3–1.8 с при 17 знаках в секунду
 RISER_START_MAX = 0.05     # riser звучит с нулевой секунды (владелец 22.10), а не после хука
 RISER_PEAK_ON_CUT = 0.10   # пик riser — на склейке (Clumzzy: riser — ожидание перед раскрытием)
+HOOK_GAP_MAX = 0.75        # голос хука кончился — следующая фраза не позже 0.75 с (пауза перед развязкой 0.3–0.75,
+                           # HyperFrames); ночь 25.10: «Опять не спишь?» кончилось на 0.80, фраза ждала пика riser
+                           # до 1.72 — 0.9 с без слов на застывшем кадре, владелец: «в начале пропущена длина»
+HOOK_GAP_TARGET = 0.35     # куда ставить пик: столько после конца голоса хука (как в «ленивом», 0.36)
 MIN_PICTURE_H = 1360       # владелец 22.10: «столько воздуха в рилсах не оставляют» — при 1100 низ был пуст
 MAX_FROZEN_SHARE = 0.05    # доля почти неподвижных кадров готового файла (reel_metrics.py), v9 — 0.025
 READ_CPS, READ_PAD = 17.0, 0.3   # дочитать группу: знаки / 17 + 0.3 с (StudioBinder 17 зн/с; разбор 189 роликов 23.10)
@@ -817,6 +821,21 @@ def check_spec(spec, sfx_names):
     if first and last and first["src"] != last["src"]:
         err.append(f"петля: финал на {last['src']}, а начало на {first['src']} — конец = начало")
     return err
+
+
+def check_hook_gap(times, spans, beats):
+    """Мёртвая пауза после хука: голос первой фразы кончился, а вторая ждёт пика riser дольше HOOK_GAP_MAX. Лечится
+    не паузой, а riser: dt первой фразы отрицательный — файл звучит с середины, пик раньше (riser всё равно с 0 с)."""
+    if len(spans) < 2 or not times:
+        return []
+    end0 = times[spans[0][1] - 1]["end"]; start1 = times[spans[1][0]]["start"]
+    gap = start1 - end0
+    if gap <= HOOK_GAP_MAX:
+        return []
+    riser = next((e for e in beats[0].get("fx", []) if e.get("kind") == "sfx" and e.get("name") == "riser"), {})
+    dt = riser.get("dt", 0.0) - (gap - HOOK_GAP_TARGET)
+    return [f"после хука {gap:.2f} с без голоса (голос кончился на {end0:.2f}, следующая фраза на {start1:.2f}) — "
+            f"мёртвая пауза > {HOOK_GAP_MAX}: riser первой фразы \"dt\": {dt:.2f} (пик раньше, звучит всё так же с 0 с)"]
 
 
 def check_timeline(shots, events, sfx_peaks, caps=None, total=None):

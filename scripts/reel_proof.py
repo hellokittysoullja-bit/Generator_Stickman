@@ -49,7 +49,7 @@ def seam(video, t, ph):
 def proof(reel_dir):
     report = json.load(open(os.path.join(reel_dir, "reel_report.json"), encoding="utf8"))
     video = os.path.join(reel_dir, "reel.mp4")
-    ph = report.get("picture_h", 1380)
+    ph = report.get("picture_top", 0) + report.get("picture_h", 1380)   # низ картинки на экране (25.10: сверху 60 px бумаги)
     tiles = []
     # без текста и в сером (план 04 п.1.7): хук работает одной картинкой; движение хука читается без цвета
     im = frame_at(video, 0.5); im[int(TILE_H * ph / 1920):] = im[int(TILE_H * ph / 1920) - 2:int(TILE_H * ph / 1920) - 1].mean(axis=(0, 1))

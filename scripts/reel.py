@@ -44,7 +44,8 @@ CAP_AXES = {"Weight": 900}
 CAP_FEATURES = None
 CAP_UPPER = False
 VIEW_K = 1.0           # view_scale после layout(): подсказки окон печатаются в координатах reel.json
-PH = 1100              # картинка — верхние PH px (reel.json: picture_h); ниже — полоса субтитров на той же бумаге
+PH = 1100              # картинка — PH px от PIC_TOP (reel.json: picture_h); ниже — полоса субтитров на той же бумаге
+PIC_TOP = 0            # сверху над картинкой — полоса бумаги (reel.json: picture_top; по умолчанию 60, владелец 25.10)
 CAP_CX, CAP_CY = 500, 1175   # центр полосы субтитров = PH + 75 (полоса 150 px, субтитр не ложится на рисунок)
 BASE_PH = 1100         # под эту высоту написаны экранные координаты reel.json (cy кадров fit/doll, y пометок, часы)
 CAP_SIZE = 76          # один кегль на весь ролик; 90 → 76 (24.10): при 90 в строку влезало ~15 знаков и треть групп была
@@ -545,8 +546,12 @@ def layout(spec):
     внизу 390 px. Окна кадров (h в пикселях исходника) растут на view_scale — по умолчанию 1.11: рисунок крупнее,
     бока целы, рисунка больше по высоте;
     экранные координаты фраз (cy, h куклы, y пометок) пересчитываются из 1100 в PH."""
-    global PH, CAP_CY, VIEW_K
-    PH = int(spec.get("picture_h", 1380)); CAP_CY = PH + 75     # 1380: низ букв субтитров выше 400 px интерфейса (лист 23.10)
+    global PH, CAP_CY, VIEW_K, PIC_TOP
+    # 25.10, владелец: «сместить картинку чуть вниз: сверху чуть свободного места, внизу чуть меньше» — правило навсегда.
+    # Картинка с 60 px (полоса той же бумаги с мягким краем), 1360 по высоте, субтитры под ней (центр 1495), внизу 350 px
+    # вместо 390. До этого: картинка 0–1380, субтитры 1455, внизу 390 (23.10: низ букв у края 400 px интерфейса).
+    PIC_TOP = int(spec.get("picture_top", 60))
+    PH = int(spec.get("picture_h", 1360)); CAP_CY = PIC_TOP + PH + 75
     k = PH / BASE_PH; vk = spec.get("view_scale", round(1.0 + (k - 1.0) * 0.42, 2))   # 1380 -> 1.11: рисунок крупнее, бока целы
     VIEW_K = vk
     if k == 1 and vk == 1: return
@@ -590,7 +595,7 @@ def fill_windows(reel_dir, spec):
                 s[key] = [cx, cy, h]
 
 def overlay_boxes(events, shots=()):
-    """Рамки рукописных надписей и маркера по туши, в пикселях экрана (картинка начинается с y = 0): для безопасных зон.
+    """Рамки рукописных надписей и маркера по туши, в пикселях картинки (на экран — + PIC_TOP): для безопасных зон.
     Надпись приклеена к бумаге и едет с наездом плана, поэтому рамка — объединение по всему времени, пока она видна."""
     out = []
     for e in events:
@@ -747,8 +752,10 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     caps_txt = [dict(t0=c["t0"], t1=c["t1"], text=" ".join(cap_text(words[j]) for j in c["idx"])) for c in chunks(words, times)]
     caps_txt[0]["t0"] = 0.0                            # хук стоит с первого кадра (still)
     rule_errs += hook_split_errors(words, times, spans)
+    rule_errs += reel_rules.check_hook_gap(times, spans, beats)
     rule_errs += reel_rules.check_timeline(shots, events, {k: v[1] for k, v in SFX.items()}, caps_txt, total)
-    rule_errs += reel_rules.check_overlays(overlay_boxes(events, shots), PH)
+    rule_errs += reel_rules.check_overlays([(i, tx, x0, y0 + PIC_TOP, x1, y1 + PIC_TOP)    # картинка — с PIC_TOP экрана
+                                            for i, tx, x0, y0, x1, y1 in overlay_boxes(events, shots)], PIC_TOP + PH)
     rule_errs += reel_rules.check_cta(spec, [times[i0]["start"] for i0, _ in spans], total)
     rule_errs += reel_rules.rehook_timing(spec, [times[i0]["start"] for i0, _ in spans])
     import reel_geom                                  # до рендера: обрывки у краёв, кукла шире кадра, надпись на рисунке
@@ -798,7 +805,7 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     out = os.path.join(reel_dir, "reel_preview_av.mp4" if preview else "reel.mp4")
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", vid, "-i", wav, "-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
                     "-shortest", "-movflags", "+faststart", out], check=True)
-    json.dump(dict(total=total, voiced=voiced, picture_h=PH, words=times,
+    json.dump(dict(total=total, voiced=voiced, picture_h=PH, picture_top=PIC_TOP, words=times,
                    voice_p95=snd["voice_p95"], sounds=sorted(snd["sounds"], key=lambda r: r["peak"]),
                    events=[dict(kind=e["kind"], t=round(e["t"], 3), beat=e.get("beat"), **({"name": e["name"]} if e.get("name") else {}))
                            for e in sorted(events, key=lambda e: e["t"])],
@@ -869,8 +876,8 @@ def segment_key(reel_dir, fps, n0, n1, i, shots, events, caps, words, times, hoo
 _JOB = None
 def _init_job(job):
     """Состояние сборки для процесса-рисовальщика: планы, события, субтитры и раскладка (PH из reel.json)."""
-    global _JOB, PH, CAP_CY
-    _JOB = job[:10]; PH, CAP_CY = job[10], job[11]
+    global _JOB, PH, CAP_CY, PIC_TOP
+    _JOB = job[:10]; PH, CAP_CY, PIC_TOP = job[10], job[11], job[12]
 
 def _render_segment(job):
     """Один план в свой файл. Кадр зависит только от времени и плана (кэши кипения, зерна, куклы — по времени), поэтому
@@ -900,7 +907,7 @@ def render_video(reel_dir, vid, fps, total, shots, events, caps, words, times, t
         key = segment_key(reel_dir, fps, n0, n1, i, shots, events, caps, words, times, hook_clock, total, code_sig)
         path = os.path.join(cache, f"seg_{fps}_{key}.mp4"); used.add(os.path.basename(path)); segs.append(path)
         if not os.path.exists(path): todo.append((i, n0, n1, path))
-    job = (reel_dir, fps, shots, events, caps, words, times, tex, hook_clock, total, PH, CAP_CY)
+    job = (reel_dir, fps, shots, events, caps, words, times, tex, hook_clock, total, PH, CAP_CY, PIC_TOP)
     jobs = max(1, min(int(os.environ.get("REEL_JOBS", os.cpu_count() or 1)), len(todo)))
     if jobs > 1:                                      # планы независимы: каждый — свой процесс и свой файл x264
         import multiprocessing as mp                  # spawn, не fork: fork при живых потоках OpenCV вешал процессы
@@ -1122,17 +1129,24 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
             u = (t - e["t"]) / 0.22                     # въезд снизу с торможением, без «прыжка»
             over(base, pad, e["x"], e["y"] + 16 * (1 - ease_out(u)), alpha=min(1.0, u * 2.5))
 
-    # картинка уходит в полосу субтитров мягким краем: одна бумага, без «вклеенного» прямоугольника
-    pic = base; base = tex.copy(); f_ = 60
-    base[:PH - f_] = pic[:PH - f_]
+    # картинка уходит в полосу субтитров мягким краем: одна бумага, без «вклеенного» прямоугольника; сверху — так же
+    # мягко из полосы бумаги PIC_TOP (ночной рисунок не встаёт резким краем под шапкой)
+    pic = base; base = tex.copy(); f_ = 60; T0 = PIC_TOP
+    base[T0:T0 + PH] = pic[:PH]
     a_ = np.linspace(1, 0, f_, dtype=np.float32)[:, None, None]
-    base[PH - f_:PH] = (pic[PH - f_:].astype(np.float32) * a_ + base[PH - f_:PH].astype(np.float32) * (1 - a_)).astype(np.uint8)
+    base[T0 + PH - f_:T0 + PH] = (pic[PH - f_:PH].astype(np.float32) * a_
+                                  + tex[T0 + PH - f_:T0 + PH].astype(np.float32) * (1 - a_)).astype(np.uint8)
+    if T0:
+        ft = min(f_, T0 + 1)
+        a_ = np.linspace(0, 1, ft, dtype=np.float32)[:, None, None]
+        base[T0:T0 + ft] = (pic[:ft].astype(np.float32) * a_ + tex[T0:T0 + ft].astype(np.float32) * (1 - a_)).astype(np.uint8)
     base = grain(base, t)
     for e in arrows:
         if e.get("dash"):
-            arrow(base, e["p0"], e["p1"], (t - e["t"]) / 0.25, dash_t=t - e["t"], u_head=(t - e["t"] - 0.08) / 0.25)
+            arrow(base, (e["p0"][0], e["p0"][1] + PIC_TOP), (e["p1"][0], e["p1"][1] + PIC_TOP), (t - e["t"]) / 0.25,
+                  dash_t=t - e["t"], u_head=(t - e["t"] - 0.08) / 0.25)
         else:
-            arrow(base, e["p0"], e["p1"], (t - e["t"]) / 0.25)
+            arrow(base, (e["p0"][0], e["p0"][1] + PIC_TOP), (e["p1"][0], e["p1"][1] + PIC_TOP), (t - e["t"]) / 0.25)
 
     # часы хука: время «летит» 23:55 -> 03:12, на последнем слове встаёт с ударом
     if hook_clock and t < hook_clock["t_end"]:
@@ -1147,7 +1161,7 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
         im = clock_img(txt, KEY if landed else WHITE)
         if t < 0.25: sc *= 1 + 0.6 * (1 - ease_out(t / 0.25))   # влёт с ударом; при 2.4x первый кадр резал цифры
         sc = min(sc, (W - 40) / im.width)             # влёт с увеличением не режет цифры краями кадра
-        over(base, im, W / 2, PH * 0.27, scale=sc)   # ниже верхних 14% — там шапка Reels
+        over(base, im, W / 2, PIC_TOP + PH * 0.27, scale=sc)   # ниже верхних 14% — там шапка Reels
 
     # субтитры: группа въезжает снизу, активное слово — по времени слова
     for c in caps:
