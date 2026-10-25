@@ -786,3 +786,24 @@ def test_written_word_is_not_cut_by_a_splice():                # v11: «бесп
     assert reel_rules.check_written_read(on_word, shots) == []                               # на само слово — годно
     through = [dict(kind="write", text="Напарник", t=38.0, dur=0.6, hold=1.0)]               # держится через план того же рода
     assert reel_rules.check_written_read(through, shots) == []
+
+
+def test_hook_steals_attention():                              # владелец 25.10: визуал, вербал, невербал, движение — не один эффект
+    steal = {"visual": "крупно рука указывает на кота сверху", "verbal": "Тебя всю жизнь звали ленивым",
+             "nonverbal": "кот вжался, уши прижаты, голос с нажимом", "motion": "ракурс снизу, наезд с разгоном и тряска"}
+    b0 = {"text": "Тебя всю жизнь звали *ленивым*.", "shots": [{"at": 0, "src": "f1", "from": [500, 500, 700],
+          "to": [500, 480, 520], "ease": "in"}], "fx": [{"kind": "shake", "at": 4, "dur": 0.4}]}
+    s = {"passport": {"standard": 13, "hook": {"steal": steal}}, "beats": [b0, {"text": "дальше"}]}
+    assert reel_rules.check_hook_steal(s) == []
+    t = copy.deepcopy(s); t["beats"][0]["fx"] = []
+    assert any("эффектов" in e for e in reel_rules.check_hook_steal(t))           # один наезд — мало
+    t = copy.deepcopy(s); t["beats"][0]["shots"][0]["to"] = [500, 495, 680]
+    assert any("эффектов" in e for e in reel_rules.check_hook_steal(t))           # дрейф 3 % — не движение
+    t = copy.deepcopy(s); del t["passport"]["hook"]["steal"]["nonverbal"]
+    assert any("nonverbal" in e for e in reel_rules.check_hook_steal(t))
+    t = copy.deepcopy(s); t["passport"]["standard"] = 12
+    assert reel_rules.check_hook_steal(t, [], "videos/99_new/reel")               # новый рилс ниже 13 — ошибка
+    EP01 = os.path.join(ROOT, "videos", "01_sdvg_pismo", "reel", "reel.json")
+    old = json.load(open(EP01, encoding="utf8"))
+    log = json.load(open(os.path.join(ROOT, "docs", "reels_log.json"), encoding="utf8"))
+    assert reel_rules.check_hook_steal(old, log, "videos/01_sdvg_pismo/reel") == []   # старые рилсы пересобираются

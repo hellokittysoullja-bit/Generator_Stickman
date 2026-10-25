@@ -247,6 +247,56 @@ def check_hook_layers(spec):
     return err
 
 
+# Хук ворует внимание (владелец 25.10: «хук должен буквально воровать внимание: сильный визуал, вербал и невербал,
+# движение или необычный ракурс, и при этом не один какой-то эффект»). Стандарт ≥ 13; новый рилс ниже 13 не рендерится.
+HOOK_STEAL_STANDARD = 13
+HOOK_STEAL = ("visual", "verbal", "nonverbal", "motion")
+HOOK_STEAL_EFFECTS_MIN = 2   # визуальных эффектов в первой фразе одновременно: не один
+HOOK_PUSH_MIN = 0.15         # наезд хука: окно меняется хотя бы на 15 % за фразу, иначе это дрейф, а не движение
+
+
+def hook_effects(b0):
+    """Визуальные эффекты первой фразы, которые видно по reel.json: вход хлёстом или наездом, сильный наезд камеры,
+    тряска, удар, прожектор, круг, жест куклы."""
+    out = set()
+    for s in (b0.get("shots") or [])[:1]:
+        if s.get("whip"): out.add("whip")
+        if s.get("zoom_in"): out.add("zoom_in")
+        f, t = s.get("from"), s.get("to")
+        if f and t and f[2] and abs(t[2] - f[2]) / f[2] >= HOOK_PUSH_MIN: out.add("push")
+        if s.get("kind") == "doll" and s.get("actions"): out.add("doll")
+    for e in b0.get("fx") or []:
+        if e.get("kind") in ("shake", "punch", "spot", "circle"): out.add(e["kind"])
+    return out
+
+
+def check_hook_steal(spec, log=(), reel_dir=""):
+    """Хук ворует внимание сразу всем: визуал (что в кадре), вербал (что сказано), невербал (мимика, поза, тон голоса),
+    движение или необычный ракурс; в первой фразе не меньше двух визуальных эффектов одновременно."""
+    pp = spec.get("passport") or {}
+    std = pp.get("standard") or 0
+    beats = spec.get("beats") or []
+    if std < HOOK_STEAL_STANDARD:
+        first = " ".join(clean(beats[0]["text"]).split()[:2]).lower() if beats else ""
+        old = any(os.path.normpath(r.get("reel", "")) == os.path.normpath(reel_dir or "")
+                  and r.get("first_words", "").lower() == first for r in log)
+        if reel_dir and not old:
+            return [f"новый рилс со стандартом {std}: нужен \"standard\": {HOOK_STEAL_STANDARD} — хук ворует внимание "
+                    "(passport.hook.steal и два эффекта в первой фразе, CLAUDE.md, рилсы п.0а)"]
+        return []
+    st, err = (pp.get("hook") or {}).get("steal") or {}, []
+    for k in HOOK_STEAL:
+        if len(str(st.get(k, "")).strip()) < 10:
+            err.append(f"хук: «{k}» не описан в passport.hook.steal — хук ворует внимание: visual (что в кадре 0), verbal "
+                       "(что сказано), nonverbal (мимика, поза, тон голоса), motion (движение или необычный ракурс)")
+    effs = hook_effects(beats[0]) if beats else set()
+    if len(effs) < HOOK_STEAL_EFFECTS_MIN:
+        err.append(f"хук: визуальных эффектов в первой фразе {len(effs)} ({', '.join(sorted(effs)) or 'нет'}), нужно "
+                   f"≥ {HOOK_STEAL_EFFECTS_MIN} одновременно: вход хлёстом или наездом, сильный наезд (≥ 15 %), тряска, "
+                   "удар, прожектор, круг — не один эффект")
+    return err
+
+
 CTA_COMMENT_RE = r"\bнапиши\b.*\bкоммент"
 
 
@@ -1104,7 +1154,7 @@ if __name__ == "__main__":
     log = json.load(open(log_p, encoding="utf8")) if os.path.exists(log_p) else []
     errs = (check_spec(spec, set(reel.SFX)) + check_passport(spec, log, os.path.relpath(sys.argv[1])) + check_knowledge(spec)
             + check_hook(spec, log, os.path.relpath(sys.argv[1])) + check_hook_layers(spec) + check_call_to_comment(spec)
-            + check_brand_and_face(spec)
+            + check_brand_and_face(spec) + check_hook_steal(spec, log, os.path.relpath(sys.argv[1]))
             + check_matrix(spec)
             + check_coverage(spec, log, os.path.relpath(sys.argv[1])) + check_human(spec)
             + check_inventory(spec, log, os.path.relpath(sys.argv[1])))
