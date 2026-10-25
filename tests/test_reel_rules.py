@@ -923,3 +923,22 @@ def test_dead_pause_after_hook_is_an_error():
     assert err and '"dt": -0.57' in err[0]
     times[3] = dict(start=1.15, end=1.25)
     assert reel_rules.check_hook_gap(times, [(0, 3), (3, 4)], beats) == []
+
+
+def test_montage_like_sample_doll_at_end_drawings_accents():
+    """25.10, образец эп.02 v9: кукла только в конце, рисунков ≥ 6 и один свой, акцентов ≥ 4 на 10 с и ≥ 5 видов."""
+    spec = {"passport": {"standard": 14}, "sources": {f"f{i}": {"frame": f"gen/g{i}.png" if i == 1 else f"../e/{i}.png"}
+                                                      for i in range(1, 7)}}
+    total = 30.0
+    shots = [dict(t0=i * 3.0, t1=i * 3.0 + 3.0, src=f"f{i % 6 + 1}") for i in range(8)] + \
+            [dict(t0=24.0, t1=27.0, kind="doll"), dict(t0=27.0, t1=30.0, kind="doll")]
+    shots[1]["zoom_in"] = 0.1; shots[2]["whip"] = [-500, 0]; shots[0]["anim"] = "x"
+    kinds = ["punch", "shake", "spot", "circle", "arrow", "write", "punch", "spot", "shake"]
+    events = [dict(kind=k, t=1.0 + i * 2.5) for i, k in enumerate(kinds)]
+    assert reel_rules.check_montage(spec, shots, events, total) == []
+    early = shots[:3] + [dict(t0=9.0, t1=12.0, kind="doll")] + shots[4:]
+    assert any("кукла" in e for e in reel_rules.check_montage(spec, early, events, total))
+    few = [dict(s, src="f1") if s.get("src") in ("f5", "f6") else s for s in shots]
+    assert any("рисунков" in e for e in reel_rules.check_montage(spec, few, events, total))
+    assert any("акцентов" in e for e in reel_rules.check_montage(spec, shots, events[:3], total))
+    assert reel_rules.check_montage({"passport": {"standard": 13}}, early, [], total) == []   # старые — своими правилами

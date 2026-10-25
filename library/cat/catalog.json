@@ -591,6 +591,60 @@
   "source": "../../../tmp/claude-0/-home-user-Generator-Stickman/7605bd81-268a-5536-b1b7-f9696ca784cb/scratchpad/hookproto/pose_b.py"
  },
  {
+  "file": "2026-10-25_gen_cx_gpt-image-2_3210e6c7.png",
+  "sha256": "3210e6c7452cc2950d882ebca072e339e4585f7ad201b3fe250c42fb09cb18ff",
+  "bytes": 2330761,
+  "size": [
+   1536,
+   1024
+  ],
+  "date": "2026-10-25",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: daytime, a plain desk seen from the front: the main character sits at the desk on the left, calm and focused, holding a pencil in one front paw and drawing the first line on a blank sheet of paper; on the right side of the same desk sit the shoulder, arm and two hands of an adult person drawn in plain grey ink lines, quietly writing in a blank open notebook, the person's face is out of the frame; both work in silence side by side; the flame on the tip of the main character's tail is a small steady bright flame. LAYOUT: the main character's whole outline in the left half; the person's arm and notebook in the right third; a clear gap of desk between them; nothing else on the desk. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1536x1024",
+  "quality": "medium",
+  "price": 140625,
+  "source": "scripts/reel_draw.py videos/03_lenivyi/reel"
+ },
+ {
+  "file": "2026-10-25_gen_cx_gpt-image-2_53e40c7b.png",
+  "sha256": "53e40c7b39d134369e830b3ebf7c0d42ae056f5fb1979d28b985f0b4cb945299",
+  "bytes": 1974753,
+  "size": [
+   1531,
+   1027
+  ],
+  "date": "2026-10-25",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: evening, a plain desk by a dark window: the main character sits at the desk, slumped, its head propped on one front paw, eyes half closed and heavy, faint grey shadows under the eyes, utterly drained but not asleep; in front of it lies one blank sheet of paper and a pencil it has not touched; a cup stands to one side; the flame on the tip of its tail is a tiny dim ember with a thin wisp of grey smoke. LAYOUT: the main character is the biggest object in the centre, whole outline visible; the window is small and behind it; nothing touches the main character. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1536x1024",
+  "quality": "medium",
+  "price": 140625,
+  "source": "scripts/reel_draw.py videos/05_ustal/reel"
+ },
+ {
+  "file": "2026-10-25_gen_cx_gpt-image-2_f140ef8b.png",
+  "sha256": "f140ef8bacedf7c7b517ade75f601d60ca5433dff1dc7f7d3d0de5b42e4d0c6f",
+  "bytes": 2567624,
+  "size": [
+   1254,
+   1254
+  ],
+  "date": "2026-10-25",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: night, a quiet bedroom in soft blue-grey shadow: the main character sits on the edge of a plain bed, raising one front paw like a solemn promise, looking up with a determined but tired face at a round wall clock that has a blank face without numbers or hands; a phone with a dark blank screen lies face up on the blanket beside it; the flame on the tip of its tail is a small dim flame. LAYOUT: the main character is the biggest object, whole outline visible, left of centre; the clock is small, high on the wall to the right; a clear gap of wall between them. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1536x1024",
+  "quality": "medium",
+  "price": 140625,
+  "source": "scripts/reel_draw.py videos/04_noch/reel"
+ },
+ {
   "file": "2026-10-25_neutral_2fe4c340.png",
   "sha256": "2fe4c340ffe2ccea23fab8c9c0c221fdc543cf5f34be2ddcc8235822fd6ad8e9",
   "bytes": 1296133,

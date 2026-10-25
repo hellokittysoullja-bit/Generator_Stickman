@@ -824,6 +824,45 @@ def check_spec(spec, sfx_names):
     return err
 
 
+MONTAGE_STANDARD = 14       # правила монтажа 25.10 (сравнение с эп.02 v9 по слову владельца) — для рилсов стандарта ≥ 14
+DOLL_FROM = 0.72            # кукла на пустом листе — только в конце: в образце эп.02 v9 она с 75 % ролика, у нас была
+                            # с 35–45 % и занимала 30–39 % времени («вода» посреди рисунков)
+MIN_DRAWINGS = 6            # разных рисунков в рилсе: в образце 5, владелец — «всегда на 1 больше, для разнообразия»
+ACCENT_PER_10S = 4.0        # акцентов на 10 с: в образце ~6 (входы наездом, удары-наезды, тряска, прожектор, круг,
+ACCENT_KINDS_MIN = 5        # пометки, стрелка), у нас было ~2; видов — не меньше пяти («всех чуть-чуть», владелец)
+ACCENT_EVENT_KINDS = ("punch", "shake", "spot", "circle", "arrow", "write", "mark")
+
+
+def check_montage(spec, shots, events, total):
+    """Монтаж по образцу эп.02 v9 (владелец 25.10): кукла только в конце, на один рисунок больше образца (и хотя бы один
+    нарисован для этого рилса — reel/gen/), акценты — часто и разные. Для рилсов стандарта ≥ MONTAGE_STANDARD."""
+    if ((spec.get("passport") or {}).get("standard") or 0) < MONTAGE_STANDARD:
+        return []
+    err = []
+    early = [s for s in shots if s.get("kind") == "doll" and s["t0"] < DOLL_FROM * total - 0.02]
+    if early:
+        at = ", ".join(f"{s['t0']:.1f}" for s in early)
+        err.append(f"кукла на {at} с — раньше {DOLL_FROM:.0%} ролика "
+                   f"({DOLL_FROM * total:.1f} с): посреди рисунков она — пустой лист; её место — финал (образец эп.02 v9)")
+    srcs = spec.get("sources", {})
+    used = {s.get("src") for s in shots if s.get("kind", "crop") in ("crop", "fit") and s.get("src")}
+    if len(used) < MIN_DRAWINGS:
+        err.append(f"рисунков {len(used)} < {MIN_DRAWINGS}: на один больше образца — новый рисунок для разнообразия (reel_draw.py)")
+    if not any(str((srcs.get(k) or {}).get("frame", "")).startswith("gen/") for k in used):
+        err.append("ни одного рисунка, нарисованного для этого рилса (reel/gen/): хотя бы один свой кадр")
+    acc = [(e["kind"], e["t"]) for e in events if e.get("kind") in ACCENT_EVENT_KINDS and not e.get("anchor")]
+    acc += [("whip" if s.get("whip") else "zoom_in", s["t0"]) for s in shots[1:] if s.get("whip") or s.get("zoom_in")]
+    acc += [("anim", s["t0"]) for s in shots if s.get("anim")]
+    rate = len(acc) / max(total, 1e-3) * 10
+    if rate < ACCENT_PER_10S:
+        err.append(f"акцентов {len(acc)} за {total:.0f} с — {rate:.1f} на 10 с < {ACCENT_PER_10S}: вход наездом, удар-наезд, "
+                   "тряска, прожектор, круг, пометка, стрелка — на смысловых словах (образец эп.02 v9: ~6 на 10 с)")
+    kinds = {k for k, _ in acc}
+    if len(kinds) < ACCENT_KINDS_MIN:
+        err.append(f"видов акцентов {len(kinds)} ({', '.join(sorted(kinds))}) < {ACCENT_KINDS_MIN}: всех понемногу, не одно и то же")
+    return err
+
+
 def check_hook_gap(times, spans, beats):
     """Мёртвая пауза после хука: голос первой фразы кончился, а вторая ждёт пика riser дольше HOOK_GAP_MAX. Лечится
     не паузой, а riser: dt первой фразы отрицательный — файл звучит с середины, пик раньше (riser всё равно с 0 с)."""

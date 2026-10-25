@@ -1,8 +1,11 @@
 {
- "style_refs": ["../../01_sdvg_pismo/frames/004.png"],
+ "style_refs": [
+  "../../01_sdvg_pismo/frames/004.png"
+ ],
  "jobs": {
   "u1_floor": "very low angle at floor level, close: the main character lies flat on its belly on a plain floor like a melted puddle, all four legs spread, chin on the floor, completely exhausted, eyes half closed and dull; the flame on the tip of its tail is a tiny dim ember with a thin wisp of grey smoke; one closed white envelope lies on the floor far behind it, small and out of focus. LAYOUT: the main character is the biggest object in the lower middle, whole outline visible; the envelope is small in the background with a clear gap between them.",
   "u2_glass": "the main character stands on a plain floor holding one full glass of water straight out at arm's length with one front paw; the paw trembles with small shake lines, the character strains with gritted teeth and a drop of sweat on its forehead, the water surface is level and full to the brim; the flame on the tip of its tail is small and dim. LAYOUT: the main character and the glass are side by side with a small gap, both whole and large in the centre of the frame.",
-  "u3_glass_down": "the main character has just set one full glass of water down on a plain small table and lets go of it; it exhales with relief, eyes closed, a small happy smile, shoulders relaxed; the flame on the tip of its tail burns medium and bright orange. LAYOUT: the main character and the table with the glass stand side by side with a clear gap of plain background between them, both whole and large in the frame."
+  "u3_glass_down": "the main character has just set one full glass of water down on a plain small table and lets go of it; it exhales with relief, eyes closed, a small happy smile, shoulders relaxed; the flame on the tip of its tail burns medium and bright orange. LAYOUT: the main character and the table with the glass stand side by side with a clear gap of plain background between them, both whole and large in the frame.",
+  "u5_drained": "evening, a plain desk by a dark window: the main character sits at the desk, slumped, its head propped on one front paw, eyes half closed and heavy, faint grey shadows under the eyes, utterly drained but not asleep; in front of it lies one blank sheet of paper and a pencil it has not touched; a cup stands to one side; the flame on the tip of its tail is a tiny dim ember with a thin wisp of grey smoke. LAYOUT: the main character is the biggest object in the centre, whole outline visible; the window is small and behind it; nothing touches the main character."
  }
 }

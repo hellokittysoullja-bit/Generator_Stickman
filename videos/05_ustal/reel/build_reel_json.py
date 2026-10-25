@@ -8,7 +8,7 @@ W = {
  "hook_face": ([740, 720, 400], [740, 725, 370]),
  "brain": ([632, 440, 830], [632, 450, 760]),
  "brain_face": ([600, 470, 420], [600, 480, 400]),
- "glass": ([600, 620, 1000], [600, 620, 900]),
+ "glass": ([470, 640, 1000], [500, 640, 940]),
  "glass_paw": ([330, 560, 520], [330, 560, 480]),
  "down": ([880, 560, 1000], [880, 560, 900]),
  "env": ([960, 500, 760], [960, 500, 700]),
@@ -20,6 +20,9 @@ W = {
  "open": ([700, 470, 800], [700, 460, 740]),
  "pressed": ([770, 590, 600], [770, 595, 560]),          # Б: конверт придавил кота — морда с конвертом, окно как задано
  "pressed_env": ([820, 560, 300], [820, 560, 285]),     # окно Б сжимается по высоте туши — крупный план ×1.5
+ "drained": ([640, 520, 1010], [660, 500, 900]),         # f7 (25.10, +1 рисунок): кот без сил за столом вместо куклы посреди
+ "drained_face": ([760, 470, 520], [760, 470, 470]),
+ "drained_tail": ([340, 470, 420], [345, 480, 380]),
 }
 def sh(at, src, key, **kw):
     f, t = W[key]; return dict(at=at, src=src, **{"from": f}, to=t, **kw)
@@ -34,23 +37,27 @@ beats = [
       shots=[sh(0, "fb", "pressed", zoom_in=0.12, keep_window=True), sh(5, "f4", "brain_face")],
       fx=[dict(kind="punch", at=4, style="cut", amt=0.22, hold=0.45)]),   # удар-наезд склейкой на «поможет» (25.10, Tella add-zooms)   # «сколько ни лежи» — груз в голове
  dict(text="Ничего не делал, |а сил *нет*.",
-      shots=[sh(0, "f1", "hook_env")], fx=[]),
+      shots=[sh(0, "f1", "hook_env"), sh(3, "f1", "hook_face", zoom_in=0.12)],
+      fx=[dict(kind="spot", at=5, x=700, y=690, r=260)]),
  dict(text="Потому что дело висело, |и ты весь день носил его в *голове*.",
-      shots=[sh(0, "f4", "brain"), sh(4, "f4", "brain_face")], fx=[]),
+      shots=[sh(0, "f4", "brain"), sh(4, "f4", "brain_face")], fx=[dict(kind="spot", at=3, x=900, y=180, r=170)]),
  dict(text="Это как держать стакан воды на вытянутой руке: |он лёгкий, а через час рука *отваливается*.",
-      shots=[sh(0, "f2", "glass"), sh(5, "f2", "glass_face"), sh(10, "f2", "glass_paw")], fx=[dict(kind="shake", at=14, dur=0.4)]),
+      shots=[sh(0, "f2", "glass"), sh(5, "f2", "glass_face"), sh(10, "f2", "glass_paw")],
+      fx=[dict(kind="circle", at=3, x=210, y=540, rx=130, ry=150, hold=0.0), dict(kind="shake", at=14, dur=0.4)]),
  dict(text="У меня тоже так. |Я думал, что ленюсь, |а я был *вымотан*.",
-      shots=[doll(0, 540, 760, 640, [dict(t=0.0, do="flame", state="ember"), dict(t=0.8, do="tilt", deg=6, dur=1.0)], sound="swoosh_deep"),
-             doll(6, actions=[dict(t=0.0, do="flame", state="ember"), dict(t=0.3, do="tilt", deg=-5, dur=0.9)], zoom=[1.0, 1.05], **CLOSE)],
-      fx=[dict(kind="write", at=1, dt=0.15, text="Напарник", x=540, y=300, size=200, dur=0.6, pen=True, red=False, hold=1.0)]),
+      shots=[sh(0, "f7", "drained", zoom_in=0.15), sh(4, "f7", "drained_face"), sh(8, "f7", "drained_tail")],
+      fx=[dict(kind="spot", at=11, x=400, y=470, r=150)]),   # 25.10: кукла ушла в финал (образец эп.02 v9), здесь — рисунок
  dict(text="Но стакан можно *поставить*.",
-      shots=[sh(0, "f3", "down", zoom_in=0.2)], fx=[dict(kind="sfx", name="riser", at=0, align="start", dt=-1.72)]),
+      shots=[sh(0, "f3", "down", zoom_in=0.2)],
+      fx=[dict(kind="sfx", name="riser", at=0, align="start", dt=-1.72), dict(kind="circle", at=3, x=1120, y=610, rx=110, ry=130)]),
  dict(text="Я делал с этим делом что-то крошечное, |хотя бы открывал его, |и голове становилось *легче*.",
       shots=[sh(0, "f6", "open"), sh(5, "f6", "env_close"), doll(11, 540, 780, 640, [dict(t=0.0, do="flame", state="golden"), dict(t=0.0, do="face", name="happy")])],
-      fx=[dict(kind="sfx", name="level_up", at=11)]),
- dict(text="Напиши в комментах, |какое дело ты сейчас носишь в *голове*.",
+      fx=[dict(kind="punch", at=9, style="cut", amt=0.18, hold=0.4), dict(kind="sfx", name="level_up", at=11),
+          dict(kind="write", at=11, dt=0.25, text="Напарник", x=540, y=300, size=200, dur=0.6, pen=True, red=False, hold=1.0)]),
+ dict(text="Напиши в комментах, |какое дело ты сейчас |носишь в *голове*.",
       shots=[doll(0, 540, 790, 620, [dict(t=0.0, do="flame", state="golden"), dict(t=0.5, do="tilt", deg=5, dur=0.9)]),
-             doll(3, actions=[dict(t=0.0, do="flame", state="golden"), dict(t=0.2, do="look", x=0.0, y=0.0, dur=0.6)], zoom=[1.0, 1.05], **CLOSE)],
+             doll(3, actions=[dict(t=0.0, do="flame", state="golden"), dict(t=0.2, do="look", x=0.0, y=0.0, dur=0.6)], zoom=[1.0, 1.05], **CLOSE),
+             doll(7, 540, 790, 600, [dict(t=0.0, do="flame", state="golden"), dict(t=0.1, do="tilt", deg=-5, dur=0.8)])],
       fx=[]),
  dict(text="И отправь тому, |кто думает, что ты *отдыхал*.",
       shots=[doll(0, 540, 800, 600, [dict(t=0.0, do="flame", state="golden"), dict(t=0.0, do="face", name="happy")]),
@@ -212,6 +219,6 @@ passport = apply_perm(passport, P)
 spec = dict(title="Кот и дела · серия 4: «Лежал и устал.» (голос Daniel)", rate=1.15, lead_in=0.0, tail=0.45,
             sources={"f1": {"frame": "gen/u1_floor.png"}, "fb": {"frame": "gen/u4_envelope_on_back.png"}, "f2": {"frame": "gen/u2_glass.png"}, "f3": {"frame": "gen/u3_glass_down.png"},
                      "f4": {"frame": "../../01_sdvg_pismo/frames/002.png"}, "f5": {"frame": "../../01_sdvg_pismo/frames/003.png"},
-                     "f6": {"frame": "../../01_sdvg_pismo/frames/004.png"}},
+                     "f6": {"frame": "../../01_sdvg_pismo/frames/004.png"}, "f7": {"frame": "gen/u5_drained.png"}},
             beats=beats, passport=passport)
 save(OUT, spec)

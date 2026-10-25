@@ -1,15 +1,18 @@
 # Библиотека оригиналов: кот и всё, что сгенерировано
 
-Картинок: **46**, 63 МБ. Оригиналы — `originals/` байт в байт, как пришли из модели (PNG без пересжатия); `thumbs/` — превью для этой страницы; `catalog.json` — промпт, модель, цена, где используется.
+Картинок: **49**, 70 МБ. Оригиналы — `originals/` байт в байт, как пришли из модели (PNG без пересжатия); `thumbs/` — превью для этой страницы; `catalog.json` — промпт, модель, цена, где используется.
 
 Пополняется сама: каждая генерация через шлюз (`llm_gateway.Gateway.image`) кладёт картинку сюда, включая забракованные варианты. Собрать уже лежащее в репозитории: `python scripts/cat_library.py --scan`.
 
-## генерация (2)
+## генерация (5)
 
 | превью | оригинал | где | промпт |
 |---|---|---|---|
 | ![](thumbs/2026-10-25_gen_cx_gpt-image-2_1462d865.jpg) | [2026-10-25_gen_cx_gpt-image-2_1462d865.png](originals/2026-10-25_gen_cx_gpt-image-2_1462d865.png)<br>1531×1027, 2026-10-25 | ../../../tmp/claude-0/-home-user-Generator-Stickman/7605bd81-268a-5536-b1b7-f9696ca784cb/scratchpad/hookproto/pose_b.py | Image 1 is a finished frame of an animation. Draw the very next key frame of the same shot: exactly the same camera angle, framing, scale, room, bed or floor, background, colors, line work, paper and lighting as image 1,… |
 | ![](thumbs/2026-10-25_gen_cx_gpt-image-2_2e233aa5.jpg) | [2026-10-25_gen_cx_gpt-image-2_2e233aa5.png](originals/2026-10-25_gen_cx_gpt-image-2_2e233aa5.png)<br>1531×1027, 2026-10-25 | ../../../tmp/claude-0/-home-user-Generator-Stickman/7605bd81-268a-5536-b1b7-f9696ca784cb/scratchpad/hookproto/pose_b.py | Image 1 is a finished frame of an animation. Draw the very next key frame of the same shot: exactly the same camera angle, framing, scale, room, bed or floor, background, colors, line work, paper and lighting as image 1,… |
+| ![](thumbs/2026-10-25_gen_cx_gpt-image-2_3210e6c7.jpg) | [2026-10-25_gen_cx_gpt-image-2_3210e6c7.png](originals/2026-10-25_gen_cx_gpt-image-2_3210e6c7.png)<br>1536×1024, 2026-10-25 | scripts/reel_draw.py videos/03_lenivyi/reel | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
+| ![](thumbs/2026-10-25_gen_cx_gpt-image-2_53e40c7b.jpg) | [2026-10-25_gen_cx_gpt-image-2_53e40c7b.png](originals/2026-10-25_gen_cx_gpt-image-2_53e40c7b.png)<br>1531×1027, 2026-10-25 | scripts/reel_draw.py videos/05_ustal/reel | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
+| ![](thumbs/2026-10-25_gen_cx_gpt-image-2_f140ef8b.jpg) | [2026-10-25_gen_cx_gpt-image-2_f140ef8b.png](originals/2026-10-25_gen_cx_gpt-image-2_f140ef8b.png)<br>1254×1254, 2026-10-25 | scripts/reel_draw.py videos/04_noch/reel | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
 
 ## герой: состояние (3)
 

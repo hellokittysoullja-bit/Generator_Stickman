@@ -755,6 +755,7 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     caps_txt[0]["t0"] = 0.0                            # хук стоит с первого кадра (still)
     rule_errs += hook_split_errors(words, times, spans)
     rule_errs += reel_rules.check_hook_gap(times, spans, beats)
+    rule_errs += reel_rules.check_montage(spec, shots, events, total)
     rule_errs += reel_rules.check_timeline(shots, events, {k: v[1] for k, v in SFX.items()}, caps_txt, total)
     rule_errs += reel_rules.check_overlays([(i, tx, x0, y0 + PIC_TOP, x1, y1 + PIC_TOP)    # картинка — с PIC_TOP экрана
                                             for i, tx, x0, y0, x1, y1 in overlay_boxes(events, shots)], PIC_TOP + PH)
