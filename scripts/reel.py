@@ -513,7 +513,15 @@ SFX_DIR = os.path.join(ROOT, "assets", "sfx", "reels")
 # библиотека звуков владельца с описаниями «что значит и когда ставить» — assets/sfx/reels/library.json
 SFX_LIB = {k: v for k, v in json.load(open(os.path.join(SFX_DIR, "library.json"), encoding="utf8")).items() if not k.startswith("_")}
 SFX = {k: (v["file"], v["peak_sec"], v["level_db"]) for k, v in SFX_LIB.items()}   # файл, пик (с), громкость пика (dBFS)
-VOICE_SFX_TRIM_DB = -7.0   # с озвучкой (-14 LUFS) звуки на 7 дБ тише: свист -17, riser -14 — под голосом, не поверх
+# Громкость звука — по роли, от голоса (25.10, калибровка ghost-editor по 6 топ-рилсам, docs/reels_knowledge/tools_review_2510.md):
+# пик звука = p95 пиков голоса (окна 50 мс) + ROLE_DB[роль] + gain_db события. До 25.10 стояли подобранные на глаз −2…−8 дБ
+# и общие −7 дБ под голосом: замер рилсов v2 — «уф» на 7 дБ тише цели, свисты склеек −15…−21 дБ к голосу, у порога «не слышно».
+ROLE_DB = {"ui": -14.0, "whoosh": -12.0, "impact": -8.0, "meme": -3.0}
+VOICE_P95_NOMINAL = -5.0   # немой черновик: p95 пиков голоса Lumean −16 LUFS (замер трёх рилсов v2 — −5.0 dBFS)
+SFX_LOUDER_MAX = 1.5       # пик звука выше голоса больше чем на 1.5 дБ — громче голоса (ошибка)
+SFX_INAUDIBLE = -22.0      # ниже −22 дБ к голосу — не слышно (ошибка)
+SFX_OFF_TARGET = 4.0       # дальше 4 дБ от цели роли — наложение звуков (предупреждение)
+SOFT_DB = {"zoom": -5.0, "new_picture": -3.0, "same_picture": -6.0}   # переходные звуки — фактура, тише своей роли
 _SFX = {}
 
 def sfx(name):
@@ -775,18 +783,23 @@ def build(reel_dir, sheet=False, preview=False, force=False):
         hook_clock["t_end"] = hook_clock["t1"] + 0.9
         if hook_clock.get("hide_on_cut"):            # часы уходят вместе со своим планом, а не висят над следующим
             hook_clock["t_end"] = min([s["t0"] for s in shots if s["t0"] > hook_clock["t1"]] + [hook_clock["t_end"]])
+    wav = os.path.join(reel_dir, "reel_audio.wav")      # звук до картинки: его проверка дешёвая, рендер — нет
+    snd = mix_audio(wav, total, shots, events, spec, voiced, voice_segments(reel_dir, nat, times) if nat else None,
+                    words=times if voiced else None)
+    print(f"  звук: голос p95 {snd['voice_p95']} dBFS, звуков {len(snd['sounds'])}")
+    for m in snd["warnings"]: print("  ⚠", m)
+    for m in snd["errors"]: print("  ✗", m)
+    if snd["errors"] and not force:
+        raise SystemExit("звук: " + "; ".join(snd["errors"]) + " — рендер остановлен (--force — только с причиной)")
     vid = os.path.join(reel_dir, "reel_preview.mp4" if preview else "reel_video.mp4")
     fps = 15 if preview else FPS
     render_video(reel_dir, vid, fps, total, shots, events, caps, words, times, tex, hook_clock)
 
-    wav = os.path.join(reel_dir, "reel_audio.wav")
-    mix_audio(wav, total, shots, events, spec, voiced, voice_segments(reel_dir, nat, times) if nat else None)
     out = os.path.join(reel_dir, "reel_preview_av.mp4" if preview else "reel.mp4")
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", vid, "-i", wav, "-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
                     "-shortest", "-movflags", "+faststart", out], check=True)
     json.dump(dict(total=total, voiced=voiced, picture_h=PH, words=times,
-                   sounds=[dict(name=p["name"], peak=round(p["peak"], 3), gain_db=p["gain_db"], soft=p["soft"])
-                           for p in sorted(sound_plan(shots, events), key=lambda p: p["peak"])],
+                   voice_p95=snd["voice_p95"], sounds=sorted(snd["sounds"], key=lambda r: r["peak"]),
                    events=[dict(kind=e["kind"], t=round(e["t"], 3), beat=e.get("beat"), **({"name": e["name"]} if e.get("name") else {}))
                            for e in sorted(events, key=lambda e: e["t"])],
                    shots=[dict(t0=round(s["t0"], 3), t1=round(s["t1"], 3), kind=s.get("kind", "crop"), src=s.get("src"),
@@ -934,13 +947,25 @@ def motion_blur(img, dx, dy):
     else: ker[:, k // 2] = 1
     return cv2.filter2D(img, -1, ker / k)
 
+def punch_at(events, s, t):
+    """Наезды плана в момент t. Обычный — 0.12 с с торможением и держится до конца плана; style "cut" — склейкой в
+    один кадр, держится hold и склейкой назад: «сглаженный удар убит» (HyperFrames film.md; Tella add-zooms 1.18–1.30)."""
+    punch = 1.0
+    for e in events:
+        if e["kind"] == "punch" and s["t0"] <= e["t"] <= t < s["t1"]:
+            if e.get("style") == "cut":
+                if t < e["t"] + e.get("hold", 1e9):
+                    punch *= 1 + e.get("amt", 0.22)
+            else:
+                punch *= 1 + e.get("amt", 0.14) * ease_out((t - e["t"]) / 0.12)
+    return punch
+
 def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock, total):
     s = next(x for x in shots if x["t0"] <= t < x["t1"] or x is shots[-1])
     kind = s.get("kind", "crop")
-    shake = (0.0, 0.0); punch = 1.0; rot = 0.0
+    shake = (0.0, 0.0); rot = 0.0
+    punch = punch_at(events, s, t)
     for e in events:
-        if e["kind"] == "punch" and s["t0"] <= e["t"] <= t < s["t1"]:
-            punch *= 1 + e.get("amt", 0.14) * ease_out((t - e["t"]) / 0.12)     # наезд держится до конца плана
         if e["kind"] == "shake" and 0 <= t - e["t"] < e.get("dur", 0.45):
             k = 1 - (t - e["t"]) / e.get("dur", 0.45); A = e.get("amp", 22) * k
             shake = (A * math.sin(t * 93), A * 0.7 * math.cos(t * 71)); rot = 0.6 * k * math.sin(t * 57)
@@ -1158,7 +1183,8 @@ def sound_plan(shots, events):
         pk = SFX[name][1] / rate
         peak = t if align == "peak" else t + pk
         placed.append(peak)
-        plan.append(dict(name=name, t=t, align=align, gain_db=gain_db, pan=pan, rate=rate, peak=peak, soft=soft, whip=whip))
+        plan.append(dict(name=name, t=t, align=align, gain_db=gain_db, pan=pan, rate=rate, peak=peak, soft=soft, whip=whip,
+                         role=SFX_LIB[name]["role"]))
     for k, sh in enumerate(shots):
         if k and sh.get("whip") and sh.get("sound", "swoosh"):        # кадр едет справа — звук справа налево
             add(sh.get("sound", "swoosh"), sh["t0"], gain_db=sh.get("gain_db", 0.0), pan=0.3 if sh["whip"][0] < 0 else -0.3, whip=True)
@@ -1172,7 +1198,7 @@ def sound_plan(shots, events):
     soft_done = []
     for tt in sorted(soft):                           # и не чаще раза в 3 с: эталон v11 — три тихих свиста через 1.5 с
         if all(abs(tt - p) > 1.0 for p in placed) and all(abs(tt - q) > 3.0 for q in soft_done):
-            add("swoosh", tt, gain_db=-7.0, soft=True); soft_done.append(tt)
+            add("swoosh", tt, gain_db=SOFT_DB["zoom"], soft=True); soft_done.append(tt)
     # звук перехода на каждой склейке (владелец 24.10: «на новой картинке свуш, там другой свуш» — склейка без звука
     # проваливается): новая картинка — свист, по очереди обычный и короткий, разной скорости; тот же рисунок ближе —
     # тихий короткий свист. Не ставится, если рядом (CUT_SOUND_NEAR) уже звучит смысловой звук.
@@ -1185,9 +1211,9 @@ def sound_plan(shots, events):
         new_pic = prev is None or (sh.get("src") or sh.get("kind")) != (prev.get("src") or prev.get("kind"))
         if new_pic:
             name = ("swoosh", "fast_whoosh")[alt % 2]; alt += 1
-            add(name, t, gain_db=-4.0 if name == "swoosh" else -2.0, soft=True, whip=True)
+            add(name, t, gain_db=SOFT_DB["new_picture"], soft=True, whip=True)
         else:
-            add("fast_whoosh", t, gain_db=-8.0, soft=True)
+            add("fast_whoosh", t, gain_db=SOFT_DB["same_picture"], soft=True)
     return plan
 
 def voice_segments(reel_dir, nat, times):
@@ -1204,26 +1230,49 @@ def voice_segments(reel_dir, nat, times):
         segs.append(dict(src=path, s0=s0, s1=s1, dst=s0 + d0)); a = k
     return segs
 
-def mix_audio(path, total, shots, events, spec, voiced=False, voice=None):
+def voice_p95(v):
+    """p95 пиков голоса по окнам 50 мс там, где голос есть (окно громче −40 dBFS) — опора громкости звуков (ghost-editor)."""
+    win = int(0.05 * SR); n = len(v) // win
+    if n == 0: return VOICE_P95_NOMINAL
+    pk = np.abs(v[:n * win]).reshape(n, win).max(1)
+    pk = pk[pk > 10 ** (-40 / 20)]
+    return float(20 * np.log10(np.percentile(pk, 95))) if len(pk) else VOICE_P95_NOMINAL
+
+def sound_levels(plan, sfx_mono, vp, words=None):
+    """Замер каждого звука на дорожке звуков (без голоса): пик против голоса и против цели роли. Ошибки — громче голоса и
+    не слышно; предупреждения — далеко от цели (наложение) и мем-звук на слове (его место — пауза после слова)."""
+    out, err, warn = [], [], []
+    for p in plan:
+        i0 = max(0, int(p["t0"] * SR)); dur = min(SFX_LIB[p["name"]]["duration_sec"] / p["rate"], 3.0) + 0.1
+        seg = sfx_mono[i0:i0 + int(dur * SR)]
+        mix_pk = float(20 * np.log10(max(float(np.abs(seg).max()) if len(seg) else 0.0, 1e-9)))
+        own = p.get("own_db", mix_pk)                 # пик самого звука; mix_pk — вместе с наложенными соседями
+        rel, rel_mix = own - vp, mix_pk - vp; tgt = ROLE_DB[p.get("level_role", p["role"])] + p["gain_db"]
+        r = dict(name=p["name"], role=p.get("level_role", p["role"]), peak=round(p["peak"], 3), soft=p["soft"],
+                 gain_db=p["gain_db"], vs_voice_db=round(rel, 1), with_overlap_db=round(rel_mix, 1), target_db=round(tgt, 1))
+        where = f"«{p['name']}» на {p['peak']:.2f} с"
+        if rel_mix > SFX_LOUDER_MAX:
+            err.append(f"{where}: {rel_mix:+.1f} дБ к голосу вместе с соседями — громче голоса"); r["flag"] = "loud"
+        elif rel < SFX_INAUDIBLE:
+            err.append(f"{where}: {rel:+.1f} дБ к голосу — не слышно (порог {SFX_INAUDIBLE:.0f})"); r["flag"] = "inaudible"
+        elif abs(rel - tgt) > SFX_OFF_TARGET:
+            warn.append(f"{where}: {rel - tgt:+.1f} дБ от цели роли — что-то сбило уровень"); r["flag"] = "off_target"
+        if p.get("level_role") == "impact" and p["role"] == "meme":
+            warn.append(f"{where}: мем-звук на слове — громкость удара ({ROLE_DB['impact']:.0f}), а не мема "
+                        f"({ROLE_DB['meme']:.0f}): мем громок, только когда стоит в паузе после слова (ghost-editor)")
+        out.append(r)
+    return out, err, warn
+
+def on_word(t, words):
+    return bool(words) and any(w["start"] <= t <= w["end"] for w in words)
+
+def mix_audio(path, total, shots, events, spec, voiced=False, voice=None, words=None):
     """Звук рилса по sound_plan. Повтор одного звука — каждый чуть другой (разбор 23.10: Gaku Lange, Marketing
     Demons — одинаковый свист «15 раз» слышен): скорость/высота по кругу 1.00 / 0.95 / 1.05 / 0.97 / 1.03, это тот же
-    звук владельца, не чужой; панорама — по направлению хлёста. Первое появление звука — как в файле."""
-    n = int((total + 0.2) * SR); tr = np.zeros((n, 2), np.float32)
-    for p in sound_plan(shots, events):
-        x = sfx(p["name"]) * (10 ** (p["gain_db"] / 20)); rate = p["rate"]
-        if rate != 1.0:
-            src_t = np.arange(int(len(x) / rate)) * rate
-            x = np.stack([np.interp(src_t, np.arange(len(x)), x[:, ch]) for ch in (0, 1)], axis=1).astype(np.float32)
-        if p["pan"]:
-            pan = p["pan"]
-            x = x * np.array([math.cos((pan + 1) * math.pi / 4), math.sin((pan + 1) * math.pi / 4)], np.float32) * math.sqrt(2)
-        pk = SFX[p["name"]][1] / rate
-        t0 = p["t"] - (pk if p["align"] == "peak" else 0.0)
-        i = int(t0 * SR)
-        if i < 0: x = x[-i:]; i = 0
-        m = min(len(x), n - i)
-        if m > 0: tr[i:i + m] += x[:m]
-    if voiced: tr *= 10 ** (VOICE_SFX_TRIM_DB / 20)
+    звук владельца, не чужой; панорама — по направлению хлёста. Первое появление звука — как в файле.
+    Громкость — по роли от голоса (ROLE_DB). Возвращает замер каждого звука (sound_levels)."""
+    n = int((total + 0.2) * SR)
+    vt = np.zeros((n, 2), np.float32)
     for seg in voice or ():                           # голос по кускам на свои места; края 10 мс без щелчков
         p = subprocess.run(["ffmpeg", "-v", "error", "-i", seg["src"], "-ac", "2", "-ar", str(SR), "-f", "f32le", "-"],
                            capture_output=True, check=True)
@@ -1234,12 +1283,36 @@ def mix_audio(path, total, shots, events, spec, voiced=False, voice=None):
         i = int(seg["dst"] * SR)
         if i < 0: x = x[-i:]; i = 0
         m = min(len(x), n - i)
-        if m > 0: tr[i:i + m] += x[:m]
+        if m > 0: vt[i:i + m] += x[:m]
+    vp = voice_p95(np.abs(vt).max(1)) if voice else VOICE_P95_NOMINAL   # пик по громкому каналу — как нормирует sfx()
+    st = np.zeros((n, 2), np.float32)
+    plan = sound_plan(shots, events)
+    for p in plan:
+        if p["role"] == "meme" and on_word(p["peak"], words):
+            p["level_role"] = "impact"                 # мем на слове заглушил бы слово — уровень удара
+        lvl = SFX[p["name"]][2]                       # sfx() отдаёт пик на level_db — приводим к цели роли
+        x = sfx(p["name"]) * (10 ** ((vp + ROLE_DB[p.get("level_role", p["role"])] + p["gain_db"] - lvl) / 20)); rate = p["rate"]
+        if rate != 1.0:
+            src_t = np.arange(int(len(x) / rate)) * rate
+            x = np.stack([np.interp(src_t, np.arange(len(x)), x[:, ch]) for ch in (0, 1)], axis=1).astype(np.float32)
+        if p["pan"]:
+            pan = p["pan"]
+            x = x * np.array([math.cos((pan + 1) * math.pi / 4), math.sin((pan + 1) * math.pi / 4)], np.float32) * math.sqrt(2)
+        pk = SFX[p["name"]][1] / rate
+        t0 = p["t"] - (pk if p["align"] == "peak" else 0.0)
+        p["t0"] = t0; p["own_db"] = float(20 * np.log10(max(float(np.abs(x).max()), 1e-9)))
+        i = int(t0 * SR)
+        if i < 0: x = x[-i:]; i = 0
+        m = min(len(x), n - i)
+        if m > 0: st[i:i + m] += x[:m]
+    levels = sound_levels(plan, np.abs(st).max(1), vp, words)
+    tr = vt + st
     peak = float(np.abs(tr).max())
     if peak > 0.89: tr *= 0.89 / peak                 # наложение двух звуков не клипует: пик не выше -1 dBFS
     pcm = (np.clip(tr, -1, 1) * 32767).astype(np.int16)
     with wave.open(path, "wb") as w:
         w.setnchannels(2); w.setsampwidth(2); w.setframerate(SR); w.writeframes(pcm.tobytes())
+    return dict(voice_p95=round(vp, 1), sounds=levels[0], errors=levels[1], warnings=levels[2])
 
 def write_srt(path, caps, words):
     def ts(x):

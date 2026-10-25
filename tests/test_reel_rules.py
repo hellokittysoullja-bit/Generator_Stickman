@@ -215,7 +215,7 @@ def test_sound_plan_matches_mixer_order():
     shots = [dict(t0=0.0), dict(t0=2.0, whip=[-560, 0]), dict(t0=5.0, zoom_in=0.3), dict(t0=9.0, sound="swoosh_deep")]
     plan = reel.sound_plan(shots, [dict(kind="sfx", name="riser", t=0.0, align="start"), dict(kind="punch", t=12.5)])
     assert [x["name"] for x in plan][:5] == ["swoosh", "swoosh_deep", "riser", "swoosh", "swoosh"]
-    assert plan[0]["whip"] and plan[0]["pan"] == 0.3 and plan[3]["soft"] and plan[3]["gain_db"] == -7.0
+    assert plan[0]["whip"] and plan[0]["pan"] == 0.3 and plan[3]["soft"] and plan[3]["gain_db"] == reel.SOFT_DB["zoom"]
     assert [(x["name"], x["t"]) for x in plan[5:]] == [("swoosh", 0.0)]   # переход 24.10: удар на первом кадре
 
 
@@ -846,3 +846,60 @@ def test_hook_moves_inside_the_drawing(tmp_path):
     assert R.rehook_timing(good, [0.0, 1.7]) == [] and R.rehook_timing(good, [0.0, 4.6])
     ev = [{"kind": "mark", "anchor": True, "text": "Груз несделанного", "t": 0.0}]
     assert R.check_writing(ev, [{"t0": 0.0}, {"t0": 1.65}]) == []
+
+
+def test_sound_level_follows_role_from_voice(tmp_path):
+    """25.10: пик звука = p95 пиков голоса + цель роли (ghost-editor), а не подбор на глаз; замер на дорожке звуков."""
+    import numpy as np
+    SR = reel.SR
+    tone = (0.3 * np.sin(2 * np.pi * 220 * np.arange(int(2.0 * SR)) / SR)).astype(np.float32)   # «голос»: пик −10.5 dBFS
+    vw = tmp_path / "v.wav"
+    import wave
+    with wave.open(str(vw), "wb") as w:
+        w.setnchannels(1); w.setsampwidth(2); w.setframerate(SR); w.writeframes((tone * 32767).astype(np.int16).tobytes())
+    voice = [dict(src=str(vw), s0=0.0, s1=None, dst=0.0)]
+    events = [dict(kind="sfx", name="oof", t=3.0, align="peak"), dict(kind="sfx", name="swoosh_deep", t=6.0, align="peak"),
+              dict(kind="sfx", name="riser", t=9.0, align="peak")]
+    shots = [dict(t0=0.0)]
+    r = reel.mix_audio(str(tmp_path / "m.wav"), 11.0, shots, events, {}, True, voice)
+    assert -14.0 < r["voice_p95"] < -10.0          # −10.5 dBFS моно; ffmpeg раскладывает моно в стерео на −3 дБ
+    got = {x["name"]: x["vs_voice_db"] for x in r["sounds"]}
+    assert abs(got["oof"] - reel.ROLE_DB["meme"]) < 0.6
+    assert abs(got["swoosh_deep"] - reel.ROLE_DB["impact"]) < 0.6
+    assert abs(got["riser"] - reel.ROLE_DB["whoosh"]) < 0.6
+    assert not r["errors"]
+
+
+def test_sound_gate_catches_inaudible_and_too_loud():
+    """Звук ниже −22 дБ к голосу не слышен, выше +1.5 — громче голоса: оба ошибки, рендер не начнётся."""
+    import numpy as np
+    SR = reel.SR
+    sx = np.zeros(int(4 * SR), np.float32)
+    sx[int(0.5 * SR):int(0.6 * SR)] = 10 ** (-30 / 20)          # на −25 дБ к голосу −5
+    sx[int(2.0 * SR):int(2.1 * SR)] = 10 ** (-2 / 20)           # на +3 дБ к голосу
+    plan = [dict(name="swoosh", role="whoosh", t0=0.5, peak=0.55, rate=1.0, soft=True, gain_db=0.0),
+            dict(name="oof", role="meme", t0=2.0, peak=2.05, rate=1.0, soft=False, gain_db=0.0)]
+    out, err, warn = reel.sound_levels(plan, sx, -5.0)
+    assert len(err) == 2 and {o.get("flag") for o in out} == {"inaudible", "loud"}
+
+
+def test_meme_on_word_is_mixed_as_impact(tmp_path):
+    """Мем-звук громок (−3) только в паузе; на слове он заглушил бы слово — ставится уровнем удара (−8)."""
+    shots = [dict(t0=0.0)]
+    ev = [dict(kind="sfx", name="oof", t=1.0, align="peak"), dict(kind="sfx", name="oof", t=4.0, align="peak")]
+    r = reel.mix_audio(str(tmp_path / "m.wav"), 6.0, shots, ev, {}, False, None, words=[dict(start=0.8, end=1.3)])
+    lv = {x["peak"]: x for x in r["sounds"]}
+    assert lv[1.0]["role"] == "impact" and abs(lv[1.0]["vs_voice_db"] - reel.ROLE_DB["impact"]) < 0.6
+    assert lv[4.0]["role"] == "meme" and abs(lv[4.0]["vs_voice_db"] - reel.ROLE_DB["meme"]) < 0.6
+    assert any("мем-звук на слове" in w for w in r["warnings"])
+
+
+def test_hard_punch_jumps_holds_and_cuts_back():
+    """25.10: удар-наезд склейкой — без разгона: кадр до слова 1.0, кадр на слове уже 1.22, после hold — снова 1.0."""
+    s = dict(t0=0.0, t1=3.0)
+    ev = [dict(kind="punch", t=1.0, style="cut", amt=0.22, hold=0.45)]
+    assert reel.punch_at(ev, s, 0.99) == 1.0
+    assert abs(reel.punch_at(ev, s, 1.0) - 1.22) < 1e-9 and abs(reel.punch_at(ev, s, 1.44) - 1.22) < 1e-9
+    assert reel.punch_at(ev, s, 1.46) == 1.0
+    soft = [dict(kind="punch", t=1.0, amt=0.14)]
+    assert 1.0 < reel.punch_at(soft, s, 1.03) < 1.14             # обычный наезд — плавно

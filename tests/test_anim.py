@@ -3,6 +3,7 @@
 import os
 import sys
 
+import cv2
 import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts"))
@@ -58,3 +59,73 @@ def test_smear_trails_behind_motion():
     rgb = np.zeros((60, 60, 3), np.float32); a = np.zeros((60, 60), np.float32); a[25:35, 25:35] = 1
     _, out_a = anim._smear(rgb * a[..., None], a, (0.0, 12.0))                    # движется вниз
     assert out_a[15:25, 30].sum() > 0.5 and out_a[36:46, 30].sum() < 1e-3        # след сверху, впереди чисто
+
+
+def _disk_scene():
+    img = np.full((400, 400, 3), 250, np.float32)
+    cv2.circle(img, (200, 250), 100, (20, 20, 20), -1)                # «персонаж» стоит на полу y=350
+    mask = np.zeros((400, 400), np.float32); cv2.circle(mask, (200, 250), 130, 1.0, -1)
+    mask = cv2.GaussianBlur(mask, (0, 0), 6)
+    return img, mask
+
+
+def test_squash_follow_keeps_volume():
+    """25.10: сжатие держит площадь; старое squash_region (sx = 1 + 0.5·a) теряло её — кот «худел» на ударе."""
+    img, mask = _disk_scene()
+    def area(x):
+        return float((x[..., 0] < 128).sum())
+    a0 = area(img)
+    new = anim.squash_follow(img, mask, (200, 350), lambda t: 0.12, 1.0, lag=0.0)
+    old = anim.squash_region(img, mask, 350, 200, 1 - 0.12, 1 + 0.06)
+    assert abs(area(new) / a0 - 1) < 0.03
+    assert area(old) / a0 < 0.95
+
+
+def test_squash_follow_hit_answers_now_far_parts_lag():
+    """Захлёст 25.10: то, куда пришёлся удар, отвечает в тот же кадр; дальнее (хвост) догоняет позже."""
+    img, mask = _disk_scene()
+    cv2.rectangle(img, (300, 320), (395, 345), (20, 20, 20), -1)       # «хвост» справа у пола
+    cv2.rectangle(mask, (290, 310), (399, 350), 1.0, -1)
+
+    def amount(t):                                                     # удар сверху в t = 1.0
+        return 0.15 if t >= 1.0 else 0.0
+    now = anim.squash_follow(img, mask, (200, 350), amount, 1.02, lag=0.12, focus=(200, 150))
+    top_now = np.where((now[..., 0] < 128)[:, 150:250].any(1))[0].min()
+    assert top_now > 150 + 8                                           # голова под ударом уже опустилась
+    tail_now = np.where((now[..., 0] < 128)[:, 300:400].any(0))[0].max() + 300
+    late = anim.squash_follow(img, mask, (200, 350), amount, 1.5, lag=0.12, focus=(200, 150))
+    tail_late = np.where((late[..., 0] < 128)[:, 300:400].any(0))[0].max() + 300
+    assert tail_late > tail_now + 3                                    # хвост раздаётся вширь позже
+
+
+def test_squash_follow_rigid_object_does_not_bend():
+    """Телефон на морде — твёрдый: сдвигается целиком, прямая остаётся прямой (лист 25.10: телефон гнулся с мордой)."""
+    img, mask = _disk_scene()
+    cv2.line(img, (120, 200), (280, 200), (200, 0, 0), 6)              # «телефон» поперёк морды
+    rig = np.zeros((400, 400), np.float32)
+    cv2.rectangle(rig, (110, 190), (290, 210), 1.0, -1)
+
+    def amount(t):
+        return 0.15
+    out = anim.squash_follow(img, mask, (200, 350), amount, 1.0, lag=0.0, focus=(200, 200), rigid=[rig])
+    red = (out[..., 0] > 150) & (out[..., 1] < 80)
+    ys = [np.where(red[:, x])[0].mean() for x in (130, 200, 270) if red[:, x].any()]
+    assert len(ys) == 3 and max(ys) - min(ys) < 1.5
+    bent = anim.squash_follow(img, mask, (200, 350), amount, 1.0, lag=0.0, focus=(200, 200))
+    red = (bent[..., 0] > 150) & (bent[..., 1] < 80)
+    yb = [np.where(red[:, x])[0].mean() for x in (130, 200, 270) if red[:, x].any()]
+    assert max(yb) - min(yb) > 1.5                                     # без rigid прямая гнётся — тест не пустой
+
+
+def test_squash_follow_far_parts_lag_behind():
+    """Захлёст: в момент, когда опора уже сжалась, верх (уши) ещё нет — он запаздывает на lag."""
+    img, mask = _disk_scene()
+    def amount(t):                                                     # удар в t = 1.0
+        return 0.15 if t >= 1.0 else 0.0
+    out = anim.squash_follow(img, mask, (200, 350), amount, 1.05, lag=0.12)
+    rows = np.where((out[..., 0] < 128).any(1))[0]
+    top_still = rows.min()                                             # верх ещё не опустился
+    full = anim.squash_follow(img, mask, (200, 350), amount, 1.5, lag=0.12)
+    top_full = np.where((full[..., 0] < 128).any(1))[0].min()
+    assert top_still < top_full - 5                                    # потом верх догоняет
+    assert abs(top_still - 150) <= 6                                   # а в 1.05 стоит почти на месте (исходный верх 150)

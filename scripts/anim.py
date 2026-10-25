@@ -228,6 +228,77 @@ def squash_region(img, mask, base_y, cx, sy, sx):
     return cv2.remap(img, mx, my, cv2.INTER_CUBIC, borderMode=cv2.BORDER_REFLECT)
 
 
+_FOLLOW = {}
+CONTACT_ZONE = 0.4
+
+
+def _follow_geo(mask, base, focus):
+    """Для захлёста: доля пути от точки удара (нет удара — от опоры) до самой дальней точки персонажа: 0 — там, куда
+    пришлась сила, 1 — хвост, дальнее ухо; и вес удара. Сетка — одна на размер кадра (память четырёх процессов)."""
+    h, w = mask.shape[:2]
+    gk = ("grid", h, w)
+    if gk not in _FOLLOW:
+        ys, xs = np.mgrid[0:h, 0:w].astype(np.float32)
+        _FOLLOW[gk] = (xs, ys)
+    xs, ys = _FOLLOW[gk]
+    src = focus if focus is not None else base
+    uk = ("u", id(mask), src)
+    if uk not in _FOLLOW:
+        d = np.hypot(xs - src[0], ys - src[1])
+        r = float(d[mask > 0.5].max()) if (mask > 0.5).any() else 1.0
+        wf = None
+        if focus is not None:                         # там, куда пришёлся удар, сминается сильнее
+            wf = (0.6 + 0.4 * np.exp(-(d / (0.5 * r)) ** 2 / 2)).astype(np.float32)
+        # зона удара (до 40% пути) отвечает в тот же кадр; запаздывает только дальнее — хвост, дальнее ухо. Без зоны
+        # макушка в трети пути от пальца отставала на 1–2 кадра и на ударе почти не сминалась (замер 25.10, «ленивый»)
+        _FOLLOW[uk] = (np.clip((d / r - CONTACT_ZONE) / (1 - CONTACT_ZONE), 0, 1).astype(np.float32), wf)
+    u, wf = _FOLLOW[uk]
+    return dict(xs=xs, ys=ys, u=u, wf=wf)
+
+
+def _centroid(m):
+    k = ("c", id(m))
+    if k not in _FOLLOW:
+        ys, xs = np.nonzero(m > 0.5)
+        _FOLLOW[k] = (int(xs.mean()), int(ys.mean())) if len(xs) else (0, 0)
+    return _FOLLOW[k]
+
+
+def squash_follow(img, mask, base, amount, t, lag=0.12, focus=None, rigid=(), levels=6):
+    """Сжатие персонажа на ударе так, как его рисуют аниматоры (25.10, разбор репозиториев: animation-principles,
+    HyperFrames character.md), а не одним полем, как squash_region:
+      - объём держится: насколько сплющилось по высоте, настолько раздалось вширь (sx = 1/sy); squash_region со
+        sx = 1 + 0.5·a терял 3–7% площади на пике — кот «худел» на ударе;
+      - захлёст: часть, куда пришлась сила (focus), отвечает в тот же кадр, дальние (хвост, дальнее ухо) запаздывают до
+        lag секунд (0.12 с ≈ 4 кадра) и доколебываются позже. Первая версия считала запаздывание от пола — голова под
+        пальцем отвечала на 3–4 кадра позже удара, ухо вытягивалось (лист 25.10);
+      - focus — там сминается полностью, на дальней стороне — на 60%;
+      - rigid — маски твёрдых предметов внутри рисунка (телефон, конверт): сдвигаются целиком, не гнутся.
+    amount(t) -> a: >0 — сплющено, <0 — вытянуто (обычно пружина anim.spring). base — (x, y) точки опоры."""
+    g = _follow_geo(mask, base, focus)
+    al = np.array([amount(t - lag * k / (levels - 1)) for k in range(levels)], np.float32)
+    if float(np.abs(al).max()) < 0.002:
+        return img
+    x = g["u"] * (levels - 1); k0 = np.floor(x).astype(np.int32); k1 = np.minimum(k0 + 1, levels - 1); fr = x - k0
+    a = al[k0] * (1 - fr) + al[k1] * fr
+    if g["wf"] is not None: a = a * g["wf"]
+    a = np.clip(a, -0.4, 0.4)
+    sy = 1.0 - a                                      # высота; ширина 1/sy — площадь та же
+    m = mask.astype(np.float32)
+    dx = (g["xs"] - base[0]) * (sy - 1.0) * m         # обратное отображение: 1/sx - 1 = sy - 1
+    dy = (g["ys"] - base[1]) * (1.0 / sy - 1.0) * m
+    for r in rigid:                                   # твёрдое — одним сдвигом, как в его центре
+        cx, cy = _centroid(r)
+        ox, oy = float(dx[cy, cx]), float(dy[cy, cx])
+        # маска твёрдого задана на исходном рисунке, а сдвиг берётся в кадре — там, куда предмет приехал
+        rr = cv2.warpAffine(np.clip(r, 0, 1).astype(np.float32), np.float32([[1, 0, -ox], [0, 1, -oy]]),
+                            (r.shape[1], r.shape[0]), flags=cv2.INTER_LINEAR, borderValue=0)
+        dx = dx * (1 - rr) + ox * rr
+        dy = dy * (1 - rr) + oy * rr
+    return cv2.remap(img, (g["xs"] + dx).astype(np.float32), (g["ys"] + dy).astype(np.float32), cv2.INTER_CUBIC,
+                     borderMode=cv2.BORDER_REFLECT)
+
+
 # ----------------------------------------------------------------------------- подготовка слоёв (быстро, без ручной возни)
 def grid(img, box, path, zoom=3, step=20):
     """Кроп рисунка с сеткой — снимать координаты глазом. Подписи сетки — в координатах РИСУНКА (не кропа):

@@ -54,8 +54,7 @@
      "kind": "sfx",
      "name": "riser",
      "at": 0,
-     "align": "start",
-     "gain_db": -3
+     "align": "start"
     },
     {
      "kind": "sfx",
@@ -109,7 +108,15 @@
      ]
     }
    ],
-   "fx": []
+   "fx": [
+    {
+     "kind": "punch",
+     "at": 7,
+     "style": "cut",
+     "amt": 0.22,
+     "hold": 0.45
+    }
+   ]
   },
   {
    "text": "День прошёл, а ты в нём *не был*.",

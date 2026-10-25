@@ -14,7 +14,7 @@ beats = [
  dict(text="Тебя звали *ленивым*.",
       shots=[dict(at=0, src="f1", anim="hands_poke", **{"from": [765, 470, 830]}, to=[765, 485, 760])],
       fx=[dict(kind="sfx", name="fast_whoosh", at=0, align="start"),
-          dict(kind="sfx", name="riser", at=0, align="start", gain_db=-3),
+          dict(kind="sfx", name="riser", at=0, align="start"),
           dict(kind="sfx", name="oof", at=2, dt=0.40),
           dict(kind="mark", anchor=True, text="Это не лень", at=0, speed=2.0, x=540, y=248, size=96)]),
  dict(text="И ты за годы сам в это *поверил*.", after_sfx="riser",
@@ -23,7 +23,7 @@ beats = [
  dict(text="Но если просто заставлять себя, |станет только *хуже*.",
       shots=[dict(at=0, src="f1", **{"from": [765, 690, 440]}, to=[765, 700, 410], zoom_in=0.12),
              dict(at=5, src="f1", **{"from": [765, 470, 830]}, to=[765, 480, 800])],
-      fx=[]),
+      fx=[dict(kind="punch", at=7, style="cut", amt=0.22, hold=0.45)]),   # удар-наезд склейкой на «хуже» (25.10, Tella add-zooms)
  dict(text="Дело висит, ты лежишь и всё равно *устаёшь*, |потому что грызёшь себя за него.",
       shots=[dict(at=0, src="f3", **{"from": [632, 440, 830]}, to=[632, 450, 760]),
              dict(at=3, src="f3", **{"from": [600, 470, 420]}, to=[600, 480, 400]),

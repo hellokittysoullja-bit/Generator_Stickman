@@ -105,14 +105,24 @@ def hand_offset(t, i, T):
 def frame(t, ctx):
     Lr = layers(); d = Lr["d"]; T = timing(ctx)
     cam = dict(dx=0.0, dy=0.0, zoom=1 / (1 + 0.12 * (1 - anim.SNAP(t / 0.30))), rot=0.0)
+    # «храповик» (Tella add-zooms): три руки — перечисление, каждый тычок склейкой поднимает камеру на ступень,
+    # последний — выше всех; без сглаживания, держится до конца плана
+    n = sum(t >= j + 0.05 for j in T["jabs"])
+    cam["zoom"] *= (1.0, 1.04, 1.08, 1.14)[n]
     img = d["bg"].astype(np.float32)
-    # кот вжимается на каждый тычок
-    sq = 0.0
-    for k, j in enumerate(T["jabs"]):
-        if t >= j + 0.04:
-            sq += (0.07 + 0.03 * k) * anim.spring(t - j - 0.04, freq=4.2, damping=0.34)
-    if abs(sq) > 0.002:
-        img = anim.squash_region(img, Lr["cat"], CAT["floor"], CAT["center"][0], 1 - sq, 1 + 0.5 * sq)
+    # кот вжимается на каждый тычок: объём держится, уши и хвост догоняют туловище (захлёст), сильнее — под пальцем
+    def sq(tt):
+        v = 0.0
+        for k, j in enumerate(T["jabs"]):
+            if tt >= j + 0.04:
+                v += (0.07 + 0.03 * k) * anim.spring(tt - j - 0.04, freq=4.2, damping=0.34)
+        return v
+    hit = [k for k, j in enumerate(T["jabs"]) if t >= j]
+    focus = None
+    if hit:
+        h = Lr["hands"][T["order"][hit[-1]]]; f = h["tip"] + h["dir"] * 110
+        focus = (round(float(f[0])), round(float(f[1])))
+    img = anim.squash_follow(img, Lr["cat"], (CAT["center"][0], CAT["floor"]), sq, t, lag=0.12, focus=focus)
     for i, h in enumerate(Lr["hands"]):
         off, ang = hand_offset(t, i, T)
         prev, _ = hand_offset(t - 1 / 30, i, T)

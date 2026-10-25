@@ -27,11 +27,12 @@ beats = [
  dict(text="Лежал и *устал*.",
       shots=[dict(at=0, src="f1", anim="envelope_fall", **{"from": [760, 650, 620]}, to=[765, 560, 820])],
       fx=[dict(kind="sfx", name="fast_whoosh", at=0, align="start"),
-          dict(kind="sfx", name="riser", at=0, align="start", gain_db=-3),
+          dict(kind="sfx", name="riser", at=0, align="start"),
           dict(kind="sfx", name="oof", at=2, dt=0.13),
           dict(kind="mark", anchor=True, text="Груз несделанного", at=0, speed=2.0, x=540, y=985, size=88)]),
  dict(text="И отдых тут не *поможет*, |сколько ни лежи.", after_sfx="riser",
-      shots=[sh(0, "fb", "pressed", zoom_in=0.12, keep_window=True), sh(5, "f4", "brain_face")], fx=[]),   # «сколько ни лежи» — груз в голове
+      shots=[sh(0, "fb", "pressed", zoom_in=0.12, keep_window=True), sh(5, "f4", "brain_face")],
+      fx=[dict(kind="punch", at=4, style="cut", amt=0.22, hold=0.45)]),   # удар-наезд склейкой на «поможет» (25.10, Tella add-zooms)   # «сколько ни лежи» — груз в голове
  dict(text="Ничего не делал, |а сил *нет*.",
       shots=[sh(0, "f1", "hook_env")], fx=[]),
  dict(text="Потому что дело висело, |и ты весь день носил его в *голове*.",
