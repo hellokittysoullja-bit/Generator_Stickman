@@ -63,10 +63,10 @@ def test_approved_values_are_defaults():
     s = {"beats": [{"text": "a", "shots": [{"src": "f1", "from": [0, 0, 100]}]}]}
     reel.layout(copy.deepcopy(s))
     # владелец 25.10: картинка чуть ниже — сверху 60 px бумаги, внизу меньше (было: 0–1380, субтитры 1455)
-    assert reel.PIC_TOP == 60 and reel.PH == 1400 and reel.CAP_CY == 1535   # картинка 60–1460, граница интерфейса 1560
+    assert reel.PIC_TOP == 60 and reel.PH == 1440 and reel.CAP_CY == 1575   # картинка 60–1500, граница интерфейса 1560
     assert reel_rules.SAFE_BOTTOM == 1560
     s2 = copy.deepcopy(s); reel.layout(s2)
-    assert abs(s2["beats"][0]["shots"][0]["from"][2] - 111.0) < 1e-6          # view_scale 1.11 при 1400
+    assert abs(s2["beats"][0]["shots"][0]["from"][2] - 113.0) < 1e-6          # view_scale 1.13 при 1440
     reel.layout({"beats": [], "picture_h": 1100})                              # вернуть модуль как был
 
 
