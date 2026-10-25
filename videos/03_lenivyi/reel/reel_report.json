@@ -514,144 +514,237 @@
    "end": 36.31666666666667
   }
  ],
+ "voice_p95": -5.0,
  "sounds": [
   {
    "name": "fast_whoosh",
+   "role": "whoosh",
    "peak": 0.13,
+   "soft": false,
    "gain_db": 0.0,
-   "soft": false
+   "vs_voice_db": -12.0,
+   "with_overlap_db": -12.0,
+   "target_db": -12.0
   },
   {
    "name": "oof",
+   "role": "impact",
    "peak": 1.12,
+   "soft": false,
    "gain_db": 0.0,
-   "soft": false
+   "vs_voice_db": -8.0,
+   "with_overlap_db": -7.2,
+   "target_db": -8.0
   },
   {
    "name": "riser",
+   "role": "whoosh",
    "peak": 1.65,
-   "gain_db": -3,
-   "soft": false
+   "soft": false,
+   "gain_db": 0.0,
+   "vs_voice_db": -12.0,
+   "with_overlap_db": -7.2,
+   "target_db": -12.0
   },
   {
    "name": "swoosh",
+   "role": "whoosh",
    "peak": 3.89,
-   "gain_db": -7.0,
-   "soft": true
+   "soft": true,
+   "gain_db": -5.0,
+   "vs_voice_db": -17.1,
+   "with_overlap_db": -17.1,
+   "target_db": -17.0
   },
   {
    "name": "fast_whoosh",
+   "role": "whoosh",
    "peak": 5.89,
-   "gain_db": -8.0,
-   "soft": true
+   "soft": true,
+   "gain_db": -6.0,
+   "vs_voice_db": -18.0,
+   "with_overlap_db": -18.0,
+   "target_db": -18.0
   },
   {
    "name": "swoosh",
+   "role": "whoosh",
    "peak": 7.49,
-   "gain_db": -4.0,
-   "soft": true
+   "soft": true,
+   "gain_db": -3.0,
+   "vs_voice_db": -15.1,
+   "with_overlap_db": -15.1,
+   "target_db": -15.0
   },
   {
    "name": "fast_whoosh",
+   "role": "whoosh",
    "peak": 8.81,
-   "gain_db": -8.0,
-   "soft": true
+   "soft": true,
+   "gain_db": -6.0,
+   "vs_voice_db": -18.0,
+   "with_overlap_db": -18.0,
+   "target_db": -18.0
   },
   {
    "name": "fast_whoosh",
+   "role": "whoosh",
    "peak": 10.93,
-   "gain_db": -2.0,
-   "soft": true
+   "soft": true,
+   "gain_db": -3.0,
+   "vs_voice_db": -15.1,
+   "with_overlap_db": -15.1,
+   "target_db": -15.0
   },
   {
    "name": "swoosh_deep",
+   "role": "impact",
    "peak": 12.85,
+   "soft": false,
    "gain_db": 0.0,
-   "soft": false
+   "vs_voice_db": -8.0,
+   "with_overlap_db": -8.0,
+   "target_db": -8.0
   },
   {
    "name": "fast_whoosh",
+   "role": "whoosh",
    "peak": 14.77,
-   "gain_db": -8.0,
-   "soft": true
+   "soft": true,
+   "gain_db": -6.0,
+   "vs_voice_db": -18.0,
+   "with_overlap_db": -18.0,
+   "target_db": -18.0
   },
   {
    "name": "swoosh",
+   "role": "whoosh",
    "peak": 17.01,
-   "gain_db": -4.0,
-   "soft": true
+   "soft": true,
+   "gain_db": -3.0,
+   "vs_voice_db": -15.1,
+   "with_overlap_db": -15.1,
+   "target_db": -15.0
   },
   {
    "name": "fast_whoosh",
+   "role": "whoosh",
    "peak": 18.69,
-   "gain_db": -8.0,
-   "soft": true
+   "soft": true,
+   "gain_db": -6.0,
+   "vs_voice_db": -18.0,
+   "with_overlap_db": -18.0,
+   "target_db": -18.0
   },
   {
    "name": "fast_whoosh",
+   "role": "whoosh",
    "peak": 19.73,
-   "gain_db": -8.0,
-   "soft": true
+   "soft": true,
+   "gain_db": -6.0,
+   "vs_voice_db": -18.0,
+   "with_overlap_db": -18.0,
+   "target_db": -18.0
   },
   {
    "name": "fast_whoosh",
+   "role": "whoosh",
    "peak": 20.61,
-   "gain_db": -2.0,
-   "soft": true
+   "soft": true,
+   "gain_db": -3.0,
+   "vs_voice_db": -15.0,
+   "with_overlap_db": -15.0,
+   "target_db": -15.0
   },
   {
    "name": "swoosh",
+   "role": "whoosh",
    "peak": 23.01,
-   "gain_db": -4.0,
-   "soft": true
+   "soft": true,
+   "gain_db": -3.0,
+   "vs_voice_db": -15.1,
+   "with_overlap_db": -15.1,
+   "target_db": -15.0
   },
   {
    "name": "fast_whoosh",
+   "role": "whoosh",
    "peak": 24.57,
-   "gain_db": -8.0,
-   "soft": true
+   "soft": true,
+   "gain_db": -6.0,
+   "vs_voice_db": -18.1,
+   "with_overlap_db": -18.2,
+   "target_db": -18.0
   },
   {
    "name": "riser",
+   "role": "whoosh",
    "peak": 26.087,
+   "soft": false,
    "gain_db": 0.0,
-   "soft": false
+   "vs_voice_db": -12.0,
+   "with_overlap_db": -12.0,
+   "target_db": -12.0
   },
   {
    "name": "fast_whoosh",
+   "role": "whoosh",
    "peak": 28.143,
-   "gain_db": -2.0,
-   "soft": true
+   "soft": true,
+   "gain_db": -3.0,
+   "vs_voice_db": -15.0,
+   "with_overlap_db": -15.0,
+   "target_db": -15.0
   },
   {
    "name": "level_up",
+   "role": "impact",
    "peak": 30.077,
+   "soft": false,
    "gain_db": 0.0,
-   "soft": false
+   "vs_voice_db": -8.0,
+   "with_overlap_db": -8.0,
+   "target_db": -8.0
   },
   {
    "name": "fast_whoosh",
+   "role": "whoosh",
    "peak": 30.81,
-   "gain_db": -8.0,
-   "soft": true
+   "soft": true,
+   "gain_db": -6.0,
+   "vs_voice_db": -18.0,
+   "with_overlap_db": -18.0,
+   "target_db": -18.0
   },
   {
    "name": "fast_whoosh",
+   "role": "whoosh",
    "peak": 31.93,
-   "gain_db": -8.0,
-   "soft": true
+   "soft": true,
+   "gain_db": -6.0,
+   "vs_voice_db": -18.0,
+   "with_overlap_db": -18.0,
+   "target_db": -18.0
   },
   {
    "name": "fast_whoosh",
+   "role": "whoosh",
    "peak": 33.37,
-   "gain_db": -8.0,
-   "soft": true
+   "soft": true,
+   "gain_db": -6.0,
+   "vs_voice_db": -18.0,
+   "with_overlap_db": -18.0,
+   "target_db": -18.0
   },
   {
    "name": "swoosh",
+   "role": "whoosh",
    "peak": 35.13,
+   "soft": false,
    "gain_db": 0.0,
-   "soft": false
+   "vs_voice_db": -10.4,
+   "with_overlap_db": -10.4,
+   "target_db": -12.0
   }
  ],
  "events": [
@@ -682,6 +775,11 @@
    "kind": "spot",
    "t": 3.077,
    "beat": 1
+  },
+  {
+   "kind": "punch",
+   "t": 6.757,
+   "beat": 2
   },
   {
    "kind": "write",

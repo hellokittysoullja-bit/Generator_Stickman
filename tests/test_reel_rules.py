@@ -903,3 +903,11 @@ def test_hard_punch_jumps_holds_and_cuts_back():
     assert reel.punch_at(ev, s, 1.46) == 1.0
     soft = [dict(kind="punch", t=1.0, amt=0.14)]
     assert 1.0 < reel.punch_at(soft, s, 1.03) < 1.14             # обычный наезд — плавно
+
+
+def test_hard_punch_zooms_to_its_focus():
+    """Удар-наезд с focus тянется к своей точке и только пока держится."""
+    s = dict(t0=0.0, t1=3.0)
+    ev = [dict(kind="punch", t=1.0, style="cut", amt=0.22, hold=0.45, focus=[765, 700])]
+    assert reel.punch_focus(ev, s, 1.2) == [765, 700]
+    assert reel.punch_focus(ev, s, 0.9) is None and reel.punch_focus(ev, s, 1.5) is None

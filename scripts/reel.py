@@ -960,6 +960,15 @@ def punch_at(events, s, t):
                 punch *= 1 + e.get("amt", 0.14) * ease_out((t - e["t"]) / 0.12)
     return punch
 
+def punch_focus(events, s, t):
+    """Центр окна удара-наезда склейкой (focus [x, y] в координатах окон reel.json): Tella add-zooms наезжает на лицо, а
+    лицо говорящей головы и так вверху кадра; у нас кот часто внизу. Лист 25.10: наезд к центру окна срезал коту лапы."""
+    for e in events:
+        if (e["kind"] == "punch" and e.get("style") == "cut" and e.get("focus") and s["t0"] <= e["t"] <= t < s["t1"]
+                and t < e["t"] + e.get("hold", 1e9)):
+            return e["focus"]
+    return None
+
 def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock, total):
     s = next(x for x in shots if x["t0"] <= t < x["t1"] or x is shots[-1])
     kind = s.get("kind", "crop")
@@ -972,6 +981,9 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
     if kind == "crop":
         src = load_src(reel_dir, s["src"])
         cx, cy, h = shot_view(s, t)
+        pf = punch_focus(events, s, t)
+        if pf:                                      # окно удара — по центру своей точки (лицо низко в кадре:
+            cx, cy = pf[0], pf[1]                   # наезд «на месте» всё равно срезал бы лапы)
         if s.get("anim"):                           # движение внутри рисунка: картинку и реакцию камеры даёт сцена
             import anim
             img, cam = anim.scene(reel_dir, s["anim"]).frame(t, s["anim_ctx"])
