@@ -50,6 +50,9 @@ BASE_PH = 1100         # под эту высоту написаны экран�
 CAP_SIZE = 76          # один кегль на весь ролик; 90 → 76 (24.10): при 90 в строку влезало ~15 знаков и треть групп была
                       # из одного слова, владелец: «удобнее по два-три слова» (замер на эп.01 v4: одиночных 21 → 4)
 CAP_MAX_W = 860        # px: от 70 до 930 — правее колонка кнопок Reels (~150 px у правого края)
+CAP_AHEAD_ALPHA = 0    # слово появляется, когда его сказали (владелец 25.10: «субтитры всегда динамичные… и в хуке»);
+                       # место в строке у всех слов группы своё с начала — строка не прыгает, когда слова добавляются
+CAP_RISE = 0           # въезда снизу нет (владелец 25.10: «зачем они поднимаются, пусть ровно»); было 18 px за 250 мс
 CAP_STROKE = 6         # тонкая тёмная обводка + мягкая тень (обводка 12% кегля читалась наклейкой)
 WHITE = (255, 255, 255); INK = (18, 18, 20)
 ACTIVE = (255, 210, 63)        # активное слово (караоке) — тёплый жёлтый
@@ -193,7 +196,7 @@ def render_chunk(words, idx, active, fade_ahead=True):
     f = cap_font(); st = CAP_STROKE; space = f.getlength(" ")
     parts = [(cap_text(words[j]), (KEY if j <= active else WHITE) if "*" in words[j] else (ACTIVE if j == active else WHITE))
              for j in idx]                      # ключевое слово вспыхивает оранжевым, когда до него дошло чтение
-    fade = [fade_ahead and j > active for j in idx]   # ещё не «произнесённые» слова — бледные: группа читается по мере речи
+    fade = [fade_ahead and j > active for j in idx]   # ещё не «произнесённые» слова: CAP_AHEAD_ALPHA (0 — их нет)
     tw = sum(tracked(f, t) for t, _ in parts) + space * (len(parts) - 1)
     asc, desc = f.getmetrics()
     bw, bh = int(tw + 2 * st + 60), int(asc + desc + 2 * st + 60)
@@ -201,7 +204,9 @@ def render_chunk(words, idx, active, fade_ahead=True):
     d, ds = ImageDraw.Draw(img), ImageDraw.Draw(sh)
     x, y = 30 + st, 30 + st
     for (t, col), fd in zip(parts, fade):
-        a = 90 if fd else 255
+        a = CAP_AHEAD_ALPHA if fd else 255
+        if not a:
+            x += tracked(f, t) + space; continue
         ds.text((x, y + CAP_SIZE * 0.07), t, font=f, fill=(0, 0, 0, 80 * a // 255), stroke_width=st + 2,
                 stroke_fill=(0, 0, 0, 80 * a // 255), features=CAP_FEATURES)
         d.text((x, y), t, font=f, fill=col + (a,), stroke_width=st, stroke_fill=INK + (a,), features=CAP_FEATURES)
@@ -239,7 +244,7 @@ def paper_tex(seed=5):
     n = n / (np.abs(n).max() + 1e-6)
     return np.clip(PAPER[None, None] * (1 + 0.025 * n[..., None]), 0, 255).astype(np.uint8)
 
-def sample(src, cx, cy, h, scale_src=2.0, shake=(0, 0), rot=0.0, boil_t=None):
+def sample(src, cx, cy, h, scale_src=2.0, shake=(0, 0), rot=0.0, boil_t=None, reflect=False):
     """Окно (cx, cy, высота h) в координатах ИСХОДНОГО кадра -> картинка 1080xPH. Края за картинкой — бумага.
     boil_t — «кипение» линии в том же проходе выборки: второй проход (remap поверх готового кадра) мылил рисунок —
     замер 22.10, v7: резкость готового рилса −11% к v6, сам второй проход на кадре f1 −46%."""
@@ -250,12 +255,13 @@ def sample(src, cx, cy, h, scale_src=2.0, shake=(0, 0), rot=0.0, boil_t=None):
     M = np.array([[ca, -sa, X0 - ca * (W / 2 + shake[0]) + sa * (PH / 2 + shake[1])],
                   [sa, ca, Y0 - sa * (W / 2 + shake[0]) - ca * (PH / 2 + shake[1])]], np.float32)
     paper = tuple(int(v) for v in PAPER)
+    bm = cv2.BORDER_REFLECT_101 if reflect else cv2.BORDER_CONSTANT   # ночной рисунок: за краем — его же стена, не крем
     if boil_t is None:
         return cv2.warpAffine(src, M, (W, PH), flags=cv2.WARP_INVERSE_MAP | cv2.INTER_CUBIC,
-                              borderMode=cv2.BORDER_CONSTANT, borderValue=paper)
+                              borderMode=bm, borderValue=paper)
     X, Y = boil_maps(boil_t, PH, W)
     return cv2.remap(src, M[0, 0] * X + M[0, 1] * Y + M[0, 2], M[1, 0] * X + M[1, 1] * Y + M[1, 2], cv2.INTER_CUBIC,
-                     borderMode=cv2.BORDER_CONSTANT, borderValue=paper)
+                     borderMode=bm, borderValue=paper)
 
 # «дорогой» вид (разбор роликов о дорогом монтаже 22.10): мягкая S-кривая (тушь глубже, бумага на месте), лёгкая
 # резкость картинки и живое зерно по всему кадру, сменяется 12 раз в секунду — как бумага рисованной анимации
@@ -558,6 +564,7 @@ def fill_windows(reel_dir, spec):
     for b in spec["beats"]:
         for s in b["shots"]:
             if "src" not in s or s.get("kind") in ("fit", "stack", "doll"): continue
+            if s.get("anim"): continue                  # сцена с движением: предмет прилетает из-за рисунка — окно её
             top, bot = ink_rows(reel_dir, s["src"])
             hs = [s[k][2] for k in ("from", "to") if k in s]
             cap = (bot - top) * 1.04                    # окно выше рисунка: from и to сжимались к одной высоте и план стоял
@@ -710,6 +717,10 @@ def build(reel_dir, sheet=False, preview=False, force=False):
         if s.get("kind") == "doll": s["doll_acts"] = doll_acts; s["doll_t0"] = doll_first
     for a, b in zip(shots, shots[1:]): a["t1"] = b["t0"]
     shots[-1]["t1"] = total
+    for s in shots:                                   # сцене анимации — время слов её фразы (удар на слове)
+        if s.get("anim"):
+            i0, i1 = spans[s["bi"]]
+            s["anim_ctx"] = dict(words=[(round(times[k]["start"], 4), round(times[k]["end"], 4)) for k in range(i0, i1)])
     # события внутри фраз: наезд, тряска, стрелка, надпись — привязаны к слову
     def wt(b_idx, k, after=False):
         w = times[spans[b_idx][0] + k]
@@ -745,7 +756,8 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     caps = chunks(words, times)
     # текст хука стоит с первого кадра целиком, без въезда и бледных слов (разбор 22.10: heyDominik, Jenny Hoyos —
     # пролистывание в первые 0.5 с — «не понял, о чём», поэтому хук читается сразу; подсветка слов идёт как обычно)
-    caps[0]["t0"] = 0.0; caps[0]["still"] = True
+    caps[0]["t0"] = 0.0
+    if spec.get("hook_still"): caps[0]["still"] = True   # старые рилсы: хук целиком с первого кадра (до 25.10)
     for c in caps:
         c["imgs"] = {j: render_chunk(words, c["idx"], j, fade_ahead=not c.get("still")) for j in c["idx"]}
 
@@ -795,9 +807,9 @@ X264 = ["-c:v", "libx264", "-preset", "slow", "-crf", "19",
                            # Параллелим по планам (render_video), каждому кодеку — один поток: детерминизм без потерь.
 
 def _code_sig():
-    """Подпись кода картинки: правка reel.py, библиотеки звуков или рига куклы перерисовывает все планы."""
+    """Подпись кода картинки: правка reel.py, модуля движения, библиотеки звуков или рига куклы перерисовывает все планы."""
     h = hashlib.md5()
-    for p in (os.path.abspath(__file__), os.path.join(SFX_DIR, "library.json"),
+    for p in (os.path.abspath(__file__), os.path.join(SFX_DIR, "library.json"), os.path.join(ROOT, "scripts", "anim.py"),
               os.path.join(ROOT, "experiments", "alive_cat", "doll", "doll_rig.py"),
               os.path.join(ROOT, "experiments", "alive_cat", "doll", "rig.json")):
         if os.path.exists(p): h.update(open(p, "rb").read())
@@ -824,6 +836,10 @@ def segment_key(reel_dir, fps, n0, n1, i, shots, events, caps, words, times, hoo
     srcs = sorted({x["src"] for x in shots[max(0, i - 1):i + 2] if "src" in x})
     src_sig = [(s_, _file_md5(p_)) for s_ in srcs
                for p_ in [os.path.join(reel_dir, "src", s_ + "_c.png")] if os.path.exists(p_)]
+    for x in shots[max(0, i - 1):i + 2]:            # сцена анимации: её код и рисунки — тоже исходник кадров
+        if x.get("anim"):
+            import anim
+            src_sig += [(x["anim"], _file_md5(p_)) for p_ in anim.scene_files(reel_dir, x["anim"])]
     ev = [e for e in events if t0 - 7.0 <= e["t"] <= t1 + 0.5]
     cp = [dict(c0=c["t0"], c1=c["t1"], words=[words[j] for j in c["idx"]], still=c.get("still"),
                at=[round(times[j]["start"], 4) for j in c["idx"]])
@@ -927,10 +943,16 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
     if kind == "crop":
         src = load_src(reel_dir, s["src"])
         cx, cy, h = shot_view(s, t)
+        if s.get("anim"):                           # движение внутри рисунка: картинку и реакцию камеры даёт сцена
+            import anim
+            img, cam = anim.scene(reel_dir, s["anim"]).frame(t, s["anim_ctx"])
+            src = np.clip(img, 0, 255).astype(np.uint8)
+            shake = (shake[0] + cam.get("dx", 0.0), shake[1] + cam.get("dy", 0.0))
+            punch *= cam.get("zoom", 1.0); rot += cam.get("rot", 0.0)
         # второй слой камеры: медленный поворот до 0.5° поверх дрейфа, на соседних планах в разные стороны
         sign = 1 if s.get("bi", 0) % 2 else -1   # одно направление на фразу (мысль): Tim Runia; правило длинного ролика
         rot += s.get("rot_drift", 0.5) * sign * ((t - s["t0"]) / max(1e-3, s["t1"] - s["t0"]) - 0.5)
-        base = grade(sharpen(sample(src, cx, cy, h / punch, shake=shake, rot=rot, boil_t=t)))
+        base = grade(sharpen(sample(src, cx, cy, h / punch, shake=shake, rot=rot, boil_t=t, reflect=bool(s.get("anim")))))
         view = (cx, cy, h / punch)
         if s.get("whip"):
             k = 1 - ease_out((t - s["t0"]) / 0.18)
@@ -1023,7 +1045,8 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
         elif e["kind"] == "mark":                   # VOX: слово от руки + жёлтый маркер, проведённый под ним слева направо
             f = font(HAND, e.get("size", 120), 700)
             im = text_img(e["text"], f, INK)
-            u = (t - e["t"]) / 0.35
+            sp = e.get("speed", 1.0)                  # якорь хука пишется вдвое быстрее (speed 2): готов к 0.3 с
+            u = (t - e["t"]) / (0.35 / sp)
             if u > 0:
                 mw, mh = int(im.width * 1.02 * min(1.0, ease_out(u))), int(im.height * 0.42)
                 if mw > 4:
@@ -1035,7 +1058,7 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
                     if e.get("soft"): mk = mk.filter(ImageFilter.GaussianBlur(6))   # мягкий край маркера ~15 px (п.1.22)
                     over(base, mk.rotate(-2, resample=Image.BICUBIC, expand=False), e["x"], e["y"])
             msc = 0.7 + 0.3 * ease_out_back((t - e["t"]) / 0.4, s=4.0) if e.get("pop") else 1.0
-            over(base, im, e["x"], e["y"], wipe=min(1.0, max(0.0, (t - e["t"] - 0.15) / 0.45)), scale=msc)
+            over(base, im, e["x"], e["y"], wipe=min(1.0, max(0.0, (t - e["t"] - 0.15 / sp) / (0.45 / sp))), scale=msc)
         elif e["kind"] == "circle":                 # VOX: красный круг рисуется от руки по контуру, открытый на конце
             u = ease_out((t - e["t"]) / 0.45)
             if view is not None:
@@ -1092,9 +1115,9 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
             for j in c["idx"]:
                 if times[j]["start"] - 0.03 <= t: act = j
             im = c["imgs"][act]
-            u = 1.0 if c.get("still") else (t - c["t0"]) / 0.25   # подъём на 18 px за 250 мс с торможением + проявление;
-            dy = 18 * (1 - ease_out(u))                   # без «прыжка» с перелётом и без смены размера
-            over(base, im, CAP_CX, CAP_CY + dy, alpha=min(1.0, 0.3 + 0.7 * u * 2.0))
+            u = 1.0 if c.get("still") else (t - c["t0"]) / 0.25
+            dy = CAP_RISE * (1 - ease_out(u))             # ровная строка: без подъёма (CAP_RISE 0), слова — по речи
+            over(base, im, CAP_CX, CAP_CY + dy, alpha=1.0 if not CAP_RISE else min(1.0, 0.3 + 0.7 * u * 2.0))
     return base
 
 def contact_sheet(reel_dir, shots):
