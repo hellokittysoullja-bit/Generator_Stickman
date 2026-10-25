@@ -344,7 +344,7 @@ def prepare_src(reel_dir, sources):
         import canvas
         a = np.asarray(Image.open(os.path.join(reel_dir, "src", name + ".png")).convert("RGB"), np.float32)
         col, share = canvas.paper_color(a)
-        if share >= canvas.PAPER_MIN_SHARE: a = canvas.retint(a, col)
+        if canvas.is_paper(col, share): a = canvas.retint(a, col)   # тёмный фон ночи — не бумага
         Image.fromarray(np.clip(a, 0, 255).astype(np.uint8)).save(out)
         print(f"  бумага {name}: {col.round().tolist()} -> крем (доля бумаги по краю {share:.2f})")
 

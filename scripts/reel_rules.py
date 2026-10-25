@@ -64,7 +64,9 @@ def check_passport(spec, log, reel_dir=""):
     if len(pp.get("devices", [])) < 5:
         err.append("в паспорте меньше 5 приёмов — опишите, чем этот рилс держит")
     parent = os.path.normpath(pp.get("variant_of", "")) if pp.get("variant_of") else None   # вариант для пробных Reels
-    prev = [r for r in log if os.path.normpath(r.get("reel", "")) not in (os.path.normpath(reel_dir), parent)]
+    own = next((i for i, r in enumerate(log) if os.path.normpath(r.get("reel", "")) == os.path.normpath(reel_dir)), None)
+    earlier = log if own is None else log[:own]       # пересборку старого рилса судят по рилсам до него, а не после
+    prev = [r for r in earlier if os.path.normpath(r.get("reel", "")) not in (os.path.normpath(reel_dir), parent)]
     if prev:
         last = prev[-1]
         if pp.get("hook_type") == last.get("hook_type"):

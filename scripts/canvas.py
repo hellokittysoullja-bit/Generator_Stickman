@@ -22,6 +22,8 @@ CREAM = np.array([250, 247, 240], np.float32)   # #FAF7F0
 ASPECT = 16 / 9
 PAPER_TOL = 18          # отличие от цвета бумаги (макс. по каналу), до которого пиксель — бумага
 PAPER_MIN_SHARE = 0.15  # меньше бумаги по краю — кадр не на бумаге, цвет не трогаем
+PAPER_MIN_LUMA = 150    # тёмный «край» — ночь, а не бумага: рилс 25.10, синий фон ночной спальни (42,50,62) делился
+                        # как бумага, и чёрный кот выходил белым; ночная серая комната (181) — ещё бумага
 PAD_MIN_SHARE = 0.6     # столько бумаги в полосе у шва — дополняем бумагой, иначе режем до 16:9
 FEATHER = 0.05          # ширина растушёвки шва, доля высоты кадра
 TEXTURE = 0.018         # сила фактуры (на светлом; на туши почти нет)
@@ -33,6 +35,11 @@ def border(a, k=0.03):
     m = max(2, int(round(k*min(h, w))))
     return np.concatenate([a[:m].reshape(-1, 3), a[-m:].reshape(-1, 3),
                            a[:, :m].reshape(-1, 3), a[:, -m:].reshape(-1, 3)]).astype(np.float32)
+
+
+def is_paper(col, share):
+    """Край кадра — бумага: его достаточно и он светлый."""
+    return share >= PAPER_MIN_SHARE and float(np.mean(col)) >= PAPER_MIN_LUMA
 
 
 def paper_color(a):
@@ -126,7 +133,7 @@ def prepare(img):
     """Картинка генератора -> (холст 16:9 uint8, сдвиг (dx, dy), на_бумаге)."""
     a = np.asarray(img.convert("RGB"), np.float32)
     col, share = paper_color(a)
-    if share >= PAPER_MIN_SHARE:
+    if is_paper(col, share):
         a = retint(a, col)
         canvas, off = to_169(a, CREAM)
         on_paper = True

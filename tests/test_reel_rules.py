@@ -807,3 +807,13 @@ def test_hook_steals_attention():                              # владеле�
     old = json.load(open(EP01, encoding="utf8"))
     log = json.load(open(os.path.join(ROOT, "docs", "reels_log.json"), encoding="utf8"))
     assert reel_rules.check_hook_steal(old, log, "videos/01_sdvg_pismo/reel") == []   # старые рилсы пересобираются
+
+
+def test_dark_night_background_is_not_paper():                 # рилс 25.10: синий фон ночи делился как бумага, кот белел
+    import canvas
+    import numpy as np
+    night = np.full((200, 300, 3), (42, 50, 62), np.float32); night[80:120, 130:170] = 20
+    col, share = canvas.paper_color(night)
+    assert share >= canvas.PAPER_MIN_SHARE and not canvas.is_paper(col, share)
+    paper = np.full((200, 300, 3), 238, np.float32); paper[80:120, 130:170] = 20
+    assert canvas.is_paper(*canvas.paper_color(paper))
