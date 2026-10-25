@@ -578,14 +578,14 @@
    "target_db": -18.0
   },
   {
-   "name": "swoosh_deep",
-   "role": "impact",
+   "name": "swoosh",
+   "role": "whoosh",
    "peak": 14.71,
-   "soft": false,
-   "gain_db": 0.0,
-   "vs_voice_db": -8.0,
-   "with_overlap_db": -8.0,
-   "target_db": -8.0
+   "soft": true,
+   "gain_db": -5.0,
+   "vs_voice_db": -17.1,
+   "with_overlap_db": -17.1,
+   "target_db": -17.0
   },
   {
    "name": "fast_whoosh",
@@ -598,13 +598,23 @@
    "target_db": -18.0
   },
   {
+   "name": "fast_whoosh",
+   "role": "whoosh",
+   "peak": 17.91,
+   "soft": true,
+   "gain_db": -6.0,
+   "vs_voice_db": -18.0,
+   "with_overlap_db": -18.0,
+   "target_db": -18.0
+  },
+  {
    "name": "swoosh",
    "role": "whoosh",
    "peak": 19.03,
    "soft": true,
    "gain_db": -3.0,
-   "vs_voice_db": -15.1,
-   "with_overlap_db": -15.1,
+   "vs_voice_db": -15.0,
+   "with_overlap_db": -15.0,
    "target_db": -15.0
   },
   {
@@ -618,24 +628,14 @@
    "target_db": -18.0
   },
   {
-   "name": "fast_whoosh",
+   "name": "swoosh",
    "role": "whoosh",
    "peak": 23.03,
    "soft": true,
-   "gain_db": -3.0,
-   "vs_voice_db": -15.0,
-   "with_overlap_db": -15.0,
-   "target_db": -15.0
-  },
-  {
-   "name": "fast_whoosh",
-   "role": "whoosh",
-   "peak": 24.11,
-   "soft": true,
-   "gain_db": -6.0,
-   "vs_voice_db": -18.1,
-   "with_overlap_db": -18.2,
-   "target_db": -18.0
+   "gain_db": -5.0,
+   "vs_voice_db": -17.1,
+   "with_overlap_db": -17.1,
+   "target_db": -17.0
   },
   {
    "name": "riser",
@@ -653,8 +653,8 @@
    "peak": 27.11,
    "soft": true,
    "gain_db": -6.0,
-   "vs_voice_db": -18.0,
-   "with_overlap_db": -18.0,
+   "vs_voice_db": -18.1,
+   "with_overlap_db": -18.1,
    "target_db": -18.0
   },
   {
@@ -668,24 +668,14 @@
    "target_db": -8.0
   },
   {
-   "name": "swoosh",
-   "role": "whoosh",
+   "name": "swoosh_deep",
+   "role": "impact",
    "peak": 29.43,
-   "soft": true,
-   "gain_db": -3.0,
-   "vs_voice_db": -15.1,
-   "with_overlap_db": -15.1,
-   "target_db": -15.0
-  },
-  {
-   "name": "fast_whoosh",
-   "role": "whoosh",
-   "peak": 30.39,
-   "soft": true,
-   "gain_db": -6.0,
-   "vs_voice_db": -18.0,
-   "with_overlap_db": -18.0,
-   "target_db": -18.0
+   "soft": false,
+   "gain_db": 0.0,
+   "vs_voice_db": -8.0,
+   "with_overlap_db": -8.0,
+   "target_db": -8.0
   },
   {
    "name": "fast_whoosh",
@@ -738,15 +728,40 @@
    "beat": 1
   },
   {
+   "kind": "spot",
+   "t": 6.777,
+   "beat": 2
+  },
+  {
+   "kind": "circle",
+   "t": 8.057,
+   "beat": 3
+  },
+  {
    "kind": "sfx",
    "t": 10.017,
    "beat": 3,
    "name": "swoosh_deep"
   },
   {
-   "kind": "write",
-   "t": 15.007,
+   "kind": "shake",
+   "t": 11.817,
+   "beat": 4
+  },
+  {
+   "kind": "spot",
+   "t": 17.337,
    "beat": 5
+  },
+  {
+   "kind": "circle",
+   "t": 18.257,
+   "beat": 5
+  },
+  {
+   "kind": "spot",
+   "t": 22.457,
+   "beat": 6
   },
   {
    "kind": "sfx",
@@ -755,10 +770,25 @@
    "name": "riser"
   },
   {
+   "kind": "spot",
+   "t": 24.377,
+   "beat": 7
+  },
+  {
    "kind": "sfx",
    "t": 28.057,
    "beat": 8,
    "name": "level_up"
+  },
+  {
+   "kind": "circle",
+   "t": 28.697,
+   "beat": 8
+  },
+  {
+   "kind": "write",
+   "t": 29.747,
+   "beat": 9
   }
  ],
  "shots": [
@@ -813,15 +843,20 @@
   {
    "t0": 14.71,
    "t1": 16.23,
-   "kind": "doll",
-   "src": null
+   "kind": "crop",
+   "src": "f6"
   },
   {
    "t0": 16.23,
+   "t1": 17.91,
+   "kind": "crop",
+   "src": "f6"
+  },
+  {
+   "t0": 17.91,
    "t1": 19.03,
-   "kind": "doll",
-   "src": null,
-   "closeup": true
+   "kind": "crop",
+   "src": "f6"
   },
   {
    "t0": 19.03,
@@ -837,16 +872,9 @@
   },
   {
    "t0": 23.03,
-   "t1": 24.11,
-   "kind": "doll",
-   "src": null
-  },
-  {
-   "t0": 24.11,
    "t1": 25.27,
-   "kind": "doll",
-   "src": null,
-   "closeup": true
+   "kind": "crop",
+   "src": "f3"
   },
   {
    "t0": 25.27,
@@ -862,22 +890,16 @@
   },
   {
    "t0": 29.43,
-   "t1": 30.39,
-   "kind": "doll",
-   "src": null
-  },
-  {
-   "t0": 30.39,
    "t1": 32.39,
    "kind": "doll",
-   "src": null,
-   "closeup": true
+   "src": null
   },
   {
    "t0": 32.39,
    "t1": 33.27,
    "kind": "doll",
-   "src": null
+   "src": null,
+   "closeup": true
   },
   {
    "t0": 33.27,
@@ -984,13 +1006,13 @@
   },
   {
    "t0": 16.95,
-   "t1": 17.67,
-   "text": "ночь обещал"
+   "t1": 17.91,
+   "text": "ночь обещал себе"
   },
   {
-   "t0": 17.67,
+   "t0": 17.91,
    "t1": 19.03,
-   "text": "себе лечь вовремя."
+   "text": "лечь вовремя."
   },
   {
    "t0": 19.03,
