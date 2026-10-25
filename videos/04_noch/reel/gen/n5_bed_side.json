@@ -1,0 +1,13 @@
+{
+ "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: side view at mattress level in a dark bedroom at night in deep blue-grey shadow: the main character lies on its back on a pillow under a blanket, holding one phone up above its face with both front paws, arms stretched up; the phone's screen faces down toward the main character's face, so the phone is seen from its thin side edge and its plain back, never its screen; only the phone's cold pale glow falls down onto the main character's face and eyes; its eyes are wide open, tired and glassy; the flame on the tip of its tail is a tiny dim ember with a thin wisp of grey smoke. LAYOUT: the main character's head and the phone above it are the biggest objects in the centre of the frame, whole outline visible; a clear gap of air between the phone and the face; the bed and blanket fill the lower part. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+ "model": "cx/gpt-image-2",
+ "quality": "medium",
+ "size": "1536x1024",
+ "price": 140625,
+ "refs": [
+  "look/style/1_desk.png",
+  "look/style/2_objects.png",
+  "videos/01_sdvg_pismo/frames/004.png",
+  "look/hero.png"
+ ]
+}
