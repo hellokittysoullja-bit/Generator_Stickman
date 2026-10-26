@@ -609,6 +609,42 @@
   "source": "scripts/reel_draw.py videos/03_lenivyi/reel"
  },
  {
+  "file": "2026-10-25_gen_cx_gpt-image-2_44ec48da.png",
+  "sha256": "44ec48daee141dcb0a9bc2743a110e4bf29f8562fa8aca32d4daf5d11d0511af",
+  "bytes": 2139590,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-10-25",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: the main character sits on a plain floor happily repotting one flower into a bigger pot, both front paws in dark soil, a little soil scattered around, focused and delighted, eyes shining; far behind it, small in the upper left background, the forgotten bucket of water with the mop lying flat on the floor. The flame on the tip of its tail burns bright. LAYOUT: the main character and the two pots are large in the lower middle; the bucket and the mop are small in the background with a clear gap. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 140625,
+  "source": "scripts/reel_draw.py videos/06_zaodno/reel"
+ },
+ {
+  "file": "2026-10-25_gen_cx_gpt-image-2_46c1a36e.png",
+  "sha256": "46c1a36efa84394385d0d6efcf3af7674596c00e1a15a9cd3ab19bbdc81e6707",
+  "bytes": 2357632,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-10-25",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: the main character stands proudly next to a mop on a clean shining plain floor with small sparkle marks, chest out, a happy smile, eyes closed with joy; the flame on the tip of its tail burns big, golden and bright; high behind it on a small windowsill one potted flower waits with one small plain white blank sticky note stuck to its pot. LAYOUT: the main character and the mop are large in the lower middle; the flower is small in the upper part with a clear gap. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 140625,
+  "source": "scripts/reel_draw.py videos/06_zaodno/reel"
+ },
+ {
   "file": "2026-10-25_gen_cx_gpt-image-2_53e40c7b.png",
   "sha256": "53e40c7b39d134369e830b3ebf7c0d42ae056f5fb1979d28b985f0b4cb945299",
   "bytes": 1974753,
@@ -625,6 +661,78 @@
   "quality": "medium",
   "price": 140625,
   "source": "scripts/reel_draw.py videos/05_ustal/reel"
+ },
+ {
+  "file": "2026-10-25_gen_cx_gpt-image-2_834f59a5.png",
+  "sha256": "834f59a5044847b662c5f7f79cc0e3dc30682a1a4ef654197b508089d87b510b",
+  "bytes": 2321515,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-10-25",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture, evening in a plain room: the main character lies on a small sofa under a blanket watching a television with a glowing blank screen, relaxed, a little guilty half smile; on the floor in front of the sofa, small and separate from each other: one half repotted flower with spilled soil, one bucket with a mop lying flat, one kettle. LAYOUT: the sofa with the main character is in the middle, the television on the left edge of the sofa, the three abandoned objects small along the bottom with gaps between them. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 140625,
+  "source": "scripts/reel_draw.py videos/06_zaodno/reel"
+ },
+ {
+  "file": "2026-10-25_gen_cx_gpt-image-2_943d023c.png",
+  "sha256": "943d023c37508ed766f421ae0a05d5d1dc660b643d2f1c49615a971b63757008",
+  "bytes": 2314314,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-10-25",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: the main character stands in the middle of a plain room, scratching the top of its head with one front paw, confused and a little sad, eyebrows raised; around it on the floor in a loose ring lie many half done things, each separate: a bucket with a mop, a half repotted flower, a pile of laundry, a cold cup of tea, an open book face down. The flame on the tip of its tail is a small dim ember. LAYOUT: the main character is whole and large in the centre; the five objects are smaller around it with gaps, none touching it. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 140625,
+  "source": "scripts/reel_draw.py videos/06_zaodno/reel"
+ },
+ {
+  "file": "2026-10-25_gen_cx_gpt-image-2_a3ebc9f2.png",
+  "sha256": "a3ebc9f24a95654b0f7bf786e462aaf1c982c93d59223790e2b019c03a041465",
+  "bytes": 2341901,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-10-25",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture, close: the main character stands at a plain white fridge and presses one small plain white square sticky note onto the fridge door with one front paw, the other front paw holds a pencil; calm, focused, a small determined smile; the sticky note is completely blank. The flame on the tip of its tail burns bright. LAYOUT: the main character and the sticky note are large in the centre, side by side; the sticky note is big enough to be clearly seen. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 140625,
+  "source": "scripts/reel_draw.py videos/06_zaodno/reel"
+ },
+ {
+  "file": "2026-10-25_gen_cx_gpt-image-2_ab8bccad.png",
+  "sha256": "ab8bccad8e32ae0212e693b6ed2b4027de0468fdd361ccbc0b6aba40caf6c084",
+  "bytes": 2136978,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-10-25",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture, a plain kitchen with a plain wall and a plain floor: the main character stands in the lower right part, already turned away from its chores, looking up with bright curious eyes at one potted flower on a small windowsill high in the upper right; on the left one mop leans upright against the plain wall all by itself, its head on the floor and its handle against the wall; one bucket of water stands on the floor a little apart from the mop. The flame on the tip of its tail burns small and calm. LAYOUT: the main character is whole and large in the lower right half; the mop and the bucket are on the left, whole, with a wide gap of plain floor between them and the main character; the mop touches nothing but the floor and the wall. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1792",
+  "quality": "medium",
+  "price": 164063,
+  "source": "scripts/reel_draw.py videos/06_zaodno/reel"
  },
  {
   "file": "2026-10-25_gen_cx_gpt-image-2_f140ef8b.png",

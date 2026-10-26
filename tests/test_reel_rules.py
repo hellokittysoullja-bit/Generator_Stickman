@@ -376,6 +376,17 @@ def test_cover_opens_counters_filled_by_outline():
     assert out[30, 30, 3] == 0 and out[15, 15, 3] == 255
 
 
+def test_cover_waits_for_anchor_words(tmp_path):
+    """26.10: обложка бралась на 0.05 с — маркер якоря уже проведён, слов ещё нет (пустая жёлтая полоса)."""
+    import reel_publish
+    spec_ = {"beats": [{"fx": [{"kind": "mark", "anchor": True, "text": "Потом помою полы", "at": 0, "speed": 2.0}]}]}
+    (tmp_path / "reel.json").write_text(json.dumps(spec_), encoding="utf8")
+    rep = {"events": [{"kind": "mark", "t": 0.0, "beat": 0}]}
+    assert reel_publish.cover_time(str(tmp_path), rep) >= 0.3
+    (tmp_path / "reel.json").write_text(json.dumps({"beats": [{"fx": []}]}), encoding="utf8")
+    assert reel_publish.cover_time(str(tmp_path), {"events": []}) == 0.05
+
+
 def test_wave8_persuasion_rules():
     """Волна 8 (23.10): давящие слова, закреп-приманка «напиши 1/2», серия без номера, смысловые петли реже 12 с."""
     s = spec()

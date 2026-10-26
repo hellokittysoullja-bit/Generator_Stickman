@@ -1,0 +1,13 @@
+{
+ "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture, a plain kitchen with a plain wall and a plain floor: the main character stands in the lower right part, already turned away from its chores, looking up with bright curious eyes at one potted flower on a small windowsill high in the upper right; on the left one mop leans upright against the plain wall all by itself, its head on the floor and its handle against the wall; one bucket of water stands on the floor a little apart from the mop. The flame on the tip of its tail burns small and calm. LAYOUT: the main character is whole and large in the lower right half; the mop and the bucket are on the left, whole, with a wide gap of plain floor between them and the main character; the mop touches nothing but the floor and the wall. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+ "model": "cx/gpt-image-2",
+ "quality": "medium",
+ "size": "1024x1792",
+ "price": 164063,
+ "refs": [
+  "look/style/1_desk.png",
+  "look/style/2_objects.png",
+  "videos/01_sdvg_pismo/frames/004.png",
+  "look/hero.png"
+ ]
+}

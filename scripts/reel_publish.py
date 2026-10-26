@@ -50,15 +50,27 @@ def open_counters(t):
     return Image.fromarray(a)
 
 
+def cover_time(reel_dir, rep):
+    """Кадр обложки: 0.05 с, но не раньше, чем якорь хука (mark) дописан. 26.10: маркер проводится первым, слова — к
+    0.6/speed с, и на 0.05 с обложки всех рилсов с якорем были пустой жёлтой полосой без слов."""
+    spec = json.load(open(os.path.join(reel_dir, "reel.json"), encoding="utf8"))
+    beats = spec.get("beats") or [{}]
+    anchor = next((f for f in beats[0].get("fx", []) if f.get("kind") == "mark" and f.get("anchor")), None)
+    ev = next((e for e in rep.get("events", []) if e.get("kind") == "mark" and e.get("beat") == 0), None)
+    if anchor is None or ev is None:
+        return 0.05
+    return max(0.05, ev["t"] + 0.6 / anchor.get("speed", 1.0) + 1 / 30)
+
+
 def cover(reel_dir, text, out):
     """Первый кадр рилса без субтитра (полоса закрыта бумагой) + текст обложки шрифтом субтитров в зоне сетки."""
     video = os.path.join(reel_dir, "reel.mp4")
-    raw = subprocess.run(["ffmpeg", "-v", "error", "-ss", "0.05", "-i", video, "-frames:v", "1", "-f", "rawvideo",
-                          "-pix_fmt", "rgb24", "-"], capture_output=True).stdout
+    rep = json.load(open(os.path.join(reel_dir, "reel_report.json"), encoding="utf8"))
+    raw = subprocess.run(["ffmpeg", "-v", "error", "-ss", f"{cover_time(reel_dir, rep):.3f}", "-i", video, "-frames:v", "1",
+                          "-f", "rawvideo", "-pix_fmt", "rgb24", "-"], capture_output=True).stdout
     if len(raw) != 1080 * 1920 * 3:
         return None
     a = np.frombuffer(raw, np.uint8).reshape(1920, 1080, 3).copy()
-    rep = json.load(open(os.path.join(reel_dir, "reel_report.json"), encoding="utf8"))
     ph = rep.get("picture_top", 0) + rep.get("picture_h", 1380)   # низ картинки на экране (25.10: сверху 60 px бумаги)
     a[ph:] = a[ph - 3:ph - 1].mean(axis=(0, 1)).astype(np.uint8)
     im = Image.fromarray(a).convert("RGBA")

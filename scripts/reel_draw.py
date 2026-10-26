@@ -24,7 +24,8 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MODEL, SIZE, QUALITY, PRICE = "cx/gpt-image-2", "1024x1792", "medium", 164063   # 9:16 — рисунки рилсов вертикальные (владелец 26.10)
+# вертикально (владелец 26.10); 1024x1792 провайдер берёт по цене 1792, а отдаёт 1024×1536 (замер 26.10)
+MODEL, SIZE, QUALITY, PRICE = "cx/gpt-image-2", "1024x1536", "medium", 140625
 
 
 def data_url(p):
