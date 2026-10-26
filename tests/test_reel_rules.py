@@ -390,28 +390,36 @@ def test_cover_waits_for_anchor_words(tmp_path):
 def test_question_first_answer_only_at_the_end():
     """26.10, владелец: «чтоб никогда не нарушено… иначе пролистывание». Живой промах «Пошёл мыть полы» v1: вопроса
     в начале не было, а ответ «заодно» прозвучал на 9.4 с из 39.6 — к «раскрытию» на 22.7 с он был уже известен."""
-    def build(texts, loop, caption="Почему я ничего не довожу?"):
+    def build(texts, loop, caption="Почему я ничего не довожу?", peaks=(), gap=0.5):
         beats = [{"text": t} for t in texts]
         words, spans, times, t = [], [], [], 0.0
         for b in beats:
             ws = b["text"].split(); spans.append((len(words), len(words) + len(ws))); words += ws
-            for _ in ws:
+            for w in ws:
+                if "заодн" in w: t += gap                     # «звуковой вакуум» перед ответом
                 times.append({"start": t, "end": t + 0.4}); t += 0.45
-        sp = {"beats": beats, "passport": {"standard": 17, "hook": {"loop": loop}, "caption": caption,
-                                           "cover": {"text": "Пошёл мыть полы"}}}
-        return reel_rules.check_open_loop(sp, words, times, spans, t)
-    good = ["Пошёл мыть полы.", "Через час сажал цветы, как так вышло?", "Одно слово уводит дальше, цветы, стирка, чайник, кино.",
-            "Я думал, что не умею ничего доводить, правда.", "А потом заметил, где теряюсь: на слове «заодно».", "Полы помыты."]
-    loop = {"question": 1, "reveal": 4, "answer": ["заодн"]}
+        sp = {"beats": beats, "passport": {"standard": 17, "hook": {"loop": loop, "payoff": {"pay": 5}}, "caption": caption,
+                                           "cover": {"text": "Пошёл мыть полы"}, "cta_beat": 6}}
+        return reel_rules.check_open_loop(sp, words, times, spans, t, (), peaks)
+    good = ["Пошёл мыть полы.", "Через час сажал цветы, как так вышло?", "Это не лень, и полы я в итоге домыл.",
+            "Одно слово уводит дальше, цветы, стирка, чайник, кино.", "А потом заметил, где теряюсь: на слове «заодно».",
+            "Полы помыты.", "Напиши в комментах."]
+    loop = {"question": 1, "reveal": 4, "answer": ["заодн"], "preblock": 2, "preview": 2, "loops": [[1, 4], [2, 5], [3, 4]]}
     assert build(good, loop) == []
-    leak = list(good); leak[2] = "Каждое «заодно» уводит дальше, цветы, стирка, чайник, кино."
+    assert any("пауза" in e for e in build(good, loop, gap=0.0))                       # без тишины перед ответом
+    assert any("звучит звук" in e for e in build(good, loop, peaks=[34 * 0.45 + 0.2]))           # звук в тишине перед ответом
+    assert any("preblock" in e for e in build(good, dict(loop, preblock=3)))          # догадка закрыта поздно
+    assert any("preview" in e for e in build(good, dict(loop, preview=None)))         # нет превью концовки
+    assert any("петель" in e for e in build(good, dict(loop, loops=[[1, 4]])))        # одна петля — мало
+    assert any("в призыве" in e for e in build(good, dict(loop, loops=[[1, 4], [2, 6], [3, 4]])))
+    leak = list(good); leak[3] = "Каждое «заодно» уводит дальше, цветы, стирка, чайник, кино."
     assert any("до раскрытия" in e for e in build(leak, loop))
     noq = list(good); noq[1] = "Через час сажал цветы, вот так вышло."
     assert any("вопроса нет" in e for e in build(noq, loop))
     assert any("подпись" in e for e in build(good, loop, caption="Это «заодно» уводит от дел"))
     assert any("loop" in e for e in build(good, {}))
     early = good[:2] + [good[4]] + good[2:4] + good[5:]
-    assert any("раньше середины" in e for e in build(early, {"question": 1, "reveal": 2, "answer": ["заодн"]}))
+    assert any("раньше середины" in e for e in build(early, dict(loop, reveal=2)))
 
 
 def test_wave8_persuasion_rules():

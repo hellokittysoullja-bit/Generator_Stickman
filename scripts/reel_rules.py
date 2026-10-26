@@ -1047,6 +1047,9 @@ LOOP_STANDARD = 17          # вопрос в начале, ответ в кон
 QUESTION_BY = 4.5           # вопрос прозвучал к 4.5 с: до первого решения «листать или нет» (повторный хук — до 4.2 с)
 REVEAL_FROM = 0.5           # ответ — не раньше середины ролика: раньше зритель получил своё и ушёл
 CAPTION_FOLD = 125          # столько знаков подписи видно до «ещё»
+VACUUM_SEC = 0.35           # «звуковой вакуум» перед ответом: только голос молчит, звуков нет (25 §17, alterega)
+LOOPS_MIN, LOOPS_MAX = 3, 4 # петель «контекст → раскрытие» в коротком ролике (25 §11, Kallaway SDHKQbKC7gA)
+LENGTH_SOFT = 36.0          # длиннее — предупреждение: досмотр 16–30 с ≈ 84 %, > 60 с ≈ 68 %, оптимум Hoyos 34 с (25 §19)
 
 
 def _stem_hit(text, stems):
@@ -1054,7 +1057,7 @@ def _stem_hit(text, stems):
     return next((st for st in stems if re.search(r"\b" + re.escape(_norm(st)), low)), None)
 
 
-def check_open_loop(spec, words, times, spans, total, events=()):
+def check_open_loop(spec, words, times, spans, total, events=(), sound_peaks=()):
     """Открытая петля (владелец 26.10): в первых двух фразах звучит вопрос (с «?»), ответ на него — слова
     passport.hook.loop.answer — не звучит, не пишется на экране, не стоит на обложке и в видимой части подписи раньше
     фразы-раскрытия; раскрытие — не раньше середины ролика. Живой промах «Пошёл мыть полы» v1: вопроса не было вовсе,
@@ -1100,7 +1103,42 @@ def check_open_loop(spec, words, times, spans, total, events=()):
         hit = _stem_hit(txt, ans)
         if hit:
             err.append(f"{name}: «{hit}» — ответ виден до просмотра, вопрос ролика уже закрыт")
+    # 25 §7: очевидная догадка закрыта сразу — фраза вопроса или следующая («и дело не в стероидах», moneyboymax)
+    pb = lp.get("preblock")
+    if not (isinstance(pb, int) and q <= pb <= q + 1):
+        err.append(f'loop.preblock = {pb!r}: догадку зрителя закрыть в фразе вопроса или сразу после ({q}–{q + 1}) — '
+                   "иначе он угадает («лень») и уйдёт")
+    # 25 §8: превью концовки рядом с хуком, выплата его — в последних 40 % (Jenny Hoyos)
+    pv, pay = lp.get("preview"), ((pp.get("hook") or {}).get("payoff") or {}).get("pay")
+    if not (isinstance(pv, int) and 0 <= pv <= 2):
+        err.append(f"loop.preview = {pv!r}: в первых трёх фразах — чем всё кончится, без «как» (превью концовки)")
+    elif isinstance(pay, int) and pay <= pv:
+        err.append(f"превью концовки (фраза {pv}) не раньше её выплаты (фраза {pay})")
+    # 25 §11: 3–4 петли «контекст → раскрытие», каждая закрыта и до призыва
+    loops, cta = lp.get("loops") or [], pp.get("cta_beat")
+    if not LOOPS_MIN <= len(loops) <= LOOPS_MAX:
+        err.append(f"петель {len(loops)}: в коротком ролике {LOOPS_MIN}–{LOOPS_MAX} пары [открыта, закрыта] (loop.loops)")
+    for lo in loops:
+        a, z = (list(lo) + [None, None])[:2]
+        if not (isinstance(a, int) and isinstance(z, int) and a < z):
+            err.append(f"петля {lo!r}: нужна пара [фраза, где открыта, фраза, где закрыта], закрытие позже")
+        elif isinstance(cta, int) and z >= cta:
+            err.append(f"петля {lo!r} закрывается в призыве или после — зритель ушёл с открытым вопросом")
+    # 25 §17: «звуковой вакуум» перед словом ответа — голос молчит, и звуков нет
+    if j is not None and j > 0:
+        g0, g1 = times[j - 1]["end"], times[j]["start"]
+        if g1 - g0 < VACUUM_SEC - 0.02:
+            err.append(f"перед ответом «{clean(words[j])}» пауза {g1 - g0:.2f} с < {VACUUM_SEC}: тишина перед главным "
+                       "(gaps после предыдущего слова)")
+        elif any(g0 - 0.05 < t < g1 - 0.1 for t in sound_peaks):    # звук на самом ответе — его удар, не тишина
+            err.append(f"в паузе перед ответом ({g0:.2f}–{g1:.2f} с) звучит звук: перед главным — только тишина")
     return err
+
+
+def loop_warnings(spec, total):
+    if ((spec.get("passport") or {}).get("standard") or 0) >= LOOP_STANDARD and total > LENGTH_SOFT:
+        return [f"рилс {total:.1f} с > {LENGTH_SOFT:.0f}: досмотр падает с длиной (25 §19) — резать мёртвые секунды"]
+    return []
 
 
 def sound_warnings(plan):

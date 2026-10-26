@@ -771,10 +771,12 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     rule_errs += reel_rules.check_whoosh_gap(sound_plan(shots, events))
     rule_errs += reel_rules.check_spots(spec, events)
     rule_errs += reel_rules.check_mindful(spec, events)
-    rule_errs += reel_rules.check_open_loop(spec, words, times, spans, total, events)   # вопрос в начале, ответ в конце
+    rule_errs += reel_rules.check_open_loop(spec, words, times, spans, total, events,   # вопрос в начале, ответ в конце
+                                            [p["peak"] for p in sound_plan(shots, events)])
     rule_errs += reel_rules.check_writing(events, shots)
     rule_errs += reel_rules.check_written_read(events, shots)  # дописанное слово не срезано склейкой
-    for w in reel_rules.warnings(spec, shots, total, events) + reel_rules.sound_warnings(sound_plan(shots, events)):
+    for w in reel_rules.warnings(spec, shots, total, events) + reel_rules.sound_warnings(sound_plan(shots, events)) + \
+            reel_rules.loop_warnings(spec, total):
         print("  ⚠ " + w)
     if rule_errs:
         print("ПРАВИЛА РИЛСА (docs/REELS_PLAYBOOK.md):\n" + "\n".join("  ✗ " + e for e in rule_errs))
