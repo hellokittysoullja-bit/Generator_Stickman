@@ -1261,18 +1261,46 @@ def sound_plan(shots, events):
             add("fast_whoosh", t, gain_db=SOFT_DB["same_picture"], soft=True)
     return plan
 
+CUT_SEARCH_SEC = 0.2      # тишину между словами ищем в ±0.2 с от середины по alignment
+CUT_FRAME_SEC = 0.01
+
+
+def voice_envelope(path):
+    """Громкость дорожки голоса по окнам 10 мс (dB); нет файла — None (тесты, немой рилс)."""
+    if not os.path.exists(path): return None
+    p = subprocess.run(["ffmpeg", "-v", "error", "-i", path, "-ac", "1", "-ar", "16000", "-f", "f32le", "-"],
+                       capture_output=True, check=True)
+    y = np.frombuffer(p.stdout, np.float32); h = int(16000 * CUT_FRAME_SEC); n = len(y) // h
+    return 20 * np.log10(np.sqrt((y[:n * h].reshape(n, h) ** 2).mean(1)) + 1e-6)
+
+
+def quiet_cut(env, prev, nxt):
+    """Точка разреза между словами prev и nxt — самое тихое место дорожки, а не середина по alignment. Lumean даёт время
+    слов с погрешностью ~0.1 с: 26.10 в рилсе 06 середина «слово | заодно» пришлась на начало «з», и «з» осталось перед
+    немой паузой, а после неё звучало «аодно». Окно не выходит за начало prev и конец nxt (не режем внутри соседних
+    слов дальше, чем ошибается alignment); тихое место берётся по 30 мс (одиночный провал на смычке «д» тише не окажется)."""
+    mid = (prev["end"] + nxt["start"]) / 2
+    if env is None: return mid
+    lo = max(prev["start"] + 0.05, mid - CUT_SEARCH_SEC); hi = min(nxt["end"] - 0.05, mid + CUT_SEARCH_SEC)
+    i0, i1 = int(lo / CUT_FRAME_SEC), min(int(hi / CUT_FRAME_SEC), len(env) - 2)
+    if i1 <= i0 + 2: return mid
+    sm = np.convolve(env, np.ones(3) / 3, mode="same")
+    return float((i0 + int(np.argmin(sm[i0:i1]))) * CUT_FRAME_SEC + CUT_FRAME_SEC / 2)
+
+
 def voice_segments(reel_dir, nat, times):
     """Куски дорожки голоса и куда их ставить: слова с одинаковым сдвигом (раскладка фраз: пик riser, немые паузы,
-    перебивка) идут одним куском; граница куска — середина тишины между словами в исходной дорожке."""
+    перебивка) идут одним куском; граница куска — самое тихое место между словами в исходной дорожке (`quiet_cut`)."""
     path = os.path.join(reel_dir, "voice", "voice.wav")
-    segs, a = [], 0
+    env = voice_envelope(path)
+    segs, a, cut = [], 0, 0.0
     for k in range(1, len(nat) + 1):
         d0 = times[a]["start"] - nat[a]["start"]
         if k < len(nat) and abs((times[k]["start"] - nat[k]["start"]) - d0) < 1e-6:
             continue
-        s0 = 0.0 if a == 0 else (nat[a - 1]["end"] + nat[a]["start"]) / 2
-        s1 = None if k == len(nat) else (nat[k - 1]["end"] + nat[k]["start"]) / 2
-        segs.append(dict(src=path, s0=s0, s1=s1, dst=s0 + d0)); a = k
+        s0 = cut
+        s1 = None if k == len(nat) else quiet_cut(env, nat[k - 1], nat[k])
+        segs.append(dict(src=path, s0=s0, s1=s1, dst=s0 + d0)); a = k; cut = s1
     return segs
 
 def voice_p95(v):

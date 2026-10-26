@@ -5,6 +5,9 @@
 import copy
 import json
 import os
+import subprocess
+
+import numpy as np
 
 import reel
 import reel_rules
@@ -449,7 +452,7 @@ def test_hook_craft_from_seven_videos(tmp_path):
     s = copy.deepcopy(good); s["passport"]["hook"]["craft"]["twist"] = {"skip": "нет"}
     assert any("twist" in e for e in reel_rules.check_hook_craft(s))      # отговорка короче причины — не решение
     s = copy.deepcopy(good); s["passport"]["standard"] = 17
-    log = [{"reel": "videos/03_lenivyi/reel", "first_words": "идёшь мыть"}]
+    log = [{"reel": "videos/03_lenivyi/reel", "first_words": "идёшь убираться"}]
     assert reel_rules.check_hook_craft(s, log, "videos/03_lenivyi/reel") == []      # готовый рилс из журнала — как был
     assert any("нужен" in e for e in reel_rules.check_hook_craft(s, log, "videos/07_new/reel"))   # новый ниже 18 — нет
 
@@ -1068,3 +1071,18 @@ def test_mindful_accents_why_and_rare_circles():
     assert any("кругов 3" in e for e in errs) and any("ближе 8.0" in e for e in errs)
     assert not any("фраза 0" in e for e in errs)                              # удар с причиной — годен
     assert reel_rules.check_mindful(dict(spec, passport={"standard": 15}), ev) == []
+
+
+def test_voice_cut_lands_in_real_silence(tmp_path):
+    """26.10, рилс 06: alignment Lumean ошибся на 0.1 с, разрез по середине пришёлся на «з» в «заодно» — «з» осталось
+    перед немой паузой. Разрез ищется по самой дорожке: в тишине между словами, даже если alignment сдвинут."""
+    sr = 16000; t = np.arange(int(1.6 * sr)) / sr
+    y = 0.3 * np.sin(2 * np.pi * 180 * t)
+    y[(t > 0.55) & (t < 0.65)] = 0.0                                  # настоящая тишина 0.55–0.65 с
+    os.makedirs(tmp_path / "voice")
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "f32le", "-ar", str(sr), "-ac", "1", "-i", "-",
+                    str(tmp_path / "voice" / "voice.wav")], input=y.astype(np.float32).tobytes(), check=True)
+    nat = [dict(start=0.0, end=0.68), dict(start=0.76, end=1.5)]      # alignment опаздывает: середина 0.72 — в звуке
+    times = [nat[0], dict(nat[1], start=1.06, end=1.8)]               # немая пауза 0.3 с перед вторым словом
+    segs = reel.voice_segments(str(tmp_path), nat, times)
+    assert 0.55 < segs[0]["s1"] < 0.65 and segs[1]["s0"] == segs[0]["s1"]

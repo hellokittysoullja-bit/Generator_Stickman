@@ -286,9 +286,10 @@ def check_hook_steal(spec, log=(), reel_dir=""):
     std = pp.get("standard") or 0
     beats = spec.get("beats") or []
     if std < HOOK_STEAL_STANDARD:
-        first = " ".join(clean(beats[0]["text"]).split()[:2]).lower() if beats else ""
+        bare = lambda x: " ".join(re.sub(r"[^\w\s]+", "", x).split()[:2]).lower()   # noqa: E731  «убираться?» = «убираться»
+        first = bare(clean(beats[0]["text"])) if beats else ""
         old = any(os.path.normpath(r.get("reel", "")) == os.path.normpath(reel_dir or "")
-                  and r.get("first_words", "").lower() == first for r in log)
+                  and bare(r.get("first_words", "")) == first for r in log)
         if reel_dir and not old:
             return [f"новый рилс со стандартом {std}: нужен \"standard\": {HOOK_STEAL_STANDARD} — хук ворует внимание "
                     "(passport.hook.steal и два эффекта в первой фразе, CLAUDE.md, рилсы п.0а)"]
@@ -319,9 +320,10 @@ def check_hook_motion(spec, log=(), reel_dir="", abs_dir=None):
     std = pp.get("standard") or 0
     beats = spec.get("beats") or []
     if std < HOOK_MOTION_STANDARD:
-        first = " ".join(clean(beats[0]["text"]).split()[:2]).lower() if beats else ""
+        bare = lambda x: " ".join(re.sub(r"[^\w\s]+", "", x).split()[:2]).lower()   # noqa: E731  «убираться?» = «убираться»
+        first = bare(clean(beats[0]["text"])) if beats else ""
         old = any(os.path.normpath(r.get("reel", "")) == os.path.normpath(reel_dir or "")
-                  and r.get("first_words", "").lower() == first for r in log)
+                  and bare(r.get("first_words", "")) == first for r in log)
         if reel_dir and not old:
             return [f"новый рилс со стандартом {std}: нужен \"standard\": {HOOK_MOTION_STANDARD} — движение внутри рисунка "
                     "в хуке (сцена anim.py), голос и удар с 0 с, якорь, повторный хук (скилл reel-anim)"]
@@ -1176,9 +1178,10 @@ def check_hook_craft(spec, log=(), reel_dir=""):
     pp = spec.get("passport") or {}
     std, beats = pp.get("standard") or 0, spec.get("beats", [])
     if std < HOOK_CRAFT_STANDARD:                        # готовые рилсы из журнала — как были; новый ниже 18 — нет
-        first = " ".join(clean(beats[0]["text"]).split()[:2]).lower() if beats else ""
+        bare = lambda x: " ".join(re.sub(r"[^\w\s]+", "", x).split()[:2]).lower()   # noqa: E731  «убираться?» = «убираться»
+        first = bare(clean(beats[0]["text"])) if beats else ""
         old = any(os.path.normpath(r.get("reel", "")) == os.path.normpath(reel_dir or "")
-                  and r.get("first_words", "").lower() == first for r in log)
+                  and bare(r.get("first_words", "")) == first for r in log)
         if reel_dir and not old:
             return [f"новый рилс со стандартом {std}: нужен \"standard\": {HOOK_CRAFT_STANDARD} — CLAUDE.md «ХУК — "
                     "ОБЯЗАТЕЛЬНО» («ты», «но», читаемость, крупный текст, passport.hook.craft)"]
