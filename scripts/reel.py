@@ -55,6 +55,9 @@ CAP_MAX_W = 860        # px: от 70 до 930 — правее колонка к
 CAP_AHEAD_ALPHA = 0    # слово появляется, когда его сказали (владелец 25.10: «субтитры всегда динамичные… и в хуке»);
                        # место в строке у всех слов группы своё с начала — строка не прыгает, когда слова добавляются
 CAP_RISE = 0           # въезда снизу нет (владелец 25.10: «зачем они поднимаются, пусть ровно»); было 18 px за 250 мс
+CAP_POP_SEC = 0.15     # «поп» слова, когда его сказали (владелец 26.10: «сделать их динамичными»): масштаб 0.86 → 1.035 → 1.0
+CAP_POP_FROM, CAP_POP_PEAK, CAP_POP_KEY = 0.86, 1.035, 1.045  # от центра своего места; ключевое чуть сильнее. 1.09 склеивал
+CAP_POP_STEPS = 5      # «в«потом»» (лист 26.10): перелёт держится меньше половины пробела, место слова своё с начала
 CAP_STROKE = 6         # тонкая тёмная обводка + мягкая тень (обводка 12% кегля читалась наклейкой)
 WHITE = (255, 255, 255); INK = (18, 18, 20)
 ACTIVE = (255, 210, 63)        # активное слово (караоке) — тёплый жёлтый
@@ -191,7 +194,13 @@ def font(path, size, wght=None, raqm=False):
         _FONTS[k] = f
     return _FONTS[k]
 
-def render_chunk(words, idx, active, fade_ahead=True):
+def pop_scale(u, key=False):
+    """Масштаб «попа» активного слова в доле u ∈ [0, 1] его CAP_POP_SEC: быстрый рост с перелётом и возврат к 1.0."""
+    u = min(max(u, 0.0), 1.0); peak = CAP_POP_KEY if key else CAP_POP_PEAK
+    if u < 0.6: return CAP_POP_FROM + (peak - CAP_POP_FROM) * ease_out(u / 0.6)
+    return peak + (1.0 - peak) * ease_io((u - 0.6) / 0.4)
+
+def render_chunk(words, idx, active, fade_ahead=True, pop=1.0):
     """RGBA одной группы: одна строка, один кегль, базовая линия на одной высоте у всех групп (высота картинки
     от метрик шрифта, а не от букв: «у/д/щ» не сдвигают группу). Белые буквы, тонкая тёмная обводка, мягкая
     тень; активное слово — жёлтым (караоке), ключевое — оранжевым. Цвет — единственное отличие слов."""
@@ -205,10 +214,18 @@ def render_chunk(words, idx, active, fade_ahead=True):
     img = Image.new("RGBA", (bw, bh), (0, 0, 0, 0)); sh = Image.new("RGBA", (bw, bh), (0, 0, 0, 0))
     d, ds = ImageDraw.Draw(img), ImageDraw.Draw(sh)
     x, y = 30 + st, 30 + st
-    for (t, col), fd in zip(parts, fade):
+    for j, (t, col), fd in zip(idx, parts, fade):
         a = CAP_AHEAD_ALPHA if fd else 255
         if not a:
             x += tracked(f, t) + space; continue
+        if j == active and abs(pop - 1.0) > 1e-3:        # поп: слово своим кеглем по центру своего места
+            fs = font(CAP_FONT, max(8, round(CAP_SIZE * pop)), CAP_AXES, raqm=True); sts = max(1, round(st * pop))
+            w0, w1 = tracked(f, t), tracked(fs, t)
+            xs = x + (w0 - w1) / 2; ys = y + (asc + desc) * (1 - pop) / 2   # центр слова на месте
+            ds.text((xs, ys + CAP_SIZE * 0.07 * pop), t, font=fs, fill=(0, 0, 0, 80 * a // 255), stroke_width=sts + 2,
+                    stroke_fill=(0, 0, 0, 80 * a // 255), features=CAP_FEATURES)
+            d.text((xs, ys), t, font=fs, fill=col + (a,), stroke_width=sts, stroke_fill=INK + (a,), features=CAP_FEATURES)
+            x += w0 + space; continue
         ds.text((x, y + CAP_SIZE * 0.07), t, font=f, fill=(0, 0, 0, 80 * a // 255), stroke_width=st + 2,
                 stroke_fill=(0, 0, 0, 80 * a // 255), features=CAP_FEATURES)
         d.text((x, y), t, font=f, fill=col + (a,), stroke_width=st, stroke_fill=INK + (a,), features=CAP_FEATURES)
@@ -795,6 +812,7 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     if spec.get("hook_still"): caps[0]["still"] = True   # старые рилсы: хук целиком с первого кадра (до 25.10)
     for c in caps:
         c["imgs"] = {j: render_chunk(words, c["idx"], j, fade_ahead=not c.get("still")) for j in c["idx"]}
+        c["words"] = words
 
     if sheet:
         return contact_sheet(reel_dir, shots)
@@ -1186,6 +1204,14 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
             for j in c["idx"]:
                 if times[j]["start"] - 0.03 <= t: act = j
             im = c["imgs"][act]
+            u = (t - times[act]["start"] + 0.03) / CAP_POP_SEC          # поп слова, когда его сказали
+            if CAP_POP_SEC and 0 <= u < 1 and not c.get("still"):
+                k = min(CAP_POP_STEPS - 1, int(u * CAP_POP_STEPS))
+                cache = c.setdefault("pops", {})
+                if (act, k) not in cache:
+                    cache[(act, k)] = render_chunk(c["words"], c["idx"], act, pop=pop_scale((k + 0.5) / CAP_POP_STEPS,
+                                                                                           "*" in c["words"][act]))
+                im = cache[(act, k)]
             u = 1.0 if c.get("still") else (t - c["t0"]) / 0.25
             dy = CAP_RISE * (1 - ease_out(u))             # ровная строка: без подъёма (CAP_RISE 0), слова — по речи
             over(base, im, CAP_CX, CAP_CY + dy, alpha=1.0 if not CAP_RISE else min(1.0, 0.3 + 0.7 * u * 2.0))

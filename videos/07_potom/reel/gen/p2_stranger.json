@@ -1,0 +1,13 @@
+{
+ "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture on plain near-white paper: the main character, relieved, pushes one big heavy plain cardboard box across a plain floor towards a tall stranger standing on the right: a tall faceless grey figure in a long plain coat and a wide hat, its face only a soft blank shadow, its hands open to take the box. The flame on the tip of the main character's tail burns small. LAYOUT: the main character whole in the lower left, the box between them on the floor, the tall figure whole on the right side with a clear gap; the box is plain with no marks. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+ "model": "cx/gpt-image-2",
+ "quality": "medium",
+ "size": "1024x1536",
+ "price": 140625,
+ "refs": [
+  "look/style/1_desk.png",
+  "look/style/2_objects.png",
+  "videos/01_sdvg_pismo/frames/004.png",
+  "look/hero.png"
+ ]
+}
