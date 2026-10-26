@@ -979,5 +979,41 @@
   "prompt": null,
   "model": null,
   "price": null
+ },
+ {
+  "file": "2026-10-26_gen_cx_gpt-image-2_4e7b9837.png",
+  "sha256": "4e7b9837775a94abe765b7937ebfa9a72e44da7203e864199f4066361d5042ca",
+  "bytes": 2175308,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-10-26",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture on plain near-white paper: the main character stands on tiptoe on a plain floor and carefully places one more small plain blank card on top of a very tall wobbly tower made of many identical small plain blank cards stacked flat, the tower leans dangerously to one side; the main character looks hopeful and a little tired. The flame on the tip of its tail is a small dim ember. LAYOUT: the tower is tall in the middle and reaches the upper part of the picture; the main character is whole and large in the lower left, its raised paw touching the top card; every card is completely blank. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 140625,
+  "source": "scripts/reel_draw.py videos/07_potom/reel"
+ },
+ {
+  "file": "2026-10-26_gen_cx_gpt-image-2_c6aea160.png",
+  "sha256": "c6aea16049169db2e8d415d57010d5cf466839ec08beb079e0d4fa286f6f6498",
+  "bytes": 2113090,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-10-26",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture on plain near-white paper: the main character, relieved, pushes one big heavy plain cardboard box across a plain floor towards a tall stranger standing on the right: a tall faceless grey figure in a long plain coat and a wide hat, its face only a soft blank shadow, its hands open to take the box. The flame on the tip of the main character's tail burns small. LAYOUT: the main character whole in the lower left, the box between them on the floor, the tall figure whole on the right side with a clear gap; the box is plain with no marks. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 140625,
+  "source": "scripts/reel_draw.py videos/07_potom/reel"
  }
 ]
