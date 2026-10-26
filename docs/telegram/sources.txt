@@ -1,0 +1,24 @@
+# Ролики YouTube, изученные для поста в Telegram (26.10): расшифровки прочитаны целиком. Не изучать повторно.
+# Разбор — docs/telegram/01_copywriting_study.md (номер в скобках — номер ролика в разборе).
+# формат: id  язык  мин  автор — название  https://youtu.be/id
+H6x8ZhKHEtM  ru  87   Максим Ильяхов — «Пиши, соблазняй: как привлечь и удержать читателя», ч.1 (1)  https://youtu.be/H6x8ZhKHEtM
+0uClmd-QQfA  ru  42   Денис Каплунов — «10 техник копирайтинга, повышающих конверсию» (2)  https://youtu.be/0uClmd-QQfA
+nDCBdMe_67U  ru  7    Денис Каплунов — «С чего начинать продающий текст?» (3)  https://youtu.be/nDCBdMe_67U
+Dr0E6v-L2jU  ru  67   Дмитрий Кот — «Советует копирайтер: продающий текст — доверие» (4)  https://youtu.be/Dr0E6v-L2jU
+qfsJRt4klAM  ru  13   Дмитрий Кот — «Как сделать продающий пост интересным: пост от лица героя» (5)  https://youtu.be/qfsJRt4klAM
+RMhXkdNOT2Q  ru  25   Ярослав Мельник — «Как писать продающие посты для Telegram» (6)  https://youtu.be/RMhXkdNOT2Q
+1brOfUd4nas  ru  16   Камилла Жибуля — «Как вести контент в Telegram-канале» (7)  https://youtu.be/1brOfUd4nas
+_hrjb_-_aFI  ru  20   Анна Павлова — «11 неочевидных фишек для Telegram-канала» (8)  https://youtu.be/_hrjb_-_aFI
+dCj21hB6cgo  ru  104  Кетт Сафронова у Геннадия Бабинцева — «9 000 000 ₽ с Telegram. Как вести живой блог» (9)  https://youtu.be/dCj21hB6cgo
+pZ82pzVoAZo  en  35   Stefan Georgi — «Direct Response Copywriting 101» (10)  https://youtu.be/pZ82pzVoAZo
+TUMjnmfsPeM  en  71   Harry Dry у David Perell — «Learn Copywriting in 76 Minutes» (11)  https://youtu.be/TUMjnmfsPeM
+OyGKFhTf0go  en  5    Alex Hormozi — «The Copy Rule I Learned From The Best Copywriter I Know» (12)  https://youtu.be/OyGKFhTf0go
+sKOcCQh5nac  en  69   Alex Hormozi у David Perell — «Copywriting Masterclass, #1 Creator Mistake, 1M Books Sold» (13)  https://youtu.be/sKOcCQh5nac
+9dwos0EtL00  en  14   Alex Cattoni — «Email Marketing Tutorial: How To Write Emails That DOUBLE Conversions» (14)  https://youtu.be/9dwos0EtL00
+YaOZyJ9ZDQM  en  11   Alex Cattoni — «4 Storytelling Formulas To Create CONTENT That SELLS» (15)  https://youtu.be/YaOZyJ9ZDQM
+YSFvTTa7_Pw  en  16   Adam Erhart — «Copywriting for Beginners: The Ultimate 2026 Guide» (16)  https://youtu.be/YSFvTTa7_Pw
+cuwMVLG3qv4  en  26   Roy Furr — «Message-Market Match: The Golden Key» (Шварц + PAISA) (17)  https://youtu.be/cuwMVLG3qv4
+B-uP4jKFowA  en  15   Bond Halbert — «Copywriting Tips For Beginners Part I» (18)  https://youtu.be/B-uP4jKFowA
+SkR3XB6Bvq8  en  28   Justin Welsh на Kajabi — «Systemizing Your Content Structure» (19)  https://youtu.be/SkR3XB6Bvq8
+2kOGHcN8Avs  en  39   Dan Koe — «4 Frameworks To Write Follow-Worthy Content» (20)  https://youtu.be/2kOGHcN8Avs
+32uLdgfvuQ4  en  26   Joanna Wiebe — «25 Years of Copywriting Advice in 25 Minutes» (21)  https://youtu.be/32uLdgfvuQ4
