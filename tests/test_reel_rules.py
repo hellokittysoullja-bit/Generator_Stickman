@@ -387,6 +387,33 @@ def test_cover_waits_for_anchor_words(tmp_path):
     assert reel_publish.cover_time(str(tmp_path), {"events": []}) == 0.05
 
 
+def test_question_first_answer_only_at_the_end():
+    """26.10, владелец: «чтоб никогда не нарушено… иначе пролистывание». Живой промах «Пошёл мыть полы» v1: вопроса
+    в начале не было, а ответ «заодно» прозвучал на 9.4 с из 39.6 — к «раскрытию» на 22.7 с он был уже известен."""
+    def build(texts, loop, caption="Почему я ничего не довожу?"):
+        beats = [{"text": t} for t in texts]
+        words, spans, times, t = [], [], [], 0.0
+        for b in beats:
+            ws = b["text"].split(); spans.append((len(words), len(words) + len(ws))); words += ws
+            for _ in ws:
+                times.append({"start": t, "end": t + 0.4}); t += 0.45
+        sp = {"beats": beats, "passport": {"standard": 17, "hook": {"loop": loop}, "caption": caption,
+                                           "cover": {"text": "Пошёл мыть полы"}}}
+        return reel_rules.check_open_loop(sp, words, times, spans, t)
+    good = ["Пошёл мыть полы.", "Через час сажал цветы, как так вышло?", "Одно слово уводит дальше, цветы, стирка, чайник, кино.",
+            "Я думал, что не умею ничего доводить, правда.", "А потом заметил, где теряюсь: на слове «заодно».", "Полы помыты."]
+    loop = {"question": 1, "reveal": 4, "answer": ["заодн"]}
+    assert build(good, loop) == []
+    leak = list(good); leak[2] = "Каждое «заодно» уводит дальше, цветы, стирка, чайник, кино."
+    assert any("до раскрытия" in e for e in build(leak, loop))
+    noq = list(good); noq[1] = "Через час сажал цветы, вот так вышло."
+    assert any("вопроса нет" in e for e in build(noq, loop))
+    assert any("подпись" in e for e in build(good, loop, caption="Это «заодно» уводит от дел"))
+    assert any("loop" in e for e in build(good, {}))
+    early = good[:2] + [good[4]] + good[2:4] + good[5:]
+    assert any("раньше середины" in e for e in build(early, {"question": 1, "reveal": 2, "answer": ["заодн"]}))
+
+
 def test_wave8_persuasion_rules():
     """Волна 8 (23.10): давящие слова, закреп-приманка «напиши 1/2», серия без номера, смысловые петли реже 12 с."""
     s = spec()

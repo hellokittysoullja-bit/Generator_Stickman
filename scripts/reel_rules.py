@@ -1043,6 +1043,66 @@ def check_mindful(spec, events):
     return err
 
 
+LOOP_STANDARD = 17          # вопрос в начале, ответ в конце (владелец 26.10: «чтоб никогда не нарушено… иначе пролистывание»)
+QUESTION_BY = 4.5           # вопрос прозвучал к 4.5 с: до первого решения «листать или нет» (повторный хук — до 4.2 с)
+REVEAL_FROM = 0.5           # ответ — не раньше середины ролика: раньше зритель получил своё и ушёл
+CAPTION_FOLD = 125          # столько знаков подписи видно до «ещё»
+
+
+def _stem_hit(text, stems):
+    low = _norm(text)
+    return next((st for st in stems if re.search(r"\b" + re.escape(_norm(st)), low)), None)
+
+
+def check_open_loop(spec, words, times, spans, total, events=()):
+    """Открытая петля (владелец 26.10): в первых двух фразах звучит вопрос (с «?»), ответ на него — слова
+    passport.hook.loop.answer — не звучит, не пишется на экране, не стоит на обложке и в видимой части подписи раньше
+    фразы-раскрытия; раскрытие — не раньше середины ролика. Живой промах «Пошёл мыть полы» v1: вопроса не было вовсе,
+    а ответ «заодно» прозвучал на 9.4 с из 39.6 и к «раскрытию» на 22.7 с был уже известен."""
+    pp = spec.get("passport") or {}
+    if (pp.get("standard") or 0) < LOOP_STANDARD:
+        return []
+    beats = spec.get("beats", [])
+    lp = (pp.get("hook") or {}).get("loop") or {}
+    q, r, ans = lp.get("question"), lp.get("reveal"), [a for a in (lp.get("answer") or []) if str(a).strip()]
+    if not (isinstance(q, int) and isinstance(r, int) and ans):
+        return ['паспорт хука: loop — {"question": фраза 0–1 с вопросом, "reveal": фраза ответа, "answer": [основы слов '
+                'ответа]}: вопрос в начале, ответ только в конце, иначе пролистывание']
+    err = []
+    if not 0 <= q <= 1 or q >= len(beats) or "?" not in beats[q]["text"]:
+        err.append(f"фраза {q}: вопроса нет — в первых двух фразах звучит вопрос со знаком «?», на который ролик ответит в конце")
+    elif times[spans[q][1] - 1]["end"] > QUESTION_BY:
+        err.append(f"вопрос (фраза {q}) договорён на {times[spans[q][1] - 1]['end']:.1f} с > {QUESTION_BY}: зритель решает раньше")
+    if not (isinstance(r, int) and q < r < len(beats)):
+        return err + [f"фраза раскрытия {r} — не после вопроса {q}"]
+    j = next((k for k in range(*spans[r]) if _stem_hit(words[k], ans)), None)
+    if j is None:
+        err.append(f"фраза раскрытия {r}: слов ответа {ans} в ней нет — вопрос не закрыт")
+        t_rev = times[spans[r][0]]["start"]
+    else:
+        t_rev = times[j]["start"]
+    if t_rev < total * REVEAL_FROM:
+        err.append(f"ответ на {t_rev:.1f} с из {total:.1f} — раньше середины: зритель получил своё и листает")
+    for k in range(spans[0][0], j if j is not None else spans[r][0]):
+        hit = _stem_hit(words[k], ans)
+        if hit:
+            b = next(i for i, (a, z) in enumerate(spans) if a <= k < z)
+            err.append(f"фраза {b}: «{clean(words[k])}» на {times[k]['start']:.1f} с — ответ «{hit}» прозвучал до раскрытия "
+                       f"(фраза {r}): петля закрыта раньше времени")
+    for i, b in enumerate(beats):
+        for e in b.get("fx", []):
+            hit = _stem_hit(e.get("text", ""), ans)
+            ev_t = next((x["t"] for x in events if x.get("beat") == i and x.get("kind") == e.get("kind")), None)
+            if hit and (i < r or (ev_t is not None and ev_t < t_rev - 0.05)):
+                err.append(f"фраза {i}: на экране «{e.get('text')}» — ответ «{hit}» написан до раскрытия")
+    seen = (("обложка", (pp.get("cover") or {}).get("text", "")), ("подпись до «ещё»", str(pp.get("caption", ""))[:CAPTION_FOLD]))
+    for name, txt in seen:
+        hit = _stem_hit(txt, ans)
+        if hit:
+            err.append(f"{name}: «{hit}» — ответ виден до просмотра, вопрос ролика уже закрыт")
+    return err
+
+
 def sound_warnings(plan):
     pk = sorted(p["peak"] for p in plan)
     for i, t in enumerate(pk):
