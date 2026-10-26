@@ -102,12 +102,15 @@ def timing(ctx):
     return dict(fall=hit - 0.42, hit=hit)
 
 
+LEAN = 5.0                                             # первый кадр — уже середина действия: швабра кренится (25 §4)
+
+
 def angle_at(t, T, rest):
     if t < T["fall"]:
-        tq = anim.on_twos(t)                           # предвестник: швабра дрожит у стены
-        return 1.2 * math.sin(2 * math.pi * 3.0 * tq) * anim.clamp01((t - 0.15) / 0.3)
+        tq = anim.on_twos(t)                           # предвестник: швабра в крене дрожит у стены
+        return LEAN + 1.2 * math.sin(2 * math.pi * 3.0 * tq) * anim.clamp01((t - 0.15) / 0.3)
     if t < T["hit"]:
-        return rest * anim.gravity((t - T["fall"]) / (T["hit"] - T["fall"]))
+        return LEAN + (rest - LEAN) * anim.gravity((t - T["fall"]) / (T["hit"] - T["fall"]))
     th = t - T["hit"]
     if th < 2 / 30:                                    # задержка на ударе
         return rest

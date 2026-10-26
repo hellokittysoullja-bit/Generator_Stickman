@@ -401,15 +401,22 @@ def test_question_first_answer_only_at_the_end():
         sp = {"beats": beats, "passport": {"standard": 17, "hook": {"loop": loop, "payoff": {"pay": 5}}, "caption": caption,
                                            "cover": {"text": "Пошёл мыть полы"}, "cta_beat": 6}}
         return reel_rules.check_open_loop(sp, words, times, spans, t, (), peaks)
-    good = ["Пошёл мыть полы.", "Через час сажал цветы, как так вышло?", "Это не лень, и полы я в итоге домыл.",
+    good = ["Шёл мыть полы, а сажаю цветы.", "Как так вышло? Полы я, кстати, домыл.", "И это не лень, правда.",
             "Одно слово уводит дальше, цветы, стирка, чайник, кино.", "А потом заметил, где теряюсь: на слове «заодно».",
             "Полы помыты.", "Напиши в комментах."]
-    loop = {"question": 1, "reveal": 4, "answer": ["заодн"], "preblock": 2, "preview": 2, "loops": [[1, 4], [2, 5], [3, 4]]}
+    def gap_at(texts):
+        n = 0
+        for t in texts:
+            for w in t.split():
+                if "заодн" in w: return n * 0.45
+                n += 1
+    loop = {"question": 1, "reveal": 4, "answer": ["заодн"], "preblock": 2, "preview": 1, "loops": [[1, 4], [1, 5], [3, 4]]}
     assert build(good, loop) == []
     assert any("пауза" in e for e in build(good, loop, gap=0.0))                       # без тишины перед ответом
-    assert any("звучит звук" in e for e in build(good, loop, peaks=[34 * 0.45 + 0.2]))           # звук в тишине перед ответом
+    assert any("звучит звук" in e for e in build(good, loop, peaks=[gap_at(good) + 0.2]))           # звук в тишине перед ответом
     assert any("preblock" in e for e in build(good, dict(loop, preblock=3)))          # догадка закрыта поздно
     assert any("preview" in e for e in build(good, dict(loop, preview=None)))         # нет превью концовки
+    assert any("превью концовки" in e for e in build(good, dict(loop, preview=3)))    # превью позже 4.5 с
     assert any("петель" in e for e in build(good, dict(loop, loops=[[1, 4]])))        # одна петля — мало
     assert any("в призыве" in e for e in build(good, dict(loop, loops=[[1, 4], [2, 6], [3, 4]])))
     leak = list(good); leak[3] = "Каждое «заодно» уводит дальше, цветы, стирка, чайник, кино."
@@ -418,7 +425,7 @@ def test_question_first_answer_only_at_the_end():
     assert any("вопроса нет" in e for e in build(noq, loop))
     assert any("подпись" in e for e in build(good, loop, caption="Это «заодно» уводит от дел"))
     assert any("loop" in e for e in build(good, {}))
-    early = good[:2] + [good[4]] + good[2:4] + good[5:]
+    early = good[:2] + [good[4]] + good[2:4] + good[5:] + ["И отправь тому, кто тоже начинает с полов, а заканчивает кино."]
     assert any("раньше середины" in e for e in build(early, dict(loop, reveal=2)))
 
 

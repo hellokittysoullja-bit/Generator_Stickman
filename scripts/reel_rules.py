@@ -1074,8 +1074,10 @@ def check_open_loop(spec, words, times, spans, total, events=(), sound_peaks=())
     err = []
     if not 0 <= q <= 1 or q >= len(beats) or "?" not in beats[q]["text"]:
         err.append(f"фраза {q}: вопроса нет — в первых двух фразах звучит вопрос со знаком «?», на который ролик ответит в конце")
-    elif times[spans[q][1] - 1]["end"] > QUESTION_BY:
-        err.append(f"вопрос (фраза {q}) договорён на {times[spans[q][1] - 1]['end']:.1f} с > {QUESTION_BY}: зритель решает раньше")
+    else:                                                  # конец самого вопроса — слово со знаком «?», не всей фразы
+        k_q = next(k for k in range(*spans[q]) if "?" in words[k])
+        if times[k_q]["end"] > QUESTION_BY:
+            err.append(f"вопрос (фраза {q}) договорён на {times[k_q]['end']:.1f} с > {QUESTION_BY}: зритель решает раньше")
     if not (isinstance(r, int) and q < r < len(beats)):
         return err + [f"фраза раскрытия {r} — не после вопроса {q}"]
     j = next((k for k in range(*spans[r]) if _stem_hit(words[k], ans)), None)
@@ -1110,8 +1112,11 @@ def check_open_loop(spec, words, times, spans, total, events=(), sound_peaks=())
                    "иначе он угадает («лень») и уйдёт")
     # 25 §8: превью концовки рядом с хуком, выплата его — в последних 40 % (Jenny Hoyos)
     pv, pay = lp.get("preview"), ((pp.get("hook") or {}).get("payoff") or {}).get("pay")
-    if not (isinstance(pv, int) and 0 <= pv <= 2):
-        err.append(f"loop.preview = {pv!r}: в первых трёх фразах — чем всё кончится, без «как» (превью концовки)")
+    if not (isinstance(pv, int) and 0 <= pv < len(spans)):  # Hoyos: хук + превью концовки — за первые ~3–4 с
+        err.append(f"loop.preview = {pv!r}: номер фразы, где сказано, чем всё кончится, без «как» (превью концовки)")
+    elif times[spans[pv][0]]["start"] > QUESTION_BY:
+        err.append(f"превью концовки (фраза {pv}) начинается на {times[spans[pv][0]]['start']:.1f} с > {QUESTION_BY}: "
+                   "хук и превью — в первые секунды")
     elif isinstance(pay, int) and pay <= pv:
         err.append(f"превью концовки (фраза {pv}) не раньше её выплаты (фраза {pay})")
     # 25 §11: 3–4 петли «контекст → раскрытие», каждая закрыта и до призыва
