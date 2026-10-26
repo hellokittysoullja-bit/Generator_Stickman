@@ -6,7 +6,14 @@
 riser, немые паузы, перебивка) делает `reel.py`: он режет эту дорожку по фразам и ставит куски на свои места, поэтому
 правка монтажа не требует новой платной озвучки.
 
-Шаблон голоса — `LUMEAN_REEL_TEMPLATE_ID` или `LUMEAN_TEMPLATE_ID` из `.env`; ключ — `LUMEAN_API_KEY`, только `.env`.
+Шаблон голоса — `voice_template` из `docs/reels_brand.json` (голос, выбранный владельцем для всех рилсов: Daniel,
+eleven_v4), и только без него — `LUMEAN_REEL_TEMPLATE_ID` / `LUMEAN_TEMPLATE_ID` из `.env`. 26.10 рилс 06 озвучился
+шаблоном из `.env` другого голоса («Голос канала 03»), и владелец услышал чужой голос: `.env` у каждой машины свой,
+поэтому голос рилсов закреплён в репозитории. Ключ — `LUMEAN_API_KEY`, только `.env`.
+
+Интонация: у фразы может быть поле `voice` — тот же текст с тегами голоса eleven_v4 (`[energetic]` один раз на хук,
+`[short pause]`, `[emphasis]`, `[slowly]`; CLAUDE.md «Сценарий: стиль»). Слова в `voice` те же, что в `text`, по
+порядку, — иначе субтитры не привязать (проверяется до заказа).
 
     python scripts/reel_voice.py videos/01_sdvg_pismo/reel [--force]
 """
@@ -36,9 +43,30 @@ def load_env():
             os.environ[m.group(1)] = m.group(2)
 
 
+TAG_RE = re.compile(r"\[[a-z ]+\]\s*")
+BRAND = os.path.join(ROOT, "docs", "reels_brand.json")
+
+
 def phrase_texts(beats):
-    """Текст для голоса: без разметки (`*`, `|`), фраза — строка."""
-    return [reel.clean(b["text"]).strip() for b in beats]
+    """Текст для голоса: без разметки (`*`, `|`), фраза — строка; есть `voice` — он (с тегами интонации)."""
+    out = []
+    for b in beats:
+        t = reel.clean(b.get("voice") or b["text"]).strip()
+        if b.get("voice"):
+            bare = lambda x: re.sub(r"[^\w]+", " ", x.lower()).split()   # noqa: E731
+            if bare(TAG_RE.sub("", t)) != bare(reel.clean(b["text"])):
+                raise SystemExit(f"voice фразы расходится с её текстом по словам: {b['voice']!r} / {b['text']!r}")
+        out.append(t)
+    return out
+
+
+def voice_template():
+    """Шаблон голоса рилсов: из бренда (общий для всех машин), иначе из `.env`."""
+    brand = json.load(open(BRAND, encoding="utf8")).get("voice_template") if os.path.exists(BRAND) else None
+    env = os.environ.get("LUMEAN_REEL_TEMPLATE_ID") or os.environ.get("LUMEAN_TEMPLATE_ID")
+    if brand and env and env != brand:
+        print(f"голос: в .env другой шаблон ({env}), беру голос рилсов из docs/reels_brand.json ({brand})")
+    return brand or env
 
 
 def word_times(text, words, rows):
@@ -72,9 +100,9 @@ def loudnorm_wav(src, dst):
 def build(reel_dir, force=False):
     load_env()
     key = os.environ.get("LUMEAN_API_KEY")
-    tpl = os.environ.get("LUMEAN_REEL_TEMPLATE_ID") or os.environ.get("LUMEAN_TEMPLATE_ID")
+    tpl = voice_template()
     if not key or not tpl:
-        raise SystemExit("нужны LUMEAN_API_KEY и LUMEAN_REEL_TEMPLATE_ID (или LUMEAN_TEMPLATE_ID) в .env")
+        raise SystemExit("нужны LUMEAN_API_KEY в .env и voice_template в docs/reels_brand.json (или шаблон в .env)")
     spec = json.load(open(os.path.join(reel_dir, "reel.json"), encoding="utf8"))
     words, _spans = reel.tokens(spec["beats"])
     text = "\n".join(phrase_texts(spec["beats"]))
