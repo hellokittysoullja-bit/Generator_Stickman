@@ -1015,5 +1015,23 @@
   "quality": "medium",
   "price": 140625,
   "source": "scripts/reel_draw.py videos/07_potom/reel"
+ },
+ {
+  "file": "2026-10-26_gen_cx_gpt-image-2_f1c90703.png",
+  "sha256": "f1c9070328cbbaf4dc276404d7e7a2689527df3769ab5377722ca9e352f26e49",
+  "bytes": 2048600,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-10-26",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture on plain near-white paper: the main character sits on a plain floor holding one plain phone with a blank screen in both front paws, looking down at it with a tired patient half smile; out of the phone a very long ribbon made of many small identical plain blank rectangular cards unrolls down over its lap and across the floor and winds around it in a loose spiral; every card is completely blank. The flame on the tip of its tail is a small dim ember. LAYOUT: the main character is whole and large in the middle, the phone is clearly visible in its paws, the ribbon of blank cards winds around it with wide gaps of plain floor, nothing touches the picture edges. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 140625,
+  "source": "scripts/reel_draw.py videos/07_potom/reel"
  }
 ]

@@ -1,10 +1,10 @@
 # Библиотека оригиналов: кот и всё, что сгенерировано
 
-Картинок: **57**, 88 МБ. Оригиналы — `originals/` байт в байт, как пришли из модели (PNG без пересжатия); `thumbs/` — превью для этой страницы; `catalog.json` — промпт, модель, цена, где используется.
+Картинок: **58**, 90 МБ. Оригиналы — `originals/` байт в байт, как пришли из модели (PNG без пересжатия); `thumbs/` — превью для этой страницы; `catalog.json` — промпт, модель, цена, где используется.
 
 Пополняется сама: каждая генерация через шлюз (`llm_gateway.Gateway.image`) кладёт картинку сюда, включая забракованные варианты. Собрать уже лежащее в репозитории: `python scripts/cat_library.py --scan`.
 
-## генерация (13)
+## генерация (14)
 
 | превью | оригинал | где | промпт |
 |---|---|---|---|
@@ -21,6 +21,7 @@
 | ![](thumbs/2026-10-25_gen_cx_gpt-image-2_f140ef8b.jpg) | [2026-10-25_gen_cx_gpt-image-2_f140ef8b.png](originals/2026-10-25_gen_cx_gpt-image-2_f140ef8b.png)<br>1254×1254, 2026-10-25 | scripts/reel_draw.py videos/04_noch/reel | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
 | ![](thumbs/2026-10-26_gen_cx_gpt-image-2_4e7b9837.jpg) | [2026-10-26_gen_cx_gpt-image-2_4e7b9837.png](originals/2026-10-26_gen_cx_gpt-image-2_4e7b9837.png)<br>1024×1536, 2026-10-26 | scripts/reel_draw.py videos/07_potom/reel | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
 | ![](thumbs/2026-10-26_gen_cx_gpt-image-2_c6aea160.jpg) | [2026-10-26_gen_cx_gpt-image-2_c6aea160.png](originals/2026-10-26_gen_cx_gpt-image-2_c6aea160.png)<br>1024×1536, 2026-10-26 | scripts/reel_draw.py videos/07_potom/reel | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
+| ![](thumbs/2026-10-26_gen_cx_gpt-image-2_f1c90703.jpg) | [2026-10-26_gen_cx_gpt-image-2_f1c90703.png](originals/2026-10-26_gen_cx_gpt-image-2_f1c90703.png)<br>1024×1536, 2026-10-26 | scripts/reel_draw.py videos/07_potom/reel | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
 
 ## герой: состояние (3)
 
