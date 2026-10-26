@@ -370,6 +370,7 @@ def rehook_timing(spec, starts):
 
 
 CTA_COMMENT_RE = r"\bнапиши\b.*\bкоммент"
+CTA_PROFILE_RE = r"\bшапк\w*\s+профил"     # владелец 26.10: «пока без кодового слова — шапка профиля»
 
 
 def check_call_to_comment(spec):
@@ -381,6 +382,8 @@ def check_call_to_comment(spec):
     beats, k = spec.get("beats") or [], pp.get("cta_beat")
     if not isinstance(k, int) or not 0 <= k < len(beats):
         return ["призыва нет: passport.cta_beat — номер фразы «Напиши в комментах, …» (призыв обязателен в каждом рилсе)"]
+    if (pp.get("standard") or 0) >= STRUCTURE_STANDARD and re.search(CTA_PROFILE_RE, clean(beats[k]["text"]).lower()):
+        return []
     if not re.search(CTA_COMMENT_RE, clean(beats[k]["text"]).lower()):
         return [f"фраза призыва {k} не зовёт в комментарии: нужен вопрос о себе «Напиши в комментах, …» "
                 "(на любой комментарий — автоличка → бот/сайт)"]
@@ -1161,6 +1164,134 @@ YOU_RE = r"\b(ты|тебя|тебе|тобой|твой|твоя|твоё|тв�
 BUT_RE = r"\b(но|однако|только вот|а вот)\b"
 
 
+STRUCTURE_STANDARD = 19     # первая строка — диссонанс, структура с ответом и призывом в середине (владелец 26.10)
+WEAK_OPENERS = ("знаешь", "сегодня", "привет", "давай", "смотри", "вот", "итак", "кстати", "представь", "слушай", "это")
+ROLES = {"hook", "contrast", "preblock", "riddle", "mechanism", "story", "answer", "proof", "cta", "bridge",
+         "payoff", "twist", "loop"}
+CTA_SHARE = (0.55, 0.70)    # призыв — чуть после середины (владелец 26.10: «не в конце, побыстрее»)
+# психологические приёмы, каждый — номер фразы или {"skip": причина}; часть код проверяет по самому тексту
+TRICKS = {
+    "dissonance": "первая строка сталкивает два несовместимых понятия (passport.hook.first_line)",
+    "callout": "«ты» и конкретная ситуация зрителя в первых двух фразах",
+    "preblock": "очевидная догадка закрыта сразу после вопроса («это не лень»)",
+    "riddle": "загадка без ответа («одна вещь», «одно слово»)",
+    "preview": "превью концовки до 4.5 с",
+    "mechanism": "понятное объяснение, почему так (польза, не только история)",
+    "analogy": "одна живая метафора механизма",
+    "authority": "имя исследователя, исследование или проверяемый факт",
+    "own_story": "рассказчик свой: «у меня тоже так»",
+    "answer": "ясный ответ-действие, который можно сделать сегодня",
+    "small_step": "маленький шаг: минуты, одна строчка",
+    "zero_risk": "бесплатно, без регистрации",
+    "bridge": "после призыва мост обратно в историю (незакрытое держит досмотр)",
+    "twist": "поворот сверх ожидания в конце",
+    "loop": "конец возвращается к началу",
+}
+TRICK_TEXT = {                                   # что должно стоять в самой фразе, если приём отдан ей
+    "authority": r"исследова|психолог|учён|учен|[А-ЯЁ][а-яё]+ и [А-ЯЁ][а-яё]+",
+    "small_step": r"\d|минут|строч|одн[аоуы]\b|два|две|три\b",
+    "zero_risk": r"бесплатн|без регистрац|без карты",
+    "preblock": r"\bне\b",
+    "bridge": r"смотри|дальше|что было|что стало",
+}
+
+
+def check_first_line(spec, log=(), reel_dir=""):
+    """Первая строка — уже жёсткий кликбейт (владелец 26.10: «первая, не вторая, не третья… в ней уже задаётся
+    когнитивный диссонанс… неприятный вопрос максимально»). Кодом: вопрос со знаком «?», обращение «ты», не
+    разгонная фраза; и в passport.hook.first_line — два сталкивающихся понятия a и b (оба стоят в самой строке),
+    убеждение зрителя, которое строка ломает (belief), и чем она колет (sting). «Лежишь и устаёшь?» не пройдёт:
+    тема и вопрос есть, а столкновения нет — нечего назвать в a/b против belief."""
+    pp = spec.get("passport") or {}
+    if (pp.get("standard") or 0) < STRUCTURE_STANDARD:     # готовые рилсы из журнала — как были; новый ниже 19 — нет
+        if reel_dir and not any(os.path.normpath(r.get("reel", "")) == os.path.normpath(reel_dir) for r in log):
+            return [f"новый рилс: нужен \"standard\": {STRUCTURE_STANDARD} — первая строка-диссонанс и вся структура "
+                    "(CLAUDE.md «ХУК — ОБЯЗАТЕЛЬНО», раздел К)"]
+        return []
+    if not spec.get("beats"):
+        return []
+    line = clean(spec["beats"][0]["text"]).strip(); low = line.lower(); err = []
+    if not line.endswith("?"):
+        err.append(f"первая строка «{line}» не вопрос: нужен неприятный вопрос с «?» уже в ней, не во второй фразе")
+    if not re.search(YOU_RE, low):
+        err.append(f"первая строка «{line}» не про зрителя: нужно «ты» (или глагол на -ешь/-ишь)")
+    first = re.findall(r"[а-яё]+", low)[:1]
+    if first and first[0] in WEAK_OPENERS:
+        err.append(f"первая строка начинается с разгона «{first[0]}»: удар с первого слова")
+    fl = (pp.get("hook") or {}).get("first_line") or {}
+    a, b = str(fl.get("a", "")).strip(), str(fl.get("b", "")).strip()
+    if not a or not b or _norm(a) == _norm(b):
+        err.append("passport.hook.first_line: нужны a и b — два понятия, которые сталкиваются в первой строке "
+                   "(«устаёшь» против «отдыха»); без столкновения это тема, а не диссонанс")
+    else:
+        miss = [x for x in (a, b) if not _stem_hit(line, [x[:max(4, len(x) - 2)]])]
+        if miss:
+            err.append(f"первая строка «{line}» не содержит {', '.join(miss)}: столкновение должно звучать в ней самой")
+    for k, what in (("belief", "убеждение зрителя, которое первая строка ломает"), ("sting", "чем строка колет, почему от неё неприятно")):
+        if len(str(fl.get(k, "")).strip()) < 15:
+            err.append(f"passport.hook.first_line.{k}: {what} — словами (≥ 15 знаков)")
+    return err
+
+
+def check_structure(spec):
+    """Вся структура, а не только хук (владелец 26.10: «ролик не должен превращаться в очередной рассказ… давать
+    реальную пользу и объяснение… ясный ответ… все психологические трюки — и проверяется ли это»). Роль у каждой
+    фразы (passport.roles); есть объяснение механизма и ясный ответ-действие, ответ — раньше призыва, после призыва
+    есть мост и развязка; каждый приём TRICKS — номер фразы (часть проверяется по тексту фразы) или отказ причиной."""
+    pp = spec.get("passport") or {}
+    if (pp.get("standard") or 0) < STRUCTURE_STANDARD:
+        return []
+    beats = spec.get("beats", []); n = len(beats); err = []
+    roles = pp.get("roles") or []
+    if len(roles) != n or any(r not in ROLES for r in roles):
+        return [f"passport.roles: роль у каждой из {n} фраз, из {sorted(ROLES)}"]
+    if roles[0] != "hook":
+        err.append("фраза 0 — хук (roles[0] = \"hook\")")
+    for need, why in (("mechanism", "объяснение, почему так: без него ролик — просто история"), ("answer", "ясный ответ"),
+                      ("cta", "призыв")):
+        if need not in roles:
+            err.append(f"нет фразы с ролью {need}: {why}")
+    if "answer" in roles and "cta" in roles:
+        ia, ic = roles.index("answer"), roles.index("cta")
+        if ia > ic:
+            err.append("ответ после призыва: сначала польза, потом просьба")
+        after = roles[ic + 1:]
+        if not any(r in ("bridge", "payoff", "twist", "loop") for r in after):
+            err.append("после призыва ничего нет: нужны мост и развязка (призыв чуть после середины, не в конце)")
+    ans = pp.get("answer") or {}
+    k, do = ans.get("beat"), str(ans.get("do", "")).strip()
+    if not isinstance(k, int) or not 0 <= k < n or roles[k] != "answer":
+        err.append("passport.answer.beat — номер фразы с ролью answer")
+    elif len(do.split()) < 3 or _norm(do) not in _norm(clean(beats[k]["text"])):
+        err.append(f"passport.answer.do — само действие дословно из фразы {k} (≥ 3 слов): ответ ясный, если его можно процитировать")
+    tricks = pp.get("tricks") or {}
+    for t, what in TRICKS.items():
+        v = tricks.get(t)
+        if isinstance(v, dict) and len(str(v.get("skip", "")).strip()) >= 15:
+            continue
+        if not isinstance(v, int) or not 0 <= v < n:
+            err.append(f"passport.tricks.{t}: {what} — номер фразы или {{\"skip\": причина}}")
+            continue
+        rx = TRICK_TEXT.get(t)
+        if rx and not re.search(rx, clean(beats[v]["text"])):
+            err.append(f"passport.tricks.{t} → фраза {v}, но в ней этого нет ({what})")
+    if isinstance(tricks.get("bridge"), int) and "cta" in roles and tricks["bridge"] < roles.index("cta"):
+        err.append("мост (tricks.bridge) стоит раньше призыва: он нужен после него")
+    return err
+
+
+def check_cta_middle(spec, beat_t0, total):
+    """Призыв чуть после середины (владелец 26.10): начало фразы призыва — в CTA_SHARE ролика по времени."""
+    pp = spec.get("passport") or {}
+    k = pp.get("cta_beat")
+    if (pp.get("standard") or 0) < STRUCTURE_STANDARD or not isinstance(k, int) or k >= len(beat_t0) or total <= 0:
+        return []
+    sh = beat_t0[k] / total
+    if not CTA_SHARE[0] <= sh <= CTA_SHARE[1]:
+        return [f"призыв (фраза {k}) на {beat_t0[k]:.1f} с = {sh:.0%} ролика: нужен {CTA_SHARE[0]:.0%}–{CTA_SHARE[1]:.0%}"]
+    return []
+
+
 def readability(text):
     """Индекс читаемости Флеша в коэффициентах Оборневой для русского текста (100 — проще всего)."""
     sents = [x for x in re.split(r"[.!?…]+", clean(text)) if x.strip()]
@@ -1537,6 +1668,7 @@ if __name__ == "__main__":
             + check_brand_and_face(spec) + check_hook_steal(spec, log, os.path.relpath(sys.argv[1]))
             + check_matrix(spec)
             + check_coverage(spec, log, os.path.relpath(sys.argv[1])) + check_human(spec)
-            + check_inventory(spec, log, os.path.relpath(sys.argv[1])))
+            + check_inventory(spec, log, os.path.relpath(sys.argv[1]))
+            + check_first_line(spec, log, os.path.relpath(sys.argv[1])) + check_structure(spec))
     print("\n".join("✗ " + e for e in errs) or "✓ reel.json по правилам (тайминг проверит reel.py при рендере)")
     sys.exit(1 if errs else 0)

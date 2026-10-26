@@ -761,6 +761,10 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     rule_errs += reel_rules.check_overlays([(i, tx, x0, y0 + PIC_TOP, x1, y1 + PIC_TOP)    # картинка — с PIC_TOP экрана
                                             for i, tx, x0, y0, x1, y1 in overlay_boxes(events, shots)], PIC_TOP + PH)
     rule_errs += reel_rules.check_cta(spec, [times[i0]["start"] for i0, _ in spans], total)
+    rule_errs += reel_rules.check_cta_middle(spec, [times[i0]["start"] for i0, _ in spans], total)   # призыв на 55–70 %
+    rule_errs += reel_rules.check_first_line(spec, json.load(open(log_p, encoding="utf8")) if os.path.exists(log_p) else [],
+                                             os.path.relpath(reel_dir, ROOT))   # первая строка — диссонанс
+    rule_errs += reel_rules.check_structure(spec)       # вся структура: объяснение, ясный ответ, приёмы
     rule_errs += reel_rules.rehook_timing(spec, [times[i0]["start"] for i0, _ in spans])
     import reel_geom                                  # до рендера: обрывки у краёв, кукла шире кадра, надпись на рисунке
     rule_errs += reel_geom.check(sys.modules[__name__], reel_dir, shots, events)

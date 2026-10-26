@@ -1086,3 +1086,45 @@ def test_voice_cut_lands_in_real_silence(tmp_path):
     times = [nat[0], dict(nat[1], start=1.06, end=1.8)]               # немая пауза 0.3 с перед вторым словом
     segs = reel.voice_segments(str(tmp_path), nat, times)
     assert 0.55 < segs[0]["s1"] < 0.65 and segs[1]["s0"] == segs[0]["s1"]
+
+
+def test_first_line_is_dissonance_and_structure_has_answer_and_mid_cta():
+    """Владелец 26.10: «первая строка, не вторая… уже жёсткий кликбейт, когнитивный диссонанс, неприятный вопрос»;
+    «ролик не должен превращаться в рассказ… реальная польза, ясный ответ, все трюки — и проверяется ли это»;
+    призыв — шапка профиля, чуть после середины."""
+    beats = [dict(text="Устаёшь от *отдыха*?"), dict(text="А за день не сделано ничего?"),
+             dict(text="Но это не лень. Тебя выматывает одна вещь."), dict(text="Это дело в голове, как стакан."),
+             dict(text="А помогает одна строчка: запиши, что сделаешь и когда. Это проверили психологи Масикампо и Баумайстер."),
+             dict(text="В шапке профиля две минуты со мной, бесплатно."), dict(text="А теперь смотри, что было дальше."),
+             dict(text="Я открыл письмо в тот же вечер.")]
+    tricks = dict(dissonance=0, callout=0, preblock=2, riddle=2, preview={"skip": "превью — в ролике, не в тесте"},
+                  mechanism=3, analogy=3, authority=4, own_story=7, answer=4, small_step=5, zero_risk=5, bridge=6,
+                  twist=7, loop={"skip": "петля — монтажом, не текстом"})
+    spec = dict(beats=beats, passport=dict(
+        standard=19, cta_beat=5, answer=dict(beat=4, do="запиши, что сделаешь и когда"), tricks=tricks,
+        roles=["hook", "contrast", "preblock", "mechanism", "answer", "cta", "bridge", "twist"],
+        hook=dict(first_line=dict(a="устаёшь", b="отдыха", belief="отдых всегда возвращает силы",
+                                  sting="зрителю неприятно: выходит, с ним что-то не так"))))
+    assert reel_rules.check_first_line(spec) == []
+    assert reel_rules.check_structure(spec) == []
+    assert reel_rules.check_call_to_comment(spec) == []                       # шапка профиля — тоже призыв
+    s = copy.deepcopy(spec); s["beats"][0]["text"] = "Лежишь и устаёшь?"      # тема с вопросом, столкновения нет
+    assert any("не содержит" in e for e in reel_rules.check_first_line(s))
+    s = copy.deepcopy(spec); s["beats"][0]["text"] = "Смотри, ты устаёшь от отдыха."
+    errs = reel_rules.check_first_line(s)
+    assert any("не вопрос" in e for e in errs) and any("разгона" in e for e in errs)
+    s = copy.deepcopy(spec); del s["passport"]["hook"]["first_line"]["sting"]
+    assert any("sting" in e for e in reel_rules.check_first_line(s))
+    s = copy.deepcopy(spec); s["passport"]["roles"][3] = "story"               # одна история, без объяснения
+    assert any("mechanism" in e for e in reel_rules.check_structure(s))
+    s = copy.deepcopy(spec); s["passport"]["roles"][6:] = ["payoff", "payoff"]; s["passport"]["roles"][5] = "cta"
+    s["beats"] = s["beats"][:6]; s["passport"]["roles"] = s["passport"]["roles"][:6]
+    s["passport"]["tricks"].update(bridge={"skip": "проверка: без моста"}, twist={"skip": "проверка: без поворота"},
+                                   own_story={"skip": "проверка: без своей истории"})
+    assert any("после призыва ничего нет" in e for e in reel_rules.check_structure(s))
+    s = copy.deepcopy(spec); s["passport"]["answer"]["do"] = "сделай что-нибудь полезное"
+    assert any("дословно" in e for e in reel_rules.check_structure(s))
+    s = copy.deepcopy(spec); s["passport"]["tricks"]["authority"] = 3             # во фразе 3 нет ни имени, ни исследования
+    assert any("authority" in e for e in reel_rules.check_structure(s))
+    assert reel_rules.check_cta_middle(spec, [0, 1, 2, 3, 6, 20, 25, 28], 33.0) == []   # 20/33 = 61 %
+    assert reel_rules.check_cta_middle(spec, [0, 1, 2, 3, 6, 30, 31, 32], 33.0)         # 91 % — в конце, нельзя
