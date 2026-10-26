@@ -44,6 +44,7 @@ def load_env():
 
 
 TAG_RE = re.compile(r"\[[a-z ]+\]\s*")
+STRESS = "\u0301"      # знак ударения в `voice` («Масика́мпо»): голос его видит, тайминг слов ищет слово без него
 BRAND = os.path.join(ROOT, "docs", "reels_brand.json")
 
 
@@ -53,7 +54,7 @@ def phrase_texts(beats):
     for b in beats:
         t = reel.clean(b.get("voice") or b["text"]).strip()
         if b.get("voice"):
-            bare = lambda x: re.sub(r"[^\w]+", " ", x.lower()).split()   # noqa: E731
+            bare = lambda x: re.sub(r"[^\w]+", " ", x.replace(STRESS, "").lower()).split()   # noqa: E731
             if bare(TAG_RE.sub("", t)) != bare(reel.clean(b["text"])):
                 raise SystemExit(f"voice фразы расходится с её текстом по словам: {b['voice']!r} / {b['text']!r}")
         out.append(t)
@@ -79,10 +80,12 @@ def word_times(text, words, rows):
         for k in range(n):
             t2a[a + k] = b + k
     out, pos = [], 0
+    keep = [j for j, c in enumerate(text) if c != STRESS]     # слово ищется в тексте без ударений, индексы — исходные
+    plain = "".join(text[j] for j in keep)
     for w in words:
         token = reel.clean(w)
-        i = text.find(token, pos); pos = i + len(token)
-        idx = [t2a[j] for j in range(i, i + len(token)) if j in t2a and text[j].isalnum()]
+        i = plain.find(token, pos); pos = i + len(token)
+        idx = [t2a[j] for j in (keep[k] for k in range(i, i + len(token))) if j in t2a and text[j].isalnum()]
         out.append(dict(word=token, start=rows[idx[0]][1], end=rows[idx[-1]][2]) if idx else dict(word=token, start=None, end=None))
     for k, w in enumerate(out):                       # слово без совпадения — между соседями
         if w["start"] is None:
