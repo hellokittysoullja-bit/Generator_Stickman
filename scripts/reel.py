@@ -674,6 +674,8 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     rule_errs += reel_rules.check_hook_layers(spec)    # хук: пять слоёв и 3C (правило владельца 24.10)
     rule_errs += reel_rules.check_hook_motion(spec, json.load(open(log_p, encoding="utf8")) if os.path.exists(log_p) else [],
                                               os.path.relpath(reel_dir, ROOT), reel_dir)   # движение в рисунке (стандарт 14)
+    rule_errs += reel_rules.check_hook_start(spec, json.load(open(log_p, encoding="utf8")) if os.path.exists(log_p) else [],
+                                             os.path.relpath(reel_dir, ROOT), reel_dir)    # влёт как в 08 (стандарт 20)
     rule_errs += reel_rules.check_matrix(spec)          # матрица: каждый приём базы решён в этом рилсе (стандарт 10)
     rule_errs += reel_rules.check_coverage(spec, json.load(open(log_p, encoding="utf8")) if os.path.exists(log_p) else [],
                                            os.path.relpath(reel_dir, ROOT))  # стратегия: каждый пункт решён (стандарт 11)
@@ -783,6 +785,12 @@ def build(reel_dir, sheet=False, preview=False, force=False):
                                              os.path.relpath(reel_dir, ROOT))   # первая строка — диссонанс
     rule_errs += reel_rules.check_structure(spec)       # вся структура: объяснение, ясный ответ, приёмы
     rule_errs += reel_rules.rehook_timing(spec, [times[i0]["start"] for i0, _ in spans])
+    if ((spec.get("passport") or {}).get("standard") or 0) >= reel_rules.HOOK_START_STANDARD and shots[0].get("anim"):
+        import anim
+        share = anim.first_frame_motion(anim.scene(reel_dir, shots[0]["anim"]).frame, shots[0]["anim_ctx"])
+        if share < reel_rules.FIRST_MOTION_MIN:          # владелец 26.10: начало как в 08 — рисунок движется с первого кадра
+            rule_errs.append(f"хук: за первые {anim.FIRST_MOTION_DT} с сцена меняет {share:.2%} рисунка < "
+                             f"{reel_rules.FIRST_MOTION_MIN:.1%}: движение должно идти с первого кадра, а не начинаться позже")
     import reel_geom                                  # до рендера: обрывки у краёв, кукла шире кадра, надпись на рисунке
     rule_errs += reel_geom.check(sys.modules[__name__], reel_dir, shots, events)
     rule_errs += reel_rules.check_knowledge(spec)                 # знания базы: маркетинг, воронка, бренд — у каждой фразы

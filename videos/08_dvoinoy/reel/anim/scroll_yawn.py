@@ -111,9 +111,7 @@ def frame(t, ctx):
     L = layers(); T = timing(ctx); A = L["A"]
     hit = T["hit"]; th = t - hit
     # камера: резкий влёт с маленьким перелётом и поворотом — динамичнее, чем в 07 (владелец 26.10)
-    snap = 1 / (1 + 0.18 * (1 - anim.SNAP(t / 0.25)))
-    over = 1 + 0.022 * anim.spring(t - 0.25, freq=3.2, damping=0.45) if t >= 0.25 else 1.0
-    cam = dict(dx=0.0, dy=0.0, zoom=snap * over, rot=-1.1 * (1 - anim.EASE_OUT(min(1.0, t / 0.4))))
+    cam = anim.hook_cam(t)
     img = A.copy()
     # кот: зевок «дышит» с первого кадра, на ударе голова клюёт вниз и пружинит
     sq = 0.012 * math.sin(2 * math.pi * 1.6 * anim.on_twos(t))

@@ -1145,6 +1145,35 @@ def check_open_loop(spec, words, times, spans, total, events=(), sound_peaks=())
     return err
 
 
+HOOK_START_STANDARD = 20    # влёт камеры как в рилсе 08 и рисунок в движении с первого кадра (владелец 26.10: «навсегда»)
+FIRST_MOTION_MIN = 0.003    # доля пикселей сцены хука, изменившихся за первые 0,1 с: 08 — 0,49 %, 05 — 1,1 %, 06 — 0 %
+
+
+def check_hook_start(spec, log=(), reel_dir="", abs_dir=None):
+    """Начало как в рилсе 08 — у каждого нового рилса (владелец 26.10: «закрепи навсегда на автомате, чтоб было такое
+    начало, более динамичное, как в 8»): сцена хука берёт камеру из anim.hook_cam (влёт 18 % за 0,25 с с перелётом и
+    поворотом), а не пишет свою. Что рисунок двигается с первого кадра, меряет reel.py (anim.first_frame_motion)."""
+    pp = spec.get("passport") or {}
+    std, beats = pp.get("standard") or 0, spec.get("beats") or []
+    if std < HOOK_START_STANDARD:
+        bare = lambda x: " ".join(re.sub(r"[^\w\s]+", "", x).split()[:2]).lower()   # noqa: E731
+        first = bare(clean(beats[0]["text"])) if beats else ""
+        old = any(os.path.normpath(r.get("reel", "")) == os.path.normpath(reel_dir or "")
+                  and bare(r.get("first_words", "")) == first for r in log)
+        if reel_dir and not old:
+            return [f"новый рилс: нужен \"standard\": {HOOK_START_STANDARD} — начало как в рилсе 08: камера хука "
+                    "из anim.hook_cam и рисунок в движении с первого кадра (CLAUDE.md, «ОБЯЗАТЕЛЬНО В КАЖДОМ РИЛСЕ», п.7)"]
+        return []
+    s0 = ((beats[0].get("shots") or [{}])[0]) if beats else {}
+    p = os.path.join(abs_dir or reel_dir or "", "anim", str(s0.get("anim")) + ".py")
+    if not s0.get("anim") or not os.path.exists(p):
+        return []                                       # сцены нет — об этом скажет check_hook_motion
+    if "hook_cam(" not in open(p, encoding="utf8").read():
+        return [f"хук: сцена anim/{s0['anim']}.py пишет свою камеру — возьмите anim.hook_cam(t) (влёт как в рилсе 08), "
+                "удар и тряску на слове добавляйте поверх"]
+    return []
+
+
 HOOK_CRAFT_STANDARD = 18    # хук по 7 роликам, прочитанным целиком (владелец 26.10: «чтобы агент не мог не применить»)
 HOOK_READ_MIN = 80          # читаемость хука по Оборневой: ≥ 80 — начальная школа (Hoyos: «не выше 5-го класса»)
 HOOK_TEXT_SIZE = 100        # крупный текст на экране с первого кадра (Kallaway: «3–5 слов крупно»)
@@ -1669,6 +1698,7 @@ if __name__ == "__main__":
             + check_matrix(spec)
             + check_coverage(spec, log, os.path.relpath(sys.argv[1])) + check_human(spec)
             + check_inventory(spec, log, os.path.relpath(sys.argv[1]))
-            + check_first_line(spec, log, os.path.relpath(sys.argv[1])) + check_structure(spec))
+            + check_first_line(spec, log, os.path.relpath(sys.argv[1])) + check_structure(spec)
+            + check_hook_start(spec, log, os.path.relpath(sys.argv[1]), sys.argv[1]))
     print("\n".join("✗ " + e for e in errs) or "✓ reel.json по правилам (тайминг проверит reel.py при рендере)")
     sys.exit(1 if errs else 0)

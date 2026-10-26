@@ -1128,3 +1128,31 @@ def test_first_line_is_dissonance_and_structure_has_answer_and_mid_cta():
     assert any("authority" in e for e in reel_rules.check_structure(s))
     assert reel_rules.check_cta_middle(spec, [0, 1, 2, 3, 6, 20, 25, 28], 33.0) == []   # 20/33 = 61 %
     assert reel_rules.check_cta_middle(spec, [0, 1, 2, 3, 6, 30, 31, 32], 33.0)         # 91 % — в конце, нельзя
+
+
+def test_hook_start_like_reel_08_is_locked_in(tmp_path):
+    """Владелец 26.10: «закрепи навсегда на автомате, чтоб было такое начало, более динамичное, как в 8». Камера хука —
+    anim.hook_cam (влёт 18 % за 0,25 с с перелётом и поворотом), рисунок меняется уже за первые 0,1 с; новый рилс ниже
+    стандарта 20 не рендерится."""
+    import anim
+    import reel_rules as R
+    c0, c1 = anim.hook_cam(0.0), anim.hook_cam(anim.HOOK_SNAP_SEC)
+    assert abs(c0["zoom"] - 1 / 1.18) < 1e-6 and abs(c0["rot"] - anim.HOOK_ROLL) < 1e-6
+    assert abs(c1["zoom"] - 1.0) < 1e-3
+    assert max(anim.hook_cam(anim.HOOK_SNAP_SEC + k / 100)["zoom"] for k in range(1, 30)) > 1.01   # перелёт есть
+    assert abs(anim.hook_cam(1.0)["rot"]) < 1e-6
+    (tmp_path / "anim").mkdir()
+    spec = {"passport": {"standard": 20}, "beats": [{"text": "Рилс тебе длинный?", "shots": [{"anim": "s"}]}]}
+    (tmp_path / "anim" / "s.py").write_text("def frame(t, ctx):\n    cam = dict(zoom=1.0)\n")
+    assert any("hook_cam" in e for e in R.check_hook_start(spec, [], "videos/x/reel", str(tmp_path)))
+    (tmp_path / "anim" / "s.py").write_text("def frame(t, ctx):\n    cam = anim.hook_cam(t)\n")
+    assert R.check_hook_start(spec, [], "videos/x/reel", str(tmp_path)) == []
+    old = copy.deepcopy(spec); old["passport"]["standard"] = 19
+    assert any("standard" in e for e in R.check_hook_start(old, [], "videos/x/reel", str(tmp_path)))
+    assert R.check_hook_start(old, [{"reel": "videos/x/reel", "first_words": "Рилс тебе"}], "videos/x/reel", str(tmp_path)) == []
+    still = lambda t, ctx: (np.full((40, 40, 3), 200, np.float32), {})          # noqa: E731
+    def moving(t, ctx):
+        img = np.full((40, 40, 3), 200, np.float32); img[:, : int(4 + 60 * t)] = 20
+        return img, {}
+    assert anim.first_frame_motion(still, {}) == 0.0
+    assert anim.first_frame_motion(moving, {}) >= R.FIRST_MOTION_MIN
