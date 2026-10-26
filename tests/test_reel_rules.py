@@ -429,6 +429,31 @@ def test_question_first_answer_only_at_the_end():
     assert any("раньше середины" in e for e in build(early, dict(loop, reveal=2)))
 
 
+def test_hook_craft_from_seven_videos(tmp_path):
+    """26.10, владелец: «чтобы в будущем агент в другой сессии не мог не применить этого к хуку» (CLAUDE.md
+    «ХУК — ОБЯЗАТЕЛЬНО», 25 §7): «ты», «но», читаемость, крупный текст и решение по каждому пункту, который кодом не
+    измерить."""
+    good = json.load(open(os.path.join(reel_rules.ROOT_DIR, "videos", "06_zaodno", "reel", "reel.json"), encoding="utf8"))
+    assert reel_rules.check_hook_craft(good) == []
+    s = copy.deepcopy(good); s["beats"][0]["text"] = "Пошёл мыть *полы*."; s["beats"][1]["text"] = "А через час сажал цветы."
+    assert any("«ты»" in e for e in reel_rules.check_hook_craft(s))
+    s = copy.deepcopy(good); s["beats"][2]["text"] = "Это не *лень*. Тебя уводило одно слово."
+    assert any("«но»" in e for e in reel_rules.check_hook_craft(s))
+    s = copy.deepcopy(good); s["beats"][2]["text"] = ("Но предварительная концептуализация распределённой ответственности "
+                                                      "существенно затрудняет последовательное доведение запланированного.")
+    assert any("читаемость" in e for e in reel_rules.check_hook_craft(s))
+    s = copy.deepcopy(good); next(f for f in s["beats"][0]["fx"] if f.get("anchor"))["size"] = 84
+    assert any("якорь" in e for e in reel_rules.check_hook_craft(s))
+    s = copy.deepcopy(good); del s["passport"]["hook"]["craft"]["culture_ref"]
+    assert any("culture_ref" in e for e in reel_rules.check_hook_craft(s))
+    s = copy.deepcopy(good); s["passport"]["hook"]["craft"]["twist"] = {"skip": "нет"}
+    assert any("twist" in e for e in reel_rules.check_hook_craft(s))      # отговорка короче причины — не решение
+    s = copy.deepcopy(good); s["passport"]["standard"] = 17
+    log = [{"reel": "videos/03_lenivyi/reel", "first_words": "идёшь мыть"}]
+    assert reel_rules.check_hook_craft(s, log, "videos/03_lenivyi/reel") == []      # готовый рилс из журнала — как был
+    assert any("нужен" in e for e in reel_rules.check_hook_craft(s, log, "videos/07_new/reel"))   # новый ниже 18 — нет
+
+
 def test_wave8_persuasion_rules():
     """Волна 8 (23.10): давящие слова, закреп-приманка «напиши 1/2», серия без номера, смысловые петли реже 12 с."""
     s = spec()

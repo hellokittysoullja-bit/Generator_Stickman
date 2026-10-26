@@ -773,6 +773,8 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     rule_errs += reel_rules.check_mindful(spec, events)
     rule_errs += reel_rules.check_open_loop(spec, words, times, spans, total, events,   # вопрос в начале, ответ в конце
                                             [p["peak"] for p in sound_plan(shots, events)])
+    rule_errs += reel_rules.check_hook_craft(spec, json.load(open(log_p, encoding="utf8")) if os.path.exists(log_p) else [],
+                                             os.path.relpath(reel_dir, ROOT))   # ХУК — ОБЯЗАТЕЛЬНО (CLAUDE.md)
     rule_errs += reel_rules.check_writing(events, shots)
     rule_errs += reel_rules.check_written_read(events, shots)  # дописанное слово не срезано склейкой
     for w in reel_rules.warnings(spec, shots, total, events) + reel_rules.sound_warnings(sound_plan(shots, events)) + \

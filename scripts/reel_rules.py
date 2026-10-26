@@ -1140,6 +1140,77 @@ def check_open_loop(spec, words, times, spans, total, events=(), sound_peaks=())
     return err
 
 
+HOOK_CRAFT_STANDARD = 18    # хук по 7 роликам, прочитанным целиком (владелец 26.10: «чтобы агент не мог не применить»)
+HOOK_READ_MIN = 80          # читаемость хука по Оборневой: ≥ 80 — начальная школа (Hoyos: «не выше 5-го класса»)
+HOOK_TEXT_SIZE = 100        # крупный текст на экране с первого кадра (Kallaway: «3–5 слов крупно»)
+HOOK_CRAFT_FIELDS = {       # то, что кодом не измерить: решение словами или {"skip": причина} — молчать нельзя
+    "title_test": "сработал бы хук заголовком и обложкой длинного ролика? (Hoyos)",
+    "mute_test": "что понятно без звука: первый кадр + текст (Hoyos, heyDominik)",
+    "first_frame": "первый кадр как обложка: середина действия, один фокус, ответ не виден (Hoyos, heyDominik)",
+    "snapback": "разворот после «но»: что зритель думал (А) → что на самом деле (Б) (Kallaway)",
+    "foreshadow": "превью концовки словами (Hoyos)",
+    "twist": "поворот в финале сверх ожидания (Hoyos)",
+    "mechanism": "что тянет до конца: сужающийся круг, список, ведро, которое ждёт (Hoyos)",
+    "culture_ref": "знакомая отсылка — бренд, лицо, мем (Kallaway «cult hopping»)",
+    "series_frame": "узнаваемая рамка серии в первом кадре (Hoyos)",
+    "cut_after_payoff": "что стоит после выплаты и почему не обрыв (Hoyos)",
+}
+YOU_RE = r"\b(ты|тебя|тебе|тобой|твой|твоя|твоё|твое|твои|твоих|вы|вас|вам)\b|\w(ешь|ёшь|ишь)\b"
+BUT_RE = r"\b(но|однако|только вот|а вот)\b"
+
+
+def readability(text):
+    """Индекс читаемости Флеша в коэффициентах Оборневой для русского текста (100 — проще всего)."""
+    sents = [x for x in re.split(r"[.!?…]+", clean(text)) if x.strip()]
+    ws = re.findall(r"[а-яёa-z]+", clean(text).lower())
+    if not sents or not ws:
+        return 100.0
+    return 206.835 - 1.3 * len(ws) / len(sents) - 60.1 * sum(syllables(w) for w in ws) / len(ws)
+
+
+def check_hook_craft(spec, log=(), reel_dir=""):
+    """Хук по 7 роликам, прочитанным целиком (25 §7, CLAUDE.md «ХУК — ОБЯЗАТЕЛЬНО»): «ты» в первых двух фразах, а не
+    «я» (Kallaway: «я мучаюсь» заставляет гадать, похож ли зритель); стоп-слово «но» перед разворотом во фразах 1–3;
+    читаемость первых трёх фраз ≥ HOOK_READ_MIN; якорь хука крупный (≥ HOOK_TEXT_SIZE), 2–5 слов; и решение по
+    каждому пункту, который кодом не измерить (passport.hook.craft) — словами или {"skip": причина}."""
+    pp = spec.get("passport") or {}
+    std, beats = pp.get("standard") or 0, spec.get("beats", [])
+    if std < HOOK_CRAFT_STANDARD:                        # готовые рилсы из журнала — как были; новый ниже 18 — нет
+        first = " ".join(clean(beats[0]["text"]).split()[:2]).lower() if beats else ""
+        old = any(os.path.normpath(r.get("reel", "")) == os.path.normpath(reel_dir or "")
+                  and r.get("first_words", "").lower() == first for r in log)
+        if reel_dir and not old:
+            return [f"новый рилс со стандартом {std}: нужен \"standard\": {HOOK_CRAFT_STANDARD} — CLAUDE.md «ХУК — "
+                    "ОБЯЗАТЕЛЬНО» («ты», «но», читаемость, крупный текст, passport.hook.craft)"]
+        return []
+    err = []
+    first2 = " ".join(clean(b["text"]).lower() for b in beats[:2])
+    if not re.search(YOU_RE, first2):
+        err.append("хук: в первых двух фразах нет «ты» — про зрителя, а не про кота («Идёшь мыть полы?», а не «Пошёл "
+                   "мыть полы»; Kallaway: «я» заставляет гадать, похож ли зритель)")
+    if not any(re.search(BUT_RE, clean(b["text"]).lower()) for b in beats[1:4]):
+        err.append("хук: нет стоп-слова «но» перед разворотом во фразах 1–3 (Kallaway: контекст → «но» → разворот)")
+    r = readability(" ".join(b["text"] for b in beats[:3]))
+    if r < HOOK_READ_MIN:
+        err.append(f"хук: читаемость первых трёх фраз {r:.0f} < {HOOK_READ_MIN} (Оборнева) — проще слова, короче фразы")
+    anchor = next((f for f in (beats[0].get("fx", []) if beats else []) if f.get("kind") == "mark" and f.get("anchor")), None)
+    if anchor is None:
+        err.append("хук: нет крупного текста на первом кадре (якорь mark, 2–5 слов): 70 % листают без звука")
+    else:
+        n = len(clean(anchor.get("text", "")).split())
+        if anchor.get("size", 0) < HOOK_TEXT_SIZE or not 2 <= n <= 5:
+            err.append(f"хук: якорь «{anchor.get('text')}» — {n} слов, кегль {anchor.get('size')}: нужно 2–5 слов и "
+                       f"≥ {HOOK_TEXT_SIZE} (Kallaway: «3–5 слов крупно»)")
+    craft = (pp.get("hook") or {}).get("craft") or {}
+    for k, what in HOOK_CRAFT_FIELDS.items():
+        v = craft.get(k)
+        ok = (isinstance(v, str) and len(v.strip()) >= WHY_MIN) or \
+             (isinstance(v, dict) and len(str(v.get("skip", "")).strip()) >= WHY_MIN)
+        if not ok:
+            err.append(f"passport.hook.craft.{k}: {what} — решение словами или {{\"skip\": причина}}")
+    return err
+
+
 def loop_warnings(spec, total):
     if ((spec.get("passport") or {}).get("standard") or 0) >= LOOP_STANDARD and total > LENGTH_SOFT:
         return [f"рилс {total:.1f} с > {LENGTH_SOFT:.0f}: досмотр падает с длиной (25 §19) — резать мёртвые секунды"]
