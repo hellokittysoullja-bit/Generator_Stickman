@@ -162,6 +162,9 @@ def test_overlays_in_safe_zone_and_cta_before_end():           # план 04 п.
     assert reel_rules.check_overlays([(14, "Напарник", 207, 280, 885, 430)]) == []
     assert reel_rules.check_overlays([(14, "Напарник", 207, 202, 885, 376)])        # v12 до 23.10: под шапкой Reels
     assert reel_rules.check_overlays([(15, "бесплатно", 600, 900, 950, 1000)])      # под колонкой кнопок
+    # 27.10: субтитры поверх рисунка (caption_y) — надпись не ложится на их строку
+    assert reel_rules.check_overlays([(3, "Ни одного", 207, 1350, 885, 1450)], 1860, cap_cy=1400)
+    assert reel_rules.check_overlays([(3, "Ни одного", 207, 1150, 885, 1300)], 1860, cap_cy=1400) == []
     s = spec()
     assert reel_rules.check_cta(s, [0.0] * 15 + [36.7, 41.1], 43.4) == []
     assert reel_rules.check_cta(s, [0.0] * 15 + [39.5, 41.1], 43.4)                 # призыв за 3.9 с до конца
