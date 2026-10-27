@@ -1141,5 +1141,77 @@
   "quality": "medium",
   "price": 140625,
   "source": "scripts/reel_draw.py videos/07_potom/reel"
+ },
+ {
+  "file": "2026-10-27_gen_cx_gpt-image-2_1bab6dc2.png",
+  "sha256": "1bab6dc27cdc3c1946881a29d3be52e0e5aec760c7f5fed7293b20a5b41b0bfb",
+  "bytes": 2013775,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-10-27",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture in a plain shop: on the left half a tall plain shelf with exactly twenty four identical small jars of jam in neat rows, every jar with a blank unprinted label; the main character stands in front of the tall shelf holding one empty small basket, head tilted, eyes wide and confused, one paw scratching its head; on the right half a small low plain table with exactly six identical jars of jam with blank labels, calm and simple. The flame on the tip of its tail is a small dim ember. LAYOUT: the main character is whole in the middle of the picture, its head in the upper middle; the tall shelf with twenty four jars on the left, the small table with six jars on the right with a clear gap; every label is completely blank. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 140625,
+  "source": "scripts/reel_draw.py videos/11_vybor/reel"
+ },
+ {
+  "file": "2026-10-27_gen_cx_gpt-image-2_95cfbf7f.png",
+  "sha256": "95cfbf7f588aa2a3f7f81a667d21529242cd267eae2519ed6cdc47b23f3d4bbe",
+  "bytes": 2313489,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-10-27",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: the main character sits small on a plain floor and holds one plain phone with both front paws, looking up with big sad envious eyes, ears a little lowered; above the phone five separate photo cards float upward like bubbles in a loose zigzag column, each card a plain rectangle with a thin ink border and a simple little picture inside: a smiling couple in wedding clothes, a beach with one palm tree and the sun, a smiling person lifting a golden cup, a birthday cake with candles, a mountain top with a small flag. The flame on the tip of its tail is a small dim ember. LAYOUT: the main character is whole in the lower third in the middle; the five cards are spread over the upper two thirds with wide gaps of plain paper between the cards and between the cards and the cat; the phone screen is completely blank; no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 140625,
+  "source": "scripts/reel_draw.py videos/12_lenta/reel"
+ },
+ {
+  "file": "2026-10-27_gen_cx_gpt-image-2_d1f36dc5.png",
+  "sha256": "d1f36dc56dee1becc268fba49b39ebf0d64d30a7ac8a9544ebcd5d1b583a953d",
+  "bytes": 2362994,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-10-27",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: the main character sits calmly and proudly right next to one plain upright vacuum cleaner on a plain floor, chin up, eyes half closed with a small satisfied smile, one front paw resting on the vacuum cleaner; on the plain wall behind hangs one framed picture that shows a smaller fluffy kitten version of the main character hiding under a chair, scared, from the same vacuum cleaner. The flame on the tip of its tail burns big, golden and bright. LAYOUT: the main character and the vacuum cleaner are whole and large in the lower half side by side with a small gap; the framed picture is clearly visible in the upper part with plain wall around it; no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 140625,
+  "source": "scripts/reel_draw.py videos/12_lenta/reel"
+ },
+ {
+  "file": "2026-10-27_gen_cx_gpt-image-2_e7c58406.png",
+  "sha256": "e7c58406471883921ff7a41e7db00782255d4850ae31e924a6997d0b9957c04f",
+  "bytes": 2363238,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-10-27",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture, evening in a plain room: the main character sits on the floor on a flat cushion in front of a large plain television, seen from slightly behind and to the side so its face is visible in three-quarter view, holding one plain remote control in one front paw pointed at the screen, eyes half closed and tired, ears drooping, shoulders slumped; the television screen is big, bright and shows only a neat grid of many plain blank light rectangles, like empty movie tiles, nothing written or drawn on them; on the floor beside the cushion stands one plate with a small portion of food that has gone cold, no steam. The flame on the tip of its tail is a small dim ember. LAYOUT: the television is large in the upper half and fills most of the width, its grid of blank tiles clearly visible; the main character with the cushion is in the lower middle, its head below the television with a clear gap, the plate on the floor at the left; every screen and tile is completely blank. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 140625,
+  "source": "scripts/reel_draw.py videos/11_vybor/reel"
  }
 ]

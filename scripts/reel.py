@@ -1049,7 +1049,7 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
         # второй слой камеры: медленный поворот до 0.5° поверх дрейфа, на соседних планах в разные стороны
         sign = 1 if s.get("bi", 0) % 2 else -1   # одно направление на фразу (мысль): Tim Runia; правило длинного ролика
         rot += s.get("rot_drift", 0.5) * sign * ((t - s["t0"]) / max(1e-3, s["t1"] - s["t0"]) - 0.5)
-        base = grade(sharpen(sample(src, cx, cy, h / punch, shake=shake, rot=rot, boil_t=t, reflect=bool(s.get("anim")))))
+        base = grade(sharpen(sample(src, cx, cy, h / punch, shake=shake, rot=rot, boil_t=t, reflect=bool(s.get("anim")) and not s.get("paper_edge"))))   # paper_edge: за краем сцены на бумаге — крем, не отражение
         view = (cx, cy, h / punch)
         if s.get("whip"):
             k = 1 - ease_out((t - s["t0"]) / 0.18)

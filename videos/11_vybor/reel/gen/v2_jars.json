@@ -1,0 +1,13 @@
+{
+ "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture in a plain shop: on the left half a tall plain shelf with exactly twenty four identical small jars of jam in neat rows, every jar with a blank unprinted label; the main character stands in front of the tall shelf holding one empty small basket, head tilted, eyes wide and confused, one paw scratching its head; on the right half a small low plain table with exactly six identical jars of jam with blank labels, calm and simple. The flame on the tip of its tail is a small dim ember. LAYOUT: the main character is whole in the middle of the picture, its head in the upper middle; the tall shelf with twenty four jars on the left, the small table with six jars on the right with a clear gap; every label is completely blank. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+ "model": "cx/gpt-image-2",
+ "quality": "medium",
+ "size": "1024x1536",
+ "price": 140625,
+ "refs": [
+  "look/style/1_desk.png",
+  "look/style/2_objects.png",
+  "videos/01_sdvg_pismo/frames/004.png",
+  "look/hero.png"
+ ]
+}

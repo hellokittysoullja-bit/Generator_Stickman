@@ -1,0 +1,13 @@
+{
+ "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: the main character sits calmly and proudly right next to one plain upright vacuum cleaner on a plain floor, chin up, eyes half closed with a small satisfied smile, one front paw resting on the vacuum cleaner; on the plain wall behind hangs one framed picture that shows a smaller fluffy kitten version of the main character hiding under a chair, scared, from the same vacuum cleaner. The flame on the tip of its tail burns big, golden and bright. LAYOUT: the main character and the vacuum cleaner are whole and large in the lower half side by side with a small gap; the framed picture is clearly visible in the upper part with plain wall around it; no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+ "model": "cx/gpt-image-2",
+ "quality": "medium",
+ "size": "1024x1536",
+ "price": 140625,
+ "refs": [
+  "look/style/1_desk.png",
+  "look/style/2_objects.png",
+  "videos/01_sdvg_pismo/frames/004.png",
+  "look/hero.png"
+ ]
+}

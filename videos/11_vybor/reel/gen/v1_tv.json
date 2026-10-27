@@ -1,0 +1,13 @@
+{
+ "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture, evening in a plain room: the main character sits on the floor on a flat cushion in front of a large plain television, seen from slightly behind and to the side so its face is visible in three-quarter view, holding one plain remote control in one front paw pointed at the screen, eyes half closed and tired, ears drooping, shoulders slumped; the television screen is big, bright and shows only a neat grid of many plain blank light rectangles, like empty movie tiles, nothing written or drawn on them; on the floor beside the cushion stands one plate with a small portion of food that has gone cold, no steam. The flame on the tip of its tail is a small dim ember. LAYOUT: the television is large in the upper half and fills most of the width, its grid of blank tiles clearly visible; the main character with the cushion is in the lower middle, its head below the television with a clear gap, the plate on the floor at the left; every screen and tile is completely blank. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+ "model": "cx/gpt-image-2",
+ "quality": "medium",
+ "size": "1024x1536",
+ "price": 140625,
+ "refs": [
+  "look/style/1_desk.png",
+  "look/style/2_objects.png",
+  "videos/01_sdvg_pismo/frames/004.png",
+  "look/hero.png"
+ ]
+}
