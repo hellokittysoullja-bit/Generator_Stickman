@@ -82,7 +82,7 @@
  "approved": {
   "title": true,
   "hook": true,
-  "script": false
+  "script": true
  },
  "items": {
   "T2": {
@@ -206,7 +206,7 @@
    "how": "кульминация без слов: кот смотрит на закрытое видео, потом нажимает — и лента оживает"
   },
   "V10": {
-   "skip": "ждёт решения владельца: музыка в длинных роликах"
+   "how": "владелец 27.10: музыка-атмосфера (эмбиент) — подбор за мной; только с лицензией, разрешающей YouTube с монетизацией, тихо под голосом, никогда не мешает речи (Shelby, ролик 1)"
   },
   "V11": {
    "skip": "перечисления нет"
@@ -243,5 +243,10 @@
  },
  "notes": [
   "27.10 владелец: хук хороший; сомнение, что [energetic] слишком энергичен — три варианта первых ~12 с озвучены на сравнение (Lumean, голос Daniel)"
- ]
+ ],
+ "music": {
+  "file": "assets/music/wisps_of_whorls.mp3",
+  "credit": "\"Wisps of Whorls\" Kevin MacLeod (incompetech.com)\nLicensed under Creative Commons: By Attribution 4.0\nhttp://creativecommons.org/licenses/by/4.0/",
+  "why": "самая пустая фактура из трёх; фон на 16 LU ниже голоса с приглушением под речью"
+ }
 }
