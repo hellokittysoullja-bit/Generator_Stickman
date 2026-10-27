@@ -5,6 +5,8 @@
 
 Шаги (каждый — отдельный скрипт, можно запускать и по одному):
   1. wordcount.py        — длина сценария против цели (стоп вне коридора).
+     long_rules.py       — обязательная структура длинного ролика (docs/long_knowledge/checklist.json): без неё
+                           дальше не идёт; после сборки — проверки готового ролика F1–F4.
   2. frame_planner.py    — спецификация и рисунок на каждую фразу.
   3. frame_generator.py  — кадр моделью шлюза с референсами look/, проверка букв, судья.
   4. lumean_tts.py       — озвучка, только с --tts (платно; иначе положите audio.mp3 сами).
@@ -47,10 +49,16 @@ def main():
         sys.exit(f"Нет {script}")
     if a.minutes:
         step("Длина сценария", ["wordcount.py", script, str(a.minutes)])
+    # Обязательная структура длинного ролика (CLAUDE.md «ДЛИННЫЙ РОЛИК YOUTUBE — ОБЯЗАТЕЛЬНО», владелец 27.10:
+    # «без которой вообще невозможно сделать ролик»): до первого платного шага, обходного флага нет.
+    sys.path.insert(0, HERE)
+    import long_rules
+    long_video = long_rules.is_long(vd)
+    if long_video:
+        step("Структура длинного ролика", ["long_rules.py", vd])
     step("План кадров", ["frame_planner.py", vd])
     step("Кадры", ["frame_generator.py", vd] + (["--confirm-spend"] if a.confirm_spend else []),
          ok_codes=(0, 2) if a.allow_rejected else (0,))
-    sys.path.insert(0, HERE)
     from assemble_frames import find_audio
     if not find_audio(vd):
         if not a.tts:
@@ -61,6 +69,10 @@ def main():
     step("Замер тайминга", ["verify_timing.py", vd], ok_codes=(0, 1, 2))
     # приёмка монтажа по пикселям (docs/MONTAGE_SPEC.md): 2 — предупреждения, ролик собран; 1 — блок
     step("Приёмка монтажа", ["montage_qc.py", vd], ok_codes=(0, 2))
+    if long_video and long_rules.check(vd, final=True):
+        # ролик собран, но не сдан: просмотр целиком, тест на отвлечение, звук с телефона, человек не из ниши
+        subprocess.run([sys.executable, os.path.join(HERE, "long_rules.py"), vd, "--final"])
+        sys.exit(f"Собран, но не сдан: {os.path.join(vd, 'final.mp4')} — пройти проверки F1–F4 и записать в long_passport.json.")
     try:
         v = json.load(open(os.path.join(vd, "media_plan", "timing_verification.json"), encoding="utf-8"))
         print(f"\nТайминг по готовому файлу: {v.get('verdict')}, дрейф {v.get('drift')}")

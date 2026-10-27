@@ -5,10 +5,17 @@ description: Сделать или переделать длинный роли�
 
 # Длинный ролик YouTube
 
-Решение владельца 27.10: правила длинного ролика обязательны для любого агента в любой сессии.
+Решение владельца 27.10: правила длинного ролика обязательны для любого агента в любой сессии, «обязательная
+структура, без которой вообще невозможно сделать ролик». Её держит код: `scripts/long_rules.py` сверяет все правила
+`docs/long_knowledge/checklist.json` по `script.txt` и `long_passport.json`, `make_video.py` без неё не планирует,
+не рисует и не озвучивает; после сборки — проверки F1–F4. Обходного флага нет.
+
+0. `python scripts/long_rules.py videos/NN --template` — паспорт со всеми полями; заполнять по ходу шагов ниже,
+   `python scripts/long_rules.py videos/NN` — сколько дыр осталось.
 
 1. **Обязательное чтение, целиком, до любой строки:**
-   `docs/LONG_PLAYBOOK.md` → `docs/long_knowledge/01_notes.md` → `docs/long_knowledge/sources.txt` (что уже изучено) →
+   `docs/LONG_PLAYBOOK.md` → `docs/long_knowledge/01_notes.md` → `docs/long_knowledge/checklist.json` →
+   `docs/long_knowledge/sources.txt` (что уже изучено) →
    CLAUDE.md, разделы «ДЛИННЫЙ РОЛИК YOUTUBE — ОБЯЗАТЕЛЬНО» и «ХУК — ОБЯЗАТЕЛЬНО» (правила хука действуют и здесь) →
    для аудитории и её слов — `docs/reels_knowledge/09_hooks_funnels_audience.md` §8–§9.
 2. **Порядок (не переставлять):**
