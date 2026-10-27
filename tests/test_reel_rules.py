@@ -1200,3 +1200,6 @@ def test_library_has_every_original():
     miss = [f for p in pats for f in glob.glob(os.path.join(root, p))
             if not f.endswith("_mask.png") and hashlib.sha256(open(f, "rb").read()).hexdigest() not in have]
     assert not miss, f"нет в библиотеке: {miss}"
+    gone = os.path.join(root, "library", "cat", "removed.json")
+    back = [r["was"] for r in (json.load(open(gone, encoding="utf8")) if os.path.exists(gone) else []) if r["sha256"] in have]
+    assert not back, f"снятые владельцем картинки вернулись в библиотеку: {back}"
