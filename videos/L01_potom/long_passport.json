@@ -39,7 +39,11 @@
   "Мне было тридцать... (отклонён: у кота нет возраста, выдуманная цифра)",
   "Жизнь с понедельника не начнётся, и вот что говорят данные спортзала, в который ходили тысячи студентов."
  ],
- "hook_voiced": [],
+ "hook_voiced": [
+  "A: [energetic] + паузы + ударение «никогда» (12.1 с)",
+  "B: без тегов (12.0 с)",
+  "C: без [energetic], паузы + ударение (12.8 с)"
+ ],
  "points": [
   {
    "block": "BLOCK 1: Понедельник",
@@ -76,7 +80,7 @@
  },
  "approved": {
   "title": true,
-  "hook": false,
+  "hook": true,
   "script": false
  },
  "items": {
@@ -235,5 +239,8 @@
   "состаренные лица": "Hershfield et al. (2011) Journal of Marketing Research 48: S23–S37",
   "Пичил: эмоции, не время; мотивация после действия; следующий шаг": "Sirois & Pychyl (2013) Social and Personality Psychology Compass 7(2); интервью Пичила (Carleton News); книга Solving the Procrastination Puzzle",
   "комментарий 6 600 лайков": "docs/reels_knowledge/09_hooks_funnels_audience.md §8.1 п.1, ролик 6j-3e59gFFo"
- }
+ },
+ "notes": [
+  "27.10 владелец: хук хороший; сомнение, что [energetic] слишком энергичен — три варианта первых ~12 с озвучены на сравнение (Lumean, голос Daniel)"
+ ]
 }
