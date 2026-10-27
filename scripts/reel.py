@@ -572,10 +572,6 @@ def layout(spec):
     # До этого: картинка 0–1380, субтитры 1455, внизу 390 (23.10: низ букв у края 400 px интерфейса).
     PIC_TOP = int(spec.get("picture_top", 60))
     PH = int(spec.get("picture_h", 1440)); CAP_CY = PIC_TOP + PH + 75
-    # 27.10, владелец: «снизу 60, субтитры повыше — профи ставят их в одно место, куда легче цепляется взгляд».
-    # caption_y — центр строки субтитров на экране; задан — субтитры стоят поверх рисунка на этой высоте
-    # (обводка и тень держат их на любой картинке), полоса под картинкой не нужна.
-    if spec.get("caption_y") is not None: CAP_CY = int(spec["caption_y"])
     k = PH / BASE_PH; vk = spec.get("view_scale", round(1.0 + (k - 1.0) * 0.42, 2))   # 1380 -> 1.11: рисунок крупнее, бока целы
     VIEW_K = vk
     if k == 1 and vk == 1: return
@@ -782,8 +778,7 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     rule_errs += reel_rules.check_montage(spec, shots, events, total)
     rule_errs += reel_rules.check_timeline(shots, events, {k: v[1] for k, v in SFX.items()}, caps_txt, total)
     rule_errs += reel_rules.check_overlays([(i, tx, x0, y0 + PIC_TOP, x1, y1 + PIC_TOP)    # картинка — с PIC_TOP экрана
-                                            for i, tx, x0, y0, x1, y1 in overlay_boxes(events, shots)], PIC_TOP + PH,
-                                           cap_cy=CAP_CY if spec.get("caption_y") is not None else None)
+                                            for i, tx, x0, y0, x1, y1 in overlay_boxes(events, shots)], PIC_TOP + PH)
     rule_errs += reel_rules.check_cta(spec, [times[i0]["start"] for i0, _ in spans], total)
     rule_errs += reel_rules.check_cta_middle(spec, [times[i0]["start"] for i0, _ in spans], total)   # призыв на 55–70 %
     rule_errs += reel_rules.check_first_line(spec, json.load(open(log_p, encoding="utf8")) if os.path.exists(log_p) else [],

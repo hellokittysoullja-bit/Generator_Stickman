@@ -1587,18 +1587,13 @@ def knowledge_timing(spec, beat_t0, total):
     return err
 
 
-CAP_BAND = 70   # полоса субтитров поверх рисунка: ± от центра строки (кегль 76, обводка, лёгкий «подскок» слова)
-
-
-def check_overlays(boxes, picture_h=None, cap_cy=None):
+def check_overlays(boxes, picture_h=None):
     """Рукописные надписи и маркер (boxes — [(фраза, текст, x0, y0, x1, y1)] по туши, в пикселях экрана 1080×1920)
     целиком в безопасной зоне: не под шапкой Reels, не под подписью, не у края и не под колонкой кнопок; и не в полосе
     субтитров ниже картинки (эп.01 v4: «Прости, долго» ушло под субтитры — y задан под 1100 и пересчитался в 1405)."""
     err = []
     for i, txt, x0, y0, x1, y1 in boxes:
         where = []
-        if cap_cy is not None and y0 < cap_cy + CAP_BAND and y1 > cap_cy - CAP_BAND:
-            where.append(f"заходит на строку субтитров (центр {cap_cy:.0f})")
         if picture_h and y1 > picture_h: where.append(f"низ {y1:.0f} > {picture_h} — в полосе субтитров (y в reel.json — под 1100)")
         if y0 < SAFE_TOP: where.append(f"верх {y0:.0f} < {SAFE_TOP} (шапка Reels)")
         if y1 > SAFE_BOTTOM: where.append(f"низ {y1:.0f} > {SAFE_BOTTOM} (подпись и кнопки)")
