@@ -1174,6 +1174,39 @@ def check_hook_start(spec, log=(), reel_dir="", abs_dir=None):
     return []
 
 
+PROMISE_STANDARD = 21       # обещание концовки — польза зрителю (владелец 27.10)
+PROMISE_SELF_RE = r"\b(как|что|кто|где|когда|почему)\s+я\b"
+
+
+def check_viewer_promise(spec, log=(), reel_dir=""):
+    """Обещание концовки в хуке — польза ЗРИТЕЛЮ, не успех кота (владелец 27.10: «почему ты пишешь, что решит кот, а
+    не зритель? зритель не получит никакую пользу»). Хук даёт любопытство по адресу (Kallaway): зритель верит, что
+    польза будет ему. «Но в конце я напишу первым», «я выберу за пять секунд» обещают успех коту — зрителю остаётся
+    «молодец кот» и свайп. Годится: «в конце ты будешь решать быстрее», «в конце покажу, как тебе…», «покажу, что
+    с этим делать». Кот остаётся рассказчиком: своя история («я так ждал полгода») — в середине, не в обещании."""
+    pp = spec.get("passport") or {}
+    std, beats = pp.get("standard") or 0, spec.get("beats") or []
+    if std < PROMISE_STANDARD:
+        bare = lambda x: " ".join(re.sub(r"[^\w\s]+", "", x).split()[:2]).lower()   # noqa: E731
+        first = bare(clean(beats[0]["text"])) if beats else ""
+        old = any(os.path.normpath(r.get("reel", "")) == os.path.normpath(reel_dir or "")
+                  and bare(r.get("first_words", "")) == first for r in log)
+        if reel_dir and not old:
+            return [f"новый рилс: нужен \"standard\": {PROMISE_STANDARD} — обещание концовки в хуке о пользе зрителю "
+                    "(«в конце ты…», «покажу, как тебе…»), не об успехе кота (CLAUDE.md «ХУК — ОБЯЗАТЕЛЬНО», п.9а)"]
+        return []
+    pv = ((pp.get("hook") or {}).get("loop") or {}).get("preview")
+    if not (isinstance(pv, int) and 0 <= pv < len(beats)):
+        return []                                       # нет превью — об этом скажет check_open_loop
+    sents = [x.strip() for x in re.split(r"(?<=[.!?…])\s+", clean(beats[pv]["text"])) if x.strip()]
+    sent = next((x for x in sents if re.search(r"конц|финал|под конец", x.lower())), sents[-1] if sents else "")
+    low = sent.lower()
+    if re.search(YOU_RE, low) or (re.search(r"покаж", low) and not re.search(PROMISE_SELF_RE, low)):
+        return []
+    return [f"фраза {pv}: обещание «{sent}» — про успех кота, а не про пользу зрителю. Говорит кот, выгода — зрителю: "
+            "«в конце ты будешь…», «покажу, как тебе…», «покажу, что с этим делать»"]
+
+
 HOOK_CRAFT_STANDARD = 18    # хук по 7 роликам, прочитанным целиком (владелец 26.10: «чтобы агент не мог не применить»)
 HOOK_READ_MIN = 80          # читаемость хука по Оборневой: ≥ 80 — начальная школа (Hoyos: «не выше 5-го класса»)
 HOOK_TEXT_SIZE = 100        # крупный текст на экране с первого кадра (Kallaway: «3–5 слов крупно»)
@@ -1699,6 +1732,7 @@ if __name__ == "__main__":
             + check_coverage(spec, log, os.path.relpath(sys.argv[1])) + check_human(spec)
             + check_inventory(spec, log, os.path.relpath(sys.argv[1]))
             + check_first_line(spec, log, os.path.relpath(sys.argv[1])) + check_structure(spec)
-            + check_hook_start(spec, log, os.path.relpath(sys.argv[1]), sys.argv[1]))
+            + check_hook_start(spec, log, os.path.relpath(sys.argv[1]), sys.argv[1])
+            + check_viewer_promise(spec, log, os.path.relpath(sys.argv[1])))
     print("\n".join("✗ " + e for e in errs) or "✓ reel.json по правилам (тайминг проверит reel.py при рендере)")
     sys.exit(1 if errs else 0)

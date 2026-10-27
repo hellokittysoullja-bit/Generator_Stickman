@@ -1156,3 +1156,19 @@ def test_hook_start_like_reel_08_is_locked_in(tmp_path):
         return img, {}
     assert anim.first_frame_motion(still, {}) == 0.0
     assert anim.first_frame_motion(moving, {}) >= R.FIRST_MOTION_MIN
+
+
+def test_hook_promise_is_for_viewer_not_cat():
+    """Владелец 27.10: «почему ты пишешь, что решит кот, а не зритель?» — обещание концовки о пользе зрителю."""
+    def sp(t1, std=21):
+        return {"passport": {"standard": std, "hook": {"loop": {"preview": 1}}},
+                "beats": [{"text": "Тебе трудно решить?"}, {"text": t1}]}
+    cat = "Даже что на ужин, и дело не в характере. Но в конце я решу быстрее всех и не пожалею."
+    assert reel_rules.check_viewer_promise(sp(cat), [], "videos/x/reel")
+    assert reel_rules.check_viewer_promise(sp("Никто не напишет. Но в конце я всё-таки напишу первым."), [], "videos/x/reel")
+    assert reel_rules.check_viewer_promise(sp("Но в конце покажу, как я выбираю за пять секунд."), [], "videos/x/reel")
+    ok = "Даже что на ужин, и дело не в характере. Но в конце ты будешь решать быстрее и не пожалеешь."
+    assert reel_rules.check_viewer_promise(sp(ok), [], "videos/x/reel") == []
+    assert reel_rules.check_viewer_promise(sp("Но это не лень, и в конце покажу, что с ней делать."), [], "videos/x/reel") == []
+    assert any("standard" in e for e in reel_rules.check_viewer_promise(sp(ok, 20), [], "videos/x/reel"))
+    assert reel_rules.check_viewer_promise(sp(cat, 20), [{"reel": "videos/x/reel", "first_words": "Тебе трудно"}], "videos/x/reel") == []
