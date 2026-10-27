@@ -1221,6 +1221,42 @@
   "origin": "GPT-Image-2 medium (scripts/reel_draw.py)"
  },
  {
+  "file": "2026-10-27_gen_cx_gpt-image-2_4d296d59.png",
+  "sha256": "4d296d5963d2257d27bd298b2bde1e0d639cd45621317a4b2fa15168ca62257e",
+  "bytes": 1765792,
+  "size": [
+   1531,
+   1027
+  ],
+  "date": "2026-10-27",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2",
+  "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. SCENE: a hand-drawn diagram: on the left a dense cluster of twelve small stick figures, on the right a looser cluster of nine, a short arrow from the right cluster to the left one; beside each cluster a wide empty patch of plain background with a short hand-drawn arrow pointing at it; plain light background. The diagram is drawn by hand like the rest of the film: ink lines with soft watercolor washes, small drawn objects and figures instead of flat icons, no clean vector graphics. Leave exactly 2 wide empty patches of plain background, one next to each labelled part, each big enough for a word in large letters (about a fifth of the image wide) and well away from the image edges, each with a short hand-drawn arrow to its part. The patches are the very same background as around them: no lighter fill, glow, shading, box or outline. Draw every arrow in red. The whole background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1536x1024",
+  "quality": "medium",
+  "price": 140625,
+  "source": "scripts/frame_generator.py videos/L01_potom --only"
+ },
+ {
+  "file": "2026-10-27_gen_cx_gpt-image-2_6143dac1.png",
+  "sha256": "6143dac1481c902b3dc8c09951595823e4072fb35623e720c4d01e74e8f62593",
+  "bytes": 2030395,
+  "size": [
+   2073,
+   758
+  ],
+  "date": "2026-10-27",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2",
+  "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. SCENE: a wide hand-drawn strip of five equal square panels in a row, separated by thin ink borders, each panel showing the same small university gym from the side with a row of treadmills and two exercise bikes; young adult students in plain sportswear exercise in it; the first panel on the left is busy with eight students, the second has seven, the third six, the fourth five, the fifth on the right only four, the free machines in later panels clearly empty; all walls, clocks and machine screens are blank; warm soft light, plain light background around the strip. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1536x1024",
+  "quality": "medium",
+  "price": 140625,
+  "source": "scripts/frame_generator.py videos/L01_potom --only"
+ },
+ {
   "file": "2026-10-27_gen_cx_gpt-image-2_95cfbf7f.png",
   "sha256": "95cfbf7f588aa2a3f7f81a667d21529242cd267eae2519ed6cdc47b23f3d4bbe",
   "bytes": 2313489,
@@ -1240,6 +1276,24 @@
   "price": 140625,
   "source": "scripts/reel_draw.py videos/12_lenta/reel",
   "origin": "GPT-Image-2 medium (scripts/reel_draw.py)"
+ },
+ {
+  "file": "2026-10-27_gen_cx_gpt-image-2_a4bc168b.png",
+  "sha256": "a4bc168b6f9f962f3d1eec2479d64178a5d7555e1c0668b85f866f46355f05d6",
+  "bytes": 2257541,
+  "size": [
+   1531,
+   1027
+  ],
+  "date": "2026-10-27",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2",
+  "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot: the main character stands at the sink, one paw on a dirty plate that rests on top of a stack of dirty plates, a small hopeful smile; on the wall beside the sink the apron hangs on a hook, clean and empty, a sponge tucked in its pocket; the apron is in the right third of the frame, plain light wall around it. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1536x1024",
+  "quality": "medium",
+  "price": 140625,
+  "source": "scripts/frame_generator.py videos/L01_potom --only"
  },
  {
   "file": "2026-10-27_gen_cx_gpt-image-2_d1f36dc5.png",

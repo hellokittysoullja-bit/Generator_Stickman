@@ -1,0 +1,2569 @@
+{
+ "version": 15,
+ "model": "ds/deepseek-v4-flash",
+ "has_hero": true,
+ "frames": [
+  {
+   "index": 0,
+   "section": "HOOK",
+   "text": "Сколько лет ты уже ждёшь, когда начнётся жизнь? С понедельника, после праздников, когда появятся силы.",
+   "key": "d9f108c05f6ec2f0",
+   "spec": {
+    "focus": "years spent waiting for life to start",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a person sits waiting on a chair",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the character sits on a chair facing a closed door",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "a thick layer of dust covers the floorboards",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "a packed suitcase stands beside the chair",
+      "tier": "should"
+     }
+    ],
+    "subject": "a waiting person"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character sits upright on a wooden chair in the middle of a dim empty room, both paws on its knees, staring at a closed door, face tired and blank; a thick layer of dust covers the floorboards and the character's shoulders; one packed suitcase stands on the floor beside the chair; plain grey wall behind.",
+   "details": [
+    "the dust on the floorboards",
+    "the packed suitcase"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   }
+  },
+  {
+   "index": 1,
+   "section": "HOOK",
+   "text": "Но «потом» не наступит никогда, и дело тут совсем не в лени.",
+   "key": "f22382ea1cb30e9a",
+   "spec": {
+    "focus": "the promised «later» never arrives",
+    "claims": [
+     {
+      "id": "core",
+      "text": "an empty railway platform is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the character stands at the edge of the platform",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the rails fade into fog with no train",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "a bench on the platform is dusty",
+      "tier": "should"
+     }
+    ],
+    "subject": "a railway platform"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "wide shot: the main character stands alone at the edge of an empty railway platform, one small suitcase in a paw, looking down two rails that fade into grey fog; no train anywhere; a bare wooden bench with dust on its seat; the upper right third of the frame is plain pale sky, calm and empty.",
+   "key_thought": "не наступит никогда",
+   "key_near": "the empty railway platform",
+   "details": [
+    "the rails fading into fog",
+    "the dusty bench"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   }
+  },
+  {
+   "index": 2,
+   "section": "HOOK",
+   "text": "У меня в закладках два года висит видео «как перестать откладывать». Я его так ни разу и не открыл.",
+   "key": "4bbdbadd36120cc9",
+   "spec": {
+    "focus": "a saved video never opened for two years",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a dusty phone lies on a table",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the phone lies flat on a wooden table",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the screen shows a grid of empty cards",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "a cobweb stretches from the phone to the table",
+      "tier": "should"
+     }
+    ],
+    "subject": "a phone"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "close-up: one phone lies flat on a wooden table, its blank glowing screen filled with a grid of small empty cards; a thin cobweb stretches from the phone to the table and dust lies along its edges; the main character's paw rests on the table beside the phone, not touching it; plain dark background.",
+   "accent": "два года",
+   "details": [
+    "the cobweb on the phone",
+    "the grid of empty cards on the screen"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   }
+  },
+  {
+   "index": 3,
+   "section": "HOOK",
+   "text": "Понедельник, кстати, правда работает, учёные это посчитали. Вот только к середине недели от него почти ничего не остаётся.",
+   "key": "6a455f8e756c5852",
+   "spec": {
+    "focus": "Monday's resolve fades by midweek",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a hand-drawn graph is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the curve peaks high on the left",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the curve drops almost to the ground on the right",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "a small flame burns at the peak",
+      "tier": "should"
+     }
+    ],
+    "subject": "a graph"
+   },
+   "kind": "diagram",
+   "hero": false,
+   "labels": [
+    "ПОНЕДЕЛЬНИК",
+    "СЕРЕДИНА НЕДЕЛИ"
+   ],
+   "picture": "a simple hand-drawn graph in the middle of the frame: a thick line rises to a tall peak on the left, then slides down and flattens almost to the ground on the right; a small bright flame burns at the peak, a tiny grey ember smoulders at the flat end; two empty patches of plain background, one left of the peak and one right of the flat end, each with a short arrow pointing at the curve.",
+   "details": [
+    "the small flame at the peak",
+    "the tiny ember at the flat end"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   }
+  },
+  {
+   "index": 4,
+   "section": "HOOK",
+   "text": "За восемь минут покажу, почему твоё «потом» не наступает, почему понедельник обманывает и как начать сегодня за две минуты.",
+   "key": "b2fedba66a7833eb",
+   "spec": {
+    "focus": "the film's three promises in eight minutes",
+    "claims": [
+     {
+      "id": "core",
+      "text": "three drawn icons stand in a row",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "three icons stand in a row",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "each icon has an empty patch with an arrow",
+      "tier": "must"
+     }
+    ],
+    "subject": "three icons"
+   },
+   "kind": "diagram",
+   "hero": false,
+   "labels": [
+    "ПОЧЕМУ «ПОТОМ»",
+    "ПОНЕДЕЛЬНИК ОБМАНЫВАЕТ",
+    "НАЧАТЬ СЕГОДНЯ"
+   ],
+   "picture": "a simple hand-drawn diagram in the middle of the frame: three small icons in a row — a closed door, a sun half hidden behind a cloud, a green sprout; under each icon a wide empty patch of plain background with a short arrow pointing up at the icon; plain light background, nothing else.",
+   "accent": "восемь минут",
+   "details": [
+    "the closed door icon",
+    "the sun behind the cloud"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   }
+  },
+  {
+   "index": 5,
+   "section": "HOOK",
+   "text": "Я сам так жил, а теперь начинаю почти каждый день без всякой силы воли.",
+   "key": "cad1514c774cc644",
+   "spec": {
+    "focus": "starting daily without willpower",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a person writes at a desk",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the character writes in an open notebook at a desk",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "a worn path of paw prints crosses the floor",
+      "tier": "should"
+     }
+    ],
+    "subject": "a working person"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character sits on a chair at a small wooden desk, leaning over an open blank notebook, a pencil in one paw, calm focused face; a worn path of paw prints crosses the floorboards from a door to the chair; soft morning light from a window; the character sits in the left half of the frame.",
+   "details": [
+    "the worn paw prints on the floor",
+    "the open blank notebook"
+   ],
+   "hero_state": "bright",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   }
+  },
+  {
+   "index": 6,
+   "section": "HOOK",
+   "text": "Но сначала маленькая проверка. Открой у себя «посмотреть позже» или закладки и посмотри, сколько там всего.",
+   "key": "0294ed0948595f34",
+   "spec": {
+    "focus": "opening your saved list to check",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a phone full of saved cards is held in paws",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "two paws hold the phone",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the screen is filled with a long column of empty cards",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "the character's face looks curious",
+      "tier": "should"
+     }
+    ],
+    "subject": "a phone"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "close-up: two paws of the main character hold one phone above a table, the blank glowing screen filled with a long column of small empty cards; one thumb rests just above the top card, not touching it; above the phone the character's face, eyebrows raised, curious; plain light background around the phone.",
+   "details": [
+    "the thumb hovering over the top card",
+    "the long column of empty cards"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     1
+    ],
+    "original": "close-up: two paws of the main character hold one phone above a table, the blank glowing screen filled with a long column of small empty cards; one thumb hovers over the top card; above the phone the character's face, eyebrows raised, curious; plain light background around the phone."
+   }
+  },
+  {
+   "index": 7,
+   "section": "HOOK",
+   "text": "Если там больше десяти, ты в нужном месте. Если больше сотни, устраивайся поудобнее, мы с тобой одной породы.",
+   "key": "9ce8bb492a6e7f84",
+   "spec": {
+    "focus": "hundreds saved means you're one of us",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a person lounges in an armchair",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the character leans back in an armchair",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "a heap of blank cards spills onto the floor",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "the legs rest on a footstool",
+      "tier": "should"
+     }
+    ],
+    "subject": "a lounging person"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character leans back deep in a soft armchair, legs stretched out on a footstool, one phone held loosely in a paw, a relaxed grin on the face; beside the armchair a tall heap of blank paper cards spills onto the floor; warm dim room, plain wall behind.",
+   "accent": "больше сотни",
+   "details": [
+    "the heap of blank cards on the floor",
+    "the footstool under the stretched legs"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   }
+  },
+  {
+   "index": 8,
+   "section": "BLOCK 1: ПОНЕДЕЛЬНИК",
+   "text": "А ты знаешь, что понедельник правда работает?",
+   "key": "b6b3da81c2b63605",
+   "spec": {
+    "focus": "Monday really does work as a fresh start",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a blank wall calendar page is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the main character holds the calendar page up in both paws",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "morning sunlight falls across the floor",
+      "tier": "should"
+     }
+    ],
+    "subject": "a calendar"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character stands at a bright window in the morning, holding up one blank wall calendar page in both paws, chin up, a small confident smile; sunlight falls in a long patch across the floor; the character is in the left half of the frame, plain light wall on the right",
+   "accent": "понедельник",
+   "details": [
+    "the blank calendar page",
+    "the sunlight on the floor"
+   ],
+   "hero_state": "bright",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   }
+  },
+  {
+   "index": 9,
+   "section": "BLOCK 1: ПОНЕДЕЛЬНИК",
+   "text": "Исследователи из Уортона, среди них Кэтрин Милкман, взяли записи университетского спортзала.",
+   "key": "da4fff259ee447cc",
+   "spec": {
+    "focus": "researchers took real gym attendance records",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a tall stack of blank paper sheets is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "a woman sits at a desk with the stack of sheets",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "a university gym with machines is seen through the window behind her",
+      "tier": "should"
+     }
+    ],
+    "subject": "a stack of records"
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "medium shot: a desk piled with a tall stack of blank paper sheets, one sheet lying loose on the desk; behind the desk a large window shows a university gym with rows of exercise machines and a turnstile; the desk sits in the left third of the frame, plain light wall on the right",
+   "details": [
+    "the tall stack of blank sheets",
+    "the gym turnstile in the window"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     8
+    ],
+    "original": "medium shot: a woman in a plain blouse sits at a desk piled with a tall stack of blank paper sheets, one sheet in her hand; behind her a large window shows a university gym with rows of exercise machines and a turnstile; she sits in the left third of the frame, plain light wall on the right"
+   }
+  },
+  {
+   "index": 10,
+   "section": "BLOCK 1: ПОНЕДЕЛЬНИК",
+   "text": "Оказалось, что в начале недели студенты приходят в зал на треть чаще обычного.",
+   "key": "c9009f5f0379f0db",
+   "spec": {
+    "focus": "the gym gets emptier day by day after a busy start of the week",
+    "claims": [
+     {
+      "id": "core",
+      "text": "five panels of the same gym are shown side by side",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the leftmost panel has the most people and each next panel has fewer",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the people are young adults exercising on gym machines",
+      "tier": "should"
+     }
+    ],
+    "subject": "the gym strip"
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "a wide hand-drawn strip of five equal square panels in a row, separated by thin ink borders, each panel showing the same small university gym from the side with a row of treadmills and two exercise bikes; young adult students in plain sportswear exercise in it; the first panel on the left is busy with eight students, the second has seven, the third six, the fourth five, the fifth on the right only four, the free machines in later panels clearly empty; all walls, clocks and machine screens are blank; warm soft light, plain light background around the strip",
+   "accent": "на треть чаще",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "переписано руками 27.10 после разбора пилота: прежняя схема — дети на пустом фоне, стрелки без смысла"
+   },
+   "details": [
+    "the busy first panel",
+    "the nearly empty last panel"
+   ]
+  },
+  {
+   "index": 11,
+   "section": "BLOCK 1: ПОНЕДЕЛЬНИК",
+   "text": "Они назвали это эффектом нового начала: в понедельник старые провалы будто остаются в прошлой неделе.",
+   "key": "9c46af8f3ea4d563",
+   "spec": {
+    "focus": "old failures stay in the past week",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a person stepping forward is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "crumpled paper balls lie behind on the dim side",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the area ahead is clean and bright",
+      "tier": "must"
+     }
+    ],
+    "subject": "a person"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "wide shot: the main character stands on the clean bright floor on the right, one foot forward, head up, facing the dim cluttered area on the left; on the dim side lie crumpled paper balls and a tipped chair; the bright floor is bare and light; a calm empty patch of plain background above it",
+   "key_thought": "нового начала",
+   "key_near": "the clean bright floor",
+   "details": [
+    "the crumpled paper balls",
+    "the tipped chair"
+   ],
+   "hero_state": "bright",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     1
+    ],
+    "original": "wide shot: the main character steps from a dim cluttered area on the left into a clean bright area on the right, one foot forward, head up; behind it on the dim side lie crumpled paper balls and a tipped chair; the bright side is bare and light; a calm empty patch of plain background above the clean bright floor"
+   }
+  },
+  {
+   "index": 12,
+   "section": "BLOCK 1: ПОНЕДЕЛЬНИК",
+   "text": "Но в тех же данных есть вторая половина: с каждым днём недели людей в зале становится всё меньше. И вот как это выглядит у меня.",
+   "key": "b893afbc25297994",
+   "spec": {
+    "focus": "attendance falls with every day of the week",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a thinning row of small figures is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the row is dense on the left and ends in a single figure on the right",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "a long arrow above the row slopes down to the right",
+      "tier": "must"
+     }
+    ],
+    "subject": "a crowd of students"
+   },
+   "kind": "diagram",
+   "hero": false,
+   "labels": [
+    "ПОНЕДЕЛЬНИК",
+    "СРЕДА",
+    "ВОСКРЕСЕНЬЕ"
+   ],
+   "picture": "a hand-drawn diagram: a row of small stick figures across the middle of the frame, dense on the left and thinning to one lonely figure on the right, a long arrow above them sloping down to the right; three wide empty patches of plain background below, each with a short hand-drawn arrow up to a group; plain light background",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   }
+  },
+  {
+   "index": 13,
+   "section": "BLOCK 1: ПОНЕДЕЛЬНИК",
+   "text": "В воскресенье вечером я пишу план на неделю: зарядка, письма, наконец разобрать стол.",
+   "key": "f75314c945fafd7c",
+   "spec": {
+    "focus": "a long Sunday plan for the whole week",
+    "claims": [
+     {
+      "id": "core",
+      "text": "an open notebook with a pen is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the main character leans over the notebook and writes",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "a small dumbbell and a stack of envelopes lie on the desk",
+      "tier": "should"
+     }
+    ],
+    "subject": "a notebook"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character sits on a chair beside a desk, upright, a pen in its paw; on the desk one open notebook with blank pages lies large in the right half, with a small dumbbell, a stack of envelopes and a messy pile of papers beside it; a dark window behind; a clear gap of plain light background between the character and the open notebook",
+   "zoom": {
+    "object": "the open notebook",
+    "word": "план"
+   },
+   "details": [
+    "the pen in the paw",
+    "the small dumbbell",
+    "the stack of envelopes"
+   ],
+   "hero_state": "bright",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     2,
+     7
+    ],
+    "original": "medium shot: the main character sits at a desk on a Sunday evening, leaning over one open notebook with blank pages, a pen in its paw; on the desk a small dumbbell, a stack of envelopes and a messy pile of papers; a dark window behind; the character in the left half, the open notebook large in the right half with plain light background around it"
+   }
+  },
+  {
+   "index": 14,
+   "section": "BLOCK 1: ПОНЕДЕЛЬНИК",
+   "text": "В понедельник я встаю, делаю зарядку и гордо пью чай. Во вторник зарядки уже нет, но письма я ещё открываю.",
+   "key": "3a6d55cf7e1b44cd",
+   "spec": {
+    "focus": "Monday holds, Tuesday already slips",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the main character is visible in two moments",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "on the left the character stands proud with a teacup and a dumbbell at its feet",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "on the right the character sits opening an envelope, no dumbbell",
+      "tier": "must"
+     }
+    ],
+    "subject": "a person"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "two panels side by side with a plain gap between them: on the left the main character stands tall holding a teacup, a dumbbell at its feet, a proud closed-eye smile; on the right the same character sits on a chair beside a table, one envelope lying open on the table, a plain cup pushed aside; plain light background in both panels",
+   "details": [
+    "the teacup",
+    "the open envelope",
+    "the dumbbell"
+   ],
+   "hero_state": "golden",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     1,
+     2
+    ],
+    "original": "two panels side by side with a plain gap between them: on the left the main character stands tall holding a teacup, a dumbbell at its feet, a proud closed-eye smile; on the right the same character sits at a table opening one envelope, no dumbbell anywhere, a plain cup pushed aside; plain light background in both panels"
+   }
+  },
+  {
+   "index": 15,
+   "section": "BLOCK 1: ПОНЕДЕЛЬНИК",
+   "text": "В среду я открываю только холодильник. А в четверг решаю, что неделя всё равно испорчена, и начну со следующего понедельника.",
+   "key": "fce5bd8d4551a7bb",
+   "spec": {
+    "focus": "by Thursday the week is written off",
+    "claims": [
+     {
+      "id": "core",
+      "text": "an open fridge is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the main character stands before it with slumped shoulders",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "cold light from the fridge falls on its face",
+      "tier": "should"
+     }
+    ],
+    "subject": "a fridge"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character stands in a dim kitchen in the left half, shoulders slumped, arms hanging; one open fridge fills the right half, its cold light on the character's face; the fridge shelves are nearly empty; a clear gap of plain dark wall between the character and the fridge",
+   "zoom": {
+    "object": "the open fridge",
+    "word": "холодильник"
+   },
+   "details": [
+    "the fridge door handle",
+    "the empty fridge shelves"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     7
+    ],
+    "original": "medium shot: the main character stands in a dim kitchen in the left half, shoulders slumped, one paw on the handle of one open fridge that fills the right half, its cold light on the character's face; the fridge shelves are nearly empty; a clear gap of plain dark wall between the character and the fridge"
+   }
+  },
+  {
+   "index": 16,
+   "section": "BLOCK 1: ПОНЕДЕЛЬНИК",
+   "text": "Знакомо? Я много лет думал, что со мной что-то не так, раз другие могут, а я сдуваюсь к среде. Но в тех же данных сдуваются все, просто мы видим только чужие понедельники.",
+   "key": "9da47777660b7caa",
+   "spec": {
+    "focus": "everyone deflates, not just me",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a crowd of slumping people is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the main character sits among them, also slumped",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the people are slumped over gym machines and benches",
+      "tier": "must"
+     }
+    ],
+    "subject": "a crowd of people"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "wide shot: a university gym with rows of exercise machines; a dozen small figures in gym clothes are slumped over the machines and benches, heads down; among them in the front the main character sits on a bench, shoulders low, tail drooping; plain light wall behind, the character in the left third",
+   "details": [
+    "a slumped figure on a treadmill",
+    "the main character's drooping tail"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   }
+  },
+  {
+   "index": 17,
+   "section": "BLOCK 1: ПОНЕДЕЛЬНИК",
+   "text": "Понедельник даёт толчок, но сил он не даёт. В понедельник есть чувство чистого листа, но нет маленького первого шага, и чувство тает раньше, чем ты начнёшь.",
+   "key": "791f67fc4cf09f4e",
+   "spec": {
+    "focus": "the clean-page feeling melts before the first step",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a blank sheet of paper is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the main character holds the sheet up in both paws",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the sheet's lower corner sags and drips like melting wax",
+      "tier": "must"
+     }
+    ],
+    "subject": "a blank sheet of paper"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "close-up: the main character holds up one blank white sheet of paper with both paws; the sheet's lower corner sags and drips like melting wax into a small puddle on the floor; the character's face is tired and disappointed; the sheet is large in the right half, a calm plain light background on the left",
+   "key_thought": "чистого листа",
+   "key_near": "the blank sheet of paper",
+   "details": [
+    "the dripping corner of the sheet",
+    "the small puddle on the floor"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [
+     "key_near_not_in_picture"
+    ],
+    "rewritten": false
+   }
+  },
+  {
+   "index": 18,
+   "section": "BLOCK 1: ПОНЕДЕЛЬНИК",
+   "text": "Самое коварное тут даже не провал. Понедельник учит тебя ждать, и каждая неудача отодвигает старт ещё на целую неделю.",
+   "key": "4305a6caa7e35f5d",
+   "spec": {
+    "focus": "each failure pushes the start a week away",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a row of blank calendars is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the calendars recede into the distance, each smaller than the last",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "an empty wooden chair stands in the foreground",
+      "tier": "should"
+     }
+    ],
+    "subject": "a calendar"
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "wide shot: a long empty corridor wall with a row of blank wall calendars pinned along it, receding into the distance, each smaller than the last; dust on the floor and a cobweb in the corner; an empty wooden chair stands in the foreground facing the row; plain light background, the nearest calendar in the right third",
+   "details": [
+    "the nearest blank calendar",
+    "the cobweb in the corner"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   }
+  },
+  {
+   "index": 19,
+   "section": "BLOCK 1: ПОНЕДЕЛЬНИК",
+   "text": "Под одним роликом про откладывание есть комментарий, который лайкнули шесть с половиной тысяч человек: «с понедельника ждём выходных, и так одиннадцать лет».",
+   "key": "c94a58faecba85db",
+   "spec": {
+    "focus": "eleven years of waiting for Monday",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a phone with a glowing screen is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the main character's paws hold the phone",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "a small heart shape glows at the bottom of the screen",
+      "tier": "should"
+     }
+    ],
+    "subject": "a phone"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "close-up: the main character's two paws hold one phone with a blank glowing screen; above the phone the character's tired half-lidded eyes; the phone is large in the right half of the frame, plain dark background on the left",
+   "accent": "одиннадцать лет",
+   "details": [
+    "the heart shape on the screen",
+    "the character's tired eyes"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     4
+    ],
+    "original": "close-up: the main character's two paws hold one phone with a blank glowing screen; a small heart shape glows at the bottom of the screen; above the phone the character's tired half-lidded eyes; the phone is large in the right half of the frame, plain dark background on the left"
+   }
+  },
+  {
+   "index": 20,
+   "section": "BLOCK 1: ПОНЕДЕЛЬНИК",
+   "text": "Хорошо, понедельник не спас. Тогда остаётся последняя надежда, то самое «потом». Только кто его, собственно, будет делать?",
+   "key": "1cab141602b6a66e",
+   "spec": {
+    "focus": "the promised later has nobody to do it",
+    "claims": [
+     {
+      "id": "core",
+      "text": "an open door is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the main character stands before the door looking over its shoulder",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "beyond the door there is only empty pale light, nobody there",
+      "tier": "must"
+     }
+    ],
+    "subject": "an open door"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character stands alone in an empty room facing one open door; beyond the door only plain pale light, nobody there; an empty chair stands beside the door; the character looks over its shoulder, uncertain; the door in the right half, plain wall on the left",
+   "details": [
+    "the empty chair",
+    "the door handle"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   }
+  },
+  {
+   "index": 21,
+   "section": "BLOCK 2: ЧУЖОЙ ЧЕЛОВЕК",
+   "text": "Вот вопрос, который меня когда-то напугал: кто будет делать твоё «потом»?",
+   "key": "0b9e354a23ed08b8",
+   "spec": {
+    "focus": "who will do the postponed task",
+    "claims": [
+     {
+      "id": "core",
+      "text": "an empty chair is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the main character stands beside the empty chair",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "a sink full of dirty dishes is behind",
+      "tier": "should"
+     }
+    ],
+    "subject": "an empty chair"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character stands in a small kitchen holding one dirty plate, head turned toward the empty chair beside the sink, uneasy look, tail low; behind, a sink piled with dirty dishes; the empty chair sits in the right half of the frame, plain light wall around it",
+   "details": [
+    "the empty chair",
+    "the pile of dirty dishes in the sink"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   }
+  },
+  {
+   "index": 22,
+   "section": "BLOCK 2: ЧУЖОЙ ЧЕЛОВЕК",
+   "text": "Психолог Хэл Хершфилд со Стэнфорда укладывал студентов в томограф и просил оценить, какие они сейчас и какими будут через десять лет.",
+   "key": "bcebc68354c781b0",
+   "spec": {
+    "focus": "students judging their present and future selves in a scanner",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a person lies inside a brain scanner",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the scanner is a big white machine with a round opening",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the person's head rests inside the round opening",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "a researcher in a white coat sits at a desk in the background",
+      "tier": "should"
+     }
+    ],
+    "subject": "a brain scanner"
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "wide shot: a young student in a plain grey shirt lies on the bed of the brain scanner, head inside the round opening, face calm and eyes open; a researcher in a white coat sits on a chair beside a desk in the background, a monitor with a blank glowing shape on the desk; the brain scanner fills the right half of the frame, plain light background on the left",
+   "zoom": {
+    "object": "the brain scanner",
+    "word": "томограф"
+   },
+   "details": [
+    "the round opening of the brain scanner",
+    "the person's face inside the scanner"
+   ],
+   "fallback": false,
+   "accent": "десять лет",
+   "accent_by": "rule",
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     2
+    ],
+    "original": "wide shot: a young student in a plain grey shirt lies on the bed of the brain scanner, head inside the round opening, face calm and eyes open; a researcher in a white coat sits at a desk in the background beside a monitor with a blank glowing shape; the brain scanner fills the right half of the frame, plain light background on the left"
+   }
+  },
+  {
+   "index": 23,
+   "section": "BLOCK 2: ЧУЖОЙ ЧЕЛОВЕК",
+   "text": "Когда человек думал о себе сегодняшнем, одна область мозга работала ярко. Когда думал о себе через десять лет, заметно слабее, ближе к тому, как мозг думает о другом человеке.",
+   "key": "09d572b320fa8ba9",
+   "spec": {
+    "focus": "the future self reads like a stranger to the brain",
+    "claims": [
+     {
+      "id": "core",
+      "text": "three brain shapes glow with different brightness",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the first brain glows brightest",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the second brain glows dimmest",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "the third brain glows as dim as the second",
+      "tier": "should"
+     }
+    ],
+    "subject": "a brain"
+   },
+   "kind": "diagram",
+   "hero": false,
+   "labels": [
+    "СЕЙЧАС",
+    "ЧЕРЕЗ ДЕСЯТЬ ЛЕТ",
+    "ДРУГОЙ ЧЕЛОВЕК"
+   ],
+   "picture": "a hand-drawn diagram: three brain shapes in a row across the middle of the frame, the left one glowing bright with short rays, the middle one pale and dim, the right one pale and dim like the middle; under each brain a wide empty patch of plain background with a short hand-drawn arrow pointing up at it; plain light background",
+   "details": [
+    "the bright glow of the first brain",
+    "the faint glow of the third brain"
+   ],
+   "fallback": false,
+   "accent": "десять лет",
+   "accent_by": "rule",
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   }
+  },
+  {
+   "index": 24,
+   "section": "BLOCK 2: ЧУЖОЙ ЧЕЛОВЕК",
+   "text": "И у кого эта разница была больше, тот охотнее брал маленькие деньги сейчас вместо больших денег позже.",
+   "key": "39f778e65582fe80",
+   "spec": {
+    "focus": "a weak future self means small money now",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a paw takes a small coin",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "a tall stack of coins sits farther away untouched",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the main character leans over the table",
+      "tier": "should"
+     }
+    ],
+    "subject": "a coin"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "close-up: the main character's paw rests on one small coin on a wooden table, the paw in the left half of the frame; farther right on the same table a tall stack of big coins stands untouched at the far end; plain light background above the table",
+   "details": [
+    "the tall stack of coins",
+    "the small coin in the paw"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     1
+    ],
+    "original": "close-up: the main character's paw picks one small coin off a wooden table, the paw in the left half of the frame; farther right on the same table a tall stack of big coins stands untouched at the far end; plain light background above the table"
+   }
+  },
+  {
+   "index": 25,
+   "section": "BLOCK 2: ЧУЖОЙ ЧЕЛОВЕК",
+   "text": "Я оставляю в раковине посуду и думаю: утром помою. Будто утром придёт бодрый кот в фартуке и всё сделает за меня.",
+   "key": "a374c267e1ab0d71",
+   "spec": {
+    "focus": "imagining a cheerful cat in an apron will do it",
+    "claims": [
+     {
+      "id": "core",
+      "text": "an apron hangs on a hook by the sink",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the main character sets a dirty plate into the sink",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the apron is clean and empty",
+      "tier": "should"
+     }
+    ],
+    "subject": "an apron"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character stands at the sink, one paw on a dirty plate that rests on top of a stack of dirty plates, a small hopeful smile; on the wall beside the sink the apron hangs on a hook, clean and empty, a sponge tucked in its pocket; the apron is in the right third of the frame, plain light wall around it",
+   "details": [
+    "the apron on the hook",
+    "the stack of dirty plates in the sink"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     1
+    ],
+    "original": "medium shot: the main character sets a dirty plate onto a stack of dirty plates in the sink, a small hopeful smile, one paw still on the plate; on the wall beside the sink the apron hangs on a hook, clean and empty, a sponge tucked in its pocket; the apron is in the right third of the frame, plain light wall around it"
+   }
+  },
+  {
+   "index": 26,
+   "section": "BLOCK 2: ЧУЖОЙ ЧЕЛОВЕК",
+   "text": "Утром приходит тот же я. Сонный, с теми же лапами и с той же раковиной, только посуды в ней стало больше.",
+   "key": "0da652ecb505c010",
+   "spec": {
+    "focus": "the same sleepy self finds a bigger pile",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a sink overflows with a taller stack of dirty dishes",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the main character stands at the sink, sleepy and drooping",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the dishes are higher than the night before",
+      "tier": "should"
+     }
+    ],
+    "subject": "a sink"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character stands at the kitchen sink in the morning, shoulders slumped, face drooping, eyes half closed, fur flat and ruffled; the sink is packed with a tall leaning stack of dirty plates and cups; the character is in the left half of the frame, the sink in the right",
+   "accent": "тот же я",
+   "details": [
+    "the leaning stack of dirty plates",
+    "the main character's drooping face"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   }
+  },
+  {
+   "index": 27,
+   "section": "BLOCK 2: ЧУЖОЙ ЧЕЛОВЕК",
+   "text": "Получается, когда ты говоришь «сделаю потом», ты отдаёшь дело кому-то, кого мозг почти не считает тобой.",
+   "key": "a142d65320e67389",
+   "spec": {
+    "focus": "the task is handed to a stranger-self",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a faceless grey figure stands beside the main character",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the main character hands a stack of plates to the figure",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the figure has a smooth blank head with no face",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "the figure's arms hang loose and empty",
+      "tier": "should"
+     }
+    ],
+    "subject": "a faceless figure"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character stands holding the stack of dirty plates in front of it, a calm blank look; a tall pale grey person with a smooth blank head and no face stands on the floor facing it, arms hanging loose; the two stand apart with a clear gap of plain light background between them; calm empty wall above the figure",
+   "details": [
+    "the faceless figure's blank head",
+    "the stack of dirty plates in the paws"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     1
+    ],
+    "original": "medium shot: the main character holds out the stack of dirty plates toward the faceless figure, a tall pale grey person with a smooth blank head and no face, standing on the floor beside it; the figure's arms hang loose; the two stand apart with a clear gap of plain light background between them; calm empty wall above the figure"
+   }
+  },
+  {
+   "index": 28,
+   "section": "BLOCK 2: ЧУЖОЙ ЧЕЛОВЕК",
+   "text": "Другу такую гору дел обычно не оставляют, правда? А себе мы оставляем её каждый день.",
+   "key": "d1433bf29fe8508b",
+   "spec": {
+    "focus": "we spare a friend but not ourselves",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a towering pile of dirty dishes stands beside the main character",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "a small grey cat holds one clean cup in both paws",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the main character is buried under the pile",
+      "tier": "should"
+     }
+    ],
+    "subject": "a pile of dishes"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "wide shot: on the right the main character stands under a towering leaning stack of dirty plates and pots, only its head and paws showing; on the left a small grey cat stands upright on the floor holding one clean cup in both paws, calm; a clear gap of plain light background between them",
+   "details": [
+    "the towering stack of dirty dishes",
+    "the single cup in the friend's paws"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   }
+  },
+  {
+   "index": 29,
+   "section": "BLOCK 2: ЧУЖОЙ ЧЕЛОВЕК",
+   "text": "В другом опыте Хершфилд показывал людям их лица, состаренные на компьютере, и они откладывали на будущее больше.",
+   "key": "e05d96910706ffb4",
+   "spec": {
+    "focus": "aged photos of their own faces made people save",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a photograph of an aged face is held in two hands",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "a young person sits at a desk holding the photograph",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "a glass jar of coins stands on the desk",
+      "tier": "should"
+     }
+    ],
+    "subject": "a photograph"
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "close-up: the photograph of an old wrinkled face stands propped on a desk, large in the right half of the frame with plain light background around it; on the desk below stands a glass jar half full of coins; plain empty light background on the left",
+   "zoom": {
+    "object": "the photograph",
+    "word": "лица"
+   },
+   "details": [
+    "the wrinkled face in the photograph",
+    "the glass jar of coins"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     8
+    ],
+    "original": "close-up: two young hands hold the photograph of an old wrinkled face, the photograph large in the right half of the frame with plain light background around it; on the desk below stands a glass jar half full of coins; the person's shoulder at the left edge of the frame"
+   }
+  },
+  {
+   "index": 30,
+   "section": "BLOCK 2: ЧУЖОЙ ЧЕЛОВЕК",
+   "text": "Я попробовал по-своему. Перед сном представил себя утреннего, сонного и помятого, и мне стало его жалко.",
+   "key": "0caceb1afb1a986f",
+   "spec": {
+    "focus": "pitying the imagined sleepy morning self",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a ruffled sleepy double of the main character sits on the floor",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the main character sits on the bed at night looking at it",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the double is slumped with half-closed eyes",
+      "tier": "should"
+     }
+    ],
+    "subject": "a sleepy cat"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character sits on the edge of a bed at night, leaning forward with a worried soft look; on the floor beside the bed a second identical black cat sits slumped, fur ruffled and flat, eyes half closed, shoulders drooping; a dark window behind; the two sit apart with plain dim wall between them",
+   "details": [
+    "the ruffled fur of the sleepy double",
+    "the main character's worried face"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   }
+  },
+  {
+   "index": 31,
+   "section": "BLOCK 2: ЧУЖОЙ ЧЕЛОВЕК",
+   "text": "Я помыл три тарелки. Всего три, но утром тот кот был мне очень благодарен, и остальное он домыл сам.",
+   "key": "b34396bd6513cfac",
+   "spec": {
+    "focus": "three washed plates made the morning self grateful",
+    "claims": [
+     {
+      "id": "core",
+      "text": "three clean plates stand on a drying rack",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the morning cat washes the rest at the sink",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the plates are still wet and gleaming",
+      "tier": "should"
+     }
+    ],
+    "subject": "a plate"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "close-up: the three clean plates stand upright in a wooden drying rack, still wet and gleaming, in the left half of the frame with plain light background around them; behind on the right the sleepy black cat stands at the sink with a sponge in one paw, washing a pot, a small grateful smile",
+   "zoom": {
+    "object": "the three clean plates",
+    "word": "три"
+   },
+   "accent": "три тарелки",
+   "details": [
+    "the three clean plates on the rack",
+    "the sponge in the morning cat's paw"
+   ],
+   "hero_state": "golden",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "faults": [
+     1
+    ],
+    "rejected": "hero_lost"
+   }
+  },
+  {
+   "index": 32,
+   "section": "BLOCK 2: ЧУЖОЙ ЧЕЛОВЕК",
+   "text": "Но если «потом» не наступает, почему мы снова и снова в него верим?",
+   "key": "b890085876241c16",
+   "spec": {
+    "focus": "why we keep believing in a later that never comes",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the main character waits alone at a night bus stop",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "an empty road stretches away into the dark",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "a small bag stands at its feet",
+      "tier": "should"
+     }
+    ],
+    "subject": "a bus stop"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "wide shot: the main character stands alone at a small bus stop at night, looking down the empty road that stretches away into the dark, a small bag on the ground at its feet, a faint hopeful look; a lamp glows above; calm plain dark sky fills the upper third of the frame",
+   "key_thought": "снова и снова",
+   "key_near": "the empty road",
+   "details": [
+    "the empty road stretching away",
+    "the small bag at its feet"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   }
+  },
+  {
+   "index": 33,
+   "section": "BLOCK 3: ЧТО ПРЯЧЕТСЯ",
+   "text": "Почему ты откладываешь даже то, что любишь?",
+   "key": "c0dc4ece30c70e74",
+   "spec": {
+    "focus": "postponing even what you love",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a slumped person is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the person sits slumped with arms crossed",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "a guitar leans against a chair, untouched",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "the person looks away from the guitar",
+      "tier": "should"
+     }
+    ],
+    "subject": "a person"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character sits slumped on the floor beside a wooden chair, arms crossed, looking away to the right; a guitar leans against the chair, untouched, a thin layer of dust on its body; the character sits in the left half of the frame, plain light wall behind, bare floorboards",
+   "details": [
+    "the guitar leaning against the chair",
+    "the character's crossed arms"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   }
+  },
+  {
+   "index": 34,
+   "section": "BLOCK 3: ЧТО ПРЯЧЕТСЯ",
+   "text": "Помнишь закладки, которые мы посчитали в самом начале? Там ведь не только скучное. Там то, что тебе правда интересно.",
+   "key": "4f99da643a32bfda",
+   "spec": {
+    "focus": "the saved bookmarks hold what truly interests you",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a book with many bookmarks is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "paper bookmarks stick out of the pages",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the bookmarks carry tiny drawn pictures",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "one bookmark with a drawn film reel is pulled half out",
+      "tier": "should"
+     }
+    ],
+    "subject": "a book"
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "close shot: an open thick book lies on a wooden table, many paper bookmarks stick out of its pages; each bookmark carries a tiny drawn picture — a film reel, a mountain, a guitar, a slice of cake; one bookmark with a drawn film reel is pulled half out; plain light background, the book in the middle of the frame",
+   "details": [
+    "the bookmark with a drawn film reel",
+    "the bookmark with a drawn mountain"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   }
+  },
+  {
+   "index": 35,
+   "section": "BLOCK 3: ЧТО ПРЯЧЕТСЯ",
+   "text": "Канадский психолог Тим Пичил много лет изучает откладывание, и у него на этот вопрос странный ответ. Но сначала моя история с тем видео из закладок.",
+   "key": "44af4e4086837706",
+   "spec": {
+    "focus": "a researcher with a strange answer about postponing",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a researcher at a desk is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the man sits at a desk stacked with folders",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "he raises one index finger",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "he has a small amused smirk",
+      "tier": "should"
+     }
+    ],
+    "subject": "a researcher"
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "medium shot: a wooden desk stacked with closed folders and blank loose sheets, a small round clock without numerals standing at one side of the desk; a plain light wall behind, the desk in the right half of the frame, calm empty space above it",
+   "details": [
+    "the raised index finger",
+    "the stack of folders"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     8,
+     4
+    ],
+    "original": "medium shot: a middle-aged man with short grey hair and round glasses sits at a desk stacked with folders and loose papers, one index finger raised as if about to say something odd, a small amused smirk; he sits in the right half of the frame, a plain light wall behind him, a single small clock without numerals on the desk"
+   }
+  },
+  {
+   "index": 36,
+   "section": "BLOCK 3: ЧТО ПРЯЧЕТСЯ",
+   "text": "Я много раз собирался его открыть и каждый раз находил дело поважнее: полить цветок, проверить почту, полежать.",
+   "key": "6c39bd3fa6acd512",
+   "spec": {
+    "focus": "endless small excuses instead of opening the video",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a person lying on the floor is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the person holds a tipped watering can",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "a dry potted plant stands beside it",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "the person's eyes are half closed",
+      "tier": "should"
+     }
+    ],
+    "subject": "a person"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character lies on its back on the floor, eyes half closed, one paw holding a tipped watering can; beside it a dry potted plant with drooping leaves stands on the floor, unwatered; a phone lies face down further away; the character lies in the lower left of the frame, plain light background",
+   "details": [
+    "the tipped watering can",
+    "the dry potted plant"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   }
+  },
+  {
+   "index": 37,
+   "section": "BLOCK 3: ЧТО ПРЯЧЕТСЯ",
+   "text": "Однажды я поймал себя на мысли, что мне не лень смотреть видео. Мне было неприятно признать, что я снова откладываю.",
+   "key": "d63186fec33dfa95",
+   "spec": {
+    "focus": "it is not laziness but discomfort at admitting it",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a face lit by a phone screen is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the eyes are wide and caught",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "a paw is frozen above the phone",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "the phone screen is dark and blank",
+      "tier": "should"
+     }
+    ],
+    "subject": "a face"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "close-up: the face of the main character lit from below by a dark blank phone screen, eyes wide and caught, mouth slightly open; one paw frozen in mid-air above the phone; the phone is in the lower right, the face fills the left, plain dark background around them",
+   "details": [
+    "the dark phone screen",
+    "the frozen paw"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   }
+  },
+  {
+   "index": 38,
+   "section": "BLOCK 3: ЧТО ПРЯЧЕТСЯ",
+   "text": "И тогда я сделал смешную вещь. Сказал себе: посмотрю ровно две минуты и закрою, честно.",
+   "key": "562b47ebbf9c3766",
+   "spec": {
+    "focus": "a two-minute deal with oneself",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a kitchen timer is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the main character holds the timer in both paws",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the character turns the blank dial",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "the character smiles sheepishly",
+      "tier": "should"
+     }
+    ],
+    "subject": "a kitchen timer"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character sits on a sofa holding one small round kitchen timer in both paws, its blank dial turned partway, a small sheepish smile, eyes on the timer; the timer is held in front of its chest; plain light wall behind, the character in the left half of the frame",
+   "details": [
+    "the blank dial of the kitchen timer"
+   ],
+   "hero_state": "bright",
+   "fallback": false,
+   "accent": "две минуты",
+   "accent_by": "rule",
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     1
+    ],
+    "original": "medium shot: the main character sits on a sofa holding one small round kitchen timer in both paws, turning its blank dial, a small sheepish smile, eyes on the timer; the timer is held in front of its chest; plain light wall behind, the character in the left half of the frame"
+   }
+  },
+  {
+   "index": 39,
+   "section": "BLOCK 3: ЧТО ПРЯЧЕТСЯ",
+   "text": "Через две минуты неприятное чувство почти пропало, и я досмотрел то видео до конца.",
+   "key": "63719f4f4af765f2",
+   "spec": {
+    "focus": "the discomfort fades and the video gets finished",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a relaxed person on a sofa is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the person holds a phone with a blank glowing screen",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "a run-down kitchen timer lies on the cushion",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "the person smiles contentedly",
+      "tier": "should"
+     }
+    ],
+    "subject": "a person"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character leans back on a sofa, relaxed, holding a phone with a blank glowing screen in one paw, a small content smile; a small round kitchen timer with a blank face lies on the cushion beside it, its dial run down; the character sits in the right half of the frame, plain light wall behind",
+   "details": [
+    "the kitchen timer on the cushion",
+    "the phone with a blank glowing screen"
+   ],
+   "hero_state": "golden",
+   "fallback": false,
+   "accent": "две минуты",
+   "accent_by": "rule",
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   }
+  },
+  {
+   "index": 40,
+   "section": "BLOCK 3: ЧТО ПРЯЧЕТСЯ",
+   "text": "Вот и ответ Пичила: откладывание не про время и не про лень. Откладывают обычно не дело, а неприятное чувство, которое приходит в первые минуты: неловкость, страх сделать плохо, скуку.",
+   "key": "0f9f2c65327b3f26",
+   "spec": {
+    "focus": "we postpone a bad feeling, not the task",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a person recoiling from a closed notebook is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "one paw hovers above the closed notebook",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the face is screwed up in discomfort",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "the body leans away from the desk",
+      "tier": "should"
+     }
+    ],
+    "subject": "a person"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character sits on a chair beside a wooden desk, body leaning away, one paw hovering above a closed notebook, face screwed up in discomfort, eyes narrowed; the closed notebook lies on the desk in the right half of the frame; a wide calm empty patch of plain light wall above the notebook",
+   "key_thought": "неприятное чувство",
+   "key_near": "the closed notebook",
+   "details": [
+    "the hovering paw",
+    "the closed notebook"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     2
+    ],
+    "original": "medium shot: the main character sits at a wooden desk, body leaning away, one paw hovering above a closed notebook, face screwed up in discomfort, eyes narrowed; the closed notebook lies on the desk in the right half of the frame; a wide calm empty patch of plain light wall above the notebook"
+   }
+  },
+  {
+   "index": 41,
+   "section": "BLOCK 3: ЧТО ПРЯЧЕТСЯ",
+   "text": "Сказать «потом» значит сразу стать спокойнее. Облегчение настоящее, только длится оно минут пять, а дело остаётся и тяжелеет.",
+   "key": "402987e518150b27",
+   "spec": {
+    "focus": "relief is real but short, the task grows heavier",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a dusty stack of papers is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "a cobweb hangs between the stack and the wall",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "a cup of tea beside it still steams",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "dust lies on the top sheet",
+      "tier": "should"
+     }
+    ],
+    "subject": "a stack of papers"
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "medium shot: a tall stack of dusty blank sheets stands on a wooden desk, a cobweb strung between the stack and the wall behind; beside the stack a cup of tea still steams, a thin curl of steam rising; the stack sits in the right half of the frame, plain light background",
+   "accent": "минут пять",
+   "details": [
+    "the steaming cup of tea",
+    "the cobweb on the paper stack"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     4
+    ],
+    "original": "medium shot: a tall stack of dusty papers stands on a wooden desk, a cobweb strung between the stack and the wall behind; beside the stack a cup of tea still steams, a thin curl of steam rising; the stack sits in the right half of the frame, plain light background, no people"
+   }
+  },
+  {
+   "index": 42,
+   "section": "BLOCK 3: ЧТО ПРЯЧЕТСЯ",
+   "text": "Поэтому «потом» и не наступает. Оно не про будущее, оно нужно, чтобы прямо сейчас не чувствовать неприятное.",
+   "key": "023fd9d57df19484",
+   "spec": {
+    "focus": "later» is a tool for now, not the future",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a person holding a cupboard door shut is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "both paws are pressed flat on the cupboard door",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the face is strained",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "a thin dark gap shows under the door",
+      "tier": "should"
+     }
+    ],
+    "subject": "a person"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character leans with its whole body against a tall cupboard door, both paws pressed flat on it, holding it shut, face strained, one paw slipping down; a thin dark gap shows under the cupboard door; the character is in the left half of the frame, plain light wall around",
+   "details": [
+    "the paw pressed on the cupboard door",
+    "the dark gap under the door"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   }
+  },
+  {
+   "index": 43,
+   "section": "BLOCK 3: ЧТО ПРЯЧЕТСЯ",
+   "text": "А раз дело в чувстве, то и справляться с ним можно без силы воли. Пичил любит повторять, что мотивация приходит после действия, а не до него. Мы ждём настроения, чтобы начать, а оно появляется, когда мы уже начали.",
+   "key": "e1593dd657de2013",
+   "spec": {
+    "focus": "motivation comes after action, not before",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a row of stepping stones ending at a lit candle is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the stones cross the frame from left to right",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "a small lit candle stands at the end of the row",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "two empty patches with short arrows point at the stones and the candle",
+      "tier": "must"
+     }
+    ],
+    "subject": "stepping stones"
+   },
+   "kind": "diagram",
+   "hero": false,
+   "labels": [
+    "ДЕЙСТВИЕ",
+    "МОТИВАЦИЯ"
+   ],
+   "picture": "a simple hand-drawn diagram across the middle of the frame: a row of small stepping stones crosses from the left edge to the right, and at the end of the row a small lit candle stands; a short arrow points from an empty patch above the stones to the stones, another from an empty patch above the candle to the candle; plain light background",
+   "details": [
+    "the lit candle",
+    "the empty patch above the stones"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   }
+  },
+  {
+   "index": 44,
+   "section": "BLOCK 3: ЧТО ПРЯЧЕТСЯ",
+   "text": "Вот что работает у меня. Первое: начинать с двух минут вместо целого дела. Не «напишу отчёт», а «открою файл и напишу одно предложение».",
+   "key": "6c5d929bc169f422",
+   "spec": {
+    "focus": "shrink the task to one tiny first step",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a person choosing one sheet over a tall stack is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "one paw pulls a single blank sheet",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the other paw pushes away a towering stack of papers",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "the person leans forward, focused",
+      "tier": "should"
+     }
+    ],
+    "subject": "a person"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character sits on a chair beside a desk, leaning forward, focused, one paw flat against a towering stack of blank sheets pushed to the right, the other paw resting on a single blank sheet in front of it; the single sheet is in the left half of the frame, the tall stack on the right, plain light wall behind",
+   "details": [
+    "the single blank sheet",
+    "the towering stack of papers"
+   ],
+   "hero_state": "bright",
+   "fallback": false,
+   "accent": "двух минут",
+   "accent_by": "rule",
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     1,
+     2,
+     4
+    ],
+    "original": "medium shot: the main character sits at a desk, one paw pushing away a towering stack of papers, the other paw pulling a single blank sheet toward itself; the character leans forward, focused; the single sheet is in the left half of the frame, the tall stack on the right, plain light wall behind"
+   }
+  },
+  {
+   "index": 45,
+   "section": "BLOCK 3: ЧТО ПРЯЧЕТСЯ",
+   "text": "Через две минуты можно честно бросить, и это важно: если бросить нельзя, мозг снова пугается и снова говорит «потом».",
+   "key": "9f7babea0c11ff1e",
+   "spec": {
+    "focus": "the honest right to stop keeps the fear away",
+    "claims": [
+     {
+      "id": "core",
+      "text": "an open door behind a desk is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the door stands wide open onto a bright corridor",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "a blank sheet and a pencil lie on the desk",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "light spills across the floor",
+      "tier": "should"
+     }
+    ],
+    "subject": "a door"
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "medium shot: a wooden desk with one blank sheet and a pencil lying on it stands in the left half of the frame; behind the desk a door stands wide open onto a bright empty corridor, light spilling across the floor; no people, plain light walls, calm empty space above the desk",
+   "details": [
+    "the open door",
+    "the pencil on the desk"
+   ],
+   "fallback": false,
+   "accent": "две минуты",
+   "accent_by": "rule",
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   }
+  },
+  {
+   "index": 46,
+   "section": "BLOCK 3: ЧТО ПРЯЧЕТСЯ",
+   "text": "Звучит слишком просто, и я сам сначала не верил, что две минуты что-то решают. Но мне и не нужно, чтобы они что-то решили, мне нужно, чтобы они прошли.",
+   "key": "bac554d45cdc6b45",
+   "spec": {
+    "focus": "two minutes only need to pass, not solve",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a doubtful face beside a kitchen timer is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the chin rests on one paw",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the eyes squint with doubt",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "a small kitchen timer stands on the table in front",
+      "tier": "must"
+     }
+    ],
+    "subject": "a face"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "close-up: the face of the main character, chin propped on one paw, eyes squinting with doubt, one brow lowered; in front of it on the table a small round kitchen timer with a blank face stands, its dial half turned; the face fills the left, the timer sits in the lower right, plain light background",
+   "details": [
+    "the kitchen timer on the table",
+    "the squinting eyes"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "accent": "две минуты",
+   "accent_by": "rule",
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   }
+  },
+  {
+   "index": 47,
+   "section": "BLOCK 3: ЧТО ПРЯЧЕТСЯ",
+   "text": "Пичил советует спрашивать себя не «как мне всё это сделать», а «какой следующий шаг». Следующий шаг почти всегда маленький и почти всегда не страшный.",
+   "key": "232eab65f5ad9eeb",
+   "spec": {
+    "focus": "ask for the next small step",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a person steps onto the first small step",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "a long staircase rises ahead",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the head is tilted down toward the step",
+      "tier": "must"
+     }
+    ],
+    "subject": "a person"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "wide shot: the main character stands at the foot of a long wooden staircase, one foot placed on the first low step, head tilted down toward that step; the stairs rise into plain light background; the character in the left third of the frame",
+   "details": [
+    "the first low step",
+    "the long staircase"
+   ],
+   "hero_state": "bright",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   }
+  },
+  {
+   "index": 48,
+   "section": "BLOCK 3: ЧТО ПРЯЧЕТСЯ",
+   "text": "Второе: начинать не в одиночку. Одному не начинается, а когда рядом кто-то сидит, даже молча, получается.",
+   "key": "a4a1bb8d97afbe8e",
+   "spec": {
+    "focus": "starting works better with someone nearby",
+    "claims": [
+     {
+      "id": "core",
+      "text": "two people sit side by side at a table",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "each bends over a blank sheet with a pen",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "no one speaks, faces calm",
+      "tier": "should"
+     }
+    ],
+    "subject": "two people"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character and a second person sit side by side on chairs at a long table, each bent over a blank sheet with a pen, faces calm and silent; plain light background",
+   "details": [
+    "the two blank sheets",
+    "the second person's hand"
+   ],
+   "hero_state": "bright",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   }
+  },
+  {
+   "index": 49,
+   "section": "BLOCK 3: ЧТО ПРЯЧЕТСЯ",
+   "text": "Поэтому я и сижу рядом. Если одному не начинается, ссылка в описании: там я просто посижу с тобой эти две минуты, бесплатно.",
+   "key": "7285afd3bca18a9f",
+   "spec": {
+    "focus": "the narrator offers to sit with you",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a person sits beside an empty chair",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "one paw pats the empty seat",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "a small kitchen timer stands on the floor between the chairs",
+      "tier": "should"
+     }
+    ],
+    "subject": "a person"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character sits on a wooden chair facing the viewer, one paw resting flat on the seat of an empty chair pulled up right beside it; a small round kitchen timer with a blank face stands on the floor between the chairs; plain light background",
+   "details": [
+    "the empty chair",
+    "the small kitchen timer on the floor"
+   ],
+   "hero_state": "golden",
+   "fallback": false,
+   "accent": "две минуты",
+   "accent_by": "rule",
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     1
+    ],
+    "original": "medium shot: the main character sits on a wooden chair facing the viewer, one paw patting the seat of an empty chair pulled up right beside it; a small round kitchen timer with a blank face stands on the floor between the chairs; plain light background"
+   }
+  },
+  {
+   "index": 50,
+   "section": "BLOCK 3: ЧТО ПРЯЧЕТСЯ",
+   "text": "А теперь давай прямо сейчас. Выбери одно дело, которое лежит в «потом» дольше всего. Возьми самое старое, даже если оно не самое важное.",
+   "key": "2efd5e428d30ecaf",
+   "spec": {
+    "focus": "choose the oldest postponed task",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a person pulls a dusty folder from a drawer",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the drawer is packed with other folders",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "a small dust puff rises",
+      "tier": "should"
+     }
+    ],
+    "subject": "a person"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "close-up: the main character's paws hold one thick dusty folder half out of an open wooden drawer packed with other folders, a small dust puff in the air; the drawer sits on the floor; plain light background",
+   "details": [
+    "the dusty folder",
+    "the dust puff"
+   ],
+   "hero_state": "bright",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     1
+    ],
+    "original": "close-up: the main character's paws lift one thick dusty folder out of an open wooden drawer packed with other folders, a small dust puff rising; the drawer sits on the floor; plain light background"
+   }
+  },
+  {
+   "index": 51,
+   "section": "BLOCK 3: ЧТО ПРЯЧЕТСЯ",
+   "text": "Две минуты, а я подожду рядом.",
+   "key": "b71b30d34ce4fa60",
+   "spec": {
+    "focus": "two minutes of waiting together",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a kitchen timer is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the main character sits beside it on the floor",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "a clear gap of plain background separates them",
+      "tier": "should"
+     }
+    ],
+    "subject": "a kitchen timer"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "close-up: one big round kitchen timer with a blank face stands on the floor, the main character sitting beside it with a calm patient face, a clear gap of plain background between them; plain light background",
+   "zoom": {
+    "object": "the kitchen timer",
+    "word": "Две"
+   },
+   "accent": "две минуты",
+   "details": [
+    "the dial of the kitchen timer"
+   ],
+   "hero_state": "golden",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   }
+  },
+  {
+   "index": 52,
+   "section": "BLOCK 3: ЧТО ПРЯЧЕТСЯ",
+   "text": "Если не получилось с первого раза, это нормально. Я до сих пор иногда говорю раковине «потом». Разница только в том, что теперь я знаю, что за этим словом прячется, и могу ответить ему двумя минутами.",
+   "key": "935b4cd23c67ec38",
+   "spec": {
+    "focus": "still slips, but now answers «later",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a person at a sink full of dishes holds a timer",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the sink is piled with dirty plates and cups",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "a small kitchen timer is held in one paw",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "a small wry smile on the face",
+      "tier": "should"
+     }
+    ],
+    "subject": "a person"
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "medium shot: a kitchen sink piled with dirty plates and cups, a small round kitchen timer with a blank face standing on the counter beside the sink; plain kitchen wall behind, the sink in the right half of the frame, calm empty space on the left",
+   "details": [
+    "the pile of dirty plates",
+    "the kitchen timer in the paw"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     8
+    ],
+    "original": "medium shot: a black cartoon cat stands at a kitchen sink piled with dirty plates and cups, holding a small round kitchen timer with a blank face in one paw, a small wry smile; plain kitchen wall behind, light background"
+   }
+  },
+  {
+   "index": 53,
+   "section": "FINAL",
+   "text": "Если две минуты прошли, а ты всё ещё в деле, это и есть начало той жизни, которую ты так долго ждёшь.",
+   "key": "edafdfa201c36375",
+   "spec": {
+    "focus": "two minutes done is already the start",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a person still working after two minutes is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the person keeps working on the task",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "a small round timer beside them has run out",
+      "tier": "should"
+     }
+    ],
+    "subject": "a person"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character sits on a chair beside a small table, leaning forward, both paws flat on a blank sheet of paper; a small round kitchen timer with a blank face stands on the table a hand's width away, its dial turned all the way; the character's face is calm and focused, tail curled; plain light room behind, a calm empty patch of plain background above the timer",
+   "accent": "две минуты",
+   "details": [
+    "the small round timer",
+    "the hands on the paper"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     1,
+     2
+    ],
+    "original": "medium shot: the main character sits at a table, leaning forward, both paws busy on a sheet of paper, a small round kitchen timer with a blank face beside them on the table, its dial turned all the way; the character's face is calm and focused, tail curled; the timer sits in the right third with a calm empty patch of plain light background above it; plain light room behind"
+   }
+  },
+  {
+   "index": 54,
+   "section": "FINAL",
+   "text": "Но есть одна ловушка, из-за которой даже две минуты срываются: «раз уж не с утра, начну завтра». Про неё следующий ролик, он уже здесь.",
+   "key": "20a7e403d05a5304",
+   "spec": {
+    "focus": "the trap of putting the start off until tomorrow",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a person turning away from an abandoned task is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "one paw pushes the sheet of paper to the far edge of the table",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the person's body is turned to leave, eyes glancing back over the shoulder",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "the kitchen timer stands forgotten on the table",
+      "tier": "should"
+     }
+    ],
+    "subject": "a person"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character stands on the floor beside a small table, body turned away, one paw flat on a blank sheet of paper at the table's far edge, face turned back over the shoulder with a small guilty look, shoulders slumped; the round kitchen timer stands untouched at the table's edge, a clear gap of plain background between it and the character; plain light background, the character in the left half of the frame",
+   "accent": "начну завтра",
+   "details": [
+    "the abandoned sheet of paper",
+    "the paw flat on the paper"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     1,
+     4
+    ],
+    "original": "medium shot: the main character stands on the floor beside a small table, body already turned away, one paw flat on a sheet of paper pushing it to the far edge, eyes glancing back over the shoulder with a small guilty look, shoulders slumped; the round kitchen timer stands untouched at the table's edge; plain light background, the character in the left half of the frame"
+   }
+  }
+ ],
+ "stats": {
+  "planned": 55,
+  "fallback": 0,
+  "cached_chapters": 5,
+  "hero_trimmed": 1,
+  "accent_by_rule": 8
+ },
+ "errors": {
+  "BLOCK 2: ЧУЖОЙ ЧЕЛОВЕК": [
+   "7:key_dropped"
+  ],
+  "FINAL": [
+   "1:writing_in_picture:words"
+  ]
+ },
+ "preflight": {
+  "checked": 55,
+  "rewritten": 22,
+  "rejected": 1,
+  "cached_chapters": 0,
+  "errors": {}
+ }
+}

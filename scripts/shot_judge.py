@@ -563,7 +563,10 @@ def defect_verdict(answers, expect_hero=False):
     однозначно и что модель называла верно: другой персонаж вместо героя."""
     if answers is None:
         return None
-    if answers["wrong_character"]:
+    # В кадре без героя «персонажа нет» — не брак: судья ставит wrong_character и за то, что кота просто нет
+    # (L01, 27.10: схема со студентами забракована «героя нет»). Брак там — только похожее на героя существо
+    # (эп.01: существо с огненным хвостом за конвертом), его судья отмечает hero_present.
+    if answers["wrong_character"] and (expect_hero or answers.get("hero_present")):
         return "reject"
     if answers["severe"] or answers["defects"] or (expect_hero and answers["off_model"]):
         return "minor"

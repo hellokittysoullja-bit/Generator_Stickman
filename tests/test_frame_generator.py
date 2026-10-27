@@ -407,6 +407,11 @@ def test_defect_verdict_policy():
     assert sj.defect_verdict(dict(clean, defects=["stray stick under the arm"])) == "minor"
     assert sj.defect_verdict(dict(clean, defects=["three front paws"], severe=True)) == "minor"   # severe — не отказ
     assert sj.defect_verdict(dict(clean, wrong_character=True)) == "reject"
+    # кадр без героя: «кота нет» — не брак (L01, схема со студентами), похожее на героя существо — брак
+    nobody = dict(clean, hero_present=False, wrong_character=True)
+    assert sj.defect_verdict(nobody, expect_hero=False) == "clean"
+    assert sj.defect_verdict(nobody, expect_hero=True) == "reject"
+    assert sj.defect_verdict(dict(clean, wrong_character=True), expect_hero=False) == "reject"
     # герой чуть не на модели — замечание только на кадре, где герой по плану есть
     assert sj.defect_verdict(dict(clean, off_model=["both ears up"]), expect_hero=True) == "minor"
     assert sj.defect_verdict(dict(clean, off_model=["both ears up"]), expect_hero=False) == "clean"
