@@ -67,6 +67,10 @@ def place():
     for f in plan["frames"]:
         if f["index"] in by and by[f["index"]].get("status") not in ("rejected", "failed"):
             by[f["index"]]["plan_sig"] = probe.plan_sig(f)
+    for f in plan["frames"]:                          # рамки предметов, заданные руками (модель зрения ошиблась)
+        d = sb[str(f["index"] + 1)]
+        if d.get("objects") and f["index"] in by:
+            by[f["index"]]["objects"] = d["objects"]
     rep["frames"] = [by[k] for k in sorted(by)]
     json.dump(rep, open(rp + ".tmp", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     os.replace(rp + ".tmp", rp)

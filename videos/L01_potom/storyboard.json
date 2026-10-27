@@ -110,7 +110,40 @@
    "details": [
     "the first gym panel",
     "the last gym panel"
-   ]
+   ],
+   "objects": [
+    {
+     "name": "the whole strip",
+     "role": "subject",
+     "box": [
+      100,
+      170,
+      1975,
+      575
+     ]
+    },
+    {
+     "name": "monday and tuesday panels",
+     "role": "detail",
+     "box": [
+      100,
+      170,
+      800,
+      575
+     ]
+    },
+    {
+     "name": "thursday and friday panels",
+     "role": "detail",
+     "box": [
+      1290,
+      170,
+      1975,
+      575
+     ]
+    }
+   ],
+   "objects_note": "рамки по сетке 27.10: одна панель в 16:9 не влезает без разреза соседей, поэтому крупный план — две панели"
   },
   "14": {
    "lib": "2026-10-20_videos_02_sdvg_vremya_frames_005_c430181c.png",
@@ -221,7 +254,57 @@
    "details": [
     "the small coin under the paw",
     "the tall stack of coins in the haze"
-   ]
+   ],
+   "objects": [
+    {
+     "name": "the small coin under the paw",
+     "role": "subject",
+     "word": null,
+     "box": [
+      597.1,
+      729.2,
+      701.2,
+      775.4
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      367.4,
+      164.3,
+      918.6,
+      677.8
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      61.2,
+      164.3,
+      918.6,
+      718.9
+     ],
+     "why": null
+    },
+    {
+     "name": "the far end of the table with the tall stack of coins",
+     "role": "detail",
+     "box": [
+      1120,
+      350,
+      1460,
+      700
+     ],
+     "sparse_ok": true
+    }
+   ],
+   "objects_note": "рамки крупных планов заданы оркестратором 27.10: модель зрения дала слишком мелкие детали, кадр стоял одним планом"
   },
   "26": {
    "done": true,
@@ -341,7 +424,56 @@
    "details": [
     "the forgotten timer",
     "the content smile"
-   ]
+   ],
+   "objects": [
+    {
+     "name": "the forgotten timer",
+     "role": "subject",
+     "word": null,
+     "box": [
+      335.3,
+      650.1,
+      474.6,
+      775.4
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      413.4,
+      143.8,
+      979.8,
+      616.2
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      413.4,
+      143.8,
+      1332.0,
+      770.2
+     ],
+     "why": null
+    },
+    {
+     "name": "the forgotten timer on the cushion",
+     "role": "detail",
+     "box": [
+      230,
+      680,
+      600,
+      840
+     ]
+    }
+   ],
+   "objects_note": "рамки крупных планов заданы оркестратором 27.10: модель зрения дала слишком мелкие детали, кадр стоял одним планом"
   },
   "41": {
    "lib": "2026-10-20_videos_01_sdvg_pismo_frames_003_274b368a.png",
@@ -378,7 +510,40 @@
     "the waiting character with the ember",
     "the walking character with the bright flame"
    ],
-   "key": "после действия"
+   "key": "после действия",
+   "objects": [
+    {
+     "name": "the waiting character with the ember",
+     "role": "detail",
+     "box": [
+      90,
+      245,
+      560,
+      670
+     ]
+    },
+    {
+     "name": "the character taking the first step",
+     "role": "subject",
+     "box": [
+      740,
+      220,
+      1215,
+      695
+     ]
+    },
+    {
+     "name": "the walking character with the bright flame",
+     "role": "detail",
+     "box": [
+      1350,
+      165,
+      1925,
+      710
+     ]
+    }
+   ],
+   "objects_note": "рамки заданы оркестратором по сетке 27.10: модель зрения спутала трёх котов в одного героя, и камера стояла одним планом 17,7 с"
   },
   "45": {
    "new": "medium shot: the main character sits at a desk writing with a pencil on one small blank sheet, a focused calm face; a towering stack of papers is pushed far to the back corner of the desk, out of its sight",

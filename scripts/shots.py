@@ -34,8 +34,11 @@ HEAD_SLIVER = 0.05      # крупный план детали может зах
                         # (0.15 захватил полглаза, живой прогон 05.10)
 HEAD_MAX_BOTTOM = 0.82  # голова героя в плане — целиком выше зоны плеера телефона (нижние 18% кадра): сравнение с эп.01 08.10 —
                         # подбородок на 0.98 и 1.03 высоты окна в среднем плане, лицо под плеером
-BODY_CROSS_MAX = 0.05   # окно захватывает больше этой доли ЧЕРНИЛ героя без головы в кадре — «обрубок» (эп.01: туловище без
-                        # головы в правом верхнем углу плана конверта, 2.5 с)
+BODY_CROSS_MAX = 0.25   # окно захватывает больше этой доли ЧЕРНИЛ героя без головы в кадре — «обрубок» (эп.01: туловище без
+                        # головы в правом верхнем углу плана конверта, 2.5 с; замер обрубков — 35 % и 80 % чернил героя).
+                        # 0.05 (до 27.10) отбрасывал и лапу у края: на L01 восемь кадров с крупным котом стояли одним
+                        # планом 7–18 с — других планов «без разреза» не находилось.
+BODY_CROSS_SLIVER = 0.05  # тот же порог, когда в кадр попал краешек головы героя (ухо): тело тогда не режется вовсе
 DETAIL_TIGHT_FILL = 0.5   # деталь внутри головы режет голову вокруг себя, только если сама занимает не меньше половины кадра —
                           # осознанный макро-план (глаза), а не лицо со срезанным подбородком
 WRITE_LEAD_SEC = 0.3      # склейка перед письмом — не позже чем за столько до первого штриха
@@ -139,10 +142,14 @@ def make_view_ok(busy, objects, wide, text_boxes=()):
                     return False
             elif camera.overlap_share(win, kb) > HEAD_SLIVER:
                 return False
+        # краешек головы в кадре (законный по HEAD_SLIVER) вместе с частью тела читается как разрезанный герой:
+        # тогда тело — по прежнему строгому порогу, лапа у края без головы — по BODY_CROSS_MAX
+        sliver = any(0 < camera.overlap_share(win, kb) and not camera.inside(kb, win) for kb in head_boxes)
+        cross_max = BODY_CROSS_SLIVER if sliver else BODY_CROSS_MAX
         for hb in hero_boxes:
             if db is not None and camera.inside(db, hb):
                 continue
-            if camera.inside(hb, win) or hero_ink_share(win, hb) <= BODY_CROSS_MAX:
+            if camera.inside(hb, win) or hero_ink_share(win, hb) <= cross_max:
                 continue
             if not any(camera.inside(kb, win) for kb in head_boxes if camera.inside(kb, hb) or camera.overlap_share(hb, kb) > 0.5):
                 return False
@@ -407,6 +414,10 @@ def detail_views(busy, objects, wide, wz, medium, view_ok):
     SH, SW = busy.shape
     details, notes = [], []
     det_objs = [o for o in objects or [] if o.get("role") == "detail" and o.get("box")]
+    # предмет фразы — тоже крупный план, если среди деталей его нет (L01 27.10: у кадров с крупным котом средний
+    # план «предмет + герой» совпадал с общим, и предмет фразы — телефон, таймер — так и не показывался крупно)
+    det_objs += [dict(o, role="detail") for o in objects or [] if o.get("role") == "subject" and o.get("box")
+                 and not any(camera.overlap_share(tuple(o["box"]), tuple(d["box"])) > 0.6 for d in det_objs)]
     det_objs += [dict(o, role="detail", name=o.get("name") or "the head of the hero")
                  for o in objects or [] if o.get("role") == "hero_head" and o.get("box")]
 
@@ -419,8 +430,11 @@ def detail_views(busy, objects, wide, wz, medium, view_ok):
         kw = dict(margin=MEDIUM_MARGIN, spread=0.25, grid=13)
         dz = (wz*camera.CUT_MIN_RATIO*1.02, camera.PUNCH_MAX_ZOOM)
         dz_lo = (wz*1.15, wz*camera.CUT_MIN_RATIO*1.02)
-        dw = camera.frame_for(busy, db, dz, accept=lambda w, db=db: view_ok(w, db), **kw) or \
-            camera.frame_for(busy, db, dz_lo, accept=lambda w, db=db: view_ok(w, db) and no_jump(w), **kw)
+        # sparse_ok — деталь, где пустота вокруг и есть смысл (L01: далёкая стопка монет «потом»), отмечена в
+        # раскадровке руками: правило «крупный план на пустой бумаге» к ней не применяется, голова героя — да
+        ink = not o.get("sparse_ok")
+        dw = camera.frame_for(busy, db, dz, accept=lambda w, db=db, ink=ink: view_ok(w, db, ink=ink), **kw) or \
+            camera.frame_for(busy, db, dz_lo, accept=lambda w, db=db, ink=ink: view_ok(w, db, ink=ink) and no_jump(w), **kw)
         if dw is None:
             any_ = camera.frame_for(busy, db, dz, **kw) or camera.frame_for(busy, db, dz_lo, accept=no_jump, **kw)
             if any_ is None:

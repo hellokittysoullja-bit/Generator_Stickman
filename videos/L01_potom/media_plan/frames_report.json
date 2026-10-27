@@ -1017,76 +1017,34 @@
    "path": "frames/013.png",
    "objects": [
     {
-     "name": "the drawn part that the label «ПОНЕДЕЛЬНИК» would describe (what its little arrow points to)",
-     "role": "label:0",
-     "word": "ПОНЕДЕЛЬНИК",
-     "box": [
-      41.5,
-      227.4,
-      414.6,
-      379.0
-     ],
-     "why": null
-    },
-    {
-     "name": "the drawn part that the label «СРЕДА» would describe (what its little arrow points to)",
-     "role": "label:1",
-     "word": "СРЕДА",
-     "box": [
-      870.7,
-      227.4,
-      1243.8,
-      379.0
-     ],
-     "why": null
-    },
-    {
-     "name": "the drawn part that the label «ВОСКРЕСЕНЬЕ» would describe (what its little arrow points to)",
-     "role": "label:2",
-     "word": "ВОСКРЕСЕНЬЕ",
-     "box": [
-      1699.9,
-      227.4,
-      2073.0,
-      379.0
-     ],
-     "why": null
-    },
-    {
-     "name": "a crowd of students",
+     "name": "the whole strip",
      "role": "subject",
-     "word": null,
      "box": [
-      41.5,
-      227.4,
-      414.6,
-      379.0
-     ],
-     "why": null
+      100,
+      170,
+      1975,
+      575
+     ]
     },
     {
-     "name": "the first gym panel",
+     "name": "monday and tuesday panels",
      "role": "detail",
-     "word": null,
      "box": [
-      41.5,
-      151.6,
-      414.6,
-      530.6
-     ],
-     "why": null
+      100,
+      170,
+      800,
+      575
+     ]
     },
     {
-     "name": "the last gym panel",
+     "name": "thursday and friday panels",
      "role": "detail",
-     "word": null,
      "box": [
-      1699.9,
-      151.6,
-      2073.0,
-      530.6
-     ],
-     "why": null
+      1290,
+      170,
+      1975,
+      575
+     ]
     }
    ],
    "plan_sig": "c20849f422e75bce1cb7"
@@ -2100,25 +2058,6 @@
      "why": null
     },
     {
-     "name": "the tall stack of coins in the haze",
-     "role": "detail",
-     "word": null,
-     "box": [
-      1258.5,
-      400.5,
-      1353.4,
-      605.9
-     ],
-     "why": null
-    },
-    {
-     "name": "the flame on the tip of the tail of a black cartoon cat",
-     "role": "detail",
-     "word": null,
-     "box": null,
-     "why": "точка, а не предмет"
-    },
-    {
      "name": "the head of a black cartoon cat",
      "role": "hero_head",
      "word": null,
@@ -2141,6 +2080,17 @@
       718.9
      ],
      "why": null
+    },
+    {
+     "name": "the far end of the table with the tall stack of coins",
+     "role": "detail",
+     "box": [
+      1120,
+      350,
+      1460,
+      700
+     ],
+     "sparse_ok": true
     }
    ]
   },
@@ -3267,30 +3217,6 @@
      "why": null
     },
     {
-     "name": "the content smile",
-     "role": "detail",
-     "word": null,
-     "box": [
-      643.0,
-      451.9,
-      750.2,
-      513.5
-     ],
-     "why": null
-    },
-    {
-     "name": "the flame on the tip of the tail of a black cartoon cat",
-     "role": "detail",
-     "word": null,
-     "box": [
-      1041.1,
-      123.2,
-      1209.5,
-      308.1
-     ],
-     "why": null
-    },
-    {
      "name": "the head of a black cartoon cat",
      "role": "hero_head",
      "word": null,
@@ -3313,6 +3239,16 @@
       770.2
      ],
      "why": null
+    },
+    {
+     "name": "the forgotten timer on the cushion",
+     "role": "detail",
+     "box": [
+      230,
+      680,
+      600,
+      840
+     ]
     }
    ]
   },
@@ -3605,51 +3541,33 @@
    "objects": [
     {
      "name": "the waiting character with the ember",
-     "role": "subject",
-     "word": null,
+     "role": "detail",
      "box": [
-      116.5,
-      105.2,
-      582.6,
-      307.4
-     ],
-     "why": null
+      90,
+      245,
+      560,
+      670
+     ]
+    },
+    {
+     "name": "the character taking the first step",
+     "role": "subject",
+     "box": [
+      740,
+      220,
+      1215,
+      695
+     ]
     },
     {
      "name": "the walking character with the bright flame",
      "role": "detail",
-     "word": null,
      "box": [
-      738.0,
-      97.1,
-      1242.9,
-      307.4
-     ],
-     "why": null
-    },
-    {
-     "name": "the head of a black cartoon cat",
-     "role": "hero_head",
-     "word": null,
-     "box": [
-      116.5,
-      105.2,
-      582.6,
-      307.4
-     ],
-     "why": null
-    },
-    {
-     "name": "a black cartoon cat",
-     "role": "hero",
-     "word": null,
-     "box": [
-      1359.4,
-      80.9,
-      1942.0,
-      307.4
-     ],
-     "why": null
+      1350,
+      165,
+      1925,
+      710
+     ]
     }
    ]
   },

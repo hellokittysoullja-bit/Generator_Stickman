@@ -253,7 +253,21 @@ def api_call(method, path, api_key, body=None, max_429_retries=3):
                           status=status, reason=reason, body=payload)
 
 
+NET_RETRIES = 5   # обрыв сети при ожидании или скачивании оплаченного заказа — повтор, а не потеря заказа (L01 27.10)
+
+
 def download(url, dest, timeout=DOWNLOAD_TIMEOUT_SEC):
+    for k in range(NET_RETRIES):
+        try:
+            return _download_once(url, dest, timeout)
+        except (urllib.error.URLError, ConnectionError, TimeoutError) as e:
+            if k == NET_RETRIES - 1:
+                raise
+            print(f"    сеть: {e} — повтор скачивания через {2 ** k} с")
+            time.sleep(2 ** k)
+
+
+def _download_once(url, dest, timeout=DOWNLOAD_TIMEOUT_SEC):
     """Атомарная запись (tmp -> os.replace) — тот же принцип, что
     pipeline_smart.atomic_url_download()/stock_fetch_multisource._download():
     обрыв сети не должен оставлять обрезанный файл под финальным именем."""
@@ -361,8 +375,19 @@ def retry_failed_items(api_key, order_id):
 def poll_until_terminal(api_key, order_id, timeout=POLL_TIMEOUT_SEC, interval=POLL_INTERVAL_SEC):
     deadline = time.monotonic() + timeout
     last = None
+    net_fails = 0
     while time.monotonic() < deadline:
-        last = get_order(api_key, order_id)
+        try:
+            last = get_order(api_key, order_id)
+        except LumeanError as e:
+            # L01 27.10: один «Connection reset by peer» во время ожидания терял уже оплаченный заказ
+            if not str(e).startswith("сетевая ошибка") or net_fails >= NET_RETRIES:
+                raise
+            net_fails += 1
+            print(f"    {e} — заказ {order_id} не потерян, повтор опроса ({net_fails}/{NET_RETRIES})")
+            time.sleep(interval)
+            continue
+        net_fails = 0
         status = last.get("status")
         if status in TERMINAL_STATUSES or status == "partially_completed":
             return last
@@ -582,15 +607,16 @@ def concat_audio(paths, out_path, temp_dir, pads=None):
 # ---------- одна секция целиком: заказ -> опрос -> скачивание ----------
 
 def process_section(api_key, template_id, temp_dir, idx, name, text, episode_name,
-                    confirm_payg=False):
+                    confirm_payg=False, order_id=None):
     """Возвращает dict с audio_path (или None при неисправимом сбое),
-    alignment (список строк или None), status, order_id, reason."""
+    alignment (список строк или None), status, order_id, reason.
+    order_id — уже созданный (оплаченный) заказ этой секции: забрать его, не заказывая заново."""
     result = {"section": name, "order_id": None, "status": None,
               "audio_path": None, "alignment": None, "reason": None}
+    reused = bool(order_id)
     try:
-        order = create_order(api_key, template_id, text,
-                             name=f"{episode_name} — {name}"[:120],
-                             confirm_payg=confirm_payg)
+        order = {"id": order_id} if order_id else create_order(
+            api_key, template_id, text, name=f"{episode_name} — {name}"[:120], confirm_payg=confirm_payg)
     except LumeanPaymentRequired as e:
         shortfall = e.body.get("shortfall_lmc")
         result["reason"] = (f"нужна доплата PAYG {shortfall} LMC (квоты подписки не хватило) — "
@@ -604,7 +630,7 @@ def process_section(api_key, template_id, temp_dir, idx, name, text, episode_nam
 
     order_id = order.get("id")
     result["order_id"] = order_id
-    print(f"    [{name}] заказ {order_id} создан, жду готовности...")
+    print(f"    [{name}] заказ {order_id} {'взят готовый' if reused else 'создан'}, жду готовности...")
 
     try:
         order = poll_until_terminal(api_key, order_id)
@@ -787,6 +813,8 @@ def main():
 
     positional = [a for a in argv if not a.startswith("--")]
     force_length = "--force-length" in argv
+    # --orders=ID,ID,,ID — уже созданные заказы по секциям (пусто — заказать): после сбоя сети не платить дважды
+    orders = next((a.split("=", 1)[1].split(",") for a in argv if a.startswith("--orders=")), [])
     confirm_payg = "--confirm-payg" in argv
     video_dir = positional[0] if positional else os.getcwd()
     target_minutes = float(positional[1]) if len(positional) > 1 else None
@@ -823,7 +851,8 @@ def main():
         print(f"\n[{idx + 1}/{len(section_texts)}] {name}")
         section_results.append(
             process_section(api_key, template_id, temp_dir, idx, name, text,
-                            episode_name, confirm_payg=confirm_payg))
+                            episode_name, confirm_payg=confirm_payg,
+                            order_id=(orders[idx].strip() or None) if idx < len(orders) else None))
 
     failed = [r for r in section_results if not r["audio_path"]]
     if failed:

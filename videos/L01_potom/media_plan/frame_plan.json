@@ -36,9 +36,9 @@
     "note": "описание написано оркестратором 27.10"
    },
    "board": "new",
+   "absorb": false,
    "key_thought": "Сколько лет",
-   "anim": "pages_fall",
-   "absorb": false
+   "anim": "pages_fall"
   },
   {
    "index": 1,
@@ -72,8 +72,8 @@
     "note": "описание написано оркестратором 27.10"
    },
    "board": "new",
-   "accent": "никогда",
-   "absorb": false
+   "absorb": false,
+   "accent": "никогда"
   },
   {
    "index": 2,
@@ -107,8 +107,8 @@
     "note": "описание написано оркестратором 27.10"
    },
    "board": "new",
-   "accent": "два года",
-   "absorb": false
+   "absorb": false,
+   "accent": "два года"
   },
   {
    "index": 3,
@@ -177,8 +177,8 @@
    },
    "board": "new",
    "hero_state": "bright",
-   "accent": "восемь минут",
-   "absorb": false
+   "absorb": false,
+   "accent": "восемь минут"
   },
   {
    "index": 5,
@@ -361,8 +361,8 @@
    },
    "board": "new",
    "hero_state": null,
-   "accent": "на треть чаще",
-   "absorb": false
+   "absorb": false,
+   "accent": "на треть чаще"
   },
   {
    "index": 10,
@@ -439,8 +439,8 @@
     "note": "описание написано оркестратором 27.10"
    },
    "board": "new",
-   "key_thought": "нового начала",
-   "absorb": false
+   "absorb": false,
+   "key_thought": "нового начала"
   },
   {
    "index": 12,
@@ -603,11 +603,11 @@
     "note": "описание написано оркестратором 27.10"
    },
    "board": "new",
+   "absorb": false,
    "zoom": {
     "object": "open fridge",
     "word": "холодильник"
-   },
-   "absorb": false
+   }
   },
   {
    "index": 16,
@@ -675,8 +675,8 @@
     "note": "описание написано оркестратором 27.10"
    },
    "board": "new",
-   "accent": "чистого листа",
-   "absorb": false
+   "absorb": false,
+   "accent": "чистого листа"
   },
   {
    "index": 18,
@@ -757,8 +757,8 @@
     "original": "close-up: the main character's two paws hold one phone with a blank glowing screen; a small heart shape glows at the bottom of the screen; above the phone the character's tired half-lidded eyes; the phone is large in the right half of the frame, plain dark background on the left"
    },
    "board": "lib",
-   "accent": "одиннадцать лет",
-   "absorb": false
+   "absorb": false,
+   "accent": "одиннадцать лет"
   },
   {
    "index": 20,
@@ -897,8 +897,8 @@
    },
    "board": "new",
    "hero_state": null,
-   "accent": "десять лет",
-   "absorb": false
+   "absorb": false,
+   "accent": "десять лет"
   },
   {
    "index": 24,
@@ -1013,8 +1013,8 @@
     "note": "описание написано оркестратором 27.10"
    },
    "board": "new",
-   "accent": "тот же я",
-   "absorb": false
+   "absorb": false,
+   "accent": "тот же я"
   },
   {
    "index": 27,
@@ -1125,11 +1125,11 @@
    },
    "board": "new",
    "hero_state": null,
+   "absorb": false,
    "zoom": {
     "object": "framed photograph",
     "word": "лица"
-   },
-   "absorb": false
+   }
   },
   {
    "index": 30,
@@ -1197,11 +1197,11 @@
     "note": "описание написано оркестратором 27.10"
    },
    "board": "new",
+   "absorb": false,
    "zoom": {
     "object": "drying rack with three clean plates",
     "word": "три"
-   },
-   "absorb": false
+   }
   },
   {
    "index": 32,
@@ -1495,8 +1495,8 @@
     "note": "описание написано оркестратором 27.10"
    },
    "board": "new",
-   "accent": "две минуты",
-   "absorb": false
+   "absorb": false,
+   "accent": "две минуты"
   },
   {
    "index": 39,
@@ -1583,8 +1583,8 @@
     "original": "medium shot: the main character sits at a wooden desk, body leaning away, one paw hovering above a closed notebook, face screwed up in discomfort, eyes narrowed; the closed notebook lies on the desk in the right half of the frame; a wide calm empty patch of plain light wall above the notebook"
    },
    "board": "lib",
-   "key_thought": "неприятное чувство",
-   "absorb": false
+   "absorb": false,
+   "key_thought": "неприятное чувство"
   },
   {
    "index": 41,
@@ -1618,8 +1618,8 @@
    },
    "board": "new",
    "hero_state": "ember",
-   "accent": "минут пять",
-   "absorb": false
+   "absorb": false,
+   "accent": "минут пять"
   },
   {
    "index": 42,
@@ -1687,8 +1687,8 @@
    },
    "board": "new",
    "hero_state": null,
-   "key_thought": "после действия",
-   "absorb": false
+   "absorb": false,
+   "key_thought": "после действия"
   },
   {
    "index": 44,
@@ -1723,8 +1723,8 @@
     "note": "описание написано оркестратором 27.10"
    },
    "board": "new",
-   "accent": "двух минут",
-   "absorb": false
+   "absorb": false,
+   "accent": "двух минут"
   },
   {
    "index": 45,
@@ -1920,8 +1920,8 @@
     "note": "описание написано оркестратором 27.10"
    },
    "board": "new",
-   "accent": "две минуты",
-   "absorb": false
+   "absorb": false,
+   "accent": "две минуты"
   },
   {
    "index": 50,
@@ -2112,8 +2112,8 @@
     "note": "описание написано оркестратором 27.10"
    },
    "board": "new",
-   "key_thought": "начну завтра",
-   "absorb": false
+   "absorb": false,
+   "key_thought": "начну завтра"
   }
  ],
  "stats": {
