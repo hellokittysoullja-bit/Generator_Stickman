@@ -83,12 +83,21 @@ def _thumb(src, dst):
         im = im.convert("RGB"); im.thumbnail((THUMB_W, THUMB_W * 2)); im.save(dst, "JPEG", quality=84)
 
 
+def removed():
+    """sha256 картинок, которые владелец велел убрать из библиотеки (заменены исправленными): library/cat/removed.json.
+    Без этого --scan достаёт их обратно из истории git (владелец 27.10: «старые удалены и заменены»)."""
+    p = os.path.join(LIB, "removed.json")
+    return {r["sha256"] for r in json.load(open(p, encoding="utf8"))} if os.path.exists(p) else set()
+
+
 def add(data, name, kind, **meta):
     """Положить картинку (байты) в библиотеку. Возвращает запись каталога; та же картинка второй раз не копируется."""
     o, t, _ = _paths()
     if not data:
         raise ValueError(f"{name}: пустой файл")
     sha = hashlib.sha256(data).hexdigest()
+    if sha in removed():                               # снят владельцем: из истории git не возвращается
+        return None
     cat = load()
     rec = next((r for r in cat if r["sha256"] == sha), None)
     used = meta.pop("used_in", None)

@@ -782,6 +782,8 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     rule_errs += hook_split_errors(words, times, spans)
     rule_errs += reel_rules.check_hook_gap(times, spans, beats)
     rule_errs += reel_rules.check_montage(spec, shots, events, total)
+    rule_errs += reel_rules.check_library_share(spec, shots, json.load(open(log_p, encoding="utf8")) if os.path.exists(log_p) else [],
+                                                os.path.relpath(reel_dir, ROOT))   # ≤ 3 фото из библиотеки (стандарт 22)
     rule_errs += reel_rules.check_timeline(shots, events, {k: v[1] for k, v in SFX.items()}, caps_txt, total)
     rule_errs += reel_rules.check_overlays([(i, tx, x0, y0 + PIC_TOP, x1, y1 + PIC_TOP)    # картинка — с PIC_TOP экрана
                                             for i, tx, x0, y0, x1, y1 in overlay_boxes(events, shots)], PIC_TOP + PH,

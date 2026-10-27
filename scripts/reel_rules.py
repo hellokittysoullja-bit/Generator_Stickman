@@ -841,6 +841,35 @@ WHOOSHES = ("swoosh", "fast_whoosh")
 WHOOSH_GAP = 1.5            # свист от свиста не ближе 1.5 с (владелец 26.10: «сделай 1,5 секунды, минимальный промежуток»)
 
 
+LIBRARY_STANDARD = 22       # фото из библиотеки — не больше трёх на рилс (владелец 27.10)
+LIBRARY_MAX = 3
+
+
+def check_library_share(spec, shots, log=(), reel_dir=""):
+    """Владелец 27.10: «если прям есть идеально подходящее фото — бери из библиотеки, но в одном видео не должно быть
+    более 3 фото из библиотеки». Библиотека — любой рисунок, нарисованный не для этого рилса (кадры эпизодов, рисунки
+    прошлых рилсов); свои — reel/gen/. Остальные рисунки рилса рисуются заново (reel_draw.py)."""
+    pp = spec.get("passport") or {}
+    std, beats = pp.get("standard") or 0, spec.get("beats") or []
+    if std < LIBRARY_STANDARD:
+        bare = lambda x: " ".join(re.sub(r"[^\w\s]+", "", x).split()[:2]).lower()   # noqa: E731
+        first = bare(clean(beats[0]["text"])) if beats else ""
+        old = any(os.path.normpath(r.get("reel", "")) == os.path.normpath(reel_dir or "")
+                  and bare(r.get("first_words", "")) == first for r in log)
+        if reel_dir and not old:
+            return [f"новый рилс: нужен \"standard\": {LIBRARY_STANDARD} — не больше {LIBRARY_MAX} фото из библиотеки, "
+                    "остальные рисунки — свои (reel/gen/)"]
+        return []
+    srcs = spec.get("sources", {})
+    used = {s.get("src") for s in shots if s.get("kind", "crop") in ("crop", "fit") and s.get("src")}
+    lib = sorted(k for k in used if not str((srcs.get(k) or {}).get("frame", "")).startswith("gen/"))
+    if len(lib) > LIBRARY_MAX:
+        names = ", ".join(f"{k}={srcs[k]['frame']}" for k in lib)
+        return [f"фото из библиотеки {len(lib)} > {LIBRARY_MAX} ({names}): оставьте самые подходящие, остальные — "
+                "свои рисунки (reel_draw.py)"]
+    return []
+
+
 def check_montage(spec, shots, events, total):
     """Монтаж по образцу эп.02 v9 (владелец 25.10): кукла только в конце, на один рисунок больше образца (и хотя бы один
     нарисован для этого рилса — reel/gen/), акценты — часто и разные. Для рилсов стандарта ≥ MONTAGE_STANDARD."""

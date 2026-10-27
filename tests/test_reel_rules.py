@@ -1175,3 +1175,34 @@ def test_hook_promise_is_for_viewer_not_cat():
     assert reel_rules.check_viewer_promise(sp("Но это не лень, и в конце покажу, что с ней делать."), [], "videos/x/reel") == []
     assert any("standard" in e for e in reel_rules.check_viewer_promise(sp(ok, 20), [], "videos/x/reel"))
     assert reel_rules.check_viewer_promise(sp(cat, 20), [{"reel": "videos/x/reel", "first_words": "Тебе трудно"}], "videos/x/reel") == []
+
+
+def test_no_more_than_three_library_photos():
+    """Владелец 27.10: в одном видео не больше 3 фото из библиотеки; остальное — свои рисунки (reel/gen/)."""
+    def sp(n_lib, std=22):
+        src = {f"f{i}": {"frame": f"../../0{i}_x/frames/00{i}.png"} for i in range(n_lib)}
+        src.update({f"g{i}": {"frame": f"gen/g{i}.png"} for i in range(3)})
+        return {"passport": {"standard": std}, "beats": [{"text": "Тебе трудно решить?"}], "sources": src}
+    shots = lambda n: [dict(src=f"f{i}") for i in range(n)] + [dict(src=f"g{i}") for i in range(3)] + [dict(kind="doll")]  # noqa: E731
+    assert reel_rules.check_library_share(sp(3), shots(3), [], "videos/x/reel") == []
+    assert reel_rules.check_library_share(sp(4), shots(4), [], "videos/x/reel")
+    assert any("standard" in e for e in reel_rules.check_library_share(sp(4, 21), shots(4), [], "videos/x/reel"))
+    assert reel_rules.check_library_share(sp(4, 21), shots(4), [{"reel": "videos/x/reel", "first_words": "Тебе трудно"}],
+                                          "videos/x/reel") == []
+
+
+def test_library_has_every_original():
+    """Владелец 25.10 и 27.10: в library/cat/ лежат все оригиналы — новые и старые; новый рисунок рилса без записи в
+    каталоге — это потерянный оригинал (python scripts/cat_library.py --scan)."""
+    import glob
+    import hashlib
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    cat = json.load(open(os.path.join(root, "library", "cat", "catalog.json"), encoding="utf8"))
+    have = {it["sha256"] for it in cat}
+    pats = ["videos/*/frames/*.png", "videos/*/reel/gen/*.png", "look/hero.png", "look/states/*.png", "look/style/*.png"]
+    miss = [f for p in pats for f in glob.glob(os.path.join(root, p))
+            if not f.endswith("_mask.png") and hashlib.sha256(open(f, "rb").read()).hexdigest() not in have]
+    assert not miss, f"нет в библиотеке: {miss}"
+    gone = os.path.join(root, "library", "cat", "removed.json")
+    back = [r["was"] for r in (json.load(open(gone, encoding="utf8")) if os.path.exists(gone) else []) if r["sha256"] in have]
+    assert not back, f"снятые владельцем картинки вернулись в библиотеку: {back}"
