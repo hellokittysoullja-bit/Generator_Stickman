@@ -27,3 +27,4 @@ videos/*/reel/reel_preview*.mp4
 videos/*/reel/shots_sheet.jpg
 videos/*/reel/.cache/
 videos/*/reel/proof.jpg
+videos/*/audio*.wav

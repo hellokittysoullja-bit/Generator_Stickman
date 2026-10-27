@@ -36,6 +36,8 @@ def resolve(events, starts, word_times):
         if i >= len(starts):
             errs.append(f"«{e['name']}»: фразы {e['phrase']} нет")
             continue
+        if "word" in e and not word_times:
+            continue                                  # немое превью без alignment: звук на слове негде поставить
         if "word" in e:
             ws = word_times[i] if i < len(word_times) else []
             w = next((w for w in ws if _stem(w["word"]).startswith(_stem(e["word"]))), None)

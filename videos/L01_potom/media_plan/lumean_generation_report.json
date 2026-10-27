@@ -1,0 +1,45 @@
+{
+  "ok": false,
+  "sections": [
+    {
+      "section": "HOOK",
+      "order_id": null,
+      "status": null,
+      "audio_path": null,
+      "alignment": null,
+      "reason": "POST /orders -> 503: Сервис временно недоступен: идут технические работы. Попробуйте позже."
+    },
+    {
+      "section": "BLOCK 1: ПОНЕДЕЛЬНИК",
+      "order_id": null,
+      "status": null,
+      "audio_path": null,
+      "alignment": null,
+      "reason": "POST /orders -> 503: Сервис временно недоступен: идут технические работы. Попробуйте позже."
+    },
+    {
+      "section": "BLOCK 2: ЧУЖОЙ ЧЕЛОВЕК",
+      "order_id": null,
+      "status": null,
+      "audio_path": null,
+      "alignment": null,
+      "reason": "POST /orders -> 503: Сервис временно недоступен: идут технические работы. Попробуйте позже."
+    },
+    {
+      "section": "BLOCK 3: ЧТО ПРЯЧЕТСЯ",
+      "order_id": null,
+      "status": null,
+      "audio_path": null,
+      "alignment": null,
+      "reason": "POST /orders -> 503: Сервис временно недоступен: идут технические работы. Попробуйте позже."
+    },
+    {
+      "section": "FINAL",
+      "order_id": null,
+      "status": null,
+      "audio_path": null,
+      "alignment": null,
+      "reason": "POST /orders -> 503: Сервис временно недоступен: идут технические работы. Попробуйте позже."
+    }
+  ]
+}
