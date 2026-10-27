@@ -28,3 +28,5 @@ videos/*/reel/shots_sheet.jpg
 videos/*/reel/.cache/
 videos/*/reel/proof.jpg
 videos/*/audio*.wav
+videos/*/media_plan/lumean_temp/
+videos/*/_fix_pauses_filter.txt
