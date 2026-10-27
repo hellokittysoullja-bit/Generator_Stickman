@@ -1197,8 +1197,11 @@ def test_library_has_every_original():
     cat = json.load(open(os.path.join(root, "library", "cat", "catalog.json"), encoding="utf8"))
     have = {it["sha256"] for it in cat}
     pats = ["videos/*/frames/*.png", "videos/*/reel/gen/*.png", "look/hero.png", "look/states/*.png", "look/style/*.png"]
+    import cat_library
+    # кадр эпизода — производная оригинала шлюза (подписи, бумага): в библиотеке достаточно оригинала
     miss = [f for p in pats for f in glob.glob(os.path.join(root, p))
-            if not f.endswith("_mask.png") and hashlib.sha256(open(f, "rb").read()).hexdigest() not in have]
+            if not f.endswith("_mask.png") and hashlib.sha256(open(f, "rb").read()).hexdigest() not in have
+            and cat_library.frame_original(f) not in have]
     assert not miss, f"нет в библиотеке: {miss}"
     gone = os.path.join(root, "library", "cat", "removed.json")
     back = [r["was"] for r in (json.load(open(gone, encoding="utf8")) if os.path.exists(gone) else []) if r["sha256"] in have]

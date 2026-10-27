@@ -143,11 +143,23 @@ def _warm(job):
     return True
 
 
+def load_scene(path, fr, words):
+    """Сцена движения внутри рисунка (videos/NN/anim/<имя>.py, класс Scene) — хук длинного ролика (27.10)."""
+    import importlib.util
+    import frame_clip
+    spec = importlib.util.spec_from_file_location("scene_" + os.path.basename(path)[:-3], path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod.Scene(fr, words, frame_clip.UPSCALE)
+
+
 def _render(job):
     import frame_clip
     fr = _prepare(job)
     tmp = job["out"]
-    cues = frame_clip.render(fr, job["plan"], job["dur"], tmp, fps=FPS, end_fade=job["end_fade"], crf=CRF)
+    scene = load_scene(job["anim"], fr, job["words"]) if job.get("anim") else None
+    cues = frame_clip.render(fr, job["plan"], job["dur"], tmp, fps=FPS, end_fade=job["end_fade"], crf=CRF,
+                             anim=scene)
     d = probe_duration(tmp)
     if d is None or abs(d - round(job["dur"]*FPS)/FPS) > CLIP_TOLERANCE + 1e-6:
         os.remove(tmp)
@@ -289,7 +301,8 @@ def main(video_dir):
         jobs.append(dict(src=src, recs=recs, objects=rec.get("objects") or [], work=work, tex=tex_path,
                          seed=k, key=(pf.get("key_thought") or "").strip() or None, words=words, mascot=mascot,
                          accent=(pf.get("accent") or "").strip() or None,
-                         dur=durs[k], T0=kept_starts[k], end_fade=(k == len(kept) - 1)))
+                         dur=durs[k], T0=kept_starts[k], end_fade=(k == len(kept) - 1),
+                         anim=os.path.join(video_dir, "anim", pf["anim"] + ".py") if pf.get("anim") else None))
 
     workers = int(os.environ.get("RENDER_WORKERS", str(max(1, min(4, (os.cpu_count() or 2) - 1)))))
     with ProcessPoolExecutor(workers) as ex:              # увеличение рисунков — дорого, параллельно и с кэшем
@@ -319,7 +332,9 @@ def main(video_dir):
             written.append((job["T0"] + p["accent_time"], len(p["accent"]["text"].split())))
         job["plan"] = p
         h = hashlib.sha256(open(job["src"], "rb").read()).hexdigest()[:12]
-        sig = hashlib.sha256(json.dumps([h, job["recs"], job["objects"], frame_clip.plan_record(p), job["dur"],
+        scene_sig = hashlib.sha256(open(job["anim"], "rb").read()).hexdigest()[:12] if job.get("anim") else None
+        head = [h, scene_sig] if scene_sig else [h]          # клипы без сцены — прежний ключ кэша
+        sig = hashlib.sha256(json.dumps(head + [job["recs"], job["objects"], frame_clip.plan_record(p), job["dur"],
                                          job["end_fade"], job["seed"], FPS, CRF, frame_clip.RENDER_VERSION,
                                          canvas.TEXTURE, frame_clip.UPSCALE],
                                         sort_keys=True, default=str).encode()).hexdigest()[:16]
@@ -394,6 +409,16 @@ def main(video_dir):
              f"attack={am.MUSIC_DUCK_ATTACK_MS}:release={am.MUSIC_DUCK_RELEASE_MS}[md];"
              f"[v][md]amix=inputs=2:duration=first:normalize=0[a]", "-map", "[a]", "-ar", "48000", premix])
         print(f"  Музыка: {os.path.basename(music)}, {gain:+.1f} дБ ({why})")
+    import long_sfx                                       # звуки на событиях (videos/NN/sfx.json), как в рилсах
+    sfx_wav = os.path.join(work, "sfx.wav")
+    rep = long_sfx.build(video_dir, starts, speech.word_times if timing == "phrase_lock" else [], total, voice, sfx_wav)
+    if rep:
+        mixed = os.path.join(work, "premix_sfx.wav")
+        run(["ffmpeg", "-y", "-v", "error", "-i", premix, "-i", sfx_wav, "-filter_complex",
+             "[1:a]aresample=48000[s];[0:a][s]amix=inputs=2:duration=first:normalize=0[a]", "-map", "[a]",
+             "-ar", "48000", mixed])
+        premix = mixed
+        print(f"  Звуки: {len(rep['sounds'])} на событиях (голос p95 {rep['voice_p95']} dBFS)")
     import pencil_sound
     voice_lufs = pencil_sound.integrated_lufs(voice)          # один замер голоса: карандаш и мастер решают по нему
     if cues:

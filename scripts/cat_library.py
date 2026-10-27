@@ -159,6 +159,23 @@ def _prompt_for(path):
     return None, None, None
 
 
+def frame_original(path):
+    """Кадр эпизода — производная (генератор кладёт подписи и выравнивает бумагу): его оригинал — картинка шлюза из
+    image_cache, записанная в отчёте как chosen. sha256 оригинала или None."""
+    import hashlib
+    m = re.match(r".*/videos/([^/]+)/frames/(\d+)\.png$", path)
+    if not m:
+        return None
+    mp = os.path.join(ROOT, "videos", m.group(1), "media_plan")
+    try:
+        r = json.load(open(os.path.join(mp, "frames_report.json"), encoding="utf8"))
+    except (OSError, ValueError):
+        return None
+    fr = next((f for f in r.get("frames", []) if f.get("index") == int(m.group(2)) - 1), None)
+    src = os.path.join(mp, "image_cache", fr["chosen"]) if fr and fr.get("chosen") else None
+    return hashlib.sha256(open(src, "rb").read()).hexdigest() if src and os.path.exists(src) else None
+
+
 def scan(extra=()):
     """Все оригиналы, уже лежащие в репозитории (и прежние версии из истории git), — в библиотеку."""
     import glob
@@ -166,6 +183,9 @@ def scan(extra=()):
     for pat, kind, origin in SCAN:
         for p in sorted(glob.glob(os.path.join(ROOT, pat))):
             if SKIP.search(p):
+                continue
+            orig = frame_original(p)
+            if orig and any(r["sha256"] == orig for r in load()):   # оригинал кадра уже в библиотеке — дубль не нужен
                 continue
             rel = os.path.relpath(p, ROOT)
             prompt, model, price = _prompt_for(p)

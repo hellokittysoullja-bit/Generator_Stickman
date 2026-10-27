@@ -1,0 +1,474 @@
+{
+ "note": "Раскадровка L01, решения оркестратора 27.10 (владелец: судья и автопроверки временно выключены, каждый кадр принимается глазами). new — рисунок GPT-Image-2 medium по picture; lib — файл из library/cat/originals; same — тот же рисунок, что у фразы N (намеренная отсылка); absorb — своей картинки нет, время отдаётся предыдущей.",
+ "frames": {
+  "1": {
+   "new": "medium shot: the main character sits upright on a wooden chair in the middle of an empty waiting room, both paws on its knees, staring at a closed door with a tired, hopeful face; a tall drift of torn-off blank calendar pages is piled around the chair legs up to the seat; one wall calendar hangs on the wall beside the door, its top page half torn off; a thin cobweb stretches from the chair back to the wall; plain grey wall",
+   "hero": true,
+   "state": "ember",
+   "details": [
+    "the drift of torn calendar pages",
+    "the half torn calendar on the wall",
+    "the closed door"
+   ],
+   "key": "Сколько лет",
+   "anim": "pages_fall"
+  },
+  "2": {
+   "new": "wide shot: the main character sits on its small packed suitcase at the edge of an empty railway platform, chin resting on its paws, looking along two rails that run away into thick grey fog; one empty bench and one lamp post on the platform; no train anywhere",
+   "hero": true,
+   "state": "ember",
+   "details": [
+    "the rails fading into the fog",
+    "the suitcase under the character"
+   ],
+   "accent": "никогда"
+  },
+  "3": {
+   "new": "close-up: one phone lies flat on a wooden table, a layer of grey dust on its dark blank screen and a thick cobweb stretching from the phone to a table lamp; the main character peeks over the far edge of the table at the phone with guilty sideways eyes, one paw half raised",
+   "hero": true,
+   "state": "ember",
+   "details": [
+    "the cobweb on the phone",
+    "the guilty eyes"
+   ],
+   "accent": "два года"
+  },
+  "4": {
+   "new": "a long plain shelf across the middle of the picture with five white candles standing in a row with even gaps; from left to right: the first is tall with a big bright flame, the second is shorter with a smaller flame, the third is a short stub with a tiny flame, the fourth and the fifth are only flat puddles of melted wax with a thin wisp of smoke; the main character sits on the floor below the right end of the shelf, looking up at the puddles with a disappointed face",
+   "hero": true,
+   "state": "ember",
+   "details": [
+    "the tall first candle",
+    "the melted puddles of wax"
+   ]
+  },
+  "5": {
+   "new": "medium shot: the main character stands behind a long low table facing the viewer with a lively curious face, one paw pointing at three things laid out in a row on the table with wide gaps between them: a small closed wooden door in its own little frame, one torn-off blank calendar page, one small round kitchen timer with a blank face",
+   "hero": true,
+   "state": "bright",
+   "details": [
+    "the small closed door",
+    "the torn calendar page",
+    "the kitchen timer"
+   ],
+   "accent": "восемь минут"
+  },
+  "6": {
+   "new": "two equal panels side by side with a plain gap between them, the same desk in both: in the left panel the room is dim grey and the main character slumps at the desk with its head on its paws beside a stack of papers, its tail flame a dim ember with a wisp of smoke; in the right panel the room is bright and the same main character sits upright at the same desk writing in an open notebook with a pencil, a calm small smile, its tail flame big and bright",
+   "hero": true,
+   "state": null,
+   "details": [
+    "the slumped character in the dim panel",
+    "the writing character in the bright panel"
+   ]
+  },
+  "7": {
+   "new": "medium shot: the main character lies comfortably on its back on a soft rug, holding one phone above its face with both paws, an amused relaxed face; out of the phone's blank glowing screen spills a very long paper ribbon made of small blank cards, it loops across the rug and piles into a big soft heap right beside the character",
+   "hero": true,
+   "state": null,
+   "details": [
+    "the phone in the paws",
+    "the heap of blank cards"
+   ]
+  },
+  "8": {
+   "absorb": true
+  },
+  "9": {
+   "new": "medium shot: the main character stands on tiptoe at a bright morning window, tearing the top page off a wall calendar with one paw, chin up, a determined grin; a wide band of sunlight falls across the floor",
+   "hero": true,
+   "state": "bright",
+   "details": [
+    "the paw tearing the calendar page",
+    "the determined grin"
+   ]
+  },
+  "10": {
+   "new": "wide shot of the entrance of a busy university gym on a Monday morning: in the foreground a metal turnstile with a small hand clicker counter resting on it; beyond it a crowded room where many young adult students in plain sportswear run on treadmills, ride exercise bikes and wait in a short line for a free machine; all walls and machine screens are blank",
+   "hero": false,
+   "details": [
+    "the turnstile with the clicker counter",
+    "the short line of waiting students"
+   ],
+   "accent": "на треть чаще"
+  },
+  "11": {
+   "absorb": true
+  },
+  "12": {
+   "new": "wide shot: the main character steps out through an open doorway from a dark cluttered room full of crumpled paper balls and a tipped-over chair into a clean, bright, empty room, head up, one foot forward, a light hopeful face, pushing the door shut behind it with its tail",
+   "hero": true,
+   "state": "bright",
+   "details": [
+    "the crumpled paper balls in the dark room",
+    "the hopeful face"
+   ],
+   "key": "нового начала"
+  },
+  "13": {
+   "lib": "2026-10-27_gen_cx_gpt-image-2_6143dac1.png",
+   "details": [
+    "the first gym panel",
+    "the last gym panel"
+   ]
+  },
+  "14": {
+   "lib": "2026-10-20_videos_02_sdvg_vremya_frames_005_c430181c.png",
+   "details": [
+    "the open notebook",
+    "the desk lamp"
+   ]
+  },
+  "15": {
+   "new": "two equal panels side by side with a plain gap between them: in the left panel the main character stands tall on a floor mat beside one small dumbbell, holding a teacup in both paws, eyes closed, a proud smile; in the right panel the same main character sits at a desk opening one envelope, a small pile of opened envelopes beside it, and the dumbbell lies forgotten on the floor behind its chair",
+   "hero": true,
+   "state": "bright",
+   "details": [
+    "the teacup in the paws",
+    "the forgotten dumbbell",
+    "the pile of opened envelopes"
+   ]
+  },
+  "16": {
+   "new": "medium shot in a dark kitchen at night: the main character stands in front of one open fridge, the fridge's cold white light on its face, one paw on the fridge door, a blank tired stare; one crumpled sheet of paper lies on the floor behind it",
+   "hero": true,
+   "state": "ember",
+   "details": [
+    "the crumpled sheet on the floor",
+    "the tired face in the fridge light"
+   ],
+   "zoom": {
+    "object": "open fridge",
+    "word": "холодильник"
+   }
+  },
+  "17": {
+   "new": "wide shot of a gym locker room: five young adults in plain sportswear sit in a row on one long bench, all slumped the same way, shoulders down, towels around their necks, heads hanging; the main character sits at the end of the same bench in exactly the same slumped pose with a small towel around its neck",
+   "hero": true,
+   "state": "ember",
+   "details": [
+    "the slumped character with the towel",
+    "the row of slumped people"
+   ]
+  },
+  "18": {
+   "new": "close-up: the main character holds up one blank white sheet of paper in both paws and looks at it with a sad soft face; the lower half of the sheet is melting like soft wax and dripping into a small puddle on the floor",
+   "hero": true,
+   "state": "ember",
+   "details": [
+    "the melting lower edge of the sheet",
+    "the puddle on the floor"
+   ],
+   "accent": "чистого листа"
+  },
+  "19": {
+   "new": "wide shot: the main character stands at the near end of a long empty corridor with a packed bag at its feet, looking down the corridor, small and tired; along the wall hangs a row of blank wall calendars, each one farther and smaller than the last, until the corridor fades into grey fog",
+   "hero": true,
+   "state": "ember",
+   "details": [
+    "the nearest blank calendar",
+    "the corridor fading into fog"
+   ]
+  },
+  "20": {
+   "lib": "2026-10-20_videos_02_sdvg_vremya_frames_001_f008509c.png",
+   "details": [
+    "the phone glowing in the paws",
+    "the night window with the moon"
+   ],
+   "accent": "одиннадцать лет"
+  },
+  "21": {
+   "new": "medium shot: a tall heap of unfinished things stands in a room: a pile of laundry, a stack of papers, a dirty mug and an unopened box; one empty wooden chair stands right beside the heap as if waiting for someone; the main character stands in front of the heap looking at the empty chair, scratching its head with one paw, puzzled",
+   "hero": true,
+   "state": "ember",
+   "details": [
+    "the empty chair",
+    "the heap of unfinished things"
+   ]
+  },
+  "22": {
+   "new": "medium shot in a dim hallway at night: the main character stands frozen with its fur slightly bristled, staring at its own shadow on the wall; the shadow is not a cat but the tall flat grey silhouette of a stranger in a long coat and a hat",
+   "hero": true,
+   "state": "ember",
+   "details": [
+    "the stranger-shaped shadow",
+    "the bristled fur"
+   ]
+  },
+  "23": {
+   "new": "wide shot of a clean bright lab: a young adult student in a plain grey shirt lies on the bed of a big round brain scanner, head inside its round opening, a calm face; a researcher in a white coat sits at a desk beside it looking at two monitors with blank screens",
+   "hero": false,
+   "details": [
+    "the student's head in the scanner opening",
+    "the researcher at the monitors"
+   ]
+  },
+  "24": {
+   "new": "two brains side by side in the middle of a plain light background, drawn by hand: in the left brain one small area glows bright with short rays around it; in the right brain the same small area is only faintly lit; above the left brain a small drawing of a young person, above the right brain the same person old, with grey hair and wrinkles",
+   "hero": false,
+   "details": [
+    "the bright spot in the left brain",
+    "the faint spot in the right brain",
+    "the old face"
+   ],
+   "accent": "десять лет"
+  },
+  "25": {
+   "new": "close-up on a long wooden table: in the left half the main character grabs one small coin with its paw, eyes fixed on it; in the right half, far away at the other end of the table, a tall stack of coins stands in a soft grey haze, ignored",
+   "hero": true,
+   "state": "ember",
+   "details": [
+    "the small coin under the paw",
+    "the tall stack of coins in the haze"
+   ]
+  },
+  "26": {
+   "done": true,
+   "details": [
+    "the apron on the hook",
+    "the dirty plates in the sink"
+   ]
+  },
+  "27": {
+   "new": "medium shot of the same small kitchen in the morning: the main character stands at the kitchen sink, sleepy, eyes half closed, fur ruffled and flattened on one side, shoulders slumped; the sink is overflowing with a much taller pile of dirty plates and cups; one empty apron hangs on a hook on the wall with a sponge in its pocket",
+   "hero": true,
+   "state": "ember",
+   "details": [
+    "the overflowing pile of dishes",
+    "the sleepy ruffled face"
+   ],
+   "accent": "тот же я"
+  },
+  "28": {
+   "new": "medium shot: the main character holds out a tall wobbling stack of dirty plates toward a tall pale grey figure with a smooth blank oval head and no face, who stands beside it with empty open hands; the character looks away with a careless face",
+   "hero": true,
+   "state": "ember",
+   "details": [
+    "the faceless figure",
+    "the wobbling stack of plates"
+   ]
+  },
+  "29": {
+   "absorb": true
+  },
+  "30": {
+   "new": "close-up on a desk with plain light background: a framed photograph of an old, kind, wrinkled face of a person with grey hair stands propped against a glass jar; the jar is half full of coins and one more coin is dropping into it",
+   "hero": false,
+   "details": [
+    "the old face in the photograph",
+    "the coin dropping into the jar"
+   ],
+   "zoom": {
+    "object": "framed photograph",
+    "word": "лица"
+   }
+  },
+  "31": {
+   "new": "medium shot of a dim bedroom at night: the main character sits on the edge of its bed looking up with soft pity at a pale dream bubble above it; inside the bubble the same main character in the morning, ruffled and sleepy, with heavy eyelids and a big yawn",
+   "hero": true,
+   "state": null,
+   "details": [
+    "the sleepy cat in the dream bubble",
+    "the pitying face"
+   ]
+  },
+  "32": {
+   "new": "medium shot of a bright morning kitchen: a wooden drying rack with exactly three clean, gleaming plates stands on the counter; next to it the main character washes one more plate at the sink with a calm happy smile; sunlight through the window",
+   "hero": true,
+   "state": "golden",
+   "details": [
+    "the three clean plates",
+    "the happy face"
+   ],
+   "zoom": {
+    "object": "drying rack with three clean plates",
+    "word": "три"
+   }
+  },
+  "33": {
+   "same": 2
+  },
+  "34": {
+   "new": "medium shot: the main character sits on the floor next to a guitar leaning against a chair, arms crossed, looking away to the side with a guilty sulky face; a thin layer of dust lies on the guitar; beside it on the floor an untouched sketchbook and a pair of running shoes",
+   "hero": true,
+   "state": "ember",
+   "details": [
+    "the dusty guitar",
+    "the sulky face"
+   ]
+  },
+  "35": {
+   "new": "close-up: the main character holds open a thick book with dozens of paper bookmarks sticking out of its pages; each bookmark has a tiny drawing on it: a mountain, a film reel, a guitar, a plane, a cake; the character looks at them with warm wistful eyes",
+   "hero": true,
+   "state": null,
+   "details": [
+    "the bookmarks with tiny drawings",
+    "the wistful eyes"
+   ]
+  },
+  "36": {
+   "absorb": true
+  },
+  "37": {
+   "lib": "2026-10-25_videos_05_ustal_reel_gen_u1_floor_9396085a.png",
+   "details": [
+    "the envelope on the floor",
+    "the glum face"
+   ]
+  },
+  "38": {
+   "lib": "2026-10-25_videos_03_lenivyi_reel_gen_g2_tail_62fcfcc3.png",
+   "details": [
+    "the worried face",
+    "the tail flame in the paws"
+   ]
+  },
+  "39": {
+   "new": "medium shot: the main character sits on a sofa holding one small round kitchen timer in both paws, its dial turned a little, a sheepish embarrassed smile; one phone lies on the cushion beside it with a blank glowing screen",
+   "hero": true,
+   "state": "bright",
+   "details": [
+    "the kitchen timer in the paws",
+    "the phone on the cushion"
+   ],
+   "accent": "две минуты"
+  },
+  "40": {
+   "new": "medium shot: the main character lies relaxed on the same sofa watching a phone with a blank glowing screen held in one paw, a content smile; the small round kitchen timer lies forgotten on the cushion",
+   "hero": true,
+   "state": "golden",
+   "details": [
+    "the forgotten timer",
+    "the content smile"
+   ]
+  },
+  "41": {
+   "lib": "2026-10-20_videos_01_sdvg_pismo_frames_003_274b368a.png",
+   "details": [
+    "the stained envelope",
+    "the uneasy face"
+   ],
+   "key": "неприятное чувство"
+  },
+  "42": {
+   "new": "medium shot: the main character lounges in an armchair with a cup of tea, eyes closed, a relieved smile; behind the armchair a stack of papers on a desk has grown tall and heavy, bending the desk legs, and its long shadow falls over the character",
+   "hero": true,
+   "state": "ember",
+   "details": [
+    "the bending desk with the heavy stack",
+    "the cup of tea"
+   ],
+   "accent": "минут пять"
+  },
+  "43": {
+   "new": "medium shot: the main character leans its whole body against a tall closet door, holding it shut with both paws, face strained; a dark grey fog seeps out from the gap under the door",
+   "hero": true,
+   "state": "ember",
+   "details": [
+    "the fog under the door",
+    "the strained face"
+   ]
+  },
+  "44": {
+   "new": "three equal panels side by side with plain gaps, the same plain floor in all three: in the first the main character sits still and waits, its tail flame a dim ember; in the second it takes its first step forward, its tail flame small; in the third it walks on with a calm smile, its tail flame big and bright",
+   "hero": true,
+   "state": null,
+   "details": [
+    "the waiting character with the ember",
+    "the walking character with the bright flame"
+   ],
+   "key": "после действия"
+  },
+  "45": {
+   "new": "medium shot: the main character sits at a desk writing with a pencil on one small blank sheet, a focused calm face; a towering stack of papers is pushed far to the back corner of the desk, out of its sight",
+   "hero": true,
+   "state": "bright",
+   "details": [
+    "the small sheet under the pencil",
+    "the towering stack pushed away"
+   ],
+   "accent": "двух минут"
+  },
+  "46": {
+   "new": "medium shot: the main character sits at a desk with one sheet and a pencil, relaxed; right beside the desk a door stands wide open onto a bright garden; the character glances at the open door with a calm small smile",
+   "hero": true,
+   "state": "bright",
+   "details": [
+    "the open door to the garden",
+    "the sheet and pencil"
+   ]
+  },
+  "47": {
+   "lib": "2026-10-23_videos_01_sdvg_pismo_reel_gen_r2_hourglass_2b638ebd.png",
+   "details": [
+    "the hourglass",
+    "the open envelope"
+   ]
+  },
+  "48": {
+   "new": "wide shot: the main character stands at the foot of a long staircase whose top disappears into clouds, but it looks only down at the first low step right under it, one foot lifted onto that step, a calm face",
+   "hero": true,
+   "state": "bright",
+   "details": [
+    "the foot on the first step",
+    "the staircase into the clouds"
+   ]
+  },
+  "49": {
+   "lib": "2026-10-25_gen_cx_gpt-image-2_3210e6c7.png",
+   "details": [
+    "the character writing",
+    "the person's hand writing"
+   ]
+  },
+  "50": {
+   "new": "medium shot facing the viewer: the main character sits on a floor cushion in a cozy lamp-lit corner, patting an empty cushion right beside it with one paw, an inviting gentle smile, looking straight at the viewer; a small round kitchen timer stands between the cushions",
+   "hero": true,
+   "state": "bright",
+   "details": [
+    "the empty cushion",
+    "the kitchen timer"
+   ],
+   "accent": "две минуты"
+  },
+  "51": {
+   "new": "close-up: the main character pulls one thick dusty folder half out of an open drawer packed with other folders, a small puff of dust in the air, a determined squint; on the desk beside the drawer stands one small round kitchen timer",
+   "hero": true,
+   "state": "bright",
+   "details": [
+    "the dusty folder",
+    "the kitchen timer"
+   ]
+  },
+  "52": {
+   "absorb": true
+  },
+  "53": {
+   "new": "medium shot of the small kitchen: the main character stands at the sink with a pile of dirty dishes, one plate in its paw, glancing sideways at the viewer with a small knowing smile; a small round kitchen timer stands on the counter beside the sink",
+   "hero": true,
+   "state": "bright",
+   "details": [
+    "the timer on the counter",
+    "the knowing smile"
+   ]
+  },
+  "54": {
+   "lib": "2026-10-20_videos_01_sdvg_pismo_frames_005_8d288020.png",
+   "details": [
+    "the golden tail flame",
+    "the paw prints to the chair"
+   ]
+  },
+  "55": {
+   "new": "medium shot in the afternoon: the main character stands beside a desk with its body turned away, pushing one blank sheet of paper aside with a paw, looking at a wall calendar whose next page it is lifting; through the window the sun is already low",
+   "hero": true,
+   "state": "ember",
+   "details": [
+    "the lifted calendar page",
+    "the pushed-away sheet"
+   ],
+   "key": "начну завтра"
+  }
+ }
+}

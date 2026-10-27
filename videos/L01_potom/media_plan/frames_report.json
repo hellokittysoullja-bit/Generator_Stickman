@@ -1,0 +1,4518 @@
+{
+ "model": "cx/gpt-image-2",
+ "size": "1536x1024",
+ "quality": "medium",
+ "look": "197bb015d9f4dbbb",
+ "judge_model": null,
+ "spent_this_run": 4078125,
+ "gateway": {
+  "base_url": "https://anymodel.org/v1",
+  "calls": 0,
+  "failures": 0,
+  "lost_bodies": 0,
+  "empty_answers": 0,
+  "spent": 0,
+  "spend_cap": 300000,
+  "dead": null,
+  "pause_wait_sec": 0.0,
+  "reasked": 0,
+  "empty_answer_reasked": 0
+ },
+ "frames": [
+  {
+   "index": 0,
+   "key": "d9f108c05f6ec2f0",
+   "sig": "bcebc6761aaf1af902ff",
+   "plan_sig": "528e3d00ffe82978656c",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot: the main character sits upright on a wooden chair in the middle of an empty waiting room, both paws on its knees, staring at a closed door with a tired, hopeful face; a tall drift of torn-off blank calendar pages is piled around the chair legs up to the seat; one wall calendar hangs on the wall beside the door, its top page half torn off; a thin cobweb stretches from the chair back to the wall; plain grey wall. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/001.png",
+   "status": "unchecked",
+   "chosen": "a83609d8e4972b74193a.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "a83609d8e4972b74193a.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "a83609d8e4972b74193a.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the drift of torn calendar pages",
+     "role": "subject",
+     "word": null,
+     "box": [
+      30.6,
+      616.2,
+      1041.1,
+      985.9
+     ],
+     "why": null
+    },
+    {
+     "name": "the half torn calendar on the wall",
+     "role": "detail",
+     "word": null,
+     "box": [
+      780.8,
+      92.4,
+      1010.5,
+      441.6
+     ],
+     "why": null
+    },
+    {
+     "name": "the closed door",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1071.7,
+      30.8,
+      1500.4,
+      873.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      283.2,
+      431.3,
+      352.1,
+      523.8
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      444.0,
+      225.9,
+      734.9,
+      462.1
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      275.6,
+      225.9,
+      734.9,
+      718.9
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 1,
+   "key": "f22382ea1cb30e9a",
+   "sig": "ddeac1fd4f51e718bd29",
+   "plan_sig": "7b574af43662921bf698",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: wide shot: the main character sits on its small packed suitcase at the edge of an empty railway platform, chin resting on its paws, looking along two rails that run away into thick grey fog; one empty bench and one lamp post on the platform; no train anywhere. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. Keep a calm area of plain empty background, about a third of the image, for handwriting added later. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/002.png",
+   "status": "unchecked",
+   "chosen": "f4ca1a9d6e63b407c165.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "f4ca1a9d6e63b407c165.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "f4ca1a9d6e63b407c165.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the rails fading into the fog",
+     "role": "subject",
+     "word": null,
+     "box": [
+      1003.2,
+      602.2,
+      1672.0,
+      941.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the suitcase under the character",
+     "role": "detail",
+     "word": null,
+     "box": [
+      551.8,
+      611.6,
+      802.6,
+      771.6
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      371.2,
+      489.3,
+      438.1,
+      564.6
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      501.6,
+      352.9,
+      802.6,
+      602.2
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      359.5,
+      352.9,
+      802.6,
+      771.6
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 2,
+   "key": "4bbdbadd36120cc9",
+   "sig": "ccaed5b21b961e35e3f9",
+   "plan_sig": "98ed5cabd6faa7d0d53f",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: close-up: one phone lies flat on a wooden table, a layer of grey dust on its dark blank screen and a thick cobweb stretching from the phone to a table lamp; the main character peeks over the far edge of the table at the phone with guilty sideways eyes, one paw half raised. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/003.png",
+   "status": "unchecked",
+   "chosen": "166aee2cea4b6af5d031.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "166aee2cea4b6af5d031.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "166aee2cea4b6af5d031.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the cobweb on the phone",
+     "role": "subject",
+     "word": null,
+     "box": [
+      275.6,
+      718.9,
+      612.4,
+      924.3
+     ],
+     "why": null
+    },
+    {
+     "name": "the guilty eyes",
+     "role": "detail",
+     "word": null,
+     "box": [
+      734.9,
+      410.8,
+      1071.7,
+      575.1
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1301.3,
+      410.8,
+      1377.9,
+      493.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      643.0,
+      133.5,
+      1224.8,
+      657.3
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      612.4,
+      133.5,
+      1469.8,
+      718.9
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 3,
+   "key": "6a455f8e756c5852",
+   "sig": "8b6c81e899ef7348140d",
+   "plan_sig": "1cf5fc0b85a88c2fccc9",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: a long plain shelf across the middle of the picture with five white candles standing in a row with even gaps; from left to right: the first is tall with a big bright flame, the second is shorter with a smaller flame, the third is a short stub with a tiny flame, the fourth and the fifth are only flat puddles of melted wax with a thin wisp of smoke; the main character sits on the floor below the right end of the shelf, looking up at the puddles with a disappointed face. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/004.png",
+   "status": "unchecked",
+   "chosen": "4c10ea13d8080976d449.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "4c10ea13d8080976d449.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "4c10ea13d8080976d449.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the tall first candle",
+     "role": "subject",
+     "word": null,
+     "box": [
+      245.8,
+      41.0,
+      368.6,
+      404.5
+     ],
+     "why": null
+    },
+    {
+     "name": "the melted puddles of wax",
+     "role": "detail",
+     "word": null,
+     "box": null,
+     "why": "не найден"
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1305.6,
+      655.4,
+      1359.4,
+      778.2
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      829.4,
+      471.0,
+      1228.8,
+      737.3
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      829.4,
+      471.0,
+      1413.1,
+      942.1
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 4,
+   "key": "b2fedba66a7833eb",
+   "sig": "b1df706712ccf599e56b",
+   "plan_sig": "9a0096eb5e4d90c64e70",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot: the main character stands behind a long low table facing the viewer with a lively curious face, one paw pointing at three things laid out in a row on the table with wide gaps between them: a small closed wooden door in its own little frame, one torn-off blank calendar page, one small round kitchen timer with a blank face. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/005.png",
+   "status": "unchecked",
+   "chosen": "fc43d1781c852c92bd64.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "fc43d1781c852c92bd64.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "fc43d1781c852c92bd64.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the small closed door",
+     "role": "subject",
+     "word": null,
+     "box": [
+      275.6,
+      510.4,
+      509.8,
+      798.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the torn calendar page",
+     "role": "detail",
+     "word": null,
+     "box": [
+      696.6,
+      667.5,
+      918.6,
+      833.9
+     ],
+     "why": null
+    },
+    {
+     "name": "the kitchen timer",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1071.7,
+      636.7,
+      1247.8,
+      806.2
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1102.3,
+      123.2,
+      1209.5,
+      256.8
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      520.5,
+      41.1,
+      1041.1,
+      482.7
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      505.2,
+      41.1,
+      1286.0,
+      667.5
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 5,
+   "key": "cad1514c774cc644",
+   "sig": "e61b2fc35be2720d3ecd",
+   "plan_sig": "8127763bef8b4ece6c6d",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: two equal panels side by side with a plain gap between them, the same desk in both: in the left panel the room is dim grey and the main character slumps at the desk with its head on its paws beside a stack of papers, its tail flame a dim ember with a wisp of smoke; in the right panel the room is bright and the same main character sits upright at the same desk writing in an open notebook with a pencil, a calm small smile, its tail flame big and bright. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/006.png",
+   "status": "unchecked",
+   "chosen": "ce7b1b7cf1d0163c7125.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "ce7b1b7cf1d0163c7125.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "ce7b1b7cf1d0163c7125.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the slumped character in the dim panel",
+     "role": "subject",
+     "word": null,
+     "box": [
+      215.0,
+      389.1,
+      706.6,
+      696.3
+     ],
+     "why": null
+    },
+    {
+     "name": "the writing character in the bright panel",
+     "role": "detail",
+     "word": null,
+     "box": [
+      952.3,
+      286.7,
+      1474.6,
+      696.3
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      998.4,
+      286.7,
+      1305.6,
+      491.5
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      952.3,
+      286.7,
+      1474.6,
+      696.3
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 6,
+   "key": "0294ed0948595f34",
+   "sig": "78bbe06d1ca491bff9f6",
+   "plan_sig": "b669863188b3b970457d",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot: the main character lies comfortably on its back on a soft rug, holding one phone above its face with both paws, an amused relaxed face; out of the phone's blank glowing screen spills a very long paper ribbon made of small blank cards, it loops across the rug and piles into a big soft heap right beside the character. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/007.png",
+   "status": "unchecked",
+   "chosen": "f79cc757a4c3b17b7e6b.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "f79cc757a4c3b17b7e6b.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "f79cc757a4c3b17b7e6b.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the phone in the paws",
+     "role": "subject",
+     "word": null,
+     "box": [
+      535.9,
+      199.2,
+      719.6,
+      410.8
+     ],
+     "why": null
+    },
+    {
+     "name": "the heap of blank cards",
+     "role": "detail",
+     "word": null,
+     "box": [
+      719.6,
+      256.8,
+      1377.9,
+      575.1
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      300.1,
+      256.8,
+      643.0,
+      534.0
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      300.1,
+      256.8,
+      1224.8,
+      831.9
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 8,
+   "key": "b6b3da81c2b63605",
+   "sig": "1556814379024edec71b",
+   "plan_sig": "a2a7dcf5a28b16af6999",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot: the main character stands on tiptoe at a bright morning window, tearing the top page off a wall calendar with one paw, chin up, a determined grin; a wide band of sunlight falls across the floor. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/009.png",
+   "status": "unchecked",
+   "chosen": "76dd1ac4b82520dc7c6b.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "76dd1ac4b82520dc7c6b.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "76dd1ac4b82520dc7c6b.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the paw tearing the calendar page",
+     "role": "subject",
+     "word": null,
+     "box": [
+      995.1,
+      246.5,
+      1071.7,
+      338.9
+     ],
+     "why": null
+    },
+    {
+     "name": "the determined grin",
+     "role": "detail",
+     "word": null,
+     "box": [
+      765.5,
+      390.3,
+      888.0,
+      462.1
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      344.5,
+      400.5,
+      459.3,
+      534.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      520.5,
+      164.3,
+      949.2,
+      462.1
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      306.2,
+      164.3,
+      1071.7,
+      893.5
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 9,
+   "key": "da4fff259ee447cc",
+   "sig": "e346e3e5701a8479d66a",
+   "plan_sig": "4e4f55ee9e272c148ed6",
+   "kind": "scene",
+   "labels": [],
+   "hero": false,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. SCENE: wide shot of the entrance of a busy university gym on a Monday morning: in the foreground a metal turnstile with a small hand clicker counter resting on it; beyond it a crowded room where many young adult students in plain sportswear run on treadmills, ride exercise bikes and wait in a short line for a free machine; all walls and machine screens are blank. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/010.png",
+   "status": "unchecked",
+   "chosen": "c5272185b6f1eb18b527.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "c5272185b6f1eb18b527.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "c5272185b6f1eb18b527.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the turnstile with the clicker counter",
+     "role": "subject",
+     "word": null,
+     "box": [
+      773.2,
+      559.7,
+      979.8,
+      1027.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the short line of waiting students",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1163.6,
+      261.9,
+      1423.8,
+      641.9
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 10,
+   "key": "c9009f5f0379f0db",
+   "sig": "5b6207b1c1ae90aae9e0",
+   "plan_sig": "a565894ff63f07bafa3a",
+   "kind": "scene",
+   "labels": [],
+   "hero": false,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. SCENE: a wide hand-drawn strip of five equal square panels in a row, separated by thin ink borders, each panel showing the same small university gym from the side with a row of treadmills and two exercise bikes; young adult students in plain sportswear exercise in it; the first panel on the left is busy with eight students, the second has seven, the third six, the fourth five, the fifth on the right only four, the free machines in later panels clearly empty; all walls, clocks and machine screens are blank; warm soft light, plain light background around the strip. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/011.png",
+   "status": "ok",
+   "chosen": "cb88047616d392866805.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "cb88047616d392866805.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "cb88047616d392866805.png": {
+     "text_ok": true,
+     "grid": null,
+     "answers": {
+      "claims": {
+       "core": "yes",
+       "c1": "yes",
+       "c2": "yes",
+       "subject": "yes"
+      },
+      "medium": "artwork",
+      "why": "The image is a hand-drawn sketch or illustration showing five panels of a gym with decreasing numbers of people, consistent with the narration and visual requirement."
+     },
+     "vector": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+     ],
+     "defects": {
+      "defects": [],
+      "severe": false,
+      "hero_present": false,
+      "off_model": [],
+      "wrong_character": true,
+      "text": false,
+      "why": "The illustration depicts a gym scene with people on treadmills and exercise bikes; the specified main character (a black cartoon cat) is completely absent."
+     },
+     "text": {
+      "unexpected_text": []
+     },
+     "defect_verdict": "clean"
+    }
+   },
+   "objects": [
+    {
+     "name": "the gym strip",
+     "role": "subject",
+     "word": null,
+     "box": [
+      31.1,
+      121.3,
+      2041.9,
+      576.1
+     ],
+     "why": null
+    },
+    {
+     "name": "the busy first panel",
+     "role": "detail",
+     "word": null,
+     "box": [
+      41.5,
+      121.3,
+      425.0,
+      576.1
+     ],
+     "why": null
+    },
+    {
+     "name": "the nearly empty last panel",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1658.4,
+      121.3,
+      2041.9,
+      576.1
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 11,
+   "key": "9c46af8f3ea4d563",
+   "sig": "0803ffcad560d8ed61db",
+   "plan_sig": "f2039c60523a52cf33ce",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: wide shot: the main character steps out through an open doorway from a dark cluttered room full of crumpled paper balls and a tipped-over chair into a clean, bright, empty room, head up, one foot forward, a light hopeful face, pushing the door shut behind it with its tail. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the main character is drawn big, at least a third of the image height. Keep a calm area of plain empty background, about a third of the image, for handwriting added later. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/012.png",
+   "status": "unchecked",
+   "chosen": "20389516d32f0f361844.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "20389516d32f0f361844.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "20389516d32f0f361844.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the crumpled paper balls in the dark room",
+     "role": "subject",
+     "word": null,
+     "box": [
+      76.5,
+      534.0,
+      306.2,
+      718.9
+     ],
+     "why": null
+    },
+    {
+     "name": "the hopeful face",
+     "role": "detail",
+     "word": null,
+     "box": [
+      581.8,
+      267.0,
+      918.6,
+      616.2
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      336.8,
+      287.6,
+      444.0,
+      410.8
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      520.5,
+      267.0,
+      918.6,
+      616.2
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      336.8,
+      267.0,
+      949.2,
+      821.6
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 12,
+   "key": "b893afbc25297994",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "status": "ok",
+   "check": "eyes",
+   "source": "library",
+   "chosen": "lib_2026-10-27_gen_cx_gpt-image-2_6143dac1.png",
+   "path": "frames/013.png",
+   "objects": [
+    {
+     "name": "the drawn part that the label «ПОНЕДЕЛЬНИК» would describe (what its little arrow points to)",
+     "role": "label:0",
+     "word": "ПОНЕДЕЛЬНИК",
+     "box": [
+      41.5,
+      227.4,
+      414.6,
+      379.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the drawn part that the label «СРЕДА» would describe (what its little arrow points to)",
+     "role": "label:1",
+     "word": "СРЕДА",
+     "box": [
+      870.7,
+      227.4,
+      1243.8,
+      379.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the drawn part that the label «ВОСКРЕСЕНЬЕ» would describe (what its little arrow points to)",
+     "role": "label:2",
+     "word": "ВОСКРЕСЕНЬЕ",
+     "box": [
+      1699.9,
+      227.4,
+      2073.0,
+      379.0
+     ],
+     "why": null
+    },
+    {
+     "name": "a crowd of students",
+     "role": "subject",
+     "word": null,
+     "box": [
+      41.5,
+      227.4,
+      414.6,
+      379.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the first gym panel",
+     "role": "detail",
+     "word": null,
+     "box": [
+      41.5,
+      151.6,
+      414.6,
+      530.6
+     ],
+     "why": null
+    },
+    {
+     "name": "the last gym panel",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1699.9,
+      151.6,
+      2073.0,
+      530.6
+     ],
+     "why": null
+    }
+   ],
+   "plan_sig": "c20849f422e75bce1cb7"
+  },
+  {
+   "index": 13,
+   "key": "f75314c945fafd7c",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "status": "ok",
+   "check": "eyes",
+   "source": "library",
+   "chosen": "lib_2026-10-20_videos_02_sdvg_vremya_frames_005_c430181c.png",
+   "path": "frames/014.png",
+   "objects": [
+    {
+     "name": "a notebook",
+     "role": "subject",
+     "word": null,
+     "box": [
+      50.2,
+      752.8,
+      468.2,
+      903.4
+     ],
+     "why": null
+    },
+    {
+     "name": "the open notebook",
+     "role": "detail",
+     "word": null,
+     "box": [
+      50.2,
+      752.8,
+      468.2,
+      903.4
+     ],
+     "why": null
+    },
+    {
+     "name": "the desk lamp",
+     "role": "detail",
+     "word": null,
+     "box": [
+      50.2,
+      329.4,
+      334.4,
+      752.8
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      309.3,
+      451.7,
+      401.3,
+      564.6
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      426.4,
+      240.0,
+      802.6,
+      564.6
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      250.8,
+      240.0,
+      836.0,
+      752.8
+     ],
+     "why": null
+    }
+   ],
+   "plan_sig": "5f644ea6b796c7cc682b"
+  },
+  {
+   "index": 14,
+   "key": "3a6d55cf7e1b44cd",
+   "sig": "2f531b9e57be49039b51",
+   "plan_sig": "2fe71965ea71c9896522",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: two equal panels side by side with a plain gap between them: in the left panel the main character stands tall on a floor mat beside one small dumbbell, holding a teacup in both paws, eyes closed, a proud smile; in the right panel the same main character sits at a desk opening one envelope, a small pile of opened envelopes beside it, and the dumbbell lies forgotten on the floor behind its chair. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/015.png",
+   "status": "unchecked",
+   "chosen": "be9907004b5e742f6276.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "be9907004b5e742f6276.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "be9907004b5e742f6276.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the teacup in the paws",
+     "role": "subject",
+     "word": null,
+     "box": [
+      411.6,
+      434.6,
+      537.5,
+      483.4
+     ],
+     "why": null
+    },
+    {
+     "name": "the forgotten dumbbell",
+     "role": "detail",
+     "word": null,
+     "box": [
+      88.7,
+      598.7,
+      266.1,
+      656.4
+     ],
+     "why": null
+    },
+    {
+     "name": "the pile of opened envelopes",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1490.2,
+      505.6,
+      1756.3,
+      656.4
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      691.9,
+      243.9,
+      780.6,
+      319.3
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      283.8,
+      106.4,
+      709.6,
+      354.8
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      212.9,
+      88.7,
+      833.8,
+      709.6
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 15,
+   "key": "fce5bd8d4551a7bb",
+   "sig": "54608410d1f5ba8c6915",
+   "plan_sig": "e20b22a854642cbde8ee",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot in a dark kitchen at night: the main character stands in front of one open fridge, the fridge's cold white light on its face, one paw on the fridge door, a blank tired stare; one crumpled sheet of paper lies on the floor behind it. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the open fridge is the biggest single object in the picture, its whole outline visible, with plain empty background around it. The main character and the open fridge sit side by side with a clear gap of plain background between them; neither touches or covers the other. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/016.png",
+   "status": "unchecked",
+   "chosen": "a943204ae13a93afea09.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "a943204ae13a93afea09.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "a943204ae13a93afea09.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "open fridge",
+     "role": "zoom",
+     "word": "холодильник",
+     "box": [
+      811.4,
+      30.8,
+      1408.5,
+      883.2
+     ],
+     "why": null
+    },
+    {
+     "name": "the crumpled sheet on the floor",
+     "role": "subject",
+     "word": null,
+     "box": [
+      91.9,
+      718.9,
+      229.7,
+      821.6
+     ],
+     "why": null
+    },
+    {
+     "name": "the tired face in the fridge light",
+     "role": "detail",
+     "word": null,
+     "box": [
+      428.7,
+      287.6,
+      796.1,
+      616.2
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      267.9,
+      493.0,
+      321.5,
+      554.6
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      413.4,
+      267.0,
+      796.1,
+      616.2
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      214.3,
+      267.0,
+      842.0,
+      842.1
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 16,
+   "key": "9da47777660b7caa",
+   "sig": "de8b81d9582bce515f37",
+   "plan_sig": "62dfbe84804124c6534c",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: wide shot of a gym locker room: five young adults in plain sportswear sit in a row on one long bench, all slumped the same way, shoulders down, towels around their necks, heads hanging; the main character sits at the end of the same bench in exactly the same slumped pose with a small towel around its neck. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/017.png",
+   "status": "unchecked",
+   "chosen": "7e0f80149375d8322a7c.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "7e0f80149375d8322a7c.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "7e0f80149375d8322a7c.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the slumped character with the towel",
+     "role": "subject",
+     "word": null,
+     "box": [
+      71.0,
+      283.8,
+      337.1,
+      709.6
+     ],
+     "why": null
+    },
+    {
+     "name": "the row of slumped people",
+     "role": "detail",
+     "word": null,
+     "box": [
+      71.0,
+      266.1,
+      1312.8,
+      709.6
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1623.2,
+      425.8,
+      1676.4,
+      496.7
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      1374.8,
+      354.8,
+      1596.6,
+      532.2
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      1366.0,
+      354.8,
+      1685.3,
+      638.6
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 17,
+   "key": "791f67fc4cf09f4e",
+   "sig": "5fe30cfe69ba48e066d7",
+   "plan_sig": "935c6db8e0c06f762d6a",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: close-up: the main character holds up one blank white sheet of paper in both paws and looks at it with a sad soft face; the lower half of the sheet is melting like soft wax and dripping into a small puddle on the floor. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/018.png",
+   "status": "unchecked",
+   "chosen": "b7d04b7feb637addc7db.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "b7d04b7feb637addc7db.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "b7d04b7feb637addc7db.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the melting lower edge of the sheet",
+     "role": "subject",
+     "word": null,
+     "box": [
+      581.8,
+      718.9,
+      918.6,
+      852.4
+     ],
+     "why": null
+    },
+    {
+     "name": "the puddle on the floor",
+     "role": "detail",
+     "word": null,
+     "box": [
+      597.1,
+      878.1,
+      918.6,
+      975.6
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1224.8,
+      493.0,
+      1286.0,
+      559.7
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      428.7,
+      61.6,
+      1071.7,
+      513.5
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      382.8,
+      51.4,
+      1347.3,
+      893.5
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 18,
+   "key": "4305a6caa7e35f5d",
+   "sig": "3523ecf6278c66b5bd08",
+   "plan_sig": "ad8dca3d0322977b29b4",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: wide shot: the main character stands at the near end of a long empty corridor with a packed bag at its feet, looking down the corridor, small and tired; along the wall hangs a row of blank wall calendars, each one farther and smaller than the last, until the corridor fades into grey fog. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/019.png",
+   "status": "unchecked",
+   "chosen": "9ffbb6cc7a6174397e1b.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "9ffbb6cc7a6174397e1b.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "9ffbb6cc7a6174397e1b.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the nearest blank calendar",
+     "role": "subject",
+     "word": null,
+     "box": [
+      92.0,
+      20.7,
+      317.7,
+      414.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the corridor fading into fog",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1170.4,
+      282.3,
+      1672.0,
+      564.6
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": null,
+     "why": "внутри пустая бумага"
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      367.8,
+      357.6,
+      635.4,
+      489.3
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      200.6,
+      357.6,
+      635.4,
+      828.1
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 19,
+   "key": "c94a58faecba85db",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "status": "ok",
+   "check": "eyes",
+   "source": "library",
+   "chosen": "lib_2026-10-20_videos_02_sdvg_vremya_frames_001_f008509c.png",
+   "path": "frames/020.png",
+   "objects": [
+    {
+     "name": "a phone",
+     "role": "subject",
+     "word": null,
+     "box": [
+      506.9,
+      573.4,
+      614.4,
+      691.2
+     ],
+     "why": null
+    },
+    {
+     "name": "the phone glowing in the paws",
+     "role": "detail",
+     "word": null,
+     "box": [
+      491.5,
+      568.3,
+      622.1,
+      696.3
+     ],
+     "why": null
+    },
+    {
+     "name": "the night window with the moon",
+     "role": "detail",
+     "word": null,
+     "box": [
+      921.6,
+      25.6,
+      1497.6,
+      706.6
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      122.9,
+      404.5,
+      176.6,
+      491.5
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      299.5,
+      256.0,
+      645.1,
+      573.4
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      69.1,
+      256.0,
+      645.1,
+      839.7
+     ],
+     "why": null
+    }
+   ],
+   "plan_sig": "f57239488f5cee969e94"
+  },
+  {
+   "index": 20,
+   "key": "1cab141602b6a66e",
+   "sig": "7e77ded4512abbb320c2",
+   "plan_sig": "ec1866e2afd8b731a6a3",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot: a tall heap of unfinished things stands in a room: a pile of laundry, a stack of papers, a dirty mug and an unopened box; one empty wooden chair stands right beside the heap as if waiting for someone; the main character stands in front of the heap looking at the empty chair, scratching its head with one paw, puzzled. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/021.png",
+   "status": "unchecked",
+   "chosen": "6d4c29a5e5b2af4eeac7.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "6d4c29a5e5b2af4eeac7.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "6d4c29a5e5b2af4eeac7.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the empty chair",
+     "role": "subject",
+     "word": null,
+     "box": [
+      1018.1,
+      297.8,
+      1485.1,
+      955.1
+     ],
+     "why": null
+    },
+    {
+     "name": "the heap of unfinished things",
+     "role": "detail",
+     "word": null,
+     "box": [
+      643.0,
+      102.7,
+      1102.3,
+      873.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": null,
+     "why": "точка, а не предмет"
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      306.2,
+      225.9,
+      689.0,
+      534.0
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      107.2,
+      225.9,
+      704.3,
+      914.0
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 21,
+   "key": "0b9e354a23ed08b8",
+   "sig": "f4a255faec8ebdb32e49",
+   "plan_sig": "baaab61b141d2931a875",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot in a dim hallway at night: the main character stands frozen with its fur slightly bristled, staring at its own shadow on the wall; the shadow is not a cat but the tall flat grey silhouette of a stranger in a long coat and a hat. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/022.png",
+   "status": "unchecked",
+   "chosen": "b814d5171b97d727c1d1.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "b814d5171b97d727c1d1.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "b814d5171b97d727c1d1.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the stranger-shaped shadow",
+     "role": "subject",
+     "word": null,
+     "box": [
+      995.1,
+      20.5,
+      1423.8,
+      893.5
+     ],
+     "why": null
+    },
+    {
+     "name": "the bristled fur",
+     "role": "detail",
+     "word": null,
+     "box": [
+      275.6,
+      338.9,
+      765.5,
+      893.5
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      130.1,
+      534.0,
+      214.3,
+      616.2
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      382.8,
+      338.9,
+      765.5,
+      718.9
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      76.5,
+      338.9,
+      765.5,
+      914.0
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 22,
+   "key": "bcebc68354c781b0",
+   "sig": "1cfaf36a6811a99d5ff8",
+   "plan_sig": "d25a7a514880752a1ad1",
+   "kind": "scene",
+   "labels": [],
+   "hero": false,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. SCENE: wide shot of a clean bright lab: a young adult student in a plain grey shirt lies on the bed of a big round brain scanner, head inside its round opening, a calm face; a researcher in a white coat sits at a desk beside it looking at two monitors with blank screens. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/023.png",
+   "status": "unchecked",
+   "chosen": "ce2175be34015a35846e.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "ce2175be34015a35846e.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "ce2175be34015a35846e.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the student's head in the scanner opening",
+     "role": "subject",
+     "word": null,
+     "box": [
+      1071.7,
+      421.1,
+      1186.5,
+      513.5
+     ],
+     "why": null
+    },
+    {
+     "name": "the researcher at the monitors",
+     "role": "detail",
+     "word": null,
+     "box": [
+      130.1,
+      354.3,
+      382.8,
+      821.6
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 23,
+   "key": "09d572b320fa8ba9",
+   "sig": "19490c86507f08783dd2",
+   "plan_sig": "2062944189d9b0cab58b",
+   "kind": "scene",
+   "labels": [],
+   "hero": false,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. SCENE: two brains side by side in the middle of a plain light background, drawn by hand: in the left brain one small area glows bright with short rays around it; in the right brain the same small area is only faintly lit; above the left brain a small drawing of a young person, above the right brain the same person old, with grey hair and wrinkles. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/024.png",
+   "status": "unchecked",
+   "chosen": "6c34d93f86de062d0450.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "6c34d93f86de062d0450.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "6c34d93f86de062d0450.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the bright spot in the left brain",
+     "role": "subject",
+     "word": null,
+     "box": [
+      505.2,
+      575.1,
+      643.0,
+      667.5
+     ],
+     "why": null
+    },
+    {
+     "name": "the faint spot in the right brain",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1071.7,
+      585.4,
+      1163.6,
+      657.3
+     ],
+     "why": null
+    },
+    {
+     "name": "the old face",
+     "role": "detail",
+     "word": null,
+     "box": [
+      918.6,
+      195.1,
+      1148.2,
+      410.8
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 24,
+   "key": "39f778e65582fe80",
+   "sig": "f0655a8a9347e4096d3c",
+   "plan_sig": "7300a8ce7f60997e842e",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: close-up on a long wooden table: in the left half the main character grabs one small coin with its paw, eyes fixed on it; in the right half, far away at the other end of the table, a tall stack of coins stands in a soft grey haze, ignored. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/025.png",
+   "status": "unchecked",
+   "chosen": "d0c2692764007378bb44.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "d0c2692764007378bb44.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "d0c2692764007378bb44.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the small coin under the paw",
+     "role": "subject",
+     "word": null,
+     "box": [
+      597.1,
+      729.2,
+      701.2,
+      775.4
+     ],
+     "why": null
+    },
+    {
+     "name": "the tall stack of coins in the haze",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1258.5,
+      400.5,
+      1353.4,
+      605.9
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": null,
+     "why": "точка, а не предмет"
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      367.4,
+      164.3,
+      918.6,
+      677.8
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      61.2,
+      164.3,
+      918.6,
+      718.9
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 25,
+   "key": "a374c267e1ab0d71",
+   "sig": "9b00c2977a5c2ccef3a5",
+   "plan_sig": "e7082bcce249b109eac1",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot: the main character stands at the sink, one paw on a dirty plate that rests on top of a stack of dirty plates, a small hopeful smile; on the wall beside the sink the apron hangs on a hook, clean and empty, a sponge tucked in its pocket; the apron is in the right third of the frame, plain light wall around it. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/026.png",
+   "status": "ok",
+   "chosen": "5d74e9be90460b94f93e.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "5d74e9be90460b94f93e.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "5d74e9be90460b94f93e.png": {
+     "text_ok": true,
+     "grid": null,
+     "answers": {
+      "claims": {
+       "core": "yes",
+       "c1": "yes",
+       "c2": "no",
+       "subject": "yes"
+      },
+      "medium": "artwork",
+      "why": "The image is a digital illustration showing a cat holding a plate over a sink with an apron hanging on a hook to the right; the apron contains a sponge, so it is not empty."
+     },
+     "vector": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      0.0
+     ],
+     "defects": {
+      "defects": [],
+      "severe": false,
+      "hero_present": true,
+      "off_model": [],
+      "wrong_character": false,
+      "text": false,
+      "why": "The illustration correctly depicts the main character (black cat) with the specific ear configuration (viewer's left folded, viewer's right upright), green eyes, and tail flame. No drawing errors or s"
+     },
+     "text": {
+      "unexpected_text": []
+     },
+     "defect_verdict": "clean"
+    }
+   },
+   "objects": [
+    {
+     "name": "an apron",
+     "role": "subject",
+     "word": null,
+     "box": [
+      1191.1,
+      259.8,
+      1423.8,
+      770.2
+     ],
+     "why": null
+    },
+    {
+     "name": "the apron on the hook",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1191.1,
+      259.8,
+      1423.8,
+      770.2
+     ],
+     "why": null
+    },
+    {
+     "name": "the dirty plates in the sink",
+     "role": "detail",
+     "word": null,
+     "box": [
+      444.0,
+      718.9,
+      796.1,
+      924.3
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      979.8,
+      410.8,
+      1041.1,
+      482.7
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      413.4,
+      154.1,
+      949.2,
+      534.0
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      398.1,
+      154.1,
+      1148.2,
+      760.0
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 26,
+   "key": "0da652ecb505c010",
+   "sig": "86101d29781fdf8825af",
+   "plan_sig": "2cedc68b18559537aa25",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot of the same small kitchen in the morning: the main character stands at the kitchen sink, sleepy, eyes half closed, fur ruffled and flattened on one side, shoulders slumped; the sink is overflowing with a much taller pile of dirty plates and cups; one empty apron hangs on a hook on the wall with a sponge in its pocket. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/027.png",
+   "status": "unchecked",
+   "chosen": "0429d577df64fc135e4b.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "0429d577df64fc135e4b.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "0429d577df64fc135e4b.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the overflowing pile of dishes",
+     "role": "subject",
+     "word": null,
+     "box": [
+      857.4,
+      451.9,
+      1423.8,
+      821.6
+     ],
+     "why": null
+    },
+    {
+     "name": "the sleepy ruffled face",
+     "role": "detail",
+     "word": null,
+     "box": [
+      459.3,
+      154.1,
+      888.0,
+      513.5
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": null,
+     "why": "внутри пустая бумага"
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      459.3,
+      154.1,
+      888.0,
+      513.5
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      275.6,
+      154.1,
+      888.0,
+      821.6
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 27,
+   "key": "a142d65320e67389",
+   "sig": "de9a1a4d0a564e47acbc",
+   "plan_sig": "4a5ecd1bc3eea8f25d42",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot: the main character holds out a tall wobbling stack of dirty plates toward a tall pale grey figure with a smooth blank oval head and no face, who stands beside it with empty open hands; the character looks away with a careless face. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/028.png",
+   "status": "unchecked",
+   "chosen": "d0e0f112dcfae78cc5c5.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "d0e0f112dcfae78cc5c5.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "d0e0f112dcfae78cc5c5.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the faceless figure",
+     "role": "subject",
+     "word": null,
+     "box": [
+      1002.8,
+      58.5,
+      1456.0,
+      962.3
+     ],
+     "why": null
+    },
+    {
+     "name": "the wobbling stack of plates",
+     "role": "detail",
+     "word": null,
+     "box": [
+      725.7,
+      329.7,
+      1062.5,
+      616.2
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      134.7,
+      448.8,
+      196.0,
+      554.6
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      245.0,
+      154.1,
+      734.9,
+      534.0
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      91.9,
+      154.1,
+      834.4,
+      944.8
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 29,
+   "key": "e05d96910706ffb4",
+   "sig": "ca8e0436502ee136487b",
+   "plan_sig": "6c0515e75a0fad413400",
+   "kind": "scene",
+   "labels": [],
+   "hero": false,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. SCENE: close-up on a desk with plain light background: a framed photograph of an old, kind, wrinkled face of a person with grey hair stands propped against a glass jar; the jar is half full of coins and one more coin is dropping into it. LAYOUT: the framed photograph is the biggest single object in the picture, its whole outline visible, with plain empty background around it. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/030.png",
+   "status": "unchecked",
+   "chosen": "5817ac03c2ce892d4131.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "5817ac03c2ce892d4131.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "5817ac03c2ce892d4131.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "framed photograph",
+     "role": "zoom",
+     "word": "лица",
+     "box": [
+      375.1,
+      269.1,
+      860.4,
+      792.8
+     ],
+     "why": null
+    },
+    {
+     "name": "the old face in the photograph",
+     "role": "subject",
+     "word": null,
+     "box": [
+      459.3,
+      359.4,
+      765.5,
+      616.2
+     ],
+     "why": null
+    },
+    {
+     "name": "the coin dropping into the jar",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1018.1,
+      277.3,
+      1090.1,
+      374.9
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 30,
+   "key": "0caceb1afb1a986f",
+   "sig": "3585214feef22e898912",
+   "plan_sig": "550602a33bf73a686984",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot of a dim bedroom at night: the main character sits on the edge of its bed looking up with soft pity at a pale dream bubble above it; inside the bubble the same main character in the morning, ruffled and sleepy, with heavy eyelids and a big yawn. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/031.png",
+   "status": "unchecked",
+   "chosen": "f161ff8ec24ff9a1e3f6.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "f161ff8ec24ff9a1e3f6.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "f161ff8ec24ff9a1e3f6.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the sleepy cat in the dream bubble",
+     "role": "subject",
+     "word": null,
+     "box": [
+      857.4,
+      61.6,
+      1270.7,
+      410.8
+     ],
+     "why": null
+    },
+    {
+     "name": "the pitying face",
+     "role": "detail",
+     "word": null,
+     "box": [
+      459.3,
+      410.8,
+      765.5,
+      657.3
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      367.4,
+      308.1,
+      796.1,
+      657.3
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      245.0,
+      308.1,
+      796.1,
+      842.1
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 31,
+   "key": "b34396bd6513cfac",
+   "sig": "62ae4d420e6f792e729f",
+   "plan_sig": "9fc37bb98a85d9249b81",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot of a bright morning kitchen: a wooden drying rack with exactly three clean, gleaming plates stands on the counter; next to it the main character washes one more plate at the sink with a calm happy smile; sunlight through the window. the flame on the tip of the main character's tail burns tall and golden with small bright sparks flying off it. LAYOUT: the drying rack with three clean plates is the biggest single object in the picture, its whole outline visible, with plain empty background around it. The main character and the drying rack with three clean plates sit side by side with a clear gap of plain background between them; neither touches or covers the other. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/032.png",
+   "status": "unchecked",
+   "chosen": "68dbdc22c9ddcd8c3d27.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "68dbdc22c9ddcd8c3d27.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "68dbdc22c9ddcd8c3d27.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "drying rack with three clean plates",
+     "role": "zoom",
+     "word": "три",
+     "box": [
+      979.8,
+      493.0,
+      1508.0,
+      883.2
+     ],
+     "why": null
+    },
+    {
+     "name": "the three clean plates",
+     "role": "subject",
+     "word": null,
+     "box": [
+      1041.1,
+      503.2,
+      1439.1,
+      811.3
+     ],
+     "why": null
+    },
+    {
+     "name": "the happy face",
+     "role": "detail",
+     "word": null,
+     "box": [
+      459.3,
+      410.8,
+      612.4,
+      513.5
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      773.2,
+      308.1,
+      872.7,
+      462.1
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      336.8,
+      195.1,
+      719.6,
+      534.0
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      306.2,
+      195.1,
+      918.6,
+      739.4
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 32,
+   "key": "b890085876241c16",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "status": "ok",
+   "check": "eyes",
+   "source": "same:2",
+   "chosen": "f4ca1a9d6e63b407c165.png",
+   "path": "frames/033.png",
+   "objects": [
+    {
+     "name": "a bus stop",
+     "role": "subject",
+     "word": null,
+     "box": null,
+     "why": "не найден"
+    },
+    {
+     "name": "the empty road stretching away",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1003.2,
+      564.6,
+      1672.0,
+      941.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the small bag at its feet",
+     "role": "detail",
+     "word": null,
+     "box": [
+      535.0,
+      611.6,
+      802.6,
+      771.6
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      376.2,
+      489.3,
+      451.4,
+      564.6
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      501.6,
+      357.6,
+      802.6,
+      602.2
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      367.8,
+      357.6,
+      802.6,
+      771.6
+     ],
+     "why": null
+    }
+   ],
+   "plan_sig": "1d9302511d506bd9c89e"
+  },
+  {
+   "index": 33,
+   "key": "c0dc4ece30c70e74",
+   "sig": "aaf248443d2cfbc1c6d8",
+   "plan_sig": "013d536c033d8df8c9b3",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot: the main character sits on the floor next to a guitar leaning against a chair, arms crossed, looking away to the side with a guilty sulky face; a thin layer of dust lies on the guitar; beside it on the floor an untouched sketchbook and a pair of running shoes. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/034.png",
+   "status": "unchecked",
+   "chosen": "1e9a4bd4bd3b33175a2e.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "1e9a4bd4bd3b33175a2e.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "1e9a4bd4bd3b33175a2e.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the dusty guitar",
+     "role": "subject",
+     "word": null,
+     "box": [
+      829.4,
+      41.0,
+      1198.1,
+      778.2
+     ],
+     "why": null
+    },
+    {
+     "name": "the sulky face",
+     "role": "detail",
+     "word": null,
+     "box": [
+      307.2,
+      204.8,
+      798.7,
+      614.4
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      199.7,
+      532.5,
+      268.8,
+      614.4
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      307.2,
+      204.8,
+      798.7,
+      614.4
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      138.2,
+      204.8,
+      798.7,
+      870.4
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 34,
+   "key": "4f99da643a32bfda",
+   "sig": "ceb346cd54e90445b8df",
+   "plan_sig": "9900d91a182202cef7c7",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: close-up: the main character holds open a thick book with dozens of paper bookmarks sticking out of its pages; each bookmark has a tiny drawing on it: a mountain, a film reel, a guitar, a plane, a cake; the character looks at them with warm wistful eyes. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/035.png",
+   "status": "unchecked",
+   "chosen": "703fc98d75d087cf3dbb.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "703fc98d75d087cf3dbb.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "703fc98d75d087cf3dbb.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the bookmarks with tiny drawings",
+     "role": "subject",
+     "word": null,
+     "box": [
+      339.9,
+      518.6,
+      1105.4,
+      677.8
+     ],
+     "why": null
+    },
+    {
+     "name": "the wistful eyes",
+     "role": "detail",
+     "word": null,
+     "box": [
+      566.5,
+      297.8,
+      979.8,
+      513.5
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      413.4,
+      30.8,
+      1102.3,
+      534.0
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      336.8,
+      30.8,
+      1408.5,
+      965.4
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 36,
+   "key": "6c39bd3fa6acd512",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "status": "ok",
+   "check": "eyes",
+   "source": "library",
+   "chosen": "lib_2026-10-25_videos_05_ustal_reel_gen_u1_floor_9396085a.png",
+   "path": "frames/037.png",
+   "objects": [
+    {
+     "name": "the envelope on the floor",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1191.1,
+      542.3,
+      1405.5,
+      608.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the glum face",
+     "role": "detail",
+     "word": null,
+     "box": [
+      535.9,
+      616.2,
+      1010.5,
+      821.6
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      237.3,
+      451.9,
+      290.9,
+      513.5
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      459.3,
+      359.4,
+      1041.1,
+      821.6
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      84.2,
+      359.4,
+      1240.1,
+      821.6
+     ],
+     "why": null
+    }
+   ],
+   "plan_sig": "b66a859846d0be79ae91"
+  },
+  {
+   "index": 37,
+   "key": "d63186fec33dfa95",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "status": "ok",
+   "check": "eyes",
+   "source": "library",
+   "chosen": "lib_2026-10-25_videos_03_lenivyi_reel_gen_g2_tail_62fcfcc3.png",
+   "path": "frames/038.png",
+   "objects": [
+    {
+     "name": "a face",
+     "role": "subject",
+     "word": null,
+     "box": [
+      612.4,
+      308.1,
+      918.6,
+      534.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the worried face",
+     "role": "detail",
+     "word": null,
+     "box": [
+      612.4,
+      308.1,
+      918.6,
+      534.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the tail flame in the paws",
+     "role": "detail",
+     "word": null,
+     "box": [
+      796.1,
+      513.5,
+      949.2,
+      616.2
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      796.1,
+      513.5,
+      949.2,
+      616.2
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      489.9,
+      164.3,
+      949.2,
+      534.0
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      489.9,
+      164.3,
+      949.2,
+      821.6
+     ],
+     "why": null
+    }
+   ],
+   "plan_sig": "214da042ffef87a30cf2"
+  },
+  {
+   "index": 38,
+   "key": "562b47ebbf9c3766",
+   "sig": "5e287a41ec127dd83e63",
+   "plan_sig": "7a80688e477319619a17",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot: the main character sits on a sofa holding one small round kitchen timer in both paws, its dial turned a little, a sheepish embarrassed smile; one phone lies on the cushion beside it with a blank glowing screen. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/039.png",
+   "status": "unchecked",
+   "chosen": "a7686d97a6a7b1a9714a.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "a7686d97a6a7b1a9714a.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "a7686d97a6a7b1a9714a.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the kitchen timer in the paws",
+     "role": "subject",
+     "word": null,
+     "box": [
+      643.0,
+      525.8,
+      783.9,
+      667.5
+     ],
+     "why": null
+    },
+    {
+     "name": "the phone on the cushion",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1071.7,
+      672.7,
+      1313.6,
+      842.1
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      975.2,
+      277.3,
+      1090.1,
+      421.1
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      428.7,
+      102.7,
+      933.9,
+      513.5
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      428.7,
+      102.7,
+      1194.2,
+      801.1
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 39,
+   "key": "63719f4f4af765f2",
+   "sig": "8f6d98696d434293a880",
+   "plan_sig": "dc4840deef1f4b830112",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot: the main character lies relaxed on the same sofa watching a phone with a blank glowing screen held in one paw, a content smile; the small round kitchen timer lies forgotten on the cushion. the flame on the tip of the main character's tail burns tall and golden with small bright sparks flying off it. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/040.png",
+   "status": "unchecked",
+   "chosen": "ade17fd60bda810560ca.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "ade17fd60bda810560ca.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "ade17fd60bda810560ca.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the forgotten timer",
+     "role": "subject",
+     "word": null,
+     "box": [
+      335.3,
+      650.1,
+      474.6,
+      775.4
+     ],
+     "why": null
+    },
+    {
+     "name": "the content smile",
+     "role": "detail",
+     "word": null,
+     "box": [
+      643.0,
+      451.9,
+      750.2,
+      513.5
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1041.1,
+      123.2,
+      1209.5,
+      308.1
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      413.4,
+      143.8,
+      979.8,
+      616.2
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      413.4,
+      143.8,
+      1332.0,
+      770.2
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 40,
+   "key": "0f9f2c65327b3f26",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "status": "ok",
+   "check": "eyes",
+   "source": "library",
+   "chosen": "lib_2026-10-20_videos_01_sdvg_pismo_frames_003_274b368a.png",
+   "path": "frames/041.png",
+   "objects": [
+    {
+     "name": "the stained envelope",
+     "role": "detail",
+     "word": null,
+     "box": [
+      758.4,
+      240.0,
+      1264.0,
+      678.4
+     ],
+     "why": null
+    },
+    {
+     "name": "the uneasy face",
+     "role": "detail",
+     "word": null,
+     "box": [
+      252.8,
+      195.0,
+      606.7,
+      525.8
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      126.4,
+      373.1,
+      189.6,
+      457.9
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      246.5,
+      195.0,
+      606.7,
+      407.0
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      75.8,
+      195.0,
+      606.7,
+      695.4
+     ],
+     "why": null
+    }
+   ],
+   "plan_sig": "7b2e8c38ebd59ec8b69f"
+  },
+  {
+   "index": 41,
+   "key": "402987e518150b27",
+   "sig": "2bd98d1132176005b9f4",
+   "plan_sig": "0eedcf5bfa8700356b91",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot: the main character lounges in an armchair with a cup of tea, eyes closed, a relieved smile; behind the armchair a stack of papers on a desk has grown tall and heavy, bending the desk legs, and its long shadow falls over the character. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/042.png",
+   "status": "unchecked",
+   "chosen": "86497309892e0dc5537b.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "86497309892e0dc5537b.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "86497309892e0dc5537b.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the bending desk with the heavy stack",
+     "role": "subject",
+     "word": null,
+     "box": [
+      214.3,
+      20.5,
+      1316.7,
+      534.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the cup of tea",
+     "role": "detail",
+     "word": null,
+     "box": [
+      719.6,
+      616.2,
+      826.7,
+      698.4
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": null,
+     "why": "точка, а не предмет"
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      581.8,
+      328.6,
+      949.2,
+      616.2
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      566.5,
+      328.6,
+      1102.3,
+      821.6
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 42,
+   "key": "023fd9d57df19484",
+   "sig": "48573c9a9565c9335917",
+   "plan_sig": "d8e3a3ba0fc5c8846228",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot: the main character leans its whole body against a tall closet door, holding it shut with both paws, face strained; a dark grey fog seeps out from the gap under the door. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/043.png",
+   "status": "unchecked",
+   "chosen": "8036eaa284cc54390e8e.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "8036eaa284cc54390e8e.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "8036eaa284cc54390e8e.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the fog under the door",
+     "role": "subject",
+     "word": null,
+     "box": [
+      857.4,
+      718.9,
+      1377.9,
+      985.9
+     ],
+     "why": null
+    },
+    {
+     "name": "the strained face",
+     "role": "detail",
+     "word": null,
+     "box": [
+      612.4,
+      308.1,
+      1010.5,
+      575.1
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      245.0,
+      349.2,
+      329.2,
+      431.3
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      505.2,
+      123.2,
+      1041.1,
+      575.1
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      229.7,
+      123.2,
+      1071.7,
+      852.4
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 43,
+   "key": "e1593dd657de2013",
+   "sig": "540a52343db9986eb2ef",
+   "plan_sig": "157ea90c106927d1fb43",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: three equal panels side by side with plain gaps, the same plain floor in all three: in the first the main character sits still and waits, its tail flame a dim ember; in the second it takes its first step forward, its tail flame small; in the third it walks on with a calm smile, its tail flame big and bright. LAYOUT: the main character is drawn big, at least a third of the image height. Keep a calm area of plain empty background, about a third of the image, for handwriting added later. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/044.png",
+   "status": "unchecked",
+   "chosen": "ea87c4b1c2041e145d18.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "ea87c4b1c2041e145d18.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "ea87c4b1c2041e145d18.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the waiting character with the ember",
+     "role": "subject",
+     "word": null,
+     "box": [
+      116.5,
+      105.2,
+      582.6,
+      307.4
+     ],
+     "why": null
+    },
+    {
+     "name": "the walking character with the bright flame",
+     "role": "detail",
+     "word": null,
+     "box": [
+      738.0,
+      97.1,
+      1242.9,
+      307.4
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      116.5,
+      105.2,
+      582.6,
+      307.4
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      1359.4,
+      80.9,
+      1942.0,
+      307.4
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 44,
+   "key": "6c5d929bc169f422",
+   "sig": "ef0e3c799171b2d90ee0",
+   "plan_sig": "0f05ab4bd869b0e56ec1",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot: the main character sits at a desk writing with a pencil on one small blank sheet, a focused calm face; a towering stack of papers is pushed far to the back corner of the desk, out of its sight. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/045.png",
+   "status": "unchecked",
+   "chosen": "a0adfd1ee6da5aceecb1.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "a0adfd1ee6da5aceecb1.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "a0adfd1ee6da5aceecb1.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the small sheet under the pencil",
+     "role": "subject",
+     "word": null,
+     "box": [
+      401.1,
+      718.9,
+      734.9,
+      829.8
+     ],
+     "why": null
+    },
+    {
+     "name": "the towering stack pushed away",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1255.4,
+      267.0,
+      1485.1,
+      513.5
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      933.9,
+      231.1,
+      1079.4,
+      431.3
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      352.1,
+      143.8,
+      918.6,
+      636.7
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      352.1,
+      143.8,
+      1163.6,
+      698.4
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 45,
+   "key": "9f7babea0c11ff1e",
+   "sig": "8e166d244eb954748031",
+   "plan_sig": "2b172b159af14f6ae3ac",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot: the main character sits at a desk with one sheet and a pencil, relaxed; right beside the desk a door stands wide open onto a bright garden; the character glances at the open door with a calm small smile. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/046.png",
+   "status": "unchecked",
+   "chosen": "10ab991cd8d941cacd74.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "10ab991cd8d941cacd74.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "10ab991cd8d941cacd74.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the open door to the garden",
+     "role": "subject",
+     "word": null,
+     "box": [
+      918.6,
+      20.5,
+      1469.8,
+      780.5
+     ],
+     "why": null
+    },
+    {
+     "name": "the sheet and pencil",
+     "role": "detail",
+     "word": null,
+     "box": [
+      183.7,
+      718.9,
+      857.4,
+      873.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      145.4,
+      328.6,
+      267.9,
+      451.9
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      336.8,
+      164.3,
+      796.1,
+      575.1
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      91.9,
+      164.3,
+      796.1,
+      718.9
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 46,
+   "key": "bac554d45cdc6b45",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "status": "ok",
+   "check": "eyes",
+   "source": "library",
+   "chosen": "lib_2026-10-23_videos_01_sdvg_pismo_reel_gen_r2_hourglass_2b638ebd.png",
+   "path": "frames/047.png",
+   "objects": [
+    {
+     "name": "a face",
+     "role": "subject",
+     "word": null,
+     "box": [
+      382.8,
+      308.1,
+      612.4,
+      513.5
+     ],
+     "why": null
+    },
+    {
+     "name": "the hourglass",
+     "role": "detail",
+     "word": null,
+     "box": [
+      750.2,
+      287.6,
+      979.8,
+      534.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the open envelope",
+     "role": "detail",
+     "word": null,
+     "box": null,
+     "why": "внутри пустая бумага"
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": null,
+     "why": "внутри пустая бумага"
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      290.9,
+      123.2,
+      704.3,
+      338.9
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      61.2,
+      123.2,
+      826.7,
+      534.0
+     ],
+     "why": null
+    }
+   ],
+   "plan_sig": "332568498895fe8adb86"
+  },
+  {
+   "index": 47,
+   "key": "232eab65f5ad9eeb",
+   "sig": "aa6e0d82341a40b1835f",
+   "plan_sig": "7cb8d7fba3d355b073eb",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: wide shot: the main character stands at the foot of a long staircase whose top disappears into clouds, but it looks only down at the first low step right under it, one foot lifted onto that step, a calm face. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/048.png",
+   "status": "unchecked",
+   "chosen": "16ee744d5b9c1658caa9.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "16ee744d5b9c1658caa9.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "16ee744d5b9c1658caa9.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the foot on the first step",
+     "role": "subject",
+     "word": null,
+     "box": [
+      673.6,
+      821.6,
+      765.5,
+      903.8
+     ],
+     "why": null
+    },
+    {
+     "name": "the staircase into the clouds",
+     "role": "detail",
+     "word": null,
+     "box": [
+      796.1,
+      61.6,
+      1469.8,
+      821.6
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      168.4,
+      380.0,
+      306.2,
+      513.5
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      428.7,
+      277.3,
+      826.7,
+      657.3
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      76.5,
+      277.3,
+      826.7,
+      914.0
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 48,
+   "key": "a4a1bb8d97afbe8e",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "status": "ok",
+   "check": "eyes",
+   "source": "library",
+   "chosen": "lib_2026-10-25_gen_cx_gpt-image-2_3210e6c7.png",
+   "path": "frames/049.png",
+   "objects": [
+    {
+     "name": "the character writing",
+     "role": "detail",
+     "word": null,
+     "box": [
+      230.4,
+      665.6,
+      614.4,
+      829.4
+     ],
+     "why": null
+    },
+    {
+     "name": "the person's hand writing",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1059.8,
+      532.5,
+      1259.5,
+      737.3
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      130.6,
+      348.2,
+      215.0,
+      460.8
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      276.5,
+      225.3,
+      645.1,
+      532.5
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      61.4,
+      225.3,
+      645.1,
+      696.3
+     ],
+     "why": null
+    }
+   ],
+   "plan_sig": "74c67830873a069f7b32"
+  },
+  {
+   "index": 49,
+   "key": "7285afd3bca18a9f",
+   "sig": "e7b34d405d61306eabca",
+   "plan_sig": "c7a11db99bcfbfb570f5",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot facing the viewer: the main character sits on a floor cushion in a cozy lamp-lit corner, patting an empty cushion right beside it with one paw, an inviting gentle smile, looking straight at the viewer; a small round kitchen timer stands between the cushions. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/050.png",
+   "status": "unchecked",
+   "chosen": "d3623cf8a32c80dcfe7f.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "d3623cf8a32c80dcfe7f.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "d3623cf8a32c80dcfe7f.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the empty cushion",
+     "role": "subject",
+     "word": null,
+     "box": [
+      811.4,
+      647.0,
+      1423.8,
+      914.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the kitchen timer",
+     "role": "detail",
+     "word": null,
+     "box": [
+      719.6,
+      780.5,
+      857.4,
+      903.8
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      229.7,
+      338.9,
+      329.2,
+      482.7
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      428.7,
+      225.9,
+      857.4,
+      575.1
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      183.7,
+      225.9,
+      918.6,
+      770.2
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 50,
+   "key": "2efd5e428d30ecaf",
+   "sig": "88556b3cf2bbbb60d6c8",
+   "plan_sig": "ab06a82ba3a75dadcd5c",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: close-up: the main character pulls one thick dusty folder half out of an open drawer packed with other folders, a small puff of dust in the air, a determined squint; on the desk beside the drawer stands one small round kitchen timer. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/051.png",
+   "status": "unchecked",
+   "chosen": "b46c818f78f4fa8d80a2.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "b46c818f78f4fa8d80a2.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "b46c818f78f4fa8d80a2.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the dusty folder",
+     "role": "subject",
+     "word": null,
+     "box": [
+      627.7,
+      554.6,
+      1224.8,
+      852.4
+     ],
+     "why": null
+    },
+    {
+     "name": "the kitchen timer",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1278.4,
+      559.7,
+      1469.8,
+      718.9
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      199.0,
+      256.8,
+      344.5,
+      431.3
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      428.7,
+      61.6,
+      1041.1,
+      534.0
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      137.8,
+      61.6,
+      1041.1,
+      780.5
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 52,
+   "key": "935b4cd23c67ec38",
+   "sig": "fa1f3e9c9f0fe2d60981",
+   "plan_sig": "3fca9957963749b5d8d5",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot of the small kitchen: the main character stands at the sink with a pile of dirty dishes, one plate in its paw, glancing sideways at the viewer with a small knowing smile; a small round kitchen timer stands on the counter beside the sink. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/053.png",
+   "status": "unchecked",
+   "chosen": "ea093a78a82c4532071c.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "ea093a78a82c4532071c.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "ea093a78a82c4532071c.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the timer on the counter",
+     "role": "subject",
+     "word": null,
+     "box": [
+      1071.7,
+      798.0,
+      1237.0,
+      955.1
+     ],
+     "why": null
+    },
+    {
+     "name": "the knowing smile",
+     "role": "detail",
+     "word": null,
+     "box": [
+      673.6,
+      410.8,
+      765.5,
+      472.4
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1079.4,
+      297.8,
+      1194.2,
+      410.8
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      428.7,
+      102.7,
+      1010.5,
+      616.2
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      428.7,
+      102.7,
+      1286.0,
+      780.5
+     ],
+     "why": null
+    }
+   ]
+  },
+  {
+   "index": 53,
+   "key": "edafdfa201c36375",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "status": "ok",
+   "check": "eyes",
+   "source": "library",
+   "chosen": "lib_2026-10-20_videos_01_sdvg_pismo_frames_005_8d288020.png",
+   "path": "frames/054.png",
+   "objects": [
+    {
+     "name": "the golden tail flame",
+     "role": "detail",
+     "word": null,
+     "box": [
+      252.8,
+      84.8,
+      429.8,
+      407.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the paw prints to the chair",
+     "role": "detail",
+     "word": null,
+     "box": [
+      88.5,
+      593.6,
+      505.6,
+      746.2
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      480.3,
+      127.2,
+      821.6,
+      424.0
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      328.6,
+      127.2,
+      821.6,
+      720.8
+     ],
+     "why": null
+    }
+   ],
+   "plan_sig": "8afba942999a34bd7308"
+  },
+  {
+   "index": 54,
+   "key": "20a7e403d05a5304",
+   "sig": "f93fe6a3eb0e96f55835",
+   "plan_sig": "1368b2ed8b80f8bf0718",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot in the afternoon: the main character stands beside a desk with its body turned away, pushing one blank sheet of paper aside with a paw, looking at a wall calendar whose next page it is lifting; through the window the sun is already low. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. Keep a calm area of plain empty background, about a third of the image, for handwriting added later. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/055.png",
+   "status": "unchecked",
+   "chosen": "fc1ddf827f004b88b6af.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "fc1ddf827f004b88b6af.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "fc1ddf827f004b88b6af.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": [
+    {
+     "name": "the lifted calendar page",
+     "role": "subject",
+     "word": null,
+     "box": [
+      460.8,
+      122.9,
+      675.8,
+      409.6
+     ],
+     "why": null
+    },
+    {
+     "name": "the pushed-away sheet",
+     "role": "detail",
+     "word": null,
+     "box": [
+      491.5,
+      604.2,
+      691.2,
+      716.8
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": null,
+     "why": "внутри пустая бумага"
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      675.8,
+      266.2,
+      1013.8,
+      573.4
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      614.4,
+      266.2,
+      1167.4,
+      921.6
+     ],
+     "why": null
+    }
+   ]
+  }
+ ]
+}

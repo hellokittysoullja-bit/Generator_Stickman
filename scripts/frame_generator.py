@@ -593,7 +593,8 @@ def main():
     # Готовый кадр берётся, только если его ПЛАН совпал: фраза, описание, герой, подписи, модель и
     # облик те же. Правка сценария, плана или образцов — перерисовка; правка формулировки задания в
     # коде — нет (plan_sig).
-    todo = [f for f in plan["frames"] if (not only or f["index"] in only) and
+    # «absorb»: своей картинки у фразы нет намеренно (раскадровка), её время отдаётся предыдущему кадру
+    todo = [f for f in plan["frames"] if not f.get("absorb") and (not only or f["index"] in only) and
             (a.force or not frame_is_done(done, f, probe.plan_sig(f))
              or not os.path.exists(os.path.join(a.video_dir, "frames", f"{f['index'] + 1:03d}.png")))]
     kept = {f["index"]: probe.plan_sig(f) for f in plan["frames"] if f not in todo}

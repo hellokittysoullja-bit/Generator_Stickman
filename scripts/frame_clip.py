@@ -14,6 +14,7 @@ prepare() — дорогая часть, общая для плана и рен�
 карта занятости); plan_clip() — план с учётом наезда в прошлом кадре
 (последовательно по ролику); render() — клип в mp4 (параллельно)."""
 import hashlib
+import math
 import json
 import os
 import subprocess
@@ -306,8 +307,27 @@ def _bake_alpha(world, alpha, win, scale, color):
     world[ys, xs] = np.clip(sub*(1 - aa) + color*aa, 0, 255).round().astype(np.uint8)
 
 
-def render(fr, p, D, out, fps=24, end_fade=False, crf="18"):
-    """Клип в out. Возвращает [(t0, t1, kind)] штрихов карандаша (от начала клипа)."""
+def _cam_window(win, cam, SW, SH):
+    """Окно плана с камерой сцены поверх: zoom > 1 — ближе, dx/dy — сдвиг в пикселях экрана."""
+    x0, y0, x1, y1 = win
+    k = (x1 - x0)/W
+    cx, cy = (x0 + x1)/2 - cam.get("dx", 0.0)*k, (y0 + y1)/2 - cam.get("dy", 0.0)*k
+    return camera.window(cx, cy, (x1 - x0)/max(1e-6, cam.get("zoom", 1.0)), SW, SH)
+
+
+def _roll(f, deg):
+    if abs(deg) < 1e-3:
+        return f
+    import cv2
+    M = cv2.getRotationMatrix2D((W/2, H/2), deg, 1.0 + abs(math.radians(deg))*0.9)   # чуть ближе: углы без пустоты
+    return cv2.warpAffine(np.ascontiguousarray(f, np.float32), M, (W, H), flags=cv2.INTER_LINEAR,
+                          borderMode=cv2.BORDER_REFLECT)
+
+
+def render(fr, p, D, out, fps=24, end_fade=False, crf="18", anim=None):
+    """Клип в out. Возвращает [(t0, t1, kind)] штрихов карандаша (от начала клипа).
+    anim — сцена движения внутри рисунка (videos/NN/anim/<имя>.py, класс Scene): frame(t, world) -> world с
+    движущимися слоями, cam(t) -> {zoom, dx, dy, rot} поверх камеры плана (хук длинного ролика, 27.10)."""
     SW, SH = fr["SW"], fr["SH"]
     full = fr["world"].copy()                  # рисунок целиком (и подписи, когда появятся)
     assemble = p.get("assemble") and len(fr["recs"]) >= 2
@@ -363,7 +383,11 @@ def render(fr, p, D, out, fps=24, end_fade=False, crf="18"):
                         fade_len = shots.LABEL_FADE_SEC
                     shown[i] = True
             win = shots.window_at(p, t, SW, SH)
-            f = _screen(world, win, UPSCALE)
+            cam = anim.cam(t) if anim is not None else {}
+            if cam:
+                win = _cam_window(win, cam, SW, SH)
+            base = anim.frame(t, world) if anim is not None else world
+            f = _screen(base, win, UPSCALE)
             if prev_world is not None and t - fade_from < fade_len:
                 a = camera.ease_io((t - fade_from)/fade_len)
                 f = _screen(prev_world, win, UPSCALE)*(1 - a) + f*a
@@ -381,12 +405,15 @@ def render(fr, p, D, out, fps=24, end_fade=False, crf="18"):
                     if assemble and full is not world:
                         _bake_alpha(full, al, wr["win"], UPSCALE, INK)   # иначе следующее проявление её сотрёт
                     wr["baked"] = True
-                    f = _screen(world, win, UPSCALE)
+                    base = anim.frame(t, world) if anim is not None else world
+                    f = _screen(base, win, UPSCALE)
                     if doll is not None:              # кадр пересчитан с нуля — кукла снова (из кэша кадра);
                         f = doll.composite(f, t, win, W, H)   # без этого она пропадала ровно на один кадр (пилот 07.10)
                 elif al.any():
                     al = _warp(al, wr["win"], win)
                     f = f*(1 - al[..., None]) + INK*al[..., None]
+            if cam.get("rot"):
+                f = _roll(f, cam["rot"])
             if end_fade and t > D - END_FADE_SEC:
                 a = camera.ease_io((t - (D - END_FADE_SEC))/END_FADE_SEC)
                 f = f*(1 - a) + canvas.CREAM*a
