@@ -29,7 +29,9 @@ GRID_Y0, GRID_Y1 = 240, 1680   # сетка профиля показывает 
 
 def utm_link(brand, reel_dir, version):
     ep = os.path.basename(os.path.dirname(os.path.abspath(reel_dir))) or "reel"
-    q = f"utm_source=instagram&utm_medium=reels&utm_campaign={ep}&utm_content={version or 'v'}"
+    # utm_content — версия из журнала или папка рилса: у одной темы на двух аккаунтах (reel и reel_friend, 28.10)
+    # переходы должны различаться, иначе не видно, чей рилс привёл людей
+    q = f"utm_source=instagram&utm_medium=reels&utm_campaign={ep}&utm_content={version or os.path.basename(os.path.abspath(reel_dir))}"
     base = brand.get("site_url") or "<адрес сайта — впишите в docs/reels_brand.json>"
     return f"{base}{'&' if '?' in base else '?'}{q}"
 
