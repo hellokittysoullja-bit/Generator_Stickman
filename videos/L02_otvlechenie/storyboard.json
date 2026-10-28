@@ -1,0 +1,525 @@
+{
+ "note": "Раскадровка L02 (оркестратор 28.10, ночь, до «да» владельца). new — рисунок GPT-Image-2 medium; lib — library/cat/originals; same — тот же рисунок, что у фразы N (намеренная отсылка); absorb — без своей картинки. narrator — кот-ведущий перед размытой сценой (пробник v3, long_fx.Narrator); bold — жирный текст Onest Black на слове (long_fx.BoldText); key — рукописная мысль карандашом.",
+ "frames": {
+  "1": {
+   "new": "medium-wide shot of a small kitchen: the main character stands on the floor in front of a tall fridge whose door is wide open, cold white light from the inside of the fridge falls on its face and on the floor; it looks back over its shoulder at the viewer with a surprised guilty face, one paw still on the fridge door; behind it, through an open doorway, a desk with an open laptop with a blank screen and an empty chair; one phone lies face down on a small shelf beside the doorway",
+   "hero": true,
+   "state": "ember",
+   "details": [
+    "the open fridge with light",
+    "the guilty face looking back",
+    "the laptop on the desk behind"
+   ],
+   "anim": "fridge_light",
+   "note": "хук: сцена движения, свет холодильника разгорается на «холодильника», камера hook_cam"
+  },
+  "2": {
+   "new": "a big old balance scale stands on the floor: on the left pan sits the main character, on the right pan lies one phone; the left pan with the character hangs low and the right pan with the phone is lifted high in the air; the character looks up at the phone with a puzzled face",
+   "hero": true,
+   "state": "ember",
+   "details": [
+    "the phone on the high pan",
+    "the character on the low pan"
+   ],
+   "accent": "не слабая воля"
+  },
+  "3": {
+   "new": "two equal panels side by side with a plain gap between them: in the left panel the main character sits at a desk and a phone beside it has five blank speech bubbles floating above it; in the right panel the same desk, the phone has no bubbles at all, and five small blank thought clouds float up from the character's own head instead",
+   "hero": true,
+   "state": "ember",
+   "details": [
+    "the phone with blank speech bubbles",
+    "the thought clouds from the head"
+   ]
+  },
+  "4": {
+   "lib": "2026-10-27_gen_cx_gpt-image-2_00c70140.png",
+   "note": "кот лежит в бумажном свитке ленты с телефоном: «находил себя в ленте»"
+  },
+  "5": {
+   "lib": "2026-10-27_gen_cx_gpt-image-2_70857920.png",
+   "note": "кот пишет за столом, огонёк горит: «возвращаюсь к делу»"
+  },
+  "6": {
+   "absorb": true,
+   "narrator": true,
+   "bold": [
+    {
+     "text": "телефон",
+     "word": "телефон"
+    },
+    {
+     "text": "ты сам",
+     "word": "сам"
+    },
+    {
+     "text": "возврат",
+     "word": "возвращаться"
+    }
+   ],
+   "note": "обещание трёх вещей — кот-ведущий перед размытым кадром 5, три слова жирным по очереди"
+  },
+  "7": {
+   "new": "three equal panels in a row with plain gaps: in the first a paw holds a phone with a blank screen; in the second a phone lies face down on a wooden desk; in the third an empty desk and, through an open doorway behind it, a phone lies on a shelf in another room",
+   "hero": false,
+   "state": null,
+   "details": [
+    "the phone in the paw",
+    "the phone face down",
+    "the phone in the other room"
+   ]
+  },
+  "8": {
+   "absorb": true
+  },
+  "9": {
+   "new": "close-up on a wooden desk: one phone lies face down; the main character's paw hovers just above it, hesitating; the character's eyes are fixed on the phone, ears forward",
+   "hero": true,
+   "state": "ember",
+   "details": [
+    "the face down phone",
+    "the hesitating paw"
+   ]
+  },
+  "10": {
+   "new": "wide shot of a plain university room with four rows of small desks; young people sit at the desks with papers in front of them; one researcher in a white coat stands at the front holding a clipboard",
+   "hero": false,
+   "state": null,
+   "details": [
+    "the researcher with the clipboard",
+    "the rows of desks"
+   ],
+   "bold": [
+    {
+     "text": "≈ 800 человек",
+     "word": "восьмистах"
+    }
+   ]
+  },
+  "11": {
+   "new": "three equal panels in a row with plain gaps, the same young student at the same desk in each: in the first panel a phone lies face down on the desk beside the paper; in the second a bag hangs on the back of the chair with a phone in its open pocket; in the third there is no phone at all and through a doorway a phone lies on a shelf in another room",
+   "hero": false,
+   "state": null,
+   "details": [
+    "the phone face down on the desk",
+    "the bag on the chair",
+    "the phone in the other room"
+   ]
+  },
+  "12": {
+   "absorb": true
+  },
+  "13": {
+   "new": "two students at two desks side by side: the left one has a phone face down on the desk and a small thought cloud above the head with a phone inside it, frowning at a paper; the right one has no phone on the desk and works calmly with a small smile",
+   "hero": false,
+   "state": null,
+   "details": [
+    "the thought cloud with a phone",
+    "the calm student"
+   ]
+  },
+  "14": {
+   "new": "medium shot: the main character sits at a desk writing on a sheet of paper with a pencil; one phone lies face down at the far corner of the desk",
+   "hero": true,
+   "state": "ember",
+   "details": [
+    "the face down phone",
+    "the paper and pencil"
+   ]
+  },
+  "15": {
+   "new": "medium shot: the main character sits at a desk with a pencil over the paper but its eyes slide sideways to a small cooking pot standing on the desk; a phone lies face down inside the pot, the lid is slightly lifted and a thin wisp of steam rises",
+   "hero": true,
+   "state": "ember",
+   "details": [
+    "the pot with the phone and the lifted lid",
+    "the sideways eyes"
+   ]
+  },
+  "16": {
+   "absorb": true
+  },
+  "17": {
+   "new": "a young person sits at a desk solving a paper puzzle; beside the paper a phone lies screen up with one small blank message bubble popping out of it; the person keeps looking at the paper, but a small thought cloud with a phone in it hangs above the head",
+   "hero": false,
+   "state": null,
+   "details": [
+    "the phone with the blank bubble",
+    "the thought cloud with a phone"
+   ]
+  },
+  "18": {
+   "absorb": true,
+   "narrator": true,
+   "bold": [
+    {
+     "text": "ошибок ×3",
+     "word": "втрое"
+    }
+   ],
+   "note": "кот-ведущий перед размытым кадром 17"
+  },
+  "19": {
+   "new": "the main character walks through an open doorway carrying one phone in both paws away from its desk into another room, a calm determined face; its desk with paper stays behind",
+   "hero": true,
+   "state": "bright",
+   "details": [
+    "the phone in the paws",
+    "the doorway"
+   ],
+   "key": "другая комната"
+  },
+  "20": {
+   "same": 7,
+   "note": "отсылка к вопросу хука «где лежит твой телефон»"
+  },
+  "21": {
+   "same": 1,
+   "note": "отсылка к кадру хука: снова у холодильника"
+  },
+  "22": {
+   "new": "the main character holds a big magnifying glass and looks down at a trail of its own small paw prints that leads across the floor from a desk to a fridge",
+   "hero": true,
+   "state": "ember",
+   "details": [
+    "the trail of paw prints",
+    "the magnifying glass"
+   ]
+  },
+  "23": {
+   "new": "two equal panels side by side with a plain gap: in the left panel a colleague taps a working person on the shoulder; in the right panel the same person sits alone at the same desk and turns away from the work by themselves to look out of a window",
+   "hero": false,
+   "state": null,
+   "details": [
+    "the tap on the shoulder",
+    "the person turning away alone"
+   ]
+  },
+  "24": {
+   "absorb": true,
+   "narrator": true,
+   "bold": [
+    {
+     "text": "себя сами",
+     "word": "сами"
+    }
+   ],
+   "note": "кот-ведущий перед размытым кадром 23"
+  },
+  "25": {
+   "new": "wide shot of a city street scene with four different people: one on a bus seat, one at a desk, one cooking at a stove, one walking a dog; above each head floats a small thought cloud with a different object in it: a beach umbrella, a cake, a cat, a bed",
+   "hero": false,
+   "state": null,
+   "details": [
+    "the thought clouds",
+    "the person at the desk"
+   ]
+  },
+  "26": {
+   "absorb": true,
+   "bold": [
+    {
+     "text": "почти половина времени",
+     "word": "половине"
+    }
+   ]
+  },
+  "27": {
+   "new": "the main character sits on a long bench among four different people; small thought clouds float above every head; above the character's head float three clouds instead of one; everyone looks relaxed",
+   "hero": true,
+   "state": "ember",
+   "details": [
+    "the three clouds above the character",
+    "the people on the bench"
+   ]
+  },
+  "28": {
+   "absorb": true
+  },
+  "29": {
+   "new": "medium shot: the main character sits at a desk with a pencil lifted above an unfinished letter and looks away at a small flower pot on the windowsill, a watering can beside the pot",
+   "hero": true,
+   "state": "ember",
+   "details": [
+    "the flower pot and the watering can",
+    "the lifted pencil"
+   ]
+  },
+  "30": {
+   "new": "the main character holds a watering can over a small flower pot that overflows: water spills over the windowsill onto the floor into a big puddle, the soaked flower droops, the character looks at the puddle with an awkward face",
+   "hero": true,
+   "state": "ember",
+   "details": [
+    "the overflowing pot",
+    "the puddle"
+   ],
+   "sfx": "oof"
+  },
+  "31": {
+   "new": "a large hand-drawn brain with a small open door in its side; the main character steps out of the door with one foot, looking away toward a fridge in the distance",
+   "hero": true,
+   "state": "ember",
+   "details": [
+    "the small door in the brain",
+    "the stepping character"
+   ],
+   "key": "ищет выход"
+  },
+  "32": {
+   "new": "the main character sits on a sofa staring blankly at an empty wall, mouth slightly open, completely zoned out, one empty thought cloud above its head",
+   "hero": true,
+   "state": "ember",
+   "details": [
+    "the blank stare",
+    "the empty thought cloud"
+   ],
+   "bold": [
+    {
+     "text": "2 700 лайков",
+     "word": "тысячи"
+    }
+   ]
+  },
+  "33": {
+   "new": "one huge blank sheet of paper stands upright like a wall and towers over the main character; next to it the character easily holds one small blank card in its paws and looks at it with relief",
+   "hero": true,
+   "state": "bright",
+   "details": [
+    "the huge sheet",
+    "the small card"
+   ],
+   "key": "сделать меньше"
+  },
+  "34": {
+   "new": "the main character stands frozen in front of a huge blank sheet of paper, holding scissors in its paws, not cutting, with a stuck face",
+   "hero": true,
+   "state": "ember",
+   "details": [
+    "the scissors",
+    "the huge sheet"
+   ]
+  },
+  "35": {
+   "absorb": true
+  },
+  "36": {
+   "new": "the main character sits at a table and cuts a long strip of paper into small cards with scissors; a neat row of small blank cards lies on the table",
+   "hero": true,
+   "state": "bright",
+   "details": [
+    "the row of small cards",
+    "the scissors"
+   ]
+  },
+  "37": {
+   "new": "a laptop stands open on a desk, its screen is plain and empty; the main character sits beside the laptop facing the viewer with a calm friendly face, one paw resting on the desk next to a small round kitchen timer",
+   "hero": true,
+   "state": "bright",
+   "details": [
+    "the laptop screen",
+    "the timer"
+   ],
+   "bold": [
+    {
+     "text": "Напарник",
+     "word": "Напарник"
+    }
+   ],
+   "note": "на пустой экран ноутбука — запись настоящего сайта (разбить дело на шаги), если владелец одобрит"
+  },
+  "38": {
+   "new": "a young person sits at a desk writing in a notebook; the main character sits right beside them on the desk, calm and quiet, its tail flame glowing softly; a small round kitchen timer stands between them",
+   "hero": true,
+   "state": "bright",
+   "details": [
+    "the cat sitting beside",
+    "the timer"
+   ]
+  },
+  "39": {
+   "absorb": true
+  },
+  "40": {
+   "absorb": true,
+   "narrator": true,
+   "bold": [
+    {
+     "text": "бесплатно",
+     "word": "бесплатно"
+    }
+   ],
+   "note": "подарок, не реклама: кот-ведущий сам говорит зрителю и честный предел «не лечит»"
+  },
+  "41": {
+   "new": "an empty desk with a pushed-back chair and an unfinished paper; a trail of small paw prints leads from the chair across the floor and out of the picture",
+   "hero": false,
+   "state": null,
+   "details": [
+    "the paw prints",
+    "the empty chair"
+   ]
+  },
+  "42": {
+   "new": "the main character stands on a grassy hill and has just thrown a boomerang: the boomerang flies far away in a wide curve drawn with a dotted line that bends back toward the character",
+   "hero": true,
+   "state": "bright",
+   "details": [
+    "the boomerang",
+    "the dotted curve"
+   ]
+  },
+  "43": {
+   "absorb": true,
+   "narrator": true,
+   "note": "кот-ведущий перед размытым бумерангом: перестать уходить нельзя, можно возвращаться"
+  },
+  "44": {
+   "lib": "2026-10-27_gen_cx_gpt-image-2_bb675af3.png",
+   "note": "вечер, кот у стола с ноутбуком: «потерял целый вечер на одном звонке»"
+  },
+  "45": {
+   "new": "the main character sits at a desk with an open laptop, holding a phone to its ear and turning away from the laptop; the laptop screen is plain and empty",
+   "hero": true,
+   "state": "ember",
+   "details": [
+    "the phone at the ear",
+    "the laptop"
+   ]
+  },
+  "46": {
+   "new": "the main character sits back at the laptop with a confused blank face, holding a cup of tea, staring at the plain empty laptop screen",
+   "hero": true,
+   "state": "ember",
+   "details": [
+    "the confused face",
+    "the cup of tea"
+   ]
+  },
+  "47": {
+   "new": "night: the main character closes the laptop lid with a sigh; a wall clock with only hands and no numbers shows late time, the window is dark",
+   "hero": true,
+   "state": "ember",
+   "details": [
+    "the closing laptop",
+    "the wall clock"
+   ]
+  },
+  "48": {
+   "new": "the main character sits on the floor beside a desk among many loose colourful threads that have fallen around it, trying to gather them in its paws, a worried face",
+   "hero": true,
+   "state": "ember",
+   "details": [
+    "the fallen threads",
+    "the paws gathering"
+   ]
+  },
+  "49": {
+   "absorb": true,
+   "narrator": true,
+   "note": "кот-ведущий перед размытыми нитями: опыт Лерой и Гломб"
+  },
+  "50": {
+   "new": "a young person at a desk quickly writes one short line on a small sticky note while a phone on the desk is ringing with small shake lines",
+   "hero": false,
+   "state": null,
+   "details": [
+    "the sticky note",
+    "the ringing phone"
+   ],
+   "bold": [
+    {
+     "text": "меньше минуты",
+     "word": "меньше"
+    }
+   ]
+  },
+  "51": {
+   "new": "close-up: one small sticky note with a few wavy pencil lines is stuck to the edge of an open laptop screen; the main character's paw has just pressed it on",
+   "hero": true,
+   "state": "bright",
+   "details": [
+    "the sticky note on the laptop",
+    "the paw"
+   ],
+   "key": "записка возврата"
+  },
+  "52": {
+   "new": "the main character holds a phone to its ear with one paw and with the other paw writes one line on a small sticky note on the desk",
+   "hero": true,
+   "state": "bright",
+   "details": [
+    "the sticky note",
+    "the phone at the ear"
+   ]
+  },
+  "53": {
+   "new": "the main character sits back at the laptop and types happily, looking at a sticky note on the laptop edge; beside the laptop lies one neat ball of colourful threads",
+   "hero": true,
+   "state": "golden",
+   "details": [
+    "the neat ball of threads",
+    "the sticky note"
+   ],
+   "sfx": "level_up"
+  },
+  "54": {
+   "absorb": true
+  },
+  "55": {
+   "new": "the main character holds a phone with a plain screen and smiles warmly at it; a few small hearts float up from the phone",
+   "hero": true,
+   "state": "bright",
+   "details": [
+    "the warm smile",
+    "the hearts"
+   ]
+  },
+  "56": {
+   "same": 42,
+   "key": "его возвращают",
+   "note": "кульминация: бумеранг возвращается, рукописная мысль; отсылка к кадру 42"
+  },
+  "57": {
+   "absorb": true,
+   "narrator": true,
+   "note": "кот-ведущий зовёт сделать листок прямо сейчас"
+  },
+  "58": {
+   "new": "an empty desk with a laptop and one small sticky note lying beside it with a few wavy pencil lines; the chair is pushed back and waits",
+   "hero": false,
+   "state": null,
+   "details": [
+    "the sticky note",
+    "the waiting chair"
+   ]
+  },
+  "59": {
+   "new": "three small things stand in a row on a plain shelf with wide gaps: a small toy door slightly open with a phone behind it, one small blank card, one sticky note with wavy lines",
+   "hero": false,
+   "state": null,
+   "details": [
+    "the door with the phone",
+    "the small card",
+    "the sticky note"
+   ],
+   "bold": [
+    {
+     "text": "другая комната",
+     "word": "комнате"
+    },
+    {
+     "text": "маленький шаг",
+     "word": "шаг"
+    },
+    {
+     "text": "записка возврата",
+     "word": "записка"
+    }
+   ]
+  },
+  "60": {
+   "same": 1,
+   "note": "конец-хук: снова холодильник — к ролику L01 о том, почему трудное место пугает"
+  }
+ }
+}

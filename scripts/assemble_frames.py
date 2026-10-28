@@ -159,7 +159,7 @@ def _render(job):
     tmp = job["out"]
     scene = load_scene(job["anim"], fr, job["words"]) if job.get("anim") else None
     cues = frame_clip.render(fr, job["plan"], job["dur"], tmp, fps=FPS, end_fade=job["end_fade"], crf=CRF,
-                             anim=scene)
+                             anim=scene, fx=job.get("fx"))
     d = probe_duration(tmp)
     if d is None or abs(d - round(job["dur"]*FPS)/FPS) > CLIP_TOLERANCE + 1e-6:
         os.remove(tmp)
@@ -280,6 +280,8 @@ def main(video_dir):
     plan_frames = load_plan_frames(video_dir)
     word_times = speech.word_times if timing == "phrase_lock" else []
     doll_look = None
+    import long_fx
+    fx_spec = long_fx.load(video_dir)                   # кот-ведущий и жирный текст по фразам (fx.json, 28.10)
     jobs = []
     for k, i in enumerate(kept):
         rec = report.get(i) or {}
@@ -298,7 +300,15 @@ def main(video_dir):
                       f"{[round(v) for v in doll_look['drawn_sat']]})")
             mascot = dict(text=blocks[i]["text"], state=pf.get("hero_state"), action=pf.get("hero_action"), seed=k,
                           mood=pf.get("hero_mood"), look=doll_look)
-        jobs.append(dict(src=src, recs=recs, objects=rec.get("objects") or [], work=work, tex=tex_path,
+        fx = []
+        for b in range(i, nxt):
+            if b not in fx_spec:
+                continue
+            p0 = starts[b] - kept_starts[k]
+            p1 = min(durs[k], (starts[b + 1] if b + 1 < len(starts) else total) - kept_starts[k])
+            ws = [w for w in words if p0 - 0.05 <= w["start"] < p1]
+            fx += long_fx.events(fx_spec[b], p0, p1, ws, blocks[b]["text"], seed=b)
+        jobs.append(dict(src=src, recs=recs, objects=rec.get("objects") or [], work=work, tex=tex_path, fx=fx,
                          seed=k, key=(pf.get("key_thought") or "").strip() or None, words=words, mascot=mascot,
                          accent=(pf.get("accent") or "").strip() or None,
                          dur=durs[k], T0=kept_starts[k], end_fade=(k == len(kept) - 1),
@@ -341,6 +351,8 @@ def main(video_dir):
         h = hashlib.sha256(open(job["src"], "rb").read()).hexdigest()[:12]
         scene_sig = hashlib.sha256(open(job["anim"], "rb").read()).hexdigest()[:12] if job.get("anim") else None
         head = [h, scene_sig] if scene_sig else [h]          # клипы без сцены — прежний ключ кэша
+        if job["fx"]:                                         # клипы без эффектов — прежний ключ кэша
+            head += [job["fx"], hashlib.sha256(open(long_fx.__file__, "rb").read()).hexdigest()[:12]]
         sig = hashlib.sha256(json.dumps(head + [job["recs"], job["objects"], frame_clip.plan_record(p), job["dur"],
                                          job["end_fade"], job["seed"], FPS, CRF, frame_clip.RENDER_VERSION,
                                          canvas.TEXTURE, frame_clip.UPSCALE],

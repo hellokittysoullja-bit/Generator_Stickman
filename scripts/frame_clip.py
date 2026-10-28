@@ -325,11 +325,16 @@ def _roll(f, deg):
                           borderMode=cv2.BORDER_REFLECT)
 
 
-def render(fr, p, D, out, fps=24, end_fade=False, crf="18", anim=None):
+def render(fr, p, D, out, fps=24, end_fade=False, crf="18", anim=None, fx=None):
     """Клип в out. Возвращает [(t0, t1, kind)] штрихов карандаша (от начала клипа).
     anim — сцена движения внутри рисунка (videos/NN/anim/<имя>.py, класс Scene): frame(t, world) -> world с
-    движущимися слоями, cam(t) -> {zoom, dx, dy, rot} поверх камеры плана (хук длинного ролика, 27.10)."""
+    движущимися слоями, cam(t) -> {zoom, dx, dy, rot} поверх камеры плана (хук длинного ролика, 27.10).
+    fx — события long_fx (кот-ведущий с размытием сцены, жирные строки) поверх готового кадра (28.10)."""
     SW, SH = fr["SW"], fr["SH"]
+    track = None
+    if fx:
+        import long_fx
+        track = long_fx.Track(fx, D)
     full = fr["world"].copy()                  # рисунок целиком (и подписи, когда появятся)
     assemble = p.get("assemble") and len(fr["recs"]) >= 2
     if assemble:
@@ -423,6 +428,8 @@ def render(fr, p, D, out, fps=24, end_fade=False, crf="18", anim=None):
                 f = _roll(f, cam["rot"])
             if manual:                                 # прожектор и хлёст — поверх картинки, под затемнением конца
                 f = long_edit.whip(long_edit.spot(f, seg, t, win, W, H), seg, t)
+            if track is not None:                      # кот-ведущий и жирный текст — поверх всего, под затемнением конца
+                f = track.apply(np.asarray(f, np.float32), t)
             if end_fade and t > D - END_FADE_SEC:
                 a = camera.ease_io((t - (D - END_FADE_SEC))/END_FADE_SEC)
                 f = f*(1 - a) + canvas.CREAM*a

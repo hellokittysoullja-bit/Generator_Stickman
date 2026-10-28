@@ -1,0 +1,101 @@
+[
+ {
+  "name": "fast_whoosh",
+  "phrase": 1,
+  "at": 0.0,
+  "role": "whoosh",
+  "why": "удар с 0 с: влёт камеры в кухню хука"
+ },
+ {
+  "name": "riser",
+  "phrase": 2,
+  "at": 0.0,
+  "align": "end",
+  "role": "whoosh",
+  "why": "нарастание первой фразы обрывается на повороте «Это не слабая воля»"
+ },
+ {
+  "name": "fast_glitch",
+  "phrase": 3,
+  "word": "странную",
+  "role": "impact",
+  "why": "стоп-момент: находка, которая ломает убеждение «дело в телефоне»"
+ },
+ {
+  "name": "swoosh_deep",
+  "phrase": 6,
+  "at": 0.45,
+  "role": "whoosh",
+  "gain_db": -3,
+  "why": "выход кота-ведущего к зрителю"
+ },
+ {
+  "name": "swoosh_deep",
+  "phrase": 18,
+  "at": 0.45,
+  "role": "whoosh",
+  "gain_db": -3,
+  "why": "выход кота-ведущего к зрителю"
+ },
+ {
+  "name": "swoosh_deep",
+  "phrase": 24,
+  "at": 0.45,
+  "role": "whoosh",
+  "gain_db": -3,
+  "why": "выход кота-ведущего к зрителю"
+ },
+ {
+  "name": "swoosh_deep",
+  "phrase": 40,
+  "at": 0.45,
+  "role": "whoosh",
+  "gain_db": -3,
+  "why": "выход кота-ведущего к зрителю"
+ },
+ {
+  "name": "swoosh_deep",
+  "phrase": 43,
+  "at": 0.45,
+  "role": "whoosh",
+  "gain_db": -3,
+  "why": "выход кота-ведущего к зрителю"
+ },
+ {
+  "name": "swoosh_deep",
+  "phrase": 49,
+  "at": 0.45,
+  "role": "whoosh",
+  "gain_db": -3,
+  "why": "выход кота-ведущего к зрителю"
+ },
+ {
+  "name": "swoosh_deep",
+  "phrase": 57,
+  "at": 0.45,
+  "role": "whoosh",
+  "gain_db": -3,
+  "why": "выход кота-ведущего к зрителю"
+ },
+ {
+  "name": "oof",
+  "phrase": 30,
+  "word": "утонул",
+  "role": "meme",
+  "why": "смешной провал кота: цветок чуть не утонул"
+ },
+ {
+  "name": "swoosh",
+  "phrase": 56,
+  "word": "возвращают",
+  "role": "whoosh",
+  "why": "бумеранг возвращается на кульминации"
+ },
+ {
+  "name": "level_up",
+  "phrase": 53,
+  "word": "снова",
+  "role": "ui",
+  "why": "награда: через минуту снова в письме"
+ }
+]

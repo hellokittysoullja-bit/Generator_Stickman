@@ -52,3 +52,44 @@ def test_narrator_is_alive_within_a_short_appearance():
 def test_bold_text_outline_stays_weak():
     # владелец дважды: «чуть-чуть сильнее» — обводка тонкая и полупрозрачная, не наклейка
     assert fx.STROKE <= 3 and 0.8 <= fx.STROKE_ALPHA < 1.0
+
+
+def test_fx_json_needs_why(tmp_path):
+    (tmp_path / "fx.json").write_text('{"phrases": {"3": {"narrator": {}}}}', encoding="utf-8")
+    import pytest
+    with pytest.raises(ValueError):
+        fx.load(str(tmp_path))
+    (tmp_path / "fx.json").write_text('{"phrases": {"3": {"narrator": {"why": "объяснение"}, '
+                                      '"bold": [{"text": "2 минуты", "word": "двух", "why": "цифра"}]}}}', encoding="utf-8")
+    got = fx.load(str(tmp_path))
+    assert list(got) == [2] and got[2]["narrator"]["why"] == "объяснение"
+
+
+def test_events_put_text_on_its_word_and_narrator_on_the_phrase():
+    words = [{"word": "Первое:", "start": 2.0, "end": 2.4}, {"word": "двух", "start": 3.1, "end": 3.4},
+             {"word": "минут", "start": 3.4, "end": 3.8}]
+    ev = fx.events({"narrator": {"why": "x"}, "bold": [{"text": "2 минуты", "word": "двух", "why": "x"}]},
+                   1.9, 9.0, words, "Первое: двух минут", seed=1)
+    nar = next(e for e in ev if e["kind"] == "narrator")
+    bold = next(e for e in ev if e["kind"] == "bold")
+    assert (nar["t0"], nar["t1"]) == (1.9, 9.0)
+    assert nar["words"][1]["start"] == 3.1 - 1.9 - fx.ENTER_SEC      # слова — от выхода кота
+    assert abs(bold["t0"] - 3.05) < 1e-9 and bold["t1"] == 9.0        # с котом — до конца фразы
+    plain = fx.events({"narrator": None, "bold": [{"text": "2 минуты", "word": "двух", "why": "x"}]},
+                      1.9, 9.0, words, "", seed=1)
+    assert plain[0]["t1"] - plain[0]["t0"] <= fx.BOLD_HOLD_SEC + 1e-9   # без кота строка не висит через склейки
+
+
+def test_track_keeps_bold_text_off_the_narrator():
+    # встройка 28.10: на перелёте роста ухо кота задевало «Знакомо?»
+    ev = fx.events({"narrator": {"why": "x"}, "bold": [{"text": "Знакомо?", "word": "Знакомо", "why": "x"}]},
+                   0.0, 3.0, [{"word": "Знакомо?", "start": 0.05, "end": 0.6}], "Знакомо?", seed=0)
+    tr = fx.Track(ev, 3.0)
+    f = np.full((fx.H, fx.W, 3), 240, np.float32)
+    out = tr.apply(f, 0.7)
+    b = next(e for e in tr.bold)
+    box = tr.nar[0][2]
+    o = b["obj"]
+    assert o.cx + o.width/2 < box[0] or o.cy + o.h/2 < box[1]          # строка левее кота или выше него
+    assert o.size == fx.SIZE_NARRATOR                                   # под котом кегль полный
+    assert out.shape == f.shape and not np.array_equal(out, f)
