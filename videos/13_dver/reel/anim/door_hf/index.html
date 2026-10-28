@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1440, height=2220" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1440px; height: 2220px; overflow: hidden; background: #f7f3ea; }
+      #root { position: relative; width: 1440px; height: 2220px; overflow: hidden; }
+      .layer { position: absolute; left: 0; top: 0; width: 1440px; height: 1920px; }
+      #cat, #thought { top: 300px; }        /* сцена ниже на 300 px: над облачком — место под якорь */
+      .abs { position: absolute; display: block; }
+      #fx { position: absolute; left: 0; top: 300px; overflow: visible; }
+      #fx path, #fx line { fill: none; stroke: #18181a; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+  </head>
+  <body>
+    <!-- Хук рилса 13 «Ты шёл и всё забыл?»: мир сцены в координатах ×2 исходника: фон 1440×2220 от (230, 440), сцена (координаты слоёв) от (230, 740).
+         Камеру, тряску, субтитры и звук даёт сборщик рилса, здесь только то, что движется в самом рисунке.
+         Время удара — ударный слог «забы́л» из озвучки: data-hit (с). -->
+    <div id="root" data-composition-id="main" data-start="0" data-duration="1.5" data-width="1440" data-height="2220"
+         data-hit="0.94" data-motion-blur="on" data-layout-allow-overflow data-layout-allow-overlap>
+      <img id="bg" class="abs clip" src="assets/bg.png" style="left:0;top:0" data-start="0" data-duration="1.5" />
+      <div id="cat" class="layer clip" data-start="0" data-duration="1.5">
+        <div id="catApproach" class="layer">
+          <div id="catStartle" class="layer">
+            <div id="catBob" class="layer">
+              <img id="tail" class="abs" src="assets/tail.png" style="left:194px;top:989px" />
+              <img id="body" class="abs" src="assets/body.png" style="left:433px;top:657px" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="thought" class="layer clip" data-start="0" data-duration="1.5">
+        <div id="thoughtFollow" class="layer">
+          <div id="thoughtBase" class="layer">
+            <div id="thoughtPop" class="layer">
+              <img id="cloud" class="abs" src="assets/cloud.png" style="left:380px;top:27px" />
+              <img id="pencil" class="abs" src="assets/pencil.png" style="left:612px;top:153px" />
+            </div>
+          </div>
+          <img id="b1" class="abs" src="assets/bubble1.png" style="left:737px;top:588px" />
+          <img id="b2" class="abs" src="assets/bubble2.png" style="left:764px;top:677px" />
+        </div>
+      </div>
+      <svg id="fx" class="clip" width="1440" height="1920" viewBox="0 0 1440 1920" data-start="0" data-duration="1.5">
+        <g id="shards"></g>
+        <g id="rays"></g>
+        <g id="q1" transform="translate(620 400)"><g class="qi"><path class="qs" d="M -42 -52 C -42 -112 46 -118 46 -58 C 46 -18 2 -12 2 34" style="stroke-width:17"/><circle class="qd" cx="2" cy="78" r="12" fill="#18181a"/></g></g>
+        <g id="q2" transform="translate(860 350)"><g class="qi"><path class="qs" d="M -34 -42 C -34 -92 38 -96 38 -48 C 38 -15 2 -10 2 28" style="stroke-width:14"/><circle class="qd" cx="2" cy="64" r="10" fill="#18181a"/></g></g>
+      </svg>
+    </div>
+    <script>
+      const root = document.getElementById("root");
+      const H = parseFloat(root.dataset.hit);          // удар
+      const PRE = 0.14;                                  // замах до удара
+      const STEP = 0.36;                                 // шаг кота
+      const CAT_FOOT = "840px 1780px", TAIL_PIVOT = "311px 501px", CLOUD_C = "732px 303px";
+      const NS = "http://www.w3.org/2000/svg";
+      let seed = 13; const rnd = () => { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; };
+
+      // обрывки контура облачка и лучи удара: построены один раз, двигаются таймлайном
+      const shards = [], rays = [];
+      for (let i = 0; i < 10; i++) {
+        const a = (2 * Math.PI * i) / 10 + (rnd() - 0.5) * 0.4;
+        const r = 0.92 + rnd() * 0.1;
+        const g = document.createElementNS(NS, "g"), m = document.createElementNS(NS, "g"), p = document.createElementNS(NS, "path");
+        const L = 46 + rnd() * 26;
+        g.setAttribute("transform", `translate(${732 + 264 * r * Math.cos(a)} ${383 + 200 * r * Math.sin(a)})`);
+        p.setAttribute("d", `M ${-L} 0 Q 0 ${-0.75 * L} ${L} 0`);
+        p.setAttribute("transform", `rotate(${(a * 180) / Math.PI + 90})`);
+        p.style.strokeWidth = 11;
+        m.appendChild(p); g.appendChild(m); document.getElementById("shards").appendChild(g);
+        shards.push({ el: m, a });
+      }
+      for (let i = 0; i < 8; i++) {
+        const a = (2 * Math.PI * (i + 0.5)) / 8 + (rnd() - 0.5) * 0.25;
+        const g = document.createElementNS(NS, "g"), m = document.createElementNS(NS, "g"), l = document.createElementNS(NS, "line");
+        g.setAttribute("transform", `translate(${732 + 330 * Math.cos(a)} ${383 + 270 * Math.sin(a)}) rotate(${(a * 180) / Math.PI})`);
+        l.setAttribute("x1", 0); l.setAttribute("y1", 0); l.setAttribute("x2", 120); l.setAttribute("y2", 0);
+        l.style.strokeWidth = 13;
+        m.appendChild(l); g.appendChild(m); document.getElementById("rays").appendChild(g);
+        rays.push({ el: m, a });
+      }
+
+      const tl = gsap.timeline({ paused: true });
+      gsap.set("#catApproach, #catStartle, #catBob", { transformOrigin: CAT_FOOT });
+      gsap.set("#tail", { transformOrigin: TAIL_PIVOT });
+      gsap.set("#thoughtFollow, #thoughtPop, #thoughtBase", { transformOrigin: CLOUD_C });
+      // облачко меньше и ниже, чем на рисунке: над ним — место под якорь (шапка Reels — верхние 269 px)
+      gsap.set("#thoughtBase", { scale: 0.8, y: 80 });
+      gsap.set("#pencil", { transformOrigin: "50% 50%" });
+      gsap.set("#b1, #b2", { transformOrigin: "50% 50%" });
+      gsap.set(".qs", { strokeDasharray: 400, strokeDashoffset: 400 });
+      gsap.set(".qd, .qi", { transformOrigin: "50% 50%", scale: 0 });
+
+      // кот идёт к зрителю: подходит ближе всё время шага
+      tl.fromTo("#catApproach", { scale: 0.95 }, { scale: 1.04, duration: H - PRE, ease: "none" }, 0);
+      // шаги: подъём — вытянут, опора — сжат, вперевалку; кадр 0 уже в середине подъёма
+      let t = 0, side = 1;
+      tl.set("#catBob", { y: -8, scaleY: 1.0, scaleX: 1.0, rotation: 1.1 }, 0);
+      while (t + STEP <= H - PRE + 1e-6) {
+        tl.to("#catBob", { y: -20, scaleY: 1.025, scaleX: 0.985, rotation: 2.4 * side, duration: STEP * 0.45, ease: "power2.out" }, t);
+        tl.to("#catBob", { y: 0, scaleY: 0.962, scaleX: 1.03, rotation: 0, duration: STEP * 0.55, ease: "power2.in" }, t + STEP * 0.45);
+        t += STEP; side = -side;
+      }
+      // замах: присел и замер на полушаге
+      tl.to("#catBob", { y: 6, scaleY: 0.94, scaleX: 1.045, rotation: -1.2, duration: H - PRE - t + PRE, ease: "power2.inOut" }, t);
+      // хвост: машет с запаздыванием на четверть шага (захлёст), на ударе — хлёст и пружина
+      tl.fromTo("#tail", { rotation: -7 }, { rotation: 9, duration: STEP, ease: "sine.inOut", yoyo: true,
+                                           repeat: Math.max(0, Math.floor((H - 0.05) / STEP) - 1) }, 0.05);
+      tl.to("#tail", { rotation: 14, duration: 0.1, ease: "power2.out" }, H);
+      tl.to("#tail", { rotation: 0, duration: 0.6, ease: "elastic.out(1, 0.45)" }, H + 0.1);
+      // испуг на ударе: подскок с вытяжением, потом пружина
+      tl.to("#catBob", { y: 0, scaleY: 1, scaleX: 1, rotation: 0, duration: 0.07, ease: "power3.out" }, H);
+      tl.to("#catStartle", { y: -48, scaleY: 1.1, scaleX: 0.93, duration: 0.07, ease: "power3.out" }, H);
+      tl.to("#catStartle", { y: 0, scaleY: 1, scaleX: 1, duration: 0.5, ease: "elastic.out(1, 0.42)" }, H + 0.07);
+
+      // мысль: облачко уже в кадре 0 и надувается, плывёт за головой с отставанием
+      tl.fromTo("#thoughtPop", { scale: 0.8, y: 34 }, { scale: 1, y: 0, duration: 0.28, ease: "back.out(2.2)" }, 0);
+      tl.fromTo("#thoughtFollow", { y: -4, rotation: -1.5 }, { y: -16, rotation: 1.8, duration: STEP, ease: "sine.inOut", yoyo: true,
+                                   repeat: Math.max(0, Math.floor((H - PRE - 0.08) / STEP) - 1) }, 0.08);
+      tl.to("#thoughtPop", { scale: 1.12, duration: PRE, ease: "power2.in" }, H - PRE);
+      // карандаш живёт в облачке: качается; перед ударом дрожит; на ударе всасывается в точку
+      tl.fromTo("#pencil", { rotation: -12, y: -6 }, { rotation: 12, y: 8, duration: 0.25, ease: "sine.inOut", yoyo: true,
+                              repeat: Math.max(0, Math.floor((H - PRE) / 0.25) - 1) }, 0);
+      tl.to("#pencil", { x: 6, rotation: 4, duration: 1 / 30, ease: "none", yoyo: true, repeat: Math.round(PRE * 30) - 1 }, H - PRE);
+      tl.to("#pencil", { scale: 0, rotation: 220, opacity: 0, duration: 0.09, ease: "power3.in" }, H - 0.02);
+      // облачко лопается
+      tl.to("#cloud", { scale: 1.35, opacity: 0, duration: 0.1, ease: "power2.out", transformOrigin: "50% 50%" }, H);
+      // пузырьки: появляются в кадре 0 по очереди, на ударе гаснут к голове
+      tl.fromTo("#b1", { scale: 0.35 }, { scale: 1, duration: 0.16, ease: "back.out(3)" }, 0);
+      tl.fromTo("#b2", { scale: 0 }, { scale: 1, duration: 0.16, ease: "back.out(3)" }, 0.05);
+      tl.to("#b2", { scale: 0, duration: 0.05, ease: "power2.in" }, H - 0.03);   // гаснет до прыжка, иначе ложится на голову
+      tl.to("#b1", { scale: 0, duration: 0.06, ease: "power2.in" }, H);
+      // обрывки облачка разлетаются и тают
+      const cx = 732, cy = 383;   // центр облачка после #thoughtBase (опущено на 80)
+      shards.forEach((s, i) => {
+        tl.set(s.el, { opacity: 0 }, 0);
+        tl.set(s.el, { opacity: 1 }, H + 0.02);
+        tl.to(s.el, { x: 260 * Math.cos(s.a), y: 260 * Math.sin(s.a), rotation: (i % 2 ? 1 : -1) * 70, opacity: 0,
+                      duration: 0.42, ease: "power2.out" }, H + 0.02);
+      });
+      // лучи «пуф» вокруг облачка
+      rays.forEach((r) => {
+        tl.set(r.el, { opacity: 0, scaleX: 0, svgOrigin: "0 0" }, 0);
+        tl.set(r.el, { opacity: 1 }, H + 0.03);
+        tl.to(r.el, { scaleX: 1, duration: 0.08, ease: "power3.out" }, H + 0.03);
+        tl.to(r.el, { x: 60, opacity: 0, duration: 0.2, ease: "power2.in" }, H + 0.12);   // вдоль своего луча
+      });
+      // два «?» от руки: штрих пишется, точка выскакивает, по очереди
+      [["#q1", H + 0.14, -9], ["#q2", H + 0.26, 8]].forEach(([q, t0, rot]) => {
+        tl.fromTo(`${q} .qi`, { scale: 0.6, rotation: -rot }, { scale: 1, rotation: rot, duration: 0.3, ease: "back.out(2.5)" }, t0);
+        tl.to(`${q} .qs`, { strokeDashoffset: 0, duration: 0.16, ease: "power2.out" }, t0);
+        tl.fromTo(`${q} .qd`, { scale: 0 }, { scale: 1, duration: 0.12, ease: "back.out(3)" }, t0 + 0.14);
+      });
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

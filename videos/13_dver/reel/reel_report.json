@@ -550,11 +550,11 @@
   {
    "name": "shock",
    "role": "impact",
-   "peak": 0.87,
+   "peak": 0.97,
    "soft": false,
    "gain_db": 0.0,
    "vs_voice_db": -8.0,
-   "with_overlap_db": -5.1,
+   "with_overlap_db": -5.3,
    "target_db": -8.0
   },
   {
@@ -564,7 +564,7 @@
    "soft": false,
    "gain_db": 0.0,
    "vs_voice_db": -12.0,
-   "with_overlap_db": -5.1,
+   "with_overlap_db": -5.3,
    "target_db": -12.0
   },
   {
@@ -768,7 +768,7 @@
   },
   {
    "kind": "sfx",
-   "t": 0.87,
+   "t": 0.97,
    "beat": 0,
    "name": "shock"
   },

@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 from reel_build_common import *
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "reel.json")
 W = {  # окна [cx, cy, h] в пикселях исходника 1024×1536, сняты по сеткам 28.10
- "hook": ([512, 760, 1270], [512, 770, 1200]),
+ "hook": ([475, 812, 1060], [475, 818, 1010]),   # облачко под шапкой Reels, лапы над якорем   # мир сцены door_hf (×2: 230–1670 × 440–2660)
  "kit_wide": ([512, 780, 1200], [512, 790, 1130]),
  "kit_face": ([540, 850, 640], [540, 855, 600]),
  "kit_cat": ([450, 940, 960], [450, 945, 900]),
@@ -46,11 +46,11 @@ T6 = "Если шаги теряются по дороге, |в шапке пр�
 T7 = "Дошёл до стола с карандашом. |И с *бутербродом*, |конечно."
 beats = [
  dict(text=T0, voice="[energetic] Ты шёл и всё забыл?",                          # К: «шёл» против «забыл»
-      shots=[dict(at=0, src="f1", anim="cloud_pop", **{"from": W["hook"][0]}, to=W["hook"][1])],
+      shots=[dict(at=0, src="f1", anim="door_hf", **{"from": W["hook"][0]}, to=W["hook"][1])],
       fx=[dict(kind="sfx", name="fast_whoosh", at=0, align="start"),
           dict(kind="sfx", name="riser", at=0, dt=-0.33, align="start"),
-          dict(kind="sfx", name="shock", at=4, dt=0.15),
-          dict(kind="mark", anchor=True, text="Зачем я шёл?", at=0, speed=2.0, x=540, y=200, size=100)]),
+          dict(kind="sfx", name="shock", at=4, dt=0.25),   # пик на кадр позже удара картинки (0,94 + 1/30): «забы́л»
+          dict(kind="mark", anchor=True, text="Зачем я шёл?", at=0, speed=2.0, x=540, y=1050, size=100)]),   # якорь на полу под лапами: верх занят облачком мысли
  dict(text=T1, after_sfx="riser",
       voice="Доходишь до кухни, [short pause] а в голове пусто. Но дело не в памяти, и в конце покажу, как донести мысль до [emphasis] места.",
       shots=[sh(0, "f2", "kit_wide", why="«Доходишь до кухни»: кот посреди кухни, склейка на пике riser"),
@@ -88,7 +88,7 @@ beats = [
  dict(text=T7,
       shots=[sh(0, "f7", "desk_wide", zoom_in=0.1, why="«дошёл до стола с карандашом»: кот за столом поднял карандаш, огонёк золотой"),
              sh(ix(T7, "И"), "f7", "desk_sand", why="«И с бутербродом»: бутерброд во второй лапе крупно"),
-             sh(ix(T7, "конечно"), "f1", "hook", whip=[-560, 0], why="петля: снова дверной проём из хука — и мысль опять над головой")],
+             sh(ix(T7, "конечно"), "f1", "hook", whip=[-560, 0], why="петля: первый кадр хука — кот в проёме, над ним снова мысль с карандашом")],
       fx=[dict(kind="sfx", name="level_up", at=0, why="дошёл с карандашом — награда"),
           dict(kind="punch", at=ix(T7, "бутербродом"), style="cut", amt=0.12, hold=0.35, why="«бутербродом»: смешной удар на развязку")]),
 ]
@@ -266,7 +266,7 @@ passport = dict(
   rehook=1),
  coverage=C, matrix=matrix, inventory=inventory)
 spec = dict(title="Кот и дела · серия 13: «Ты шёл и всё забыл?» (голос Daniel, эксперимент без повторов)", rate=1.15, lead_in=0.0, tail=0.55,
-            sources={"f1": {"frame": "gen/d1_doorway.png"}, "f2": {"frame": "gen/d2_kitchen.png"}, "f3": {"frame": "gen/d3_sandwich.png"},
+            sources={"f1": {"frame": "anim/kit/hook_first.png"},   # кадр 0 сцены door_hf (сам рисунок d1 сцена берёт сама): конец = начало "f2": {"frame": "gen/d2_kitchen.png"}, "f3": {"frame": "gen/d3_sandwich.png"},
                      "f4": {"frame": "gen/d4_box.png"}, "f5": {"frame": "gen/d5_curtain.png"}, "f6": {"frame": "gen/d6_note.png"},
                      "f7": {"frame": "gen/d7_desk.png"}},
             beats=beats, passport=passport)
