@@ -1,10 +1,10 @@
 # Библиотека оригиналов: кот и всё, что сгенерировано
 
-Картинок: **110**, 204 МБ. Оригиналы — `originals/` байт в байт, как пришли из модели (PNG без пересжатия); `thumbs/` — превью для этой страницы; `catalog.json` — промпт, модель, цена, где используется.
+Картинок: **117**, 221 МБ. Оригиналы — `originals/` байт в байт, как пришли из модели (PNG без пересжатия); `thumbs/` — превью для этой страницы; `catalog.json` — промпт, модель, цена, где используется.
 
 Пополняется сама: каждая генерация через шлюз (`llm_gateway.Gateway.image`) кладёт картинку сюда, включая забракованные варианты. Собрать уже лежащее в репозитории: `python scripts/cat_library.py --scan`.
 
-## генерация (64)
+## генерация (71)
 
 | превью | оригинал | где | промпт |
 |---|---|---|---|
@@ -72,6 +72,13 @@
 | ![](thumbs/2026-10-27_gen_cx_gpt-image-2_f5f85512.jpg) | [2026-10-27_gen_cx_gpt-image-2_f5f85512.png](originals/2026-10-27_gen_cx_gpt-image-2_f5f85512.png)<br>1531×1027, 2026-10-27 | scripts/frame_generator.py videos/L01_potom --only | Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, col… |
 | ![](thumbs/2026-10-27_gen_cx_gpt-image-2_fa90b035.jpg) | [2026-10-27_gen_cx_gpt-image-2_fa90b035.png](originals/2026-10-27_gen_cx_gpt-image-2_fa90b035.png)<br>1531×1027, 2026-10-27 | scripts/frame_generator.py videos/L01_potom --only | Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, col… |
 | ![](thumbs/2026-10-27_gen_cx_gpt-image-2_fb58bf98.jpg) | [2026-10-27_gen_cx_gpt-image-2_fb58bf98.png](originals/2026-10-27_gen_cx_gpt-image-2_fb58bf98.png)<br>1531×1027, 2026-10-27 | scripts/frame_generator.py videos/L01_potom --only | Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, col… |
+| ![](thumbs/2026-10-28_gen_cx_gpt-image-2_3310b98f.jpg) | [2026-10-28_gen_cx_gpt-image-2_3310b98f.png](originals/2026-10-28_gen_cx_gpt-image-2_3310b98f.png)<br>1024×1536, 2026-10-28 | scripts/reel_draw.py videos/13_dver/reel | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
+| ![](thumbs/2026-10-28_gen_cx_gpt-image-2_39581659.jpg) | [2026-10-28_gen_cx_gpt-image-2_39581659.png](originals/2026-10-28_gen_cx_gpt-image-2_39581659.png)<br>1024×1536, 2026-10-28 | scripts/reel_draw.py videos/13_dver/reel | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
+| ![](thumbs/2026-10-28_gen_cx_gpt-image-2_70875f79.jpg) | [2026-10-28_gen_cx_gpt-image-2_70875f79.png](originals/2026-10-28_gen_cx_gpt-image-2_70875f79.png)<br>1024×1536, 2026-10-28 | scripts/reel_draw.py videos/13_dver/reel | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
+| ![](thumbs/2026-10-28_gen_cx_gpt-image-2_a25265fc.jpg) | [2026-10-28_gen_cx_gpt-image-2_a25265fc.png](originals/2026-10-28_gen_cx_gpt-image-2_a25265fc.png)<br>1024×1536, 2026-10-28 | scripts/reel_draw.py videos/13_dver/reel | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
+| ![](thumbs/2026-10-28_gen_cx_gpt-image-2_aaaaa171.jpg) | [2026-10-28_gen_cx_gpt-image-2_aaaaa171.png](originals/2026-10-28_gen_cx_gpt-image-2_aaaaa171.png)<br>1024×1536, 2026-10-28 | scripts/reel_draw.py videos/13_dver/reel | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
+| ![](thumbs/2026-10-28_gen_cx_gpt-image-2_cfb18a98.jpg) | [2026-10-28_gen_cx_gpt-image-2_cfb18a98.png](originals/2026-10-28_gen_cx_gpt-image-2_cfb18a98.png)<br>1024×1536, 2026-10-28 | scripts/reel_draw.py videos/13_dver/reel | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
+| ![](thumbs/2026-10-28_gen_cx_gpt-image-2_f2214e26.jpg) | [2026-10-28_gen_cx_gpt-image-2_f2214e26.png](originals/2026-10-28_gen_cx_gpt-image-2_f2214e26.png)<br>1024×1536, 2026-10-28 | scripts/reel_draw.py videos/13_dver/reel | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
 
 ## герой: состояние (3)
 
