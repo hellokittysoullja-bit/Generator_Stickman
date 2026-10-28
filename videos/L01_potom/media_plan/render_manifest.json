@@ -1,41 +1,41 @@
 {
  "total_blocks": 55,
- "timing": "estimate",
+ "timing": "phrase_lock",
  "clips": [
   {
    "index": 0,
    "status": "ok",
-   "dur": 7.4583
+   "dur": 7.3333
   },
   {
    "index": 1,
    "status": "ok",
-   "dur": 6.0833
+   "dur": 5.0833
   },
   {
    "index": 2,
    "status": "ok",
-   "dur": 9.2083
+   "dur": 6.3333
   },
   {
    "index": 3,
    "status": "ok",
-   "dur": 8.7917
+   "dur": 7.8333
   },
   {
    "index": 4,
    "status": "ok",
-   "dur": 9.25
+   "dur": 8.375
   },
   {
    "index": 5,
    "status": "ok",
-   "dur": 6.9583
+   "dur": 5.25
   },
   {
    "index": 6,
    "status": "ok",
-   "dur": 15.9583
+   "dur": 14.875
   },
   {
    "index": 7,
@@ -45,12 +45,12 @@
   {
    "index": 8,
    "status": "ok",
-   "dur": 3.875
+   "dur": 3.2083
   },
   {
    "index": 9,
    "status": "ok",
-   "dur": 12.1667
+   "dur": 12.0
   },
   {
    "index": 10,
@@ -60,87 +60,87 @@
   {
    "index": 11,
    "status": "ok",
-   "dur": 7.4583
+   "dur": 7.1667
   },
   {
    "index": 12,
    "status": "ok",
-   "dur": 11.9167
+   "dur": 7.9167
   },
   {
    "index": 13,
    "status": "ok",
-   "dur": 6.5417
+   "dur": 6.4167
   },
   {
    "index": 14,
    "status": "ok",
-   "dur": 9.6667
+   "dur": 8.6667
   },
   {
    "index": 15,
    "status": "ok",
-   "dur": 9.6667
+   "dur": 8.5833
   },
   {
    "index": 16,
    "status": "ok",
-   "dur": 15.0833
+   "dur": 11.8333
   },
   {
    "index": 17,
    "status": "ok",
-   "dur": 12.375
+   "dur": 10.9167
   },
   {
    "index": 18,
    "status": "ok",
-   "dur": 9.2083
+   "dur": 8.75
   },
   {
    "index": 19,
    "status": "ok",
-   "dur": 10.5833
+   "dur": 9.5417
   },
   {
    "index": 20,
    "status": "ok",
-   "dur": 7.625
+   "dur": 8.7917
   },
   {
    "index": 21,
    "status": "ok",
-   "dur": 5.625
+   "dur": 5.4583
   },
   {
    "index": 22,
    "status": "ok",
-   "dur": 10.125
+   "dur": 8.6667
   },
   {
    "index": 23,
    "status": "ok",
-   "dur": 13.7083
+   "dur": 11.4583
   },
   {
    "index": 24,
    "status": "ok",
-   "dur": 8.3333
+   "dur": 6.75
   },
   {
    "index": 25,
    "status": "ok",
-   "dur": 10.125
+   "dur": 8.4167
   },
   {
    "index": 26,
    "status": "ok",
-   "dur": 10.125
+   "dur": 7.9167
   },
   {
    "index": 27,
    "status": "ok",
-   "dur": 15.3333
+   "dur": 14.0833
   },
   {
    "index": 28,
@@ -150,32 +150,32 @@
   {
    "index": 29,
    "status": "ok",
-   "dur": 8.3333
+   "dur": 7.75
   },
   {
    "index": 30,
    "status": "ok",
-   "dur": 7.9167
+   "dur": 7.4583
   },
   {
    "index": 31,
    "status": "ok",
-   "dur": 9.2083
+   "dur": 7.3333
   },
   {
    "index": 32,
    "status": "ok",
-   "dur": 5.8333
+   "dur": 4.8333
   },
   {
    "index": 33,
    "status": "ok",
-   "dur": 3.8333
+   "dur": 2.9583
   },
   {
    "index": 34,
    "status": "ok",
-   "dur": 21.1667
+   "dur": 16.75
   },
   {
    "index": 35,
@@ -185,77 +185,77 @@
   {
    "index": 36,
    "status": "ok",
-   "dur": 8.3333
+   "dur": 7.7917
   },
   {
    "index": 37,
    "status": "ok",
-   "dur": 9.6667
+   "dur": 7.6667
   },
   {
    "index": 38,
    "status": "ok",
-   "dur": 7.4583
+   "dur": 6.4583
   },
   {
    "index": 39,
    "status": "ok",
-   "dur": 7.0
+   "dur": 5.9583
   },
   {
    "index": 40,
    "status": "ok",
-   "dur": 13.7083
+   "dur": 13.25
   },
   {
    "index": 41,
    "status": "ok",
-   "dur": 8.75
+   "dur": 9.2917
   },
   {
    "index": 42,
    "status": "ok",
-   "dur": 8.375
+   "dur": 7.5
   },
   {
    "index": 43,
    "status": "ok",
-   "dur": 17.7083
+   "dur": 13.2917
   },
   {
    "index": 44,
    "status": "ok",
-   "dur": 11.0417
+   "dur": 10.125
   },
   {
    "index": 45,
    "status": "ok",
-   "dur": 9.2083
+   "dur": 8.125
   },
   {
    "index": 46,
    "status": "ok",
-   "dur": 13.2917
+   "dur": 9.5417
   },
   {
    "index": 47,
    "status": "ok",
-   "dur": 11.4583
+   "dur": 10.125
   },
   {
    "index": 48,
    "status": "ok",
-   "dur": 7.875
+   "dur": 8.4167
   },
   {
    "index": 49,
    "status": "ok",
-   "dur": 10.5833
+   "dur": 8.75
   },
   {
    "index": 50,
    "status": "ok",
-   "dur": 14.4167
+   "dur": 12.9167
   },
   {
    "index": 51,
@@ -265,17 +265,17 @@
   {
    "index": 52,
    "status": "ok",
-   "dur": 15.7083
+   "dur": 12.125
   },
   {
    "index": 53,
    "status": "ok",
-   "dur": 10.125
+   "dur": 7.5
   },
   {
    "index": 54,
    "status": "ok",
-   "dur": 10.75
+   "dur": 9.4583
   }
  ]
 }
