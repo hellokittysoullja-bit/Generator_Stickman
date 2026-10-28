@@ -1,13 +1,163 @@
 [
- {"name": "fast_whoosh", "phrase": 1, "at": 0.05, "role": "whoosh", "why": "хук: резкий влёт камеры с первого кадра, первый листок срывается"},
- {"name": "fast_whoosh", "phrase": 1, "word": "понедельника", "offset": 0.1, "role": "whoosh", "gain_db": -2, "why": "срывается листок календаря на «понедельника»"},
- {"name": "fast_whoosh", "phrase": 1, "word": "силы", "offset": 0.1, "role": "whoosh", "gain_db": -2, "why": "срывается последний листок на «силы»"},
- {"name": "riser", "phrase": 2, "at": 0.0, "role": "whoosh", "why": "интрига к повороту: пик на склейке к «Но «потом» не наступит никогда»"},
- {"name": "oof", "phrase": 3, "word": "открыл", "offset": 0.55, "role": "meme", "gain_db": -4, "why": "смешной провал кота: два года не открыл видео про откладывание"},
- {"name": "level_up", "phrase": 6, "word": "начинаю", "offset": 0.05, "role": "ui", "why": "было → стало: теперь начинаю почти каждый день"},
- {"name": "oof", "phrase": 16, "word": "холодильник", "offset": 0.6, "role": "meme", "gain_db": -4, "why": "среда: от плана остался только холодильник"},
- {"name": "shock", "phrase": 22, "word": "напугал", "offset": 0.05, "role": "impact", "gain_db": -3, "why": "тень чужого человека вместо своей — вопрос, который напугал"},
- {"name": "level_up", "phrase": 32, "word": "три", "offset": 0.05, "role": "ui", "why": "награда: помыл три тарелки, огонёк золотой"},
- {"name": "fast_glitch", "phrase": 38, "word": "поймал", "offset": 0.05, "role": "whoosh", "why": "стоп-момент: поймал себя на мысли"},
- {"name": "level_up", "phrase": 40, "word": "досмотрел", "offset": 0.05, "role": "ui", "why": "выплата истории: через две минуты досмотрел до конца"}
+ {
+  "name": "fast_whoosh",
+  "phrase": 1,
+  "at": 0.05,
+  "role": "whoosh",
+  "why": "хук: резкий влёт камеры с первого кадра, первый листок срывается"
+ },
+ {
+  "name": "fast_whoosh",
+  "phrase": 1,
+  "word": "понедельника",
+  "offset": 0.1,
+  "role": "whoosh",
+  "gain_db": -2,
+  "why": "срывается листок календаря на «понедельника»"
+ },
+ {
+  "name": "fast_whoosh",
+  "phrase": 1,
+  "word": "силы",
+  "offset": 0.1,
+  "role": "whoosh",
+  "gain_db": -2,
+  "why": "срывается последний листок на «силы»"
+ },
+ {
+  "name": "riser",
+  "phrase": 2,
+  "at": 0.0,
+  "role": "whoosh",
+  "why": "интрига к повороту: пик на склейке к «Но «потом» не наступит никогда»"
+ },
+ {
+  "name": "oof",
+  "phrase": 3,
+  "word": "открыл",
+  "offset": 0.55,
+  "role": "meme",
+  "gain_db": -4,
+  "why": "смешной провал кота: два года не открыл видео про откладывание"
+ },
+ {
+  "name": "level_up",
+  "phrase": 6,
+  "word": "начинаю",
+  "offset": 0.05,
+  "role": "ui",
+  "why": "было → стало: теперь начинаю почти каждый день"
+ },
+ {
+  "name": "oof",
+  "phrase": 16,
+  "word": "холодильник",
+  "offset": 0.6,
+  "role": "meme",
+  "gain_db": -4,
+  "why": "среда: от плана остался только холодильник"
+ },
+ {
+  "name": "shock",
+  "phrase": 22,
+  "word": "напугал",
+  "offset": 0.05,
+  "role": "impact",
+  "gain_db": -3,
+  "why": "тень чужого человека вместо своей — вопрос, который напугал"
+ },
+ {
+  "name": "level_up",
+  "phrase": 32,
+  "word": "три",
+  "offset": 0.05,
+  "role": "ui",
+  "why": "награда: помыл три тарелки, огонёк золотой"
+ },
+ {
+  "name": "fast_glitch",
+  "phrase": 38,
+  "word": "поймал",
+  "offset": 0.05,
+  "role": "whoosh",
+  "why": "стоп-момент: поймал себя на мысли"
+ },
+ {
+  "name": "level_up",
+  "phrase": 40,
+  "word": "досмотрел",
+  "offset": 0.05,
+  "role": "ui",
+  "why": "выплата истории: через две минуты досмотрел до конца"
+ },
+ {
+  "name": "fast_whoosh",
+  "phrase": 2,
+  "word": "никогда",
+  "offset": 0.0,
+  "role": "whoosh",
+  "why": "удар-наезд на «никогда»: рельсы в туман"
+ },
+ {
+  "name": "swoosh",
+  "phrase": 5,
+  "word": "потом",
+  "offset": 0.0,
+  "role": "whoosh",
+  "gain_db": -3,
+  "why": "хлёст к двери «потом»"
+ },
+ {
+  "name": "swoosh",
+  "phrase": 5,
+  "word": "понедельник",
+  "offset": 0.0,
+  "role": "whoosh",
+  "gain_db": -3,
+  "why": "хлёст к оторванному листку"
+ },
+ {
+  "name": "swoosh",
+  "phrase": 5,
+  "word": "начать",
+  "offset": 0.0,
+  "role": "whoosh",
+  "gain_db": -3,
+  "why": "хлёст к таймеру «как начать»"
+ },
+ {
+  "name": "swoosh",
+  "phrase": 6,
+  "word": "теперь",
+  "offset": 0.0,
+  "role": "whoosh",
+  "gain_db": -3,
+  "why": "хлёст «было → стало»"
+ },
+ {
+  "name": "swoosh",
+  "phrase": 7,
+  "word": "сколько",
+  "offset": 0.0,
+  "role": "whoosh",
+  "gain_db": -3,
+  "why": "хлёст на всю кучу «сколько там всего»"
+ },
+ {
+  "name": "fast_whoosh",
+  "phrase": 3,
+  "word": "не",
+  "offset": 0.0,
+  "role": "whoosh",
+  "gain_db": -2,
+  "why": "удар-наезд на виноватые глаза «и не открыл»"
+ },
+ {
+  "name": "fast_whoosh",
+  "phrase": 9,
+  "word": "правда",
+  "offset": 0.0,
+  "role": "whoosh",
+  "why": "удар-наезд на лапу, срывающую лист"
+ }
 ]

@@ -60,7 +60,8 @@ THRESHOLDS = {
     "hook_first_cut_sec":     (2.0,  "<=", "warn", "hypothesis"),
     "hook_plan_len_sec":      ((1.2, 2.0), "range", "warn", "hypothesis"),
     "hook_voice_onset_sec":   (0.3,  "<=", "warn", "hypothesis"),
-    "cuts_in_silence_share":  (vt.MIN_CUTS_IN_SILENCE, ">=", "block", "calibrated"),   # §2.1, порог verify_timing
+    "cuts_in_silence_share":  (vt.MIN_CUTS_IN_SILENCE, ">=", "block", "calibrated"),   # §2.1, порог verify_timing; стыки фраз
+    "cuts_inside_words_share": (vt.MAX_CUTS_IN_WORDS, "<=", "block", "calibrated"),   # склейки внутри фразы — не посреди слова
 }
 
 
@@ -386,10 +387,9 @@ def build(video_dir, video_path=None):
     m.update(direction_metrics(sc, plans, pic, total))
     m.update(cut_metrics(sc, cuts)); m.update(sharpness_metrics(sc, plans)); m.update(hook_metrics(plans, cuts, silences))
     m.update(paper_tone_jumps(video_path, cuts, fps_d)); m.update(cuts_crosscheck(cuts, scenedetect_cuts(video_path)))
-    if cuts and silences is not None:
-        m["cuts_in_silence_share"] = float(np.mean([vt.inside_silence(c, silences, pad=0.05) for c in cuts]))
-    else:
-        m["cuts_in_silence_share"] = None
+    sm = vt.speech_cut_metrics(video_dir, video_path, cuts, pic[1:] if pic else [])
+    m["cuts_in_silence_share"] = sm["cuts_in_silence_share"]
+    m["cuts_inside_words_share"] = sm["cuts_inside_words_share"]
     checks = {k: _check(k, m.get(k)) for k in THRESHOLDS}
     blocks = [k for k, c in checks.items() if c["state"] == "violation" and c["level"] == "block" and c["status"] == "calibrated"]
     warns = [k for k, c in checks.items() if c["state"] == "violation" and k not in blocks]

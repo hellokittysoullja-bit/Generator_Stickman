@@ -40,7 +40,8 @@ def resolve(events, starts, word_times):
             continue                                  # немое превью без alignment: звук на слове негде поставить
         if "word" in e:
             ws = word_times[i] if i < len(word_times) else []
-            w = next((w for w in ws if _stem(w["word"]).startswith(_stem(e["word"]))), None)
+            w = next((w for w in ws if _stem(w["word"]) == _stem(e["word"])), None) or \
+                next((w for w in ws if _stem(w["word"]).startswith(_stem(e["word"]))), None)   # точное слово важнее
             if not w:
                 errs.append(f"«{e['name']}»: слова «{e['word']}» нет во фразе {e['phrase']}")
                 continue

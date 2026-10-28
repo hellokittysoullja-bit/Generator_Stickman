@@ -25,6 +25,7 @@ from PIL import Image
 import camera
 import canvas
 import labels as labels_mod
+import long_edit
 import placement
 import shots
 import upscale
@@ -386,6 +387,12 @@ def render(fr, p, D, out, fps=24, end_fade=False, crf="18", anim=None):
             cam = anim.cam(t) if anim is not None else {}
             if cam:
                 win = _cam_window(win, cam, SW, SH)
+            seg = next((s_ for s_ in p["segments"] if s_["t0"] <= t < s_["t1"]), p["segments"][-1])
+            manual = seg.get("kind") == "manual"
+            if manual:                                 # ручной монтаж: тряска на ударе
+                dx, dy = long_edit.shake_px(seg, t)
+                if dx or dy:
+                    win = _cam_window(win, {"dx": dx, "dy": dy}, SW, SH)
             base = anim.frame(t, world) if anim is not None else world
             f = _screen(base, win, UPSCALE)
             if prev_world is not None and t - fade_from < fade_len:
@@ -414,6 +421,8 @@ def render(fr, p, D, out, fps=24, end_fade=False, crf="18", anim=None):
                     f = f*(1 - al[..., None]) + INK*al[..., None]
             if cam.get("rot"):
                 f = _roll(f, cam["rot"])
+            if manual:                                 # прожектор и хлёст — поверх картинки, под затемнением конца
+                f = long_edit.whip(long_edit.spot(f, seg, t, win, W, H), seg, t)
             if end_fade and t > D - END_FADE_SEC:
                 a = camera.ease_io((t - (D - END_FADE_SEC))/END_FADE_SEC)
                 f = f*(1 - a) + canvas.CREAM*a

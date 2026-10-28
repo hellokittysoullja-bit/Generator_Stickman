@@ -307,6 +307,8 @@ def main(video_dir):
     workers = int(os.environ.get("RENDER_WORKERS", str(max(1, min(4, (os.cpu_count() or 2) - 1)))))
     with ProcessPoolExecutor(workers) as ex:              # увеличение рисунков — дорого, параллельно и с кэшем
         list(ex.map(_warm, jobs))
+    import long_edit
+    edits = long_edit.load(video_dir)
     last_punch, last_key, shot_log, written = -1e9, -1e9, [], []
     for k, job in enumerate(jobs):                         # план — по порядку: наезды и мысли не чаще порога
         fr = _prepare(job)
@@ -330,6 +332,11 @@ def main(video_dir):
             p["key_time"] = None
         if p.get("accent_time") is not None and p.get("accent"):
             written.append((job["T0"] + p["accent_time"], len(p["accent"]["text"].split())))
+        if kept[k] in edits:                               # ручной монтаж оркестратора (edit.json)
+            import long_edit
+            p["segments"] = long_edit.segments(fr, edits[kept[k]]["shots"], job["words"], job["dur"])
+            p["punch_at"] = None
+            long_edit.relayout_text(fr, p, frame_clip)
         job["plan"] = p
         h = hashlib.sha256(open(job["src"], "rb").read()).hexdigest()[:12]
         scene_sig = hashlib.sha256(open(job["anim"], "rb").read()).hexdigest()[:12] if job.get("anim") else None

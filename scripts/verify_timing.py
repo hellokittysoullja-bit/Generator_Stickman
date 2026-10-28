@@ -106,7 +106,9 @@ MATCH_WINDOW_SEC = 0.60
 MAX_MEDIAN_DRIFT_SEC = 0.10      # ~2.4 кадра при 24 fps
 MAX_DRIFT_TREND_SEC_PER_MIN = 0.05   # накопительный уход — главный симптом
 MIN_COVERAGE = 0.50              # ниже этого измерения просто нет
-MIN_CUTS_IN_SILENCE = 0.70       # рез поперёк слова — слышимая ошибка
+MIN_CUTS_IN_SILENCE = 0.70       # рез поперёк слова — слышимая ошибка (стыки фраз: там пауза есть по построению)
+MAX_CUTS_IN_WORDS = 0.05         # склейка внутри фразы — между словами; посреди слова — не больше этой доли
+WORD_EDGE_SEC = 0.09             # склейка ближе к краю слова (2 кадра при 24 к/с: квантование и задержка детектора) — стык слов
 
 SILENCE_NOISE_DB = -35.0
 SILENCE_MIN_DUR = 0.20
@@ -338,6 +340,38 @@ def match_cuts(expected, detected, window=MATCH_WINDOW_SEC):
     return pairs, unmatched, extra
 
 
+def speech_cut_metrics(video_dir, video_path, detected, expected):
+    """Склейки против речи (28.10, L01 — первый длинный ролик с голосом и музыкой):
+    паузы ищутся по чистому голосу temp_render/voice_processed.wav (в миксе эмбиент 16 LU под голосом закрывает
+    паузы: 4 из 127); в паузе обязаны быть склейки на стыках фраз (expected — онсеты фраз), а склейки внутри фразы
+    (их ставит камера каждые 2–3,5 с) — между словами, не посреди слова: пауза ≥ 0,2 с бывает реже, чем нужен план.
+    Без онсетов — прежняя мера по всем склейкам. Возвращает dict."""
+    stem = os.path.join(video_dir, "temp_render", "voice_processed.wav")
+    silences = detect_silences(stem if os.path.exists(stem) else video_path)
+    out = {"silence_spans": len(silences), "silence_source": "voice_stem" if os.path.exists(stem) else "mix"}
+    near = [d for d in detected if expected and min(abs(d - e) for e in expected) <= 0.15]
+    base = near if expected else detected
+    out["cuts_in_silence_share"] = (round(sum(1 for t in base if inside_silence(t, silences, pad=0.05)) / len(base), 4)
+                                    if base else None)
+    inner = [d for d in detected if d not in near] if expected else []
+    words = []
+    try:
+        import script_parser
+        from speech_timing import SpeechTiming
+        st = SpeechTiming(video_dir)
+        if st.onsets(script_parser.parse_blocks(os.path.join(video_dir, "script.txt"))):
+            words = [w for ws in st.word_times for w in ws]
+    except Exception:  # noqa: BLE001 — нет alignment: мера «посреди слова» не считается
+        words = []
+    if inner and words:
+        mid = [t for t in inner if any(w["start"] + WORD_EDGE_SEC < t < w["end"] - WORD_EDGE_SEC for w in words)]
+        out["cuts_inside_words_share"] = round(len(mid) / len(inner), 4)
+        out["cuts_inside_words_sec"] = [round(t, 2) for t in mid[:20]]
+    else:
+        out["cuts_inside_words_share"] = None
+    return out
+
+
 def inside_silence(t, spans, pad=0.0):
     for s, e in spans:
         if s - pad <= t <= e + pad:
@@ -373,16 +407,10 @@ def verify(video_dir, video_path=None, threshold=DIFF_PEAK_RATIO):
     report["phrase_lock"] = locked
 
     detected = detect_cuts(video_path, threshold)
-    silences = detect_silences(video_path)
     report["detected_cuts"] = len(detected)
-    report["silence_spans"] = len(silences)
 
-    # --- Ось 2: рез в тишине (не зависит от alignment вообще) ---
-    if detected:
-        in_sil = sum(1 for t in detected if inside_silence(t, silences))
-        report["cuts_in_silence_share"] = round(in_sil / len(detected), 4)
-    else:
-        report["cuts_in_silence_share"] = None
+    # --- Ось 2: склейки против речи: стыки фраз — в паузе, внутри фразы — не посреди слова ---
+    report.update(speech_cut_metrics(video_dir, video_path, detected, [t for t in onsets if t and t > 0.0]))
 
     # --- Ось 1: дрейф реза от фразы ---
     expected = [t for t in onsets if t and t > 0.0]
@@ -419,8 +447,9 @@ def verify(video_dir, video_path=None, threshold=DIFF_PEAK_RATIO):
     elif (report["drift"]["trend_ms_per_min"] is not None
           and abs(report["drift"]["trend_ms_per_min"]) > MAX_DRIFT_TREND_SEC_PER_MIN * 1000):
         verdict, code = "drift_trend", 2
-    elif (report["cuts_in_silence_share"] is not None
-          and report["cuts_in_silence_share"] < MIN_CUTS_IN_SILENCE):
+    elif ((report["cuts_in_silence_share"] is not None and report["cuts_in_silence_share"] < MIN_CUTS_IN_SILENCE)
+          or (report.get("cuts_inside_words_share") is not None
+              and report["cuts_inside_words_share"] > MAX_CUTS_IN_WORDS)):
         verdict, code = "cuts_across_speech", 2
     report["verdict"] = verdict
     return report, code

@@ -702,6 +702,9 @@ def window_at(p, t, SW, SH):
 def _window_at(p, t, SW, SH):
     segs = p["segments"]
     s = next((s for s in segs if s["t0"] <= t < s["t1"]), segs[-1])
+    if s["kind"] == "manual":                          # ручной монтаж оркестратора (long_edit.py, edit.json)
+        import long_edit
+        return long_edit.window_at(s, t)
     u = (t - s["t0"])/max(1e-6, s["t1"] - s["t0"])
     if s["kind"] == "punch":
         return camera.lerp(s["win"], s["win_to"], camera.ease_out(u))
