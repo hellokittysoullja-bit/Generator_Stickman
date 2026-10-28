@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "measured_at": "2026-10-28T00:42:23",
+  "measured_at": "2026-10-28T00:57:04",
   "video": "final.mp4",
   "peak_ratio": 4.0,
   "match_window_sec": 0.6,
@@ -11,13 +11,13 @@
     "ложный пик на контрастном Ken Burns попадает в unmatched_detected"
   ],
   "phrase_lock": true,
-  "detected_cuts": 182,
+  "detected_cuts": 185,
   "silence_spans": 127,
   "silence_source": "voice_stem",
   "cuts_in_silence_share": 0.9592,
-  "cuts_inside_words_share": 0.0075,
+  "cuts_inside_words_share": 0.0074,
   "cuts_inside_words_sec": [
-    436.67
+    436.75
   ],
   "expected_cuts": 49,
   "matched": 49,

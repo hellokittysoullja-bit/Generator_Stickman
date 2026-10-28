@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "measured_at": "2026-10-28T00:43:23",
+ "measured_at": "2026-10-28T00:57:51",
  "video": "final.mp4",
  "spec": "docs/MONTAGE_SPEC.md",
  "limits": [
@@ -10,7 +10,7 @@
  ],
  "checks": {
   "plan_max_sec": {
-   "value": 6.125,
+   "value": 5.25,
    "threshold": 3.5416666666666665,
    "op": "<=",
    "level": "block",
@@ -18,7 +18,7 @@
    "state": "violation"
   },
   "plan_len_cv": {
-   "value": 0.34927312384582065,
+   "value": 0.3284807147474904,
    "threshold": 0.25,
    "op": ">=",
    "level": "warn",
@@ -26,7 +26,7 @@
    "state": "ok"
   },
   "plan_near_equal_share": {
-   "value": 0.18681318681318682,
+   "value": 0.19021739130434784,
    "threshold": 0.3,
    "op": "<=",
    "level": "warn",
@@ -82,7 +82,7 @@
    "state": "violation"
   },
   "cut_attention_shift": {
-   "value": 0.44928455352783203,
+   "value": 0.4473510980606079,
    "threshold": 0.25,
    "op": "<=",
    "level": "warn",
@@ -133,7 +133,7 @@
    "state": "ok"
   },
   "cuts_inside_words_share": {
-   "value": 0.0152,
+   "value": 0.0075,
    "threshold": 0.05,
    "op": "<=",
    "level": "block",
@@ -153,22 +153,22 @@
  ],
  "no_signal": [],
  "measured": {
-  "plan_max_sec": 6.125,
-  "plan_len_cv": 0.34927312384582065,
-  "plan_near_equal_share": 0.18681318681318682,
-  "plans": 183,
-  "plan_mean_sec": 2.3854644808743166,
+  "plan_max_sec": 5.25,
+  "plan_len_cv": 0.3284807147474904,
+  "plan_near_equal_share": 0.19021739130434784,
+  "plans": 185,
+  "plan_mean_sec": 2.3596756756756756,
   "writing_plans": 7,
   "frozen_share": 0.0,
   "speed_max_over_mean": 1.0189613486007718,
   "plans_measured": 146,
-  "plans_total": 183,
+  "plans_total": 185,
   "direction_flips_excess": 2,
   "pictures_measured": 37,
   "cut_luma_jump": 149.9389409722222,
-  "cut_luma_jump_median": 15.634943576388906,
-  "cut_attention_shift": 0.44928455352783203,
-  "cuts": 181,
+  "cut_luma_jump_median": 15.978559027777777,
+  "cut_attention_shift": 0.4473510980606079,
+  "cuts": 183,
   "sharpness_cv": 0.01879803192064959,
   "hook_first_cut_sec": 0.041666666666666664,
   "hook_plan_len_sec": 1.458,
@@ -179,7 +179,7 @@
   "cuts_unconfirmed": 16,
   "cuts_extra_by_scenedetect": 1,
   "cuts_in_silence_share": 0.9592,
-  "cuts_inside_words_share": 0.0152
+  "cuts_inside_words_share": 0.0075
  },
  "per_plan": [
   null,
@@ -942,12 +942,14 @@
    "ratio": 1.0181505571639482,
    "static": false
   },
+  null,
+  null,
+  null,
   {
    "frozen": 0.0,
-   "ratio": 1.0406830589816614,
+   "ratio": 1.415690020790932,
    "static": false
   },
-  null,
   null
  ],
  "plans": [
@@ -1673,14 +1675,22 @@
   ],
   [
    427.547,
-   430.542
+   429.417
   ],
   [
-   430.542,
-   436.667
+   429.417,
+   432.0
   ],
   [
-   436.667,
+   432.0,
+   433.333
+  ],
+  [
+   433.333,
+   434.542
+  ],
+  [
+   434.542,
    437.0
   ]
  ],
@@ -1864,10 +1874,12 @@
   422.667,
   424.75,
   427.542,
-  430.542,
-  436.667
+  429.417,
+  432.0,
+  433.333,
+  434.542
  ],
- "qc_seconds": 280.6,
+ "qc_seconds": 283.6,
  "video_seconds": 437.0,
  "verdict": "blocked"
 }

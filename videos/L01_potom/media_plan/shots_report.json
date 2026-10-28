@@ -1571,11 +1571,23 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
     ],
     [
-     2.96,
-     "lean"
+     1.84,
+     "manual"
+    ],
+    [
+     4.44,
+     "manual"
+    ],
+    [
+     5.72,
+     "manual"
+    ],
+    [
+     6.96,
+     "manual"
     ]
    ],
    "labels_at": [],
