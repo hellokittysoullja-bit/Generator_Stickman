@@ -366,7 +366,10 @@ def build(video_dir, video_path=None):
     # равна нулю и на настоящей склейке (эп.01: 5 из 11 склеек пропущены) — см. frame_change_share_curve
     fps_d, diffs = vt.frame_change_share_curve(video_path)
     cuts, _ = vt.cuts_from_curve(fps_d, diffs, min_abs=vt.SHARE_MIN_ABS)
-    silences = vt.detect_silences(video_path)
+    # паузы речи — по чистому голосу, если он есть: под голосом длинного ролика идёт эмбиент (16 LU ниже), и в
+    # миксе silencedetect на −35 дБ находил 4 паузы из 127 (L01 27.10) — склейки в паузах читались как «поперёк слов»
+    stem = os.path.join(video_dir, "temp_render", "voice_processed.wav")
+    silences = vt.detect_silences(stem if os.path.exists(stem) else video_path)
     pic = []
     pt = os.path.join(video_dir, "media_plan", "phrase_timeline.json")
     if os.path.exists(pt):

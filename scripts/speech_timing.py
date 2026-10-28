@@ -28,18 +28,27 @@ ONSET_TEXT_MATCH_MIN_RATIO = 0.9   # ниже — текст блока разо
 WEIGHT_TEXT_MATCH_MIN_RATIO = 0.55  # вес блока терпимее онсета: длина речи переживает правку слова-двух
 
 
+class PauseMap(list):
+    """Вырезанные паузы [(a, b), ...] плюс вставки тишины inserts [(сырая_позиция, секунды), ...]."""
+    inserts = ()
+
+
 def raw_to_real_time(t, cuts):
     """Точный (не приближённый по тегам) пересчёт сырого времени alignment.csv
         (до обрезки пауз в fix_pauses.py) в реальное время audio_fixed.mp3 —
         вычитает из t суммарно всё, что реально вырезано ДО t (частично, если t
-        попадает внутрь самого вырезанного интервала). cuts — из load_pause_cuts(),
-        отсортированы по возрастанию (естественный порядок silencedetect)."""
+        попадает внутрь самого вырезанного интервала), и прибавляет тишину, которую
+        fix_pauses ВСТАВИЛ до t (доводка тег-пауз до документированной длины, pause_inserts).
+        Вставки читаются снова с 27.10: L01 — 24 вставки, +4.9 с, картинка к середине ролика
+        обгоняла голос на секунду, потому что этот пересчёт про них не знал.
+        cuts — из pause_cuts(), отсортированы по возрастанию (естественный порядок silencedetect)."""
     removed = 0.0
     for a, b in cuts:
         if a >= t:
             break
         removed += min(t, b) - a
-    return t - removed
+    added = sum(sec for p, sec in getattr(cuts, "inserts", ()) if p < t)
+    return t - removed + added
 
 
 def _clean_timed_chars(segment):
@@ -164,7 +173,8 @@ class SpeechTiming:
                           "порезки игнорирую, подписи хука пересчитаются без точной подгонки паузы.")
                     self._cuts = []
                     return self._cuts
-            self._cuts = [(float(a), float(b)) for a, b in data.get("cuts", [])]
+            self._cuts = PauseMap((float(a), float(b)) for a, b in data.get("cuts", []))
+            self._cuts.inserts = [(float(p), float(sec)) for p, sec in data.get("pause_inserts", [])]
         except Exception:
             self._cuts = []
         return self._cuts
