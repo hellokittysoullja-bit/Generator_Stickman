@@ -37,48 +37,56 @@ def ease_out(u):
 
 # --------------------------------------------------------------------------- размытие под ведущим
 
-def focus_blur(f, t, t0, t1, sigma=14, dark=0.12, ramp=0.3):
-    """Сцена уходит в расфокус (и чуть темнеет), пока кот говорит со зрителем, потом возвращается."""
-    k = ease_out((t - t0)/ramp) * (1 - ease_out((t - (t1 - ramp))/ramp))
+def focus_blur(f, t, t0, t1, sigma=20, dark=0.05, ramp=0.5, out=None):
+    """Сцена уходит в расфокус вместе с выходом кота (замер образца 28.10: за 0,1 с уже сильно, максимум к 0,5 с —
+    ease-out), до конца плана; уход — склейкой, а не обратным размытием (out=None). out — секунды обратного размытия,
+    если плана-склейки после нет."""
+    k = ease_out((t - t0)/ramp)
+    if out:
+        k *= 1 - ease_out((t - (t1 - out))/out)
     if k <= 0.01:
         return f
     b = cv2.GaussianBlur(np.ascontiguousarray(f, np.float32), (0, 0), sigma*k + 0.1)
     return b*(1 - dark*k)
 
 
-# --------------------------------------------------------------------------- кот-ведущий
+GROW_SEC, OVER, SETTLE_SEC = 0.4, 1.36, 0.55   # замер образца: 0,4 с рост до 136 %, 0,55 с плавная посадка к 100 %
+
+
+def narrator_scale(t):
+    """Масштаб кота-ведущего: растёт от ног из маленького с большим мягким перелётом и плавно садится (без пружины)."""
+    if t < GROW_SEC:
+        return 0.04 + (OVER - 0.04)*ease_out(t/GROW_SEC)
+    u = min(1.0, (t - GROW_SEC)/SETTLE_SEC)
+    return OVER - (OVER - 1.0)*(0.5 - 0.5*math.cos(math.pi*u))
+
 
 class Narrator:
-    """Кукла кота во весь рост перед сценой: выпрыгивает снизу с перелётом, моргает, смотрит на зрителя, уходит."""
+    """Кукла кота перед сценой: вырастает от ног снизу, моргает, смотрит на зрителя; уходит склейкой."""
 
-    def __init__(self, dur, cx=0.72, height=0.78, seed=3, words=None, text=""):
+    def __init__(self, dur, cx=0.66, height=0.70, seed=3, words=None, text=""):
         import mascot_live as M
         self.M, self.R = M, M.rig()
         acts = M.plan_actions(dur, words or [], text, [0.0, 0.0], seed=seed)
         self.state = M._mod().plan(dur, acts, seed=seed)
         self.dur, self.cx, self.height = dur, cx, height
 
-    def composite(self, f, t, pop=0.32, out=0.22):
+    def composite(self, f, t):
         st = self.state(t)
         rgba = self.R.frame_rgba(st, t)
         x0, y0, x1, y1 = self.R.bb_for(st)
         sub = np.ascontiguousarray(rgba[y0:y1, x0:x1])
-        s_in = back_out(t/pop) if t < pop else 1.0
-        s_out = 1 - ease_out((t - (self.dur - out))/out) if t > self.dur - out else 1.0
-        s = max(0.02, s_in*s_out)
-        k = self.height*H/sub.shape[0]*s
+        k = self.height*H/sub.shape[0]*narrator_scale(t)
         nw, nh = max(1, int(sub.shape[1]*k)), max(1, int(sub.shape[0]*k))
-        small = cv2.resize(sub, (nw, nh), interpolation=cv2.INTER_AREA if k < 1 else cv2.INTER_LINEAR)
-        base_y = H + 6                                 # лапы у нижнего края кадра
-        x, y = int(self.cx*W - nw/2), int(base_y - nh)
+        small = cv2.resize(sub, (nw, nh), interpolation=cv2.INTER_AREA if k < 1 else cv2.INTER_CUBIC)
+        x, y = int(self.cx*W - nw/2), int(H + 4 - nh)       # ноги на нижнем крае, рост от ног
         out_ = f.copy()
         xa, ya, xb, yb = max(0, x), max(0, y), min(W, x + nw), min(H, y + nh)
         if xb <= xa or yb <= ya:
             return out_
         piece = small[ya - y:yb - y, xa - x:xb - x]
         a = np.clip(piece[..., 3:4], 0, 1)
-        # мягкая тень за котом — он стоит перед сценой, а не вклеен
-        sh = cv2.GaussianBlur(a[..., 0], (0, 0), 18)[..., None]*0.28
+        sh = cv2.GaussianBlur(a[..., 0], (0, 0), 22)[..., None]*0.22    # мягкая тень: кот перед сценой
         region = out_[ya:yb, xa:xb]
         region *= 1 - sh
         out_[ya:yb, xa:xb] = region*(1 - a) + np.clip(piece[..., :3], 0, 255)
