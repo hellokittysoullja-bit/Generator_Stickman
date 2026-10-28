@@ -167,8 +167,8 @@ class BoldText:
                 f = _paste(f, g, gx + shake, self.cy, scale=sc, alpha=min(1.0, u*3)*fade, blur_x=(1 - u)*40)
             return f
         if self.style == "rise":
-            words, cur, wi = [], [], 0
-            for i, (ch, x, w) in enumerate(self.xs):
+            wi = 0
+            for ch, x, w in self.xs:
                 if ch == " ":
                     wi += 1
                     continue
