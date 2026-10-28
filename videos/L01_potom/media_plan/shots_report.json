@@ -29,15 +29,15 @@
    ],
    "labels_at": [],
    "punch": null,
-   "key": "Сколько лет",
-   "key_at": 0.0,
-   "key_hold_until": 3.19,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
    "accent": null,
    "notes": [
-    "крупный план «the half torn calendar on the wall» не делается: разрезал бы голову или тело героя",
     "крупный план «the closed door» не делается: деталь не помещается в план",
     "крупный план «the flame on the tip of the tail of a black cartoon cat» не делается: деталь мелкая даже на пределе зума",
-    "крупный план «the drift of torn calendar pages» не делается: разрезал бы голову или тело героя"
+    "крупный план «the drift of torn calendar pages» не делается: разрезал бы голову или тело героя",
+    "крупный план «the head of a black cartoon cat» не делается: почти совпадает с другим планом"
    ]
   },
   {
@@ -73,10 +73,6 @@
   },
   {
    "index": 2,
-   "note": "акцент «два года» пропущен: лимит рукописных слов"
-  },
-  {
-   "index": 2,
    "duration": 6.333,
    "views": [
     [
@@ -105,7 +101,8 @@
    "notes": [
     "крупный план «the guilty eyes» не делается: разрезал бы голову или тело героя",
     "крупный план «the flame on the tip of the tail of a black cartoon cat» не делается: разрезал бы голову или тело героя",
-    "крупный план «the head of a black cartoon cat» не делается: разрезал бы голову или тело героя"
+    "крупный план «the head of a black cartoon cat» не делается: разрезал бы голову или тело героя",
+    "акценту «два года» нет места — не пишется"
    ]
   },
   {
@@ -138,10 +135,6 @@
   },
   {
    "index": 4,
-   "note": "акцент «восемь минут» пропущен: лимит рукописных слов"
-  },
-  {
-   "index": 4,
    "duration": 8.375,
    "views": [
     [
@@ -169,7 +162,8 @@
    "accent": null,
    "notes": [
     "крупный план «the flame on the tip of the tail of a black cartoon cat» не делается: деталь мелкая даже на пределе зума",
-    "крупный план «the head of a black cartoon cat» не делается: почти совпадает с другим планом"
+    "крупный план «the head of a black cartoon cat» не делается: почти совпадает с другим планом",
+    "акценту «восемь минут» нет места — не пишется"
    ]
   },
   {
