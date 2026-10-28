@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "measured_at": "2026-10-28T00:25:53",
+ "measured_at": "2026-10-28T00:43:23",
  "video": "final.mp4",
  "spec": "docs/MONTAGE_SPEC.md",
  "limits": [
@@ -10,7 +10,7 @@
  ],
  "checks": {
   "plan_max_sec": {
-   "value": 11.453000000000003,
+   "value": 6.125,
    "threshold": 3.5416666666666665,
    "op": "<=",
    "level": "block",
@@ -18,7 +18,7 @@
    "state": "violation"
   },
   "plan_len_cv": {
-   "value": 0.4358197657904395,
+   "value": 0.34927312384582065,
    "threshold": 0.25,
    "op": ">=",
    "level": "warn",
@@ -26,7 +26,7 @@
    "state": "ok"
   },
   "plan_near_equal_share": {
-   "value": 0.19318181818181818,
+   "value": 0.18681318681318682,
    "threshold": 0.3,
    "op": "<=",
    "level": "warn",
@@ -42,7 +42,7 @@
    "state": "ok"
   },
   "speed_max_over_mean": {
-   "value": 1.019074860740465,
+   "value": 1.0189613486007718,
    "threshold": 1.25,
    "op": "<=",
    "level": "warn",
@@ -58,7 +58,7 @@
    "state": "violation"
   },
   "cut_luma_jump": {
-   "value": 149.93385416666666,
+   "value": 149.9389409722222,
    "threshold": 12.0,
    "op": "<=",
    "level": "warn",
@@ -66,7 +66,7 @@
    "state": "violation"
   },
   "cut_paper_de": {
-   "value": 22.0108642578125,
+   "value": 22.011934280395508,
    "threshold": 2.0,
    "op": "<=",
    "level": "warn",
@@ -74,7 +74,7 @@
    "state": "violation"
   },
   "cuts_unconfirmed": {
-   "value": 14,
+   "value": 16,
    "threshold": 0,
    "op": "<=",
    "level": "warn",
@@ -133,7 +133,7 @@
    "state": "ok"
   },
   "cuts_inside_words_share": {
-   "value": 0.0159,
+   "value": 0.0152,
    "threshold": 0.05,
    "op": "<=",
    "level": "block",
@@ -153,35 +153,36 @@
  ],
  "no_signal": [],
  "measured": {
-  "plan_max_sec": 11.453000000000003,
-  "plan_len_cv": 0.4358197657904395,
-  "plan_near_equal_share": 0.19318181818181818,
-  "plans": 177,
-  "plan_mean_sec": 2.466327683615819,
+  "plan_max_sec": 6.125,
+  "plan_len_cv": 0.34927312384582065,
+  "plan_near_equal_share": 0.18681318681318682,
+  "plans": 183,
+  "plan_mean_sec": 2.3854644808743166,
   "writing_plans": 7,
   "frozen_share": 0.0,
-  "speed_max_over_mean": 1.019074860740465,
+  "speed_max_over_mean": 1.0189613486007718,
   "plans_measured": 146,
-  "plans_total": 177,
+  "plans_total": 183,
   "direction_flips_excess": 2,
   "pictures_measured": 37,
-  "cut_luma_jump": 149.93385416666666,
-  "cut_luma_jump_median": 15.339253472222225,
+  "cut_luma_jump": 149.9389409722222,
+  "cut_luma_jump_median": 15.634943576388906,
   "cut_attention_shift": 0.44928455352783203,
-  "cuts": 175,
+  "cuts": 181,
   "sharpness_cv": 0.01879803192064959,
   "hook_first_cut_sec": 0.041666666666666664,
   "hook_plan_len_sec": 1.458,
   "hook_voice_onset_sec": 0.0,
   "hook_plans": 2,
-  "cut_paper_de": 22.0108642578125,
-  "cut_paper_de_median": 0.5441060066223145,
-  "cuts_unconfirmed": 14,
+  "cut_paper_de": 22.011934280395508,
+  "cut_paper_de_median": 0.5582560896873474,
+  "cuts_unconfirmed": 16,
   "cuts_extra_by_scenedetect": 1,
   "cuts_in_silence_share": 0.9592,
-  "cuts_inside_words_share": 0.0159
+  "cuts_inside_words_share": 0.0152
  },
  "per_plan": [
+  null,
   null,
   null,
   null,
@@ -458,9 +459,14 @@
    "ratio": 1.034052003791685,
    "static": false
   },
+  null,
+  null,
+  null,
+  null,
+  null,
   {
    "frozen": 0.0,
-   "ratio": 1.1729544740612414,
+   "ratio": 1.004073185465022,
    "static": false
   },
   {
@@ -987,6 +993,10 @@
   ],
   [
    12.429,
+   14.25
+  ],
+  [
+   14.25,
    16.542
   ],
   [
@@ -1251,6 +1261,26 @@
   ],
   [
    173.0,
+   175.375
+  ],
+  [
+   175.375,
+   176.875
+  ],
+  [
+   176.875,
+   177.625
+  ],
+  [
+   177.625,
+   179.708
+  ],
+  [
+   179.708,
+   180.917
+  ],
+  [
+   180.917,
    184.453
   ],
   [
@@ -1665,6 +1695,7 @@
   9.25,
   10.292,
   12.417,
+  14.25,
   16.542,
   17.542,
   18.75,
@@ -1731,6 +1762,11 @@
   167.083,
   169.958,
   173.0,
+  175.375,
+  176.875,
+  177.625,
+  179.708,
+  180.917,
   184.458,
   187.542,
   189.042,
@@ -1831,7 +1867,7 @@
   430.542,
   436.667
  ],
- "qc_seconds": 231.7,
+ "qc_seconds": 280.6,
  "video_seconds": 437.0,
  "verdict": "blocked"
 }

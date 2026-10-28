@@ -84,6 +84,10 @@
      "manual"
     ],
     [
+     1.82,
+     "manual"
+    ],
+    [
      4.1,
      "manual"
     ],
@@ -674,7 +678,27 @@
    "views": [
     [
      0.0,
-     "lean"
+     "manual"
+    ],
+    [
+     2.33,
+     "manual"
+    ],
+    [
+     3.81,
+     "manual"
+    ],
+    [
+     4.61,
+     "manual"
+    ],
+    [
+     6.69,
+     "manual"
+    ],
+    [
+     7.89,
+     "manual"
     ]
    ],
    "labels_at": [],
