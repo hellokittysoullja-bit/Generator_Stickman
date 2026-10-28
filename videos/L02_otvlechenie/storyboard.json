@@ -1,17 +1,10 @@
 {
- "note": "Раскадровка L02 (оркестратор 28.10, ночь, до «да» владельца). new — рисунок GPT-Image-2 medium; lib — library/cat/originals; same — тот же рисунок, что у фразы N (намеренная отсылка); absorb — без своей картинки. narrator — кот-ведущий перед размытой сценой (пробник v3, long_fx.Narrator); bold — жирный текст Onest Black на слове (long_fx.BoldText); key — рукописная мысль карандашом.",
+ "note": "Раскадровка L02 (оркестратор 28.10, ночь, до «да» владельца). new — рисунок GPT-Image-2 medium; lib — library/cat/originals; same — тот же рисунок, что у фразы N (намеренная отсылка); absorb — без своей картинки. narrator — кот-ведущий перед размытой сценой (пробник v3, long_fx.Narrator); bold — жирный текст Onest Black на слове (long_fx.BoldText); key — рукописная мысль карандашом. | 28.10 (владелец: «как можно больше разумно использовать фотографий из галереи, даже те что для вертикальных роликов»): 10 кадров переведены на библиотеку (1, 22, 32, 34, 38, 41, 47, 53, 55, 58); вертикальные сборщик сам кладёт на бумагу 16:9 по всей высоте.",
  "frames": {
   "1": {
-   "new": "medium-wide shot of a small kitchen: the main character stands on the floor in front of a tall fridge whose door is wide open, cold white light from the inside of the fridge falls on its face and on the floor; it looks back over its shoulder at the viewer with a surprised guilty face, one paw still on the fridge door; behind it, through an open doorway, a desk with an open laptop with a blank screen and an empty chair; one phone lies face down on a small shelf beside the doorway",
-   "hero": true,
-   "state": "ember",
-   "details": [
-    "the open fridge with light",
-    "the guilty face looking back",
-    "the laptop on the desk behind"
-   ],
-   "anim": "fridge_light",
-   "note": "хук: сцена движения, свет холодильника разгорается на «холодильника», камера hook_cam"
+   "lib": "2026-10-27_gen_cx_gpt-image-2_eb2640c6.png",
+   "note": "хук: кот у открытого холодильника (горизонтальный, из библиотеки); движение — HyperFrames по слоям, +1 рисунок кота отдельно",
+   "anim": "fridge_light"
   },
   "2": {
    "new": "a big old balance scale stands on the floor: on the left pan sits the main character, on the right pan lies one phone; the left pan with the character hangs low and the right pan with the phone is lifted high in the air; the character looks up at the phone with a puzzled face",
@@ -178,13 +171,8 @@
    "note": "отсылка к кадру хука: снова у холодильника"
   },
   "22": {
-   "new": "the main character holds a big magnifying glass and looks down at a trail of its own small paw prints that leads across the floor from a desk to a fridge",
-   "hero": true,
-   "state": "ember",
-   "details": [
-    "the trail of paw prints",
-    "the magnifying glass"
-   ]
+   "lib": "2026-10-28_gen_cx_gpt-image-2_39581659.png",
+   "note": "кот на кухне у холодильника чешет голову: «кто же отвёл меня к холодильнику?» (вертикальный, на бумаге 16:9)"
   },
   "23": {
    "new": "two equal panels side by side with a plain gap: in the left panel a colleague taps a working person on the shoulder; in the right panel the same person sits alone at the same desk and turns away from the work by themselves to look out of a window",
@@ -266,13 +254,8 @@
    "key": "ищет выход"
   },
   "32": {
-   "new": "the main character sits on a sofa staring blankly at an empty wall, mouth slightly open, completely zoned out, one empty thought cloud above its head",
-   "hero": true,
-   "state": "ember",
-   "details": [
-    "the blank stare",
-    "the empty thought cloud"
-   ],
+   "lib": "2026-10-27_gen_cx_gpt-image-2_bfd71c98.png",
+   "note": "кот залип в телефон на диване: «во что-нибудь залипнуть»",
    "bold": [
     {
      "text": "2 700 лайков",
@@ -291,13 +274,8 @@
    "key": "сделать меньше"
   },
   "34": {
-   "new": "the main character stands frozen in front of a huge blank sheet of paper, holding scissors in its paws, not cutting, with a stuck face",
-   "hero": true,
-   "state": "ember",
-   "details": [
-    "the scissors",
-    "the huge sheet"
-   ]
+   "lib": "2026-10-27_gen_cx_gpt-image-2_8319c7a6.png",
+   "note": "кот застыл на стуле среди груды листов: «дробить трудно, когда трудно»"
   },
   "35": {
    "absorb": true
@@ -328,13 +306,8 @@
    "note": "на пустой экран ноутбука — запись настоящего сайта (разбить дело на шаги), если владелец одобрит"
   },
   "38": {
-   "new": "a young person sits at a desk writing in a notebook; the main character sits right beside them on the desk, calm and quiet, its tail flame glowing softly; a small round kitchen timer stands between them",
-   "hero": true,
-   "state": "bright",
-   "details": [
-    "the cat sitting beside",
-    "the timer"
-   ]
+   "lib": "2026-10-25_gen_cx_gpt-image-2_3210e6c7.png",
+   "note": "кот пишет рядом с человеком: «сижу рядом, пока ты делаешь шаг»"
   },
   "39": {
    "absorb": true
@@ -351,13 +324,8 @@
    "note": "подарок, не реклама: кот-ведущий сам говорит зрителю и честный предел «не лечит»"
   },
   "41": {
-   "new": "an empty desk with a pushed-back chair and an unfinished paper; a trail of small paw prints leads from the chair across the floor and out of the picture",
-   "hero": false,
-   "state": null,
-   "details": [
-    "the paw prints",
-    "the empty chair"
-   ]
+   "lib": "2026-10-28_gen_cx_gpt-image-2_a25265fc.png",
+   "note": "кот уходит в дверной проём с пустым облачком: «всё равно иногда уйдёшь» (вертикальный)"
   },
   "42": {
    "new": "the main character stands on a grassy hill and has just thrown a boomerang: the boomerang flies far away in a wide curve drawn with a dotted line that bends back toward the character",
@@ -396,13 +364,8 @@
    ]
   },
   "47": {
-   "new": "night: the main character closes the laptop lid with a sigh; a wall clock with only hands and no numbers shows late time, the window is dark",
-   "hero": true,
-   "state": "ember",
-   "details": [
-    "the closing laptop",
-    "the wall clock"
-   ]
+   "lib": "2026-10-25_gen_cx_gpt-image-2_53e40c7b.png",
+   "note": "ночь, кот устало за столом: «закрыл ноутбук до завтра»"
   },
   "48": {
    "new": "the main character sits on the floor beside a desk among many loose colourful threads that have fallen around it, trying to gather them in its paws, a worried face",
@@ -453,26 +416,15 @@
    ]
   },
   "53": {
-   "new": "the main character sits back at the laptop and types happily, looking at a sticky note on the laptop edge; beside the laptop lies one neat ball of colourful threads",
-   "hero": true,
-   "state": "golden",
-   "details": [
-    "the neat ball of threads",
-    "the sticky note"
-   ],
-   "sfx": "level_up"
+   "lib": "2026-10-20_videos_01_sdvg_pismo_frames_005_8d288020.png",
+   "note": "кот за столом снова читает письмо, огонёк горит: «через минуту я снова в письме»"
   },
   "54": {
    "absorb": true
   },
   "55": {
-   "new": "the main character holds a phone with a plain screen and smiles warmly at it; a few small hearts float up from the phone",
-   "hero": true,
-   "state": "bright",
-   "details": [
-    "the warm smile",
-    "the hearts"
-   ]
+   "lib": "2026-10-23_videos_01_sdvg_pismo_reel_gen_r1_phone_e3b862b6.png",
+   "note": "кот читает телефон: комментарий «не лох, а молодец»"
   },
   "56": {
    "same": 42,
@@ -485,13 +437,8 @@
    "note": "кот-ведущий зовёт сделать листок прямо сейчас"
   },
   "58": {
-   "new": "an empty desk with a laptop and one small sticky note lying beside it with a few wavy pencil lines; the chair is pushed back and waits",
-   "hero": false,
-   "state": null,
-   "details": [
-    "the sticky note",
-    "the waiting chair"
-   ]
+   "lib": "2026-10-07_look_style_1_desk_1c1c5a17.jpg",
+   "note": "пустой стол с ноутбуком ждёт: «листок будет тебя ждать»"
   },
   "59": {
    "new": "three small things stand in a row on a plain shelf with wide gaps: a small toy door slightly open with a phone behind it, one small blank card, one sticky note with wavy lines",
