@@ -275,6 +275,10 @@
     [
      8.47,
      "manual"
+    ],
+    [
+     10.36,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -299,7 +303,15 @@
      "manual"
     ],
     [
+     1.48,
+     "manual"
+    ],
+    [
      3.84,
+     "manual"
+    ],
+    [
+     6.92,
      "manual"
     ],
     [
@@ -549,35 +561,19 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
     ],
     [
-     2.56,
-     "drift"
+     4.48,
+     "manual"
     ],
     [
-     5.48,
-     "drift"
+     7.2,
+     "manual"
     ],
     [
-     8.48,
-     "drift"
-    ],
-    [
-     12.28,
-     "drift"
-    ],
-    [
-     15.12,
-     "drift"
-    ],
-    [
-     17.44,
-     "drift"
-    ],
-    [
-     18.96,
-     "drift"
+     10.84,
+     "manual"
     ]
    ],
    "labels_at": [],
