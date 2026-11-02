@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
-"""Увеличение рисунка для крупных планов: Real-ESRGAN (аниме, лёгкая версия) +
-смешивание с Lanczos.
+"""Увеличение рисунка для крупных планов.
+
+С 02.11 по выбору владельца — waifu2x swin_unet/art (nagadomi/nunif, MIT): по листу «исходник / наше / waifu2x» на
+кадре L02 выбрана правая — линия как у художника. Замер агента 02.11 на 7 рисунках: верность исходнику PSNR
+40,5–47,8 дБ против 31,7–39,7 у прежней смеси (она «обводила маркером»: линии темнее на 12–42 %, серые штрихи
+чернели), цветных пятен, блоков и сдвига нет; швы кусков убраны запасом контекста 16 px (отличия > 20 уровней у
+границ 448 → 6). Пустые куски (бумага) берутся из Lanczos. В ~1,7 раза медленнее, но считается один раз на рисунок
+и лежит в кэше. UPSCALE_METHOD=esrgan — прежняя смесь ниже (байт в байт как раньше).
+
+Прежнее (до 02.11): Real-ESRGAN (аниме, лёгкая версия) + смешивание с Lanczos.
 
 Почему смесь, а не чистый ESRGAN: нейросеть на рисованной линии чуть
 «пластилинит» штриховку и зерно бумаги. Низкие частоты берутся у Lanczos
@@ -31,7 +39,15 @@ TILE, PAD = 256, 24
 FLAT_DEV = 12            # кусок, где 99.5% пикселей отличаются от его медианы меньше — бумага или ровная
                          # заливка: линий нет, нейросеть там не нужна (замер 04.10: ~45% кусков кадра)
 LOW_SIGMA, HI_ESR, HI_LANCZOS = 1.4, 0.85, 0.6
-VERSION = 2
+VERSION = 3                # 3: waifu2x по умолчанию (02.11)
+W2X_URL = "https://unlimited.waifu2x.net/models/swin_unet/art/scale2x.onnx"
+W2X_SHA = "f5de9edfbc4ef273c962502ccd949e6d4e3b2a93db2c2f9cba5c795d19554342"
+W2X_PATH = os.path.join(ROOT, "models", "waifu2x", "swin_unet_art_scale2x.onnx")
+W2X_TILE, W2X_CROP, W2X_MARGIN = 256, 8, 8      # модель сама срезает 8 px с каждой стороны; ещё 8 — запас против швов
+
+
+def method():
+    return os.environ.get("UPSCALE_METHOD", "waifu2x")
 
 _SESSION = None
 WARNED = []
@@ -45,15 +61,15 @@ def _sha(path):
     return h.hexdigest()
 
 
-def ensure_model(path=MODEL_PATH):
-    if os.path.exists(path) and _sha(path) == MODEL_SHA:
+def ensure_model(path=MODEL_PATH, url=MODEL_URL, sha=MODEL_SHA):
+    if os.path.exists(path) and _sha(path) == sha:
         return path
     os.makedirs(os.path.dirname(path), exist_ok=True)
     tmp = path + ".part"
-    urllib.request.urlretrieve(MODEL_URL, tmp)
-    if _sha(tmp) != MODEL_SHA:
+    urllib.request.urlretrieve(url, tmp)
+    if _sha(tmp) != sha:
         os.remove(tmp)
-        raise RuntimeError("ESRGAN: скачанный файл не совпал по sha256 — не используем")
+        raise RuntimeError(f"{os.path.basename(path)}: скачанный файл не совпал по sha256 — не используем")
     os.replace(tmp, path)
     return path
 
@@ -68,7 +84,8 @@ def session():
             import onnxruntime as ort
             so = ort.SessionOptions()
             so.intra_op_num_threads = int(os.environ.get("UPSCALE_THREADS", "1"))
-            _SESSION = ort.InferenceSession(ensure_model(), so, providers=["CPUExecutionProvider"])
+            model = ensure_model(W2X_PATH, W2X_URL, W2X_SHA) if method() == "waifu2x" else ensure_model()
+            _SESSION = ort.InferenceSession(model, so, providers=["CPUExecutionProvider"])
         except Exception as e:  # noqa: BLE001
             _SESSION = False
             if not WARNED:
@@ -106,6 +123,31 @@ def _esrgan(a, scale, sess, L):
     return out
 
 
+def _flat(t):
+    dev = np.abs(t.astype(np.int16) - np.median(t.reshape(-1, 3), axis=0).astype(np.int16)).max(2)
+    return float(np.percentile(dev, 99.5)) < FLAT_DEV
+
+
+def _waifu2x(a, sess, L):
+    """a — HxWx3 uint8 -> (2H)x(2W)x3 float32 кусками; пустые куски — из Lanczos L (там результат тот же)."""
+    name = sess.get_inputs()[0].name
+    x = a.astype(np.float32) / 255
+    H, W = a.shape[:2]
+    off = W2X_CROP + W2X_MARGIN; step = W2X_TILE - 2 * off; m = 2 * W2X_MARGIN
+    xp = np.pad(x, ((off, off + step), (off, off + step), (0, 0)), mode="edge")
+    out = np.zeros((2 * H, 2 * W, 3), np.float32)
+    for i in range(0, H, step):
+        for j in range(0, W, step):
+            ey, ex = min(i + step, H), min(j + step, W)
+            if _flat(a[max(0, i - off):ey + off, max(0, j - off):ex + off]):
+                out[2 * i:2 * ey, 2 * j:2 * ex] = L[2 * i:2 * ey, 2 * j:2 * ex]
+                continue
+            t = np.ascontiguousarray(xp[i:i + W2X_TILE, j:j + W2X_TILE].transpose(2, 0, 1)[None])
+            y = sess.run(None, {name: t})[0][0].transpose(1, 2, 0)
+            out[2 * i:2 * ey, 2 * j:2 * ex] = np.clip(y[m:m + 2 * (ey - i), m:m + 2 * (ex - j)], 0, 1) * 255
+    return out
+
+
 def upscale(a, scale=2, cache_dir=None):
     """Рисунок в scale (2 или 4) раза: смесь ESRGAN и Lanczos. uint8 -> uint8.
     cache_dir — дисковый кэш по содержимому (повторный рендер не платит временем)."""
@@ -113,7 +155,8 @@ def upscale(a, scale=2, cache_dir=None):
     key = None
     if cache_dir:
         neural = os.environ.get("UPSCALE_NEURAL", "1") != "0"
-        key = hashlib.sha256(a.tobytes() + f"{a.shape}|{scale}|{VERSION}|{LOW_SIGMA}|{HI_ESR}|{HI_LANCZOS}|{neural}|{FLAT_DEV}"
+        tag = f"|{VERSION}|w2x" if method() == "waifu2x" else f"|2|{LOW_SIGMA}|{HI_ESR}|{HI_LANCZOS}"
+        key = hashlib.sha256(a.tobytes() + f"{a.shape}|{scale}{tag}|{neural}|{FLAT_DEV}"
                              .encode()).hexdigest()[:24]
         p = os.path.join(cache_dir, f"up_{key}.png")
         if os.path.exists(p):
@@ -126,6 +169,13 @@ def upscale(a, scale=2, cache_dir=None):
     sess = session()
     if sess is None:
         out = L
+    elif method() == "waifu2x":
+        L2 = L if scale == 2 else np.asarray(Image.fromarray(a).resize((w * 2, h * 2), Image.LANCZOS), np.float32)
+        out = _waifu2x(a, sess, L2)
+        if scale == 4:                                   # 4x — дважды по 2x
+            b = np.clip(out, 0, 255).round().astype(np.uint8)
+            L4 = np.asarray(Image.fromarray(b).resize((w * 4, h * 4), Image.LANCZOS), np.float32)
+            out = _waifu2x(b, sess, L4)
     else:
         U = _esrgan(a, scale, sess, L)
 
