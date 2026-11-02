@@ -43,6 +43,12 @@ REVEAL_MAX_SHARE = 0.25  # общий прямоугольник «подпис�
 RENDER_VERSION = 3   # 07.10: ход камеры сквозь склейку (camera.through)
 
 
+def upscale_sig():
+    """Способ и версия увеличения рисунка — в ключ кэша клипа (02.11: после смены на waifu2x сборщик брал старые
+    клипы, и ролик выходил прежним до байта)."""
+    return f"{upscale.method()}:{upscale.VERSION}:{os.environ.get('UPSCALE_NEURAL', '1')}"
+
+
 def _hash(*parts):
     return hashlib.sha256("|".join(str(p) for p in parts).encode()).hexdigest()[:16]
 

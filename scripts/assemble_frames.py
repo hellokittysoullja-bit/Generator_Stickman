@@ -359,7 +359,7 @@ def main(video_dir):
             head += [job["fx"], hashlib.sha256(open(long_fx.__file__, "rb").read()).hexdigest()[:12]]
         sig = hashlib.sha256(json.dumps(head + [job["recs"], job["objects"], frame_clip.plan_record(p), job["dur"],
                                          job["end_fade"], job["seed"], FPS, CRF, frame_clip.RENDER_VERSION,
-                                         canvas.TEXTURE, frame_clip.UPSCALE],
+                                         canvas.TEXTURE, frame_clip.UPSCALE, frame_clip.upscale_sig()],
                                         sort_keys=True, default=str).encode()).hexdigest()[:16]
         job["out"] = os.path.join(work, f"clip_{k:04d}_{sig}.mp4")
         shot_log.append({"index": kept[k], "duration": round(job["dur"], 3),

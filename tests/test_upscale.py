@@ -28,3 +28,11 @@ def test_waifu2x_keeps_the_drawing_and_leaves_paper_to_lanczos(monkeypatch):
     assert np.array_equal(out[:150, :150], L[:150, :150])         # пустой кусок — Lanczos как есть
     small = np.asarray(Image.fromarray(out).resize((300, 300), Image.LANCZOS)).astype(float)
     assert 10 * np.log10(255 ** 2 / ((small - a) ** 2).mean()) > 35   # рисунок верен исходнику (не «обводка маркером»)
+
+
+def test_clip_cache_key_follows_the_upscale_method(monkeypatch):
+    """Смена способа увеличения обязана пересобирать клипы: 02.11 L02 после смены на waifu2x вышел прежним до байта."""
+    import frame_clip
+    monkeypatch.setenv("UPSCALE_METHOD", "waifu2x"); a = frame_clip.upscale_sig()
+    monkeypatch.setenv("UPSCALE_METHOD", "esrgan"); b = frame_clip.upscale_sig()
+    assert a != b
