@@ -56,8 +56,11 @@
       }
       const ring = document.getElementById("ring"); ring.setAttribute("d", d);
       const LEN = ring.getTotalLength();
-      gsap.set(ring, { strokeDasharray: LEN, strokeDashoffset: LEN * 0.82 });     // в кадре 0 круг уже начат
-      tl.to(ring, { strokeDashoffset: LEN * 0.12, duration: H - 0.05, ease: "power1.inOut" }, 0);
+      // с первого кадра маркер рывком ведёт круг (владелец 02.11: «уже на 2–3 секунде все уходят» — сильное движение
+      // с кадра 0, а не медленное рисование), потом дотягивает и замыкает его на ударе
+      gsap.set(ring, { strokeDasharray: LEN, strokeDashoffset: LEN * 0.9 });
+      tl.to(ring, { strokeDashoffset: LEN * 0.35, duration: 0.3, ease: "power3.out" }, 0);
+      tl.to(ring, { strokeDashoffset: LEN * 0.12, duration: Math.max(0.1, H - 0.35), ease: "sine.inOut" }, 0.3);
       tl.to(ring, { strokeDashoffset: 0, duration: 0.09, ease: "power3.out" }, H - 0.05);     // замкнул на ударе
       tl.fromTo(ring, { scale: 1 }, { scale: 1.06, duration: 0.08, ease: "power2.out", svgOrigin: `${cx} ${cy}`,
                  yoyo: true, repeat: 1 }, H);
@@ -77,11 +80,16 @@
 
       // список новой жизни висит на кнопках и качается
       gsap.set("#list", { transformOrigin: px(K.list_pin_local) });
-      tl.fromTo("#list", { rotation: -0.8 }, { rotation: 0.8, duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 3 }, 0);
+      // список с первого кадра раскачивается широко (как от рывка лапы) и затухает
+      tl.fromTo("#list", { rotation: -3.2 }, { rotation: 2.4, duration: 0.32, ease: "sine.inOut" }, 0);
+      tl.to("#list", { rotation: -1.4, duration: 0.36, ease: "sine.inOut" }, 0.32);
+      tl.to("#list", { rotation: 0.7, duration: 0.42, ease: "sine.inOut", yoyo: true, repeat: 2 }, 0.68);
 
       // кот тянется к календарю, на ударе подпрыгивает от предвкушения и пружинит обратно
       gsap.set("#catHop", { transformOrigin: px(K.cat_foot) });
-      tl.fromTo("#catHop", { y: 0, scaleY: 1 }, { y: -6, scaleY: 1.015, duration: H - 0.12, ease: "sine.inOut" }, 0);
+      // кадр 0 — уже в прыжке к календарю: подскок и приземление пружиной, потом тянется до удара
+      tl.fromTo("#catHop", { y: -34, scaleY: 1.05, scaleX: 0.98 }, { y: 0, scaleY: 1, scaleX: 1, duration: 0.32, ease: "bounce.out" }, 0);
+      tl.to("#catHop", { y: -6, scaleY: 1.015, duration: Math.max(0.1, H - 0.44), ease: "sine.inOut" }, 0.32);
       tl.to("#catHop", { y: 4, scaleY: 0.975, scaleX: 1.015, duration: 0.1, ease: "power2.in" }, H - 0.12);
       tl.to("#catHop", { y: -30, scaleY: 1.04, scaleX: 0.985, duration: 0.12, ease: "power3.out" }, H - 0.02);
       tl.to("#catHop", { y: 0, scaleY: 1, scaleX: 1, duration: 0.5, ease: "elastic.out(1, 0.45)" }, H + 0.1);
