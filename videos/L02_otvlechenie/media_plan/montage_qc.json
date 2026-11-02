@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "measured_at": "2026-11-02T18:11:00",
+ "measured_at": "2026-11-02T20:09:01",
  "video": "final.mp4",
  "spec": "docs/MONTAGE_SPEC.md",
  "limits": [
@@ -34,7 +34,7 @@
    "state": "ok"
   },
   "frozen_share": {
-   "value": 0.01316488295654962,
+   "value": 0.013084116803441957,
    "threshold": 0.05,
    "op": "<=",
    "level": "warn",
@@ -42,7 +42,7 @@
    "state": "ok"
   },
   "speed_max_over_mean": {
-   "value": 1.0216810584613687,
+   "value": 1.019642658868506,
    "threshold": 1.25,
    "op": "<=",
    "level": "warn",
@@ -58,7 +58,7 @@
    "state": "ok"
   },
   "cut_luma_jump": {
-   "value": 87.8972829861111,
+   "value": 87.86310763888889,
    "threshold": 12.0,
    "op": "<=",
    "level": "warn",
@@ -66,7 +66,7 @@
    "state": "violation"
   },
   "cut_paper_de": {
-   "value": 4.220348834991455,
+   "value": 4.220846176147461,
    "threshold": 2.0,
    "op": "<=",
    "level": "warn",
@@ -74,7 +74,7 @@
    "state": "violation"
   },
   "cuts_unconfirmed": {
-   "value": 33,
+   "value": 36,
    "threshold": 0,
    "op": "<=",
    "level": "warn",
@@ -82,7 +82,7 @@
    "state": "violation"
   },
   "cut_attention_shift": {
-   "value": 0.3559322953224182,
+   "value": 0.35421910881996155,
    "threshold": 0.25,
    "op": "<=",
    "level": "warn",
@@ -90,7 +90,7 @@
    "state": "violation"
   },
   "sharpness_cv": {
-   "value": 0.018089251964179473,
+   "value": 0.016908780878656056,
    "threshold": 0.1,
    "op": "<=",
    "level": "warn",
@@ -156,24 +156,24 @@
   "plans": 176,
   "plan_mean_sec": 2.540005681818181,
   "writing_plans": 29,
-  "frozen_share": 0.01316488295654962,
-  "speed_max_over_mean": 1.0216810584613687,
-  "plans_measured": 162,
+  "frozen_share": 0.013084116803441957,
+  "speed_max_over_mean": 1.019642658868506,
+  "plans_measured": 163,
   "plans_total": 176,
   "direction_flips_excess": 0,
   "pictures_measured": 40,
-  "cut_luma_jump": 87.8972829861111,
-  "cut_luma_jump_median": 13.502200520833327,
-  "cut_attention_shift": 0.3559322953224182,
+  "cut_luma_jump": 87.86310763888889,
+  "cut_luma_jump_median": 13.56495659722222,
+  "cut_attention_shift": 0.35421910881996155,
   "cuts": 175,
-  "sharpness_cv": 0.018089251964179473,
+  "sharpness_cv": 0.016908780878656056,
   "hook_first_cut_sec": 1.4166666666666667,
   "hook_plan_len_sec": 1.417,
   "hook_voice_onset_sec": 0.0,
   "hook_plans": 3,
-  "cut_paper_de": 4.220348834991455,
-  "cut_paper_de_median": 0.5011175870895386,
-  "cuts_unconfirmed": 33,
+  "cut_paper_de": 4.220846176147461,
+  "cut_paper_de_median": 0.5010635852813721,
+  "cuts_unconfirmed": 36,
   "cuts_extra_by_scenedetect": 0,
   "cuts_in_silence_share": 0.8636,
   "cuts_inside_words_share": 0.0153
@@ -191,816 +191,820 @@
   null,
   {
    "frozen": 0.0,
-   "ratio": 1.002267951680584,
+   "ratio": 1.0025153016574446,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0042041265698018,
+   "ratio": 1.002273651790789,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0379223900219874,
+   "ratio": 1.0367708791996952,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0121183523127928,
+   "ratio": 1.0126392187914537,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0450089292531897,
+   "ratio": 1.0450790213436525,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0147307201101172,
+   "ratio": 1.0149636720349526,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0168435655002523,
+   "ratio": 1.0193718620913568,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0166060141781021,
+   "ratio": 1.01613716212245,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0144810730147908,
+   "ratio": 1.0142834153186184,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0104885953459626,
+   "ratio": 1.010428485727116,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0017702780835547,
+   "ratio": 1.0016974366882696,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.034938758478421,
+   "ratio": 1.0311445061210833,
    "static": false
   },
   {
    "frozen": 0.09375,
-   "ratio": 4.648964340595286,
+   "ratio": 4.628572276216809,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0374394582514486,
+   "ratio": 1.0357272554574206,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0074637216055868,
+   "ratio": 1.0092220147164095,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.021951771166657,
+   "ratio": 1.0197448662631228,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0196000662452687,
+   "ratio": 1.0188048853051141,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.003198020667633,
+   "ratio": 1.0039893811339036,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0063480876228252,
+   "ratio": 1.0057717870672485,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0316926143314664,
+   "ratio": 1.0293249690657542,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0824017201969969,
-   "static": false
-  },
-  null,
-  {
-   "frozen": 0.0,
-   "ratio": 1.0096662451031815,
+   "ratio": 1.0733949429246372,
    "static": false
   },
   null,
   {
    "frozen": 0.0,
-   "ratio": 1.0108392324650244,
-   "static": false
-  },
-  {
-   "frozen": 0.0,
-   "ratio": 1.0070911119883872,
+   "ratio": 1.0113008535266452,
    "static": false
   },
   null,
   {
    "frozen": 0.0,
-   "ratio": 1.0059549866130826,
+   "ratio": 1.010625238336334,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.005784690405242,
+   "ratio": 1.0078686476074419,
    "static": false
   },
   null,
   {
    "frozen": 0.0,
-   "ratio": 1.004590918438238,
+   "ratio": 1.0058822172703088,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0284994872249718,
+   "ratio": 1.0047950326097532,
+   "static": false
+  },
+  null,
+  {
+   "frozen": 0.0,
+   "ratio": 1.0046940088070437,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0409992704443434,
+   "ratio": 1.0264465715431554,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0306000214198632,
+   "ratio": 1.034200259903026,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0197643592353862,
+   "ratio": 1.0296639211683156,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.022735927376345,
+   "ratio": 1.017157209369649,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.011716277103214,
+   "ratio": 1.0178364671702067,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0187415912156241,
+   "ratio": 1.0122521990146747,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0225292617237403,
+   "ratio": 1.0198707007694312,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0325028093663735,
+   "ratio": 1.0224195073807678,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0140788286149935,
+   "ratio": 1.0294981663438325,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0224188469937168,
+   "ratio": 1.0156799763938527,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0130375494950103,
+   "ratio": 1.0184623210143509,
+   "static": false
+  },
+  {
+   "frozen": 0.0,
+   "ratio": 1.0135377928641989,
    "static": false
   },
   {
    "frozen": 0.3333333333333333,
-   "ratio": 6.773237690352101,
+   "ratio": 6.80288410620625,
    "static": false
   },
   {
    "frozen": 0.125,
-   "ratio": 1.5236824637466702,
+   "ratio": 1.5289312947139184,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0199358975906312,
+   "ratio": 1.0200006848811025,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.007450872248684,
+   "ratio": 1.0069435109227256,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.003072606245766,
+   "ratio": 1.0027956090827783,
+   "static": false
+  },
+  {
+   "frozen": 0.0,
+   "ratio": 1.0141573201634084,
+   "static": false
+  },
+  {
+   "frozen": 0.0,
+   "ratio": 1.0259076997940828,
+   "static": false
+  },
+  {
+   "frozen": 0.0,
+   "ratio": 1.0220493473975227,
+   "static": false
+  },
+  {
+   "frozen": 0.0,
+   "ratio": 1.0662952366511727,
+   "static": false
+  },
+  {
+   "frozen": 0.0,
+   "ratio": 1.0220473451057532,
+   "static": false
+  },
+  {
+   "frozen": 0.0,
+   "ratio": 1.0315699133580876,
+   "static": false
+  },
+  {
+   "frozen": 0.0,
+   "ratio": 1.0327323541630706,
+   "static": false
+  },
+  {
+   "frozen": 0.0,
+   "ratio": 1.0172842004813238,
+   "static": false
+  },
+  {
+   "frozen": 0.0,
+   "ratio": 1.0150984280576958,
    "static": false
   },
   null,
   {
    "frozen": 0.0,
-   "ratio": 1.0270105183196427,
+   "ratio": 1.0035209130059595,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.022805105125254,
+   "ratio": 1.0052415389121758,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.067508601881405,
+   "ratio": 1.0094609920600779,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0263900990992483,
+   "ratio": 1.0070467218651915,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0419442047020646,
-   "static": false
-  },
-  {
-   "frozen": 0.0,
-   "ratio": 1.0318873972236358,
-   "static": false
-  },
-  {
-   "frozen": 0.0,
-   "ratio": 1.0195647811914172,
-   "static": false
-  },
-  {
-   "frozen": 0.0,
-   "ratio": 1.0166188163787644,
-   "static": false
-  },
-  null,
-  {
-   "frozen": 0.0,
-   "ratio": 1.003803988897199,
-   "static": false
-  },
-  {
-   "frozen": 0.0,
-   "ratio": 1.0073259423328262,
-   "static": false
-  },
-  {
-   "frozen": 0.0,
-   "ratio": 1.003774295353742,
-   "static": false
-  },
-  {
-   "frozen": 0.0,
-   "ratio": 1.0076798857895921,
-   "static": false
-  },
-  {
-   "frozen": 0.0,
-   "ratio": 1.0116348705658877,
+   "ratio": 1.0105530893964996,
    "static": false
   },
   {
    "frozen": 0.125,
-   "ratio": 3.5847072900322448,
+   "ratio": 3.629775887049278,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.034707178352505,
+   "ratio": 1.0301370084722403,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0296927845896529,
+   "ratio": 1.0245696348723425,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0234449097638545,
+   "ratio": 1.023422529272705,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0238363548683709,
+   "ratio": 1.018528949690384,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.073460074257811,
+   "ratio": 1.074318437434659,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0196398059555716,
+   "ratio": 1.019642658868506,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0208936115775118,
+   "ratio": 1.0220996310383141,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0135082975446004,
+   "ratio": 1.0142158312267828,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0119961060396951,
+   "ratio": 1.011574664117276,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.017520687526279,
+   "ratio": 1.0178123466258289,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0140474078284463,
+   "ratio": 1.0137366361978375,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.051742382222634,
+   "ratio": 1.048191640367239,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0189931589139194,
+   "ratio": 1.0170533468310414,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0107643857180515,
+   "ratio": 1.0119371445193057,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0167245463797439,
+   "ratio": 1.0164376548626666,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0233551384542992,
+   "ratio": 1.0218094407657592,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0176395843961439,
+   "ratio": 1.0172608102971161,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0056827127728305,
+   "ratio": 1.0048912815879618,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0038896929823515,
+   "ratio": 1.0014492077724724,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0048509871068712,
+   "ratio": 1.0060595052098644,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0263827117882725,
+   "ratio": 1.022220837210179,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0232282979908736,
+   "ratio": 1.021815410848857,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0228669658938594,
+   "ratio": 1.0212282252192124,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.1043568026903259,
+   "ratio": 1.1050514112468381,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.016532483376989,
+   "ratio": 1.0164319063901224,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0141139959034904,
+   "ratio": 1.0135877187410385,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.014706851009645,
+   "ratio": 1.0145875137000007,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0237662003409693,
+   "ratio": 1.022927663978234,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.035371821183622,
+   "ratio": 1.0360610717377439,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0219673754005043,
+   "ratio": 1.0253464285917384,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0334422317220828,
+   "ratio": 1.031758240056603,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0236047585054038,
+   "ratio": 1.0195371879419532,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.02202505228466,
+   "ratio": 1.0187424946434966,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.018082580104635,
+   "ratio": 1.0177023553377205,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0131562936915108,
+   "ratio": 1.012698021451278,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0981485322584323,
+   "ratio": 1.09624671205296,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0277541709461342,
+   "ratio": 1.028894726352479,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0276459677274157,
+   "ratio": 1.0282528782783664,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0271182231325542,
+   "ratio": 1.0238550341531087,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0240332114074153,
+   "ratio": 1.023876039391908,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0219558440787901,
+   "ratio": 1.0200695230975503,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0201191471133217,
+   "ratio": 1.0191603848117428,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0174757479194663,
+   "ratio": 1.0155260788520724,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 3.6784316574179012,
+   "ratio": 3.6834256902788973,
    "static": false
   },
   {
    "frozen": 0.09090909090909091,
-   "ratio": 2.2424165838584846,
+   "ratio": 2.2692956743019694,
    "static": false
   },
   {
    "frozen": 0.14285714285714285,
-   "ratio": 2.134402115370323,
+   "ratio": 2.1493981175777783,
    "static": false
   },
   {
    "frozen": 0.14285714285714285,
-   "ratio": 3.4426469807558657,
+   "ratio": 3.43295196510974,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.1068590918955945,
+   "ratio": 1.100518952394046,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0150656644498706,
+   "ratio": 1.014830937757779,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.1238860840721956,
+   "ratio": 1.117164176604306,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.021548597619512,
+   "ratio": 1.0207774442725979,
    "static": false
   },
   {
    "frozen": 0.3333333333333333,
-   "ratio": 1.8549288816420777,
+   "ratio": 1.8973852371088478,
    "static": false
   },
   {
    "frozen": 0.16666666666666666,
-   "ratio": 1.5741853419678529,
+   "ratio": 1.5796843119633646,
    "static": false
   },
   {
    "frozen": 0.16666666666666666,
-   "ratio": 1.929031681670989,
+   "ratio": 1.943428752556987,
    "static": false
   },
   {
    "frozen": 0.09090909090909091,
-   "ratio": 1.4255725283516618,
+   "ratio": 1.4119943970027813,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0179402725185376,
+   "ratio": 1.0167317002442486,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.018446967989382,
+   "ratio": 1.0183251643401077,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0245556671969676,
+   "ratio": 1.0223105351100956,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0235021063175604,
+   "ratio": 1.0242772654873407,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.021317378342016,
+   "ratio": 1.0223295613632624,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0243493748252743,
+   "ratio": 1.0218535857810103,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0169469568273677,
+   "ratio": 1.0164071283715166,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0497679019031776,
+   "ratio": 1.0476614460052818,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0189513889047077,
+   "ratio": 1.0179577965850906,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0119342590546807,
+   "ratio": 1.0106565802213998,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0361605162695777,
+   "ratio": 1.0307124972815729,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0159024726388788,
+   "ratio": 1.0141107722947524,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.027316706082122,
+   "ratio": 1.023371161820752,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0164163347902584,
+   "ratio": 1.0133414812701687,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0104509525467842,
-   "static": false
-  },
-  null,
-  {
-   "frozen": 0.0,
-   "ratio": 1.5561885564847981,
-   "static": false
-  },
-  {
-   "frozen": 0.0,
-   "ratio": 1.4871252182966515,
-   "static": false
-  },
-  {
-   "frozen": 0.0,
-   "ratio": 1.009752467196315,
+   "ratio": 1.0085105216073293,
    "static": false
   },
   null,
   {
    "frozen": 0.0,
-   "ratio": 1.1001041771484448,
+   "ratio": 1.5430473480295812,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0035078307101848,
+   "ratio": 1.4644739621962901,
+   "static": false
+  },
+  {
+   "frozen": 0.0,
+   "ratio": 1.0072922403033762,
    "static": false
   },
   null,
   {
    "frozen": 0.0,
-   "ratio": 1.0089961984930433,
+   "ratio": 1.1015649306910233,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0051622227074781,
+   "ratio": 1.0026689957718382,
+   "static": false
+  },
+  null,
+  {
+   "frozen": 0.0,
+   "ratio": 1.0075842890638655,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0034419417327285,
+   "ratio": 1.004083137803289,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0319112414733878,
+   "ratio": 1.0033123010950837,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.023871170285946,
+   "ratio": 1.0284319767877854,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.028021623800696,
+   "ratio": 1.0212024295191278,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0218135193032254,
+   "ratio": 1.020935995460367,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0340652067147404,
+   "ratio": 1.022358384488054,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0117140068401398,
+   "ratio": 1.027075762689031,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0123251099139032,
+   "ratio": 1.0109060442073021,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0205204463936943,
+   "ratio": 1.0121454595722494,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0020887907803342,
+   "ratio": 1.0197110920241472,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0032921151638723,
+   "ratio": 1.0021170650425886,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0023297913222555,
+   "ratio": 1.002313770689914,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0048670336995424,
+   "ratio": 1.0011841696495347,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0039248331815318,
+   "ratio": 1.0046528050927965,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0795387112321073,
+   "ratio": 1.0029817088477067,
+   "static": false
+  },
+  {
+   "frozen": 0.0,
+   "ratio": 1.0793898265633823,
    "static": false
   },
   {
    "frozen": 0.07142857142857142,
-   "ratio": 1.6715794652611782,
+   "ratio": 1.655615732108827,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0331422150251748,
+   "ratio": 1.0290134750846862,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0158093529939027,
+   "ratio": 1.0168544195981077,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.1103209561712177,
+   "ratio": 1.1061662163031876,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0249927881108785,
+   "ratio": 1.0265264599458546,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.1947667438428924,
+   "ratio": 1.1884636484191888,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0178878529473503,
+   "ratio": 1.0170319271358141,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0322483960840731,
+   "ratio": 1.0250550583586402,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0223643359101608,
+   "ratio": 1.0175335665206071,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.02513391826696,
+   "ratio": 1.0240009300278778,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0151972615431175,
+   "ratio": 1.0134346743983913,
    "static": false
   }
  ],
@@ -1887,7 +1891,7 @@
   443.75,
   445.667
  ],
- "qc_seconds": 350.0,
+ "qc_seconds": 266.9,
  "video_seconds": 447.5,
  "verdict": "warnings"
 }
