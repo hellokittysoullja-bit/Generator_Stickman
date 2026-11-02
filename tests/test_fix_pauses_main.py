@@ -203,7 +203,7 @@ def test_detect_silences_closes_trailing_silence_without_end_marker(monkeypatch)
 
     monkeypatch.setattr(fix_pauses.subprocess, "run", lambda *a, **k: _R())
     pairs = fix_pauses.detect_silences("audio.mp3", total=12.0)
-    assert pairs == [(3.0, 4.5), (9.0, 12.0)]
+    assert pairs == [(3.0, 4.5 - fix_pauses.ONSET_GUARD_SEC), (9.0, 12.0)]  # конец тишины отступает от атаки слова
 
 
 def test_detect_silences_unchanged_when_end_marker_present(monkeypatch):
@@ -215,7 +215,7 @@ def test_detect_silences_unchanged_when_end_marker_present(monkeypatch):
         stderr = log
 
     monkeypatch.setattr(fix_pauses.subprocess, "run", lambda *a, **k: _R())
-    assert fix_pauses.detect_silences("audio.mp3", total=12.0) == [(3.0, 4.5), (9.0, 12.0)]
+    assert fix_pauses.detect_silences("audio.mp3", total=12.0) == [(3.0, 4.5 - fix_pauses.ONSET_GUARD_SEC), (9.0, 12.0)]
 
 
 def test_missing_ffprobe_degrades_to_defaults_instead_of_killing_the_step(tmp_path, monkeypatch, capsys):

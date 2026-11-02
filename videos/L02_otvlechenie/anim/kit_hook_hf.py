@@ -32,8 +32,11 @@ def plate(a):
     return canvas.retint(a, col) if canvas.is_paper(col, share) else a
 
 
-def bg(name, a, top, seed):
+def bg(name, a, top, seed, warm=None):
     a = plate(a.astype(np.float32))[top:top + H]
+    if warm:          # серые кухни 103 холоднее бумаги ролика (критик L02): средние тона — к тёплому, бумага на месте
+        w = np.clip((235 - a.mean(2, keepdims=True)) / 60, 0, 1)
+        a = a * (1 + w * (np.float32(warm) - 1))
     big = upscale.upscale(np.clip(a, 0, 255).round().astype(np.uint8), S, cache_dir=CACHE)
     big = canvas.bake_texture(big, canvas.paper_texture(), seed=seed)
     Image.fromarray(big).save(os.path.join(OUT, name + ".png"))
@@ -52,7 +55,7 @@ def piece(name):
 def main():
     os.makedirs(OUT, exist_ok=True)
     k = np.asarray(Image.open(os.path.join(KIT, "kitchen.png")).convert("RGB"))
-    bg("kitchen", k, KITCHEN_TOP, seed=1)
+    bg("kitchen", k, KITCHEN_TOP, seed=1, warm=(1.03, 1.0, 0.95))
     d = Image.open(os.path.join(KIT, "desk.png")).convert("RGB").resize((W, 1027), Image.LANCZOS)
     bg("desk", np.asarray(d), DESK_TOP, seed=2)
     geom = dict(stage=[W * S, H * S], scale=S, pieces={n: piece(n) for n in ("cat_desk", "cat_fridge", "phone")})

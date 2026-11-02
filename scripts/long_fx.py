@@ -43,23 +43,29 @@ def ease_out(u):
 
 # --------------------------------------------------------------------------- размытие под ведущим
 
-def focus_blur(f, t, t0, t1, sigma=20, dark=0.05, ramp=0.5, out=None):
+PAPER = np.float32((250, 247, 240))
+VEIL = 0.38                # сцена под ведущим уходит к бумаге: критик L02 — размытый чёрный кот сцены читался вторым котом
+
+
+def focus_blur(f, t, t0, t1, sigma=20, dark=0.05, ramp=0.5, out=None, veil=VEIL):
     """Сцена уходит в расфокус вместе с выходом кота (замер образца 28.10: за 0,1 с уже сильно, максимум к 0,5 с —
     ease-out), до конца плана; уход — склейкой, а не обратным размытием (out=None). out — секунды обратного размытия,
-    если плана-склейки после нет."""
+    если плана-склейки после нет. veil — доля бумаги поверх размытой сцены: тёмные пятна сцены бледнеют."""
     k = ease_out((t - t0)/ramp)
     if out:
         k *= 1 - ease_out((t - (t1 - out))/out)
     if k <= 0.01:
         return f
     b = cv2.GaussianBlur(np.ascontiguousarray(f, np.float32), (0, 0), sigma*k + 0.1)
-    return b*(1 - dark*k)
+    b = b*(1 - dark*k)
+    return b*(1 - veil*k) + PAPER*(veil*k)
 
 
 GROW_SEC, OVER, SETTLE_SEC = 0.4, 1.36, 0.55   # замер образца: 0,4 с рост до 136 %, 0,55 с плавная посадка к 100 %
 ENTER_SEC = 0.2            # сцена сначала резкая (образец: ~0,15 с), потом выходит кот
 EXIT_SEC = 0.3             # уход без склейки: обратный рост и сцена в фокус
 BOLD_HOLD_SEC = 2.4        # строка без кота стоит не дольше: камера режет планы, а строка стоит на экране
+BOLD_MIN_SEC = 1.1         # и не меньше: следующая строка той же фразы ждёт, пока эта допечатана и прочитана
 SIZE_NARRATOR, SIZE_PLAIN = 150, 120
 
 
@@ -141,9 +147,12 @@ class Narrator:
         x0, y0, x1, y1 = self.R.bb_for(st)
         sub = np.ascontiguousarray(rgba[y0:y1, x0:x1])
         sc = narrator_scale(t)
+        fade = 1.0
         if exit_at is not None and t > exit_at - EXIT_SEC:
-            sc *= max(0.0, 1 - ease_out((t - (exit_at - EXIT_SEC))/EXIT_SEC))
-            if sc < 0.03:
+            # уход без склейки — растворением в свой размер: обратный рост оставлял крошечного второго кота поверх
+            # уже резкой сцены (критик L02: 4:55, 6:02, 7:01)
+            fade = max(0.0, 1 - ease_out((t - (exit_at - EXIT_SEC))/EXIT_SEC))
+            if fade < 0.03:
                 return f
         k = self.height*H/sub.shape[0]*sc
         nw, nh = max(1, int(sub.shape[1]*k)), max(1, int(sub.shape[0]*k))
@@ -154,11 +163,11 @@ class Narrator:
         if xb <= xa or yb <= ya:
             return out_
         piece = small[ya - y:yb - y, xa - x:xb - x]
-        a = np.clip(piece[..., 3:4], 0, 1)
+        a = np.clip(piece[..., 3:4], 0, 1)*fade
         sh = cv2.GaussianBlur(a[..., 0], (0, 0), 22)[..., None]*0.22    # мягкая тень: кот перед сценой
         region = out_[ya:yb, xa:xb]
         region *= 1 - sh
-        out_[ya:yb, xa:xb] = region*(1 - a) + np.clip(piece[..., :3], 0, 255)
+        out_[ya:yb, xa:xb] = region*(1 - a) + np.clip(piece[..., :3], 0, 255)*fade
         return out_
 
 
@@ -359,6 +368,9 @@ def events(spec, t0, t1, words, text, seed=0):
         at = w["start"] - 0.05 if w else t0 + 0.3          # немое превью без alignment: в начале фразы
         bold.append(dict(kind="bold", text=b["text"], t0=max(t0, at), style=b.get("style", "letters")))
     bold.sort(key=lambda e: e["t0"])
+    for i in range(1, len(bold)):                          # строка не сменяется недопечатанной (критик L02, финал:
+        bold[i]["t0"] = max(bold[i]["t0"], bold[i - 1]["t0"] + BOLD_MIN_SEC)   # «маленький ш» 0,7 с)
+    bold = [e for e in bold if e["t0"] < t1 - 0.5]
     for i, e in enumerate(bold):
         end = bold[i + 1]["t0"] if i + 1 < len(bold) else t1
         if spec.get("narrator") is None:
@@ -368,11 +380,39 @@ def events(spec, t0, t1, words, text, seed=0):
     return ev + bold
 
 
+def after_writing(evs, write_ends, hold):
+    """Кот-ведущий выходит не раньше, чем рукописная мысль дописана и простояла hold: размытие под ведущим иначе уводит
+    недописанную мысль. Мысль, дописанная позже, чем за секунду до конца ведущего, ведущего снимает. Жирные строки,
+    вставшие до сдвинутого выхода, ставятся как строки без ведущего."""
+    out = [dict(e) for e in evs]
+    for e in out:
+        if e["kind"] != "narrator":
+            continue
+        late = [w + hold for w in write_ends if w + hold > e["t0"] and w - 3.0 < e["t0"]]
+        if not late:
+            continue
+        start = max(late)
+        if start > e["t1"] - 1.0:
+            e["kind"] = "narrator_dropped"
+            for b in out:
+                if b["kind"] == "bold" and e["t0"] <= b["t0"] < e["t1"]:
+                    b["narrator"] = False
+            continue
+        for b in out:
+            if b["kind"] == "bold" and e["t0"] <= b["t0"] < start:
+                b["narrator"] = False
+                b["t1"] = min(b["t1"], b["t0"] + BOLD_HOLD_SEC)
+        shift = start - e["t0"]
+        e["words"] = [dict(w, start=w["start"] - shift, end=w["end"] - shift) for w in e.get("words", [])]
+        e["t0"] = start
+    return out
+
+
 class Track:
     """Все события клипа: размытие и кот-ведущий, жирные строки — поверх готового кадра экрана."""
 
-    def __init__(self, evs, D):
-        self.D = D
+    def __init__(self, evs, D, peek=None):
+        self.D, self.peek = D, peek
         self.nar = []
         for e in evs:
             if e["kind"] == "narrator":
@@ -399,7 +439,13 @@ class Track:
                     cx, cy, sz, _ = free_spot(np.full_like(f, 245), e["text"], SIZE_NARRATOR, prefer=(W*0.33, H*0.3),
                                               avoid=box)
                 else:
-                    cx, cy, sz, _ = free_spot(f, e["text"], SIZE_PLAIN, prefer=(W/2, H*0.2), avoid=box)
+                    # место — по всем кадрам, пока строка стоит, а не по первому: камера режет планы, и строка,
+                    # чистая на первом кадре, ложилась на голову кота следующего (критик L02: «Напарник», «≈ 800»)
+                    g = f
+                    if self.peek is not None:
+                        for tt in (0.5*(e["t0"] + e["t1"]), e["t1"] - 0.05):
+                            g = np.minimum(g, np.asarray(self.peek(min(tt, self.D - 1e-3)), np.float32))
+                    cx, cy, sz, _ = free_spot(g, e["text"], SIZE_PLAIN, prefer=(W/2, H*0.2), avoid=box)
                 e["obj"] = BoldText(e["text"], cx, cy, size=sz, style=e["style"], t0=e["t0"])
             f = e["obj"].composite(f, t, t_end=e["t1"])
         return f

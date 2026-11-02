@@ -35,6 +35,7 @@ import subprocess
 import sys
 
 THRESH_SEC = 1.0     # тишина длиннее этого — подрезается
+ONSET_GUARD_SEC = 0.03   # столько тишины перед словом не режется никогда: атака слова тише порога тишины
 NOISE_DB = "-30dB"   # порог тишины
 LOUDNORM_TARGET = "I=-16:TP=-1.5:LRA=11"   # стандарт для закадрового голоса
 
@@ -149,6 +150,10 @@ def detect_silences(path, total=None):
     pairs = list(zip(starts, ends))
     if total is not None and len(starts) == len(ends) + 1 and starts[-1] < total:
         pairs.append((starts[-1], total))
+    # тишина по порогу −30 дБ кончается уже на атаке слова: резать до её конца — срезать 4–16 мс начала слова
+    # (аудит звука L02: «Помнишь», «Телефон», «А что»). Конец тишины отступает от речи на ONSET_GUARD_SEC — для всех,
+    # кто режет по этим парам (подрезка, pause_cuts.json, тег-паузы), одинаково.
+    pairs = [(ss, max(ss, se - ONSET_GUARD_SEC)) if total is None or se < total - 1e-6 else (ss, se) for ss, se in pairs]
     return pairs
 
 

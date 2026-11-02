@@ -332,9 +332,6 @@ def render(fr, p, D, out, fps=24, end_fade=False, crf="18", anim=None, fx=None):
     fx — события long_fx (кот-ведущий с размытием сцены, жирные строки) поверх готового кадра (28.10)."""
     SW, SH = fr["SW"], fr["SH"]
     track = None
-    if fx:
-        import long_fx
-        track = long_fx.Track(fx, D)
     full = fr["world"].copy()                  # рисунок целиком (и подписи, когда появятся)
     assemble = p.get("assemble") and len(fr["recs"]) >= 2
     if assemble:
@@ -355,6 +352,14 @@ def render(fr, p, D, out, fps=24, end_fade=False, crf="18", anim=None, fx=None):
         writes.append(dict(ink=writeon.Ink(L, ev, H, W), end=t0 + T, win=item["win"], baked=False))
         cues += [(e["t0"], e["t1"], e["kind"]) for e in ev]
     cues.sort()
+    if fx:
+        import long_fx
+        # кот-ведущий не уводит в размытие недописанную мысль (критик L02: «его возвращают» ушла в размытие на
+        # «его возвраща-», целиком видна 0,25 с): ведущий выходит, когда мысль дописана и простояла KEY_HOLD_SEC
+        fx = long_fx.after_writing(fx, [w["end"] for w in writes], shots.KEY_HOLD_SEC)
+        def peek(tt):                                  # кадр плана в момент tt без надписей — куда встанет строка
+            return _screen(world, shots.window_at(p, tt, SW, SH), UPSCALE)
+        track = long_fx.Track(fx, D, peek=peek)
     doll = None
     if p.get("mascot"):
         import mascot_live

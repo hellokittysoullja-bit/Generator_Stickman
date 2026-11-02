@@ -114,10 +114,11 @@
       gsap.set("#exclDot", { scale: 0, transformOrigin: "50% 50%" });
       gsap.set("#glow, #glowIn", { opacity: 0 });
 
-      // «убираешь телефон»: лапа уже толкнула — телефон с кадра 0 едет влево по столу, крутится и встаёт у блокнота
-      tl.fromTo("#phoneMove", { x: 0, y: 0 }, { x: -1000, y: 60, duration: 0.95, ease: "power3.out" }, 0);
-      tl.fromTo("#phone", { rotation: -6 }, { rotation: -205, duration: 0.95, ease: "power3.out" }, 0);
-      tl.to("#phone", { rotation: -198, duration: 0.18, ease: "sine.inOut", yoyo: true, repeat: 1 }, 0.95);
+      // «убираешь телефон»: лапа уже толкнула — телефон с кадра 0 трогается влево (на кадре 0 он резкий и узнаётся:
+      // критик L02 — при старте с полной скорости первый кадр был серым смазанным бруском), крутится и встаёт у блокнота
+      tl.fromTo("#phoneMove", { x: 0, y: 0 }, { x: -1000, y: 60, duration: 1.0, ease: "power2.inOut" }, 0);
+      tl.fromTo("#phone", { rotation: -6 }, { rotation: -205, duration: 1.0, ease: "power2.inOut" }, 0);
+      tl.to("#phone", { rotation: -198, duration: 0.18, ease: "sine.inOut", yoyo: true, repeat: 1 }, 1.0);
       // кот после толчка: возвращается из наклона к телефону
       tl.fromTo("#catWrite", { rotation: -3.2, x: -18 }, { rotation: 0, x: 0, duration: 0.45, ease: "back.out(2)" }, 0);
 

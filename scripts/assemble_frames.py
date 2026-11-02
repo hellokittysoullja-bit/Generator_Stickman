@@ -427,7 +427,7 @@ def main(video_dir):
         gain, why = am.music_bed_gain_db(voice, music)
         premix = os.path.join(work, "premix.wav")
         run(["ffmpeg", "-y", "-v", "error", "-i", voice, "-stream_loop", "-1", "-i", music, "-filter_complex",
-             f"[1:a]atrim=0:{total:.3f},volume={gain:.2f}dB[m];[0:a]asplit=2[v][sc];"
+             f"[1:a]atrim=0:{total:.3f},{am.MUSIC_COMPRESS},volume={gain:.2f}dB[m];[0:a]asplit=2[v][sc];"
              f"[m][sc]sidechaincompress=threshold={am.MUSIC_DUCK_THRESHOLD}:ratio={am.MUSIC_DUCK_RATIO}:"
              f"attack={am.MUSIC_DUCK_ATTACK_MS}:release={am.MUSIC_DUCK_RELEASE_MS}[md];"
              f"[v][md]amix=inputs=2:duration=first:normalize=0[a]", "-map", "[a]", "-ar", "48000", premix])
@@ -461,7 +461,12 @@ def main(video_dir):
     voiceless = not pencil_sound.has_voice(voice_lufs)
     if voiceless:
         print("  Голоса в дорожке нет (превью/заглушка): мастер без loudnorm, уровни как сведены")
-    af = am.build_master_af(am.measure_loudnorm_stats(premix), max(0.0, total - 2.0), 0.05, voiceless=voiceless)
+    # затухание — после последнего слова: с 2-секундным уходом под конец оно съедало хук на следующий ролик
+    # (аудит звука L02: «жить» −3,5 дБ, «здесь» −10 дБ). Слов нет (немое превью) — прежние 2 с.
+    last = max((w["end"] for ws in (speech.word_times if timing == "phrase_lock" else []) for w in ws), default=None)
+    fade_st = max(0.0, total - 2.0) if last is None else min(max(0.0, total - 0.25), last + 0.08)
+    af = am.build_master_af(am.measure_loudnorm_stats(premix), fade_st, 0.05, voiceless=voiceless,
+                            fade_out_d=max(0.15, total - fade_st))
     final = os.path.join(video_dir, "final.mp4")
     run(["ffmpeg", "-y", "-v", "error", "-i", video, "-i", premix, "-af", af, "-map", "0:v", "-map", "1:a",
          "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-t", f"{total:.3f}",

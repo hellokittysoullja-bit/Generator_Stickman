@@ -93,3 +93,47 @@ def test_track_keeps_bold_text_off_the_narrator():
     assert o.cx + o.width/2 < box[0] or o.cy + o.h/2 < box[1]          # строка левее кота или выше него
     assert o.size == fx.SIZE_NARRATOR                                   # под котом кегль полный
     assert out.shape == f.shape and not np.array_equal(out, f)
+
+
+def test_narrator_waits_until_written_thought_is_read():
+    # критик L02, фр.56→57: «его возвращают» ушла в размытие недописанной, целиком видна 0,25 с
+    evs = [dict(kind="narrator", t0=5.0, t1=11.0, words=[dict(word="Хочешь", start=0.2, end=0.6)]),
+           dict(kind="bold", text="листок", t0=5.4, t1=11.0, narrator=True)]
+    out = fx.after_writing(evs, [5.5], 1.5)
+    nar = next(e for e in out if e["kind"] == "narrator")
+    assert nar["t0"] == 7.0 and abs(nar["words"][0]["start"] - (0.2 - 2.0)) < 1e-9
+    bold = next(e for e in out if e["kind"] == "bold")
+    assert bold["narrator"] is False                 # встала до ведущего — строка без ведущего
+    short = [dict(evs[0], t1=9.5), evs[1]]
+    assert fx.after_writing(short, [7.9], 1.5)[0]["kind"] == "narrator_dropped"   # мысль почти до конца — ведущего нет
+    assert fx.after_writing(evs, [1.0], 1.5)[0]["t0"] == 5.0                    # давно дописанная не мешает
+
+
+def test_bold_lines_are_not_replaced_before_they_are_read():
+    # критик L02, финал: «маленький шаг» сменилась на «записке возврата» недопечатанной («маленький ш», 0,7 с)
+    words = [dict(word=w, start=s, end=s + 0.3) for w, s in (("телефон", 0.5), ("шаг", 1.2), ("записка", 1.7))]
+    spec = {"bold": [dict(text="телефон", word="телефон", why="x"), dict(text="маленький шаг", word="шаг", why="x"),
+                     dict(text="записка возврата", word="записка", why="x")]}
+    ev = [e for e in fx.events(spec, 0.0, 6.0, words, "") if e["kind"] == "bold"]
+    assert all(b["t0"] - a["t0"] >= fx.BOLD_MIN_SEC - 1e-9 for a, b in zip(ev, ev[1:]))
+
+
+def test_scene_under_narrator_fades_toward_paper():
+    # критик L02: размытый чёрный кот сцены под ведущим читался вторым котом
+    f = np.zeros((40, 40, 3), np.float32)
+    out = fx.focus_blur(f, 2.0, 0.0, 5.0)
+    assert out.mean() > 0.3*245
+
+
+def test_bold_line_place_accounts_for_later_shots():
+    # критик L02: строка, чистая на первом кадре, ложилась на голову кота следующего плана
+    clean = np.full((fx.H, fx.W, 3), 245, np.float32)
+    later = clean.copy()
+    later[0:500, 600:1400] = 30                      # следующий план: голова кота вверху по центру
+    ev = [dict(kind="bold", text="Напарник", t0=0.0, t1=2.0, narrator=False, style="letters")]
+    tr = fx.Track(ev, 3.0, peek=lambda t: later if t > 0.5 else clean)
+    tr.apply(clean.copy(), 0.0)
+    o = tr.bold[0]["obj"]
+    beside = o.cx + o.width/2 < 600 or o.cx - o.width/2 > 1400
+    below = o.cy - 0.45*o.size > 500
+    assert beside or below

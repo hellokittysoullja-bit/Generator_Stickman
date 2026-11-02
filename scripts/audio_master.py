@@ -54,13 +54,18 @@ MUSIC_BED_GAIN_MIN_DB, MUSIC_BED_GAIN_MAX_DB = -30.0, 6.0
 MUSIC_DUCK_THRESHOLD = 0.06
 
 
-MUSIC_DUCK_RATIO = 9.0
+MUSIC_DUCK_RATIO = 3.5  # аудит звука L02: при 9 подложка «качала» — 7,8 дБ вниз под речью и вверх на каждом вдохе
 
 
 MUSIC_DUCK_ATTACK_MS = 15.0    # быстро прижать к началу фразы
 
 
-MUSIC_DUCK_RELEASE_MS = 450.0  # плавно отпустить после — без эффекта "накачки"
+MUSIC_DUCK_RELEASE_MS = 900.0  # плавно отпустить после — без «накачки» (450 мс поднимали музыку в каждой паузе вдоха)
+
+
+# своя динамика ассета (Healing — ~17 дБ) сужала разрыв с голосом до 13 LU и поднимала подложку на 13 дБ за 0,3 с
+# (аудит звука L02): мягкий компрессор на музыку до приглушения под голос
+MUSIC_COMPRESS = "acompressor=threshold=0.05:ratio=2.5:attack=200:release=1500:makeup=1"
 
 
 # A6: цепочка обработки самого голоса (сырой TTS -> вещательного качества),
@@ -309,7 +314,7 @@ def audio_qc(path, label="Audio QC"):
 NO_VOICE_LUFS = -50.0   # интегральная громкость дорожки голоса ниже этого — голоса в ней нет (тишина, заглушка превью)
 
 
-def build_master_af(loud_stats, fade_out_st, fade_in_sec, voiceless=False):
+def build_master_af(loud_stats, fade_out_st, fade_in_sec, voiceless=False, fade_out_d=2.0):
     """Мастер-цепочка финального прохода: loudnorm -> лимитер -> фейды.
 
     Вынесено из main() отдельной функцией, чтобы порядок ступеней можно было
@@ -346,5 +351,5 @@ def build_master_af(loud_stats, fade_out_st, fade_in_sec, voiceless=False):
                       f"attack={MASTER_LIMITER_ATTACK_MS}:"
                       f"release={MASTER_LIMITER_RELEASE_MS}:level=disabled")
     stages.append(f"afade=t=in:st=0:d={fade_in_sec}")
-    stages.append(f"afade=t=out:st={fade_out_st:.3f}:d=2")
+    stages.append(f"afade=t=out:st={fade_out_st:.3f}:d={fade_out_d:g}")
     return ",".join(stages)
