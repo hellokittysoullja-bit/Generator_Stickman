@@ -129,3 +129,64 @@ def test_squash_follow_far_parts_lag_behind():
     top_full = np.where((full[..., 0] < 128).any(1))[0].min()
     assert top_still < top_full - 5                                    # потом верх догоняет
     assert abs(top_still - 150) <= 6                                   # а в 1.05 стоит почти на месте (исходный верх 150)
+
+
+def test_split_part_gives_stray_whiskers_back_to_the_body():
+    # рилс 13 (владелец 02.11): усы щеки, попавшие в многоугольник хвоста, висели в воздухе, когда хвост махал
+    import cv2
+    tail = np.zeros((200, 200), np.uint8)
+    cv2.circle(tail, (60, 100), 40, 1, -1)                        # тело хвоста
+    cv2.line(tail, (60, 140), (60, 160), 1, 2)                     # шерстинка на краю — своя
+    cv2.line(tail, (130, 60), (180, 70), 1, 2)                     # ус в просвете, оторван от хвоста
+    cv2.line(tail, (30, 75), (5, 20), 1, 2)                        # ус, касающийся шерсти хвоста, торчит наружу
+    body = np.zeros_like(tail)
+    own, rest = anim.split_part(tail, body)
+    assert own[100, 60] and own[150, 60]                          # тело и своя шерсть — хвосту
+    assert not own[65, 155] and rest[65, 155]                     # ус — телу
+    assert not own[42, 15] and rest[42, 15]                        # торчащий ус — тоже телу
+    assert anim.detached_share(own * 255) == 0.0
+    assert anim.detached_share(tail * 255) > 0.0                  # проверка ловит прежнюю нарезку
+
+
+def test_defringe_removes_paper_halo_on_layer_edge():
+    # кайма: край тёмного хвоста, смешанный с белой бумагой, светится на сером фоне
+    rgb = np.zeros((10, 10, 3), np.float32); a = np.zeros((10, 10), np.float32)
+    rgb[:, :5] = 40; a[:, :5] = 1.0
+    rgb[:, 5] = 0.5 * 40 + 0.5 * 250; a[:, 5] = 0.5               # край: полупрозрачный, наполовину бумага
+    out = anim.defringe(rgb, a, paper=(250, 250, 250))
+    assert abs(out[0, 5, 0] - 40) < 3                              # цвет края — цвет хвоста, а не бумаги
+
+
+def test_trim_paper_edge_keeps_inner_highlights():
+    img = np.full((60, 60, 3), 248, np.float32)
+    img[10:50, 10:50] = 40                                         # тёмная часть
+    img[28:32, 28:32] = 250                                        # блик внутри — рисунок
+    mask = np.zeros((60, 60), np.uint8); mask[8:52, 8:52] = 1      # маска с захватом бумаги по краю
+    out = anim.trim_paper_edge(img, mask)
+    assert out[9, 30] == 0 and out[30, 9] == 0                     # бумага по краю снята
+    assert out[30, 30] == 1 and out[20, 20] == 1                   # блик и тело остались
+
+
+def test_keep_attached_drops_frame_bits_near_the_character():
+    import cv2
+    m = np.zeros((100, 100), np.uint8)
+    cv2.circle(m, (40, 50), 25, 1, -1)
+    cv2.line(m, (90, 10), (90, 80), 1, 1)                          # обрывок рамки двери рядом с котом
+    cv2.line(m, (64, 50), (75, 50), 1, 1)                          # ус от щеки — касается тела
+    out = anim.keep_attached(m)
+    assert out[40, 90] == 0 and out[50, 72] == 1 and out[50, 40] == 1
+
+
+def test_drop_scene_lines_removes_door_frame_through_whiskers():
+    import cv2
+    img = np.full((600, 600, 3), 245, np.float32)
+    cv2.circle(img, (250, 300), 120, (40, 40, 40), -1)            # кот
+    cv2.line(img, (420, 0), (420, 599), (60, 60, 60), 3)           # рамка двери во всю высоту
+    cv2.line(img, (360, 290), (520, 250), (30, 30, 30), 2)         # ус через рамку
+    mask = np.zeros((600, 600), np.uint8)
+    cv2.circle(mask, (250, 300), 120, 1, -1)
+    mask[200:400, 360:520] |= (img[200:400, 360:520].mean(2) < 200).astype(np.uint8)
+    out = anim.drop_scene_lines(img, mask)
+    assert out[350, 420] == 0                                      # рамка ниже уса — не кот
+    assert out[270, 440] == 1 or out[269, 440] == 1                # ус остался
+    assert out[300, 250] == 1                                      # тело не тронуто

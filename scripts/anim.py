@@ -428,6 +428,131 @@ def fill_hole(img, hole, valid=None, sigs=(10, 25, 60), grain_from=None, feather
     return img * (1 - a) + out * a
 
 
+# --------------------------------------------------------------------------- нарезка частей тела без артефактов
+# Рилс 13 (владелец 02.11, скрин хука 0:00.86): в слой хвоста попали три штриха усов — в рисунке усы щеки проходят через
+# просвет завитка, и многоугольник хвоста забрал их; хвост машет — усы висят в воздухе рядом с ним. Тот же класс
+# брака у любой части (лапа и шерсть соседа, ухо и прядь чёлки): тонкий штрих принадлежит той части, от которой растёт.
+PART_CORE_OPEN = 7        # px: всё тоньше — штрих (ус, волосок, линия), а не тело части
+PART_REACH = 10           # px: штрих ближе к телу части — её шерсть; дальше — чужой, уходит в родительский слой
+SPUR_BASE = 4             # px: полоса у тела части, где ус и шерсть неразделимы — остаётся части
+SPUR_LEN, SPUR_WIDTH = 30, 4.0   # длинный тонкий штрих, торчащий из части (ус через шерсть хвоста), — не её
+
+
+def split_part(part, rest, core_open=PART_CORE_OPEN, reach=PART_REACH):
+    """Отделить движущуюся часть (хвост, лапа, ухо) от остального тела. part, rest — маски 0/1 одного размера.
+    Тело части — толстая область (раскрытие core_open) и всё, что связано с ней в пределах reach; оторванные от
+    тела тонкие штрихи (усы через просвет, линии соседа) отдаются родительскому слою rest. Возвращает (part, rest)."""
+    part = (np.asarray(part) > 0).astype(np.uint8)
+    rest = (np.asarray(rest) > 0).astype(np.uint8)
+    core = cv2.morphologyEx(part, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (core_open, core_open)))
+    n, lab, st, _ = cv2.connectedComponentsWithStats(core)
+    if n <= 1:
+        return part, rest
+    big = 1 + int(np.argmax(st[1:, cv2.CC_STAT_AREA]))
+    core = (lab == big).astype(np.uint8)
+    near = cv2.dilate(core, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * reach + 1, 2 * reach + 1)))
+    # кусок части остаётся, если хоть одним пикселем касается тела: шерсть по краю цела, ус в просвете уходит
+    n, lab = cv2.connectedComponents(part)
+    touch = np.unique(lab[(near > 0) & (part > 0)])
+    own = np.isin(lab, touch[touch > 0]).astype(np.uint8) & part
+    # ус, который касается шерсти части, но торчит из неё длинной тонкой линией: всё, что вне узкой полосы у тела,
+    # делится на куски; кусок длинный и тонкий (средняя толщина ≤ SPUR_WIDTH, длина ≥ SPUR_LEN) — чужой штрих.
+    # Шерсть части — треугольные пряди: короче или толще, остаются
+    out = own & (1 - cv2.dilate(core, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * SPUR_BASE + 1,) * 2)))
+    n2, lab2, st2, _ = cv2.connectedComponentsWithStats(out)
+    for i in range(1, n2):
+        w, h, area = st2[i, cv2.CC_STAT_WIDTH], st2[i, cv2.CC_STAT_HEIGHT], st2[i, cv2.CC_STAT_AREA]
+        length = math.hypot(w, h)
+        if length >= SPUR_LEN and area / length <= SPUR_WIDTH:
+            own[lab2 == i] = 0
+    stray = part & (1 - own)
+    return own, rest | stray
+
+
+def drop_scene_lines(img, mask, min_len=300, angle_tol=8.0, width=7, core_open=PART_CORE_OPEN):
+    """Убрать из маски персонажа прямые линии сцены, проходящие сквозь его тонкие края (рамка двери за усами, линия
+    пола у лап — тело рилса 13): длинные почти вертикальные или горизонтальные отрезки туши по всей картинке
+    (Хаф), только там, где маска тонкая (вне тела). Усы короче и наклонены — остаются."""
+    m = (np.asarray(mask) > 0).astype(np.uint8)
+    img = np.asarray(img, np.float32)
+    ink = ((img.mean(2) < 200) * 255).astype(np.uint8)
+    segs = cv2.HoughLinesP(ink, 1, np.pi / 360, threshold=min_len // 2, minLineLength=min_len, maxLineGap=12)
+    if segs is None:
+        return m
+    lines = np.zeros_like(m)
+    for x0, y0, x1, y1 in np.asarray(segs).reshape(-1, 4):
+        ang = abs(math.degrees(math.atan2(y1 - y0, x1 - x0))) % 180
+        if min(ang, 180 - ang) <= angle_tol or abs(ang - 90) <= angle_tol:
+            cv2.line(lines, (int(x0), int(y0)), (int(x1), int(y1)), 1, width)
+    core = cv2.morphologyEx(m, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (core_open, core_open)))
+    core = cv2.dilate(core, np.ones((3, 3), np.uint8))
+    return (m & ~((lines > 0) & (core == 0))).astype(np.uint8)
+
+
+def keep_attached(mask, reach=PART_REACH):
+    """Только главный кусок маски и то, что касается его в пределах reach: обрывки рамки двери, линии пола, чужие
+    штрихи рядом с персонажем, попавшие в его многоугольник, иначе ездят вместе с ним по сцене (тело рилса 13)."""
+    m = (np.asarray(mask) > 0).astype(np.uint8)
+    n, lab, st, _ = cv2.connectedComponentsWithStats(m)
+    if n <= 2:
+        return m
+    big = (lab == 1 + int(np.argmax(st[1:, cv2.CC_STAT_AREA]))).astype(np.uint8)
+    near = cv2.dilate(big, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * reach + 1, 2 * reach + 1)))
+    return np.isin(lab, np.unique(lab[(near > 0) & (m > 0)])).astype(np.uint8) & m
+
+
+def detached_share(alpha, thr=0.1, reach=PART_REACH):
+    """Доля непрозрачности слоя, оторванная от его главного куска (дальше reach): у слоя части тела должна быть 0 —
+    иначе при движении слоя кусок висит в воздухе. Проверка нарезки до рендера."""
+    a = np.asarray(alpha, np.float32)
+    if a.max() > 1.5:
+        a = a / 255.0
+    m = (a > thr).astype(np.uint8)
+    n, lab, st, _ = cv2.connectedComponentsWithStats(m)
+    if n <= 1:
+        return 0.0
+    big = (lab == 1 + int(np.argmax(st[1:, cv2.CC_STAT_AREA]))).astype(np.uint8)
+    near = cv2.dilate(big, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * reach + 1, 2 * reach + 1)))
+    n, lab = cv2.connectedComponents(m)
+    keep = np.isin(lab, np.unique(lab[(near > 0) & (m > 0)]))
+    return float(a[(m > 0) & ~keep].sum() / max(a.sum(), 1e-6))
+
+
+def trim_paper_edge(img, mask, ring=8, light=205, sat=28):
+    """Снять с края маски бумагу: закрытие маски (MORPH_CLOSE) захватывает светлую бумагу у вогнутых краёв шерсти,
+    и на чужом фоне слой светится белыми зубцами (хвост рилса 13). В полосе ring у границы маски светлые и
+    бесцветные пиксели — не рисунок; внутри (блики глаз, светлая шерсть) не трогается."""
+    m = (np.asarray(mask) > 0).astype(np.uint8)
+    img = np.asarray(img, np.float32)
+    edge = m & (1 - cv2.erode(m, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * ring + 1,) * 2)))
+    paperish = (img.mean(2) > light) & ((img.max(2) - img.min(2)) < sat)
+    return (m & ~(edge.astype(bool) & paperish)).astype(np.uint8)
+
+
+def defringe(rgb, alpha, paper=(250, 247, 240)):
+    """Убрать бумажную кайму полупрозрачного края слоя: цвет края — смесь рисунка и бумаги, и на другом фоне он
+    светится белой полосой (хвост рилса 13 на стене двери). Цвет рисунка восстанавливается из смеси:
+    C = (I − (1 − a)·бумага) / a, по краю (a < 1); где a мала — цвет ближайшего непрозрачного соседа."""
+    rgb = np.asarray(rgb, np.float32)
+    a = np.asarray(alpha, np.float32)
+    if a.max() > 1.5:
+        a = a / 255.0
+    a3 = a[..., None]
+    un = (rgb - (1 - a3) * np.float32(paper)) / np.maximum(a3, 1e-3)
+    solid = (a > 0.9).astype(np.uint8)
+    if solid.any():
+        _, idx = cv2.distanceTransformWithLabels(1 - solid, cv2.DIST_L2, 5, labelType=cv2.DIST_LABEL_PIXEL)
+        ys, xs = np.nonzero(solid)
+        lut = np.zeros((idx.max() + 1, 3), np.float32)
+        lut[idx[ys, xs]] = rgb[ys, xs]
+        near = lut[idx]
+    else:
+        near = rgb
+    w = np.clip((a3 - 0.15) / 0.5, 0, 1)                 # почти прозрачный край — цвет соседа, плотнее — восстановленный
+    out = np.where(a3 >= 0.9, rgb, w * np.clip(un, 0, 255) + (1 - w) * near)
+    return np.clip(out, 0, 255)
+
+
 def paper_like(img):
     """Бумага рисунка -> крем рилса тем же способом, что prepare_src в reel.py (иначе сцена на другой бумаге)."""
     import canvas

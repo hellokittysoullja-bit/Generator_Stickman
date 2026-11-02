@@ -98,11 +98,14 @@ def main():
             run = cat[1650:2100, xx] & (gA[1650:2100, xx] < 150) & (gA[1650:2100, xx - 7] > 150) & (gA[1650:2100, xx + 7] > 150)
             cat[1650:2100, xx] &= ~run
     cat[1650:2100, 1420:1520] &= gA[1650:2100, 1420:1520] < 120     # за рамкой у кота только усы: тёмные штрихи
+    cat = anim.drop_scene_lines(A, cat)                         # рамка двери и пол сквозь усы и у лап — сцене
     cat_bub = np.zeros_like(cat)
     for m in anim.ink_objects(A, box=BUB_BOX, min_area=300): cat_bub |= m
     cat &= ~cv2.dilate(cat_bub, np.ones((9, 9), np.uint8)).astype(bool)          # пузырёк мысли — не кот
     tail_reg = np.zeros_like(cat); cv2.fillPoly(tail_reg, [np.int32(TAIL_POLY)], 1)
     tail = cat & tail_reg; body = cat & ~tail_reg.astype(bool)
+    # усы щеки проходят через просвет завитка хвоста: оторванные от хвоста штрихи — телу (владелец 02.11, 0:00.86)
+    tail, body = anim.split_part(tail, body)
     cloud = np.zeros_like(cat); bub = np.zeros_like(cat)
     for m in anim.ink_objects(A, box=CLOUD_BOX, min_area=20000): cloud |= m
     for m in anim.ink_objects(A, box=BUB_BOX, min_area=300): bub |= m
@@ -141,7 +144,14 @@ def main():
 
     def save(name, img, m):
         """Слой с мягким краем в 1 px (без каймы) — в kit/<name>.png, рамка — в kit.json."""
+        m = anim.trim_paper_edge(img, m)                         # без белых зубцов бумаги по краю
+        if not name.startswith("bubble"):
+            m = anim.keep_attached(m)                            # без обрывков рамки и пола, ездящих с котом
         im, xy = rgba(img, cv2.GaussianBlur(m.astype(np.float32), (0, 0), 0.8))
+        al = im[..., 3].astype(np.float32) / 255
+        paper = np.median(im[..., :3][al < 0.02], axis=0) if (al < 0.02).any() else (250, 247, 240)
+        im[..., :3] = anim.defringe(im[..., :3], al, paper).round().astype(np.uint8)     # без бумажной каймы по краю
+        assert anim.detached_share(al) < 0.002 or name.startswith("bubble"), f"слой {name}: оторванные куски"
         Image.fromarray(im).save(os.path.join(OUT, name + ".png")); layers[name] = dict(xy=xy, wh=im.shape[1::-1])
 
     for name, m in (("tail", tail), ("body", body), ("cloud", cloud)):
