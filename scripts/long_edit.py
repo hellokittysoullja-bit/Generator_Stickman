@@ -10,6 +10,8 @@
   "punch" удар: 0,25 с влёт из прошлого окна в это (SNAP), потом стоит; "shake" — тряска на ударе (px экрана);
   "spot"  [x, y, r] — прожектор: всё дальше r от точки темнеет до 25 %, проявляется за 0,25 с (как в рилсах);
   "whip"  "left" | "right" — хлёсткая склейка: смаз уходящего и входящего плана по направлению;
+  "parallax" true | {"dx", "dz"} — объём по карте глубины (depth_parallax.py): редкий эффект, только где за котом
+          чистая бумага или стол (владелец 02.11: «на очень малом количестве кадров, где реально подходит»);
   "why"   зачем этот план — обязательно (монтаж со смыслом, а не ради склейки).
 Кадр с edit.json монтирует оркестратор целиком: автоматическая раскладка планов для него не используется, а надписи
 (главная мысль, акцент) раскладываются заново в окне того плана, где их пишут."""
@@ -56,6 +58,14 @@ def _win(fr, c):
     return camera.window(c[0] + ox, c[1] + oy, c[2], fr["SW"], fr["SH"])
 
 
+def _parallax(p):
+    """"parallax": true | {"dx": px, "dz": доля} — объём по карте глубины на этом плане (редкий эффект, 02.11)."""
+    if not p:
+        return None
+    import depth_parallax as dp
+    return dict(dx=dp.DX, dz=dp.DZ) if p is True else dict(dx=float(p.get("dx", dp.DX)), dz=float(p.get("dz", dp.DZ)))
+
+
 def segments(fr, shots, words, D):
     """Ручные планы -> сегменты камеры (kind="manual") в координатах холста."""
     if not shots:
@@ -80,7 +90,8 @@ def segments(fr, shots, words, D):
         seg = dict(t0=t0, t1=t1, kind="manual", win=win, win_to=win_to, why=s["why"],
                    punch_from=prev if s.get("punch") and prev is not None else None,
                    shake=float(s.get("shake", 0)), whip=s.get("whip"),
-                   spot=(sp[0] + ox, sp[1] + oy, sp[2]) if sp else None)
+                   spot=(sp[0] + ox, sp[1] + oy, sp[2]) if sp else None,
+                   parallax=_parallax(s.get("parallax")))
         segs.append(seg)
         prev = win_to
     for a, b in zip(segs, segs[1:]):          # хлёст смазывает и уходящий план

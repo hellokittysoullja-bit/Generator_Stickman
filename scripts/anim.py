@@ -202,6 +202,20 @@ def stroke(base, p0, p1, width, color, alpha=1.0, taper=(0.15, 0.25)):
 HOOK_ZOOM, HOOK_SNAP_SEC, HOOK_OVERSHOOT, HOOK_ROLL, HOOK_ROLL_SEC = 0.18, 0.25, 0.022, -1.1, 0.4
 
 
+def _vhash(i, seed):
+    h = (int(i) * 374761393 + int(seed) * 668265263) & 0xFFFFFFFF
+    h = (h ^ (h >> 13)) & 0xFFFFFFFF
+    h = (h * 1274126177) & 0xFFFFFFFF
+    return ((h ^ (h >> 16)) & 0xFFFFFFFF) / 4294967296
+
+
+def vnoise(x, seed=0):
+    """Шум значений 0..1 (хэш узлов + smootherstep), как в блоке camera-shake HyperFrames: неровная тряска «с руки»
+    вместо синусов; чистая функция x и seed — любой кадр при перемотке тот же."""
+    i = math.floor(x); f = x - i; u = f * f * f * (f * (f * 6 - 15) + 10)
+    return _vhash(i, seed) * (1 - u) + _vhash(i + 1, seed) * u
+
+
 def hook_cam(t):
     """Камера первого плана хука в момент t: резкий влёт с маленьким перелётом и поворотом (как в рилсе 08)."""
     snap = 1 / (1 + HOOK_ZOOM * (1 - SNAP(t / HOOK_SNAP_SEC)))

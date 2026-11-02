@@ -137,3 +137,18 @@ def test_bold_line_place_accounts_for_later_shots():
     beside = o.cx + o.width/2 < 600 or o.cx - o.width/2 > 1400
     below = o.cy - 0.45*o.size > 500
     assert beside or below
+
+
+def test_parallax_moves_near_more_than_far_and_is_identity_at_start():
+    """Параллакс по глубине (02.11): в начале плана кадр не меняется; ближнее сдвигается сильнее дальнего."""
+    import depth_parallax as dp
+    H, W = 120, 200
+    img = np.full((H, W, 3), 240, np.float32)
+    img[40:80, 90:110] = 30                                          # ближний предмет
+    img[10:20, 20:30] = 120                                          # дальний предмет
+    D = np.zeros((H, W), np.float32); D[35:85, 85:115] = 1.0          # глубина: предмет близко
+    assert np.allclose(dp.apply(img, D, 0.0), img)
+    out = dp.apply(img, dp.prepare(img, D), 1.0, dx=12, dz=0.0)
+    near = np.argwhere(out[60, :, 0] < 100).mean() - 99.5
+    far = np.argwhere(out[15, :, 0] < 180).mean() - 24.5
+    assert abs(near) > abs(far) + 3

@@ -174,6 +174,11 @@ def main():
     Image.fromarray(bg_crop).save(os.path.join(OUT, "bg.png"))
     for v in layers.values():                                   # в координаты мира сцены
         v["xy"] = (v["xy"][0] - ox, v["xy"][1] - oy)
+    # хвост гнётся сеткой (scripts/tail_rig.py, владелец 02.11): огонёк отдельно, сетка и кости; углы — физикой при рендере
+    import tail_rig
+    tx, ty = layers["tail"]["xy"]
+    tail_rig.prepare_part(os.path.join(OUT, "tail.png"), attach=(TAIL_PIVOT[0] - ox - tx, TAIL_PIVOT[1] - oy - ty),
+                          out_dir=OUT, name="tail")
     meta = dict(origin=ORIGIN, size=SIZE, bg_top=BG_TOP, layers=layers, tail_pivot=(TAIL_PIVOT[0] - ox, TAIL_PIVOT[1] - oy),
                 cat_foot=(CAT_FOOT[0] - ox, CAT_FOOT[1] - oy), fps=30)
     json.dump(meta, open(os.path.join(OUT, "kit.json"), "w"), indent=1)

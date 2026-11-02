@@ -40,8 +40,13 @@ def default_vars(project_dir):
     return json.loads(m[0])
 
 
-def signature(project_dir, assets_dir, variables, fps, version=1):
+LIB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "hf_lib")     # общие скрипты композиций (lib/ проекта)
+
+
+def signature(project_dir, assets_dir, variables, fps, version=1, extra=()):
     h = hashlib.md5()
+    for p in sorted(glob.glob(os.path.join(LIB, "*"))) + [f for f in extra]:          # общая библиотека и код подготовки
+        h.update(os.path.basename(p).encode()); h.update(open(p, "rb").read())
     for p in sorted(glob.glob(os.path.join(project_dir, "*.html")) + glob.glob(os.path.join(project_dir, "*.json"))):
         h.update(os.path.basename(p).encode()); h.update(open(p, "rb").read())
     for p in sorted(glob.glob(os.path.join(assets_dir, "*"))):
@@ -51,8 +56,12 @@ def signature(project_dir, assets_dir, variables, fps, version=1):
 
 
 class Scene:
-    def __init__(self, project_dir, assets_dir, fps, duration, cache_dir, name=None, version=1, workers=2):
+    def __init__(self, project_dir, assets_dir, fps, duration, cache_dir, name=None, version=1, workers=2,
+                 prepare=None, extra=()):
+        """prepare(proj, variables) — шаг перед рендером в копии проекта (например, физика хвоста пишет углы в
+        assets/); extra — файлы его кода: входят в ключ кэша."""
         self.project, self.assets, self.fps, self.dur = project_dir, assets_dir, fps, duration
+        self.prepare, self.extra = prepare, tuple(extra)
         self.cache_dir, self.name = cache_dir, name or os.path.basename(os.path.normpath(project_dir))
         self.version, self.workers = version, workers
         self.frames, self._mem = [], {}
@@ -61,7 +70,7 @@ class Scene:
         """Кадры композиции с этим временем (dict, сливается с примером из index.html); список путей к PNG."""
         v = dict(default_vars(self.project))
         v.update(variables or {})
-        out = os.path.join(self.cache_dir, f"{self.name}_{signature(self.project, self.assets, v, self.fps, self.version)}")
+        out = os.path.join(self.cache_dir, f"{self.name}_{signature(self.project, self.assets, v, self.fps, self.version, self.extra)}")
         need = int(round(self.dur * self.fps))
         frames = sorted(glob.glob(os.path.join(out, "frames", "*.png")))
         if len(frames) >= need:
@@ -76,10 +85,13 @@ class Scene:
         shutil.rmtree(out, ignore_errors=True)
         shutil.copytree(self.project, proj, ignore=shutil.ignore_patterns("assets", "node_modules", "frames", "renders"))
         shutil.copytree(self.assets, os.path.join(proj, "assets"))
+        shutil.copytree(LIB, os.path.join(proj, "lib"))
         html = os.path.join(proj, "index.html")
         s = open(html, encoding="utf-8").read()
         s = VARS_RE.sub(lambda _m: f"data-vars='{json.dumps(v, ensure_ascii=False)}'", s, count=1)
         open(html, "w", encoding="utf-8").write(s)
+        if self.prepare is not None:
+            self.prepare(proj, v)
         env = dict(os.environ, HYPERFRAMES_TELEMETRY="0", DO_NOT_TRACK="1")
         r = subprocess.run(["npx", "--yes", HF, "render", "--format", "png-sequence", "--fps", str(self.fps),
                             "--workers", str(self.workers), "-o", "frames", "--quiet"],

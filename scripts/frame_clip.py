@@ -116,6 +116,18 @@ def _screen(world, win, scale):
                                                     box=(x0*scale, y0*scale, x1*scale, y1*scale)), np.float32)
 
 
+def _parallax_frame(f, fr, win, seg, t):
+    """Кадр плана с параллаксом: глубина рисунка (кэш на кадр) в том же окне, сдвиг по ходу плана."""
+    import depth_parallax as dp
+    if "_depth" not in fr:
+        d = dp.depth_map(fr["canvas"], cache_dir=os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "models", "depth_cache"))
+        fr["_depth"] = (np.repeat(d[..., None], 3, axis=2) * 255).astype(np.uint8)
+    x0, y0, x1, y1 = win
+    d = np.asarray(Image.fromarray(fr["_depth"]).resize((W, H), Image.BILINEAR, box=(x0, y0, x1, y1)), np.float32)[..., 0] / 255
+    tau = (t - seg["t0"]) / max(1e-6, seg["t1"] - seg["t0"])
+    return dp.apply(f, dp.prepare(f, d), tau, seg["parallax"]["dx"], seg["parallax"]["dz"])
+
+
 def key_layout(fr, text, win, seed=9):
     """Где и каким кеглем писать главную мысль в окне win. (letters, (cx, cy), кегль) или None."""
     scr = _screen(np.asarray(Image.fromarray(fr["final_rgb"]).resize(
@@ -405,6 +417,8 @@ def render(fr, p, D, out, fps=24, end_fade=False, crf="18", anim=None, fx=None):
                     win = _cam_window(win, {"dx": dx, "dy": dy}, SW, SH)
             base = anim.frame(t, world) if anim is not None else world
             f = _screen(base, win, UPSCALE)
+            if manual and seg.get("parallax"):          # объём по глубине — редкий эффект ручного плана (02.11)
+                f = _parallax_frame(f, fr, win, seg, t)
             if prev_world is not None and t - fade_from < fade_len:
                 a = camera.ease_io((t - fade_from)/fade_len)
                 f = _screen(prev_world, win, UPSCALE)*(1 - a) + f*a
