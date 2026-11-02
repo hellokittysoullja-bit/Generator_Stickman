@@ -30,7 +30,68 @@
    "source": "library",
    "chosen": "lib_2026-10-27_gen_cx_gpt-image-2_eb2640c6.png",
    "path": "frames/001.png",
-   "objects": [],
+   "objects": [
+    {
+     "name": "the lit empty shelves",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1071.7,
+      133.5,
+      1301.3,
+      780.5
+     ],
+     "why": null
+    },
+    {
+     "name": "the phone lying face down",
+     "role": "detail",
+     "word": null,
+     "box": [
+      91.9,
+      718.9,
+      229.7,
+      821.6
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      267.9,
+      493.0,
+      321.5,
+      554.6
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      428.7,
+      277.3,
+      796.1,
+      636.7
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      214.3,
+      277.3,
+      842.0,
+      821.6
+     ],
+     "why": null
+    }
+   ],
    "plan_sig": "df760b0bf1a9c302d92f"
   },
   {
@@ -63,7 +124,63 @@
      "defects": null
     }
    },
-   "objects": []
+   "objects": [
+    {
+     "name": "the phone on the high pan",
+     "role": "subject",
+     "word": null,
+     "box": [
+      1105.9,
+      286.7,
+      1274.9,
+      522.2
+     ],
+     "why": null
+    },
+    {
+     "name": "the character on the low pan",
+     "role": "detail",
+     "word": null,
+     "box": [
+      299.5,
+      358.4,
+      645.1,
+      778.2
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": null,
+     "why": "точка, а не предмет"
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      307.2,
+      358.4,
+      645.1,
+      655.4
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      184.3,
+      358.4,
+      645.1,
+      778.2
+     ],
+     "why": null
+    }
+   ]
   },
   {
    "index": 2,
@@ -95,7 +212,63 @@
      "defects": null
     }
    },
-   "objects": []
+   "objects": [
+    {
+     "name": "the phone with blank speech bubbles",
+     "role": "subject",
+     "word": null,
+     "box": [
+      159.7,
+      425.8,
+      354.8,
+      496.7
+     ],
+     "why": null
+    },
+    {
+     "name": "the thought clouds from the head",
+     "role": "detail",
+     "word": null,
+     "box": [
+      975.7,
+      53.2,
+      1685.3,
+      257.2
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": null,
+     "why": "точка, а не предмет"
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      1153.1,
+      221.8,
+      1507.9,
+      425.8
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      1099.9,
+      221.8,
+      1703.0,
+      496.7
+     ],
+     "why": null
+    }
+   ]
   },
   {
    "index": 3,
@@ -108,7 +281,63 @@
    "source": "library",
    "chosen": "lib_2026-10-27_gen_cx_gpt-image-2_00c70140.png",
    "path": "frames/004.png",
-   "objects": [],
+   "objects": [
+    {
+     "name": "the blank sheet of paper",
+     "role": "detail",
+     "word": null,
+     "box": [
+      535.9,
+      205.4,
+      704.3,
+      410.8
+     ],
+     "why": null
+    },
+    {
+     "name": "the cup of tea with no steam",
+     "role": "detail",
+     "word": null,
+     "box": null,
+     "why": "не найден"
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1025.8,
+      493.0,
+      1132.9,
+      605.9
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      306.2,
+      256.8,
+      689.0,
+      534.0
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      306.2,
+      256.8,
+      1224.8,
+      821.6
+     ],
+     "why": null
+    }
+   ],
    "plan_sig": "6512977f8905f847d561"
   },
   {
@@ -122,7 +351,63 @@
    "source": "library",
    "chosen": "lib_2026-10-27_gen_cx_gpt-image-2_70857920.png",
    "path": "frames/005.png",
-   "objects": [],
+   "objects": [
+    {
+     "name": "the pen in the paw",
+     "role": "detail",
+     "word": null,
+     "box": [
+      404.2,
+      570.0,
+      538.9,
+      775.4
+     ],
+     "why": null
+    },
+    {
+     "name": "the phone lying face down",
+     "role": "detail",
+     "word": null,
+     "box": null,
+     "why": "не найден"
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      933.9,
+      228.0,
+      1082.4,
+      451.9
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      367.4,
+      143.8,
+      918.6,
+      616.2
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      306.2,
+      143.8,
+      1163.6,
+      718.9
+     ],
+     "why": null
+    }
+   ],
    "plan_sig": "bd1ed465111217d46764"
   },
   {
@@ -155,7 +440,44 @@
      "defects": null
     }
    },
-   "objects": []
+   "objects": [
+    {
+     "name": "the phone in the paw",
+     "role": "subject",
+     "word": null,
+     "box": [
+      230.8,
+      149.5,
+      478.2,
+      557.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the phone face down",
+     "role": "detail",
+     "word": null,
+     "box": [
+      865.6,
+      305.2,
+      1216.0,
+      518.8
+     ],
+     "why": null
+    },
+    {
+     "name": "the phone in the other room",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1690.0,
+      202.2,
+      1813.7,
+      228.9
+     ],
+     "why": null
+    }
+   ]
   },
   {
    "index": 8,
@@ -187,7 +509,68 @@
      "defects": null
     }
    },
-   "objects": []
+   "objects": [
+    {
+     "name": "the face down phone",
+     "role": "subject",
+     "word": null,
+     "box": [
+      467.0,
+      770.2,
+      1022.7,
+      950.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the hesitating paw",
+     "role": "detail",
+     "word": null,
+     "box": [
+      459.3,
+      616.2,
+      704.3,
+      770.2
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1247.8,
+      261.9,
+      1324.3,
+      410.8
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      413.4,
+      61.6,
+      1102.3,
+      657.3
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      398.1,
+      51.4,
+      1454.5,
+      780.5
+     ],
+     "why": null
+    }
+   ]
   },
   {
    "index": 9,
@@ -219,7 +602,32 @@
      "defects": null
     }
    },
-   "objects": []
+   "objects": [
+    {
+     "name": "the researcher with the clipboard",
+     "role": "subject",
+     "word": null,
+     "box": [
+      790.0,
+      148.9,
+      895.6,
+      451.9
+     ],
+     "why": null
+    },
+    {
+     "name": "the rows of desks",
+     "role": "detail",
+     "word": null,
+     "box": [
+      30.6,
+      308.1,
+      1500.4,
+      975.6
+     ],
+     "why": null
+    }
+   ]
   },
   {
    "index": 10,
@@ -251,7 +659,39 @@
      "defects": null
     }
    },
-   "objects": []
+   "objects": [
+    {
+     "name": "the phone face down on the desk",
+     "role": "subject",
+     "word": null,
+     "box": [
+      123.7,
+      515.0,
+      263.8,
+      550.9
+     ],
+     "why": null
+    },
+    {
+     "name": "the bag on the chair",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1187.1,
+      396.8,
+      1298.4,
+      557.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the phone in the other room",
+     "role": "detail",
+     "word": null,
+     "box": null,
+     "why": "точка, а не предмет"
+    }
+   ]
   },
   {
    "index": 12,
@@ -283,7 +723,32 @@
      "defects": null
     }
    },
-   "objects": []
+   "objects": [
+    {
+     "name": "the thought cloud with a phone",
+     "role": "subject",
+     "word": null,
+     "box": [
+      199.0,
+      63.7,
+      401.1,
+      205.4
+     ],
+     "why": null
+    },
+    {
+     "name": "the calm student",
+     "role": "detail",
+     "word": null,
+     "box": [
+      888.0,
+      200.3,
+      1255.4,
+      955.1
+     ],
+     "why": null
+    }
+   ]
   },
   {
    "index": 13,
@@ -315,7 +780,63 @@
      "defects": null
     }
    },
-   "objects": []
+   "objects": [
+    {
+     "name": "the face down phone",
+     "role": "subject",
+     "word": null,
+     "box": [
+      1139.1,
+      761.0,
+      1394.7,
+      852.4
+     ],
+     "why": null
+    },
+    {
+     "name": "the paper and pencil",
+     "role": "detail",
+     "word": null,
+     "box": [
+      454.7,
+      718.9,
+      903.3,
+      833.9
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": null,
+     "why": "точка, а не предмет"
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      474.6,
+      131.5,
+      995.1,
+      575.1
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      428.7,
+      123.2,
+      1224.8,
+      718.9
+     ],
+     "why": null
+    }
+   ]
   },
   {
    "index": 14,
@@ -347,7 +868,68 @@
      "defects": null
     }
    },
-   "objects": []
+   "objects": [
+    {
+     "name": "the pot with the phone and the lifted lid",
+     "role": "subject",
+     "word": null,
+     "box": [
+      979.8,
+      503.2,
+      1423.8,
+      790.8
+     ],
+     "why": null
+    },
+    {
+     "name": "the sideways eyes",
+     "role": "detail",
+     "word": null,
+     "box": [
+      520.5,
+      369.7,
+      903.3,
+      513.5
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      245.0,
+      410.8,
+      329.2,
+      482.7
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      428.7,
+      123.2,
+      918.6,
+      534.0
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      183.7,
+      123.2,
+      918.6,
+      718.9
+     ],
+     "why": null
+    }
+   ]
   },
   {
    "index": 16,
@@ -379,7 +961,32 @@
      "defects": null
     }
    },
-   "objects": []
+   "objects": [
+    {
+     "name": "the phone with the blank bubble",
+     "role": "subject",
+     "word": null,
+     "box": [
+      967.7,
+      727.0,
+      1167.4,
+      819.2
+     ],
+     "why": null
+    },
+    {
+     "name": "the thought cloud with a phone",
+     "role": "detail",
+     "word": null,
+     "box": [
+      860.2,
+      97.3,
+      1136.6,
+      327.7
+     ],
+     "why": null
+    }
+   ]
   },
   {
    "index": 18,
@@ -411,7 +1018,68 @@
      "defects": null
     }
    },
-   "objects": []
+   "objects": [
+    {
+     "name": "the phone in the paws",
+     "role": "subject",
+     "word": null,
+     "box": [
+      675.8,
+      586.8,
+      806.4,
+      766.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the doorway",
+     "role": "detail",
+     "word": null,
+     "box": [
+      169.0,
+      0.0,
+      614.4,
+      880.6
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      353.3,
+      460.8,
+      445.4,
+      573.4
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      506.9,
+      276.5,
+      921.6,
+      614.4
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      337.9,
+      276.5,
+      921.6,
+      901.1
+     ],
+     "why": null
+    }
+   ]
   },
   {
    "index": 19,
@@ -424,7 +1092,53 @@
    "source": "same:7",
    "chosen": "a7edca3a963e1e4b5b43.png",
    "path": "frames/020.png",
-   "objects": [],
+   "objects": [
+    {
+     "name": "a phone",
+     "role": "subject",
+     "word": null,
+     "box": [
+      247.3,
+      152.6,
+      478.2,
+      557.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the hovering paw above the phone",
+     "role": "detail",
+     "word": null,
+     "box": null,
+     "why": "не найден"
+    },
+    {
+     "name": "the phone lying face up",
+     "role": "detail",
+     "word": null,
+     "box": [
+      886.2,
+      305.2,
+      1216.0,
+      457.8
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": null,
+     "why": "не найден"
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": null,
+     "why": "не найден"
+    }
+   ],
    "plan_sig": "d972f8b4189c2874adf4"
   },
   {
@@ -438,7 +1152,58 @@
    "source": "same:1",
    "chosen": "lib_2026-10-27_gen_cx_gpt-image-2_eb2640c6.png",
    "path": "frames/021.png",
-   "objects": [],
+   "objects": [
+    {
+     "name": "the open fridge door",
+     "role": "detail",
+     "word": null,
+     "box": [
+      811.4,
+      77.0,
+      1377.9,
+      883.2
+     ],
+     "why": null
+    },
+    {
+     "name": "the phone on the far counter",
+     "role": "detail",
+     "word": null,
+     "box": null,
+     "why": "не найден"
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": null,
+     "why": "точка, а не предмет"
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      413.4,
+      277.3,
+      796.1,
+      616.2
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      214.3,
+      277.3,
+      834.4,
+      842.1
+     ],
+     "why": null
+    }
+   ],
    "plan_sig": "d79691be52cea83fa35d"
   },
   {
@@ -452,7 +1217,68 @@
    "source": "library",
    "chosen": "lib_2026-10-28_gen_cx_gpt-image-2_39581659.png",
    "path": "frames/022.png",
-   "objects": [],
+   "objects": [
+    {
+     "name": "the open fridge",
+     "role": "detail",
+     "word": null,
+     "box": [
+      0.0,
+      84.5,
+      337.9,
+      1144.3
+     ],
+     "why": null
+    },
+    {
+     "name": "the empty paws",
+     "role": "detail",
+     "word": null,
+     "box": [
+      291.8,
+      752.6,
+      409.6,
+      921.6
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      199.7,
+      921.6,
+      256.0,
+      1013.8
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      297.0,
+      568.3,
+      512.0,
+      921.6
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      153.6,
+      568.3,
+      512.0,
+      1305.6
+     ],
+     "why": null
+    }
+   ],
    "plan_sig": "b8c5e1a3fff4d23ac2c7"
   },
   {
@@ -485,7 +1311,32 @@
      "defects": null
     }
    },
-   "objects": []
+   "objects": [
+    {
+     "name": "the tap on the shoulder",
+     "role": "subject",
+     "word": null,
+     "box": [
+      359.5,
+      343.2,
+      462.2,
+      403.3
+     ],
+     "why": null
+    },
+    {
+     "name": "the person turning away alone",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1247.1,
+      257.4,
+      1522.2,
+      557.7
+     ],
+     "why": null
+    }
+   ]
   },
   {
    "index": 24,
@@ -517,7 +1368,32 @@
      "defects": null
     }
    },
-   "objects": []
+   "objects": [
+    {
+     "name": "the thought clouds",
+     "role": "subject",
+     "word": null,
+     "box": [
+      122.5,
+      256.8,
+      1469.8,
+      410.8
+     ],
+     "why": null
+    },
+    {
+     "name": "the person at the desk",
+     "role": "detail",
+     "word": null,
+     "box": [
+      459.3,
+      431.3,
+      612.4,
+      636.7
+     ],
+     "why": null
+    }
+   ]
   },
   {
    "index": 26,
@@ -549,7 +1425,68 @@
      "defects": null
     }
    },
-   "objects": []
+   "objects": [
+    {
+     "name": "the three clouds above the character",
+     "role": "subject",
+     "word": null,
+     "box": [
+      599.0,
+      184.3,
+      921.6,
+      327.7
+     ],
+     "why": null
+    },
+    {
+     "name": "the people on the bench",
+     "role": "detail",
+     "word": null,
+     "box": [
+      30.7,
+      307.2,
+      1505.3,
+      921.6
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      921.6,
+      430.1,
+      983.0,
+      532.5
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      599.0,
+      337.9,
+      890.9,
+      532.5
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      583.7,
+      327.7,
+      998.4,
+      737.3
+     ],
+     "why": null
+    }
+   ]
   },
   {
    "index": 28,
@@ -581,7 +1518,68 @@
      "defects": null
     }
    },
-   "objects": []
+   "objects": [
+    {
+     "name": "the flower pot and the watering can",
+     "role": "subject",
+     "word": null,
+     "box": [
+      964.5,
+      205.4,
+      1469.8,
+      575.1
+     ],
+     "why": null
+    },
+    {
+     "name": "the lifted pencil",
+     "role": "detail",
+     "word": null,
+     "box": [
+      505.2,
+      462.1,
+      643.0,
+      698.4
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      275.6,
+      349.2,
+      329.2,
+      410.8
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      428.7,
+      123.2,
+      918.6,
+      534.0
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      183.7,
+      123.2,
+      918.6,
+      698.4
+     ],
+     "why": null
+    }
+   ]
   },
   {
    "index": 29,
@@ -613,7 +1611,68 @@
      "defects": null
     }
    },
-   "objects": []
+   "objects": [
+    {
+     "name": "the overflowing pot",
+     "role": "subject",
+     "word": null,
+     "box": [
+      310.8,
+      406.7,
+      505.2,
+      641.9
+     ],
+     "why": null
+    },
+    {
+     "name": "the puddle",
+     "role": "detail",
+     "word": null,
+     "box": [
+      306.2,
+      821.6,
+      1071.7,
+      1001.3
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1255.4,
+      410.8,
+      1332.0,
+      513.5
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      734.9,
+      102.7,
+      1163.6,
+      462.1
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      704.3,
+      82.2,
+      1377.9,
+      852.4
+     ],
+     "why": null
+    }
+   ]
   },
   {
    "index": 30,
@@ -645,7 +1704,63 @@
      "defects": null
     }
    },
-   "objects": []
+   "objects": [
+    {
+     "name": "the small door in the brain",
+     "role": "subject",
+     "word": null,
+     "box": [
+      486.9,
+      451.9,
+      612.4,
+      821.6
+     ],
+     "why": null
+    },
+    {
+     "name": "the stepping character",
+     "role": "detail",
+     "word": null,
+     "box": [
+      612.4,
+      451.9,
+      918.6,
+      873.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": null,
+     "why": "точка, а не предмет"
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      673.6,
+      451.9,
+      918.6,
+      718.9
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      398.1,
+      451.9,
+      918.6,
+      873.0
+     ],
+     "why": null
+    }
+   ]
   },
   {
    "index": 31,
@@ -658,7 +1773,39 @@
    "source": "library",
    "chosen": "lib_2026-10-27_gen_cx_gpt-image-2_bfd71c98.png",
    "path": "frames/032.png",
-   "objects": [],
+   "objects": [
+    {
+     "name": "a phone",
+     "role": "subject",
+     "word": null,
+     "box": [
+      826.7,
+      493.0,
+      979.8,
+      698.4
+     ],
+     "why": null
+    },
+    {
+     "name": "the blank glowing screen",
+     "role": "detail",
+     "word": null,
+     "box": [
+      839.0,
+      503.2,
+      964.5,
+      677.8
+     ],
+     "why": null
+    },
+    {
+     "name": "the nearest tiny figures",
+     "role": "detail",
+     "word": null,
+     "box": null,
+     "why": "не найден"
+    }
+   ],
    "plan_sig": "bc2806aff10f9ad4bbd2"
   },
   {
@@ -691,7 +1838,68 @@
      "defects": null
     }
    },
-   "objects": []
+   "objects": [
+    {
+     "name": "the huge sheet",
+     "role": "subject",
+     "word": null,
+     "box": [
+      183.7,
+      131.5,
+      826.7,
+      907.9
+     ],
+     "why": null
+    },
+    {
+     "name": "the small card",
+     "role": "detail",
+     "word": null,
+     "box": [
+      860.4,
+      636.7,
+      1022.7,
+      741.5
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1279.9,
+      503.2,
+      1362.6,
+      616.2
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      839.0,
+      338.9,
+      1224.8,
+      657.3
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      826.7,
+      338.9,
+      1423.8,
+      914.0
+     ],
+     "why": null
+    }
+   ]
   },
   {
    "index": 33,
@@ -704,7 +1912,68 @@
    "source": "library",
    "chosen": "lib_2026-10-27_gen_cx_gpt-image-2_8319c7a6.png",
    "path": "frames/034.png",
-   "objects": [],
+   "objects": [
+    {
+     "name": "a cat",
+     "role": "subject",
+     "word": null,
+     "box": [
+      428.7,
+      225.9,
+      734.9,
+      718.9
+     ],
+     "why": null
+    },
+    {
+     "name": "the limp paw",
+     "role": "detail",
+     "word": null,
+     "box": [
+      566.5,
+      534.0,
+      689.0,
+      616.2
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      275.6,
+      410.8,
+      352.1,
+      513.5
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      428.7,
+      225.9,
+      734.9,
+      482.7
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      275.6,
+      225.9,
+      734.9,
+      718.9
+     ],
+     "why": null
+    }
+   ],
    "plan_sig": "0fa21e0e125886076172"
   },
   {
@@ -737,7 +2006,68 @@
      "defects": null
     }
    },
-   "objects": []
+   "objects": [
+    {
+     "name": "the row of small cards",
+     "role": "subject",
+     "word": null,
+     "box": [
+      275.6,
+      718.9,
+      1010.5,
+      801.1
+     ],
+     "why": null
+    },
+    {
+     "name": "the scissors",
+     "role": "detail",
+     "word": null,
+     "box": [
+      612.4,
+      554.6,
+      765.5,
+      667.5
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1056.4,
+      256.8,
+      1178.9,
+      390.3
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      459.3,
+      123.2,
+      1010.5,
+      534.0
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      428.7,
+      123.2,
+      1270.7,
+      667.5
+     ],
+     "why": null
+    }
+   ]
   },
   {
    "index": 36,
@@ -769,7 +2099,63 @@
      "defects": null
     }
    },
-   "objects": []
+   "objects": [
+    {
+     "name": "the laptop screen",
+     "role": "subject",
+     "word": null,
+     "box": [
+      199.0,
+      410.8,
+      643.0,
+      708.6
+     ],
+     "why": null
+    },
+    {
+     "name": "the timer",
+     "role": "detail",
+     "word": null,
+     "box": null,
+     "why": "не найден"
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1209.5,
+      256.8,
+      1316.7,
+      410.8
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      673.6,
+      123.2,
+      1163.6,
+      534.0
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      673.6,
+      123.2,
+      1439.1,
+      739.4
+     ],
+     "why": null
+    }
+   ]
   },
   {
    "index": 37,
@@ -782,7 +2168,58 @@
    "source": "library",
    "chosen": "lib_2026-10-25_gen_cx_gpt-image-2_3210e6c7.png",
    "path": "frames/038.png",
-   "objects": [],
+   "objects": [
+    {
+     "name": "a kitchen timer",
+     "role": "subject",
+     "word": null,
+     "box": null,
+     "why": "не найден"
+    },
+    {
+     "name": "the dial of the kitchen timer",
+     "role": "detail",
+     "word": null,
+     "box": null,
+     "why": "не найден"
+    },
+    {
+     "name": "the cat's folded paws",
+     "role": "detail",
+     "word": null,
+     "box": [
+      301.1,
+      610.3,
+      571.4,
+      696.3
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      261.1,
+      225.3,
+      645.1,
+      573.4
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      61.4,
+      225.3,
+      645.1,
+      696.3
+     ],
+     "why": null
+    }
+   ],
    "plan_sig": "94dc34a365d563a8a9b0"
   },
   {
@@ -796,7 +2233,75 @@
    "source": "library",
    "chosen": "lib_2026-10-28_gen_cx_gpt-image-2_a25265fc.png",
    "path": "frames/041.png",
-   "objects": [],
+   "objects": [
+    {
+     "name": "a cat",
+     "role": "subject",
+     "word": null,
+     "box": [
+      204.8,
+      691.2,
+      716.8,
+      1259.5
+     ],
+     "why": null
+    },
+    {
+     "name": "the small slip on the desk",
+     "role": "detail",
+     "word": null,
+     "box": null,
+     "why": "не найден"
+    },
+    {
+     "name": "the kitchen doorway",
+     "role": "detail",
+     "word": null,
+     "box": [
+      133.1,
+      30.7,
+      880.6,
+      1321.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      235.5,
+      844.8,
+      286.7,
+      937.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      348.2,
+      691.2,
+      655.4,
+      1075.2
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      204.8,
+      691.2,
+      716.8,
+      1259.5
+     ],
+     "why": null
+    }
+   ],
    "plan_sig": "632e1870cb13aea946bc"
   },
   {
@@ -829,7 +2334,63 @@
      "defects": null
     }
    },
-   "objects": []
+   "objects": [
+    {
+     "name": "the boomerang",
+     "role": "subject",
+     "word": null,
+     "box": [
+      1304.4,
+      45.2,
+      1482.0,
+      258.8
+     ],
+     "why": null
+    },
+    {
+     "name": "the dotted curve",
+     "role": "detail",
+     "word": null,
+     "box": null,
+     "why": "внутри пустая бумага"
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      237.3,
+      246.5,
+      367.4,
+      390.3
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      444.0,
+      215.7,
+      918.6,
+      575.1
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      76.5,
+      215.7,
+      964.5,
+      873.0
+     ],
+     "why": null
+    }
+   ]
   },
   {
    "index": 43,
@@ -842,7 +2403,56 @@
    "source": "library",
    "chosen": "lib_2026-10-27_gen_cx_gpt-image-2_bb675af3.png",
    "path": "frames/044.png",
-   "objects": [],
+   "objects": [
+    {
+     "name": "an empty chair",
+     "role": "subject",
+     "word": null,
+     "box": [
+      30.7,
+      675.8,
+      537.6,
+      1024.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the phone on the desk",
+     "role": "detail",
+     "word": null,
+     "box": [
+      115.2,
+      506.9,
+      460.8,
+      716.8
+     ],
+     "why": null
+    },
+    {
+     "name": "the empty chair",
+     "role": "detail",
+     "word": null,
+     "box": [
+      30.7,
+      675.8,
+      537.6,
+      1024.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the cold cup of tea",
+     "role": "detail",
+     "word": null,
+     "box": [
+      376.3,
+      583.7,
+      460.8,
+      655.4
+     ],
+     "why": null
+    }
+   ],
    "plan_sig": "8848d35153cc0b2aef99"
   },
   {
@@ -875,7 +2485,63 @@
      "defects": null
     }
    },
-   "objects": []
+   "objects": [
+    {
+     "name": "the phone at the ear",
+     "role": "subject",
+     "word": null,
+     "box": [
+      952.3,
+      389.1,
+      1075.2,
+      532.5
+     ],
+     "why": null
+    },
+    {
+     "name": "the laptop",
+     "role": "detail",
+     "word": null,
+     "box": [
+      169.0,
+      450.6,
+      752.6,
+      757.8
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": null,
+     "why": "точка, а не предмет"
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      599.0,
+      143.4,
+      1075.2,
+      532.5
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      583.7,
+      143.4,
+      1336.3,
+      675.8
+     ],
+     "why": null
+    }
+   ]
   },
   {
    "index": 45,
@@ -907,7 +2573,68 @@
      "defects": null
     }
    },
-   "objects": []
+   "objects": [
+    {
+     "name": "the confused face",
+     "role": "subject",
+     "word": null,
+     "box": [
+      765.5,
+      410.8,
+      857.4,
+      493.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the cup of tea",
+     "role": "detail",
+     "word": null,
+     "box": [
+      750.2,
+      554.6,
+      872.7,
+      677.8
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1163.6,
+      410.8,
+      1224.8,
+      482.7
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      581.8,
+      133.5,
+      1071.7,
+      534.0
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      566.5,
+      133.5,
+      1301.3,
+      718.9
+     ],
+     "why": null
+    }
+   ]
   },
   {
    "index": 46,
@@ -920,7 +2647,34 @@
    "source": "library",
    "chosen": "lib_2026-10-25_gen_cx_gpt-image-2_53e40c7b.png",
    "path": "frames/047.png",
-   "objects": [],
+   "objects": [
+    {
+     "name": "a laptop",
+     "role": "subject",
+     "word": null,
+     "box": null,
+     "why": "не найден"
+    },
+    {
+     "name": "the closed laptop lid",
+     "role": "detail",
+     "word": null,
+     "box": null,
+     "why": "не найден"
+    },
+    {
+     "name": "the cold cup of tea",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1105.4,
+      593.6,
+      1313.6,
+      792.8
+     ],
+     "why": null
+    }
+   ],
    "plan_sig": "92b5e5736c8ebd182dae"
   },
   {
@@ -953,7 +2707,68 @@
      "defects": null
     }
    },
-   "objects": []
+   "objects": [
+    {
+     "name": "the fallen threads",
+     "role": "subject",
+     "word": null,
+     "box": [
+      275.6,
+      641.9,
+      1431.5,
+      960.2
+     ],
+     "why": null
+    },
+    {
+     "name": "the paws gathering",
+     "role": "detail",
+     "word": null,
+     "box": [
+      673.6,
+      647.0,
+      1010.5,
+      821.6
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1209.5,
+      513.5,
+      1270.7,
+      605.9
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      604.7,
+      231.1,
+      1102.3,
+      657.3
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      597.1,
+      225.9,
+      1332.0,
+      862.7
+     ],
+     "why": null
+    }
+   ]
   },
   {
    "index": 49,
@@ -985,7 +2800,32 @@
      "defects": null
     }
    },
-   "objects": []
+   "objects": [
+    {
+     "name": "the sticky note",
+     "role": "subject",
+     "word": null,
+     "box": [
+      543.5,
+      698.4,
+      696.6,
+      770.2
+     ],
+     "why": null
+    },
+    {
+     "name": "the ringing phone",
+     "role": "detail",
+     "word": null,
+     "box": [
+      964.5,
+      688.1,
+      1163.6,
+      811.3
+     ],
+     "why": null
+    }
+   ]
   },
   {
    "index": 50,
@@ -1017,7 +2857,68 @@
      "defects": null
     }
    },
-   "objects": []
+   "objects": [
+    {
+     "name": "the sticky note on the laptop",
+     "role": "subject",
+     "word": null,
+     "box": [
+      932.4,
+      435.2,
+      1059.8,
+      558.1
+     ],
+     "why": null
+    },
+    {
+     "name": "the paw",
+     "role": "detail",
+     "word": null,
+     "box": [
+      860.2,
+      450.6,
+      960.0,
+      532.5
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      92.2,
+      297.0,
+      230.4,
+      460.8
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      330.2,
+      133.1,
+      860.2,
+      614.4
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      30.7,
+      133.1,
+      952.3,
+      849.9
+     ],
+     "why": null
+    }
+   ]
   },
   {
    "index": 51,
@@ -1049,7 +2950,68 @@
      "defects": null
     }
    },
-   "objects": []
+   "objects": [
+    {
+     "name": "the sticky note",
+     "role": "subject",
+     "word": null,
+     "box": [
+      650.7,
+      708.6,
+      839.0,
+      788.7
+     ],
+     "why": null
+    },
+    {
+     "name": "the phone at the ear",
+     "role": "detail",
+     "word": null,
+     "box": [
+      944.6,
+      374.9,
+      1050.3,
+      575.1
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      321.5,
+      256.8,
+      428.7,
+      390.3
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      535.9,
+      123.2,
+      1056.4,
+      575.1
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      260.3,
+      123.2,
+      1071.7,
+      718.9
+     ],
+     "why": null
+    }
+   ]
   },
   {
    "index": 52,
@@ -1062,7 +3024,75 @@
    "source": "library",
    "chosen": "lib_2026-10-20_videos_01_sdvg_pismo_frames_005_8d288020.png",
    "path": "frames/053.png",
-   "objects": [],
+   "objects": [
+    {
+     "name": "a slip of paper",
+     "role": "subject",
+     "word": null,
+     "box": [
+      647.2,
+      373.1,
+      824.1,
+      530.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the slip in the paw",
+     "role": "detail",
+     "word": null,
+     "box": [
+      647.2,
+      373.1,
+      824.1,
+      530.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the threads lying on the table",
+     "role": "detail",
+     "word": null,
+     "box": null,
+     "why": "не найден"
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": [
+      280.6,
+      84.8,
+      436.1,
+      398.6
+     ],
+     "why": null
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      493.0,
+      127.2,
+      821.6,
+      407.0
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      353.9,
+      127.2,
+      821.6,
+      678.4
+     ],
+     "why": null
+    }
+   ],
    "plan_sig": "771ffe5ddd7003b26ff3"
   },
   {
@@ -1076,7 +3106,29 @@
    "source": "library",
    "chosen": "lib_2026-10-23_videos_01_sdvg_pismo_reel_gen_r1_phone_e3b862b6.png",
    "path": "frames/055.png",
-   "objects": [],
+   "objects": [
+    {
+     "name": "a crowd",
+     "role": "subject",
+     "word": null,
+     "box": null,
+     "why": "не найден"
+    },
+    {
+     "name": "the raised hands",
+     "role": "detail",
+     "word": null,
+     "box": null,
+     "why": "не найден"
+    },
+    {
+     "name": "the front row of figures",
+     "role": "detail",
+     "word": null,
+     "box": null,
+     "why": "не найден"
+    }
+   ],
    "plan_sig": "da0acc9517b13c9e4082"
   },
   {
@@ -1090,7 +3142,44 @@
    "source": "same:42",
    "chosen": "200ba30876907543132f.png",
    "path": "frames/056.png",
-   "objects": [],
+   "objects": [
+    {
+     "name": "flame on tail tip",
+     "role": "detail",
+     "word": null,
+     "box": [
+      232.7,
+      246.5,
+      367.4,
+      390.3
+     ],
+     "why": null
+    },
+    {
+     "name": "raised paw with pads",
+     "role": "detail",
+     "word": null,
+     "box": [
+      857.4,
+      534.0,
+      956.9,
+      616.2
+     ],
+     "why": null
+    },
+    {
+     "name": "flying boomerang",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1309.0,
+      61.6,
+      1485.1,
+      256.8
+     ],
+     "why": null
+    }
+   ],
    "plan_sig": "de2dcccbce85d9df3b90"
   },
   {
@@ -1104,7 +3193,65 @@
    "source": "library",
    "chosen": "lib_2026-10-07_look_style_1_desk_1c1c5a17.jpg",
    "path": "frames/058.png",
-   "objects": [],
+   "objects": [
+    {
+     "name": "a slip of paper",
+     "role": "subject",
+     "word": null,
+     "box": [
+      270.5,
+      593.6,
+      429.8,
+      653.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the slip of paper on the desk",
+     "role": "detail",
+     "word": null,
+     "box": [
+      270.5,
+      593.6,
+      429.8,
+      653.0
+     ],
+     "why": null
+    },
+    {
+     "name": "the closed laptop",
+     "role": "detail",
+     "word": null,
+     "box": [
+      467.7,
+      339.2,
+      821.6,
+      610.6
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": null,
+     "why": "не найден"
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": null,
+     "why": "не найден"
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": null,
+     "why": "не найден"
+    }
+   ],
    "plan_sig": "476f75991577bf2ca988"
   },
   {
@@ -1137,7 +3284,44 @@
      "defects": null
     }
    },
-   "objects": []
+   "objects": [
+    {
+     "name": "the door with the phone",
+     "role": "subject",
+     "word": null,
+     "box": [
+      335.3,
+      277.3,
+      587.9,
+      677.8
+     ],
+     "why": null
+    },
+    {
+     "name": "the small card",
+     "role": "detail",
+     "word": null,
+     "box": [
+      699.7,
+      513.5,
+      956.9,
+      662.4
+     ],
+     "why": null
+    },
+    {
+     "name": "the sticky note",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1062.5,
+      498.1,
+      1258.5,
+      669.6
+     ],
+     "why": null
+    }
+   ]
   },
   {
    "index": 59,
@@ -1150,7 +3334,63 @@
    "source": "same:1",
    "chosen": "lib_2026-10-27_gen_cx_gpt-image-2_eb2640c6.png",
    "path": "frames/060.png",
-   "objects": [],
+   "objects": [
+    {
+     "name": "the glowing open fridge",
+     "role": "detail",
+     "word": null,
+     "box": [
+      1041.1,
+      61.6,
+      1377.9,
+      883.2
+     ],
+     "why": null
+    },
+    {
+     "name": "the tall shut door",
+     "role": "detail",
+     "word": null,
+     "box": [
+      811.4,
+      30.8,
+      1071.7,
+      821.6
+     ],
+     "why": null
+    },
+    {
+     "name": "the flame on the tip of the tail of a black cartoon cat",
+     "role": "detail",
+     "word": null,
+     "box": null,
+     "why": "точка, а не предмет"
+    },
+    {
+     "name": "the head of a black cartoon cat",
+     "role": "hero_head",
+     "word": null,
+     "box": [
+      428.7,
+      277.3,
+      796.1,
+      636.7
+     ],
+     "why": null
+    },
+    {
+     "name": "a black cartoon cat",
+     "role": "hero",
+     "word": null,
+     "box": [
+      214.3,
+      277.3,
+      842.0,
+      842.1
+     ],
+     "why": null
+    }
+   ],
    "plan_sig": "20a7139fb11e86550c91"
   }
  ]
