@@ -63,8 +63,8 @@ def kitchen():
         xs = np.where(row)[0]
         runs = np.split(xs, np.where(np.diff(xs) > 1)[0] + 1)
         for r in runs:
-            l, rr = r[0] - 1, r[-1] + 1
-            cl = np.median(A[y, max(0, l - 6):l + 1], axis=0) if l >= 0 else None
+            lft, rr = r[0] - 1, r[-1] + 1
+            cl = np.median(A[y, max(0, lft - 6):lft + 1], axis=0) if lft >= 0 else None
             cr = np.median(A[y, rr:rr + 7], axis=0) if rr < A.shape[1] else None
             cl = cr if cl is None else cl; cr = cl if cr is None else cr
             if rr >= EDGE_X[0] - 8:                     # правый край — дверца холодильника: её серый не тянуть через стену

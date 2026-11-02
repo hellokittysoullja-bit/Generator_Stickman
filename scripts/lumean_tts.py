@@ -614,6 +614,17 @@ def process_section(api_key, template_id, temp_dir, idx, name, text, episode_nam
     result = {"section": name, "order_id": None, "status": None,
               "audio_path": None, "alignment": None, "reason": None}
     reused = bool(order_id)
+    if order_id == "local":      # секция уже скачана прошлым прогоном: хранилище Lumean держит файлы не вечно
+        audio_path = os.path.join(temp_dir, f"section_{idx:02d}.mp3")
+        raw = os.path.join(temp_dir, f"section_{idx:02d}_alignment.csv")
+        if not os.path.exists(audio_path):
+            result["reason"] = f"--orders=local, но {audio_path} нет"
+            print(f"    [{name}] {result['reason']}")
+            return result
+        result.update(order_id="local", status="completed", audio_path=audio_path,
+                      alignment=try_parse_alignment(open(raw, "rb").read()) if os.path.exists(raw) else None)
+        print(f"    [{name}] взята скачанная раньше секция: {audio_path}")
+        return result
     try:
         order = {"id": order_id} if order_id else create_order(
             api_key, template_id, text, name=f"{episode_name} — {name}"[:120], confirm_payg=confirm_payg)

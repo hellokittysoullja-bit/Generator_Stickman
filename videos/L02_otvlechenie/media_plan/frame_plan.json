@@ -48,9 +48,9 @@
     "issues": [],
     "rewritten": false
    },
-   "anim": "fridge_light",
    "absorb": false,
-   "board": "lib"
+   "board": "lib",
+   "anim": "fridge_light"
   },
   {
    "index": 1,
@@ -83,9 +83,9 @@
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
    },
-   "accent": "не слабая воля",
    "absorb": false,
-   "board": "new"
+   "board": "new",
+   "accent": "не слабая воля"
   },
   {
    "index": 2,
@@ -782,9 +782,9 @@
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
    },
-   "key_thought": "другая комната",
    "absorb": false,
-   "board": "new"
+   "board": "new",
+   "key_thought": "другая комната"
   },
   {
    "index": 19,
@@ -1270,9 +1270,9 @@
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
    },
-   "key_thought": "ищет выход",
    "absorb": false,
-   "board": "new"
+   "board": "new",
+   "key_thought": "ищет выход"
   },
   {
    "index": 31,
@@ -1351,10 +1351,10 @@
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
    },
-   "key_thought": "сделать меньше",
    "absorb": false,
    "board": "new",
-   "hero_state": "bright"
+   "hero_state": "bright",
+   "key_thought": "сделать меньше"
   },
   {
    "index": 33,
@@ -2079,9 +2079,9 @@
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
    },
-   "key_thought": "записка возврата",
    "absorb": false,
-   "board": "new"
+   "board": "new",
+   "key_thought": "записка возврата"
   },
   {
    "index": 51,
@@ -2269,9 +2269,9 @@
    "labels": [],
    "picture": "a simple drawn scene illustrating: Внимание не удерживают, его возвращают.",
    "fallback": true,
-   "key_thought": "его возвращают",
    "absorb": false,
-   "board": "same"
+   "board": "same",
+   "key_thought": "его возвращают"
   },
   {
    "index": 56,

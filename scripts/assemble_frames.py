@@ -206,10 +206,14 @@ def find_audio(video_dir):
     return None
 
 
-def music_file():
-    files = sorted(f for f in glob.glob(os.path.join(env.ROOT, "assets", "music", "*"))
-                   if f.lower().endswith((".mp3", ".flac", ".wav", ".ogg", ".m4a")))
-    return files[0] if files else None
+def music_file(video_dir=None):
+    """Своя дорожка ролика (videos/NN/music/) главнее общей assets/music: у каждого ролика может быть своя музыка."""
+    for d in ([os.path.join(video_dir, "music")] if video_dir else []) + [os.path.join(env.ROOT, "assets", "music")]:
+        files = sorted(f for f in glob.glob(os.path.join(d, "*"))
+                       if f.lower().endswith((".mp3", ".flac", ".wav", ".ogg", ".m4a")))
+        if files:
+            return files[0]
+    return None
 
 
 def main(video_dir):
@@ -417,7 +421,7 @@ def main(video_dir):
 
     # --- звук: цепочка старого генератора
     voice = am.process_voice(audio, os.path.join(work, "voice_processed.wav"))
-    music = music_file()
+    music = music_file(video_dir)
     premix = voice
     if music:
         gain, why = am.music_bed_gain_db(voice, music)

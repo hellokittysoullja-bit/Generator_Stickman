@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=3062, height=1722" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 3062px; height: 1722px; overflow: hidden; background: #faf7f0; }
+      #root { position: relative; width: 3062px; height: 1722px; overflow: hidden; }
+      .layer { position: absolute; left: 0; top: 0; width: 3062px; height: 1722px; }
+      .abs { position: absolute; display: block; }
+      svg.fx { position: absolute; left: 0; top: 0; overflow: visible; }
+      svg.fx path, svg.fx line { fill: none; stroke: #18181a; stroke-linecap: round; stroke-linejoin: round; }
+      .shadow { position: absolute; border-radius: 50%; background: rgba(40, 36, 32, 0.2); filter: blur(14px); }
+      #glow { position: absolute; left: 380px; top: 1240px; width: 1900px; height: 560px; border-radius: 50%;
+              background: radial-gradient(closest-side, rgba(255, 246, 222, 0.85), rgba(255, 246, 222, 0) 100%);
+              mix-blend-mode: screen; }
+      #glowIn { position: absolute; left: 470px; top: 0px; width: 560px; height: 1420px;
+                background: radial-gradient(closest-side, rgba(255, 250, 236, 0.55), rgba(255, 250, 236, 0) 100%);
+                mix-blend-mode: screen; }
+    </style>
+  </head>
+  <body>
+    <!-- Хук L02, кадр 1 «Ты убираешь телефон, выключаешь уведомления, садишься за дело, а через пять минут почему-то
+         стоишь у холодильника?». Сцена — мир кадра 1 сборщика длинного ролика: холст 16:9 ×2 (3062×1722).
+         Стол (библиотека 10) → хлёст → кухня (библиотека 103 без кота); коты и телефон — с листа gen/hook_sheet.png.
+         Время каждого движения — из озвучки: data-times (с от начала фразы), его подставляет anim/fridge_light.py.
+         Камеру хука (anim.hook_cam) и тряску на ударе даёт сборщик, здесь только то, что движется в самом рисунке. -->
+    <div id="root" data-composition-id="main" data-start="0" data-duration="8" data-width="3062" data-height="1722"
+         data-fps="24" data-motion-blur="on" data-layout-allow-overflow data-layout-allow-overlap
+         data-times='{"phone":0.16,"bell":1.4,"strike":1.92,"sit":2.92,"work":3.52,"whip":4.12,"lean":5.12,"hit":6.3}'>
+      <div id="pan" class="layer clip" data-start="0" data-duration="8">
+      <div id="desk" class="layer">
+        <img id="deskBg" class="abs" src="assets/desk.png" style="left:0;top:0" />
+        <div id="phoneMove" class="layer">
+          <img id="phone" class="abs" src="assets/phone.png" style="left:1690px;top:1120px;width:340px" />
+        </div>
+        <div class="shadow" style="left:2200px;top:1650px;width:760px;height:90px"></div>
+        <div id="catSit" class="layer">
+          <div id="catWrite" class="layer">
+            <img id="catDesk" class="abs" src="assets/cat_desk.png" style="left:2120px;top:680px;width:915px" />
+          </div>
+        </div>
+        <svg class="fx" width="3062" height="1722" viewBox="0 0 3062 1722">
+          <g transform="translate(1530 300) scale(1.45)">
+            <g id="bell">
+              <g id="bellRing">
+                <path d="M -78 62 C -78 -6 -70 -86 0 -92 C 70 -86 78 -6 78 62 L 100 86 L -100 86 Z" style="stroke-width:16" />
+                <path d="M -22 104 C -18 128 18 128 22 104" style="stroke-width:16" />
+                <circle cx="0" cy="-104" r="11" fill="#18181a" />
+              </g>
+              <g id="waves">
+                <path d="M -128 -56 C -152 -20 -152 20 -128 56" style="stroke-width:13" />
+                <path d="M 128 -56 C 152 -20 152 20 128 56" style="stroke-width:13" />
+                <path d="M -164 -82 C -200 -30 -200 30 -164 82" style="stroke-width:11" />
+                <path d="M 164 -82 C 200 -30 200 30 164 82" style="stroke-width:11" />
+              </g>
+              <line id="strike" x1="-130" y1="-130" x2="130" y2="140" style="stroke-width:24" />
+            </g>
+          </g>
+        </svg>
+      </div>
+      <div id="kitchen" class="layer" style="left:3062px">
+        <img id="kitchenBg" class="abs" src="assets/kitchen.png" style="left:0;top:0" />
+        <div id="glow"></div>
+        <div id="glowIn"></div>
+        <div id="shadowFridge" class="shadow" style="left:1700px;top:1560px;width:600px;height:80px"></div>
+        <div id="catLean" class="layer">
+          <div id="catStartle" class="layer">
+            <img id="catFridge" class="abs" src="assets/cat_fridge.png" style="left:1480px;top:420px" />
+          </div>
+        </div>
+        <svg class="fx" width="3062" height="1722" viewBox="0 0 3062 1722">
+          <g transform="translate(2300 330)">
+            <g id="excl">
+              <path id="exclStroke" d="M 6 -120 C 2 -60 -2 -20 -4 36" style="stroke-width:26" />
+              <circle id="exclDot" cx="-6" cy="96" r="18" fill="#18181a" />
+            </g>
+          </g>
+          <g id="rays"></g>
+        </svg>
+      </div>
+      </div>
+    </div>
+    <script>
+      const root = document.getElementById("root");
+      const T = JSON.parse(root.dataset.times);
+      const NS = "http://www.w3.org/2000/svg";
+      const SIT_FOOT = "2577px 1745px", FRIDGE_FOOT = "1985px 1601px";
+
+      // удар: короткие штрихи вокруг головы кота у холодильника
+      const rays = [];
+      for (let i = 0; i < 7; i++) {
+        const a = -Math.PI * (0.08 + 0.84 * i / 6);              // верхняя полуокружность
+        const g = document.createElementNS(NS, "g"), m = document.createElementNS(NS, "g"), l = document.createElementNS(NS, "line");
+        g.setAttribute("transform", `translate(${1900 + 380 * Math.cos(a)} ${640 + 330 * Math.sin(a)}) rotate(${(a * 180) / Math.PI})`);
+        l.setAttribute("x1", 0); l.setAttribute("y1", 0); l.setAttribute("x2", 90); l.setAttribute("y2", 0);
+        l.style.strokeWidth = 16;
+        m.appendChild(l); g.appendChild(m); document.getElementById("rays").appendChild(g);
+        rays.push(m);
+      }
+
+      const tl = gsap.timeline({ paused: true });
+      gsap.set("#catSit, #catWrite", { transformOrigin: SIT_FOOT });
+      gsap.set("#catLean, #catStartle", { transformOrigin: FRIDGE_FOOT });
+      gsap.set("#phone", { transformOrigin: "50% 50%" });
+      gsap.set("#bell, #bellRing", { transformOrigin: "0px 0px", svgOrigin: "0 0" });
+      gsap.set("#bellRing", { svgOrigin: "0 -104" });
+      gsap.set("#bell", { scale: 0 });
+      gsap.set("#waves", { opacity: 0 });
+      gsap.set("#strike", { strokeDasharray: 390, strokeDashoffset: 390 });
+      gsap.set("#exclStroke", { strokeDasharray: 170, strokeDashoffset: 170 });
+      gsap.set("#exclDot", { scale: 0, transformOrigin: "50% 50%" });
+      gsap.set("#glow, #glowIn", { opacity: 0 });
+
+      // «убираешь телефон»: лапа уже толкнула — телефон с кадра 0 едет влево по столу, крутится и встаёт у блокнота
+      tl.fromTo("#phoneMove", { x: 0, y: 0 }, { x: -1000, y: 60, duration: 0.95, ease: "power3.out" }, 0);
+      tl.fromTo("#phone", { rotation: -6 }, { rotation: -205, duration: 0.95, ease: "power3.out" }, 0);
+      tl.to("#phone", { rotation: -198, duration: 0.18, ease: "sine.inOut", yoyo: true, repeat: 1 }, 0.95);
+      // кот после толчка: возвращается из наклона к телефону
+      tl.fromTo("#catWrite", { rotation: -3.2, x: -18 }, { rotation: 0, x: 0, duration: 0.45, ease: "back.out(2)" }, 0);
+
+      // «выключаешь уведомления»: колокольчик выскакивает и звенит, его перечёркивают — звон обрывается
+      tl.to("#bell", { scale: 1, duration: 0.22, ease: "back.out(2.6)" }, T.bell);
+      tl.set("#waves", { opacity: 1 }, T.bell + 0.06);
+      tl.fromTo("#bellRing", { rotation: -16 }, { rotation: 16, duration: 0.07, ease: "sine.inOut", yoyo: true,
+                                                 repeat: Math.max(1, Math.round((T.strike - T.bell) / 0.07) - 1) }, T.bell);
+      tl.fromTo("#waves", { scale: 0.92 }, { scale: 1.08, duration: 0.14, ease: "sine.inOut", yoyo: true, svgOrigin: "0 0",
+                                             repeat: Math.max(1, Math.round((T.strike - T.bell) / 0.14) - 1) }, T.bell + 0.06);
+      tl.to("#strike", { strokeDashoffset: 0, duration: 0.18, ease: "power2.out" }, T.strike);
+      tl.to("#bellRing", { rotation: 0, duration: 0.25, ease: "elastic.out(1, 0.4)" }, T.strike + 0.05);
+      tl.to("#waves", { opacity: 0, scale: 0.6, duration: 0.12, ease: "power2.in" }, T.strike + 0.06);
+      tl.to("#bell", { scale: 0.9, duration: 0.1, ease: "power2.out" }, T.strike + 0.18);
+      tl.to("#bell", { scale: 0, opacity: 0, duration: 0.22, ease: "back.in(2)" }, T.sit - 0.3);
+
+      // «садишься за дело»: замах вверх, посадка со сжатием, пружина; потом пишет — лёгкое покачивание
+      tl.to("#catSit", { y: -42, scaleY: 1.04, scaleX: 0.97, duration: 0.13, ease: "power2.out" }, T.sit);
+      tl.to("#catSit", { y: 0, scaleY: 0.93, scaleX: 1.05, duration: 0.11, ease: "power2.in" }, T.sit + 0.13);
+      tl.to("#catSit", { scaleY: 1, scaleX: 1, duration: 0.5, ease: "elastic.out(1, 0.45)" }, T.sit + 0.24);
+      tl.fromTo("#catWrite", { rotation: 0 }, { rotation: -1.6, duration: 0.17, ease: "sine.inOut", yoyo: true,
+                                              repeat: Math.max(1, Math.round((T.whip - T.work) / 0.17) - 1) }, T.work);
+
+      // «а через пять минут»: хлёст — стол улетает влево, кухня въезжает справа (размытие движения — движок)
+      // одна панорама на обе сцены: кухня стоит справа от стола впритык, без пустой бумаги между ними
+      tl.to("#pan", { x: -3062, duration: 0.34, ease: "power3.inOut" }, T.whip);
+      // свет холодильника включается миганием и дышит
+      tl.to("#glow, #glowIn", { opacity: 0.9, duration: 0.05 }, T.whip + 0.42);
+      tl.to("#glow, #glowIn", { opacity: 0.25, duration: 0.05 }, T.whip + 0.5);
+      tl.to("#glow, #glowIn", { opacity: 1, duration: 0.08 }, T.whip + 0.58);
+      tl.to("#glow, #glowIn", { opacity: 0.75, duration: 0.45, ease: "sine.inOut", yoyo: true, repeat: 7 }, T.whip + 0.7);
+      // кот тянется к дверце: покачивается, на «почему-то» — наклон к холодильнику
+      tl.fromTo("#catLean", { rotation: 1.2 }, { rotation: -1.2, duration: 0.42, ease: "sine.inOut", yoyo: true,
+                                               repeat: Math.max(1, Math.round((T.lean - T.whip - 0.3) / 0.42) - 1) }, T.whip + 0.3);
+      tl.to("#catLean", { rotation: -3.4, x: -26, duration: 0.5, ease: "power2.inOut" }, T.lean);
+
+      // «холоди́льника»: пойман — замах 0.1 с, подскок с вытяжением, пружина; «!» и штрихи удара
+      tl.to("#catStartle", { y: 10, scaleY: 0.95, scaleX: 1.04, duration: 0.1, ease: "power2.in" }, T.hit - 0.1);
+      tl.to("#catLean", { rotation: 0, x: 0, duration: 0.12, ease: "power3.out" }, T.hit);
+      tl.to("#catStartle", { y: -82, scaleY: 1.09, scaleX: 0.93, duration: 0.08, ease: "power3.out" }, T.hit);
+      tl.to("#catStartle", { y: 0, scaleY: 1, scaleX: 1, duration: 0.6, ease: "elastic.out(1, 0.4)" }, T.hit + 0.08);
+      tl.to("#shadowFridge", { scaleX: 0.75, opacity: 0.6, duration: 0.08, ease: "power3.out" }, T.hit);
+      tl.to("#shadowFridge", { scaleX: 1, opacity: 1, duration: 0.5, ease: "elastic.out(1, 0.4)" }, T.hit + 0.08);
+      tl.to("#exclStroke", { strokeDashoffset: 0, duration: 0.12, ease: "power2.out" }, T.hit + 0.06);
+      tl.to("#exclDot", { scale: 1, duration: 0.14, ease: "back.out(3)" }, T.hit + 0.16);
+      tl.fromTo("#excl", { rotation: -10, scale: 0.7, svgOrigin: "0 0" }, { rotation: 6, scale: 1, duration: 0.35, ease: "back.out(2.5)" }, T.hit + 0.06);
+      rays.forEach((r, i) => {
+        tl.set(r, { opacity: 0, scaleX: 0, svgOrigin: "0 0" }, 0);
+        tl.set(r, { opacity: 1 }, T.hit + 0.02 + 0.01 * i);
+        tl.to(r, { scaleX: 1, duration: 0.07, ease: "power3.out" }, T.hit + 0.02 + 0.01 * i);
+        tl.to(r, { x: 50, opacity: 0, duration: 0.2, ease: "power2.in" }, T.hit + 0.12);
+      });
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
