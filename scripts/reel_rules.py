@@ -1888,7 +1888,7 @@ def other_reels(root, reel_abs):
     out = []
     for p in sorted(_glob.glob(os.path.join(root, "videos", "*", "reel*", "reel.json"))):
         d = os.path.dirname(p)
-        if os.path.normpath(d) == os.path.normpath(reel_abs):
+        if os.path.realpath(d) == os.path.realpath(reel_abs):     # путь рилса бывает относительным (reel.py videos/…)
             continue
         try:
             out.append((os.path.relpath(d, os.path.join(root, "videos")), _json.load(open(p, encoding="utf-8")), d))

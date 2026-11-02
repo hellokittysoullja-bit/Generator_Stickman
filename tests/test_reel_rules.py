@@ -1255,3 +1255,12 @@ def test_standard_24_new_reels_are_built_on_the_base_of_reel_13(tmp_path):
     assert rr.check_anim_base(old, str(d)) == []                      # прежние рилсы — своими правилами
     errs = rr.check_hf_hook(old, [], "videos/14_x/reel", str(d))
     assert errs and "24" in errs[0]                                   # но новый рилс ниже 24 не рендерится
+
+
+def test_other_reels_never_include_the_reel_itself_by_relative_path(tmp_path, monkeypatch):
+    """reel.py зовёт с относительной папкой (videos/12_lenta/reel_friend): рилс сравнивался сам с собой, и все его
+    фразы и рисунки шли «повтором» (рендер рилса 12, 02.11)."""
+    import reel_rules as rr
+    d = tmp_path / "videos" / "12_x" / "reel"; d.mkdir(parents=True); (d / "reel.json").write_text("{}", encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+    assert rr.other_reels(str(tmp_path), "videos/12_x/reel") == []
