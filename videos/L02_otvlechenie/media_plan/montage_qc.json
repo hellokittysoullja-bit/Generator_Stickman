@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "measured_at": "2026-11-02T15:39:00",
+ "measured_at": "2026-11-02T18:11:00",
  "video": "final.mp4",
  "spec": "docs/MONTAGE_SPEC.md",
  "limits": [
@@ -10,15 +10,15 @@
  ],
  "checks": {
   "plan_max_sec": {
-   "value": 4.494,
+   "value": 3.481999999999914,
    "threshold": 3.5416666666666665,
    "op": "<=",
    "level": "block",
    "status": "calibrated",
-   "state": "violation"
+   "state": "ok"
   },
   "plan_len_cv": {
-   "value": 0.32730657332283436,
+   "value": 0.3852500910930767,
    "threshold": 0.25,
    "op": ">=",
    "level": "warn",
@@ -26,7 +26,7 @@
    "state": "ok"
   },
   "plan_near_equal_share": {
-   "value": 0.1781609195402299,
+   "value": 0.18857142857142858,
    "threshold": 0.3,
    "op": "<=",
    "level": "warn",
@@ -34,7 +34,7 @@
    "state": "ok"
   },
   "frozen_share": {
-   "value": 0.017322739372428814,
+   "value": 0.01316488295654962,
    "threshold": 0.05,
    "op": "<=",
    "level": "warn",
@@ -42,7 +42,7 @@
    "state": "ok"
   },
   "speed_max_over_mean": {
-   "value": 1.02202505228466,
+   "value": 1.0216810584613687,
    "threshold": 1.25,
    "op": "<=",
    "level": "warn",
@@ -66,7 +66,7 @@
    "state": "violation"
   },
   "cut_paper_de": {
-   "value": 2.626588821411133,
+   "value": 4.220348834991455,
    "threshold": 2.0,
    "op": "<=",
    "level": "warn",
@@ -90,7 +90,7 @@
    "state": "violation"
   },
   "sharpness_cv": {
-   "value": 0.01824853768250662,
+   "value": 0.018089251964179473,
    "threshold": 0.1,
    "op": "<=",
    "level": "warn",
@@ -133,7 +133,7 @@
    "state": "ok"
   },
   "cuts_inside_words_share": {
-   "value": 0.0154,
+   "value": 0.0153,
    "threshold": 0.05,
    "op": "<=",
    "level": "block",
@@ -141,9 +141,7 @@
    "state": "ok"
   }
  },
- "blocks": [
-  "plan_max_sec"
- ],
+ "blocks": [],
  "warnings": [
   "cut_luma_jump",
   "cut_paper_de",
@@ -152,33 +150,33 @@
  ],
  "no_signal": [],
  "measured": {
-  "plan_max_sec": 4.494,
-  "plan_len_cv": 0.32730657332283436,
-  "plan_near_equal_share": 0.1781609195402299,
-  "plans": 175,
-  "plan_mean_sec": 2.554519999999999,
-  "writing_plans": 32,
-  "frozen_share": 0.017322739372428814,
-  "speed_max_over_mean": 1.02202505228466,
-  "plans_measured": 161,
-  "plans_total": 175,
+  "plan_max_sec": 3.481999999999914,
+  "plan_len_cv": 0.3852500910930767,
+  "plan_near_equal_share": 0.18857142857142858,
+  "plans": 176,
+  "plan_mean_sec": 2.540005681818181,
+  "writing_plans": 29,
+  "frozen_share": 0.01316488295654962,
+  "speed_max_over_mean": 1.0216810584613687,
+  "plans_measured": 162,
+  "plans_total": 176,
   "direction_flips_excess": 0,
   "pictures_measured": 40,
   "cut_luma_jump": 87.8972829861111,
-  "cut_luma_jump_median": 14.4517404513889,
+  "cut_luma_jump_median": 13.502200520833327,
   "cut_attention_shift": 0.3559322953224182,
-  "cuts": 174,
-  "sharpness_cv": 0.01824853768250662,
+  "cuts": 175,
+  "sharpness_cv": 0.018089251964179473,
   "hook_first_cut_sec": 1.4166666666666667,
   "hook_plan_len_sec": 1.417,
   "hook_voice_onset_sec": 0.0,
   "hook_plans": 3,
-  "cut_paper_de": 2.626588821411133,
-  "cut_paper_de_median": 0.4960947036743164,
+  "cut_paper_de": 4.220348834991455,
+  "cut_paper_de_median": 0.5011175870895386,
   "cuts_unconfirmed": 33,
   "cuts_extra_by_scenedetect": 0,
   "cuts_in_silence_share": 0.8636,
-  "cuts_inside_words_share": 0.0154
+  "cuts_inside_words_share": 0.0153
  },
  "per_plan": [
   {
@@ -238,28 +236,22 @@
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0313331355505992,
+   "ratio": 1.0104885953459626,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0276719361263462,
-   "static": false
-  },
-  null,
-  {
-   "frozen": 0.08333333333333333,
-   "ratio": 2.4435700071601874,
+   "ratio": 1.0017702780835547,
    "static": false
   },
   {
-   "frozen": 0.3333333333333333,
-   "ratio": 3.1159971449720176,
+   "frozen": 0.0,
+   "ratio": 1.034938758478421,
    "static": false
   },
   {
-   "frozen": 0.3333333333333333,
-   "ratio": 1.5419740958085422,
+   "frozen": 0.09375,
+   "ratio": 4.648964340595286,
    "static": false
   },
   {
@@ -408,12 +400,17 @@
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0161265879087205,
+   "ratio": 1.0199358975906312,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0029255952808134,
+   "ratio": 1.007450872248684,
+   "static": false
+  },
+  {
+   "frozen": 0.0,
+   "ratio": 1.003072606245766,
    "static": false
   },
   null,
@@ -457,19 +454,25 @@
    "ratio": 1.0166188163787644,
    "static": false
   },
+  null,
   {
    "frozen": 0.0,
-   "ratio": 1.0877907282030337,
+   "ratio": 1.003803988897199,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0081824730355216,
+   "ratio": 1.0073259423328262,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.011493027705771,
+   "ratio": 1.003774295353742,
+   "static": false
+  },
+  {
+   "frozen": 0.0,
+   "ratio": 1.0076798857895921,
    "static": false
   },
   {
@@ -1068,22 +1071,14 @@
   ],
   [
    30.917,
-   34.667
+   32.208
   ],
   [
-   34.667,
-   36.708
+   32.208,
+   34.75
   ],
   [
-   36.708,
-   39.792
-  ],
-  [
-   39.792,
-   42.292
-  ],
-  [
-   42.292,
+   34.75,
    44.323
   ],
   [
@@ -1216,6 +1211,10 @@
   ],
   [
    124.708,
+   127.167
+  ],
+  [
+   127.167,
    128.375
   ],
   [
@@ -1260,6 +1259,10 @@
   ],
   [
    154.881,
+   157.458
+  ],
+  [
+   157.458,
    159.375
   ],
   [
@@ -1268,6 +1271,10 @@
   ],
   [
    162.083,
+   163.375
+  ],
+  [
+   163.375,
    165.75
   ],
   [
@@ -1720,10 +1727,8 @@
   26.208,
   28.75,
   30.917,
-  34.667,
-  36.708,
-  39.792,
-  42.292,
+  32.208,
+  34.75,
   44.333,
   47.75,
   50.0,
@@ -1757,6 +1762,7 @@
   118.792,
   122.083,
   124.708,
+  127.167,
   128.375,
   131.25,
   134.208,
@@ -1768,8 +1774,10 @@
   150.25,
   152.458,
   154.875,
+  157.458,
   159.375,
   162.083,
+  163.375,
   165.75,
   167.5,
   176.708,
@@ -1879,7 +1887,7 @@
   443.75,
   445.667
  ],
- "qc_seconds": 303.3,
+ "qc_seconds": 350.0,
  "video_seconds": 447.5,
- "verdict": "blocked"
+ "verdict": "warnings"
 }
