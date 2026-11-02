@@ -222,3 +222,52 @@ def test_fill_hole_noise_strength_from_clean_paper_only():
     hole = np.zeros((200, 200), bool); hole[80:120, 80:120] = True
     out = anim.fill_hole(img, hole, grain_from="noise", feather=0)
     assert float(out[85:115, 95:105].std()) < 3.0                  # сила шума — как у бумаги, не как у линий
+
+
+def _whisker_scene():
+    """Хвост — толстый круг, тело справа; ус тела идёт по краю хвоста и выходит за него (рилс 13, 02.11)."""
+    img = np.full((200, 300, 3), 245, np.uint8)
+    part = np.zeros((200, 300), np.uint8); cv2.circle(part, (90, 100), 45, 1, -1)
+    rest = np.zeros_like(part); rest[40:180, 160:300] = 1
+    img[part > 0] = 100; img[rest > 0] = 100
+    cv2.line(img, (110, 95), (230, 70), (10, 10, 10), 2)               # ус: начинается на шерсти хвоста, уходит к телу
+    line = np.zeros_like(part); cv2.line(line, (110, 95), (230, 70), 1, 2)
+    part = (part | (line & (np.arange(300)[None, :] < 160))).astype(np.uint8)     # многоугольник хвоста забрал кусок уса
+    rest = (rest | (line & (np.arange(300)[None, :] >= 160))).astype(np.uint8)
+    return img, part, rest, line
+
+
+def test_claim_strokes_gives_whisker_drawn_over_part_to_its_owner():
+    img, part, rest, line = _whisker_scene()
+    p, r, fill = anim.claim_strokes(img, part, rest)
+    outside = line & (cv2.circle(np.zeros_like(line), (90, 100), 45, 1, -1) == 0)
+    assert p[outside > 0].sum() <= 4                       # торчащий за хвост кусок уса — не хвосту (угол у края — пара px)
+    assert (r[line > 0] == 1).mean() > 0.9                # ус целиком у хозяина
+    assert fill.sum() > 0                                 # на шерсти под усом — дорисовка
+    assert p.sum() > 0.95 * (cv2.circle(np.zeros_like(line), (90, 100), 45, 1, -1)).sum()   # хвост цел
+
+
+def test_claim_strokes_keeps_fur_strands():
+    img = np.full((200, 300, 3), 245, np.uint8)
+    part = np.zeros((200, 300), np.uint8); cv2.circle(part, (120, 100), 50, 1, -1)
+    for a in range(0, 360, 30):                           # короткие треугольные пряди тушью по краю
+        x, y = 120 + 50 * np.cos(np.radians(a)), 100 + 50 * np.sin(np.radians(a))
+        pts = np.int32([[x, y], [x + 18 * np.cos(np.radians(a + 20)), y + 18 * np.sin(np.radians(a + 20))],
+                        [x + 4 * np.cos(np.radians(a + 90)), y + 4 * np.sin(np.radians(a + 90))]])
+        cv2.fillPoly(part, [pts], 1)
+    img[part > 0] = 30
+    p, r, fill = anim.claim_strokes(img, part, np.zeros_like(part))
+    assert p.sum() == part.sum() and fill.sum() == 0
+
+
+def test_underlap_only_at_the_seam_and_never_takes_thin_strokes():
+    part = np.zeros((200, 300), np.uint8); part[50:150, 50:120] = 1
+    cover = np.zeros_like(part); cover[50:150, 120:250] = 1
+    whisk = np.zeros_like(part); cv2.line(whisk, (40, 30), (125, 45), 1, 2); cover |= whisk
+    full = part | cover
+    u = anim.underlap(part, cover, full, around=(120, 140, 25))
+    added = u & (1 - part)
+    assert added.sum() > 0
+    ys, xs = np.nonzero(added)
+    assert ((xs - 120) ** 2 + (ys - 140) ** 2 <= 25 ** 2).all()   # только у шва
+    assert (added & whisk).sum() == 0                              # ус соседа не забирается

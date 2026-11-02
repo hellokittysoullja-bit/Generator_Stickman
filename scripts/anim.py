@@ -530,6 +530,42 @@ def split_part(part, rest, core_open=PART_CORE_OPEN, reach=PART_REACH):
     return own, rest | stray
 
 
+CLAIM_MIN_LEN = 35          # px: прямой тонкий штрих туши не короче — ус, а не прядь шерсти (пряди — треугольные и короче)
+CLAIM_INK, CLAIM_WIDTH = 70, 5  # тушь темнее шерсти (шерсть 60–120); ус не толще 5 px
+
+
+def claim_strokes(img, part, rest, min_len=CLAIM_MIN_LEN, ink=CLAIM_INK, width=CLAIM_WIDTH, core_open=PART_CORE_OPEN):
+    """Ус соседа, нарисованный ПОВЕРХ части (рилс 13, 02.11: ус щеки идёт по кончику хвоста и торчит за его край):
+    split_part его не отдаёт — он касается шерсти. Прямой тонкий штрих туши (Хаф), который выходит за тело части,
+    целиком уходит в слой rest (он выше), а в части под ним остаётся дыра для дорисовки шерсти.
+    Возвращает (part, rest, fill): fill — пиксели части, которые надо дорисовать её же цветом (inpaint)."""
+    part = (np.asarray(part) > 0).astype(np.uint8)
+    rest = (np.asarray(rest) > 0).astype(np.uint8)
+    g = np.asarray(img, np.float32)[..., :3].mean(2)
+    inkm = ((g < ink) & ((part | rest) > 0)).astype(np.uint8)
+    thin = inkm & (1 - cv2.morphologyEx(inkm, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (width + 1,) * 2)))
+    core = cv2.morphologyEx(part, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (core_open, core_open)))
+    zone = cv2.dilate(part, np.ones((2 * min_len + 1,) * 2, np.uint8)) & thin     # ус продолжается за частью — брать целиком
+    segs = cv2.HoughLinesP((zone * 255).astype(np.uint8), 1, np.pi / 360, threshold=min_len // 2,
+                           minLineLength=min_len, maxLineGap=4)
+    stroke = np.zeros_like(part)
+    for x0, y0, x1, y1 in ([] if segs is None else np.asarray(segs).reshape(-1, 4)):
+        n = int(math.hypot(x1 - x0, y1 - y0)) + 1
+        xs = np.clip(np.round(np.linspace(x0, x1, n)).astype(int), 0, part.shape[1] - 1)
+        ys = np.clip(np.round(np.linspace(y0, y1, n)).astype(int), 0, part.shape[0] - 1)
+        on_ink = thin[ys, xs].mean()
+        out = (part[ys, xs] == 0).sum()
+        inside = (core[ys, xs] > 0).sum()
+        if on_ink >= 0.8 and out >= 10 and inside >= 6:          # штрих лежит на шерсти и выходит за неё — ус поверх
+            line = np.zeros_like(part); cv2.line(line, (int(x0), int(y0)), (int(x1), int(y1)), 1, width)
+            stroke |= line & cv2.dilate(thin, np.ones((3, 3), np.uint8))
+    stroke &= cv2.dilate(inkm, np.ones((3, 3), np.uint8))
+    moved = stroke & part
+    fill = moved & core                                          # на шерсти — дорисовать; за краем — просто убрать
+    part = part & (1 - (moved & (1 - core)))
+    return part, (rest | moved).astype(np.uint8), fill
+
+
 def drop_scene_lines(img, mask, min_len=300, angle_tol=8.0, width=7, core_open=PART_CORE_OPEN):
     """Убрать из маски персонажа прямые линии сцены, проходящие сквозь его тонкие края (рамка двери за усами, линия
     пола у лап — тело рилса 13): длинные почти вертикальные или горизонтальные отрезки туши по всей картинке
@@ -565,14 +601,23 @@ def keep_attached(mask, reach=PART_REACH):
 PART_UNDERLAP = 14          # px: часть заходит под соседний слой — шов разреза не просвечивает
 
 
-def underlap(part, cover, full, width=PART_UNDERLAP):
+def underlap(part, cover, full, width=PART_UNDERLAP, around=None):
     """Продлить часть (хвост, лапу, ухо) под слой, который лежит поверх неё (тело), на width px вдоль их общего края.
     Разрез встык даёт обоим слоям полупрозрачный край по одной линии, и сквозь него светится бумага — белая полоска
     между хвостом и телом (владелец 02.11, хук рилса 13). full — маска персонажа целиком: продление берёт только его
-    пиксели. Возвращает новую маску части; слой cover не меняется (он сверху и закрывает продление)."""
+    пиксели. Возвращает новую маску части; слой cover не меняется (он сверху и закрывает продление).
+    around=(x, y, r) — продлевать только у шва (основание хвоста): вдоль всего края часть забирала соседа там, где
+    касается его без разреза (рилс 13, 02.11: кончик хвоста унёс 14 px уса щеки, и ус махал вместе с хвостом).
+    Тонкие штрихи соседа (усы) не забираются никогда — только его тело."""
     part = (np.asarray(part) > 0).astype(np.uint8)
+    cover = (np.asarray(cover) > 0).astype(np.uint8)
     grow = cv2.dilate(part, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * width + 1, 2 * width + 1)))
-    return (part | (grow & (np.asarray(cover) > 0) & (np.asarray(full) > 0))).astype(np.uint8)
+    body = cv2.morphologyEx(cover, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (PART_CORE_OPEN,) * 2))
+    add = grow & body & (np.asarray(full) > 0)
+    if around is not None:
+        disc = np.zeros_like(part); cv2.circle(disc, (int(around[0]), int(around[1])), int(around[2]), 1, -1)
+        add &= disc
+    return (part | add).astype(np.uint8)
 
 
 def detached_share(alpha, thr=0.1, reach=PART_REACH):

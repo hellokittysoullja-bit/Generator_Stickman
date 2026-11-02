@@ -106,7 +106,9 @@ def main():
     tail = cat & tail_reg; body = cat & ~tail_reg.astype(bool)
     # усы щеки проходят через просвет завитка хвоста: оторванные от хвоста штрихи — телу (владелец 02.11, 0:00.86)
     tail, body = anim.split_part(tail, body)
-    tail = anim.underlap(tail, body, cat)                       # хвост заходит под тело: без белого шва у основания
+    # ус щеки нарисован поверх кончика хвоста и торчит за его край: он — голове (слой тела выше), шерсть под ним — хвосту
+    tail, body, tail_fill = anim.claim_strokes(A, tail, body)
+    tail = anim.underlap(tail, body, cat, around=(*TAIL_PIVOT, 200))   # без белого шва у основания, только у шва
     cloud = np.zeros_like(cat); bub = np.zeros_like(cat)
     for m in anim.ink_objects(A, box=CLOUD_BOX, min_area=20000): cloud |= m
     for m in anim.ink_objects(A, box=BUB_BOX, min_area=300): bub |= m
@@ -155,8 +157,12 @@ def main():
         assert anim.detached_share(al) < 0.002 or name.startswith("bubble"), f"слой {name}: оторванные куски"
         Image.fromarray(im).save(os.path.join(OUT, name + ".png")); layers[name] = dict(xy=xy, wh=im.shape[1::-1])
 
-    for name, m in (("tail", tail), ("body", body), ("cloud", cloud)):
-        save(name, Ap, m)
+    Ap_tail = Ap
+    if tail_fill.any():                                         # шерсть хвоста под снятым усом — дорисовать его же шерстью
+        u8 = np.clip(Ap, 0, 255).astype(np.uint8)
+        Ap_tail = cv2.inpaint(u8, cv2.dilate(tail_fill, np.ones((3, 3), np.uint8)), 4, cv2.INPAINT_TELEA).astype(Ap.dtype)
+    for name, img, m in (("tail", Ap_tail, tail), ("body", Ap, body), ("cloud", Ap, cloud)):
+        save(name, img, m)
     n, lab = cv2.connectedComponents(bub)
     for i in range(1, n):
         save(f"bubble{i}", Ap, lab == i)

@@ -12,6 +12,7 @@
 import json
 import math
 import os
+import re
 
 import numpy as np
 from PIL import Image
@@ -24,7 +25,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 KIT = ["bg.png", "body.png", "tail.png", "tail_body.png", "tail_flame.png", "tail_mesh.json", "cloud.png", "pencil.png",
        "bubble1.png", "bubble2.png", "kit.json"]
 SOURCES = ["gen/d1_doorway.png", "anim/kit_doorway.py", "anim/door_hf/index.html"] + [f"anim/kit/{k}" for k in KIT]
-VERSION = 1
+VERSION = 2                        # 2: ус щеки — голове, положение слоёв из kit.json
 FPS = 30
 HIT_FRAC = 0.55                    # «за-бы́л»: ударный второй слог
 REEL_DIR = None
@@ -36,9 +37,28 @@ def _hit(ctx):
     return round(w[-1][0] + HIT_FRAC * (w[-1][1] - w[-1][0]), 3)
 
 
+PLACE = {"body": "body", "cloud": "cloud", "b1": "bubble1", "b2": "bubble2"}     # id в композиции -> слой kit.json
+TAIL_MARG = 180                                                                    # поле холста хвоста (meshPart marg)
+
+
+def place_layers(proj):
+    """Положение слоёв в композиции — из kit.json, а не числами руками: нарезка меняет рамку слоя (02.11: ус щеки ушёл
+    из хвоста в тело, тело стало шире на 14 px влево), и вписанное руками left/top сдвинуло бы рисунок."""
+    layers = json.load(open(os.path.join(proj, "assets", "kit.json")))["layers"]
+    html = os.path.join(proj, "index.html"); s = open(html, encoding="utf-8").read()
+    pos = {i: layers[n]["xy"] for i, n in PLACE.items()}
+    tx, ty = layers["tail"]["xy"]; pos["tail"] = (tx - TAIL_MARG, ty - TAIL_MARG)
+    for i, (x, y) in pos.items():
+        s, n = re.subn(rf'(id="{i}"[^>]*?style=")left:-?\d+px;top:-?\d+px', rf"\g<1>left:{x}px;top:{y}px", s)
+        if n != 1:
+            raise RuntimeError(f"door_hf/index.html: нет слоя id={i} с left/top")
+    open(html, "w", encoding="utf-8").write(s)
+
+
 def _tail_physics(proj, v):
     """Хвост по физике (владелец 02.11): как тело несёт хвост по таймлайну композиции → углы суставов на 240 Гц
     с ударом в момент v["hit"] → assets/tail_angles.json проекта перед рендером."""
+    place_layers(proj)
     mesh = json.load(open(os.path.join(proj, "assets", "tail_mesh.json")))
     tx, ty = json.load(open(os.path.join(HERE, "kit", "kit.json")))["layers"]["tail"]["xy"]
     motion = tail_rig.extract_motion(proj, "tail", 1.6)
