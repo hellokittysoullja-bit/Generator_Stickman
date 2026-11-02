@@ -4,6 +4,7 @@ import os
 import sys
 
 import cv2
+import pytest
 import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts"))
@@ -271,3 +272,29 @@ def test_underlap_only_at_the_seam_and_never_takes_thin_strokes():
     ys, xs = np.nonzero(added)
     assert ((xs - 120) ** 2 + (ys - 140) ** 2 <= 25 ** 2).all()   # только у шва
     assert (added & whisk).sum() == 0                              # ус соседа не забирается
+
+
+def test_inpaint_bg_on_dark_wall_keeps_the_old_fill():
+    """LaMa на тёмной стене не проверена (25.10 давала пятна): там — прежняя fill_hole, без сети."""
+    img = np.full((120, 160, 3), 40, np.float32)
+    hole = np.zeros((120, 160), bool); hole[40:80, 60:100] = True
+    img[hole] = 200
+    out = anim.inpaint_bg(img, hole)
+    assert out[hole].mean() < 80
+
+
+@pytest.mark.skipif(not os.path.exists(os.path.join(os.path.dirname(__file__), "..", "models", "lama_fp32.onnx")),
+                    reason="нет models/lama_fp32.onnx (качается при первом запуске сцены)")
+def test_inpaint_bg_continues_scene_line_and_leaves_no_silhouette(tmp_path):
+    rng = np.random.default_rng(1)
+    img = np.full((400, 600, 3), 238, np.float32); img[300:] = 215
+    cv2.line(img, (0, 300), (599, 300), (90, 90, 90), 3)
+    img += rng.normal(0, 2, img.shape)
+    truth = img.copy()
+    hole = np.zeros((400, 600), np.uint8); cv2.circle(hole, (300, 280), 70, 1, -1); hole = hole > 0
+    img[hole] = 30                                                   # «кот»
+    out = anim.inpaint_bg(img, hole, cache_dir=str(tmp_path))
+    assert (out[300, 250:350].mean(1) < 150).mean() > 0.9           # плинтус продолжен сквозь дыру
+    assert np.abs(out[hole] - truth[hole]).mean() < 8                # силуэта предмета нет
+    again = anim.inpaint_bg(img, hole, cache_dir=str(tmp_path))
+    assert np.array_equal(out, again)                                # второй раз — из кэша, то же самое

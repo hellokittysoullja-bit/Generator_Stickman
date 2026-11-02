@@ -146,16 +146,8 @@ def main():
     layers = {}
 
     def save(name, img, m):
-        """Слой с мягким краем в 1 px (без каймы) — в kit/<name>.png, рамка — в kit.json."""
-        m = anim.trim_paper_edge(img, m)                         # без белых зубцов бумаги по краю
-        if not name.startswith("bubble"):
-            m = anim.keep_attached(m)                            # без обрывков рамки и пола, ездящих с котом
-        im, xy = rgba(img, cv2.GaussianBlur(m.astype(np.float32), (0, 0), 0.8))
-        al = im[..., 3].astype(np.float32) / 255
-        paper = np.median(im[..., :3][al < 0.02], axis=0) if (al < 0.02).any() else (250, 247, 240)
-        im[..., :3] = anim.defringe(im[..., :3], al, paper).round().astype(np.uint8)     # без бумажной каймы по краю
-        assert anim.detached_share(al) < 0.002 or name.startswith("bubble"), f"слой {name}: оторванные куски"
-        Image.fromarray(im).save(os.path.join(OUT, name + ".png")); layers[name] = dict(xy=xy, wh=im.shape[1::-1])
+        """Слой — общим шагом нарезки anim.save_layer (стандарт 24): kit/<name>.png и рамка в kit.json."""
+        anim.save_layer(OUT, name, img, m, layers, keep_attached_=not name.startswith("bubble"))
 
     Ap_tail = Ap
     if tail_fill.any():                                         # шерсть хвоста под снятым усом — дорисовать его же шерстью

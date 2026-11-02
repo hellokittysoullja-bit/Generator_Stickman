@@ -1216,7 +1216,7 @@ def test_standard_23_hook_on_hyperframes_and_no_repeats_of_other_reels(tmp_path)
     d = tmp_path / "videos" / "14_x" / "reel"; (d / "anim").mkdir(parents=True); (d / "gen").mkdir()
     (d / "gen" / "a.png").write_bytes(b"own")
     (d / "anim" / "hook.py").write_text("import anim\n", encoding="utf-8")
-    spec = {"passport": {"standard": 23}, "sources": {"f1": {"frame": "gen/a.png"}},
+    spec = {"passport": {"standard": 24}, "sources": {"f1": {"frame": "gen/a.png"}},
             "beats": [{"text": "Все ушли, а ты?", "shots": [{"anim": "hook"}]},
                       {"text": "В шапке профиля я помогу тебе начать твоё дело, а также посижу с тобой пару минут"}]}
     errs = rr.check_hf_hook(spec, [], "videos/14_x/reel", str(d))
@@ -1235,3 +1235,23 @@ def test_standard_23_hook_on_hyperframes_and_no_repeats_of_other_reels(tmp_path)
     old = dict(spec, passport={"standard": 22})                    # прежние рилсы судятся своими правилами
     assert rr.check_originality(old, str(d), rr.other_reels(str(tmp_path), str(d))) == []
     assert rr.check_hf_hook(old, [], "videos/14_x/reel", str(d))   # но новый рилс ниже 23 не рендерится
+
+
+def test_standard_24_new_reels_are_built_on_the_base_of_reel_13(tmp_path):
+    """Владелец 02.11: «то, что сделано в последнем рилсе, — база для всех следующих, старое не основной движок»:
+    слои общим шагом anim.save_layer, фон anim.inpaint_bg, хвост сеткой tail_rig; новый рилс ниже 24 не рендерится."""
+    import reel_rules as rr
+    d = tmp_path / "videos" / "14_x" / "reel"; (d / "anim").mkdir(parents=True)
+    spec = {"passport": {"standard": 24}, "beats": [{"text": "Все ушли, а ты?", "shots": [{"anim": "hook"}]}]}
+    (d / "anim" / "kit.py").write_text("bg = anim.fill_hole(A, hole)\nsave('tail', A, m)\n", encoding="utf-8")
+    errs = rr.check_anim_base(spec, str(d))
+    assert any("fill_hole" in e for e in errs) and any("save_layer" in e for e in errs) and any("inpaint_bg" in e for e in errs)
+    (d / "anim" / "kit.py").write_text("bg = anim.inpaint_bg(A, hole, CACHE)\nanim.save_layer(OUT, 'tail', A, m, L)\n",
+                                       encoding="utf-8")
+    assert any("tail_rig" in e for e in rr.check_anim_base(spec, str(d)))
+    (d / "anim" / "hook.py").write_text("import tail_rig\ntail_rig.prepare_part(p, a, OUT, 'tail')\n", encoding="utf-8")
+    assert rr.check_anim_base(spec, str(d)) == []
+    old = {"passport": {"standard": 23}, "beats": spec["beats"]}
+    assert rr.check_anim_base(old, str(d)) == []                      # прежние рилсы — своими правилами
+    errs = rr.check_hf_hook(old, [], "videos/14_x/reel", str(d))
+    assert errs and "24" in errs[0]                                   # но новый рилс ниже 24 не рендерится

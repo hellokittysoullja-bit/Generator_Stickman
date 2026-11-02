@@ -489,6 +489,47 @@ def fill_hole(img, hole, valid=None, sigs=(10, 25, 60), grain_from=None, feather
     return img * (1 - a) + out * a
 
 
+def save_layer(out_dir, name, img, mask, layers, keep_attached_=True, soft=0.8):
+    """ОБЩИЙ шаг нарезки слоя сцены HyperFrames (стандарт 24, образец — рилс 13): край без бумажных зубцов
+    (trim_paper_edge), без обрывков рамки и пола (keep_attached), мягкий край soft px, без бумажной каймы (defringe),
+    проверка «нет оторванных кусков» (detached_share) — потом PNG в out_dir/<name>.png и рамка в layers[name].
+    keep_attached_=False — для россыпи (пузырьки мысли, искры): там куски и должны быть отдельными."""
+    from PIL import Image
+    m = trim_paper_edge(img, mask)
+    if keep_attached_:
+        m = keep_attached(m)
+    a = cv2.GaussianBlur(m.astype(np.float32), (0, 0), soft)
+    ys, xs = np.where(a > 0.02)
+    x0, y0, x1, y1 = xs.min() - 6, ys.min() - 6, xs.max() + 7, ys.max() + 7
+    im = np.dstack([np.asarray(img)[y0:y1, x0:x1], 255 * a[y0:y1, x0:x1]]).clip(0, 255).astype(np.uint8)
+    al = im[..., 3].astype(np.float32) / 255
+    paper = np.median(im[..., :3][al < 0.02], axis=0) if (al < 0.02).any() else (250, 247, 240)
+    im[..., :3] = defringe(im[..., :3], al, paper).round().astype(np.uint8)
+    if keep_attached_ and detached_share(al) >= 0.002:
+        raise ValueError(f"слой {name}: оторванные куски ({detached_share(al):.4f}) — при движении повиснут в воздухе")
+    Image.fromarray(im).save(os.path.join(out_dir, name + ".png"))
+    layers[name] = dict(xy=(int(x0), int(y0)), wh=im.shape[1::-1])
+    return layers[name]
+
+
+DARK_BG = 110        # средняя яркость фона вокруг дыры ниже — тёмная стена: LaMa там не проверена (25.10 давала пятна)
+
+
+def inpaint_bg(img, hole, cache_dir=None, grow=True):
+    """ОСНОВНАЯ заливка фона под вырезанным предметом для новых сцен (владелец 02.11: «вообще идеально стало»):
+    ореол предмета (свечение, дым) уходит вместе с ним, LaMa продолжает линии сцены (плинтус, пол, край двери),
+    тон и зерно — с бумаги этого же рисунка, тень на полу остаётся (scripts/inpaint.py). Считается один раз и
+    кладётся в cache_dir. На тёмной стене — прежняя fill_hole (LaMa там не проверена). Возвращает float32 RGB."""
+    import inpaint
+    img = np.asarray(img, np.float32); hole = np.asarray(hole).astype(bool)
+    ring = cv2.dilate(hole.astype(np.uint8), np.ones((31, 31), np.uint8)).astype(bool) & ~hole
+    if ring.any() and float(np.median(img[ring].mean(1))) < DARK_BG:
+        return fill_hole(img, hole, grain_from="noise")
+    if cache_dir:
+        return inpaint.cached(img, hole, cache_dir, grow=grow)
+    return inpaint.inpaint(img, hole, grow=grow)
+
+
 # --------------------------------------------------------------------------- нарезка частей тела без артефактов
 # Рилс 13 (владелец 02.11, скрин хука 0:00.86): в слой хвоста попали три штриха усов — в рисунке усы щеки проходят через
 # просвет завитка, и многоугольник хвоста забрал их; хвост машет — усы висят в воздухе рядом с ним. Тот же класс

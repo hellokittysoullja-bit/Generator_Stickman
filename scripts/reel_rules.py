@@ -1790,10 +1790,11 @@ def _is_new(spec, log, reel_dir):
 def check_hf_hook(spec, log=(), reel_dir="", abs_dir=None):
     pp = spec.get("passport") or {}
     std = pp.get("standard") or 0
+    if std < BASE_STANDARD and _is_new(spec, log, reel_dir):
+        return [f"новый рилс: нужен \"standard\": {BASE_STANDARD} — хук на HyperFrames (scripts/anim_hf.py, скилл "
+                "reel-anim), база рилса 13 (anim.save_layer, anim.inpaint_bg, tail_rig) и ни одного повтора "
+                "рисунков и фраз прошлых рилсов"]
     if std < HF_STANDARD:
-        if _is_new(spec, log, reel_dir):
-            return [f"новый рилс: нужен \"standard\": {HF_STANDARD} — хук на HyperFrames (scripts/anim_hf.py, скилл "
-                    "reel-anim) и ни одного повтора рисунков и фраз прошлых рилсов"]
         return []
     s0 = ((spec.get("beats") or [{}])[0].get("shots") or [{}])[0]
     name = s0.get("anim")
@@ -1804,6 +1805,34 @@ def check_hf_hook(spec, log=(), reel_dir="", abs_dir=None):
         return [f"хук: сцена anim/{name}.py не на HyperFrames — движение хука делается в композиции HyperFrames "
                 "через scripts/anim_hf.py (решение владельца 28.10 и 02.11, образец — рилс 13 door_hf)"]
     return []
+
+
+BASE_STANDARD = 24      # владелец 02.11: «всё, что сделано в последнем рилсе, — база для всех следующих, старое не основной движок»
+
+
+def check_anim_base(spec, abs_dir):
+    """Стандарт 24: сцены рилса собираются на базе рилса 13 — слои общим шагом anim.save_layer (нарезка без
+    обрывков, каймы и швов), фон под ними — anim.inpaint_bg (ореол, LaMa, зерно своей бумаги), хвост — сеткой с
+    физикой tail_rig. Прежняя anim.fill_hole в новых сценах — ошибка (inpaint_bg сам зовёт её на тёмной стене)."""
+    if ((spec.get("passport") or {}).get("standard") or 0) < BASE_STANDARD:
+        return []
+    d = os.path.join(abs_dir, "anim")
+    srcs = {f: open(os.path.join(d, f), encoding="utf-8").read() for f in sorted(os.listdir(d)) if f.endswith(".py")} \
+        if os.path.isdir(d) else {}
+    if not srcs:
+        return []                                          # сцены нет — об этом скажут check_hook_motion и check_hf_hook
+    errs, allsrc = [], "\n".join(srcs.values())
+    for f, t in srcs.items():
+        if re.search(r"\bfill_hole\(", t):
+            errs.append(f"anim/{f}: fill_hole — прежняя заливка; в новых сценах фон под предметом — anim.inpaint_bg")
+    if "save_layer(" not in allsrc:
+        errs.append("сцены рилса режут слои не общим шагом anim.save_layer (без него — обрывки усов, бумажная кайма, "
+                    "оторванные куски; образец — videos/13_dver/reel/anim/kit_doorway.py)")
+    if "inpaint_bg(" not in allsrc:
+        errs.append("фон под вырезанными слоями не через anim.inpaint_bg (силуэт предмета рельефом, рваный плинтус)")
+    if re.search(r"save_layer\([^)]*[\"']tail[\"']", allsrc) and "tail_rig." not in allsrc:
+        errs.append("слой хвоста есть, а сетки с физикой нет — хвост гнётся через scripts/tail_rig.py (образец — door_hf)")
+    return errs
 
 
 def _grams(text):
