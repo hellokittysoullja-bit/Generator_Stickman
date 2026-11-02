@@ -72,7 +72,7 @@
           </div>
         </div>
         <svg class="fx" width="3062" height="1722" viewBox="0 0 3062 1722">
-          <g transform="translate(2300 330)">
+          <g transform="translate(2330 500)">
             <g id="excl">
               <path id="exclStroke" d="M 6 -120 C 2 -60 -2 -20 -4 36" style="stroke-width:26" />
               <circle id="exclDot" cx="-6" cy="96" r="18" fill="#18181a" />
@@ -94,7 +94,7 @@
       for (let i = 0; i < 7; i++) {
         const a = -Math.PI * (0.08 + 0.84 * i / 6);              // верхняя полуокружность
         const g = document.createElementNS(NS, "g"), m = document.createElementNS(NS, "g"), l = document.createElementNS(NS, "line");
-        g.setAttribute("transform", `translate(${1900 + 380 * Math.cos(a)} ${640 + 330 * Math.sin(a)}) rotate(${(a * 180) / Math.PI})`);
+        g.setAttribute("transform", `translate(${1900 + 360 * Math.cos(a)} ${660 + 250 * Math.sin(a)}) rotate(${(a * 180) / Math.PI})`);
         l.setAttribute("x1", 0); l.setAttribute("y1", 0); l.setAttribute("x2", 90); l.setAttribute("y2", 0);
         l.style.strokeWidth = 16;
         m.appendChild(l); g.appendChild(m); document.getElementById("rays").appendChild(g);

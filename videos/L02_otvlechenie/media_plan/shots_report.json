@@ -1,0 +1,1105 @@
+{
+ "punch_gap_sec": 15.0,
+ "key_gap_sec": 10.0,
+ "clips": [
+  {
+   "index": 0,
+   "duration": 7.25,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     5.12,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 1,
+   "duration": 4.083,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ],
+    [
+     2.08,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": [
+    "акценту «не слабая воля» нет места — не пишется"
+   ]
+  },
+  {
+   "index": 2,
+   "duration": 8.417,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ],
+    [
+     2.88,
+     "drift"
+    ],
+    [
+     4.96,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 3,
+   "duration": 8.875,
+   "views": [
+    [
+     0.0,
+     "lean"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 4,
+   "duration": 15.542,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ],
+    [
+     2.16,
+     "drift"
+    ],
+    [
+     5.88,
+     "drift"
+    ],
+    [
+     7.92,
+     "drift"
+    ],
+    [
+     11.04,
+     "drift"
+    ],
+    [
+     13.52,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 6,
+   "duration": 10.583,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": [
+    "план 0.0-10.6 с без смены: другого плана без разреза рисунка нет"
+   ]
+  },
+  {
+   "index": 8,
+   "duration": 4.25,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ],
+    [
+     1.89,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 9,
+   "duration": 6.375,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ],
+    [
+     2.9,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 10,
+   "duration": 12.125,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": [
+    "план 0.0-12.1 с без смены: другого плана без разреза рисунка нет"
+   ]
+  },
+  {
+   "index": 12,
+   "duration": 10.792,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": [
+    "план 0.0-10.8 с без смены: другого плана без разреза рисунка нет"
+   ]
+  },
+  {
+   "index": 13,
+   "duration": 6.458,
+   "views": [
+    [
+     0.0,
+     "lean"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 14,
+   "duration": 14.333,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ],
+    [
+     2.77,
+     "drift"
+    ],
+    [
+     4.97,
+     "drift"
+    ],
+    [
+     8.09,
+     "drift"
+    ],
+    [
+     10.09,
+     "drift"
+    ],
+    [
+     12.17,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 16,
+   "duration": 15.0,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ],
+    [
+     2.09,
+     "drift"
+    ],
+    [
+     4.53,
+     "drift"
+    ],
+    [
+     7.77,
+     "drift"
+    ],
+    [
+     10.91,
+     "drift"
+    ],
+    [
+     12.94,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 18,
+   "duration": 9.542,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ],
+    [
+     3.03,
+     "lean"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": "другая комната",
+   "key_at": 5.27,
+   "key_hold_until": 9.02,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 19,
+   "duration": 7.125,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": [
+    "план 0.0-7.1 с без смены: другого плана без разреза рисунка нет"
+   ]
+  },
+  {
+   "index": 20,
+   "duration": 8.917,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ],
+    [
+     2.72,
+     "drift"
+    ],
+    [
+     5.68,
+     "lean"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 21,
+   "duration": 4.625,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ],
+    [
+     2.16,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 22,
+   "duration": 21.833,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": [
+    "план 0.0-21.8 с без смены: другого плана без разреза рисунка нет"
+   ]
+  },
+  {
+   "index": 24,
+   "duration": 13.625,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ],
+    [
+     3.14,
+     "drift"
+    ],
+    [
+     5.38,
+     "drift"
+    ],
+    [
+     8.1,
+     "drift"
+    ],
+    [
+     10.29,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 26,
+   "duration": 14.125,
+   "views": [
+    [
+     0.0,
+     "lean"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 28,
+   "duration": 9.417,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ],
+    [
+     2.96,
+     "drift"
+    ],
+    [
+     5.68,
+     "drift"
+    ],
+    [
+     7.68,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 29,
+   "duration": 4.167,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ],
+    [
+     2.0,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 30,
+   "duration": 10.292,
+   "views": [
+    [
+     0.0,
+     "lean"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": "ищет выход",
+   "key_at": 6.75,
+   "key_hold_until": 10.09,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 31,
+   "duration": 8.333,
+   "views": [
+    [
+     0.0,
+     "lean"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 32,
+   "note": "главная мысль «сделать меньше» пропущена: за 30 с на экране уже 2 рукописных слов"
+  },
+  {
+   "index": 32,
+   "duration": 10.125,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": [
+    "план 0.0-10.1 с без смены: другого плана без разреза рисунка нет"
+   ]
+  },
+  {
+   "index": 33,
+   "duration": 11.667,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ],
+    [
+     2.86,
+     "drift"
+    ],
+    [
+     5.95,
+     "drift"
+    ],
+    [
+     8.31,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 35,
+   "duration": 4.167,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ],
+    [
+     1.95,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 36,
+   "duration": 8.125,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ],
+    [
+     1.85,
+     "drift"
+    ],
+    [
+     4.73,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 37,
+   "duration": 25.625,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ],
+    [
+     3.01,
+     "drift"
+    ],
+    [
+     6.18,
+     "drift"
+    ],
+    [
+     8.31,
+     "drift"
+    ],
+    [
+     11.27,
+     "drift"
+    ],
+    [
+     13.67,
+     "drift"
+    ],
+    [
+     16.11,
+     "drift"
+    ],
+    [
+     18.71,
+     "drift"
+    ],
+    [
+     21.67,
+     "drift"
+    ],
+    [
+     23.59,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 40,
+   "duration": 8.0,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ],
+    [
+     3.04,
+     "drift"
+    ],
+    [
+     4.96,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 41,
+   "duration": 12.792,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ],
+    [
+     3.42,
+     "drift"
+    ],
+    [
+     6.16,
+     "drift"
+    ],
+    [
+     7.84,
+     "drift"
+    ],
+    [
+     9.68,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 43,
+   "duration": 3.792,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ],
+    [
+     1.76,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 44,
+   "duration": 6.167,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ],
+    [
+     3.11,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 45,
+   "duration": 8.833,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ],
+    [
+     2.92,
+     "drift"
+    ],
+    [
+     6.32,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 46,
+   "duration": 7.333,
+   "views": [
+    [
+     0.0,
+     "lean"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 47,
+   "duration": 19.542,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ],
+    [
+     3.32,
+     "drift"
+    ],
+    [
+     4.92,
+     "drift"
+    ],
+    [
+     7.96,
+     "drift"
+    ],
+    [
+     10.28,
+     "drift"
+    ],
+    [
+     13.44,
+     "drift"
+    ],
+    [
+     16.12,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 49,
+   "duration": 7.917,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ],
+    [
+     1.92,
+     "drift"
+    ],
+    [
+     4.28,
+     "drift"
+    ],
+    [
+     6.2,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 50,
+   "duration": 9.75,
+   "views": [
+    [
+     0.0,
+     "lean"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": "записка возврата",
+   "key_at": 0.44,
+   "key_hold_until": 4.39,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 51,
+   "duration": 8.792,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ],
+    [
+     2.81,
+     "drift"
+    ],
+    [
+     6.01,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 52,
+   "duration": 12.625,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ],
+    [
+     2.82,
+     "drift"
+    ],
+    [
+     5.61,
+     "drift"
+    ],
+    [
+     7.36,
+     "drift"
+    ],
+    [
+     9.76,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 54,
+   "duration": 9.917,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": [
+    "план 0.0-9.9 с без смены: другого плана без разреза рисунка нет"
+   ]
+  },
+  {
+   "index": 55,
+   "duration": 10.583,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": "его возвращают",
+   "key_at": 1.69,
+   "key_hold_until": 5.38,
+   "accent": null,
+   "notes": [
+    "план 0.0-10.6 с без смены: другого плана без разреза рисунка нет"
+   ]
+  },
+  {
+   "index": 57,
+   "duration": 5.75,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ],
+    [
+     2.85,
+     "drift"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 58,
+   "duration": 7.708,
+   "views": [
+    [
+     0.0,
+     "lean"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": []
+  },
+  {
+   "index": 59,
+   "duration": 11.208,
+   "views": [
+    [
+     0.0,
+     "drift"
+    ],
+    [
+     2.48,
+     "drift"
+    ],
+    [
+     5.68,
+     "lean"
+    ],
+    [
+     7.44,
+     "drift"
+    ],
+    [
+     9.36,
+     "lean"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "notes": []
+  }
+ ]
+}
