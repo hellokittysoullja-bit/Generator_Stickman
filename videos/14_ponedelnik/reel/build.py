@@ -30,7 +30,8 @@ W = {  # окна [cx, cy, h] в пикселях исходника, сняты
  "laptop": ([800, 520, 960], [800, 524, 910]),
  "timer": ([830, 700, 360], [830, 702, 340]),
  "laptop_face": ([920, 400, 520], [920, 403, 495]),
- "screen": ([300, 420, 500], [300, 422, 475]),         # пустой экран ноутбука — место под «Бесплатно»
+ "screen": ([376, 548, 480], [346, 566, 456]),        # пустой экран ноутбука — место под «Бесплатно»
+ "cal_close": ([300, 430, 330], [302, 432, 315]),     # кончик маркера у понедельника
 }
 
 
@@ -62,12 +63,15 @@ beats = [
       fx=[dict(kind="sfx", name="fast_whoosh", at=0, align="start", why="влёт камеры в первый кадр"),
           dict(kind="sfx", name="riser", at=0, dt=0.0, align="start", why="riser с нуля к раскрытию"),
           dict(kind="sfx", name="swoosh_deep", at=3, dt=0.15, why="маркер замыкает круг на понедельнике"),
-          dict(kind="mark", anchor=True, text=HOOK["anchor"], at=0, speed=2.0, x=540, y=190, size=124, marker=RED)]),
+          dict(kind="mark", anchor=True, text=HOOK["anchor"], at=0, speed=2.0, x=540, y=215, size=124, marker=RED)]),
  dict(text=T1, after_sfx="riser", voice=V1,
       shots=[sh(0, "f2", "wed", why="«к среде всё бросишь»: та же неделя, среда — кот сполз с дивана"),
              sh(ix(T1, "и"), "f2", "wed_face", zoom_in=0.1, why="«дело не в силе воли»: усталая морда, не ленивая"),
-             sh(ix(T1, "конце") - 1, "f1", "cal", why="превью «покажу, как начать без него»: тот самый понедельник на календаре")],
-      fx=[dict(kind="punch", at=ix(T1, "начать"), style="cut", amt=0.14, hold=0.4, why="«как начать без него»: удар на загадку")]),
+             sh(ix(T1, "конце") - 1, "f1", "cal", why="превью «в конце покажу»: тот самый понедельник на календаре"),
+             sh(ix(T1, "как"), "f1", "cal_close", zoom_in=0.1, why="«как начать без него»: маркер у понедельника крупно")],
+      fx=[dict(kind="punch", at=ix(T1, "начать"), style="cut", amt=0.14, hold=0.4, why="«как начать без него»: удар на загадку"),
+          dict(kind="circle", at=ix(T1, "начать"), x=232, y=345, rx=58, ry=50, hold=1.0,
+               why="«начать»: тот самый красный круг на понедельнике из хука — понедельник, без которого начнём")]),
  dict(text=T2,
       shots=[sh(0, "f1", "list", why="«три понедельника»: длинный список новой жизни до пола"),
              sh(ix(T2, "новая"), "f1", "sun_face", zoom_in=0.1, why="«новая жизнь»: кот с маркером, надежда в глазах"),
@@ -91,7 +95,7 @@ beats = [
              sh(ix(T5, "Бесплатно"), "f6", "screen", why="«Бесплатно»: пустой экран ноутбука — слово пишется на нём"),
              sh(ix(T5, "Смотри"), "f2", "wed", why="мост «смотри, что дальше»: снова среда — что будет?")],
       gaps=[[ix(T5, "Бесплатно"), 0.3]],
-      fx=[dict(kind="mark", at=ix(T5, "Бесплатно"), text="Бесплатно", x=540, y=700, size=110, marker=RED,
+      fx=[dict(kind="mark", at=ix(T5, "Бесплатно"), text="Бесплатно", x=360, y=400, size=100, marker=RED,
                why="«Бесплатно» от руки, чёрный текст на красном маркере (владелец 02.11)")]),
  dict(text=T6,
       shots=[sh(0, "f2", "wed_face", why="«в среду я опять сорвался»: тот же провал"),
@@ -277,7 +281,7 @@ passport = dict(
   rehook=1),
  coverage=C, matrix=matrix, inventory=inventory)
 spec = dict(title=f"Кот и дела · серия 14: «{HOOK['text'].replace('*', '')}» (голос Daniel, эксперимент: уф не в начале, красный маркер)",
-            rate=1.15, lead_in=0.0, tail=0.5,
+            rate=1.15, lead_in=0.0, tail=1.1,
             sources={"f1": {"frame": "gen/m1_sunday.png"}, "f2": {"frame": "gen/m2_wednesday.png"}, "f3": {"frame": "gen/m3_thursday.png"},
                      "f4": {"frame": "lib/calendar_tear.png"}, "f5": {"frame": "lib/spring_door.png"}, "f6": {"frame": "lib/laptop_timer.png"}},
             beats=beats, passport=passport)
