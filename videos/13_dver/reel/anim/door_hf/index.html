@@ -18,9 +18,9 @@
   <body>
     <!-- Хук рилса 13 «Ты шёл и всё забыл?»: мир сцены в координатах ×2 исходника: фон 1440×2220 от (230, 440), сцена (координаты слоёв) от (230, 740).
          Камеру, тряску, субтитры и звук даёт сборщик рилса, здесь только то, что движется в самом рисунке.
-         Время удара — ударный слог «забы́л» из озвучки: data-hit (с). -->
+         Время удара — ударный слог «забы́л» из озвучки: data-vars.hit (с), подставляет scripts/anim_hf.py. -->
     <div id="root" data-composition-id="main" data-start="0" data-duration="1.5" data-width="1440" data-height="2220"
-         data-hit="0.94" data-motion-blur="on" data-layout-allow-overflow data-layout-allow-overlap>
+         data-vars='{"hit": 0.94}' data-motion-blur="on" data-layout-allow-overflow data-layout-allow-overlap>
       <img id="bg" class="abs clip" src="assets/bg.png" style="left:0;top:0" data-start="0" data-duration="1.5" />
       <div id="cat" class="layer clip" data-start="0" data-duration="1.5">
         <div id="catApproach" class="layer">
@@ -53,7 +53,7 @@
     </div>
     <script>
       const root = document.getElementById("root");
-      const H = parseFloat(root.dataset.hit);          // удар
+      const H = JSON.parse(root.dataset.vars).hit;          // удар
       const PRE = 0.14;                                  // замах до удара
       const STEP = 0.36;                                 // шаг кота
       const CAT_FOOT = "840px 1780px", TAIL_PIVOT = "311px 501px", CLOUD_C = "732px 303px";

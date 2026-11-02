@@ -1765,3 +1765,104 @@ if __name__ == "__main__":
             + check_viewer_promise(spec, log, os.path.relpath(sys.argv[1])))
     print("\n".join("✗ " + e for e in errs) or "✓ reel.json по правилам (тайминг проверит reel.py при рендере)")
     sys.exit(1 if errs else 0)
+
+
+# --------------------------------------------------------------------------- стандарт 23 (владелец 02.11)
+# 1) «чтобы все последующие Reels уже на автомате делались… через гиперфреймс»: сцена хука — на общем модуле
+#    scripts/anim_hf.py (HyperFrames: размытие поворота и масштаба, побайтный повтор; ENGINES.md рилса 13).
+# 2) «чтобы не было вообще повторений никаких в кадрах… почему нету в рекомендациях»: рилс не повторяет прошлые —
+#    ни один рисунок (по содержимому файла), ни одна фраза почти дословно. Живой случай: призыв «В шапке профиля я
+#    помогу тебе начать твоё дело, а также посижу с тобой пару минут…» стоял в рилсах 05, 07, 08, 09, 10 и 12, а
+#    оригинал рилса 12 брал рисунки рилсов 03, 04, 05 и 08.
+HF_STANDARD = 23
+REPEAT_NGRAM = 3            # совпадение фраз — по тройкам слов
+REPEAT_SHARE = 0.5          # больше половины троек фразы уже были в другом рилсе — повтор
+
+
+def _is_new(spec, log, reel_dir):
+    beats = spec.get("beats") or []
+    bare = lambda x: " ".join(re.sub(r"[^\w\s]+", "", x).split()[:2]).lower()   # noqa: E731
+    first = bare(clean(beats[0]["text"])) if beats else ""
+    return bool(reel_dir) and not any(os.path.normpath(r.get("reel", "")) == os.path.normpath(reel_dir or "")
+                                      and bare(r.get("first_words", "")) == first for r in log)
+
+
+def check_hf_hook(spec, log=(), reel_dir="", abs_dir=None):
+    pp = spec.get("passport") or {}
+    std = pp.get("standard") or 0
+    if std < HF_STANDARD:
+        if _is_new(spec, log, reel_dir):
+            return [f"новый рилс: нужен \"standard\": {HF_STANDARD} — хук на HyperFrames (scripts/anim_hf.py, скилл "
+                    "reel-anim) и ни одного повтора рисунков и фраз прошлых рилсов"]
+        return []
+    s0 = ((spec.get("beats") or [{}])[0].get("shots") or [{}])[0]
+    name = s0.get("anim")
+    path = os.path.join(abs_dir or reel_dir, "anim", f"{name}.py") if name else None
+    if not path or not os.path.exists(path):
+        return []                                           # сцены нет — об этом скажет check_hook_motion
+    if "anim_hf.Scene(" not in open(path, encoding="utf-8").read():
+        return [f"хук: сцена anim/{name}.py не на HyperFrames — движение хука делается в композиции HyperFrames "
+                "через scripts/anim_hf.py (решение владельца 28.10 и 02.11, образец — рилс 13 door_hf)"]
+    return []
+
+
+def _grams(text):
+    w = re.findall(r"[а-яёa-z0-9]+", clean(text).lower())
+    return {tuple(w[i:i + REPEAT_NGRAM]) for i in range(len(w) - REPEAT_NGRAM + 1)}
+
+
+def _source_files(spec, reel_abs):
+    out = {}
+    for k, v in (spec.get("sources") or {}).items():
+        f = v.get("frame") if isinstance(v, dict) else v
+        if isinstance(f, str):
+            p = os.path.normpath(os.path.join(reel_abs, f))
+            if os.path.exists(p):
+                out[k] = p
+    return out
+
+
+def check_originality(spec, reel_abs, others):
+    """others — [(имя рилса, его reel.json, папка)] прошлых рилсов. Для стандарта ≥ HF_STANDARD: ни один рисунок рилса
+    не совпадает по содержимому с рисунком прошлого рилса, ни одна фраза не повторяет фразу прошлого рилса больше чем
+    на REPEAT_SHARE троек слов."""
+    import hashlib
+    if ((spec.get("passport") or {}).get("standard") or 0) < HF_STANDARD:
+        return []
+
+    def md5(p):
+        return hashlib.md5(open(p, "rb").read()).hexdigest()
+    mine = {k: md5(p) for k, p in _source_files(spec, reel_abs).items()}
+    seen, said = {}, []
+    for name, osp, odir in others:
+        for p in _source_files(osp, odir).values():
+            seen.setdefault(md5(p), name)
+        said += [(name, _grams(b.get("text", ""))) for b in osp.get("beats") or []]
+    err = [f"рисунок {k} уже был в рилсе {seen[h]} — повтор кадра (нарисуйте свой: reel_draw.py)"
+           for k, h in mine.items() if h in seen]
+    for i, b in enumerate(spec.get("beats") or []):
+        g = _grams(b.get("text", ""))
+        if len(g) < 2:
+            continue
+        for name, og in said:
+            if og and len(g & og) / len(g) > REPEAT_SHARE:
+                err.append(f"фраза {i} почти дословно была в рилсе {name}: «{clean(b['text'])[:70]}…» — скажите иначе, "
+                           "своими словами этой истории")
+                break
+    return err
+
+
+def other_reels(root, reel_abs):
+    """Все прошлые рилсы на диске: [(имя, reel.json, папка)], кроме этого."""
+    import glob as _glob
+    import json as _json
+    out = []
+    for p in sorted(_glob.glob(os.path.join(root, "videos", "*", "reel*", "reel.json"))):
+        d = os.path.dirname(p)
+        if os.path.normpath(d) == os.path.normpath(reel_abs):
+            continue
+        try:
+            out.append((os.path.relpath(d, os.path.join(root, "videos")), _json.load(open(p, encoding="utf-8")), d))
+        except (OSError, ValueError):
+            continue
+    return out

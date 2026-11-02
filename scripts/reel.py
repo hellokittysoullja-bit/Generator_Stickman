@@ -788,6 +788,9 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     rule_errs += reel_rules.check_first_line(spec, json.load(open(log_p, encoding="utf8")) if os.path.exists(log_p) else [],
                                              os.path.relpath(reel_dir, ROOT))   # первая строка — диссонанс
     rule_errs += reel_rules.check_structure(spec)       # вся структура: объяснение, ясный ответ, приёмы
+    _log = json.load(open(log_p, encoding="utf8")) if os.path.exists(log_p) else []
+    rule_errs += reel_rules.check_hf_hook(spec, _log, os.path.relpath(reel_dir, ROOT), reel_dir)   # хук на HyperFrames
+    rule_errs += reel_rules.check_originality(spec, reel_dir, reel_rules.other_reels(ROOT, reel_dir))   # без повторов
     rule_errs += reel_rules.rehook_timing(spec, [times[i0]["start"] for i0, _ in spans])
     if ((spec.get("passport") or {}).get("standard") or 0) >= reel_rules.HOOK_START_STANDARD and shots[0].get("anim"):
         import anim

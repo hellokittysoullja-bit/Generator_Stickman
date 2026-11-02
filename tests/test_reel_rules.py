@@ -1206,3 +1206,32 @@ def test_library_has_every_original():
     gone = os.path.join(root, "library", "cat", "removed.json")
     back = [r["was"] for r in (json.load(open(gone, encoding="utf8")) if os.path.exists(gone) else []) if r["sha256"] in have]
     assert not back, f"снятые владельцем картинки вернулись в библиотеку: {back}"
+
+
+def test_standard_23_hook_on_hyperframes_and_no_repeats_of_other_reels(tmp_path):
+    """Владелец 02.11: новые рилсы — хук на HyperFrames автоматически, и ни одного повтора кадров и фраз прошлых
+    рилсов (призыв «В шапке профиля я помогу тебе начать твоё дело…» стоял в шести рилсах)."""
+    import json
+    import reel_rules as rr
+    d = tmp_path / "videos" / "14_x" / "reel"; (d / "anim").mkdir(parents=True); (d / "gen").mkdir()
+    (d / "gen" / "a.png").write_bytes(b"own")
+    (d / "anim" / "hook.py").write_text("import anim\n", encoding="utf-8")
+    spec = {"passport": {"standard": 23}, "sources": {"f1": {"frame": "gen/a.png"}},
+            "beats": [{"text": "Все ушли, а ты?", "shots": [{"anim": "hook"}]},
+                      {"text": "В шапке профиля я помогу тебе начать твоё дело, а также посижу с тобой пару минут"}]}
+    errs = rr.check_hf_hook(spec, [], "videos/14_x/reel", str(d))
+    assert errs and "HyperFrames" in errs[0]
+    (d / "anim" / "hook.py").write_text("import anim_hf\nhf = anim_hf.Scene(...)\n", encoding="utf-8")
+    assert rr.check_hf_hook(spec, [], "videos/14_x/reel", str(d)) == []
+    o = tmp_path / "videos" / "07_y" / "reel"; (o / "gen").mkdir(parents=True)
+    (o / "gen" / "b.png").write_bytes(b"own")                     # тот же рисунок по содержимому
+    ospec = {"sources": {"f2": {"frame": "gen/b.png"}},
+             "beats": [{"text": "В шапке профиля я помогу тебе начать твоё дело, |а также посижу с тобой пару минут, "
+                                "пока ты делаешь первый шаг"}]}
+    (o / "reel.json").write_text(json.dumps(ospec, ensure_ascii=False), encoding="utf-8")
+    errs = rr.check_originality(spec, str(d), rr.other_reels(str(tmp_path), str(d)))
+    assert any("рисунок f1" in e for e in errs) and any("фраза 1" in e for e in errs)
+    assert not any("фраза 0" in e for e in errs)
+    old = dict(spec, passport={"standard": 22})                    # прежние рилсы судятся своими правилами
+    assert rr.check_originality(old, str(d), rr.other_reels(str(tmp_path), str(d))) == []
+    assert rr.check_hf_hook(old, [], "videos/14_x/reel", str(d))   # но новый рилс ниже 23 не рендерится
