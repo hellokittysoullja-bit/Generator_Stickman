@@ -1264,3 +1264,15 @@ def test_other_reels_never_include_the_reel_itself_by_relative_path(tmp_path, mo
     d = tmp_path / "videos" / "12_x" / "reel"; d.mkdir(parents=True); (d / "reel.json").write_text("{}", encoding="utf-8")
     monkeypatch.chdir(tmp_path)
     assert rr.other_reels(str(tmp_path), "videos/12_x/reel") == []
+
+
+def test_whoosh_variety_never_puts_two_same_whooshes_in_a_row():
+    """Владелец 02.11 (рилс 14): «не должны два одинаковых свуша идти подряд». Код сам ставит тихие свисты — с флагом
+    "whoosh_variety" они чередуются и не повторяют соседний смысловой свист; без флага план прежний."""
+    import reel
+    mk = lambda: [dict(name=n, t=t, align="peak", peak=t, soft=s, rate=1.0, role="whoosh")   # noqa: E731
+                  for n, t, s in [("swoosh", 1, True), ("swoosh", 3, True), ("swoosh", 5, True),
+                                  ("fast_whoosh", 7, False), ("fast_whoosh", 8.5, True)]]
+    names = [p["name"] for p in reel.vary_whooshes(mk())]
+    assert all(a != b for a, b in zip(names, names[1:]))
+    assert names[3] == "fast_whoosh"                                  # смысловой звук reel.json не тронут

@@ -659,7 +659,9 @@ def hook_split_errors(words, times, spans):
             f"({cap_width(list(range(n)), words)} px > {CAP_MAX_W}): короче или без лишнего слова"]
 
 def build(reel_dir, sheet=False, preview=False, force=False):
+    global WHOOSH_VARIETY
     spec = json.load(open(os.path.join(reel_dir, "reel.json"), encoding="utf8"))
+    WHOOSH_VARIETY = bool(spec.get("whoosh_variety"))
     import reel_rules                                  # правила рилса кодом: хук, riser с 0 с, звуки владельца, планы ≤ 3 с
     rule_errs = reel_rules.check_spec(spec, set(SFX))
     log_p = os.path.join(ROOT, "docs", "reels_log.json")           # против шаблона: паспорт против прошлых рилсов
@@ -1258,6 +1260,29 @@ SWOOSH_RATES = (1.0, 0.95, 1.05, 0.97, 1.03)
 CUT_SOUND_NEAR = 0.35      # склейка «озвучена», если пик звука ближе 0.35 с
 WHOOSHES, WHOOSH_GAP = reel_rules.WHOOSHES, reel_rules.WHOOSH_GAP   # свист от свиста не ближе 1.5 с (владелец 26.10)
 
+WHOOSH_VARIETY = False     # рилс 14 (владелец 02.11): «не должны два одинаковых свуша идти подряд» — "whoosh_variety": true
+QUIET_PAIR = ("swoosh", "fast_whoosh")
+
+
+def vary_whooshes(plan):
+    """Автоматический тихий свист не повторяет соседний свист: два одинаковых подряд узнаются как шаблон (владелец
+    02.11). Меняются только тихие свисты, которые код ставит сам (soft); смысловые звуки reel.json остаются как есть."""
+    ws = sorted((p for p in plan if p["name"] in WHOOSHES), key=lambda p: p["peak"])
+    for i, p in enumerate(ws):
+        if not p["soft"] or p["name"] not in QUIET_PAIR:
+            continue
+        prev = ws[i - 1]["name"] if i else None
+        nxt = ws[i + 1]["name"] if i + 1 < len(ws) and not ws[i + 1]["soft"] else None
+        for name in (p["name"], *QUIET_PAIR):
+            if name != prev and name != nxt:
+                if name != p["name"]:
+                    pk = SFX[name][1] / p["rate"]
+                    p.update(name=name, role=SFX_LIB[name]["role"],
+                             peak=p["t"] if p["align"] == "peak" else p["t"] + pk)
+                break
+    return plan
+
+
 def sound_plan(shots, events):
     """Все звуки рилса по порядку: [{name, t, align, gain_db, pan, peak, soft, whip}] — одна правда для микшера и для
     правил (reel_rules.check_sounds): хлёсткие склейки — swoosh пиком на склейку (J-cut), звуки планов, события фраз,
@@ -1306,7 +1331,7 @@ def sound_plan(shots, events):
             add(name, t, gain_db=SOFT_DB["new_picture"], soft=True, whip=True)
         else:
             add("fast_whoosh", t, gain_db=SOFT_DB["same_picture"], soft=True)
-    return plan
+    return vary_whooshes(plan) if WHOOSH_VARIETY else plan
 
 CUT_SEARCH_SEC = 0.2      # тишину между словами ищем в ±0.2 с от середины по alignment
 CUT_FRAME_SEC = 0.01
