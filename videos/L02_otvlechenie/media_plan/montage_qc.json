@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "measured_at": "2026-11-02T14:57:39",
+ "measured_at": "2026-11-02T15:13:15",
  "video": "final.mp4",
  "spec": "docs/MONTAGE_SPEC.md",
  "limits": [
@@ -10,7 +10,7 @@
  ],
  "checks": {
   "plan_max_sec": {
-   "value": 4.81899999999996,
+   "value": 4.0,
    "threshold": 3.5416666666666665,
    "op": "<=",
    "level": "block",
@@ -18,7 +18,7 @@
    "state": "violation"
   },
   "plan_len_cv": {
-   "value": 0.2723768299975945,
+   "value": 0.2595116988324439,
    "threshold": 0.25,
    "op": ">=",
    "level": "warn",
@@ -26,7 +26,7 @@
    "state": "ok"
   },
   "plan_near_equal_share": {
-   "value": 0.19411764705882353,
+   "value": 0.20114942528735633,
    "threshold": 0.3,
    "op": "<=",
    "level": "warn",
@@ -34,7 +34,7 @@
    "state": "ok"
   },
   "frozen_share": {
-   "value": 0.018618600105941876,
+   "value": 0.018047477403305624,
    "threshold": 0.05,
    "op": "<=",
    "level": "warn",
@@ -42,7 +42,7 @@
    "state": "ok"
   },
   "speed_max_over_mean": {
-   "value": 1.0234735080407074,
+   "value": 1.0228669658938594,
    "threshold": 1.25,
    "op": "<=",
    "level": "warn",
@@ -58,7 +58,7 @@
    "state": "ok"
   },
   "cut_luma_jump": {
-   "value": 64.70428819444444,
+   "value": 87.8972829861111,
    "threshold": 12.0,
    "op": "<=",
    "level": "warn",
@@ -66,7 +66,7 @@
    "state": "violation"
   },
   "cut_paper_de": {
-   "value": 2.3936872482299805,
+   "value": 2.626588821411133,
    "threshold": 2.0,
    "op": "<=",
    "level": "warn",
@@ -90,7 +90,7 @@
    "state": "violation"
   },
   "sharpness_cv": {
-   "value": 0.020031224514107188,
+   "value": 0.01922747305290617,
    "threshold": 0.1,
    "op": "<=",
    "level": "warn",
@@ -133,7 +133,7 @@
    "state": "ok"
   },
   "cuts_inside_words_share": {
-   "value": 0.0159,
+   "value": 0.0154,
    "threshold": 0.05,
    "op": "<=",
    "level": "block",
@@ -152,33 +152,33 @@
  ],
  "no_signal": [],
  "measured": {
-  "plan_max_sec": 4.81899999999996,
-  "plan_len_cv": 0.2723768299975945,
-  "plan_near_equal_share": 0.19411764705882353,
-  "plans": 171,
-  "plan_mean_sec": 2.6142748538011684,
-  "writing_plans": 7,
-  "frozen_share": 0.018618600105941876,
-  "speed_max_over_mean": 1.0234735080407074,
-  "plans_measured": 158,
-  "plans_total": 171,
+  "plan_max_sec": 4.0,
+  "plan_len_cv": 0.2595116988324439,
+  "plan_near_equal_share": 0.20114942528735633,
+  "plans": 175,
+  "plan_mean_sec": 2.554519999999999,
+  "writing_plans": 35,
+  "frozen_share": 0.018047477403305624,
+  "speed_max_over_mean": 1.0228669658938594,
+  "plans_measured": 163,
+  "plans_total": 175,
   "direction_flips_excess": 0,
-  "pictures_measured": 38,
-  "cut_luma_jump": 64.70428819444444,
-  "cut_luma_jump_median": 14.367456597222215,
+  "pictures_measured": 40,
+  "cut_luma_jump": 87.8972829861111,
+  "cut_luma_jump_median": 13.748940972222215,
   "cut_attention_shift": 0.3559322953224182,
-  "cuts": 170,
-  "sharpness_cv": 0.020031224514107188,
+  "cuts": 174,
+  "sharpness_cv": 0.01922747305290617,
   "hook_first_cut_sec": 1.4166666666666667,
   "hook_plan_len_sec": 1.417,
   "hook_voice_onset_sec": 0.0,
   "hook_plans": 3,
-  "cut_paper_de": 2.3936872482299805,
-  "cut_paper_de_median": 0.4875425845384598,
+  "cut_paper_de": 2.626588821411133,
+  "cut_paper_de_median": 0.4906514286994934,
   "cuts_unconfirmed": 40,
   "cuts_extra_by_scenedetect": 0,
   "cuts_in_silence_share": 0.8636,
-  "cuts_inside_words_share": 0.0159
+  "cuts_inside_words_share": 0.0154
  },
  "per_plan": [
   {
@@ -193,7 +193,12 @@
   null,
   {
    "frozen": 0.0,
-   "ratio": 1.0178762018057317,
+   "ratio": 1.002267951680584,
+   "static": false
+  },
+  {
+   "frozen": 0.0,
+   "ratio": 1.0042041265698018,
    "static": false
   },
   {
@@ -277,7 +282,16 @@
    "ratio": 1.0196000662452687,
    "static": false
   },
-  null,
+  {
+   "frozen": 0.0,
+   "ratio": 1.003198020667633,
+   "static": false
+  },
+  {
+   "frozen": 0.0,
+   "ratio": 1.0063480876228252,
+   "static": false
+  },
   {
    "frozen": 0.0,
    "ratio": 1.0316926143314664,
@@ -563,12 +577,17 @@
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0303792021404214,
+   "ratio": 1.0056827127728305,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0045648522356945,
+   "ratio": 1.0038896929823515,
+   "static": false
+  },
+  {
+   "frozen": 0.0,
+   "ratio": 1.0048509871068712,
    "static": false
   },
   {
@@ -840,7 +859,12 @@
   null,
   {
    "frozen": 0.0,
-   "ratio": 1.0838915798373323,
+   "ratio": 1.1001041771484448,
+   "static": false
+  },
+  {
+   "frozen": 0.0,
+   "ratio": 1.0035078307101848,
    "static": false
   },
   null,
@@ -1012,6 +1036,10 @@
   ],
   [
    7.31,
+   8.792
+  ],
+  [
+   8.792,
    11.417
   ],
   [
@@ -1084,6 +1112,10 @@
   ],
   [
    54.917,
+   57.417
+  ],
+  [
+   57.417,
    59.083
   ],
   [
@@ -1324,6 +1356,10 @@
   ],
   [
    218.22,
+   220.25
+  ],
+  [
+   220.25,
    222.875
   ],
   [
@@ -1552,6 +1588,10 @@
   ],
   [
    366.708,
+   368.833
+  ],
+  [
+   368.833,
    371.125
   ],
   [
@@ -1678,6 +1718,7 @@
   5.167,
   6.375,
   7.292,
+  8.792,
   11.417,
   14.333,
   16.417,
@@ -1696,6 +1737,7 @@
   50.0,
   52.125,
   54.917,
+  57.417,
   59.083,
   62.042,
   65.5,
@@ -1756,6 +1798,7 @@
   214.042,
   216.042,
   218.208,
+  220.25,
   222.875,
   225.292,
   228.5,
@@ -1813,6 +1856,7 @@
   363.208,
   365.583,
   366.708,
+  368.833,
   371.125,
   372.167,
   375.0,
@@ -1843,7 +1887,7 @@
   443.75,
   445.667
  ],
- "qc_seconds": 298.6,
+ "qc_seconds": 293.2,
  "video_seconds": 447.5,
  "verdict": "blocked"
 }

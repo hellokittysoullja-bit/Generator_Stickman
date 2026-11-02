@@ -29,6 +29,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [],
    "notes": [
     "крупный план «the lit empty shelves» не делается: деталь не помещается в план",
     "крупный план «the phone lying face down» не делается: разрезал бы голову или тело героя",
@@ -41,7 +42,11 @@
    "views": [
     [
      0.0,
-     "lean"
+     "manual"
+    ],
+    [
+     1.48,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -49,10 +54,12 @@
    "key": null,
    "key_at": null,
    "key_hold_until": null,
-   "accent": "не слабая воля",
+   "accent": null,
+   "narrator": [],
    "notes": [
     "крупный план «the phone on the high pan» не делается: почти совпадает с другим планом",
-    "крупный план «the head of a black cartoon cat» не делается: почти совпадает с другим планом"
+    "крупный план «the head of a black cartoon cat» не делается: почти совпадает с другим планом",
+    "accent «не слабая воля» не пишется: в ручном плане нет места"
    ]
   },
   {
@@ -78,6 +85,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [],
    "notes": [
     "крупный план «the thought clouds from the head» не делается: почти совпадает с другим планом",
     "крупный план «the phone with blank speech bubbles» не делается: деталь мелкая даже на пределе зума",
@@ -111,6 +119,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [],
    "notes": [
     "крупный план «the flame on the tip of the tail of a black cartoon cat» не делается: деталь мелкая даже на пределе зума",
     "крупный план «the head of a black cartoon cat» не делается: почти совпадает с другим планом"
@@ -151,6 +160,12 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [
+    [
+     5.88,
+     15.56
+    ]
+   ],
    "notes": [
     "крупный план «the pen in the paw» не делается: разрезал бы голову или тело героя",
     "крупный план «the head of a black cartoon cat» не делается: почти совпадает с другим планом"
@@ -183,6 +198,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [],
    "notes": [
     "крупный план «the phone in the other room» не делается: деталь мелкая даже на пределе зума",
     "крупный план «the phone in the paw» не делается: почти совпадает с другим планом"
@@ -194,7 +210,11 @@
    "views": [
     [
      0.0,
-     "lean"
+     "manual"
+    ],
+    [
+     2.48,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -203,6 +223,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [],
    "notes": [
     "крупный план «the hesitating paw» не делается: разрезал бы голову или тело героя",
     "крупный план «the flame on the tip of the tail of a black cartoon cat» не делается: разрезал бы голову или тело героя",
@@ -229,6 +250,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [],
    "notes": [
     "крупный план «the rows of desks» не делается: деталь не помещается в план",
     "крупный план «the researcher with the clipboard» не делается: почти совпадает с другим планом"
@@ -261,6 +283,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [],
    "notes": [
     "крупный план «the bag on the chair» не делается: деталь мелкая даже на пределе зума",
     "крупный план «the phone face down on the desk» не делается: деталь мелкая даже на пределе зума",
@@ -290,6 +313,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [],
    "notes": [
     "крупный план «the calm student» не делается: деталь не помещается в план",
     "крупный план «the thought cloud with a phone» не делается: деталь мелкая даже на пределе зума",
@@ -315,6 +339,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [],
    "notes": []
   },
   {
@@ -352,6 +377,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [],
    "notes": [
     "крупный план «the flame on the tip of the tail of a black cartoon cat» не делается: деталь мелкая даже на пределе зума",
     "крупный план «the head of a black cartoon cat» не делается: почти совпадает с другим планом"
@@ -392,6 +418,12 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [
+    [
+     9.11,
+     15.02
+    ]
+   ],
    "notes": [
     "крупный план «the phone with the blank bubble» не делается: деталь мелкая даже на пределе зума"
    ]
@@ -419,6 +451,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [],
    "notes": [
     "крупный план «the doorway» не делается: деталь не помещается в план",
     "крупный план «the flame on the tip of the tail of a black cartoon cat» не делается: деталь мелкая даже на пределе зума",
@@ -450,6 +483,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [],
    "notes": [
     "крупный план «the phone lying face up» не делается: почти совпадает с другим планом",
     "крупный план «a phone» не делается: почти совпадает с другим планом"
@@ -478,6 +512,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [],
    "notes": [
     "крупный план «the open fridge door» не делается: деталь не помещается в план"
    ]
@@ -501,6 +536,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [],
    "notes": [
     "крупный план «the open fridge» не делается: деталь не помещается в план",
     "крупный план «the empty paws» не делается: разрезал бы голову или тело героя",
@@ -550,6 +586,12 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [
+    [
+     12.28,
+     21.81
+    ]
+   ],
    "notes": [
     "крупный план «the tap on the shoulder» не делается: деталь мелкая даже на пределе зума"
    ]
@@ -585,6 +627,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [],
    "notes": [
     "крупный план «the thought clouds» не делается: деталь не помещается в план"
    ]
@@ -624,6 +667,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [],
    "notes": [
     "крупный план «the people on the bench» не делается: деталь не помещается в план",
     "крупный план «the flame on the tip of the tail of a black cartoon cat» не делается: деталь мелкая даже на пределе зума",
@@ -657,6 +701,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [],
    "notes": [
     "крупный план «the flame on the tip of the tail of a black cartoon cat» не делается: деталь мелкая даже на пределе зума",
     "крупный план «the head of a black cartoon cat» не делается: почти совпадает с другим планом"
@@ -681,6 +726,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [],
    "notes": [
     "крупный план «the puddle» не делается: деталь не помещается в план",
     "крупный план «the flame on the tip of the tail of a black cartoon cat» не делается: деталь мелкая даже на пределе зума"
@@ -692,6 +738,10 @@
    "views": [
     [
      0.0,
+     "manual"
+    ],
+    [
+     2.04,
      "manual"
     ],
     [
@@ -709,6 +759,7 @@
    "key_at": 6.75,
    "key_hold_until": 10.09,
    "accent": null,
+   "narrator": [],
    "notes": [
     "крупный план «the stepping character» не делается: почти совпадает с другим планом",
     "крупный план «the small door in the brain» не делается: почти совпадает с другим планом",
@@ -738,6 +789,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [],
    "notes": [
     "крупный план «the blank glowing screen» не делается: деталь мелкая даже на пределе зума"
    ]
@@ -773,6 +825,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [],
    "notes": [
     "крупный план «the small card» не делается: деталь мелкая даже на пределе зума",
     "крупный план «the flame on the tip of the tail of a black cartoon cat» не делается: деталь мелкая даже на пределе зума",
@@ -806,6 +859,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [],
    "notes": [
     "крупный план «the limp paw» не делается: деталь мелкая даже на пределе зума",
     "крупный план «the flame on the tip of the tail of a black cartoon cat» не делается: деталь мелкая даже на пределе зума"
@@ -830,6 +884,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [],
    "notes": [
     "крупный план «the scissors» не делается: деталь мелкая даже на пределе зума",
     "крупный план «the flame on the tip of the tail of a black cartoon cat» не делается: деталь мелкая даже на пределе зума",
@@ -859,6 +914,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [],
    "notes": [
     "крупный план «the flame on the tip of the tail of a black cartoon cat» не делается: деталь мелкая даже на пределе зума"
    ]
@@ -914,6 +970,12 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [
+    [
+     16.16,
+     25.62
+    ]
+   ],
    "notes": [
     "крупный план «the cat's folded paws» не делается: деталь мелкая даже на пределе зума",
     "крупный план «the head of a black cartoon cat» не делается: почти совпадает с другим планом"
@@ -942,6 +1004,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [],
    "notes": [
     "крупный план «the kitchen doorway» не делается: деталь не помещается в план",
     "крупный план «the flame on the tip of the tail of a black cartoon cat» не делается: деталь мелкая даже на пределе зума",
@@ -979,6 +1042,12 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [
+    [
+     3.48,
+     12.88
+    ]
+   ],
    "notes": [
     "крупный план «the flame on the tip of the tail of a black cartoon cat» не делается: деталь мелкая даже на пределе зума",
     "крупный план «the boomerang» не делается: вокруг детали пустая бумага"
@@ -1003,6 +1072,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [],
    "notes": [
     "крупный план «the empty chair» не делается: деталь не помещается в план",
     "крупный план «the cold cup of tea» не делается: деталь мелкая даже на пределе зума"
@@ -1027,6 +1097,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [],
    "notes": [
     "крупный план «the phone at the ear» не делается: деталь мелкая даже на пределе зума",
     "крупный план «the head of a black cartoon cat» не делается: почти совпадает с другим планом"
@@ -1055,6 +1126,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [],
    "notes": [
     "крупный план «the cup of tea» не делается: деталь мелкая даже на пределе зума",
     "крупный план «the flame on the tip of the tail of a black cartoon cat» не делается: деталь мелкая даже на пределе зума",
@@ -1084,6 +1156,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [],
    "notes": []
   },
   {
@@ -1125,6 +1198,12 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [
+    [
+     11.38,
+     19.51
+    ]
+   ],
    "notes": [
     "крупный план «the paws gathering» не делается: деталь мелкая даже на пределе зума",
     "крупный план «the flame on the tip of the tail of a black cartoon cat» не делается: деталь мелкая даже на пределе зума"
@@ -1145,6 +1224,10 @@
     [
      3.48,
      "manual"
+    ],
+    [
+     5.6,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -1153,6 +1236,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [],
    "notes": [
     "крупный план «the ringing phone» не делается: деталь мелкая даже на пределе зума",
     "крупный план «the sticky note» не делается: деталь мелкая даже на пределе зума"
@@ -1185,6 +1269,7 @@
    "key_at": 0.44,
    "key_hold_until": 4.39,
    "accent": null,
+   "narrator": [],
    "notes": [
     "крупный план «the paw» не делается: разрезал бы голову или тело героя",
     "крупный план «the flame on the tip of the tail of a black cartoon cat» не делается: разрезал бы голову или тело героя",
@@ -1215,6 +1300,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [],
    "notes": [
     "крупный план «the phone at the ear» не делается: деталь мелкая даже на пределе зума",
     "крупный план «the flame on the tip of the tail of a black cartoon cat» не делается: деталь мелкая даже на пределе зума",
@@ -1252,6 +1338,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [],
    "notes": [
     "крупный план «the slip in the paw» не делается: деталь мелкая даже на пределе зума",
     "крупный план «the head of a black cartoon cat» не делается: почти совпадает с другим планом"
@@ -1284,6 +1371,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [],
    "notes": [
     "план 0.0-10.0 с без смены: другого плана без разреза рисунка нет"
    ]
@@ -1307,6 +1395,12 @@
    "key_at": 1.69,
    "key_hold_until": 5.38,
    "accent": null,
+   "narrator": [
+    [
+     3.43,
+     10.55
+    ]
+   ],
    "notes": [
     "крупный план «flame on tail tip» не делается: деталь мелкая даже на пределе зума",
     "крупный план «raised paw with pads» не делается: деталь мелкая даже на пределе зума",
@@ -1333,6 +1427,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [],
    "notes": [
     "крупный план «the slip of paper on the desk» не делается: деталь мелкая даже на пределе зума"
    ]
@@ -1360,6 +1455,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [],
    "notes": [
     "крупный план «the sticky note» не делается: почти совпадает с другим планом",
     "крупный план «the door with the phone» не делается: почти совпадает с другим планом"
@@ -1396,6 +1492,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "narrator": [],
    "notes": [
     "крупный план «the glowing open fridge» не делается: деталь не помещается в план",
     "крупный план «the tall shut door» не делается: деталь не помещается в план"
