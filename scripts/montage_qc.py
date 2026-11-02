@@ -308,7 +308,24 @@ def writing_windows(video_dir):
     return out
 
 
-def length_metrics(plans, writing=()):
+def narrator_windows(video_dir):
+    """[(начало, конец)] кота-ведущего в глобальном времени — из shots_report.json. Под ведущим сцена размыта, а
+    в кадре живой персонаж (растёт, говорит, двигает ушами и хвостом): это не стоящий план, склейка под ним — разрыв
+    обращения к зрителю. В plan_max не входит; полный план вне ведущего считается как обычно."""
+    try:
+        clips = json.load(open(os.path.join(video_dir, "media_plan", "shots_report.json"), encoding="utf-8"))["clips"]
+    except (OSError, ValueError, KeyError):
+        return []
+    out, t0 = [], 0.0
+    for c in clips:
+        if "duration" not in c:
+            continue
+        out += [(t0 + float(a), t0 + float(b)) for a, b in c.get("narrator") or []]
+        t0 += float(c["duration"])
+    return out
+
+
+def length_metrics(plans, writing=(), narrator=()):
     """writing — окна «пишется и стоит» рукописной мысли: план, в котором она пишется, по замыслу держится до
     конца удержания (склейка на время письма запрещена, обрезать надпись нельзя) и в plan_max не входит,
     если кончается не позже конца удержания + допуск. Прежний ролик эп.01 держал такой план 4,83 с, новый —
@@ -325,6 +342,7 @@ def length_metrics(plans, writing=()):
         # следующий план начинается после удержания и ничего не вычитает
         held = sum(max(0.0, min(b, w1 + (WRITING_PLAN_SLACK_SEC if a <= w0 + 1e-6 else 0.0)) - max(a, w0))
                    for w0, w1 in writing)
+        held += sum(max(0.0, min(b, n1) - max(a, n0)) for n0, n1 in narrator)
         return b - a - held
     eff = [effective(a, b) for a, b in plans]
     return dict(plan_max_sec=float(max(eff)), plan_len_cv=float(L.std() / L.mean()) if len(L) > 2 else None,
@@ -383,7 +401,7 @@ def build(video_dir, video_path=None):
     sc = scan(video_path)
     plans = plan_bounds(cuts, total, pic)
     m = {}
-    m.update(length_metrics(plans, writing_windows(video_dir))); m.update(speed_metrics(sc, plans))
+    m.update(length_metrics(plans, writing_windows(video_dir), narrator_windows(video_dir))); m.update(speed_metrics(sc, plans))
     m.update(direction_metrics(sc, plans, pic, total))
     m.update(cut_metrics(sc, cuts)); m.update(sharpness_metrics(sc, plans)); m.update(hook_metrics(plans, cuts, silences))
     m.update(paper_tone_jumps(video_path, cuts, fps_d)); m.update(cuts_crosscheck(cuts, scenedetect_cuts(video_path)))

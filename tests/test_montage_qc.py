@@ -112,3 +112,18 @@ class TestDiscipline:
             pytest.skip("замер времени под параллельными воркерами делит ядра — не показатель")
         r = reports["lin"]
         assert r["qc_seconds"] < r["video_seconds"]
+
+
+def test_narrator_time_is_not_a_static_plan(tmp_path):
+    """Кот-ведущий перед размытой сценой — живой персонаж, говорит со зрителем; L02: 4,8 с ведущего блокировали
+    приёмку как «стоящий план». Время ведущего вычитается, план до ведущего считается как обычно."""
+    import json
+    import pytest
+    import montage_qc as mq
+    plans = [(0.0, 2.0), (2.0, 7.0)]
+    assert mq.length_metrics(plans, narrator=[(2.4, 7.0)])["plan_max_sec"] == pytest.approx(2.0)
+    assert mq.length_metrics(plans, narrator=[(5.0, 7.0)])["plan_max_sec"] == pytest.approx(3.0)
+    mp = tmp_path / "media_plan"; mp.mkdir()
+    (mp / "shots_report.json").write_text(json.dumps({"clips": [
+        {"index": 0, "duration": 2.0}, {"index": 1, "duration": 6.0, "narrator": [[1.0, 6.0]]}]}), encoding="utf-8")
+    assert mq.narrator_windows(str(tmp_path)) == [(pytest.approx(3.0), pytest.approx(8.0))]

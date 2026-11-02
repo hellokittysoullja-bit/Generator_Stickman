@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "measured_at": "2026-11-02T14:40:50",
+ "measured_at": "2026-11-02T14:57:39",
  "video": "final.mp4",
  "spec": "docs/MONTAGE_SPEC.md",
  "limits": [
@@ -10,7 +10,7 @@
  ],
  "checks": {
   "plan_max_sec": {
-   "value": 6.457999999999998,
+   "value": 4.81899999999996,
    "threshold": 3.5416666666666665,
    "op": "<=",
    "level": "block",
@@ -18,7 +18,7 @@
    "state": "violation"
   },
   "plan_len_cv": {
-   "value": 0.3168516501377039,
+   "value": 0.2723768299975945,
    "threshold": 0.25,
    "op": ">=",
    "level": "warn",
@@ -26,7 +26,7 @@
    "state": "ok"
   },
   "plan_near_equal_share": {
-   "value": 0.18674698795180722,
+   "value": 0.19411764705882353,
    "threshold": 0.3,
    "op": "<=",
    "level": "warn",
@@ -34,7 +34,7 @@
    "state": "ok"
   },
   "frozen_share": {
-   "value": 0.018978960107992365,
+   "value": 0.018618600105941876,
    "threshold": 0.05,
    "op": "<=",
    "level": "warn",
@@ -42,7 +42,7 @@
    "state": "ok"
   },
   "speed_max_over_mean": {
-   "value": 1.0237662003409693,
+   "value": 1.0234735080407074,
    "threshold": 1.25,
    "op": "<=",
    "level": "warn",
@@ -66,7 +66,7 @@
    "state": "violation"
   },
   "cut_paper_de": {
-   "value": 2.6477034091949463,
+   "value": 2.3936872482299805,
    "threshold": 2.0,
    "op": "<=",
    "level": "warn",
@@ -90,7 +90,7 @@
    "state": "violation"
   },
   "sharpness_cv": {
-   "value": 0.020176612903323652,
+   "value": 0.020031224514107188,
    "threshold": 0.1,
    "op": "<=",
    "level": "warn",
@@ -133,7 +133,7 @@
    "state": "ok"
   },
   "cuts_inside_words_share": {
-   "value": 0.0164,
+   "value": 0.0159,
    "threshold": 0.05,
    "op": "<=",
    "level": "block",
@@ -152,33 +152,33 @@
  ],
  "no_signal": [],
  "measured": {
-  "plan_max_sec": 6.457999999999998,
-  "plan_len_cv": 0.3168516501377039,
-  "plan_near_equal_share": 0.18674698795180722,
-  "plans": 167,
-  "plan_mean_sec": 2.676892215568861,
-  "writing_plans": 4,
-  "frozen_share": 0.018978960107992365,
-  "speed_max_over_mean": 1.0237662003409693,
-  "plans_measured": 155,
-  "plans_total": 167,
+  "plan_max_sec": 4.81899999999996,
+  "plan_len_cv": 0.2723768299975945,
+  "plan_near_equal_share": 0.19411764705882353,
+  "plans": 171,
+  "plan_mean_sec": 2.6142748538011684,
+  "writing_plans": 7,
+  "frozen_share": 0.018618600105941876,
+  "speed_max_over_mean": 1.0234735080407074,
+  "plans_measured": 158,
+  "plans_total": 171,
   "direction_flips_excess": 0,
-  "pictures_measured": 37,
+  "pictures_measured": 38,
   "cut_luma_jump": 64.70428819444444,
-  "cut_luma_jump_median": 14.164405381944434,
+  "cut_luma_jump_median": 14.367456597222215,
   "cut_attention_shift": 0.3559322953224182,
-  "cuts": 166,
-  "sharpness_cv": 0.020176612903323652,
+  "cuts": 170,
+  "sharpness_cv": 0.020031224514107188,
   "hook_first_cut_sec": 1.4166666666666667,
   "hook_plan_len_sec": 1.417,
   "hook_voice_onset_sec": 0.0,
   "hook_plans": 3,
-  "cut_paper_de": 2.6477034091949463,
-  "cut_paper_de_median": 0.46972429752349854,
+  "cut_paper_de": 2.3936872482299805,
+  "cut_paper_de_median": 0.4875425845384598,
   "cuts_unconfirmed": 40,
   "cuts_extra_by_scenedetect": 0,
   "cuts_in_silence_share": 0.8636,
-  "cuts_inside_words_share": 0.0164
+  "cuts_inside_words_share": 0.0159
  },
  "per_plan": [
   {
@@ -387,14 +387,15 @@
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0480627427173663,
+   "ratio": 1.0161265879087205,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0765897249093765,
+   "ratio": 1.0029255952808134,
    "static": false
   },
+  null,
   {
    "frozen": 0.0,
    "ratio": 1.0270105183196427,
@@ -562,17 +563,17 @@
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0125802283767669,
+   "ratio": 1.0303792021404214,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.015116899843949,
+   "ratio": 1.0045648522356945,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.2154017751021835,
+   "ratio": 1.0263827117882725,
    "static": false
   },
   {
@@ -845,12 +846,17 @@
   null,
   {
    "frozen": 0.0,
-   "ratio": 1.0059630398223087,
+   "ratio": 1.0089961984930433,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0109909623415947,
+   "ratio": 1.0051622227074781,
+   "static": false
+  },
+  {
+   "frozen": 0.0,
+   "ratio": 1.0034419417327285,
    "static": false
   },
   {
@@ -895,27 +901,37 @@
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0017226650768496,
+   "ratio": 1.0020887907803342,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0122325439635989,
+   "ratio": 1.0032921151638723,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0043547033358047,
+   "ratio": 1.0023297913222555,
    "static": false
   },
   {
    "frozen": 0.0,
-   "ratio": 1.0536319867431623,
+   "ratio": 1.0048670336995424,
+   "static": false
+  },
+  {
+   "frozen": 0.0,
+   "ratio": 1.0039248331815318,
+   "static": false
+  },
+  {
+   "frozen": 0.0,
+   "ratio": 1.0795387112321073,
    "static": false
   },
   {
    "frozen": 0.07142857142857142,
-   "ratio": 1.7731365119517417,
+   "ratio": 1.6715794652611782,
    "static": false
   },
   {
@@ -1164,10 +1180,14 @@
   ],
   [
    124.708,
-   127.75
+   128.375
   ],
   [
-   127.75,
+   128.375,
+   131.25
+  ],
+  [
+   131.25,
    134.208
   ],
   [
@@ -1304,14 +1324,14 @@
   ],
   [
    218.22,
-   220.708
-  ],
-  [
-   220.708,
    222.875
   ],
   [
    222.875,
+   225.292
+  ],
+  [
+   225.292,
    228.5
   ],
   [
@@ -1540,10 +1560,14 @@
   ],
   [
    372.167,
-   376.667
+   375.0
   ],
   [
-   376.667,
+   375.0,
+   378.333
+  ],
+  [
+   378.333,
    380.875
   ],
   [
@@ -1584,6 +1608,10 @@
   ],
   [
    404.292,
+   406.292
+  ],
+  [
+   406.292,
    408.833
   ],
   [
@@ -1592,6 +1620,10 @@
   ],
   [
    412.224,
+   413.917
+  ],
+  [
+   413.917,
    417.958
   ],
   [
@@ -1688,7 +1720,8 @@
   118.792,
   122.083,
   124.708,
-  127.75,
+  128.375,
+  131.25,
   134.208,
   136.0,
   138.25,
@@ -1723,8 +1756,8 @@
   214.042,
   216.042,
   218.208,
-  220.708,
   222.875,
+  225.292,
   228.5,
   231.25,
   233.875,
@@ -1782,7 +1815,8 @@
   366.708,
   371.125,
   372.167,
-  376.667,
+  375.0,
+  378.333,
   380.875,
   383.708,
   386.917,
@@ -1793,8 +1827,10 @@
   399.458,
   402.25,
   404.292,
+  406.292,
   408.833,
   412.208,
+  413.917,
   417.958,
   422.792,
   425.667,
@@ -1807,7 +1843,7 @@
   443.75,
   445.667
  ],
- "qc_seconds": 287.2,
+ "qc_seconds": 298.6,
  "video_seconds": 447.5,
  "verdict": "blocked"
 }

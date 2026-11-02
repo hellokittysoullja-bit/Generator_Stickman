@@ -402,11 +402,15 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
     ],
     [
-     3.03,
-     "drift"
+     3.63,
+     "manual"
+    ],
+    [
+     6.51,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -688,15 +692,15 @@
    "views": [
     [
      0.0,
-     "drift"
-    ],
-    [
-     2.48,
-     "drift"
+     "manual"
     ],
     [
      4.64,
-     "lean"
+     "manual"
+    ],
+    [
+     7.08,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -1167,7 +1171,11 @@
      "manual"
     ],
     [
-     5.52,
+     3.84,
+     "manual"
+    ],
+    [
+     7.2,
      "manual"
     ]
    ],
@@ -1262,6 +1270,10 @@
      "manual"
     ],
     [
+     4.01,
+     "manual"
+    ],
+    [
      6.57,
      "manual"
     ]
@@ -1282,7 +1294,11 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
+    ],
+    [
+     1.69,
+     "manual"
     ]
    ],
    "labels_at": [],
