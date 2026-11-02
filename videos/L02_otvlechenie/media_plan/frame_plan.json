@@ -1,0 +1,2473 @@
+{
+ "version": 15,
+ "model": "ds/deepseek-v4-flash",
+ "has_hero": true,
+ "frames": [
+  {
+   "index": 0,
+   "section": "HOOK",
+   "text": "Ты убираешь телефон, выключаешь уведомления, садишься за дело, а через пять минут почему-то стоишь у холодильника?",
+   "key": "8eb69351f03b91e5",
+   "spec": {
+    "focus": "five minutes into work, you end up at the fridge",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a person standing at an open refrigerator is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the character stands in front of an open refrigerator",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the refrigerator shelves are empty and lit",
+      "tier": "should"
+     },
+     {
+      "id": "c3",
+      "text": "a phone lies face down on a desk in the background",
+      "tier": "should"
+     }
+    ],
+    "subject": "a person"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character stands beside one large open refrigerator in the right half of the frame, arms hanging limp, blank tired stare into the lit empty shelves; a clear gap of plain background between the character and the refrigerator; in the far left background a desk with a phone lying face down; plain light wall.",
+   "details": [
+    "the lit empty shelves",
+    "the phone lying face down"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   },
+   "anim": "fridge_light",
+   "absorb": false,
+   "board": "lib"
+  },
+  {
+   "index": 1,
+   "section": "HOOK",
+   "text": "Это не слабая воля, и телефон тут виноват меньше, чем ты думаешь.",
+   "key": "21f0357245b7652e",
+   "spec": {
+    "focus": "Это не слабая воля, и телефон тут виноват меньше, чем ты думаешь.",
+    "subject": "the phone on the high pan",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the phone on the high pan is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "a big old balance scale stands on the floor: on the left pan sits the main character, on the right pan lies one phone; the left pan with the character hangs low and the right pan with the phone is lifted high in the air; the character looks up at the phone with a puzzled face",
+   "details": [
+    "the phone on the high pan",
+    "the character on the low pan"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "accent": "не слабая воля",
+   "absorb": false,
+   "board": "new"
+  },
+  {
+   "index": 2,
+   "section": "HOOK",
+   "text": "Исследовательница внимания Глория Марк заметила странную вещь: когда уведомлений становится меньше, люди начинают отвлекать себя сами.",
+   "key": "f4d6b3525c467b10",
+   "spec": {
+    "focus": "Исследовательница внимания Глория Марк заметила странную вещь: когда уведомлений",
+    "subject": "the phone with blank speech bubbles",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the phone with blank speech bubbles is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "two equal panels side by side with a plain gap between them: in the left panel the main character sits at a desk and a phone beside it has five blank speech bubbles floating above it; in the right panel the same desk, the phone has no bubbles at all, and five small blank thought clouds float up from the character's own head instead",
+   "details": [
+    "the phone with blank speech bubbles",
+    "the thought clouds from the head"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "absorb": false,
+   "board": "new",
+   "hero_state": "ember"
+  },
+  {
+   "index": 3,
+   "section": "HOOK",
+   "text": "Я это знаю по себе. Раньше я садился написать одно письмо и через час находил себя в ленте, с остывшим чаем и пустым черновиком.",
+   "key": "34bccfe1c8cfa75f",
+   "spec": {
+    "focus": "past self ended up scrolling with cold tea and a blank draft",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a person holding a phone at a desk is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the character holds a phone with a blank glowing screen",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "a cup of tea with no steam stands on the desk",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "a blank sheet of paper lies on the desk",
+      "tier": "should"
+     }
+    ],
+    "subject": "a person"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character sits on a chair beside a desk in the right half of the frame holding a phone with a blank glowing screen in both paws, eyes glazed; a blank sheet of paper and one cup of tea with no steam sit on the desk to the left, a clear gap of plain background between the cup and the character; plain light wall.",
+   "details": [
+    "the blank sheet of paper",
+    "the cup of tea with no steam"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     2
+    ],
+    "original": "medium shot: the main character sits at a desk in the right half of the frame holding a phone with a blank glowing screen in both paws, eyes glazed; a blank sheet of paper and one cup of tea with no steam sit on the desk to the left, a clear gap of plain background between the cup and the character; plain light wall."
+   },
+   "absorb": false,
+   "board": "lib"
+  },
+  {
+   "index": 4,
+   "section": "HOOK",
+   "text": "Я и сейчас отвлекаюсь, честно. Но возвращаюсь к делу за минуту, а не через час.",
+   "key": "0ec8e767ca1db4a6",
+   "spec": {
+    "focus": "returning to work in a minute, not an hour",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a person writing at a desk is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the character holds a pen over a sheet of paper",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the phone lies face down at the edge of the desk",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "the character's face is calm and satisfied",
+      "tier": "should"
+     }
+    ],
+    "subject": "a person"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character sits upright on a chair beside a desk in the left half of the frame, one paw holding a pen over a sheet of paper with a few drawn lines, calm satisfied face; the phone lies face down at the far edge of the desk; calm empty wall above the desk; plain light background.",
+   "details": [
+    "the pen in the paw",
+    "the phone lying face down"
+   ],
+   "hero_state": "golden",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     2
+    ],
+    "original": "medium shot: the main character sits upright at a desk in the left half of the frame, one paw holding a pen over a sheet of paper with a few drawn lines, calm satisfied face; the phone lies face down at the far edge of the desk; calm empty wall above the desk; plain light background."
+   },
+   "absorb": false,
+   "board": "lib"
+  },
+  {
+   "index": 5,
+   "section": "HOOK",
+   "text": "За восемь минут покажу, где телефон правда ворует твоё внимание, почему ты отвлекаешь себя сам и как возвращаться к делу, даже если внимание убежало.",
+   "key": "cbd3ba91242d27f3",
+   "spec": {
+    "focus": "the film's three parts in eight minutes",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a person pointing at three icons is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "three icons stand in a column: a phone, a reaching hand, a return arrow",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "an empty patch of plain background sits beside each icon",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "the character points one paw at the icons",
+      "tier": "should"
+     }
+    ],
+    "subject": "a person"
+   },
+   "kind": "diagram",
+   "hero": true,
+   "labels": [
+    "ГДЕ ТЕЛЕФОН ВОРУЕТ ВНИМАНИЕ",
+    "ПОЧЕМУ ТЫ ОТВЛЕКАЕШЬ СЕБЯ",
+    "КАК ВОЗВРАЩАТЬСЯ"
+   ],
+   "picture": "a hand-drawn diagram: the main character stands at the left of the frame pointing one paw at three small drawings stacked in a column on the right — a phone, an open drawer, a curved arrow pointing back to a sheet of paper; beside each drawing a wide empty patch of plain background with a short arrow pointing at it; plain light background.",
+   "details": [
+    "the curved return arrow",
+    "the open drawer"
+   ],
+   "hero_state": "bright",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     1,
+     9
+    ],
+    "original": "a hand-drawn diagram: the main character stands at the left of the frame pointing one paw at three icons stacked in a column on the right — a phone, a hand reaching toward an open drawer, a curved arrow returning to a sheet of paper; beside each icon a wide empty patch of plain background with a short arrow pointing at the icon; plain light background."
+   },
+   "absorb": true,
+   "board": "absorb"
+  },
+  {
+   "index": 6,
+   "section": "HOOK",
+   "text": "Но сначала посмотри, где сейчас лежит твой телефон. В руке, на столе экраном вниз или в другой комнате?",
+   "key": "167e33b20d5010ac",
+   "spec": {
+    "focus": "Но сначала посмотри, где сейчас лежит твой телефон. В руке, на столе экраном вни",
+    "subject": "the phone in the paw",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the phone in the paw is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "three equal panels in a row with plain gaps: in the first a paw holds a phone with a blank screen; in the second a phone lies face down on a wooden desk; in the third an empty desk and, through an open doorway behind it, a phone lies on a shelf in another room",
+   "details": [
+    "the phone in the paw",
+    "the phone face down",
+    "the phone in the other room"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "absorb": false,
+   "board": "new",
+   "hero_state": null
+  },
+  {
+   "index": 7,
+   "section": "HOOK",
+   "text": "Запомни ответ, он пригодится через минуту.",
+   "key": "61d1fadf773db0ea",
+   "spec": {
+    "focus": "hold on to the answer, it will be needed soon",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a person pressing a paw to its temple is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the character's eyes are narrowed in concentration",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "a phone lies on a table nearby",
+      "tier": "should"
+     }
+    ],
+    "subject": "a person"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "close-up: the face of the main character in the left half of the frame, eyes narrowed in concentration, one paw pressed to its temple; a phone lies on a table in the right foreground with a clear gap of plain background between the paw and the phone; plain light wall.",
+   "details": [
+    "the phone on the table"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   },
+   "absorb": true,
+   "board": "absorb"
+  },
+  {
+   "index": 8,
+   "section": "BLOCK 1: ЭКРАНОМ ВНИЗ",
+   "text": "Как ты думаешь, помогает ли положить телефон экраном вниз?",
+   "key": "46dcfe4f076fe5b4",
+   "spec": {
+    "focus": "Как ты думаешь, помогает ли положить телефон экраном вниз?",
+    "subject": "the face down phone",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the face down phone is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "close-up on a wooden desk: one phone lies face down; the main character's paw hovers just above it, hesitating; the character's eyes are fixed on the phone, ears forward",
+   "details": [
+    "the face down phone",
+    "the hesitating paw"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "absorb": false,
+   "board": "new",
+   "hero_state": "ember"
+  },
+  {
+   "index": 9,
+   "section": "BLOCK 1: ЭКРАНОМ ВНИЗ",
+   "text": "Психолог Эдриан Уорд из Техасского университета с коллегами проверил это почти на восьмистах людях.",
+   "key": "df5d5205b457e1d2",
+   "spec": {
+    "focus": "Психолог Эдриан Уорд из Техасского университета с коллегами проверил это почти н",
+    "subject": "the researcher with the clipboard",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the researcher with the clipboard is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "wide shot of a plain university room with four rows of small desks; young people sit at the desks with papers in front of them; one researcher in a white coat stands at the front holding a clipboard",
+   "details": [
+    "the researcher with the clipboard",
+    "the rows of desks"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "absorb": false,
+   "board": "new",
+   "hero_state": null
+  },
+  {
+   "index": 10,
+   "section": "BLOCK 1: ЭКРАНОМ ВНИЗ",
+   "text": "Одних просили положить телефон на стол экраном вниз, других убрать в карман или в сумку, третьих оставить в другой комнате.",
+   "key": "7d29671723d8c339",
+   "spec": {
+    "focus": "Одних просили положить телефон на стол экраном вниз, других убрать в карман или ",
+    "subject": "the phone face down on the desk",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the phone face down on the desk is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "three equal panels in a row with plain gaps, the same young student at the same desk in each: in the first panel a phone lies face down on the desk beside the paper; in the second a bag hangs on the back of the chair with a phone in its open pocket; in the third there is no phone at all and through a doorway a phone lies on a shelf in another room",
+   "details": [
+    "the phone face down on the desk",
+    "the bag on the chair",
+    "the phone in the other room"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "absorb": false,
+   "board": "new",
+   "hero_state": null
+  },
+  {
+   "index": 11,
+   "section": "BLOCK 1: ЭКРАНОМ ВНИЗ",
+   "text": "Потом все решали задачи, где нужно держать в голове много сразу.",
+   "key": "c0ba37bdebee2afa",
+   "spec": {
+    "focus": "a demanding memory task for everyone",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a person balances a tower of blocks on one palm",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "a pencil is held over a blank sheet",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the character's eyes are narrowed with effort",
+      "tier": "should"
+     }
+    ],
+    "subject": "a person"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "Medium shot: the main character sits on a chair beside a desk in the right half of the frame, a pencil in one paw over a blank sheet, eyes narrowed, a small tower of five wooden blocks standing on the other palm; shoulders hunched with effort; plain light background on the left.",
+   "details": [
+    "the tower of five wooden blocks",
+    "the pencil over the blank sheet"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     2
+    ],
+    "original": "Medium shot: the main character sits at a desk in the right half of the frame, a pencil in one paw over a blank sheet, eyes narrowed, balancing a small tower of five wooden blocks on the other palm; shoulders hunched with effort; plain light background on the left."
+   },
+   "absorb": true,
+   "board": "absorb"
+  },
+  {
+   "index": 12,
+   "section": "BLOCK 1: ЭКРАНОМ ВНИЗ",
+   "text": "Лучше всех справились те, чей телефон лежал в другой комнате. А телефон на столе экраном вниз не помог: он молчал, но часть ума всё равно держала его в голове.",
+   "key": "a94352ea2bc144da",
+   "spec": {
+    "focus": "Лучше всех справились те, чей телефон лежал в другой комнате. А телефон на столе",
+    "subject": "the thought cloud with a phone",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the thought cloud with a phone is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "two students at two desks side by side: the left one has a phone face down on the desk and a small thought cloud above the head with a phone inside it, frowning at a paper; the right one has no phone on the desk and works calmly with a small smile",
+   "details": [
+    "the thought cloud with a phone",
+    "the calm student"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "absorb": false,
+   "board": "new",
+   "hero_state": null
+  },
+  {
+   "index": 13,
+   "section": "BLOCK 1: ЭКРАНОМ ВНИЗ",
+   "text": "Я проверил это на себе самым глупым способом. Положил телефон экраном вниз и сел писать.",
+   "key": "d9a86e9935066075",
+   "spec": {
+    "focus": "Я проверил это на себе самым глупым способом. Положил телефон экраном вниз и сел",
+    "subject": "the face down phone",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the face down phone is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character sits at a desk writing on a sheet of paper with a pencil; one phone lies face down at the far corner of the desk",
+   "details": [
+    "the face down phone",
+    "the paper and pencil"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "absorb": false,
+   "board": "new"
+  },
+  {
+   "index": 14,
+   "section": "BLOCK 1: ЭКРАНОМ ВНИЗ",
+   "text": "Телефон молчал, а я каждые пару минут косился на него, как на кастрюлю, которая вот-вот закипит. Вдруг там уже ответили.",
+   "key": "694e435bf2c6f121",
+   "spec": {
+    "focus": "Телефон молчал, а я каждые пару минут косился на него, как на кастрюлю, которая ",
+    "subject": "the pot with the phone and the lifted lid",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the pot with the phone and the lifted lid is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character sits at a desk with a pencil over the paper but its eyes slide sideways to a small cooking pot standing on the desk; a phone lies face down inside the pot, the lid is slightly lifted and a thin wisp of steam rises",
+   "details": [
+    "the pot with the phone and the lifted lid",
+    "the sideways eyes"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "absorb": false,
+   "board": "new"
+  },
+  {
+   "index": 15,
+   "section": "BLOCK 1: ЭКРАНОМ ВНИЗ",
+   "text": "Вот она, та часть ума, которая занята, хотя ты ничего не открывал.",
+   "key": "238d289f587a4912",
+   "spec": {
+    "focus": "the part of the mind kept busy by the phone",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a phone lies face down at the edge of a desk",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "a paw is frozen in the air above a blank sheet",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the pen lies still on the sheet",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "the character's eyes are turned to the phone",
+      "tier": "should"
+     }
+    ],
+    "subject": "a phone"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "Medium close shot: the main character sits on a chair beside a desk, one paw raised and frozen above a blank sheet with a pen lying still on it, eyes turned to the phone lying face down at the edge of the table; a calm empty patch of plain background in the upper left of the frame.",
+   "details": [
+    "the frozen paw",
+    "the pen lying still"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     2
+    ],
+    "original": "close-up of a desk: a blank sheet with a pen lying still on it, a phone face down at the edge of the table; the main character's paw hangs frozen in the air above the sheet, its eyes turned to the phone; a calm empty patch of plain background in the upper left of the frame"
+   },
+   "absorb": true,
+   "board": "absorb"
+  },
+  {
+   "index": 16,
+   "section": "BLOCK 1: ЭКРАНОМ ВНИЗ",
+   "text": "С уведомлениями ещё хуже. В другом опыте, во Флориде, людям во время задания приходило сообщение, и они его даже не открывали.",
+   "key": "aaa2150a06e862bc",
+   "spec": {
+    "focus": "С уведомлениями ещё хуже. В другом опыте, во Флориде, людям во время задания при",
+    "subject": "the phone with the blank bubble",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the phone with the blank bubble is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "a young person sits at a desk solving a paper puzzle; beside the paper a phone lies screen up with one small blank message bubble popping out of it; the person keeps looking at the paper, but a small thought cloud with a phone in it hangs above the head",
+   "details": [
+    "the phone with the blank bubble",
+    "the thought cloud with a phone"
+   ],
+   "hero_state": null,
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "absorb": false,
+   "board": "new"
+  },
+  {
+   "index": 17,
+   "section": "BLOCK 1: ЭКРАНОМ ВНИЗ",
+   "text": "Ошибались они втрое чаще остальных, примерно как те, кто правда переписывался.",
+   "key": "666c306028d0808e",
+   "spec": {
+    "focus": "three times more errors, like texting",
+    "claims": [
+     {
+      "id": "core",
+      "text": "three stacks of blocks stand in a row",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "two stacks are tall and equal, the third stack is short",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "a phone lies beside the first stack",
+      "tier": "should"
+     },
+     {
+      "id": "c3",
+      "text": "two small figures sit facing each other beside the second stack",
+      "tier": "should"
+     }
+    ],
+    "subject": "three stacks of blocks"
+   },
+   "kind": "diagram",
+   "hero": false,
+   "labels": [
+    "ПРИШЛО СООБЩЕНИЕ",
+    "ПЕРЕПИСЫВАЛИСЬ",
+    "ОСТАЛЬНЫЕ"
+   ],
+   "picture": "Hand-drawn diagram: three stacks of small wooden blocks stand in a row on a line, the first two stacks tall and equal, the third stack short; a phone lies beside the first stack, and beside the second two phones lie face to face on the desk; above each stack an empty patch of plain background with a short arrow pointing down; plain light background.",
+   "details": [
+    "the short stack",
+    "the phone beside the first stack"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     8
+    ],
+    "original": "Hand-drawn diagram: three stacks of small wooden blocks stand in a row on a line, the first two stacks tall and equal, the third stack short; a phone lies beside the first stack and two small figures sit facing each other beside the second; above each stack an empty patch of plain background with a short arrow pointing down; plain light background."
+   },
+   "absorb": true,
+   "board": "absorb"
+  },
+  {
+   "index": 18,
+   "section": "BLOCK 1: ЭКРАНОМ ВНИЗ",
+   "text": "Поэтому первый приём простой и почти без силы воли. На время дела телефон уходит в другую комнату, не в ящик стола и не экраном вниз.",
+   "key": "74914a17e6ef81a9",
+   "spec": {
+    "focus": "Поэтому первый приём простой и почти без силы воли. На время дела телефон уходит",
+    "subject": "the phone in the paws",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the phone in the paws is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "the main character walks through an open doorway carrying one phone in both paws away from its desk into another room, a calm determined face; its desk with paper stays behind",
+   "details": [
+    "the phone in the paws",
+    "the doorway"
+   ],
+   "hero_state": "bright",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "key_thought": "другая комната",
+   "absorb": false,
+   "board": "new"
+  },
+  {
+   "index": 19,
+   "section": "BLOCK 1: ЭКРАНОМ ВНИЗ",
+   "text": "Помнишь, где лежит твой телефон? Если рядом, это не приговор, просто часть твоего внимания сейчас сторожит его.",
+   "key": "0ff6b28f8920576b",
+   "spec": {
+    "focus": "a nearby phone still guards your attention",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a phone lies on a desk beside a person",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the character's paw hovers above the phone without touching it",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the character looks at the viewer with a questioning face",
+      "tier": "should"
+     }
+    ],
+    "subject": "a phone"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "Medium shot: the main character sits on a chair beside a desk, head turned toward the viewer with a questioning look, one paw raised above a phone lying face up on the desk beside a blank sheet, not touching it; the other paw rests on the desk; plain light background.",
+   "details": [
+    "the hovering paw above the phone",
+    "the phone lying face up"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     2
+    ],
+    "original": "Medium shot: the main character sits at a desk, head turned toward the viewer with a questioning look, one paw hovering above a phone lying face up on the desk beside a blank sheet, not touching it; the other paw rests on the desk; plain light background."
+   },
+   "absorb": false,
+   "board": "same"
+  },
+  {
+   "index": 20,
+   "section": "BLOCK 1: ЭКРАНОМ ВНИЗ",
+   "text": "Я так и сделал, отнёс телефон на кухню. А через пять минут обнаружил себя на той же кухне, у холодильника. Телефон я при этом даже не взял.",
+   "key": "a42528062264b799",
+   "spec": {
+    "focus": "he ends up at the fridge without the phone",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a person stands at an open fridge",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the fridge door is open",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the phone lies untouched on the far counter",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "the character stares blankly into the fridge",
+      "tier": "should"
+     }
+    ],
+    "subject": "a person"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "Wide shot: the main character stands in a kitchen in front of an open fridge, one paw on the open fridge door, staring blankly inside; across the kitchen the phone on the far counter lies untouched, a bowl and a kettle beside it; plain light wall, the character on the left, the phone on the right, a clear gap of empty floor between them.",
+   "details": [
+    "the open fridge door",
+    "the phone on the far counter"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   },
+   "absorb": false,
+   "board": "same"
+  },
+  {
+   "index": 21,
+   "section": "BLOCK 2: КТО ОТВЛЕКАЕТ",
+   "text": "Так кто же отвёл меня к холодильнику, если телефона рядом не было?",
+   "key": "ecfffe6077ae4748",
+   "spec": {
+    "focus": "who led me to the fridge without a phone",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a puzzled person stands in front of an open fridge",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the fridge door is open",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the person's paws are empty",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "no phone is anywhere in the kitchen",
+      "tier": "should"
+     }
+    ],
+    "subject": "a person"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character stands on a kitchen floor in front of an open fridge, both front paws empty and held up at chest height, head tilted, puzzled frown; the fridge glows cold white; no phone anywhere in the kitchen; the character in the left half of the frame, plain light background.",
+   "details": [
+    "the open fridge",
+    "the empty paws"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     1
+    ],
+    "original": "medium shot: the main character stands on a kitchen floor in front of an open fridge, both front paws empty and lifted, head tilted, puzzled frown; the fridge glows cold white; no phone anywhere in the kitchen; the character in the left half of the frame, plain light background."
+   },
+   "absorb": false,
+   "board": "lib"
+  },
+  {
+   "index": 22,
+   "section": "BLOCK 2: КТО ОТВЛЕКАЕТ",
+   "text": "Глория Марк из Калифорнийского университета годами записывала, как люди переключаются за работой. И оказалось, что себя люди прерывают почти так же часто, как их прерывают другие.",
+   "key": "83af1d1bd057b558",
+   "spec": {
+    "focus": "Глория Марк из Калифорнийского университета годами записывала, как люди переключ",
+    "subject": "the tap on the shoulder",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the tap on the shoulder is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "two equal panels side by side with a plain gap: in the left panel a colleague taps a working person on the shoulder; in the right panel the same person sits alone at the same desk and turns away from the work by themselves to look out of a window",
+   "details": [
+    "the tap on the shoulder",
+    "the person turning away alone"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "absorb": false,
+   "board": "new",
+   "hero_state": null
+  },
+  {
+   "index": 23,
+   "section": "BLOCK 2: КТО ОТВЛЕКАЕТ",
+   "text": "А когда внешних помех становилось меньше, люди начинали чаще прерывать себя сами. Будто у внимания есть норма побегов, и оно её выполняет.",
+   "key": "9fc7e6253f3b5b09",
+   "spec": {
+    "focus": "fewer outside interruptions make people interrupt themselves more",
+    "claims": [
+     {
+      "id": "core",
+      "text": "two crossing arrows are visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "one arrow slopes down and the other slopes up",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the arrows cross in the middle of the frame",
+      "tier": "should"
+     }
+    ],
+    "subject": "two arrows"
+   },
+   "kind": "diagram",
+   "hero": false,
+   "labels": [
+    "ВНЕШНИЕ ПОМЕХИ",
+    "СВОИ ПРЕРЫВАНИЯ"
+   ],
+   "picture": "a hand-drawn diagram: two long arrows cross in the middle of the frame, one sloping down from left to right, the other sloping up from left to right; a wide empty patch of plain background above the left end of the falling arrow with a short pointer, and another empty patch below the right end of the rising arrow with a short pointer; plain light background.",
+   "details": [
+    "the crossing point of the two arrows",
+    "the arrowhead of the rising arrow"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   },
+   "absorb": true,
+   "board": "absorb"
+  },
+  {
+   "index": 24,
+   "section": "BLOCK 2: КТО ОТВЛЕКАЕТ",
+   "text": "В Гарварде Мэтью Киллингсворт и Дэниел Гилберт через приложение спрашивали больше двух тысяч человек в случайные моменты дня, о чём они сейчас думают.",
+   "key": "5039f167990ba3a7",
+   "spec": {
+    "focus": "В Гарварде Мэтью Киллингсворт и Дэниел Гилберт через приложение спрашивали больш",
+    "subject": "the thought clouds",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the thought clouds is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "wide shot of a city street scene with four different people: one on a bus seat, one at a desk, one cooking at a stove, one walking a dog; above each head floats a small thought cloud with a different object in it: a beach umbrella, a cake, a cat, a bed",
+   "details": [
+    "the thought clouds",
+    "the person at the desk"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "absorb": false,
+   "board": "new",
+   "hero_state": null
+  },
+  {
+   "index": 25,
+   "section": "BLOCK 2: КТО ОТВЛЕКАЕТ",
+   "text": "Почти в половине ответов люди думали не о том, что делали.",
+   "key": "1deb4e5166c3e31f",
+   "spec": {
+    "focus": "in half the answers the mind was elsewhere",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a circle split into two equal halves is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the left half holds a small figure bent over a desk",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the right half holds the same figure leaning back and looking up",
+      "tier": "must"
+     }
+    ],
+    "subject": "a circle"
+   },
+   "kind": "diagram",
+   "hero": false,
+   "labels": [
+    "О ДЕЛЕ",
+    "НЕ О ДЕЛЕ"
+   ],
+   "picture": "a hand-drawn diagram: one big circle in the middle of the frame divided by a straight vertical line into two equal halves; in the left half a tiny figure bent over a desk with a blank sheet, in the right half the same tiny figure leaning back on a chair, face turned up at nothing; under each half a wide empty patch of plain background with a short arrow up to it; plain light background",
+   "details": [
+    "the small figure bent over the desk",
+    "the leaning figure"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   },
+   "absorb": true,
+   "board": "absorb"
+  },
+  {
+   "index": 26,
+   "section": "BLOCK 2: КТО ОТВЛЕКАЕТ",
+   "text": "То есть отвлекаться не поломка. Так устроены почти все головы, а у кого-то с СДВГ, с диагнозом или без, побегов будет ещё больше.",
+   "key": "2004405b231a8c07",
+   "spec": {
+    "focus": "То есть отвлекаться не поломка. Так устроены почти все головы, а у кого-то с СДВ",
+    "subject": "the three clouds above the character",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the three clouds above the character is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "the main character sits on a long bench among four different people; small thought clouds float above every head; above the character's head float three clouds instead of one; everyone looks relaxed",
+   "details": [
+    "the three clouds above the character",
+    "the people on the bench"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "absorb": false,
+   "board": "new",
+   "hero_state": "ember"
+  },
+  {
+   "index": 27,
+   "section": "BLOCK 2: КТО ОТВЛЕКАЕТ",
+   "text": "Но вот что я заметил за собой. Я сбегаю не в случайный момент.",
+   "key": "f0781b30c0b6f128",
+   "spec": {
+    "focus": "the escape is not random, it has a trigger",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a half-written letter is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the cat holds a pen above the letter without writing",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the cat's eyes slide to the side",
+      "tier": "must"
+     }
+    ],
+    "subject": "a letter"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "close-up: a sheet of paper with a wide blank gap in the middle, the rest shaded grey, lies on a desk; a pen rests on the paper beside the gap; the main character's face above the paper, eyes slid to the side, mouth a flat line; the paper fills the lower half of the frame, plain light background above.",
+   "details": [
+    "the pen hovering above the paper",
+    "the cat's sideways glance"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     1
+    ],
+    "original": "close-up: a sheet of paper with a wide blank gap in the middle, the rest shaded grey, lies on a desk; a pen hovers above it in the main character's paw; the cat's face above the paper, eyes slid to the side, mouth a flat line; the paper fills the lower half of the frame, plain light background above"
+   },
+   "absorb": true,
+   "board": "absorb"
+  },
+  {
+   "index": 28,
+   "section": "BLOCK 2: КТО ОТВЛЕКАЕТ",
+   "text": "Я пишу письмо, всё идёт нормально, и вдруг дохожу до места, где не знаю, что сказать. Ровно в эту секунду мне срочно нужно полить цветок.",
+   "key": "08d4bb6c3218bf4c",
+   "spec": {
+    "focus": "Я пишу письмо, всё идёт нормально, и вдруг дохожу до места, где не знаю, что ска",
+    "subject": "the flower pot and the watering can",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the flower pot and the watering can is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character sits at a desk with a pencil lifted above an unfinished letter and looks away at a small flower pot on the windowsill, a watering can beside the pot",
+   "details": [
+    "the flower pot and the watering can",
+    "the lifted pencil"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "absorb": false,
+   "board": "new"
+  },
+  {
+   "index": 29,
+   "section": "BLOCK 2: КТО ОТВЛЕКАЕТ",
+   "text": "Цветок потом чуть не утонул, так часто я его поливал.",
+   "key": "349a119fcf8f3682",
+   "spec": {
+    "focus": "Цветок потом чуть не утонул, так часто я его поливал.",
+    "subject": "the overflowing pot",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the overflowing pot is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "the main character holds a watering can over a small flower pot that overflows: water spills over the windowsill onto the floor into a big puddle, the soaked flower droops, the character looks at the puddle with an awkward face",
+   "details": [
+    "the overflowing pot",
+    "the puddle"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "absorb": false,
+   "board": "new"
+  },
+  {
+   "index": 30,
+   "section": "BLOCK 2: КТО ОТВЛЕКАЕТ",
+   "text": "Отвлечение почти всегда приходит в трудном месте, где непонятно, что дальше, страшно сделать плохо или скучно. Мозг ищет не телефон, он ищет выход.",
+   "key": "ecf6ac1770c4ce2f",
+   "spec": {
+    "focus": "Отвлечение почти всегда приходит в трудном месте, где непонятно, что дальше, стр",
+    "subject": "the small door in the brain",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the small door in the brain is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "a large hand-drawn brain with a small open door in its side; the main character steps out of the door with one foot, looking away toward a fridge in the distance",
+   "details": [
+    "the small door in the brain",
+    "the stepping character"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "key_thought": "ищет выход",
+   "absorb": false,
+   "board": "new"
+  },
+  {
+   "index": 31,
+   "section": "BLOCK 2: КТО ОТВЛЕКАЕТ",
+   "text": "Под одним роликом про СДВГ кто-то написал: «мозг только и хочет во что-нибудь залипнуть». Это лайкнули две тысячи семьсот человек.",
+   "key": "b50f0bf6c7e0eeb3",
+   "spec": {
+    "focus": "a comment about the brain wanting to get stuck, liked by thousands",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a phone surrounded by a dense crowd is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "a dense crowd of tiny figures packs around the phone",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "one large hand reaches toward the screen",
+      "tier": "should"
+     }
+    ],
+    "subject": "a phone"
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "close-up: one phone lies flat in the middle of the frame, its screen blank and glowing; around it a dense ring of tiny grey figures packed shoulder to shoulder, all leaning in toward the phone; one large hand reaches in from the left toward the screen; plain light background above.",
+   "details": [
+    "the blank glowing screen",
+    "the nearest tiny figures"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     1,
+     3
+    ],
+    "original": "close-up: one phone lies flat in the middle of the frame, its screen blank and glowing; around it a dense ring of tiny grey figures packed shoulder to shoulder, all leaning in toward the phone; one large hand reaches in from the left toward the screen; plain light background above"
+   },
+   "absorb": false,
+   "board": "lib"
+  },
+  {
+   "index": 32,
+   "section": "BLOCK 2: КТО ОТВЛЕКАЕТ",
+   "text": "А раз выход ищут в трудном месте, значит, трудное место надо сделать меньше. Не «напишу письмо», а «напишу одно предложение, с которого начну».",
+   "key": "9f0dc66e5d8cc1a9",
+   "spec": {
+    "focus": "А раз выход ищут в трудном месте, значит, трудное место надо сделать меньше. Не ",
+    "subject": "the huge sheet",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the huge sheet is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "one huge blank sheet of paper stands upright like a wall and towers over the main character; next to it the character easily holds one small blank card in its paws and looks at it with relief",
+   "details": [
+    "the huge sheet",
+    "the small card"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "key_thought": "сделать меньше",
+   "absorb": false,
+   "board": "new",
+   "hero_state": "bright"
+  },
+  {
+   "index": 33,
+   "section": "BLOCK 2: КТО ОТВЛЕКАЕТ",
+   "text": "Только тут есть подвох. Дробить дело на шаги трудно ровно тогда, когда тебе трудно.",
+   "key": "eefac46444d44797",
+   "spec": {
+    "focus": "splitting into steps is hardest exactly when you're stuck",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a slumped cat is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the cat's head rests on a thick stack of papers",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "one paw hangs limp off the chair",
+      "tier": "must"
+     }
+    ],
+    "subject": "a cat"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character sits slumped on a chair at a desk, chin and cheek flat on a thick stack of blank sheets, eyes half closed, one paw hanging limp; the desk and chair stand on the floor, plain light background",
+   "details": [
+    "the limp paw"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   },
+   "absorb": false,
+   "board": "lib"
+  },
+  {
+   "index": 34,
+   "section": "BLOCK 2: КТО ОТВЛЕКАЕТ",
+   "text": "Когда застреваешь, голова не хочет думать про следующий шаг, она хочет к холодильнику.",
+   "key": "2b69099a0af8d91a",
+   "spec": {
+    "focus": "when stuck, the head wants the fridge",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a fridge is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the cat stands facing the fridge",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the cat's body is turned away from a desk with papers",
+      "tier": "should"
+     }
+    ],
+    "subject": "a fridge"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character stands on the kitchen floor facing one closed fridge, head lowered, eyes fixed on its door; behind the cat a desk with a stack of blank sheets and a pen; the fridge is large in the right half of the frame with plain light background around it",
+   "details": [
+    "the fridge handle",
+    "the papers on the desk"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   },
+   "absorb": true,
+   "board": "absorb"
+  },
+  {
+   "index": 35,
+   "section": "BLOCK 2: КТО ОТВЛЕКАЕТ",
+   "text": "Поэтому я перестал дробить в голове и делаю это снаружи.",
+   "key": "4a4242b1dc8414cf",
+   "spec": {
+    "focus": "Поэтому я перестал дробить в голове и делаю это снаружи.",
+    "subject": "the row of small cards",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the row of small cards is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "the main character sits at a table and cuts a long strip of paper into small cards with scissors; a neat row of small blank cards lies on the table",
+   "details": [
+    "the row of small cards",
+    "the scissors"
+   ],
+   "hero_state": "bright",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "absorb": false,
+   "board": "new"
+  },
+  {
+   "index": 36,
+   "section": "BLOCK 2: КТО ОТВЛЕКАЕТ",
+   "text": "Для этого и есть «Напарник». Пишешь дело, которое не идёт, и оно раскладывается на маленькие шаги, где первый занимает пару минут.",
+   "key": "e68ca0b71e227638",
+   "spec": {
+    "focus": "Для этого и есть «Напарник». Пишешь дело, которое не идёт, и оно раскладывается ",
+    "subject": "the laptop screen",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the laptop screen is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "a laptop stands open on a desk, its screen is plain and empty; the main character sits beside the laptop facing the viewer with a calm friendly face, one paw resting on the desk next to a small round kitchen timer",
+   "details": [
+    "the laptop screen",
+    "the timer"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "absorb": false,
+   "board": "new",
+   "hero_state": "bright"
+  },
+  {
+   "index": 37,
+   "section": "BLOCK 2: КТО ОТВЛЕКАЕТ",
+   "text": "Потом ставишь таймер, а я сижу рядом, пока ты делаешь этот один шаг. Не слежу и не ругаю, просто сижу.",
+   "key": "1036734c0e63bf08",
+   "spec": {
+    "focus": "a timer set, the companion just sits nearby",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a kitchen timer is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the cat sits beside the timer on the table",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the cat's face is calm and patient",
+      "tier": "must"
+     }
+    ],
+    "subject": "a kitchen timer"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: one big round kitchen timer with a blank face stands on a table in the right half of the frame; the main character sits on the table beside it with a clear gap of plain background between them, paws folded, calm patient face, eyes on the viewer; plain light background",
+   "details": [
+    "the dial of the kitchen timer",
+    "the cat's folded paws"
+   ],
+   "fallback": false,
+   "accent_by": "rule",
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   },
+   "absorb": false,
+   "board": "lib"
+  },
+  {
+   "index": 38,
+   "section": "BLOCK 2: КТО ОТВЛЕКАЕТ",
+   "text": "И когда в трудном месте снова тянет сбежать, перед тобой уже лежит следующий шаг, и он маленький. От такого сбегать даже неловко.",
+   "key": "aa1ea67c1a881c63",
+   "spec": {
+    "focus": "the next step is already there, too small to flee",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a small slip of paper is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the slip lies on the desk right in front of the cat",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the cat looks at it with a sheepish sideways glance",
+      "tier": "must"
+     }
+    ],
+    "subject": "a slip of paper"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character sits at a desk, one small blank slip of paper lying right in front of its paws, the cat looking down at it with a sheepish sideways glance, one paw lifted and frozen; a calm empty patch of plain background above the slip; plain light background",
+   "details": [
+    "the small slip on the desk",
+    "the cat's raised paw"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [
+     "key_near_not_in_picture"
+    ],
+    "rewritten": false,
+    "faults": [
+     1
+    ],
+    "rejected": "still:key_near_not_in_picture"
+   },
+   "absorb": true,
+   "board": "absorb"
+  },
+  {
+   "index": 39,
+   "section": "BLOCK 2: КТО ОТВЛЕКАЕТ",
+   "text": "Это бесплатно, ссылка в описании. «Напарник» не лечит СДВГ и не сделает дело за тебя. Он просто забирает самый тяжёлый кусок.",
+   "key": "a97184f7bd5108a8",
+   "spec": {
+    "focus": "it doesn't cure, it just takes the heaviest piece",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a heavy block is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the cat carries the block in both paws",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "a small slip remains on the desk behind",
+      "tier": "should"
+     }
+    ],
+    "subject": "a block"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character stands on the floor holding one big heavy grey block in both paws, knees bent, back arched under the weight, determined face; behind on a desk one small blank slip of paper is left alone; plain light background.",
+   "details": [
+    "the heavy block in the cat's paws",
+    "the small slip left on the desk"
+   ],
+   "hero_state": "golden",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     1
+    ],
+    "original": "medium shot: the main character walks on the floor carrying one big heavy grey block in both paws, knees bent, back arched under the weight, determined face; behind on a desk one small blank slip of paper is left alone; plain light background"
+   },
+   "absorb": true,
+   "board": "absorb"
+  },
+  {
+   "index": 40,
+   "section": "BLOCK 2: КТО ОТВЛЕКАЕТ",
+   "text": "Но даже с маленьким шагом и телефоном на кухне ты всё равно иногда уйдёшь. И вот здесь начинается самое важное.",
+   "key": "b77ae5ebf8fbe761",
+   "spec": {
+    "focus": "even so, you will sometimes walk away",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a cat walking away is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "a small slip lies alone on the desk behind the cat",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the cat's head is turned toward a kitchen doorway",
+      "tier": "must"
+     }
+    ],
+    "subject": "a cat"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "wide shot: the main character stands on the floor with one foot lifted mid-step, turned away from a desk where one small blank slip lies alone, head turned toward a kitchen doorway on the right; the desk and the doorway stand on the floor, plain light background.",
+   "details": [
+    "the small slip on the desk",
+    "the kitchen doorway"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     1
+    ],
+    "original": "wide shot: the main character is caught mid-step on the floor, walking away from a desk where one small blank slip lies alone, head turned toward a kitchen doorway on the right; the desk and the doorway stand on the floor, plain light background"
+   },
+   "absorb": false,
+   "board": "lib"
+  },
+  {
+   "index": 41,
+   "section": "BLOCK 3: ЗАПИСКА ВОЗВРАТА",
+   "text": "А что, если цель вообще не в том, чтобы не отвлекаться?",
+   "key": "a404a7222b670fde",
+   "spec": {
+    "focus": "А что, если цель вообще не в том, чтобы не отвлекаться?",
+    "subject": "the boomerang",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the boomerang is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "the main character stands on a grassy hill and has just thrown a boomerang: the boomerang flies far away in a wide curve drawn with a dotted line that bends back toward the character",
+   "details": [
+    "the boomerang",
+    "the dotted curve"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "absorb": false,
+   "board": "new",
+   "hero_state": "bright"
+  },
+  {
+   "index": 42,
+   "section": "BLOCK 3: ЗАПИСКА ВОЗВРАТА",
+   "text": "Помнишь, почти половину времени мысли где-то ещё, у всех. Перестать уходить нельзя. Зато можно научиться возвращаться.",
+   "key": "592e94a1271d5062",
+   "spec": {
+    "focus": "returning is a skill, not staying",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a person walking back along its own prints is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the paw prints loop far away and curve back",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "a desk with one blank sheet stands at the end of the prints",
+      "tier": "should"
+     }
+    ],
+    "subject": "a person walking"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "wide shot: the main character stands mid-step on a light floor in the right third, facing a small desk that holds one blank sheet; its own looping paw prints wander far to the left and curve back to the desk; plain light background.",
+   "details": [
+    "the looping paw prints",
+    "the blank sheet on the desk"
+   ],
+   "hero_state": "bright",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     1
+    ],
+    "original": "wide shot: the main character walks back along its own looping paw prints on a light floor, the prints wander far to the left and curve back to a small desk holding one blank sheet; the character is mid-step in the right third, facing the desk; plain light background."
+   },
+   "absorb": true,
+   "board": "absorb"
+  },
+  {
+   "index": 43,
+   "section": "BLOCK 3: ЗАПИСКА ВОЗВРАТА",
+   "text": "Расскажу, как я однажды потерял целый вечер на одном звонке.",
+   "key": "9cecea9af4cd4401",
+   "spec": {
+    "focus": "a whole evening lost to one call",
+    "claims": [
+     {
+      "id": "core",
+      "text": "an empty chair at a desk is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "a phone lies on the desk with a blank glowing screen",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "a dark window shows night outside",
+      "tier": "should"
+     },
+     {
+      "id": "c3",
+      "text": "a cold untouched cup of tea stands on the desk",
+      "tier": "should"
+     }
+    ],
+    "subject": "an empty chair"
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "wide shot: an empty chair pushed back from a desk in a dim room, one phone lying on the desk with a blank glowing screen, a cold untouched cup of tea beside it, a dark window behind showing night; the desk sits in the right half of the frame, plain dark background on the left.",
+   "details": [
+    "the phone on the desk",
+    "the empty chair",
+    "the cold cup of tea"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   },
+   "absorb": false,
+   "board": "lib"
+  },
+  {
+   "index": 44,
+   "section": "BLOCK 3: ЗАПИСКА ВОЗВРАТА",
+   "text": "Я писал важное письмо и дошёл до середины. Позвонили, разговор минут на десять.",
+   "key": "0cf9fd284f3b5f40",
+   "spec": {
+    "focus": "Я писал важное письмо и дошёл до середины. Позвонили, разговор минут на десять.",
+    "subject": "the phone at the ear",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the phone at the ear is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "the main character sits at a desk with an open laptop, holding a phone to its ear and turning away from the laptop; the laptop screen is plain and empty",
+   "details": [
+    "the phone at the ear",
+    "the laptop"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "absorb": false,
+   "board": "new",
+   "hero_state": "ember"
+  },
+  {
+   "index": 45,
+   "section": "BLOCK 3: ЗАПИСКА ВОЗВРАТА",
+   "text": "Вернулся, смотрю на экран и не понимаю, что хотел сказать дальше. Перечитал начало, налил чай, перечитал ещё раз.",
+   "key": "906022add3ce39da",
+   "spec": {
+    "focus": "Вернулся, смотрю на экран и не понимаю, что хотел сказать дальше. Перечитал нача",
+    "subject": "the confused face",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the confused face is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "the main character sits back at the laptop with a confused blank face, holding a cup of tea, staring at the plain empty laptop screen",
+   "details": [
+    "the confused face",
+    "the cup of tea"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "absorb": false,
+   "board": "new"
+  },
+  {
+   "index": 46,
+   "section": "BLOCK 3: ЗАПИСКА ВОЗВРАТА",
+   "text": "Через полчаса я закрыл ноутбук до завтра. Звонок длился десять минут, а вечер съело возвращение.",
+   "key": "8e74c7b34303cb85",
+   "spec": {
+    "focus": "the evening lost to returning, not the call",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a closed laptop is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the room around the desk is dark",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "a cold half-full cup of tea stands beside the laptop",
+      "tier": "should"
+     }
+    ],
+    "subject": "a laptop"
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "close-up: one closed laptop sits on a dark desk, its lid shut, a cold half-full cup of tea beside it, a chair pushed back; the room around is dim; the closed laptop is large in the right half of the frame with plain dark background on the left.",
+   "details": [
+    "the closed laptop lid",
+    "the cold cup of tea"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   },
+   "absorb": false,
+   "board": "lib"
+  },
+  {
+   "index": 47,
+   "section": "BLOCK 3: ЗАПИСКА ВОЗВРАТА",
+   "text": "Сложное дело держит в голове много нитей сразу. Когда ты уходишь, нити падают, и вернуться значит собрать их заново. Это трудно, и мозг снова ищет выход.",
+   "key": "f07338970ab4be9b",
+   "spec": {
+    "focus": "Сложное дело держит в голове много нитей сразу. Когда ты уходишь, нити падают, и",
+    "subject": "the fallen threads",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the fallen threads is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "the main character sits on the floor beside a desk among many loose colourful threads that have fallen around it, trying to gather them in its paws, a worried face",
+   "details": [
+    "the fallen threads",
+    "the paws gathering"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "absorb": false,
+   "board": "new"
+  },
+  {
+   "index": 48,
+   "section": "BLOCK 3: ЗАПИСКА ВОЗВРАТА",
+   "text": "Психолог Софи Лерой изучает, что остаётся в голове после переключения, и вместе с Терезой Гломб проверила простую вещь.",
+   "key": "5a138cb885e27ac7",
+   "spec": {
+    "focus": "a researcher studies what switching leaves behind",
+    "claims": [
+     {
+      "id": "core",
+      "text": "two researchers at a table are visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "one woman points at a page with a pencil",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the table is covered with blank papers and a small notebook",
+      "tier": "should"
+     }
+    ],
+    "subject": "researchers"
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "medium shot: two women researchers sit on chairs at a table covered with blank papers and one small notebook, the one on the left leans over a page and points at it with a pencil, the other watches her; a plain office wall behind; the two sit in the middle of the frame with calm space around them.",
+   "details": [
+    "the pointing pencil",
+    "the stack of blank papers"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     2
+    ],
+    "original": "medium shot: two women researchers sit at a table covered with blank papers and one small notebook, the one on the left leans over a page and points at it with a pencil, the other watches her; a plain office wall behind; the two sit in the middle of the frame with calm space around them."
+   },
+   "absorb": true,
+   "board": "absorb"
+  },
+  {
+   "index": 49,
+   "section": "BLOCK 3: ЗАПИСКА ВОЗВРАТА",
+   "text": "Перед тем как переключиться, люди тратили меньше минуты, чтобы записать, где остановились, что осталось и с чего продолжат.",
+   "key": "8ddaae1bb5e82e71",
+   "spec": {
+    "focus": "Перед тем как переключиться, люди тратили меньше минуты, чтобы записать, где ост",
+    "subject": "the sticky note",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the sticky note is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "a young person at a desk quickly writes one short line on a small sticky note while a phone on the desk is ringing with small shake lines",
+   "details": [
+    "the sticky note",
+    "the ringing phone"
+   ],
+   "hero_state": null,
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "absorb": false,
+   "board": "new"
+  },
+  {
+   "index": 50,
+   "section": "BLOCK 3: ЗАПИСКА ВОЗВРАТА",
+   "text": "С такой запиской старое дело меньше тянуло внимание назад, и новое шло лучше. Я пользуюсь этим каждый день и зову это запиской возврата.",
+   "key": "557d4237209c45f4",
+   "spec": {
+    "focus": "С такой запиской старое дело меньше тянуло внимание назад, и новое шло лучше. Я ",
+    "subject": "the sticky note on the laptop",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the sticky note on the laptop is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "close-up: one small sticky note with a few wavy pencil lines is stuck to the edge of an open laptop screen; the main character's paw has just pressed it on",
+   "details": [
+    "the sticky note on the laptop",
+    "the paw"
+   ],
+   "hero_state": "bright",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "key_thought": "записка возврата",
+   "absorb": false,
+   "board": "new"
+  },
+  {
+   "index": 51,
+   "section": "BLOCK 3: ЗАПИСКА ВОЗВРАТА",
+   "text": "Теперь, когда звонит телефон, я не бросаю письмо на полуслове. Я пишу на листке одну строчку: «дальше третий абзац, про цену».",
+   "key": "c7e7fbd1d7e17293",
+   "spec": {
+    "focus": "Теперь, когда звонит телефон, я не бросаю письмо на полуслове. Я пишу на листке ",
+    "subject": "the sticky note",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the sticky note is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "the main character holds a phone to its ear with one paw and with the other paw writes one line on a small sticky note on the desk",
+   "details": [
+    "the sticky note",
+    "the phone at the ear"
+   ],
+   "hero_state": "bright",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "absorb": false,
+   "board": "new"
+  },
+  {
+   "index": 52,
+   "section": "BLOCK 3: ЗАПИСКА ВОЗВРАТА",
+   "text": "После звонка я смотрю на листок, и через минуту я снова в письме. Нити не надо собирать, они лежат на столе.",
+   "key": "f364c8626742310f",
+   "spec": {
+    "focus": "the threads already lie on the table",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a slip of paper in a paw is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "several loose threads lie neatly on the table",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "an open laptop stands in front of the character",
+      "tier": "should"
+     }
+    ],
+    "subject": "a slip of paper"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character sits on a chair beside the desk holding a small slip of paper in one paw and reading it, a laptop open in front; several loose threads lie neatly on the table beside the laptop; the character is in the left half of the frame, plain light background.",
+   "details": [
+    "the slip in the paw",
+    "the threads lying on the table"
+   ],
+   "hero_state": "golden",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     2
+    ],
+    "original": "medium shot: the main character sits at the desk holding a small slip of paper in one paw and reading it, a laptop open in front; several loose threads lie neatly on the table beside the laptop; the character is in the left half of the frame, plain light background."
+   },
+   "absorb": false,
+   "board": "lib"
+  },
+  {
+   "index": 53,
+   "section": "BLOCK 3: ЗАПИСКА ВОЗВРАТА",
+   "text": "Знаешь, что мне тут нравится больше всего? Я больше не ругаю себя, когда ухожу.",
+   "key": "4feddc77c48a61a6",
+   "spec": {
+    "focus": "no more self-blame for drifting",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a relaxed person in a chair is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the character leans back with both paws behind its head",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "a phone rings on the desk in front",
+      "tier": "should"
+     }
+    ],
+    "subject": "a person in a chair"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character leans back in a chair with a calm relieved smile, both paws behind its head, one phone ringing on the desk in front with small vibration lines; the character is in the right half of the frame, plain light background.",
+   "details": [
+    "the ringing phone on the desk",
+    "the chair"
+   ],
+   "hero_state": "golden",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   },
+   "absorb": true,
+   "board": "absorb"
+  },
+  {
+   "index": 54,
+   "section": "BLOCK 3: ЗАПИСКА ВОЗВРАТА",
+   "text": "Один человек написал в комментариях: «не лох, что снова отвлекался, а молодец, что возвращал внимание обратно». Сто девять человек согласились, и я тоже.",
+   "key": "31bc0b1a4b166d11",
+   "spec": {
+    "focus": "many people agree: returning is the win",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a crowd with raised hands is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "many small figures raise their hands",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the figures stand on a light floor",
+      "tier": "should"
+     }
+    ],
+    "subject": "a crowd"
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "wide shot: a crowd of small drawn figures stands on a light floor with hands raised, filling the middle of the frame; a few figures in front are larger, the rest smaller behind them; plain light background above the crowd.",
+   "details": [
+    "the raised hands",
+    "the front row of figures"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   },
+   "absorb": false,
+   "board": "lib"
+  },
+  {
+   "index": 55,
+   "section": "BLOCK 3: ЗАПИСКА ВОЗВРАТА",
+   "text": "Внимание не удерживают, его возвращают.",
+   "key": "8e84b46474179667",
+   "spec": {
+    "focus": "Внимание не удерживают, его возвращают.",
+    "claims": [
+     {
+      "id": "core",
+      "text": "Внимание не удерживают, его возвращают.",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "a simple drawn scene illustrating: Внимание не удерживают, его возвращают.",
+   "fallback": true,
+   "key_thought": "его возвращают",
+   "absorb": false,
+   "board": "same"
+  },
+  {
+   "index": 56,
+   "section": "BLOCK 3: ЗАПИСКА ВОЗВРАТА",
+   "text": "Хочешь попробовать прямо сейчас? Возьми листок и напиши одно дело, которое тебя ждёт, и с чего ты продолжишь.",
+   "key": "7b835f89b9fb50f7",
+   "spec": {
+    "focus": "an invitation to write a return note now",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a blank slip of paper is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "a paw holds the slip out toward the viewer",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "a pen is held in the other paw",
+      "tier": "should"
+     }
+    ],
+    "subject": "a slip of paper"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character holds out a small blank slip of paper toward the viewer with one paw, a pen in the other paw; the slip is large in the middle of the frame, plain light background around it.",
+   "details": [
+    "the blank slip of paper",
+    "the pen in the paw"
+   ],
+   "hero_state": "bright",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   },
+   "absorb": true,
+   "board": "absorb"
+  },
+  {
+   "index": 57,
+   "section": "BLOCK 3: ЗАПИСКА ВОЗВРАТА",
+   "text": "Положи его рядом. Когда в следующий раз уйдёшь, а ты уйдёшь, листок будет тебя ждать.",
+   "key": "f62c9a1732a73ef8",
+   "spec": {
+    "focus": "the note waits for the next departure",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a slip of paper on a desk is visible",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the slip lies next to a closed laptop",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the chair behind the desk is empty",
+      "tier": "should"
+     }
+    ],
+    "subject": "a slip of paper"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot: the main character stands beside a desk, one paw still on a small slip of paper it has just set down next to a closed laptop; the chair behind is empty; the slip and laptop are in the right half of the frame, plain light background.",
+   "details": [
+    "the slip of paper on the desk",
+    "the closed laptop"
+   ],
+   "hero_state": "golden",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false
+   },
+   "absorb": false,
+   "board": "lib"
+  },
+  {
+   "index": 58,
+   "section": "FINAL",
+   "text": "Телефон в другой комнате, маленький следующий шаг и записка возврата. Ни одному из них не нужна сила воли.",
+   "key": "fc9d9ca5c22b0319",
+   "spec": {
+    "focus": "Телефон в другой комнате, маленький следующий шаг и записка возврата. Ни одному ",
+    "subject": "the door with the phone",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the door with the phone is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "three small things stand in a row on a plain shelf with wide gaps: a small toy door slightly open with a phone behind it, one small blank card, one sticky note with wavy lines",
+   "details": [
+    "the door with the phone",
+    "the small card",
+    "the sticky note"
+   ],
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "absorb": false,
+   "board": "new",
+   "hero_state": null
+  },
+  {
+   "index": 59,
+   "section": "FINAL",
+   "text": "Но остаётся вопрос, почему трудное место так пугает, что мы бежим от него к холодильнику и откладываем дело на потом. Про это мой ролик «Ты никогда не начнёшь жить», он уже здесь.",
+   "key": "5be78e4b7c7525a8",
+   "spec": {
+    "focus": "fleeing a hard task to the fridge",
+    "claims": [
+     {
+      "id": "core",
+      "text": "a person turns away from a door toward a fridge",
+      "tier": "must"
+     },
+     {
+      "id": "c1",
+      "text": "the person's back is to a tall closed door",
+      "tier": "must"
+     },
+     {
+      "id": "c2",
+      "text": "the fridge stands open and glowing",
+      "tier": "must"
+     },
+     {
+      "id": "c3",
+      "text": "one paw rests on the fridge door",
+      "tier": "should"
+     }
+    ],
+    "subject": "a person"
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "medium shot in a kitchen: the main character stands on the floor with its back to a tall closed door on the left, body twisted toward an open fridge on the right, one paw resting on the fridge door, shoulders slumped, guilty tired face; cold light from the fridge lies in a bright wedge on the floor; the character is in the middle of the frame, plain light wall behind",
+   "details": [
+    "the glowing open fridge",
+    "the tall shut door"
+   ],
+   "hero_state": "ember",
+   "fallback": false,
+   "preflight": {
+    "issues": [],
+    "rewritten": true,
+    "faults": [
+     1,
+     2
+    ],
+    "original": "medium shot in a kitchen: the main character stands with its back to a tall closed door on the left, body twisted toward an open fridge on the right, one paw on the fridge door, shoulders slumped, guilty tired face; cold light spills from the fridge onto the floor; the character sits in the middle of the frame, plain light wall behind"
+   },
+   "absorb": false,
+   "board": "same"
+  }
+ ],
+ "stats": {
+  "planned": 59,
+  "fallback": 1,
+  "cached_chapters": 0,
+  "hero_trimmed": 0,
+  "accent_by_rule": 1
+ },
+ "errors": {
+  "BLOCK 1: ЭКРАНОМ ВНИЗ": [
+   "8:writing_in_picture:words"
+  ],
+  "BLOCK 3: ЗАПИСКА ВОЗВРАТА": [
+   "15:writing_in_picture:words"
+  ]
+ },
+ "preflight": {
+  "checked": 59,
+  "rewritten": 34,
+  "rejected": 1,
+  "cached_chapters": 0,
+  "errors": {}
+ }
+}

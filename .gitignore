@@ -31,3 +31,5 @@ videos/*/audio*.wav
 videos/*/media_plan/lumean_temp/
 videos/*/_fix_pauses_filter.txt
 deliver/
+videos/*/media_plan/upscale/
+videos/*/anim/hf/assets/

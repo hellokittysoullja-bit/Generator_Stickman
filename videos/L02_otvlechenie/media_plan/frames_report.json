@@ -1,0 +1,919 @@
+{
+ "model": "cx/gpt-image-2",
+ "size": "1536x1024",
+ "quality": "medium",
+ "look": "197bb015d9f4dbbb",
+ "judge_model": null,
+ "spent_this_run": 3937500,
+ "gateway": {
+  "base_url": "https://anymodel.org/v1",
+  "calls": 0,
+  "failures": 0,
+  "lost_bodies": 0,
+  "empty_answers": 0,
+  "spent": 0,
+  "spend_cap": 300000,
+  "dead": null,
+  "pause_wait_sec": 0.0,
+  "reasked": 0,
+  "empty_answer_reasked": 0
+ },
+ "frames": [
+  {
+   "index": 1,
+   "key": "21f0357245b7652e",
+   "sig": "104966d3a74fc71267dd",
+   "plan_sig": "6bb1b4070e430d6b2eaf",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: a big old balance scale stands on the floor: on the left pan sits the main character, on the right pan lies one phone; the left pan with the character hangs low and the right pan with the phone is lifted high in the air; the character looks up at the phone with a puzzled face. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/002.png",
+   "status": "unchecked",
+   "chosen": "41b43fca8ec77e9da64c.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "41b43fca8ec77e9da64c.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "41b43fca8ec77e9da64c.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": []
+  },
+  {
+   "index": 2,
+   "key": "f4d6b3525c467b10",
+   "sig": "2f68dec90b94b512bbb5",
+   "plan_sig": "c0883a6bc5f76b1a88cd",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: two equal panels side by side with a plain gap between them: in the left panel the main character sits at a desk and a phone beside it has five blank speech bubbles floating above it; in the right panel the same desk, the phone has no bubbles at all, and five small blank thought clouds float up from the character's own head instead. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/003.png",
+   "status": "unchecked",
+   "chosen": "36ee625c274c30766c8d.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "36ee625c274c30766c8d.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "36ee625c274c30766c8d.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": []
+  },
+  {
+   "index": 6,
+   "key": "167e33b20d5010ac",
+   "sig": "d07a7716f84ef5784d3c",
+   "plan_sig": "7346ba1e8b1048bb9469",
+   "kind": "scene",
+   "labels": [],
+   "hero": false,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. SCENE: three equal panels in a row with plain gaps: in the first a paw holds a phone with a blank screen; in the second a phone lies face down on a wooden desk; in the third an empty desk and, through an open doorway behind it, a phone lies on a shelf in another room. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/007.png",
+   "status": "unchecked",
+   "chosen": "a7edca3a963e1e4b5b43.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "a7edca3a963e1e4b5b43.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "a7edca3a963e1e4b5b43.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": []
+  },
+  {
+   "index": 8,
+   "key": "46dcfe4f076fe5b4",
+   "sig": "c84a114096c6978204d8",
+   "plan_sig": "72afc252299480d41f67",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: close-up on a wooden desk: one phone lies face down; the main character's paw hovers just above it, hesitating; the character's eyes are fixed on the phone, ears forward. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/009.png",
+   "status": "unchecked",
+   "chosen": "d9c184e514faa0b88652.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "d9c184e514faa0b88652.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "d9c184e514faa0b88652.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": []
+  },
+  {
+   "index": 9,
+   "key": "df5d5205b457e1d2",
+   "sig": "45a70cdb187320353250",
+   "plan_sig": "b276b389443c678d1b0b",
+   "kind": "scene",
+   "labels": [],
+   "hero": false,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. SCENE: wide shot of a plain university room with four rows of small desks; young people sit at the desks with papers in front of them; one researcher in a white coat stands at the front holding a clipboard. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/010.png",
+   "status": "unchecked",
+   "chosen": "54b40319fd6749e6157e.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "54b40319fd6749e6157e.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "54b40319fd6749e6157e.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": []
+  },
+  {
+   "index": 10,
+   "key": "7d29671723d8c339",
+   "sig": "88e9b6395d740cc43d9a",
+   "plan_sig": "b77e2efe82d8463434ad",
+   "kind": "scene",
+   "labels": [],
+   "hero": false,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. SCENE: three equal panels in a row with plain gaps, the same young student at the same desk in each: in the first panel a phone lies face down on the desk beside the paper; in the second a bag hangs on the back of the chair with a phone in its open pocket; in the third there is no phone at all and through a doorway a phone lies on a shelf in another room. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/011.png",
+   "status": "unchecked",
+   "chosen": "8762d44efa06e1e8877f.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "8762d44efa06e1e8877f.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "8762d44efa06e1e8877f.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": []
+  },
+  {
+   "index": 12,
+   "key": "a94352ea2bc144da",
+   "sig": "199ebcdba7b930684dd2",
+   "plan_sig": "daf092b25d4def7ccca2",
+   "kind": "scene",
+   "labels": [],
+   "hero": false,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. SCENE: two students at two desks side by side: the left one has a phone face down on the desk and a small thought cloud above the head with a phone inside it, frowning at a paper; the right one has no phone on the desk and works calmly with a small smile. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/013.png",
+   "status": "unchecked",
+   "chosen": "989074d95bd3303241ca.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "989074d95bd3303241ca.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "989074d95bd3303241ca.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": []
+  },
+  {
+   "index": 13,
+   "key": "d9a86e9935066075",
+   "sig": "5fce88b87b81672ffa22",
+   "plan_sig": "df636bbc9b518d25c8af",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot: the main character sits at a desk writing on a sheet of paper with a pencil; one phone lies face down at the far corner of the desk. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/014.png",
+   "status": "unchecked",
+   "chosen": "b452fb6873a4504d4fd4.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "b452fb6873a4504d4fd4.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "b452fb6873a4504d4fd4.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": []
+  },
+  {
+   "index": 14,
+   "key": "694e435bf2c6f121",
+   "sig": "2687380d2aff7dbc20f1",
+   "plan_sig": "0edde2b0192ed637d1cb",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot: the main character sits at a desk with a pencil over the paper but its eyes slide sideways to a small cooking pot standing on the desk; a phone lies face down inside the pot, the lid is slightly lifted and a thin wisp of steam rises. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/015.png",
+   "status": "unchecked",
+   "chosen": "a00bad8915be8d869333.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "a00bad8915be8d869333.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "a00bad8915be8d869333.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": []
+  },
+  {
+   "index": 16,
+   "key": "aaa2150a06e862bc",
+   "sig": "7b4f7d1d1fb415c2d7bc",
+   "plan_sig": "6caeaa18b7b76a73b603",
+   "kind": "scene",
+   "labels": [],
+   "hero": false,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. SCENE: a young person sits at a desk solving a paper puzzle; beside the paper a phone lies screen up with one small blank message bubble popping out of it; the person keeps looking at the paper, but a small thought cloud with a phone in it hangs above the head. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/017.png",
+   "status": "unchecked",
+   "chosen": "05ecde144167c3f0f3fd.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "05ecde144167c3f0f3fd.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "05ecde144167c3f0f3fd.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": []
+  },
+  {
+   "index": 18,
+   "key": "74914a17e6ef81a9",
+   "sig": "83e733b3db374313d6d8",
+   "plan_sig": "9282e7216d2e8dd7259b",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: the main character walks through an open doorway carrying one phone in both paws away from its desk into another room, a calm determined face; its desk with paper stays behind. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the main character is drawn big, at least a third of the image height. Keep a calm area of plain empty background, about a third of the image, for handwriting added later. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/019.png",
+   "status": "unchecked",
+   "chosen": "cbdf49c3d9944f4213c6.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "cbdf49c3d9944f4213c6.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "cbdf49c3d9944f4213c6.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": []
+  },
+  {
+   "index": 22,
+   "key": "83af1d1bd057b558",
+   "sig": "8c7173cd91332cfd551b",
+   "plan_sig": "667610d92964ec21ed21",
+   "kind": "scene",
+   "labels": [],
+   "hero": false,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. SCENE: two equal panels side by side with a plain gap: in the left panel a colleague taps a working person on the shoulder; in the right panel the same person sits alone at the same desk and turns away from the work by themselves to look out of a window. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/023.png",
+   "status": "unchecked",
+   "chosen": "3466c0687bd544ce1fb6.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "3466c0687bd544ce1fb6.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "3466c0687bd544ce1fb6.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": []
+  },
+  {
+   "index": 24,
+   "key": "5039f167990ba3a7",
+   "sig": "b389bb8200a9732b1543",
+   "plan_sig": "85b523ab9cde6bd18dc0",
+   "kind": "scene",
+   "labels": [],
+   "hero": false,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. SCENE: wide shot of a city street scene with four different people: one on a bus seat, one at a desk, one cooking at a stove, one walking a dog; above each head floats a small thought cloud with a different object in it: a beach umbrella, a cake, a cat, a bed. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/025.png",
+   "status": "unchecked",
+   "chosen": "8b3485cceb2e27664e90.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "8b3485cceb2e27664e90.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "8b3485cceb2e27664e90.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": []
+  },
+  {
+   "index": 26,
+   "key": "2004405b231a8c07",
+   "sig": "cdd98d56c6193dc83a3d",
+   "plan_sig": "c2dfb5551c3d6e492e5d",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: the main character sits on a long bench among four different people; small thought clouds float above every head; above the character's head float three clouds instead of one; everyone looks relaxed. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/027.png",
+   "status": "unchecked",
+   "chosen": "d70372de78c4fe8bc49e.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "d70372de78c4fe8bc49e.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "d70372de78c4fe8bc49e.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": []
+  },
+  {
+   "index": 28,
+   "key": "08d4bb6c3218bf4c",
+   "sig": "82749557bca5b389de10",
+   "plan_sig": "479005e3bbf76fefa7e1",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot: the main character sits at a desk with a pencil lifted above an unfinished letter and looks away at a small flower pot on the windowsill, a watering can beside the pot. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/029.png",
+   "status": "unchecked",
+   "chosen": "422935ecf44dcea3a181.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "422935ecf44dcea3a181.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "422935ecf44dcea3a181.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": []
+  },
+  {
+   "index": 29,
+   "key": "349a119fcf8f3682",
+   "sig": "d0f1ed4003ca1af41789",
+   "plan_sig": "e2a28952108e06076c26",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: the main character holds a watering can over a small flower pot that overflows: water spills over the windowsill onto the floor into a big puddle, the soaked flower droops, the character looks at the puddle with an awkward face. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/030.png",
+   "status": "unchecked",
+   "chosen": "8950d3a42fd1c662b1a9.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "8950d3a42fd1c662b1a9.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "8950d3a42fd1c662b1a9.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": []
+  },
+  {
+   "index": 30,
+   "key": "ecf6ac1770c4ce2f",
+   "sig": "f86563c64c20cfdc3f40",
+   "plan_sig": "8ae8be87ff226d69e461",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: a large hand-drawn brain with a small open door in its side; the main character steps out of the door with one foot, looking away toward a fridge in the distance. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. Keep a calm area of plain empty background, about a third of the image, for handwriting added later. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/031.png",
+   "status": "unchecked",
+   "chosen": "d8b14ca217dc1524fa47.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "d8b14ca217dc1524fa47.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "d8b14ca217dc1524fa47.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": []
+  },
+  {
+   "index": 32,
+   "key": "9f0dc66e5d8cc1a9",
+   "sig": "91d7d48bf5ada10b6819",
+   "plan_sig": "70a7f32f07ce4672fae6",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: one huge blank sheet of paper stands upright like a wall and towers over the main character; next to it the character easily holds one small blank card in its paws and looks at it with relief. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the main character is drawn big, at least a third of the image height. Keep a calm area of plain empty background, about a third of the image, for handwriting added later. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/033.png",
+   "status": "unchecked",
+   "chosen": "6c8352a5cd68eaebe33a.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "6c8352a5cd68eaebe33a.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "6c8352a5cd68eaebe33a.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": []
+  },
+  {
+   "index": 35,
+   "key": "4a4242b1dc8414cf",
+   "sig": "1ac7dcd5e15ddc37d7a1",
+   "plan_sig": "44802f719deb2842962e",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: the main character sits at a table and cuts a long strip of paper into small cards with scissors; a neat row of small blank cards lies on the table. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/036.png",
+   "status": "unchecked",
+   "chosen": "ab29cfc967eda4ee32d0.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "ab29cfc967eda4ee32d0.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "ab29cfc967eda4ee32d0.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": []
+  },
+  {
+   "index": 36,
+   "key": "e68ca0b71e227638",
+   "sig": "4a3682b42bbfcb658a33",
+   "plan_sig": "db762021556d2826d322",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: a laptop stands open on a desk, its screen is plain and empty; the main character sits beside the laptop facing the viewer with a calm friendly face, one paw resting on the desk next to a small round kitchen timer. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/037.png",
+   "status": "unchecked",
+   "chosen": "cec4baf4d73ad2fbd2a0.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "cec4baf4d73ad2fbd2a0.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "cec4baf4d73ad2fbd2a0.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": []
+  },
+  {
+   "index": 41,
+   "key": "a404a7222b670fde",
+   "sig": "94214c5dbdb851b87819",
+   "plan_sig": "dd4d5ff88accc93ba500",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: the main character stands on a grassy hill and has just thrown a boomerang: the boomerang flies far away in a wide curve drawn with a dotted line that bends back toward the character. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/042.png",
+   "status": "unchecked",
+   "chosen": "200ba30876907543132f.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "200ba30876907543132f.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "200ba30876907543132f.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": []
+  },
+  {
+   "index": 44,
+   "key": "0cf9fd284f3b5f40",
+   "sig": "e3170c1ae469103e8066",
+   "plan_sig": "ff0a983a75b1508fe35c",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: the main character sits at a desk with an open laptop, holding a phone to its ear and turning away from the laptop; the laptop screen is plain and empty. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/045.png",
+   "status": "unchecked",
+   "chosen": "0d82e6e740a0228e7f30.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "0d82e6e740a0228e7f30.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "0d82e6e740a0228e7f30.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": []
+  },
+  {
+   "index": 45,
+   "key": "906022add3ce39da",
+   "sig": "3f4e2d097e921fe3a1ba",
+   "plan_sig": "f35bda575c2acb37ea03",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: the main character sits back at the laptop with a confused blank face, holding a cup of tea, staring at the plain empty laptop screen. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/046.png",
+   "status": "unchecked",
+   "chosen": "0415e2cf34dd1fdfb980.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "0415e2cf34dd1fdfb980.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "0415e2cf34dd1fdfb980.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": []
+  },
+  {
+   "index": 47,
+   "key": "f07338970ab4be9b",
+   "sig": "a8954d2e490ba81bc97c",
+   "plan_sig": "602287717470ff6f8ed7",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: the main character sits on the floor beside a desk among many loose colourful threads that have fallen around it, trying to gather them in its paws, a worried face. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/048.png",
+   "status": "unchecked",
+   "chosen": "a97010be94c04e1f2733.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "a97010be94c04e1f2733.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "a97010be94c04e1f2733.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": []
+  },
+  {
+   "index": 49,
+   "key": "8ddaae1bb5e82e71",
+   "sig": "bb2745520655da68274a",
+   "plan_sig": "33295ce0896ebfdc4247",
+   "kind": "scene",
+   "labels": [],
+   "hero": false,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. SCENE: a young person at a desk quickly writes one short line on a small sticky note while a phone on the desk is ringing with small shake lines. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/050.png",
+   "status": "unchecked",
+   "chosen": "5f06c421c1345d9ad315.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "5f06c421c1345d9ad315.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "5f06c421c1345d9ad315.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": []
+  },
+  {
+   "index": 50,
+   "key": "557d4237209c45f4",
+   "sig": "9eb4013ce958e3301a8e",
+   "plan_sig": "680c51dccb16e1da2690",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: close-up: one small sticky note with a few wavy pencil lines is stuck to the edge of an open laptop screen; the main character's paw has just pressed it on. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the main character is drawn big, at least a third of the image height. Keep a calm area of plain empty background, about a third of the image, for handwriting added later. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/051.png",
+   "status": "unchecked",
+   "chosen": "26e4c8eb6b28306fc3ef.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "26e4c8eb6b28306fc3ef.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "26e4c8eb6b28306fc3ef.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": []
+  },
+  {
+   "index": 51,
+   "key": "c7e7fbd1d7e17293",
+   "sig": "af00b004702f25e303aa",
+   "plan_sig": "0171fe60d7b76dce65c0",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: the main character holds a phone to its ear with one paw and with the other paw writes one line on a small sticky note on the desk. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/052.png",
+   "status": "unchecked",
+   "chosen": "65f011a1bc4bdf97e73f.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "65f011a1bc4bdf97e73f.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "65f011a1bc4bdf97e73f.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": []
+  },
+  {
+   "index": 58,
+   "key": "fc9d9ca5c22b0319",
+   "sig": "a0e3b592f44974d08327",
+   "plan_sig": "b0ff7a28988e050691b9",
+   "kind": "scene",
+   "labels": [],
+   "hero": false,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. SCENE: three small things stand in a row on a plain shelf with wide gaps: a small toy door slightly open with a phone behind it, one small blank card, one sticky note with wavy lines. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/059.png",
+   "status": "unchecked",
+   "chosen": "c7fa4f6cb6cce6a1eea4.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "c7fa4f6cb6cce6a1eea4.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "c7fa4f6cb6cce6a1eea4.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": []
+  }
+ ]
+}
