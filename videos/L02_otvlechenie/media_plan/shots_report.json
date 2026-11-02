@@ -131,27 +131,19 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
     ],
     [
      2.16,
-     "drift"
+     "manual"
     ],
     [
-     5.88,
-     "drift"
+     3.44,
+     "manual"
     ],
     [
-     7.92,
-     "drift"
-    ],
-    [
-     11.04,
-     "drift"
-    ],
-    [
-     13.52,
-     "drift"
+     6.0,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -449,6 +441,10 @@
      "manual"
     ],
     [
+     2.43,
+     "manual"
+    ],
+    [
      3.63,
      "manual"
     ],
@@ -564,11 +560,19 @@
      "manual"
     ],
     [
+     2.56,
+     "manual"
+    ],
+    [
      4.48,
      "manual"
     ],
     [
      7.2,
+     "manual"
+    ],
+    [
+     8.48,
      "manual"
     ],
     [
