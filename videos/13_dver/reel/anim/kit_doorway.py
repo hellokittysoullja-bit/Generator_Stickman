@@ -106,6 +106,7 @@ def main():
     tail = cat & tail_reg; body = cat & ~tail_reg.astype(bool)
     # усы щеки проходят через просвет завитка хвоста: оторванные от хвоста штрихи — телу (владелец 02.11, 0:00.86)
     tail, body = anim.split_part(tail, body)
+    tail = anim.underlap(tail, body, cat)                       # хвост заходит под тело: без белого шва у основания
     cloud = np.zeros_like(cat); bub = np.zeros_like(cat)
     for m in anim.ink_objects(A, box=CLOUD_BOX, min_area=20000): cloud |= m
     for m in anim.ink_objects(A, box=BUB_BOX, min_area=300): bub |= m

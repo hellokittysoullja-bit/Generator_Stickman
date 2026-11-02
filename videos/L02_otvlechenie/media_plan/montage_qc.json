@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "measured_at": "2026-11-02T15:29:22",
+ "measured_at": "2026-11-02T15:39:00",
  "video": "final.mp4",
  "spec": "docs/MONTAGE_SPEC.md",
  "limits": [
@@ -1879,7 +1879,7 @@
   443.75,
   445.667
  ],
- "qc_seconds": 392.8,
+ "qc_seconds": 303.3,
  "video_seconds": 447.5,
  "verdict": "blocked"
 }

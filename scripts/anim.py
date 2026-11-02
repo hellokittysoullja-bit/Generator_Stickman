@@ -398,6 +398,51 @@ def _nfill(img, valid, sig):
     return num / np.maximum(den, 1e-6), den[..., 0]
 
 
+def _clean_paper(img, valid, win=9, thr=6.0):
+    """Чистая бумага: свой фон без линий туши и краёв предметов рядом (локальный разброс яркости мал)."""
+    g = img.mean(2) if img.ndim == 3 else img
+    m = cv2.blur(g, (win, win)); v = cv2.blur(g * g, (win, win)) - m * m
+    calm = np.sqrt(np.clip(v, 0, None)) < thr
+    # не по valid: на ровной бумаге он «в крапинку» (порог по процентилю), и эрозия съедала всё; тушь и дыру — с запасом
+    ink = g < np.median(g[valid]) - 25 if valid.any() else np.zeros_like(calm)
+    near = cv2.dilate((ink | ~(valid | calm)).astype(np.uint8), np.ones((win, win), np.uint8)).astype(bool)
+    return calm & ~near
+
+
+def _grain_tiles(hf, clean, shape, tile=96, seed=11):
+    """Зерно на весь кадр плитками с чистой бумаги: без отражения и без заворота края кадра (np.roll заворачивал
+    его: в заливке кота у холодильника проступали призраки лап с другого края — разбор 02.11)."""
+    H, W = shape
+    def centers(t):                                   # центры плиток целиком на чистой бумаге и целиком в кадре
+        e = cv2.erode(clean.astype(np.uint8), np.ones((t, t), np.uint8), borderType=cv2.BORDER_CONSTANT, borderValue=0)
+        e[:t // 2 + 1] = 0; e[H - t // 2 - 1:] = 0; e[:, :t // 2 + 1] = 0; e[:, W - t // 2 - 1:] = 0
+        return np.nonzero(e)
+    ys, xs = centers(tile)
+    if len(ys) == 0:                                  # чистого места на плитку нет — мелкие плитки
+        tile = 32
+        ys, xs = centers(tile)
+        if len(ys) == 0:
+            return np.zeros_like(hf)
+    rng = np.random.default_rng(seed)
+    out = np.zeros_like(hf)
+    for y in range(0, H, tile):
+        for x in range(0, W, tile):
+            k = int(rng.integers(len(ys)))
+            cy, cx = ys[k] - tile // 2, xs[k] - tile // 2     # эрозия: плитка с центром здесь вся на чистой бумаге
+            h, w = min(tile, H - y), min(tile, W - x)
+            out[y:y + h, x:x + w] = hf[cy:cy + h, cx:cx + w]
+    return out
+
+
+def _shift_no_wrap(hf, d, fallback):
+    """Сдвиг (dy, dx) без заворота края: что вышло за кадр — из запасного зерна."""
+    dy, dx = int(d[0]), int(d[1]); H, W = hf.shape[:2]
+    out = fallback.copy()
+    ys0, ys1 = max(0, dy), min(H, H + dy); xs0, xs1 = max(0, dx), min(W, W + dx)
+    out[ys0:ys1, xs0:xs1] = hf[ys0 - dy:ys1 - dy, xs0 - dx:xs1 - dx]
+    return out
+
+
 def fill_hole(img, hole, valid=None, sigs=(10, 25, 60), grain_from=None, feather=5):
     """Фон на месте вырезанного предмета: гладкое продолжение соседнего фона (нормированная свёртка по `valid` —
     только свой фон, без контуров и соседних предметов) + зерно рисунка с чистого места `grain_from` (dy, dx:
@@ -415,15 +460,17 @@ def fill_hole(img, hole, valid=None, sigs=(10, 25, 60), grain_from=None, feather
     for s_ in reversed(sigs[:-1]):
         f, d = _nfill(img, valid, s_); out = np.where((d > 0.15)[..., None], f, out)
     hf = img - cv2.GaussianBlur(img, (0, 0), 2.5)
-    if grain_from == "noise":                         # зерно шумом той же силы, что у чистого фона рядом
-        sd = float(hf[valid].std()) if valid.any() else 2.0
+    clean = _clean_paper(img, valid) & ~cv2.dilate(hole.astype(np.uint8), np.ones((9, 9), np.uint8)).astype(bool)
+    if grain_from == "noise":                         # зерно шумом той же силы, что у чистой бумаги рядом
+        # сила — по чистой бумаге (без линий туши): по всему фону вместе с линиями выходило в 6 раз сильнее (02.11)
+        sd = float(np.median(np.abs(hf[clean])) * 1.4826) if clean.sum() > 500 else 2.0
         rng = np.random.default_rng(7)
         nz = cv2.GaussianBlur(rng.normal(0, 1, img.shape[:2]).astype(np.float32), (0, 0), 0.8)
         out = out + (nz / (nz.std() + 1e-6) * sd)[..., None]
-    else:                                             # зерно с чистого места: (dy, dx) — строка y берёт y - dy
-        if grain_from is None:
-            grain_from = (int(cv2.boundingRect(hole.astype(np.uint8))[3] * 1.3), 0)
-        out = out + np.roll(hf, grain_from, axis=(0, 1))
+    elif grain_from is None:                          # зерно — плитками с чистой бумаги, со случайным сдвигом
+        out = out + _grain_tiles(hf, clean, img.shape[:2])
+    else:                                             # зерно с указанного места: (dy, dx) — строка y берёт y - dy
+        out = out + _shift_no_wrap(hf, grain_from, _grain_tiles(hf, clean, img.shape[:2]))
     a = cv2.GaussianBlur(hole.astype(np.float32), (0, 0), feather)[..., None] if feather else hole[..., None].astype(np.float32)
     return img * (1 - a) + out * a
 
@@ -499,6 +546,19 @@ def keep_attached(mask, reach=PART_REACH):
     big = (lab == 1 + int(np.argmax(st[1:, cv2.CC_STAT_AREA]))).astype(np.uint8)
     near = cv2.dilate(big, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * reach + 1, 2 * reach + 1)))
     return np.isin(lab, np.unique(lab[(near > 0) & (m > 0)])).astype(np.uint8) & m
+
+
+PART_UNDERLAP = 14          # px: часть заходит под соседний слой — шов разреза не просвечивает
+
+
+def underlap(part, cover, full, width=PART_UNDERLAP):
+    """Продлить часть (хвост, лапу, ухо) под слой, который лежит поверх неё (тело), на width px вдоль их общего края.
+    Разрез встык даёт обоим слоям полупрозрачный край по одной линии, и сквозь него светится бумага — белая полоска
+    между хвостом и телом (владелец 02.11, хук рилса 13). full — маска персонажа целиком: продление берёт только его
+    пиксели. Возвращает новую маску части; слой cover не меняется (он сверху и закрывает продление)."""
+    part = (np.asarray(part) > 0).astype(np.uint8)
+    grow = cv2.dilate(part, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * width + 1, 2 * width + 1)))
+    return (part | (grow & (np.asarray(cover) > 0) & (np.asarray(full) > 0))).astype(np.uint8)
 
 
 def detached_share(alpha, thr=0.1, reach=PART_REACH):

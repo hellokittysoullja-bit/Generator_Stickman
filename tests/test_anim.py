@@ -190,3 +190,35 @@ def test_drop_scene_lines_removes_door_frame_through_whiskers():
     assert out[350, 420] == 0                                      # рамка ниже уса — не кот
     assert out[270, 440] == 1 or out[269, 440] == 1                # ус остался
     assert out[300, 250] == 1                                      # тело не тронуто
+
+
+def test_underlap_hides_the_cut_seam_between_part_and_body():
+    # владелец 02.11: белая полоска между хвостом и телом — разрез встык, бумага светится сквозь оба края
+    full = np.zeros((40, 80), np.uint8); full[10:30, 5:75] = 1
+    tail = full.copy(); tail[:, 40:] = 0
+    body = full.copy(); body[:, :40] = 0
+    out = anim.underlap(tail, body, full, width=6)
+    assert out[20, 44] == 1 and out[20, 50] == 0                   # хвост зашёл под тело на 6 px, дальше — нет
+    assert out[5, 44] == 0                                         # только пиксели персонажа
+
+
+def test_fill_hole_grain_never_wraps_the_frame_edge():
+    # разбор 02.11: np.roll заворачивал край кадра — в заливке высокой дыры проступали линии с другого края
+    rng = np.random.default_rng(0)
+    img = np.full((300, 300, 3), 240, np.float32) + rng.normal(0, 1.5, (300, 300, 1)).astype(np.float32)
+    img[280:284, :] = 30                                           # линия пола у нижнего края
+    hole = np.zeros((300, 300), bool); hole[20:200, 100:200] = True   # высокая дыра у верхнего края
+    out = anim.fill_hole(img, hole, feather=0)
+    assert out[20:200, 100:200].min() > 200                        # линии пола в дыре нет
+    sd = float(out[60:160, 120:180].std())
+    assert 0.5 < sd < 4.0                                          # зерно есть, но не грязь
+
+
+def test_fill_hole_noise_strength_from_clean_paper_only():
+    rng = np.random.default_rng(1)
+    img = np.full((200, 200, 3), 240, np.float32) + rng.normal(0, 1.0, (200, 200, 1)).astype(np.float32)
+    for x in range(10, 200, 25):
+        img[:, x:x + 3] = 30                                       # линии туши по фону
+    hole = np.zeros((200, 200), bool); hole[80:120, 80:120] = True
+    out = anim.fill_hole(img, hole, grain_from="noise", feather=0)
+    assert float(out[85:115, 95:105].std()) < 3.0                  # сила шума — как у бумаги, не как у линий
