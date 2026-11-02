@@ -2700,5 +2700,59 @@
   "quality": "medium",
   "price": 140625,
   "source": "scripts/frame_generator.py videos/L02_otvlechenie --confirm-spend"
+ },
+ {
+  "file": "2026-11-02_gen_cx_gpt-image-2_34180f9f.png",
+  "sha256": "34180f9f03cd8eae0a760004fe0e8e35db63fe7b71758a197f650ae1a7ac61ae",
+  "bytes": 2568113,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-02",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: a calm evening; the main character wears plain running shoes on its paws and steps out through an open front door, looking back over its shoulder at the viewer with a small brave smile; outside the door is a simple path and a few trees under a soft evening sky in grey wash. The flame on the tip of its tail burns big, golden and bright with a few tiny sparks. LAYOUT: the main character is whole and large in the middle, standing in the doorway; the door frame is large around it; plain wall around the door; no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 140625,
+  "source": "scripts/reel_draw.py videos/14_ponedelnik/reel"
+ },
+ {
+  "file": "2026-11-02_gen_cx_gpt-image-2_8b2a0848.png",
+  "sha256": "8b2a08481909fe45da0949dcbd2756da6e30441a2acf55c8f667065350363f48",
+  "bytes": 2377142,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-02",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: the main character lies slumped on a plain sofa, half sliding off it, ears down, tired half-closed eyes looking up at the ceiling, one front paw hanging down; on the floor in front of the sofa lie the plain running shoes tossed apart and one long sheet of paper crumpled into a ball. The flame on the tip of its tail is a small dim ember with a thin wisp of smoke. LAYOUT: the main character is whole and large in the middle; the shoes and the paper ball are on the floor in the lower part; plain wall above with clean space; no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 140625,
+  "source": "scripts/reel_draw.py videos/14_ponedelnik/reel"
+ },
+ {
+  "file": "2026-11-02_gen_cx_gpt-image-2_ea22e361.png",
+  "sha256": "ea22e3615e3815e20efb03b82bccd9d8f31bcadb567ee170503e9e2a1bf1c4b9",
+  "bytes": 2361844,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-02",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: a quiet Sunday evening at home. The main character stands on a small plain stool in front of a big plain wall calendar, front paw raised high toward the first square of the top row with a thick black marker pen in it, looking at the calendar with wide hopeful determined eyes; the calendar is a large empty grid of plain squares; next to it a long plain to-do list on a sheet of paper hangs on the wall, its blank lines running all the way down to the floor; a pair of new plain running shoes stands neatly by the closed door. The flame on the tip of its tail burns bright. LAYOUT: the calendar is big in the upper middle with every square blank; the main character is whole in the lower middle in front of it; the long list is on the right side; the shoes and the door are in the lower left; plain wall around; no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 140625,
+  "source": "scripts/reel_draw.py videos/14_ponedelnik/reel"
  }
 ]

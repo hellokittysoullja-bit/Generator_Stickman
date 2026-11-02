@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=2048, height=2800" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="lib/mesh_part.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 2048px; height: 2800px; overflow: hidden; background: #f7f3ea; }
+      #root { position: relative; width: 2048px; height: 2800px; overflow: hidden; }
+      .layer { position: absolute; left: 0; top: 0; width: 2048px; height: 2800px; }
+      .abs { position: absolute; display: block; }
+      #fx { position: absolute; left: 0; top: 0; overflow: visible; }
+      #ring { fill: none; stroke: #e4402f; stroke-linecap: round; stroke-linejoin: round; }
+      #rays line { stroke: #18181a; stroke-linecap: round; }
+    </style>
+  </head>
+  <body>
+    <!-- Хук рилса 14 «Опять начнёшь с понедельника?»: мир сцены — рисунок m1_sunday ×2 от (0, 160), 2048×2800.
+         Слои — anim/kit_monday.py (база рилса 13), положение слоёв подставляет monday_hf.py из kit.json.
+         Красный круг на понедельнике рисует маркер с первого кадра и замыкается на ударном «понеде́льника» (data-vars.hit).
+         Камеру, тряску, субтитры и звук даёт сборщик рилса. -->
+    <div id="root" data-composition-id="main" data-start="0" data-duration="2.4" data-width="2048" data-height="2800"
+         data-vars='{"hit": 1.3}' data-motion-blur="on" data-layout-allow-overflow data-layout-allow-overlap>
+      <img id="bg" class="abs clip" src="assets/bg.png" style="left:0;top:0" data-start="0" data-duration="2.4" />
+      <div id="wall" class="layer clip" data-start="0" data-duration="2.4">
+        <img id="list" class="abs" src="assets/list.png" style="left:0px;top:0px" />
+      </div>
+      <svg id="fx" class="clip" width="2048" height="2800" viewBox="0 0 2048 2800" data-start="0" data-duration="2.4">
+        <path id="ring" d="" style="stroke-width:15" />
+        <g id="rays"></g>
+      </svg>
+      <div id="cat" class="layer clip" data-start="0" data-duration="2.4">
+        <div id="catHop" class="layer">
+          <canvas id="tail" class="abs" width="752" height="961" style="left:0px;top:0px"></canvas>
+          <img id="body" class="abs" src="assets/body.png" style="left:0px;top:0px" />
+        </div>
+      </div>
+    </div>
+    <script>
+      const root = document.getElementById("root");
+      const V = JSON.parse(root.dataset.vars), H = V.hit, K = V.kit;
+      const NS = "http://www.w3.org/2000/svg";
+      const tl = gsap.timeline({ paused: true });
+      const px = (p) => `${p[0]}px ${p[1]}px`;
+
+      // круг от руки: чуть неровный эллипс, начинается и кончается с нахлёстом (как маркером)
+      const [cx, cy, rx, ry] = K.circle;
+      let d = "";
+      for (let i = 0; i <= 64; i++) {
+        const a = -2.3 + (2 * Math.PI * 1.12 * i) / 64;
+        const w = 1 + 0.05 * Math.sin(3 * a) + 0.03 * Math.cos(5 * a);
+        const x = cx + rx * w * Math.cos(a), y = cy + ry * w * Math.sin(a) - 8 * i / 64;
+        d += (i ? " L " : "M ") + x.toFixed(1) + " " + y.toFixed(1);
+      }
+      const ring = document.getElementById("ring"); ring.setAttribute("d", d);
+      const LEN = ring.getTotalLength();
+      gsap.set(ring, { strokeDasharray: LEN, strokeDashoffset: LEN * 0.82 });     // в кадре 0 круг уже начат
+      tl.to(ring, { strokeDashoffset: LEN * 0.12, duration: H - 0.05, ease: "power1.inOut" }, 0);
+      tl.to(ring, { strokeDashoffset: 0, duration: 0.09, ease: "power3.out" }, H - 0.05);     // замкнул на ударе
+      tl.fromTo(ring, { scale: 1 }, { scale: 1.06, duration: 0.08, ease: "power2.out", svgOrigin: `${cx} ${cy}`,
+                 yoyo: true, repeat: 1 }, H);
+
+      // штрихи «готово!» вокруг круга — пером, вспыхивают на ударе
+      for (let i = 0; i < 6; i++) {
+        const a = -Math.PI / 2 + (i - 2.5) * 0.55;
+        const g = document.createElementNS(NS, "g"), m = document.createElementNS(NS, "g"), l = document.createElementNS(NS, "line");
+        g.setAttribute("transform", `translate(${cx + (rx + 40) * Math.cos(a)} ${cy + (ry + 40) * Math.sin(a)}) rotate(${(a * 180) / Math.PI})`);
+        l.setAttribute("x1", 0); l.setAttribute("y1", 0); l.setAttribute("x2", 60); l.setAttribute("y2", 0); l.style.strokeWidth = 11;
+        m.appendChild(l); g.appendChild(m); document.getElementById("rays").appendChild(g);
+        tl.set(m, { opacity: 0, scaleX: 0, svgOrigin: "0 0" }, 0);
+        tl.set(m, { opacity: 1 }, H + 0.03);
+        tl.to(m, { scaleX: 1, duration: 0.07, ease: "power3.out" }, H + 0.03);
+        tl.to(m, { x: 40, opacity: 0, duration: 0.22, ease: "power2.in" }, H + 0.14);
+      }
+
+      // список новой жизни висит на кнопках и качается
+      gsap.set("#list", { transformOrigin: px(K.list_pin_local) });
+      tl.fromTo("#list", { rotation: -0.8 }, { rotation: 0.8, duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 3 }, 0);
+
+      // кот тянется к календарю, на ударе подпрыгивает от предвкушения и пружинит обратно
+      gsap.set("#catHop", { transformOrigin: px(K.cat_foot) });
+      tl.fromTo("#catHop", { y: 0, scaleY: 1 }, { y: -6, scaleY: 1.015, duration: H - 0.12, ease: "sine.inOut" }, 0);
+      tl.to("#catHop", { y: 4, scaleY: 0.975, scaleX: 1.015, duration: 0.1, ease: "power2.in" }, H - 0.12);
+      tl.to("#catHop", { y: -30, scaleY: 1.04, scaleX: 0.985, duration: 0.12, ease: "power3.out" }, H - 0.02);
+      tl.to("#catHop", { y: 0, scaleY: 1, scaleX: 1, duration: 0.5, ease: "elastic.out(1, 0.45)" }, H + 0.1);
+      meshPart({ canvas: document.getElementById("tail"), marg: 180, img: "assets/tail_body.png",
+                 flame: "assets/tail_flame.png", mesh: "assets/tail_mesh.json", angles: "assets/tail_angles.json", fps: 30 });
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
