@@ -1140,7 +1140,8 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
                     a = math.radians(q * 30); r0, r1 = r * (0.80 if q % 3 else 0.72), r * 0.90
                     cv2.line(base, (int(sx + r0 * math.cos(a)), int(sy + r0 * math.sin(a))),
                              (int(sx + r1 * math.cos(a)), int(sy + r1 * math.sin(a))), INK, 10 if q % 3 == 0 else 6, cv2.LINE_AA)
-        elif e["kind"] == "mark":                   # VOX: слово от руки + жёлтый маркер, проведённый под ним слева направо
+        elif e["kind"] == "mark":                   # VOX: слово от руки + маркер, проведённый под ним слева направо
+            # "marker": [r, g, b, a] — цвет маркера (рилс 14, эксперимент владельца 02.11: красный под чёрным текстом)
             f = font(HAND, e.get("size", 120), 700)
             im = text_img(e["text"], f, INK)
             sp = e.get("speed", 1.0)                  # якорь хука пишется вдвое быстрее (speed 2): готов к 0.3 с
@@ -1152,7 +1153,7 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
                     y0 = int(im.height * 0.48)
                     pts = [(0, y0 + 6)] + [(x_, y0 + int(3 * math.sin(x_ * 0.05))) for x_ in range(0, mw, 12)] + \
                           [(mw, y0 + 4), (mw, y0 + mh), (0, y0 + mh - 4)]
-                    dm.polygon(pts, fill=(255, 205, 50, 200))
+                    dm.polygon(pts, fill=tuple(e.get("marker", (255, 205, 50, 200))))   # цвет маркера: жёлтый, по слову — свой
                     if e.get("soft"): mk = mk.filter(ImageFilter.GaussianBlur(6))   # мягкий край маркера ~15 px (п.1.22)
                     over(base, mk.rotate(-2, resample=Image.BICUBIC, expand=False), e["x"], e["y"])
             msc = 0.7 + 0.3 * ease_out_back((t - e["t"]) / 0.4, s=4.0) if e.get("pop") else 1.0
