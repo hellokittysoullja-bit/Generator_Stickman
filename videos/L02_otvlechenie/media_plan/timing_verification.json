@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "measured_at": "2026-11-02T14:22:56",
+  "measured_at": "2026-11-02T14:40:00",
   "video": "final.mp4",
   "peak_ratio": 4.0,
   "match_window_sec": 0.6,
@@ -11,23 +11,26 @@
     "ложный пик на контрастном Ken Burns попадает в unmatched_detected"
   ],
   "phrase_lock": true,
-  "detected_cuts": 137,
+  "detected_cuts": 149,
   "silence_spans": 122,
   "silence_source": "voice_stem",
-  "cuts_in_silence_share": 0.8537,
-  "cuts_inside_words_share": 0.0104,
+  "cuts_in_silence_share": 0.85,
+  "cuts_inside_words_share": 0.0092,
   "cuts_inside_words_sec": [
     6.5
   ],
   "expected_cuts": 44,
-  "matched": 41,
-  "coverage": 0.9318,
+  "matched": 40,
+  "coverage": 0.9091,
   "unmatched_expected_sec": [
     109.676,
     124.696,
-    389.656
+    389.656,
+    402.269
   ],
   "unmatched_detected_sec": [
+    1.417,
+    2.958,
     4.333,
     5.167,
     6.5,
@@ -45,6 +48,11 @@
     50.0,
     52.125,
     62.042,
+    68.875,
+    71.292,
+    74.0,
+    81.875,
+    85.875,
     91.958,
     98.167,
     100.375,
@@ -60,21 +68,14 @@
     144.083,
     147.042,
     152.458,
-    157.458,
-    160.375,
-    163.375,
-    167.167,
-    170.0,
-    172.333,
-    173.833,
-    179.875
+    157.458
   ],
   "drift": {
-    "median_ms": 10.7,
-    "p90_ms": 18.0,
+    "median_ms": 10.5,
+    "p90_ms": 17.6,
     "max_ms": 19.9,
-    "signed_mean_ms": -0.5,
-    "trend_ms_per_min": 0.8
+    "signed_mean_ms": -0.1,
+    "trend_ms_per_min": 1.1
   },
   "verdict": "ok"
 }

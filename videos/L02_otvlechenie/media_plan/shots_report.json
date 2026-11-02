@@ -11,6 +11,14 @@
      "manual"
     ],
     [
+     1.4,
+     "manual"
+    ],
+    [
+     2.92,
+     "manual"
+    ],
+    [
      5.12,
      "manual"
     ]
@@ -232,7 +240,19 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
+    ],
+    [
+     3.36,
+     "manual"
+    ],
+    [
+     5.76,
+     "manual"
+    ],
+    [
+     8.47,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -253,7 +273,15 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
+    ],
+    [
+     3.84,
+     "manual"
+    ],
+    [
+     7.84,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -1104,7 +1132,15 @@
    "views": [
     [
      0.0,
-     "lean"
+     "manual"
+    ],
+    [
+     2.36,
+     "manual"
+    ],
+    [
+     3.48,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -1124,7 +1160,15 @@
    "views": [
     [
      0.0,
-     "lean"
+     "manual"
+    ],
+    [
+     1.04,
+     "manual"
+    ],
+    [
+     5.52,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -1211,7 +1255,15 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
+    ],
+    [
+     2.02,
+     "manual"
+    ],
+    [
+     6.57,
+     "manual"
     ]
    ],
    "labels_at": [],
