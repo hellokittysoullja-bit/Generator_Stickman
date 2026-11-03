@@ -456,3 +456,16 @@ def test_defect_question_sends_hero_reference_only_for_hero_frames(tmp_path):
     g_.frame(dict(FRAME, hero=True))
     g_.frame(dict(FRAME, index=FRAME["index"] + 1))
     assert seen == [2, 1]
+
+
+def test_palette_is_partly_coloured_and_keeps_colour_without_hero():
+    """Владелец 03.11: стиль прежний (тушь, кремовая бумага, рисунок), но цветной — «не всё, а что-то»: акварельный
+    цвет у главного предмета и пары деталей, остальное тушь и серое. Без героя цвет предметов не должен
+    превращаться в «всё серое» (запасная фраза palette_without_hero)."""
+    import os
+    import look as lk
+    import frame_generator as fg
+    pal = lk.load(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "look")).palette
+    assert "cream paper" in pal and "black ink" in pal and "watercolour colour" in pal and "stay ink and grey" in pal
+    out = fg.palette_without_hero(pal)
+    assert "main character" not in out and "watercolour colour" in out and "No warm colours" not in out
