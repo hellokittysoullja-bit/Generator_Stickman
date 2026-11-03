@@ -203,7 +203,7 @@ caption = ("Опять с понедельника? Прокрастинация
 assert len(QUOTE) == len(beats)
 matrix, inventory = transfer(beats, MAP, QUOTE, len(cands))
 passport = dict(
- standard=24, hook_type="вопрос", account="основной аккаунт владельца",
+ standard=25, hook_type="вопрос", account="основной аккаунт владельца",
  roles=["hook", "preblock", "story", "mechanism", "answer", "cta", "twist"],
  answer=dict(beat=4, do="начало назначаешь ты"),
  tricks=dict(dissonance=0, callout=1, preblock=1, riddle=1, preview=1, mechanism=3, analogy=3, authority=3, own_story=2,
@@ -248,6 +248,7 @@ passport = dict(
   audience_quote={"text": "…с понедельника ждем выходных и тд. И так на протяжении 11 лет.", "likes": 6600, "video": "6j-3e59gFFo"},
   blame_off=HOOK["preblock"] + "; «я так прожил три понедельника» (2)",
   belief=HOOK["belief"], lever=[10, 9, 12, 16],
+  second_hook=("второй удар «А к среде всё бросишь» и новый вопрос: если не сила воли, то что ломает к среде и как начать без понедельника; ответа до 10 с нет, только история кота"),
   first_line=dict(a=HOOK["a"], b=HOOK["b"], belief=HOOK["belief"], sting=HOOK["sting"]),
   payoff={"promise": HOOK["promise"], "tease": 1, "pay": 6},
   loop={"question": 0, "reveal": 4, "answer": ["назначаешь"], "preblock": 1, "preview": 1,

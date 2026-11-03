@@ -20,7 +20,7 @@ import tail_rig
 HERE = os.path.dirname(os.path.abspath(__file__))
 KIT = ["bg.png", "body.png", "tail.png", "tail_body.png", "tail_flame.png", "tail_mesh.json", "list.png", "kit.json"]
 SOURCES = ["gen/m1_sunday.png", "anim/kit_monday.py", "anim/monday_hf/index.html"] + [f"anim/kit/{k}" for k in KIT]
-VERSION = 1
+VERSION = 3
 FPS, DUR = 30, 2.4
 HIT_FRAC = 0.4                      # «понеде́льника»: ударный третий слог
 PLACE = {"body": "body", "list": "list"}

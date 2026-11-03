@@ -80,18 +80,24 @@
 
       // список новой жизни висит на кнопках и качается
       gsap.set("#list", { transformOrigin: px(K.list_pin_local) });
-      // список с первого кадра раскачивается широко (как от рывка лапы) и затухает
-      tl.fromTo("#list", { rotation: -3.2 }, { rotation: 2.4, duration: 0.32, ease: "sine.inOut" }, 0);
-      tl.to("#list", { rotation: -1.4, duration: 0.36, ease: "sine.inOut" }, 0.32);
-      tl.to("#list", { rotation: 0.7, duration: 0.42, ease: "sine.inOut", yoyo: true, repeat: 2 }, 0.68);
-
-      // кот тянется к календарю, на ударе подпрыгивает от предвкушения и пружинит обратно
+      // правило 25 (владелец 03.11: «движение с первого кадра очень интенсивное»): список раскачивается широко и без
+      // затухания до удара, на ударе его дёргает лапой — и только потом он успокаивается
+      tl.fromTo("#list", { rotation: -5.5 }, { rotation: 4.2, duration: 0.26, ease: "sine.out" }, 0);   // с кадра 0 — на скорости
+      tl.to("#list", { rotation: -3.6, duration: 0.28, ease: "sine.inOut" }, 0.26);
+      tl.to("#list", { rotation: 3.0, duration: Math.max(0.12, H - 0.6), ease: "sine.inOut" }, 0.54);
+      tl.to("#list", { rotation: -6, duration: 0.08, ease: "power3.out" }, H - 0.04);
+      tl.to("#list", { rotation: 0, duration: 0.9, ease: "elastic.out(1.1, 0.3)" }, H + 0.06);
+      // кот: кадр 0 — высоко в прыжке к календарю, приземление с приседом, второй нетерпеливый подскок, присед перед
+      // ударом и прыжок на «понеде́льника»
       gsap.set("#catHop", { transformOrigin: px(K.cat_foot) });
-      // кадр 0 — уже в прыжке к календарю: подскок и приземление пружиной, потом тянется до удара
-      tl.fromTo("#catHop", { y: -34, scaleY: 1.05, scaleX: 0.98 }, { y: 0, scaleY: 1, scaleX: 1, duration: 0.32, ease: "bounce.out" }, 0);
-      tl.to("#catHop", { y: -6, scaleY: 1.015, duration: Math.max(0.1, H - 0.44), ease: "sine.inOut" }, 0.32);
-      tl.to("#catHop", { y: 4, scaleY: 0.975, scaleX: 1.015, duration: 0.1, ease: "power2.in" }, H - 0.12);
-      tl.to("#catHop", { y: -30, scaleY: 1.04, scaleX: 0.985, duration: 0.12, ease: "power3.out" }, H - 0.02);
+      tl.fromTo("#catHop", { y: -72, rotation: -2.5, scaleY: 1.07, scaleX: 0.97 },
+                { y: 0, rotation: 0, scaleY: 1, scaleX: 1, duration: 0.24, ease: "none" }, 0);   // уже летит: скорость с кадра 0
+      tl.to("#catHop", { y: 6, scaleY: 0.95, scaleX: 1.03, duration: 0.06, ease: "power2.out" }, 0.24);
+      tl.to("#catHop", { y: -44, rotation: 1.8, scaleY: 1.05, scaleX: 0.98, duration: 0.16, ease: "power3.out" }, 0.30);
+      tl.to("#catHop", { y: 0, rotation: 0, scaleY: 1, scaleX: 1, duration: 0.18, ease: "power2.in" }, 0.46);
+      tl.to("#catHop", { y: -10, scaleY: 1.02, duration: Math.max(0.1, H - 0.78), ease: "sine.inOut" }, 0.64);
+      tl.to("#catHop", { y: 8, scaleY: 0.95, scaleX: 1.03, duration: 0.1, ease: "power2.in" }, H - 0.12);
+      tl.to("#catHop", { y: -50, scaleY: 1.06, scaleX: 0.98, duration: 0.12, ease: "power3.out" }, H - 0.02);
       tl.to("#catHop", { y: 0, scaleY: 1, scaleX: 1, duration: 0.5, ease: "elastic.out(1, 0.45)" }, H + 0.1);
       meshPart({ canvas: document.getElementById("tail"), marg: 180, img: "assets/tail_body.png",
                  flame: "assets/tail_flame.png", mesh: "assets/tail_mesh.json", angles: "assets/tail_angles.json", fps: 30 });
