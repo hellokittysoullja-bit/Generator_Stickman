@@ -2774,6 +2774,60 @@
   "source": "scripts/reel_draw.py videos/15_svoe/reel"
  },
  {
+  "file": "2026-11-03_gen_cx_gpt-image-2_5_384c231c.png",
+  "sha256": "384c231cfe2956638952ba9cfc1c7a7207dd3d0402e2696ed8d038a99062f568",
+  "bytes": 2382546,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-03",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: night in a dim bedroom in grey-blue shadow. The main character lies in a plain bed under a blanket, wide awake, eyes wide open and tired, staring up; from under the bed sticks out one corner of the big plain grey box, and on the wall above the bed looms a huge dark shadow shaped like that box, leaning over the character. The flame on the tip of its tail is a small dim ember with a thin wisp of smoke. LAYOUT: the bed with the character is whole in the lower half; the huge box shadow fills the wall in the upper half; the box corner is visible under the bed; no clock, no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "scripts/reel_draw.py videos/16_otlozhish/reel --only"
+ },
+ {
+  "file": "2026-11-03_gen_cx_gpt-image-2_5_d3fcc68e.png",
+  "sha256": "d3fcc68e501b1dd2016aeee5f574c783bebf87581caac34064d46db3ef1ed350",
+  "bytes": 2064029,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-03",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: a plain room in the daytime. The main character stands on its hind legs, leaning forward and pushing with both front paws one big heavy plain grey cardboard box away from itself toward a plain bed on the right; the character's eyes are happily closed and it has a big relieved smile, as if a weight just fell off its shoulders; one small puff of dust flies from under the box. The flame on the tip of its tail burns bright. LAYOUT: the box is big and whole in the middle right, standing on the floor, its left side touching the character's paws; the main character is whole in the middle left; the bed is on the far right edge, only its foot end visible; plain wall above with wide clean space in the upper part; plain floor line; the box is plain and smooth, no tape, labels, letters or numbers. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "scripts/reel_draw.py videos/16_otlozhish/reel --only"
+ },
+ {
+  "file": "2026-11-03_gen_cx_gpt-image-2_5_e08f40d0.png",
+  "sha256": "e08f40d088a69d3bf6da601031af18d79950df0f33ee8867ac5fc08605560577",
+  "bytes": 2295855,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-03",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture made of two equal panels one above the other with a plain gap between them, the same plain room in both. TOP PANEL: the main character stands in front of a plain round mirror, frowning and pointing a stern paw at its own reflection, scolding itself; behind it the plain grey box is enormous, towering up to the ceiling. BOTTOM PANEL: the same character stands calmly with one front paw on its chest and a soft kind smile; behind it the same grey box is small, only knee high. The flame on its tail is dim in the top panel and bright in the bottom panel. LAYOUT: both panels the same size; the character whole in each panel; plain walls; no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "scripts/reel_draw.py videos/16_otlozhish/reel --only"
+ },
+ {
   "file": "2026-11-03_gen_cx_gpt-image-2_a5bed903.png",
   "sha256": "a5bed9036cffc5fecfcc4692d42a9c7f82eea78d5749145ea441c777c08c89eb",
   "bytes": 2679192,

@@ -26,6 +26,10 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # вертикально (владелец 26.10); 1024x1792 провайдер берёт по цене 1792, а отдаёт 1024×1536 (замер 26.10)
 MODEL, SIZE, QUALITY, PRICE = "cx/gpt-image-2", "1024x1536", "medium", 140625
+# 03.11: шлюз поднял цену cx/gpt-image-2 medium до 795 000 за рисунок (×5,65), а скрипт печатал старую константу —
+# цена теперь из каталога шлюза перед заказом, и дороже MAX_PRICE не заказывается без явного --max-price
+MODEL = os.environ.get("REEL_DRAW_MODEL", MODEL)
+MAX_PRICE = int(os.environ.get("REEL_DRAW_MAX_PRICE", "200000"))
 
 
 def data_url(p):
@@ -44,20 +48,31 @@ def prompt(scene, n_style):
             "Draw everything in exactly the drawing style of the style references.")
 
 
-def draw(reel_dir, dry=False):
+def draw(reel_dir, dry=False, only=None, max_price=None):
     cfg = json.load(open(os.path.join(reel_dir, "draw.json"), encoding="utf8"))
     style = sorted(glob.glob(os.path.join(ROOT, "look", "style", "*.png")))
     style += [os.path.normpath(os.path.join(reel_dir, p)) for p in cfg.get("style_refs", [])]
     hero = os.path.join(ROOT, "look", "hero.png")
     out = os.path.join(reel_dir, "gen"); os.makedirs(out, exist_ok=True)
-    todo = {k: v for k, v in cfg["jobs"].items() if not os.path.exists(os.path.join(out, k + ".png"))}
-    print(f"рисунков к заказу {len(todo)} из {len(cfg['jobs'])}, цена {PRICE * len(todo):_} баланса".replace("_", " "))
+    todo = {k: v for k, v in cfg["jobs"].items() if not os.path.exists(os.path.join(out, k + ".png"))
+            and (not only or k in only)}
+    import env; env.load_env()
+    import llm_gateway
+    G0 = llm_gateway.Gateway()
+    try:
+        price1 = G0.image_cost(MODEL, SIZE, QUALITY)
+    except Exception as e:                            # без ключа или каталога — прежняя оценка, заказ всё равно проверит шлюз
+        print(f"  цена из каталога недоступна ({e}); оценка {PRICE}"); price1 = PRICE
+    print(f"рисунков к заказу {len(todo)} из {len(cfg['jobs'])}, {MODEL} {QUALITY} {SIZE}: {price1:_} за рисунок, "
+          f"всего {price1 * len(todo):_} баланса".replace("_", " "))
     if dry or not todo:
         for k, v in todo.items(): print(f"--- {k}\n{prompt(v, len(style))}")
         return []
-    import env; env.load_env()
-    import llm_gateway
-    G = llm_gateway.Gateway(spend_cap=int(PRICE * len(todo) * 1.05))
+    lim = max_price or MAX_PRICE
+    if price1 > lim:
+        raise SystemExit(f"не заказываю: {price1:_} за рисунок > предела {lim:_} (цена шлюза выросла?) — "
+                         "другая модель в REEL_DRAW_MODEL или --max-price со словом владельца".replace("_", " "))
+    G = llm_gateway.Gateway(spend_cap=int(price1 * len(todo) * 1.05))
     refs = [data_url(p) for p in style + [hero]]
     made = []
     for k, scene in todo.items():
@@ -75,5 +90,7 @@ def draw(reel_dir, dry=False):
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("reel_dir"); ap.add_argument("--dry", action="store_true")
+    ap.add_argument("--only", nargs="*", help="заказать только эти задания (пробный рисунок)")
+    ap.add_argument("--max-price", type=int, help="предел цены одного рисунка — только со слова владельца")
     a = ap.parse_args()
-    draw(a.reel_dir, a.dry)
+    draw(a.reel_dir, a.dry, a.only, a.max_price)
