@@ -238,6 +238,22 @@ def first_frame_motion(frame_fn, ctx):
     return float((d > FIRST_MOTION_LEVEL).mean())
 
 
+# Стандарт 25 (владелец 03.11: «движение с первого кадра очень интенсивное, ещё динамичнее, чем было»): мера не одного
+# шага 0 → 0,1 с, а всей первой секунды кадр за кадром — рисунок не должен ни разу «встать» и в среднем меняться сильно.
+OPENING_SEC, OPENING_FPS = 1.0, 30
+
+
+def opening_motion(frame_fn, ctx, dur=OPENING_SEC, fps=OPENING_FPS):
+    """Движение сцены хука за первые dur с без камеры: first — доля пикселей, изменившихся за FIRST_MOTION_DT;
+    mean и min — средняя и наименьшая доля, изменившаяся между соседними кадрами (fps). Замер 03.11: рилс 08 —
+    0,48 / 0,47 / 0 %, 12 — 2,1 / 1,7 / 0,7 %, 13 — 6,2 / 3,6 / 1,9 %, 14 v2 — 9,1 / 4,5 / 2,0 % (до 0,5 с)."""
+    fr = [np.asarray(frame_fn(i / fps, ctx)[0], np.float32) for i in range(int(round(dur * fps)) + 1)]
+    ch = [float((np.abs(a - b).max(axis=2) > FIRST_MOTION_LEVEL).mean()) for a, b in zip(fr, fr[1:])]
+    k = int(round(FIRST_MOTION_DT * fps))
+    first = float((np.abs(fr[0] - fr[k]).max(axis=2) > FIRST_MOTION_LEVEL).mean())
+    return dict(first=first, mean=float(np.mean(ch)), min=float(min(ch)), min_at=ch.index(min(ch)) / fps)
+
+
 def impact_strokes(base, center, t, r0, r1, n=7, spread=(200, 340), width=14, color=(235, 242, 255), seed=3, life=0.33):
     """Штрихи удара вокруг точки: вылетают наружу и тают за life секунд. t — от удара, уже на двойках.
     Направления и длины чуть свои у каждого рисунка (кипение), но веер — один."""

@@ -1790,10 +1790,11 @@ def _is_new(spec, log, reel_dir):
 def check_hf_hook(spec, log=(), reel_dir="", abs_dir=None):
     pp = spec.get("passport") or {}
     std = pp.get("standard") or 0
-    if std < BASE_STANDARD and _is_new(spec, log, reel_dir):
-        return [f"новый рилс: нужен \"standard\": {BASE_STANDARD} — хук на HyperFrames (scripts/anim_hf.py, скилл "
-                "reel-anim), база рилса 13 (anim.save_layer, anim.inpaint_bg, tail_rig) и ни одного повтора "
-                "рисунков и фраз прошлых рилсов"]
+    if std < HOOK_ZONE_STANDARD and _is_new(spec, log, reel_dir):
+        return [f"новый рилс: нужен \"standard\": {HOOK_ZONE_STANDARD} — хук на HyperFrames (scripts/anim_hf.py, скилл "
+                "reel-anim), база рилса 13 (anim.save_layer, anim.inpaint_bg, tail_rig), ни одного повтора "
+                "рисунков и фраз прошлых рилсов, и ЖЕЛЕЗНЫЕ ПРАВИЛА 25: вторая фраза — второй крючок, никаких "
+                f"объяснений до {NO_EXPLAIN_SEC:.0f} с, движение рисунка с первого кадра не слабее планки 25"]
     if std < HF_STANDARD:
         return []
     s0 = ((spec.get("beats") or [{}])[0].get("shots") or [{}])[0]
@@ -1895,3 +1896,74 @@ def other_reels(root, reel_abs):
         except (OSError, ValueError):
             continue
     return out
+
+# ── ЖЕЛЕЗНЫЕ ПРАВИЛА 25 (владелец 03.11: «максимально наистрожайшее правило, которое нельзя никак нарушить») ──────────
+# Живой промах: на опубликованных рилсах уходили на 2–3-й секунде — вторая фраза объясняла, рисунок стоял.
+HOOK_ZONE_STANDARD = 25
+NO_EXPLAIN_SEC = 10.0       # до этой секунды — ни одного объяснения проблемы или темы (владелец: «минимум 7, даже 10»)
+SECOND_HOOK_ROLES = {"contrast", "preblock", "riddle", "loop", "twist"}      # вторая фраза — только крючок
+HOOK_ZONE_ROLES = SECOND_HOOK_ROLES | {"hook", "story"}                      # что может звучать до 10 с
+EXPLAIN_RE = (r"\bпотому\b|\bиз за\b|\bдело в\b|\bэто значит|\bзначит\b|\bпричин\w*|\bпоэтому\b|\bтак как\b|"
+              r"\bведь\b|\bмозг\w*|\bдофамин\w*|исследова\w*|\bучен\w*|\bпсихолог\w*|\bмеханизм\w*|"
+              r"\bназыва\w*|\bобъясн\w*|\bнашл[аи]\b|\bработает так|\bсуть\b")      # по тексту после _norm (ё → е)
+EXPLAIN_TRICKS = ("mechanism", "analogy", "authority", "answer")            # приёмы-объяснения — после 10 с
+# движение рисунка хука (anim.opening_motion, без камеры): выше рилса 14 v2 (9,1 / 4,5 / 2,0 %) — «ещё динамичнее»
+OPEN_FIRST_MIN = 0.10       # за первые 0,1 с меняется ≥ 10 % рисунка
+OPEN_MEAN_MIN = 0.05        # в среднем каждый кадр первой секунды меняет ≥ 5 % рисунка
+OPEN_STILL_MIN = 0.02       # ни один кадр первой секунды не меняет < 2 %: рисунок ни разу не «встаёт»
+
+
+def check_hook_zone(spec, words, times, spans):
+    """Железное правило 25, часть 1. Вторая фраза — всегда дополнительный крючок (роль из SECOND_HOOK_ROLES и
+    passport.hook.second_hook — какой новый вопрос она сажает), ни в коем случае не объяснение. До NO_EXPLAIN_SEC
+    не звучит ни одного объяснения: фразы, начатые раньше, — только крючки и история, без слов-объяснений
+    (EXPLAIN_RE) и без приёмов механизма, метафоры, авторитета и ответа. Обхода нет: --force это не правило."""
+    pp = spec.get("passport") or {}
+    if (pp.get("standard") or 0) < HOOK_ZONE_STANDARD:
+        return []
+    beats, roles, err = spec.get("beats") or [], pp.get("roles") or [], []
+    if len(beats) < 2:
+        return ["правило 25: у рилса нет второй фразы — вторая фраза обязана быть вторым крючком"]
+    r1 = roles[1] if len(roles) > 1 else None
+    if r1 not in SECOND_HOOK_ROLES:
+        err.append(f"правило 25: вторая фраза — роль {r1!r}, а должна быть крючком ({sorted(SECOND_HOOK_ROLES)}): "
+                   "она цепляет вторым ударом, а не объясняет")
+    sh = ((pp.get("hook") or {}).get("second_hook") or "")
+    if len(str(sh).strip()) < 12:
+        err.append("правило 25: passport.hook.second_hook — словами, какой НОВЫЙ вопрос сажает вторая фраза "
+                   "(не повтор первого и не ответ)")
+    for i, (a, z) in enumerate(spans):
+        if i >= len(beats) or times[a]["start"] >= NO_EXPLAIN_SEC:
+            continue
+        r = roles[i] if i < len(roles) else None
+        if r not in HOOK_ZONE_ROLES:
+            err.append(f"правило 25: фраза {i} начинается на {times[a]['start']:.1f} с < {NO_EXPLAIN_SEC:.0f} с с ролью "
+                       f"{r!r} — до {NO_EXPLAIN_SEC:.0f} с только крючки и история, никаких объяснений")
+        ks = [k for k in range(a, z) if times[k]["start"] < NO_EXPLAIN_SEC]          # что успело прозвучать до 10 с
+        txt = _norm(" ".join(clean(words[k]) for k in ks))
+        for m in re.finditer(EXPLAIN_RE, txt):
+            n_before = len(txt[:m.start()].split())
+            k = ks[min(n_before, len(ks) - 1)]
+            err.append(f"правило 25: «{m.group(0)}» на {times[k]['start']:.1f} с (фраза {i}) — объяснение раньше "
+                       f"{NO_EXPLAIN_SEC:.0f} с; сначала зацепить, объяснять потом")
+        for tr in EXPLAIN_TRICKS:
+            v = (pp.get("tricks") or {}).get(tr)
+            if v == i:
+                err.append(f"правило 25: приём {tr!r} отдан фразе {i}, а она звучит до {NO_EXPLAIN_SEC:.0f} с")
+    return err
+
+
+def check_opening_motion(m):
+    """Железное правило 25, часть 2: рисунок хука движется очень интенсивно с первого кадра (замер
+    anim.opening_motion). Ниже планки — не рендерится."""
+    err = []
+    if m["first"] < OPEN_FIRST_MIN:
+        err.append(f"правило 25: за первые 0,1 с рисунок меняет {m['first']:.1%} < {OPEN_FIRST_MIN:.0%} — движение с "
+                   "первого кадра слабое")
+    if m["mean"] < OPEN_MEAN_MIN:
+        err.append(f"правило 25: первая секунда меняет в среднем {m['mean']:.1%} рисунка на кадр < {OPEN_MEAN_MIN:.0%} — "
+                   "мало движения, нужно интенсивнее")
+    if m["min"] < OPEN_STILL_MIN:
+        err.append(f"правило 25: на {m['min_at']:.2f} с рисунок почти стоит ({m['min']:.1%} < {OPEN_STILL_MIN:.0%}) — в "
+                   "первую секунду ни одного «вдоха», движение без остановки")
+    return err

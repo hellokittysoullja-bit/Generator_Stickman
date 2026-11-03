@@ -801,6 +801,21 @@ def build(reel_dir, sheet=False, preview=False, force=False):
         if share < reel_rules.FIRST_MOTION_MIN:          # владелец 26.10: начало как в 08 — рисунок движется с первого кадра
             rule_errs.append(f"хук: за первые {anim.FIRST_MOTION_DT} с сцена меняет {share:.2%} рисунка < "
                              f"{reel_rules.FIRST_MOTION_MIN:.1%}: движение должно идти с первого кадра, а не начинаться позже")
+    # ЖЕЛЕЗНЫЕ ПРАВИЛА 25 (владелец 03.11): вторая фраза — крючок, без объяснений до 10 с, интенсивное движение с
+    # кадра 0. Их не снимает и --force: нарушение — не рендер.
+    iron_errs = reel_rules.check_hook_zone(spec, words, times, spans)
+    if ((spec.get("passport") or {}).get("standard") or 0) >= reel_rules.HOOK_ZONE_STANDARD:
+        if not shots[0].get("anim"):
+            iron_errs.append("правило 25: у первого плана нет сцены движения (anim) — рисунок хука обязан двигаться с кадра 0")
+        else:
+            import anim
+            om = anim.opening_motion(anim.scene(reel_dir, shots[0]["anim"]).frame, shots[0]["anim_ctx"])
+            print(f"  движение хука: 0–0,1 с {om['first']:.1%}, в среднем {om['mean']:.1%} на кадр, минимум {om['min']:.1%}"
+                  f" на {om['min_at']:.2f} с")
+            iron_errs += reel_rules.check_opening_motion(om)
+    if iron_errs:
+        print("ЖЕЛЕЗНЫЕ ПРАВИЛА 25 (CLAUDE.md, первый раздел):\n" + "\n".join("  ✗ " + e for e in iron_errs))
+        raise SystemExit("не рендерю: железные правила 25 не обходятся, и --force тоже")
     import reel_geom                                  # до рендера: обрывки у краёв, кукла шире кадра, надпись на рисунке
     rule_errs += reel_geom.check(sys.modules[__name__], reel_dir, shots, events)
     rule_errs += reel_rules.check_knowledge(spec)                 # знания базы: маркетинг, воронка, бренд — у каждой фразы

@@ -1216,7 +1216,7 @@ def test_standard_23_hook_on_hyperframes_and_no_repeats_of_other_reels(tmp_path)
     d = tmp_path / "videos" / "14_x" / "reel"; (d / "anim").mkdir(parents=True); (d / "gen").mkdir()
     (d / "gen" / "a.png").write_bytes(b"own")
     (d / "anim" / "hook.py").write_text("import anim\n", encoding="utf-8")
-    spec = {"passport": {"standard": 24}, "sources": {"f1": {"frame": "gen/a.png"}},
+    spec = {"passport": {"standard": 25}, "sources": {"f1": {"frame": "gen/a.png"}},
             "beats": [{"text": "Все ушли, а ты?", "shots": [{"anim": "hook"}]},
                       {"text": "В шапке профиля я помогу тебе начать твоё дело, а также посижу с тобой пару минут"}]}
     errs = rr.check_hf_hook(spec, [], "videos/14_x/reel", str(d))
@@ -1254,7 +1254,7 @@ def test_standard_24_new_reels_are_built_on_the_base_of_reel_13(tmp_path):
     old = {"passport": {"standard": 23}, "beats": spec["beats"]}
     assert rr.check_anim_base(old, str(d)) == []                      # прежние рилсы — своими правилами
     errs = rr.check_hf_hook(old, [], "videos/14_x/reel", str(d))
-    assert errs and "24" in errs[0]                                   # но новый рилс ниже 24 не рендерится
+    assert errs and "25" in errs[0]                                   # но новый рилс ниже 25 не рендерится
 
 
 def test_other_reels_never_include_the_reel_itself_by_relative_path(tmp_path, monkeypatch):
@@ -1285,3 +1285,68 @@ def test_whoosh_variety_takes_a_third_whoosh_when_squeezed():
             for n, t, s in [("swoosh", 1, False), ("fast_whoosh", 3, True), ("fast_whoosh", 5, False)]]
     names = [p["name"] for p in reel.vary_whooshes(plan)]
     assert names == ["swoosh", "swoosh_deep", "fast_whoosh"]
+
+
+def _zone(texts, roles, starts, **hook):
+    """Рилс из фраз: слова каждой фразы идут по 0,4 с от её начала."""
+    words, times, spans = [], [], []
+    for txt, t0 in zip(texts, starts):
+        a = len(words)
+        for j, w in enumerate(txt.split()):
+            words.append(w); times.append({"start": t0 + 0.4 * j, "end": t0 + 0.4 * j + 0.35})
+        spans.append((a, len(words)))
+    spec = {"passport": {"standard": 25, "roles": roles, "hook": dict(hook), "tricks": {}},
+            "beats": [{"text": t} for t in texts]}
+    return spec, words, times, spans
+
+
+def test_iron_rule_25_second_phrase_hooks_and_nothing_explains_before_10s():
+    """Владелец 03.11: «вторая фраза всегда должна быть дополнительным крючком, ни в коем случае не объяснением.
+    Никакого объяснения минимум в первые 7 секунд, даже 10». Код: роль второй фразы — крючок, второй крючок назван
+    словами, до 10 с — ни роли-объяснения, ни слова-объяснения, ни приёма механизма или авторитета."""
+    import reel_rules as rr
+    good = dict(second_hook="зритель гадает, что сломается в среду и при чём тут не сила воли")
+    texts = ["Опять с понедельника?", "А к среде всё бросишь, и дело не в силе воли.", "Я так прожил три понедельника.",
+             "Учёная нашла ловушку: дата обещает нового тебя."]
+    spec, w, t, sp = _zone(texts, ["hook", "preblock", "story", "mechanism"], [0.1, 1.5, 6.7, 10.7], **good)
+    assert rr.check_hook_zone(spec, w, t, sp) == []
+    spec, w, t, sp = _zone(texts, ["hook", "mechanism", "story", "mechanism"], [0.1, 1.5, 6.7, 10.7], **good)
+    assert any("вторая фраза" in e for e in rr.check_hook_zone(spec, w, t, sp))      # вторая фраза объясняет
+    spec, w, t, sp = _zone(texts, ["hook", "preblock", "story", "mechanism"], [0.1, 1.5, 4.0, 8.0], **good)
+    errs = rr.check_hook_zone(spec, w, t, sp)
+    assert any("фраза 3" in e and "роль" in e for e in errs) and any("«учен" in e for e in errs)   # механизм на 8 с
+    spec, w, t, sp = _zone(["Опять с понедельника?", "Это потому что мозг любит даты.", "Я так жил."],
+                           ["hook", "riddle", "story"], [0.1, 1.5, 6.0], **good)
+    assert any("потому" in e for e in rr.check_hook_zone(spec, w, t, sp))           # слово-объяснение во 2-й фразе
+    spec, w, t, sp = _zone(["Опять с понедельника?", "А дело в том, что дата врёт.", "Я так жил."],
+                           ["hook", "riddle", "story"], [0.1, 1.5, 6.0], **good)
+    assert any("дело в" in e for e in rr.check_hook_zone(spec, w, t, sp))           # оборот из двух слов тоже
+    spec, w, t, sp = _zone(texts, ["hook", "preblock", "story", "mechanism"], [0.1, 1.5, 6.7, 10.7])
+    assert any("second_hook" in e for e in rr.check_hook_zone(spec, w, t, sp))      # второй крючок не назван
+    spec["passport"]["standard"] = 24
+    assert rr.check_hook_zone(spec, w, t, sp) == []                                 # готовые рилсы — своими правилами
+    errs = rr.check_hf_hook(spec, [], "videos/15_x/reel", "/nonexistent")
+    assert errs and "25" in errs[0]                                                 # новый рилс ниже 25 — не рендер
+
+
+def test_iron_rule_25_opening_motion_is_intense_and_never_still():
+    """Владелец 03.11: «движение с первого кадра очень интенсивное, ещё динамичнее, чем было». Планка выше рилса 14 v2
+    (9,1 % за 0,1 с, 4,5 % в среднем, 2,0 % минимум): рисунок, который пошёл и встал, или двигается вяло, — не рендер."""
+    import anim
+    import reel_rules as rr
+    def sweep(speed, stop=None):
+        def f(t, ctx):
+            u = min(t, stop) if stop else t
+            img = np.full((60, 60, 3), 220, np.float32); x = int(speed * u) % 60
+            img[:, x:x + 12] = 20
+            img[(int(240 * u) % 60):, :] -= 0 if speed < 300 else 60      # быстрая сцена: ещё и шторка вниз
+            return np.clip(img, 0, 255), {}
+        return f
+    om = anim.opening_motion(sweep(600), {})
+    assert rr.check_opening_motion(om) == [], om
+    slow = anim.opening_motion(sweep(30), {})
+    assert any("в среднем" in e for e in rr.check_opening_motion(slow))
+    halt = anim.opening_motion(sweep(600, stop=0.5), {})
+    assert any("почти стоит" in e for e in rr.check_opening_motion(halt))
+    assert rr.OPEN_FIRST_MIN > 0.091 and rr.OPEN_MEAN_MIN > 0.045                # строже, чем было в 14 v2
+
