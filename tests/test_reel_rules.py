@@ -1350,3 +1350,11 @@ def test_iron_rule_25_opening_motion_is_intense_and_never_still():
     assert any("почти стоит" in e for e in rr.check_opening_motion(halt))
     assert rr.OPEN_FIRST_MIN > 0.091 and rr.OPEN_MEAN_MIN > 0.045                # строже, чем было в 14 v2
 
+
+def test_you_includes_second_person_on_ash():
+    """«Чужое сдашь, а своё?» (рилс 15, 03.11): «сдашь», «дашь» — обращение к зрителю, а проверка «ты» их не видела."""
+    import re
+    import reel_rules as rr
+    for line in ("Чужое сдашь, а своё?", "Дашь себе минуту?", "Стоишь у двери?", "Опять с понедельника?"):
+        assert bool(re.search(rr.YOU_RE, rr._norm(line))) == (line != "Опять с понедельника?"), line
+
