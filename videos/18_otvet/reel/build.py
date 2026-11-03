@@ -53,7 +53,8 @@ T5 = "Поэтому пиши строчку: |«Прости, что долго
 T6 = "Я отправил строчку, |а в ответ *сердечко*."
 beats = [
  dict(text=HOOK["text"], voice=HOOK["voice"],
-      shots=[dict(at=0, src="f1", anim="wait_hf", **{"from": W["hook"][0]}, to=W["hook"][1])],
+      shots=[dict(at=0, src="f1", anim="wait_hf", **{"from": W["hook"][0]}, to=W["hook"][1]),
+             sh(ix(HOOK["text"], "а"), "f1", "face", anim="wait_hf", why="«а ты не отвечаешь»: крупно виноватая морда, телефон дрожит")],
       fx=[dict(kind="sfx", name="fast_whoosh", at=0, align="start", why="влёт камеры в первый кадр"),
           dict(kind="sfx", name="riser", at=0, dt=0.0, align="start", why="riser с нуля к раскрытию"),
           dict(kind="sfx", name="oof", at=ix(HOOK["text"], "неделю"), dt=0.05, why="«нЕделю»: листки слетают, кот вздрагивает"),
