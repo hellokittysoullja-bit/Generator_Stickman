@@ -1184,7 +1184,7 @@ FIRST_MOTION_MIN = 0.003    # доля пикселей сцены хука, и�
 
 def check_hook_start(spec, log=(), reel_dir="", abs_dir=None):
     """Начало как в рилсе 08 — у каждого нового рилса (владелец 26.10: «закрепи навсегда на автомате, чтоб было такое
-    начало, более динамичное, как в 8»): сцена хука берёт камеру из anim.hook_cam (влёт 18 % за 0,25 с с перелётом и
+    начало, более динамичное, как в 8»): сцена хука берёт камеру из anim.hook_cam (с 03.11 — влёт правила 28, не слабее эталона рилса 17, с перелётом и
     поворотом), а не пишет свою. Что рисунок двигается с первого кадра, меряет reel.py (anim.first_frame_motion)."""
     pp = spec.get("passport") or {}
     std, beats = pp.get("standard") or 0, spec.get("beats") or []
@@ -1203,7 +1203,7 @@ def check_hook_start(spec, log=(), reel_dir="", abs_dir=None):
         return []                                       # сцены нет — об этом скажет check_hook_motion
     code = open(p, encoding="utf8").read()
     if "hook_cam(" not in code:
-        return [f"хук: сцена anim/{s0['anim']}.py пишет свою камеру — возьмите anim.hook_cam(t) (влёт как в рилсе 08), "
+        return [f"хук: сцена anim/{s0['anim']}.py пишет свою камеру — возьмите anim.hook_cam(t, hit=…) (влёт правила 28, эталон — рилс 17), "
                 "удар и тряску на слове добавляйте поверх"]
     if std >= HOOK_FLY_STANDARD and not re.search(r"hook_cam\(\s*t\s*,\s*hit\s*=", code):
         return [f"правило 28: сцена anim/{s0['anim']}.py зовёт anim.hook_cam(t) без удара — нужен anim.hook_cam(t, hit=…) "
@@ -1215,6 +1215,29 @@ def check_hook_start(spec, log=(), reel_dir="", abs_dir=None):
 # ПРАВИЛО 28 (владелец 03.11): влёт камеры на 0 с — мощный и красивый, как у рилсов с сильными хуками; параметры —
 # anim.HOOK28_*, кладёт их сама anim.hook_cam(t, hit=…). Новый рилс ниже 28 не рендерится (check_hf_hook).
 HOOK_FLY_STANDARD = 28
+# Звуки (владелец 03.11 к эталону рилса 17: «чтобы SFX были везде… чтобы их не было мало: свуши и другие звуки по смыслу»):
+# не меньше, чем в эталоне. Замер по reel_report (пики звуков): 17 — 5,7 звука на 10 с, 6 разных, самая длинная тишина
+# между звуками 3,2 с; 16 — 5,7 / 6 / 2,9; 15 — 4,8 / 8 / 4,4; 14 — 5,3 / 7 / 3,7.
+SOUND_DENSITY_MIN, SOUND_KINDS_MIN, SOUND_GAP_MAX = 5.0, 5, 3.5
+
+
+def check_sound_density(plan, total, std):
+    if std < HOOK_FLY_STANDARD or not plan:
+        return []
+    err = []
+    peaks = sorted(p["peak"] for p in plan)
+    dens = len(peaks) / max(total, 1e-3) * 10
+    if dens < SOUND_DENSITY_MIN:
+        err.append(f"звуков {len(peaks)} за {total:.1f} с — {dens:.1f} на 10 с < {SOUND_DENSITY_MIN}: мало, как в старых рилсах "
+                   "(эталон рилс 17 — 5,7); свист на склейках, удар на событии рисунка, звук на смысловом слове")
+    kinds = {p["name"] for p in plan}
+    if len(kinds) < SOUND_KINDS_MIN:
+        err.append(f"разных звуков {len(kinds)} < {SOUND_KINDS_MIN}: один и тот же звук приедается — по смыслу из library.json")
+    pts = [0.0] + peaks + [total]
+    gap, at = max((b - a, a) for a, b in zip(pts, pts[1:]))
+    if gap > SOUND_GAP_MAX:
+        err.append(f"тишина без звуков {gap:.1f} с с {at:.1f} с > {SOUND_GAP_MAX} с: поставьте звук по смыслу в этот кусок")
+    return err
 # Влёт должен прилетать к рисунку, а не к бумаге: после влёта рисунок хука занимает ≥ 65 % высоты картинки
 # (reel.hook_fill). Замер 03.11: рилс 13 — 98 %, 14 — 94 %, 15 — 100 %, 16 — 46 % (кот и коробка узкой полосой
 # посередине, «приближение» к пустому листу — то, что владелец назвал «не слишком динамичное»).

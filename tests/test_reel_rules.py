@@ -1136,11 +1136,9 @@ def test_hook_start_like_reel_08_is_locked_in(tmp_path):
     стандарта 20 не рендерится."""
     import anim
     import reel_rules as R
-    c0, c1 = anim.hook_cam(0.0), anim.hook_cam(anim.HOOK_SNAP_SEC)
-    assert abs(c0["zoom"] - 1 / 1.18) < 1e-6 and abs(c0["rot"] - anim.HOOK_ROLL) < 1e-6
-    assert abs(c1["zoom"] - 1.0) < 1e-3
-    assert max(anim.hook_cam(anim.HOOK_SNAP_SEC + k / 100)["zoom"] for k in range(1, 30)) > 1.01   # перелёт есть
-    assert abs(anim.hook_cam(1.0)["rot"]) < 1e-6
+    c0 = anim.hook_cam(0.0)                                         # влёт с первого кадра (с 03.11 — правило 28)
+    assert c0["zoom"] < 1 / 1.39 and abs(c0["rot"]) >= 2.9
+    assert max(anim.hook_cam(k / 100)["zoom"] for k in range(20, 60)) > 1.01   # перелёт есть
     (tmp_path / "anim").mkdir()
     spec = {"passport": {"standard": 20}, "beats": [{"text": "Рилс тебе длинный?", "shots": [{"anim": "s"}]}]}
     (tmp_path / "anim" / "s.py").write_text("def frame(t, ctx):\n    cam = dict(zoom=1.0)\n")
@@ -1460,20 +1458,29 @@ def test_rule_27_hook_caption_times_go_into_the_cache_signature():
 
 
 def test_rule_28_hook_fly_in_is_stronger_with_blur_and_second_kick():
-    """Правило 28 (владелец 03.11): влёт камеры на 0 с мощнее рилса 16 — дальше, быстрее, с поворотом, размытием
-    движения и вторым ударом на слоге; без hit старые сцены (08–16) получают прежнюю камеру байт в байт."""
+    """Правило 28 (владелец 03.11): влёт камеры на 0 с по умолчанию не слабее эталона — рилса 17 (40 % за 0,22 с,
+    перелёт 5 %, поворот 3°, размытие движения, второй удар +8 % на слоге), у каждого рилса свой и не по шаблону;
+    прежнего мягкого влёта (18 % за 0,25 с, −1,1°, без размытия) в коде нет вовсе — ни с hit, ни без."""
     import anim
-    old = [anim.hook_cam(i / 30) for i in range(31)]
-    assert abs(old[0]["zoom"] - 1 / 1.18) < 1e-9 and "zoom_blur" not in old[0]
-    new = [anim.hook_cam(i / 30, hit=0.6) for i in range(31)]
-    step = lambda cs: max(abs(b["zoom"] / a["zoom"] - 1) for a, b in zip(cs[:9], cs[1:10]))   # noqa: E731
-    assert 1 / new[0]["zoom"] - 1 >= 0.38                   # влёт с 40 % дальше (было 18 %)
-    assert step(new) >= 1.6 * step(old)                     # самый быстрый кадр влёта заметно быстрее
-    assert abs(new[0]["rot"]) >= 2.9 and abs(old[0]["rot"]) < 1.2
-    assert max(c["zoom_blur"] for c in new[:6]) >= 0.04     # край кадра тянется, пока камера летит
-    assert new[15]["zoom_blur"] < 0.004                     # и резко после
-    kick = anim.hook_cam(0.6 + 2 / 30, hit=0.6)["zoom"] / anim.hook_cam(0.6 - 1 / 30, hit=0.6)["zoom"]
-    assert kick >= 1.06                                     # второй удар камерой на ударном слоге
+    assert not hasattr(anim, "HOOK_ZOOM")                   # старый влёт удалён
+    ref_step = 0.0
+    p17 = anim.HOOK28_MIN
+    z = lambda t: 1 / (1 + p17["zoom"] * (1 - anim.SNAP(min(1.0, t / p17["snap"]))))   # noqa: E731
+    ref_step = max(abs(z((i + 1) / 30) / z(i / 30) - 1) for i in range(9))
+    seen = set()
+    for hit in (None, 0.6, 1.2, 1.564, 1.9, 2.3):
+        cs = [anim.hook_cam(i / 30, hit=hit) for i in range(31)]
+        step = max(abs(b["zoom"] / a["zoom"] - 1) for a, b in zip(cs[:9], cs[1:10]))
+        assert 1 / cs[0]["zoom"] - 1 >= 0.40 - 1e-9          # влёт не ближе эталона
+        assert step >= ref_step - 1e-9                      # и не медленнее
+        assert abs(cs[0]["rot"]) >= 3.0 - 1e-9
+        assert max(c["zoom_blur"] for c in cs[:6]) >= 0.04  # край кадра тянется, пока камера летит
+        assert cs[20]["zoom_blur"] < 0.004 or (hit is not None and 0 <= 20 / 30 - hit < 0.1)
+        if hit is not None:
+            kick = anim.hook_cam(hit + 2 / 30, hit=hit)["zoom"] / anim.hook_cam(hit - 1 / 30, hit=hit)["zoom"]
+            assert kick >= 1.06                             # второй удар камерой на ударном слоге
+        seen.add(tuple(round(v, 3) for v in anim.hook28_params(hit).values()))
+    assert len(seen) == 6                                   # у каждого рилса свой влёт, не шаблон
 
 
 def test_rule_28_new_reel_needs_standard_28_and_hit_in_hook_cam(tmp_path):
@@ -1500,3 +1507,17 @@ def test_rule_28_zoom_blur_keeps_centre_sharp_and_smears_edges():
 def test_rule_28_fly_in_lands_on_the_drawing_not_on_paper():
     assert reel_rules.check_hook_fill({"h": 0.46, "w": 0.77})          # рилс 16
     assert reel_rules.check_hook_fill({"h": 0.94, "w": 0.76}) == []    # рилс 14
+
+
+def test_rule_29_sounds_not_fewer_than_reference_reel_17():
+    """Владелец 03.11: «чтобы SFX были везде… чтобы их не было мало» — звуков не меньше эталона (рилс 17)."""
+    names = ["fast_whoosh", "riser", "oof", "swoosh", "fast_glitch", "level_up"]
+    good = [dict(name=names[i % 6], peak=0.2 + 1.7 * i) for i in range(21)]
+    assert reel_rules.check_sound_density(good, 35.0, 28) == []
+    few = good[::2]
+    assert any("на 10 с" in e for e in reel_rules.check_sound_density(few, 35.0, 28))
+    same = [dict(p, name="swoosh") for p in good]
+    assert any("разных" in e for e in reel_rules.check_sound_density(same, 35.0, 28))
+    hole = [p for p in good if not 10 < p["peak"] < 16]
+    assert any("тишина" in e for e in reel_rules.check_sound_density(hole, 35.0, 28))
+    assert reel_rules.check_sound_density(few, 35.0, 26) == []      # готовые рилсы ниже 28 не трогаем
