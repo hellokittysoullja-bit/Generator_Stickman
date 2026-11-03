@@ -1276,3 +1276,12 @@ def test_whoosh_variety_never_puts_two_same_whooshes_in_a_row():
     names = [p["name"] for p in reel.vary_whooshes(mk())]
     assert all(a != b for a, b in zip(names, names[1:]))
     assert names[3] == "fast_whoosh"                                  # смысловой звук reel.json не тронут
+
+
+def test_whoosh_variety_takes_a_third_whoosh_when_squeezed():
+    """Тихий свист между двумя разными смысловыми (swoosh … fast_whoosh) берёт третий — swoosh_deep, а не повтор."""
+    import reel
+    plan = [dict(name=n, t=t, align="peak", peak=t, soft=s, rate=1.0, role="whoosh")
+            for n, t, s in [("swoosh", 1, False), ("fast_whoosh", 3, True), ("fast_whoosh", 5, False)]]
+    names = [p["name"] for p in reel.vary_whooshes(plan)]
+    assert names == ["swoosh", "swoosh_deep", "fast_whoosh"]

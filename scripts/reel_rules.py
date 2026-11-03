@@ -999,7 +999,7 @@ def check_cut_sounds(plan, shots, near=0.35):
     есть пик звука ближе near секунд — смысловой или переходный. Исключение (владелец 26.10: «не супер часто свуши»):
     склейка, где свист пропущен, потому что другой звучал меньше WHOOSH_GAP назад, — она не проваливается."""
     peaks = [p["peak"] for p in plan]
-    wh = [p["peak"] for p in plan if p["name"] in WHOOSHES]
+    wh = [p["peak"] for p in plan if p["name"] in WHOOSHES or p.get("whoosh_like")]   # свист, сменённый на другой
     return [f"склейка {s['t0']:.2f} с без звука: переход проваливается (свист, короткий свист или смысловой звук)"
             for s in shots[1:] if not any(abs(s["t0"] - q) <= near for q in peaks)
             and not any(abs(s["t0"] - q) < WHOOSH_GAP for q in wh)]
@@ -1008,7 +1008,7 @@ def check_cut_sounds(plan, shots, near=0.35):
 def check_whoosh_gap(plan):
     """Свисты не подряд (владелец 26.10: «если идёт свуш и прям сразу свуш… не надо супер прям подряд»): пики swoosh и
     fast_whoosh не ближе WHOOSH_GAP. Тихие переходные reel.sound_plan сам пропускает; ловится то, что поставлено руками."""
-    wh = sorted((p["peak"], p["name"]) for p in plan if p["name"] in WHOOSHES)
+    wh = sorted((p["peak"], p["name"]) for p in plan if p["name"] in WHOOSHES or p.get("whoosh_like"))
     return [f"свист «{b[1]}» на {b[0]:.2f} с через {b[0] - a[0]:.2f} с после «{a[1]}» — свисты подряд «тук-тук»: "
             f"не ближе {WHOOSH_GAP} с (уберите звук у одного или разведите)"
             for a, b in zip(wh, wh[1:]) if b[0] - a[0] < WHOOSH_GAP - 0.02]

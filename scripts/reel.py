@@ -1267,17 +1267,22 @@ QUIET_PAIR = ("swoosh", "fast_whoosh")
 def vary_whooshes(plan):
     """Автоматический тихий свист не повторяет соседний свист: два одинаковых подряд узнаются как шаблон (владелец
     02.11). Меняются только тихие свисты, которые код ставит сам (soft); смысловые звуки reel.json остаются как есть."""
-    ws = sorted((p for p in plan if p["name"] in WHOOSHES), key=lambda p: p["peak"])
+    like = set(WHOOSHES) | {"swoosh_deep", "fast_glitch"}            # для уха это всё свисты
+    ws = sorted((p for p in plan if p["name"] in like), key=lambda p: p["peak"])
     for i, p in enumerate(ws):
         if not p["soft"] or p["name"] not in QUIET_PAIR:
             continue
         prev = ws[i - 1]["name"] if i else None
         nxt = ws[i + 1]["name"] if i + 1 < len(ws) and not ws[i + 1]["soft"] else None
-        for name in (p["name"], *QUIET_PAIR):
+        used = {}
+        for q in plan:
+            used[q["name"]] = used.get(q["name"], 0) + 1
+        extra = [n for n in ("swoosh_deep", "fast_glitch") if used.get(n, 0) < 3]   # смысловые — не больше трёх раз
+        for name in (p["name"], *QUIET_PAIR, *extra):      # зажат между двумя разными — третий, глубокий или глитч
             if name != prev and name != nxt:
                 if name != p["name"]:
                     pk = SFX[name][1] / p["rate"]
-                    p.update(name=name, role=SFX_LIB[name]["role"],
+                    p.update(name=name, role=SFX_LIB[name]["role"], whoosh_like=True,
                              peak=p["t"] if p["align"] == "peak" else p["t"] + pk)
                 break
     return plan
