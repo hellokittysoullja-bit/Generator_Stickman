@@ -809,6 +809,9 @@ def build(reel_dir, sheet=False, preview=False, force=False):
             events.append(dict(e, t=wt(bi, e.get("at", 0), e.get("after", False)) + e.get("dt", 0.0), beat=bi))
             if e.get("anchor") and e.get("kind") == "mark" and _std >= reel_rules.HOOK_BASE_STANDARD:
                 events[-1]["size"] = round(e.get("size", 120) * ANCHOR_SCALE)      # правило 27: заголовок крупнее
+                if bi == 0:                                 # правило 27: заголовок с 0 с, а не с первого слова голоса
+                    events[-1]["t"] = 0.0                   # (рилс 16: голос с 0,14 с — якорь проявлялся к 0,44 с)
+                    events[-1]["speed"] = max(2.0, e.get("speed", 1.0))
             if "strike_at" in e:                      # зачёркивание: только если поле задано в reel.json
                 events[-1]["strike_t"] = wt(bi, e["strike_at"]) + e.get("strike_dt", 0.0)
     for e in events:                                  # удержание накладки — только пока идут планы того же рода

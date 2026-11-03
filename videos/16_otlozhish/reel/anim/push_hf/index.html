@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=2048, height=1500" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="lib/mesh_part.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 2048px; height: 1500px; overflow: hidden; background: #f7f3ea; }
+      #root { position: relative; width: 2048px; height: 1500px; overflow: hidden; }
+      .layer { position: absolute; left: 0; top: 0; width: 2048px; height: 1500px; }
+      .abs { position: absolute; display: block; }
+      svg.layer { overflow: visible; }
+      #dust circle { fill: #c9c3b9; }
+      #rays line { stroke: #18181a; stroke-linecap: round; }
+    </style>
+  </head>
+  <body>
+    <!-- Хук рилса 16 «Отложишь дело, и тебе легче?»: мир сцены — рисунок o1_push ×2 от (0, 1000), 2048×1500.
+         Слои — anim/kit_push.py (база рилса 13), положение слоёв подставляет push_hf.py из kit.json.
+         Правила 25–26: с кадра 0 всё уже в движении — кот рывками толкает коробку-дело прочь и подпрыгивает от радости,
+         коробка уезжает толчками и качается, из-под неё на каждом толчке пыль; на ударном «лЕгче» (data-vars.hit) кот
+         подпрыгивает с облегчением, коробка отлетает к кровати, пыль клубами. Камеру, тряску, субтитры и звук даёт сборщик. -->
+    <div id="root" data-composition-id="main" data-start="0" data-duration="2.6" data-width="2048" data-height="1500"
+         data-vars='{"hit": 1.2}' data-motion-blur="on" data-layout-allow-overflow data-layout-allow-overlap>
+      <img id="bg" class="abs clip" src="assets/bg.png" style="left:0;top:0" data-start="0" data-duration="2.6" />
+      <svg id="dust" class="layer clip" width="2048" height="1500" viewBox="0 0 2048 1500" data-start="0" data-duration="2.6"></svg>
+      <div id="boxG" class="layer clip" data-start="0" data-duration="2.6">
+        <img id="box" class="abs" src="assets/box.png" style="left:0px;top:0px" />
+      </div>
+      <img id="puff" class="abs clip" src="assets/puff.png" style="left:0px;top:0px" data-start="0" data-duration="2.6" />
+      <div id="cat" class="layer clip" data-start="0" data-duration="2.6">
+        <div id="catHop" class="layer">
+          <canvas id="tail" class="abs" width="764" height="1044" style="left:0px;top:0px"></canvas>
+          <img id="body" class="abs" src="assets/body.png" style="left:0px;top:0px" />
+        </div>
+        <svg id="rays" class="layer" width="2048" height="1500" viewBox="0 0 2048 1500"></svg>
+      </div>
+    </div>
+    <script>
+      const root = document.getElementById("root");
+      const V = JSON.parse(root.dataset.vars), H = V.hit, K = V.kit;
+      const NS = "http://www.w3.org/2000/svg";
+      const tl = gsap.timeline({ paused: true });
+      const px = (p) => `${p[0]}px ${p[1]}px`;
+      // толчки: кот бьёт лапами коробку каждые ~0,22 с с кадра 0 (правило 26: в кадре 0 уже на скорости, без разгона)
+      const pushes = [0.0, 0.22, 0.44, 0.66, 0.88, 1.1].filter((t) => t < H - 0.16);
+      gsap.set("#catHop", { transformOrigin: px(K.feet) });
+      gsap.set("#boxG", { transformOrigin: px(K.box_foot) });
+      // кадр 0: кот уже летит вперёд в толчке, коробка уже едет
+      tl.fromTo("#catHop", { x: -70, y: -40, rotation: -6 }, { x: 24, y: 0, rotation: 3, duration: 0.11, ease: "none" }, 0);
+      tl.fromTo("#boxG", { x: -60, rotation: -3 }, { x: 0, rotation: 2, duration: 0.11, ease: "none" }, 0);
+      let bx = 0;
+      pushes.forEach((t0, i) => {
+        const back = t0 + 0.11;
+        // отскок назад и подпрыгивание от радости между толчками
+        tl.to("#catHop", { x: -44, y: -54 - 8 * (i % 2), rotation: -5, duration: 0.11, ease: "sine.out" }, back);
+        tl.to("#catHop", { x: 24, y: 0, rotation: 3, duration: 0.11, ease: "power2.in" }, back + 0.11);
+        // коробка уезжает на шаг от каждого толчка и качается на ребре
+        bx += 46;
+        tl.to("#boxG", { x: bx, rotation: -3.4, duration: 0.12, ease: "power2.out" }, back + 0.11);
+        tl.to("#boxG", { rotation: 2.4, duration: 0.1, ease: "sine.inOut" }, back + 0.23);
+        // пыль из-под коробки на каждом толчке
+        tl.fromTo("#puff", { x: bx - 40, y: 6, scale: 0.6, opacity: 0.0, transformOrigin: "50% 100%" },
+                  { x: bx - 70, y: -10, scale: 1.25, opacity: 1, duration: 0.12, ease: "power2.out" }, back + 0.1);
+        tl.to("#puff", { opacity: 0, x: bx - 110, duration: 0.12, ease: "power1.in" }, back + 0.22);
+      });
+      // «лЕгче»: кот подпрыгивает с облегчением, коробка отлетает к кровати и бьётся о неё, пыль клубами
+      tl.to("#catHop", { y: 14, scaleY: 0.92, scaleX: 1.05, rotation: 0, duration: 0.1, ease: "power2.in" }, H - 0.14);
+      tl.to("#catHop", { y: -90, scaleY: 1.07, scaleX: 0.97, rotation: -5, duration: 0.16, ease: "power3.out" }, H - 0.04);
+      tl.to("#catHop", { y: 0, scaleY: 1, scaleX: 1, rotation: 0, duration: 0.7, ease: "bounce.out" }, H + 0.12);
+      tl.to("#boxG", { x: bx + 190, rotation: 4, duration: 0.2, ease: "power3.out" }, H - 0.04);
+      tl.to("#boxG", { x: bx + 172, rotation: -1.5, duration: 0.18, ease: "sine.inOut" }, H + 0.16);
+      tl.to("#boxG", { rotation: 0, duration: 0.4, ease: "elastic.out(1, 0.4)" }, H + 0.34);
+      const [fx, fy] = K.box_foot;
+      for (let i = 0; i < 16; i++) {
+        const c = document.createElementNS(NS, "circle");
+        const ang = -Math.PI * (0.05 + 0.9 * ((i * 0.618) % 1)), d = 140 + 220 * ((i * 0.37) % 1);
+        c.setAttribute("cx", fx - 330 + (i % 4) * 30); c.setAttribute("cy", fy - 20); c.setAttribute("r", 16 + 14 * ((i * 0.53) % 1));
+        document.getElementById("dust").appendChild(c);
+        tl.set(c, { opacity: 0, scale: 0.3, svgOrigin: `${fx - 300} ${fy}` }, 0);
+        tl.to(c, { opacity: 0.9, duration: 0.05 }, H + i * 0.008);
+        tl.to(c, { x: d * Math.cos(ang) - 120, y: d * Math.sin(ang) * 0.6, scale: 1.8, duration: 0.6, ease: "power2.out" }, H + i * 0.008);
+        tl.to(c, { opacity: 0, duration: 0.4, ease: "power1.in" }, H + 0.25 + i * 0.008);
+      }
+      // штрихи облегчения вокруг головы кота
+      const [hx, hy] = [K.paws[0] - 380, K.paws[1] - 420];
+      for (let i = 0; i < 6; i++) {
+        const a = -Math.PI / 2 + (i - 2.5) * 0.48;
+        const g = document.createElementNS(NS, "g"), m = document.createElementNS(NS, "g"), l = document.createElementNS(NS, "line");
+        g.setAttribute("transform", `translate(${hx + 330 * Math.cos(a)} ${hy + 290 * Math.sin(a)}) rotate(${(a * 180) / Math.PI})`);
+        l.setAttribute("x1", 0); l.setAttribute("y1", 0); l.setAttribute("x2", 70); l.setAttribute("y2", 0); l.style.strokeWidth = 12;
+        m.appendChild(l); g.appendChild(m); document.getElementById("rays").appendChild(g);
+        tl.set(m, { opacity: 0, scaleX: 0, svgOrigin: "0 0" }, 0);
+        tl.set(m, { opacity: 1 }, H + 0.02);
+        tl.to(m, { scaleX: 1, duration: 0.07, ease: "power3.out" }, H + 0.02);
+        tl.to(m, { x: 46, opacity: 0, duration: 0.24, ease: "power2.in" }, H + 0.16);
+      }
+      meshPart({ canvas: document.getElementById("tail"), marg: 180, img: "assets/tail_body.png",
+                 flame: "assets/tail_flame.png", mesh: "assets/tail_mesh.json", angles: "assets/tail_angles.json", fps: 30 });
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
