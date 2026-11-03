@@ -52,6 +52,10 @@ BASE_PH = 1100         # под эту высоту написаны экран�
 CAP_SIZE = 76          # один кегль на весь ролик; 90 → 76 (24.10): при 90 в строку влезало ~15 знаков и треть групп была
                       # из одного слова, владелец: «удобнее по два-три слова» (замер на эп.01 v4: одиночных 21 → 4)
 CAP_MAX_W = 860        # px: от 70 до 930 — правее колонка кнопок Reels (~150 px у правого края)
+# ЖЕЛЕЗНОЕ ПРАВИЛО 27 (владелец 03.11): хук читается без звука как можно раньше — по умолчанию в каждом новом рилсе,
+# без проверок: надпись-якорь хука на 15 % крупнее заданной, субтитры первой фразы появляются вдвое быстрее голоса
+ANCHOR_SCALE = 1.15     # «заголовок чуть больше… чуть-чуть, чтобы был более заметен»
+HOOK_CAP_SPEED = 0.5    # слово хука появляется в субтитре на половине своего времени в голосе
 CAP_AHEAD_ALPHA = 0    # слово появляется, когда его сказали (владелец 25.10: «субтитры всегда динамичные… и в хуке»);
                        # место в строке у всех слов группы своё с начала — строка не прыгает, когда слова добавляются
 CAP_RISE = 0           # въезда снизу нет (владелец 25.10: «зачем они поднимаются, пусть ровно»); было 18 px за 250 мс
@@ -158,6 +162,18 @@ def _split_segment(seg, words):
     while b > 0:
         a = back[b]; groups.append(list(seg[a:b])); b = a
     return groups[::-1]
+
+def hook_caps(caps, times, hook_end, speed=HOOK_CAP_SPEED):
+    """Правило 27 (владелец 03.11): «первые субтитры, хуковые, идут быстрее… чтобы человек без звука быстрее понял тему».
+    Слова первой фразы появляются на экране в speed от своего времени в голосе (0,5 — вдвое раньше), группы хука
+    сменяют друг друга так же раньше; дальше субтитры идут по голосу, как всегда."""
+    hc = [c for c in caps if c["idx"][0] < hook_end]
+    for c in hc:
+        c["appear"] = {j: round(speed * times[j]["start"], 4) for j in c["idx"]}
+        c["t0"] = 0.0 if c is caps[0] else c["appear"][c["idx"][0]]
+    for a, b in zip(hc, hc[1:]):
+        a["t1"] = b["t0"]
+    return caps
 
 def chunks(words, times):
     """Группы по 2-3 слова, всегда ОДНОЙ строкой одного кегля. Обрыв — только конец предложения и «|»;
@@ -787,9 +803,12 @@ def build(reel_dir, sheet=False, preview=False, force=False):
         w = times[spans[b_idx][0] + k]
         return w["end"] if after else w["start"]
     events = []
+    _std = (spec.get("passport") or {}).get("standard") or 0
     for bi, b in enumerate(beats):
         for e in b.get("fx", []):                     # after: от конца слова (riser — сразу после фразы-хука)
             events.append(dict(e, t=wt(bi, e.get("at", 0), e.get("after", False)) + e.get("dt", 0.0), beat=bi))
+            if e.get("anchor") and e.get("kind") == "mark" and _std >= reel_rules.HOOK_BASE_STANDARD:
+                events[-1]["size"] = round(e.get("size", 120) * ANCHOR_SCALE)      # правило 27: заголовок крупнее
             if "strike_at" in e:                      # зачёркивание: только если поле задано в reel.json
                 events[-1]["strike_t"] = wt(bi, e["strike_at"]) + e.get("strike_dt", 0.0)
     for e in events:                                  # удержание накладки — только пока идут планы того же рода
@@ -865,6 +884,8 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     # пролистывание в первые 0.5 с — «не понял, о чём», поэтому хук читается сразу; подсветка слов идёт как обычно)
     caps[0]["t0"] = 0.0
     if spec.get("hook_still"): caps[0]["still"] = True   # старые рилсы: хук целиком с первого кадра (до 25.10)
+    if _std >= reel_rules.HOOK_BASE_STANDARD:          # правило 27: субтитры первой фразы вдвое быстрее голоса
+        hook_caps(caps, times, spans[0][1])
     for c in caps:
         c["imgs"] = {j: render_chunk(words, c["idx"], j, fade_ahead=not c.get("still")) for j in c["idx"]}
         c["words"] = words
@@ -955,7 +976,7 @@ def segment_key(reel_dir, fps, n0, n1, i, shots, events, caps, words, times, hoo
             src_sig += [(x["anim"], _file_md5(p_)) for p_ in anim.scene_files(reel_dir, x["anim"])]
     ev = [e for e in events if t0 - 7.0 <= e["t"] <= t1 + 0.5]
     cp = [dict(c0=c["t0"], c1=c["t1"], words=[words[j] for j in c["idx"]], still=c.get("still"),
-               at=[round(times[j]["start"], 4) for j in c["idx"]])
+               at=[round(times[j]["start"], 4) for j in c["idx"]], ap=c.get("appear"))
           for c in caps if c["t0"] < t1 + 0.5 and c["t1"] > t0 - 0.5]
     hc = hook_clock if hook_clock and hook_clock["t0"] < t1 and hook_clock["t_end"] > t0 else None
     blob = json.dumps(_plain(dict(v=code_sig, fps=fps, n=[n0, n1], shots=shots[max(0, i - 1):i + 2], ev=ev, caps=cp,
@@ -1257,11 +1278,11 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
     # субтитры: группа въезжает снизу, активное слово — по времени слова
     for c in caps:
         if c["t0"] - 0.0 <= t < c["t1"]:
-            act = c["idx"][0]
+            act = c["idx"][0]; ap = c.get("appear") or {}
             for j in c["idx"]:
-                if times[j]["start"] - 0.03 <= t: act = j
+                if ap.get(j, times[j]["start"]) - 0.03 <= t: act = j
             im = c["imgs"][act]
-            u = (t - times[act]["start"] + 0.03) / CAP_POP_SEC          # поп слова, когда его сказали
+            u = (t - ap.get(act, times[act]["start"]) + 0.03) / CAP_POP_SEC   # поп слова, когда его сказали (хук — раньше)
             if CAP_POP_SEC and 0 <= u < 1 and not c.get("still"):
                 k = min(CAP_POP_STEPS - 1, int(u * CAP_POP_STEPS))
                 cache = c.setdefault("pops", {})

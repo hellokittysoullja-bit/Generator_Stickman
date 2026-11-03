@@ -1438,3 +1438,15 @@ def test_iron_rule_26_reel_base_dissonance_on_screen_broad_topic_hooks_cuts():
     assert rr.check_base_motion({"first": 0.106, "mean": 0.055, "min": 0.042, "min_at": 0.7})   # рилсу 15 мало
     assert rr.check_base_motion({"first": 0.13, "mean": 0.07, "min": 0.035, "min_at": 0.7}) == []
 
+
+def test_rule_27_hook_captions_twice_faster_and_anchor_bigger():
+    """Владелец 03.11: «первые хуковые субтитры идут быстрее… заголовок с маркером чуть больше — всегда, без проверок»."""
+    import reel
+    times = [{"start": 0.1 + 0.4 * k, "end": 0.45 + 0.4 * k} for k in range(8)]
+    caps = [dict(idx=[0, 1], t0=0.0, t1=0.9), dict(idx=[2, 3], t0=0.9, t1=1.7), dict(idx=[4, 5], t0=1.7, t1=2.5)]
+    reel.hook_caps(caps, times, hook_end=4)
+    assert caps[1]["appear"][2] == round(0.5 * times[2]["start"], 4) and caps[1]["t0"] == caps[1]["appear"][2]
+    assert caps[0]["t1"] == caps[1]["t0"] and caps[0]["t0"] == 0.0
+    assert "appear" not in caps[2] and caps[2]["t0"] == 1.7                     # после хука — по голосу
+    assert reel.HOOK_CAP_SPEED == 0.5 and 1.1 <= reel.ANCHOR_SCALE <= 1.2       # «чуть-чуть» крупнее
+
