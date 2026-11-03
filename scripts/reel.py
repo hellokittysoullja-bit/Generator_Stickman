@@ -856,6 +856,11 @@ def build(reel_dir, sheet=False, preview=False, force=False):
             iron_errs += reel_rules.check_opening_motion(om)
             if ((spec.get("passport") or {}).get("standard") or 0) >= reel_rules.HOOK_BASE_STANDARD:
                 iron_errs += reel_rules.check_base_motion(om)
+            if ((spec.get("passport") or {}).get("standard") or 0) >= reel_rules.HOOK_FLY_STANDARD:
+                fill = hook_fill(reel_dir, shots[0])
+                print(f"  влёт хука (правило 28): рисунок после влёта занимает {fill['h']:.0%} высоты и "
+                      f"{fill['w']:.0%} ширины картинки")
+                iron_errs += reel_rules.check_hook_fill(fill)
     iron_errs += reel_rules.check_hook_base(spec, words, times, spans, events, shots)   # база 26 (владелец 03.11)
     if iron_errs:
         print("ЖЕЛЕЗНЫЕ ПРАВИЛА 25–26 (CLAUDE.md, первый раздел):\n" + "\n".join("  ✗ " + e for e in iron_errs))
@@ -1060,6 +1065,33 @@ def shot_view(s, t):
         h *= 1 + s["zoom_in"] * k
     return cx, cy, h
 
+def hook_fill(reel_dir, s, t=None):
+    """Правило 28: насколько крупно рисунок хука стоит в кадре, когда камера долетела (t по умолчанию — 0,6 с или
+    конец плана). Доля высоты и ширины картинки между крайними строками и столбцами, где туши ≥ 0,5 %. Рилс 16:
+    кот и коробка — узкая полоса посередине, влёт «приближает» к пустой бумаге."""
+    import anim
+    t = min(0.6, s["t1"] - 0.05) if t is None else t
+    img, cam = anim.scene(reel_dir, s["anim"]).frame(t, s["anim_ctx"])
+    cx, cy, h = shot_view(s, t)
+    pic = sample(np.clip(img, 0, 255).astype(np.uint8), cx, cy, h / cam.get("zoom", 1.0))
+    paper = np.median(pic.reshape(-1, 3), axis=0)
+    ink = np.abs(pic.astype(np.int16) - paper).max(axis=2) > 40
+    rows, cols = np.where(ink.mean(axis=1) >= 0.005)[0], np.where(ink.mean(axis=0) >= 0.005)[0]
+    if not len(rows):
+        return dict(h=0.0, w=0.0)
+    return dict(h=(rows[-1] - rows[0] + 1) / ink.shape[0], w=(cols[-1] - cols[0] + 1) / ink.shape[1])
+
+def zoom_blur(img, spread, n=9):
+    """Радиальное размытие влёта (правило 28): среднее n копий кадра, увеличенных от 1 до 1 + spread вокруг центра —
+    центр резкий, края тянутся к краю кадра, как у быстрого наезда камерой."""
+    h, w = img.shape[:2]
+    acc = img.astype(np.float32)
+    for i in range(1, n):
+        k = 1 + spread * i / (n - 1)
+        M = np.float32([[k, 0, w / 2 * (1 - k)], [0, k, h / 2 * (1 - k)]])
+        acc += cv2.warpAffine(img, M, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+    return np.clip(acc / n, 0, 255).astype(img.dtype)
+
 def motion_blur(img, dx, dy):
     k = int(max(abs(dx), abs(dy)))
     if k < 3: return img
@@ -1100,6 +1132,7 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
         if e["kind"] == "shake" and 0 <= t - e["t"] < e.get("dur", 0.45):
             k = 1 - (t - e["t"]) / e.get("dur", 0.45); A = e.get("amp", 22) * k
             shake = (A * math.sin(t * 93), A * 0.7 * math.cos(t * 71)); rot = 0.6 * k * math.sin(t * 57)
+    zblur = 0.0
     if kind == "crop":
         src = load_src(reel_dir, s["src"])
         cx, cy, h = shot_view(s, t)
@@ -1112,6 +1145,7 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
             src = np.clip(img, 0, 255).astype(np.uint8)
             shake = (shake[0] + cam.get("dx", 0.0), shake[1] + cam.get("dy", 0.0))
             punch *= cam.get("zoom", 1.0); rot += cam.get("rot", 0.0)
+            zblur = cam.get("zoom_blur", 0.0)               # правило 28: размытие влёта камеры хука
         # второй слой камеры: медленный поворот до 0.5° поверх дрейфа, на соседних планах в разные стороны
         sign = 1 if s.get("bi", 0) % 2 else -1   # одно направление на фразу (мысль): Tim Runia; правило длинного ролика
         rot += s.get("rot_drift", 0.5) * sign * ((t - s["t0"]) / max(1e-3, s["t1"] - s["t0"]) - 0.5)
@@ -1123,6 +1157,8 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
             if k > 0.05:
                 sc = PH / (h / punch) / 2.0
                 base = motion_blur(base, s["whip"][0] * k * sc * 0.25 * 2.0 * 0.5, s["whip"][1] * k * sc * 0.25)
+        if zblur > 0.004:
+            base = zoom_blur(base, zblur)
         if s.get("zoom_in"):                       # вход наездом: размытие гаснет за 0.25 с (white minimal: blur 30->0)
             k = 1 - ease_out((t - s["t0"]) / 0.25)
             if k > 0.05: base = cv2.GaussianBlur(base, (0, 0), 1 + 7 * k)

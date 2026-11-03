@@ -1216,7 +1216,7 @@ def test_standard_23_hook_on_hyperframes_and_no_repeats_of_other_reels(tmp_path)
     d = tmp_path / "videos" / "14_x" / "reel"; (d / "anim").mkdir(parents=True); (d / "gen").mkdir()
     (d / "gen" / "a.png").write_bytes(b"own")
     (d / "anim" / "hook.py").write_text("import anim\n", encoding="utf-8")
-    spec = {"passport": {"standard": 26}, "sources": {"f1": {"frame": "gen/a.png"}},
+    spec = {"passport": {"standard": 28}, "sources": {"f1": {"frame": "gen/a.png"}},
             "beats": [{"text": "Все ушли, а ты?", "shots": [{"anim": "hook"}]},
                       {"text": "В шапке профиля я помогу тебе начать твоё дело, а также посижу с тобой пару минут"}]}
     errs = rr.check_hf_hook(spec, [], "videos/14_x/reel", str(d))
@@ -1457,3 +1457,46 @@ def test_rule_27_hook_caption_times_go_into_the_cache_signature():
     import json
     sig = json.dumps(reel._plain({"caps": [{"appear": {0: 0.0, 2: 0.31}, "_anchor": 1}]}), sort_keys=True)
     assert '"appear": {"0": 0.0, "2": 0.31}' in sig and "_anchor" not in sig
+
+
+def test_rule_28_hook_fly_in_is_stronger_with_blur_and_second_kick():
+    """Правило 28 (владелец 03.11): влёт камеры на 0 с мощнее рилса 16 — дальше, быстрее, с поворотом, размытием
+    движения и вторым ударом на слоге; без hit старые сцены (08–16) получают прежнюю камеру байт в байт."""
+    import anim
+    old = [anim.hook_cam(i / 30) for i in range(31)]
+    assert abs(old[0]["zoom"] - 1 / 1.18) < 1e-9 and "zoom_blur" not in old[0]
+    new = [anim.hook_cam(i / 30, hit=0.6) for i in range(31)]
+    step = lambda cs: max(abs(b["zoom"] / a["zoom"] - 1) for a, b in zip(cs[:9], cs[1:10]))   # noqa: E731
+    assert 1 / new[0]["zoom"] - 1 >= 0.38                   # влёт с 40 % дальше (было 18 %)
+    assert step(new) >= 1.6 * step(old)                     # самый быстрый кадр влёта заметно быстрее
+    assert abs(new[0]["rot"]) >= 2.9 and abs(old[0]["rot"]) < 1.2
+    assert max(c["zoom_blur"] for c in new[:6]) >= 0.04     # край кадра тянется, пока камера летит
+    assert new[15]["zoom_blur"] < 0.004                     # и резко после
+    kick = anim.hook_cam(0.6 + 2 / 30, hit=0.6)["zoom"] / anim.hook_cam(0.6 - 1 / 30, hit=0.6)["zoom"]
+    assert kick >= 1.06                                     # второй удар камерой на ударном слоге
+
+
+def test_rule_28_new_reel_needs_standard_28_and_hit_in_hook_cam(tmp_path):
+    spec = {"passport": {"standard": 28}, "beats": [{"text": "Новый хук?", "shots": [{"anim": "s"}]}]}
+    (tmp_path / "anim").mkdir()
+    (tmp_path / "anim" / "s.py").write_text("cam = anim.hook_cam(t)\n", encoding="utf8")
+    errs = reel_rules.check_hook_start(spec, (), "videos/99_x/reel", str(tmp_path))
+    assert errs and "правило 28" in errs[0]
+    (tmp_path / "anim" / "s.py").write_text("cam = anim.hook_cam(t, hit=C['hit'])\n", encoding="utf8")
+    assert reel_rules.check_hook_start(spec, (), "videos/99_x/reel", str(tmp_path)) == []
+    spec26 = {"passport": {"standard": 26}, "beats": [{"text": "Новый хук?", "shots": [{"anim": "s"}]}]}
+    assert any("28" in e for e in reel_rules.check_hf_hook(spec26, (), "videos/99_x/reel", str(tmp_path)))
+
+
+def test_rule_28_zoom_blur_keeps_centre_sharp_and_smears_edges():
+    import numpy as np
+    img = np.zeros((200, 160, 3), np.uint8); img[::8] = 255
+    out = reel.zoom_blur(img, 0.06)
+    c = lambda a: a[90:110, 70:90].astype(float).std()       # noqa: E731
+    e = lambda a: a[0:20, 0:20].astype(float).std()          # noqa: E731
+    assert c(out) > 0.7 * c(img) and e(out) < 0.7 * e(img)
+
+
+def test_rule_28_fly_in_lands_on_the_drawing_not_on_paper():
+    assert reel_rules.check_hook_fill({"h": 0.46, "w": 0.77})          # рилс 16
+    assert reel_rules.check_hook_fill({"h": 0.94, "w": 0.76}) == []    # рилс 14

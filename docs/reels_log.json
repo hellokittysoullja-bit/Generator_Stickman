@@ -1235,5 +1235,38 @@
    "без куклы и без кадра с «Напарником»"
   ],
   "after_publish": {}
+ },
+ {
+  "reel": "videos/14_ponedelnik/reel",
+  "version": "v3",
+  "date": "2026-11-03",
+  "status": "стандарт 25; хук на HyperFrames",
+  "first_words": "Опять с",
+  "hook_type": "",
+  "structure": "Опять с понедельника?",
+  "devices": "{'dissonance': 0, 'callout': 1, 'preblock': 1, 'riddle': 1, 'preview': 1, 'mechanism': 3, 'analogy': 3, 'authority': 3, 'own_story': 2, 'answer': 4, 'small_step': 5, 'zero_risk': 5, 'bridge': 5, 'twist': 6, 'loop': {'skip': 'петля монтажом: последний план — календарь хука, текстом её не повторяем'}}",
+  "after_publish": {}
+ },
+ {
+  "reel": "videos/15_svoe/reel",
+  "version": "v1",
+  "date": "2026-11-03",
+  "status": "стандарт 26; фиолетовый маркер; 37,8 с",
+  "first_words": "Чужое сдашь,",
+  "hook_type": "",
+  "structure": "Чужое сдашь, а своё?",
+  "devices": "{'dissonance': 0, 'callout': 1, 'preblock': 1, 'riddle': 1, 'preview': 1, 'mechanism': 3, 'analogy': {'skip': 'метафоры нет: механизм прямыми словами «чужое кто-то ждёт»'}, 'authority': 3, 'own_story': 2, 'answer': 4, 'small_step': 5, 'zero_risk': 5, 'bridge': 5, 'twist': 6, 'loop': {'skip': 'петля ",
+  "after_publish": {}
+ },
+ {
+  "reel": "videos/16_otlozhish/reel",
+  "version": "v1",
+  "date": "2026-11-03",
+  "status": "стандарт 26 + правило 27; хук владельца; 35 с; --force только за ширину строки хука в субтитрах",
+  "first_words": "Отложишь дело,",
+  "hook_type": "",
+  "structure": "Отложишь дело, и тебе легче?",
+  "devices": "{'dissonance': 0, 'callout': 1, 'preblock': 1, 'riddle': 1, 'preview': 1, 'mechanism': 3, 'analogy': {'skip': 'метафора — в картинке (коробка растёт от ругани), словами механизм прямо'}, 'authority': 3, 'own_story': 2, 'answer': 4, 'small_step': 6, 'zero_risk': 5, 'bridge': 5, 'twist': 6, 'loop': {'",
+  "after_publish": {}
  }
 ]

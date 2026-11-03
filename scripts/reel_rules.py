@@ -1201,9 +1201,30 @@ def check_hook_start(spec, log=(), reel_dir="", abs_dir=None):
     p = os.path.join(abs_dir or reel_dir or "", "anim", str(s0.get("anim")) + ".py")
     if not s0.get("anim") or not os.path.exists(p):
         return []                                       # сцены нет — об этом скажет check_hook_motion
-    if "hook_cam(" not in open(p, encoding="utf8").read():
+    code = open(p, encoding="utf8").read()
+    if "hook_cam(" not in code:
         return [f"хук: сцена anim/{s0['anim']}.py пишет свою камеру — возьмите anim.hook_cam(t) (влёт как в рилсе 08), "
                 "удар и тряску на слове добавляйте поверх"]
+    if std >= HOOK_FLY_STANDARD and not re.search(r"hook_cam\(\s*t\s*,\s*hit\s*=", code):
+        return [f"правило 28: сцена anim/{s0['anim']}.py зовёт anim.hook_cam(t) без удара — нужен anim.hook_cam(t, hit=…) "
+                "(время ударного слога): сильный влёт 40 % за 0,22 с, отскок, поворот −3°, размытие движения и второй "
+                "удар камерой +8 % на слоге"]
+    return []
+
+
+# ПРАВИЛО 28 (владелец 03.11): влёт камеры на 0 с — мощный и красивый, как у рилсов с сильными хуками; параметры —
+# anim.HOOK28_*, кладёт их сама anim.hook_cam(t, hit=…). Новый рилс ниже 28 не рендерится (check_hf_hook).
+HOOK_FLY_STANDARD = 28
+# Влёт должен прилетать к рисунку, а не к бумаге: после влёта рисунок хука занимает ≥ 65 % высоты картинки
+# (reel.hook_fill). Замер 03.11: рилс 13 — 98 %, 14 — 94 %, 15 — 100 %, 16 — 46 % (кот и коробка узкой полосой
+# посередине, «приближение» к пустому листу — то, что владелец назвал «не слишком динамичное»).
+HOOK_FILL_MIN = 0.65
+
+
+def check_hook_fill(fill):
+    if fill["h"] < HOOK_FILL_MIN:
+        return [f"правило 28: после влёта рисунок хука занимает {fill['h']:.0%} высоты картинки < {HOOK_FILL_MIN:.0%} — "
+                "окно хука (from/to) уже, на событие боли: камера прилетает к рисунку, а не к пустой бумаге"]
     return []
 
 
@@ -1794,12 +1815,13 @@ def _is_new(spec, log, reel_dir):
 def check_hf_hook(spec, log=(), reel_dir="", abs_dir=None):
     pp = spec.get("passport") or {}
     std = pp.get("standard") or 0
-    if std < HOOK_BASE_STANDARD and _is_new(spec, log, reel_dir):
-        return [f"новый рилс: нужен \"standard\": {HOOK_BASE_STANDARD} — хук на HyperFrames (scripts/anim_hf.py, скилл "
+    if std < HOOK_FLY_STANDARD and _is_new(spec, log, reel_dir):
+        return [f"новый рилс: нужен \"standard\": {HOOK_FLY_STANDARD} — хук на HyperFrames (scripts/anim_hf.py, скилл "
                 "reel-anim), база рилса 13 (anim.save_layer, anim.inpaint_bg, tail_rig), ни одного повтора "
                 "рисунков и фраз прошлых рилсов, и ЖЕЛЕЗНЫЕ ПРАВИЛА 25: вторая фраза — второй крючок, никаких "
                 f"объяснений до {NO_EXPLAIN_SEC:.0f} с, движение рисунка с первого кадра не слабее планки 25, и БАЗА 26: "
-                "диссонанс крупно на экране с 0 с, общая тема, три крючка до 10 с, три склейки за 5 с"]
+                "диссонанс крупно на экране с 0 с, общая тема, три крючка до 10 с, три склейки за 5 с; ПРАВИЛО 28: "
+                "влёт камеры хука anim.hook_cam(t, hit=…) — сильный, с отскоком, поворотом, размытием и вторым ударом"]
     if std < HF_STANDARD:
         return []
     s0 = ((spec.get("beats") or [{}])[0].get("shots") or [{}])[0]

@@ -216,8 +216,39 @@ def vnoise(x, seed=0):
     return _vhash(i, seed) * (1 - u) + _vhash(i + 1, seed) * u
 
 
-def hook_cam(t):
-    """Камера первого плана хука в момент t: резкий влёт с маленьким перелётом и поворотом (как в рилсе 08)."""
+# ПРАВИЛО 28 (владелец 03.11 после рилса 16: «на нулевой секунде, которое приближает, должно быть более мощное, красивое,
+# динамичное… чтобы в будущем на постоянке рилсы делались по таким параметрам, посильнее»). Влёт рилса 16 — 18 % за
+# 0,25 с, поворот −1,1°, без размытия: читался как плавный наезд. Теперь у каждой новой сцены хука (вызов с hit=):
+# влёт с 40 % дальше за 0,22 с, перелёт 5 % с отскоком, поворот −3° с возвратом, радиальное размытие движения, пока
+# камера летит (как у «zoom transition» сильных рилсов), и второй удар камерой +8 % на ударном слоге хука.
+HOOK28_ZOOM, HOOK28_SNAP_SEC, HOOK28_OVERSHOOT, HOOK28_ROLL, HOOK28_ROLL_SEC = 0.40, 0.22, 0.05, -3.0, 0.3
+HOOK28_KICK, HOOK28_KICK_ROLL, HOOK28_BLUR_GAIN, HOOK28_BLUR_MAX = 0.08, 1.4, 0.5, 0.06
+
+
+def _hook28_zoom(t):
+    if t <= 0:
+        return 1 / (1 + HOOK28_ZOOM)
+    snap = 1 / (1 + HOOK28_ZOOM * (1 - SNAP(t / HOOK28_SNAP_SEC)))
+    u = t - HOOK28_SNAP_SEC
+    over = 1 + HOOK28_OVERSHOOT * 2.0 * math.exp(-u / 0.14) * math.sin(2 * math.pi * 1.8 * u) if u > 0 else 1.0
+    return snap * over
+
+
+def hook_cam(t, hit=None):
+    """Камера первого плана хука в момент t. Без hit — влёт рилсов 08–16 (готовые рилсы не меняются); с hit (время
+    удара сцены, с) — правило 28: сильный влёт, отскок, поворот, размытие движения (`zoom_blur` — доля радиуса, на
+    которую тянется край кадра; его кладёт reel.py) и второй удар камерой на hit."""
+    if hit is not None:
+        z = _hook28_zoom(t)
+        dz = abs(z / _hook28_zoom(t - 1 / 30) - 1) if t > 0 else 0.0      # изменение масштаба за кадр
+        rot = HOOK28_ROLL * (1 - EASE_OUT(min(1.0, max(0.0, t) / HOOK28_ROLL_SEC)))
+        th = t - hit
+        if th >= 0:                                     # второй удар: наезд за 2 кадра, затухающая пружина
+            k = min(1.0, th / (2 / 30)) * math.exp(-max(0.0, th - 2 / 30) / 0.16)
+            z *= 1 + HOOK28_KICK * k; rot += HOOK28_KICK_ROLL * k * math.cos(th * 18)
+            if th < 2 / 30:
+                dz = max(dz, HOOK28_KICK * 0.5)
+        return dict(dx=0.0, dy=0.0, zoom=z, rot=rot, zoom_blur=min(HOOK28_BLUR_MAX, HOOK28_BLUR_GAIN * dz))
     snap = 1 / (1 + HOOK_ZOOM * (1 - SNAP(t / HOOK_SNAP_SEC)))
     # перелёт начинается с нуля и гаснет: в рилсе 08 он включался ступенькой (+2,2 % за один кадр на 0,25 с) — здесь плавно
     u = t - HOOK_SNAP_SEC
