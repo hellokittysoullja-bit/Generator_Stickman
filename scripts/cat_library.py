@@ -27,6 +27,7 @@ THUMB_W = 360
 SCAN = [
     ("videos/*/frames/*.png", "кадр эпизода", "Gemini 3.1 Flash Image (кадры длинных роликов)"),
     ("videos/*/reel/gen/*.png", "рисунок рилса", "GPT-Image-2 medium (scripts/reel_draw.py)"),
+    ("videos/*/reel_friend/gen/*.png", "рисунок рилса", "GPT-Image-2 medium (scripts/reel_draw.py, версия друга)"),
     ("look/hero.png", "герой: эталон", "референс героя"),
     ("look/states/*.png", "герой: состояние", "эталон состояния героя"),
     ("look/style/*.png", "образец стиля", "образец стиля"),
