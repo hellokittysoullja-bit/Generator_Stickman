@@ -2950,6 +2950,24 @@
   "origin": "GPT-Image-2 medium (scripts/reel_draw.py)"
  },
  {
+  "file": "2026-11-03_gen_cx_gpt-image-2_5_209e65be.png",
+  "sha256": "209e65be5a6625a796c6aa357b7b25fbaca4b7ff2882811947cd4ae6c732f8f3",
+  "bytes": 1948598,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-03",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: a plain room in the daytime. The main character sits on the floor frozen, holding one phone in both front paws close to its face and staring at it with wide guilty eyes, ears flattened, one small sweat drop on its forehead; one plain empty speech bubble floats just above the phone. On the plain wall behind it hangs one plain tear-off calendar, and five blank calendar pages are flying off it through the air one after another, apart from each other. The flame on the tip of its tail is small and nervous. LAYOUT: the main character is big and whole, filling most of the height from the floor up to the middle of the picture, in the lower middle; the calendar and the flying blank pages are in the upper part, apart from the character; the phone screen is blank; no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "scripts/reel_draw.py videos/18_otvet/reel"
+ },
+ {
   "file": "2026-11-03_gen_cx_gpt-image-2_5_384c231c.png",
   "sha256": "384c231cfe2956638952ba9cfc1c7a7207dd3d0402e2696ed8d038a99062f568",
   "bytes": 2382546,
@@ -2971,6 +2989,24 @@
   "origin": "GPT-Image-2 medium (scripts/reel_draw.py)"
  },
  {
+  "file": "2026-11-03_gen_cx_gpt-image-2_5_4acbc328.png",
+  "sha256": "4acbc32873e406e531250400829389e4b0c2f35866cc902847016619936a4b24",
+  "bytes": 2314250,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-03",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: a plain cosy room in soft daylight. The main character sits on the floor holding one phone in its front paws, beaming with joy, eyes squeezed happily shut, mouth open in a happy smile; one big plain red heart pops out of the phone screen into the air with a few small sparkles around it. The flame on the tip of its tail burns big, golden and bright with a few tiny sparks. LAYOUT: the main character is whole and large in the lower middle; the red heart floats above the phone in clear space; plain wall; the phone screen is blank; no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "scripts/reel_draw.py videos/18_otvet/reel"
+ },
+ {
   "file": "2026-11-03_gen_cx_gpt-image-2_5_943b60de.png",
   "sha256": "943b60de073f53ff08bd1c6d17ac01bdffe75c344c9625daa2023f07010f4829",
   "bytes": 2222200,
@@ -2990,6 +3026,24 @@
   "price": 197550,
   "source": "scripts/reel_draw.py videos/17_pashesh/reel",
   "origin": "GPT-Image-2 medium (scripts/reel_draw.py)"
+ },
+ {
+  "file": "2026-11-03_gen_cx_gpt-image-2_5_ba853b2c.png",
+  "sha256": "ba853b2cc69dfe879b9fa192bb667eca4a35135e2778c1658bc3e2c66373334b",
+  "bytes": 2292737,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-03",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: a plain room. The main character sits at a small plain desk holding one pencil, looking overwhelmed with wide eyes, while one very long sheet of paper rolls off the desk like a scroll, unrolling across the floor all the way to the bottom of the picture; the paper is covered with many plain wavy pencil lines, no letters. The flame on the tip of its tail is dim. LAYOUT: the character and the desk are whole in the upper half; the long unrolled paper fills the lower half, curling at the end; plain wall; no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "scripts/reel_draw.py videos/18_otvet/reel"
  },
  {
   "file": "2026-11-03_gen_cx_gpt-image-2_5_c94d980c.png",
