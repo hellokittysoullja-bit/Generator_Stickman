@@ -22,5 +22,12 @@
   "was": "videos/08_dvoinoy/reel/gen/q1_sofa.png",
   "date": "2026-10-27",
   "why": "заменён исправленным вариантом владельца: подушечки серые"
+ },
+ {
+  "sha256": "209e65be5a6625a796c6aa357b7b25fbaca4b7ff2882811947cd4ae6c732f8f3",
+  "file": "2026-11-03_gen_cx_gpt-image-2_5_209e65be.png",
+  "date": "2026-11-03",
+  "reason": "брак (артефакты), владелец 03.11 заменил своим исправленным рисунком",
+  "used_in": "videos/18_otvet/reel/gen/a1_wait.png"
  }
 ]
