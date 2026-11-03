@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=2048, height=2200" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="lib/mesh_part.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 2048px; height: 2200px; overflow: hidden; background: #f7f3ea; }
+      #root { position: relative; width: 2048px; height: 2200px; overflow: hidden; }
+      .layer { position: absolute; left: 0; top: 0; width: 2048px; height: 2200px; }
+      .abs { position: absolute; display: block; }
+      svg.layer { overflow: visible; }
+      #rays line { stroke: #18181a; stroke-linecap: round; }
+    </style>
+  </head>
+  <body>
+    <!-- Хук рилса 17 «Пашешь, а итог ноль?»: мир сцены — рисунок p1_rush ×2 от (0, 600), 2048×2200.
+         Слои — anim/kit_rush.py (база рилса 13), положение слоёв подставляет rush_hf.py из kit.json.
+         Правила 25–26: с кадра 0 всё уже в движении — кот бежит на месте рывками (подскок, качание), стикеры кружат и
+         трепещут вокруг головы, линии скорости мигают; на ударном «нОль» (data-vars.hit) кот спотыкается и кренится
+         вперёд, стикеры разлетаются в стороны, вокруг головы штрихи удара. Камеру, тряску, субтитры и звук даёт сборщик. -->
+    <div id="root" data-composition-id="main" data-start="0" data-duration="2.6" data-width="2048" data-height="2200"
+         data-vars='{"hit": 1.4}' data-motion-blur="on" data-layout-allow-overflow data-layout-allow-overlap>
+      <img id="bg" class="abs clip" src="assets/bg.png" style="left:0;top:0" data-start="0" data-duration="2.6" />
+      <img id="speed" class="abs clip" src="assets/speed.png" style="left:0px;top:0px" data-start="0" data-duration="2.6" />
+      <div id="cat" class="layer clip" data-start="0" data-duration="2.6">
+        <div id="catHop" class="layer">
+          <canvas id="tail" class="abs" width="880" height="1458" style="left:0px;top:0px"></canvas>
+          <img id="body" class="abs" src="assets/body.png" style="left:0px;top:0px" />
+        </div>
+        <svg id="rays" class="layer" width="2048" height="2200" viewBox="0 0 2048 2200"></svg>
+      </div>
+      <img id="note0" class="abs clip" src="assets/note0.png" style="left:0px;top:0px" data-start="0" data-duration="2.6" />
+      <img id="note1" class="abs clip" src="assets/note1.png" style="left:0px;top:0px" data-start="0" data-duration="2.6" />
+      <img id="note2" class="abs clip" src="assets/note2.png" style="left:0px;top:0px" data-start="0" data-duration="2.6" />
+      <img id="note3" class="abs clip" src="assets/note3.png" style="left:0px;top:0px" data-start="0" data-duration="2.6" />
+    </div>
+    <script>
+      const root = document.getElementById("root");
+      const V = JSON.parse(root.dataset.vars), H = V.hit, K = V.kit;
+      const NS = "http://www.w3.org/2000/svg";
+      const tl = gsap.timeline({ paused: true });
+      const px = (p) => `${p[0]}px ${p[1]}px`;
+      gsap.set("#catHop", { transformOrigin: px(K.feet) });
+      // бег на месте: шаг каждые 0,18 с с кадра 0 — подскок, качание, рывок вперёд-назад (без разгона с нуля)
+      const STEP = 0.18;
+      tl.fromTo("#catHop", { x: -40, y: -70, rotation: -6 }, { x: 22, y: 0, rotation: 3.5, duration: STEP / 2, ease: "none" }, 0);
+      let t = STEP / 2, i = 0;
+      while (t < H - 0.12) {
+        const up = i % 2 === 0;
+        tl.to("#catHop", { x: up ? -34 : 26, y: up ? -64 - 10 * (i % 3) : -8, rotation: up ? -5.5 : 4, duration: STEP / 2, ease: "sine.out" }, t);
+        tl.to("#catHop", { x: up ? 18 : -22, y: 0, rotation: up ? 3 : -3, duration: STEP / 2, ease: "power2.in" }, t + STEP / 2);
+        t += STEP; i++;
+      }
+      // «нОль»: кот спотыкается — присел, рывком кренится вперёд и обмякает
+      tl.to("#catHop", { y: 26, x: 40, rotation: 9, scaleY: 0.93, scaleX: 1.05, duration: 0.08, ease: "power3.in" }, H - 0.08);
+      tl.to("#catHop", { y: 40, x: 70, rotation: 14, scaleY: 0.97, scaleX: 1.02, duration: 0.16, ease: "power3.out" }, H);
+      tl.to("#catHop", { y: 18, x: 46, rotation: 7, scaleY: 1, scaleX: 1, duration: 0.8, ease: "elastic.out(1, 0.45)" }, H + 0.16);
+      // линии скорости мигают и дрожат, пока кот бежит; на ударе гаснут
+      for (let k = 0; k * 0.09 < H; k++) {
+        tl.to("#speed", { x: k % 2 ? -46 : 6, opacity: k % 2 ? 0.45 : 1, duration: 0.09, ease: "none" }, k * 0.09);
+      }
+      tl.to("#speed", { opacity: 0, x: -90, duration: 0.12, ease: "power2.in" }, H);
+      // стикеры: трепещут и кружат вокруг головы с кадра 0, каждый в своей фазе; на ударе разлетаются
+      const C = K.notes_c;
+      const hx = K.head[0], hy = K.head[1];
+      C.forEach((c, j) => {
+        const id = `#note${j}`;
+        gsap.set(id, { transformOrigin: "50% 50%" });
+        const per = 0.34 + 0.05 * j, R = 46 + 10 * j, ph = j * 1.7;
+        const n = Math.ceil(H / per) + 1;
+        tl.fromTo(id, { x: R * Math.cos(ph), y: R * 0.7 * Math.sin(ph), rotation: (j % 2 ? 1 : -1) * 18 },
+                  { x: R * Math.cos(ph + Math.PI / 2), y: R * 0.7 * Math.sin(ph + Math.PI / 2), rotation: (j % 2 ? -1 : 1) * 14,
+                    duration: per / 4, ease: "none" }, 0);
+        for (let q = 1; q < 4 * n && q * per / 4 < H; q++) {
+          const a = ph + (q + 1) * Math.PI / 2;
+          tl.to(id, { x: R * Math.cos(a), y: R * 0.7 * Math.sin(a), rotation: ((q + j) % 2 ? -1 : 1) * 16,
+                      duration: per / 4, ease: "sine.inOut" }, q * per / 4);
+        }
+        const dx = c[0] - hx, dy = c[1] - hy, d = Math.hypot(dx, dy) || 1;
+        tl.to(id, { x: (dx / d) * 520, y: (dy / d) * 420 + 260, rotation: (j % 2 ? 1 : -1) * 220, duration: 0.55,
+                    ease: "power2.out" }, H + 0.01 * j);
+        tl.to(id, { y: (dy / d) * 420 + 900, opacity: 0, duration: 0.6, ease: "power2.in" }, H + 0.5 + 0.01 * j);
+      });
+      // штрихи удара вокруг головы на «нОль»
+      for (let k = 0; k < 7; k++) {
+        const a = -Math.PI / 2 + (k - 3) * 0.42;
+        const g = document.createElementNS(NS, "g"), m = document.createElementNS(NS, "g"), l = document.createElementNS(NS, "line");
+        g.setAttribute("transform", `translate(${hx + 560 * Math.cos(a)} ${hy + 470 * Math.sin(a)}) rotate(${(a * 180) / Math.PI})`);
+        l.setAttribute("x1", 0); l.setAttribute("y1", 0); l.setAttribute("x2", 80); l.setAttribute("y2", 0); l.style.strokeWidth = 13;
+        m.appendChild(l); g.appendChild(m); document.getElementById("rays").appendChild(g);
+        tl.set(m, { opacity: 0, scaleX: 0, svgOrigin: "0 0" }, 0);
+        tl.set(m, { opacity: 1 }, H + 0.02);
+        tl.to(m, { scaleX: 1, duration: 0.07, ease: "power3.out" }, H + 0.02);
+        tl.to(m, { x: 50, opacity: 0, duration: 0.26, ease: "power2.in" }, H + 0.18);
+      }
+      meshPart({ canvas: document.getElementById("tail"), marg: 180, img: "assets/tail_body.png",
+                 flame: "assets/tail_flame.png", mesh: "assets/tail_mesh.json", angles: "assets/tail_angles.json", fps: 30 });
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
