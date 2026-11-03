@@ -1450,3 +1450,10 @@ def test_rule_27_hook_captions_twice_faster_and_anchor_bigger():
     assert "appear" not in caps[2] and caps[2]["t0"] == 1.7                     # после хука — по голосу
     assert reel.HOOK_CAP_SPEED == 0.5 and 1.1 <= reel.ANCHOR_SCALE <= 1.2       # «чуть-чуть» крупнее
 
+
+
+def test_rule_27_hook_caption_times_go_into_the_cache_signature():
+    """Рилс 16: hook_caps кладёт в субтитр {номер слова: время}, а подпись кэша клипов падала на числовом ключе."""
+    import json
+    sig = json.dumps(reel._plain({"caps": [{"appear": {0: 0.0, 2: 0.31}, "_anchor": 1}]}), sort_keys=True)
+    assert '"appear": {"0": 0.0, "2": 0.31}' in sig and "_anchor" not in sig

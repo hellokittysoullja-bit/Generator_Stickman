@@ -961,7 +961,9 @@ def _file_md5(p):
 
 def _plain(x):
     """Без служебных полей (`_anchor` меняется при рендере) и без ссылки плана на фразу."""
-    if isinstance(x, dict): return {k: _plain(v) for k, v in sorted(x.items()) if not k.startswith("_") and k != "beat"}
+    if isinstance(x, dict):                    # ключи бывают числами: время появления слов хука (правило 27, рилс 16)
+        return {str(k): _plain(v) for k, v in sorted(x.items(), key=lambda kv: str(kv[0]))
+                if not str(k).startswith("_") and k != "beat"}
     if isinstance(x, (list, tuple)): return [_plain(v) for v in x]
     return x
 
