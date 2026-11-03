@@ -263,6 +263,14 @@ def paper_tex(seed=5):
     n = n / (np.abs(n).max() + 1e-6)
     return np.clip(PAPER[None, None] * (1 + 0.025 * n[..., None]), 0, 255).astype(np.uint8)
 
+def light_edges(src, level=200):
+    """Кромка рисунка — светлая бумага? Тогда за краем окна сцены — бумага, а не отражение: у рилса 15 (03.11) влёт
+    камеры хука выходил за край, и отражение ставило вторую гитару и полосу пола. Отражение — для тёмной стены ночи."""
+    e = np.concatenate([src[:4, ::8].reshape(-1, 3), src[-4:, ::8].reshape(-1, 3),
+                        src[::8, :4].reshape(-1, 3), src[::8, -4:].reshape(-1, 3)])
+    return float(np.median(e.mean(1))) > level
+
+
 def sample(src, cx, cy, h, scale_src=2.0, shake=(0, 0), rot=0.0, boil_t=None, reflect=False):
     """Окно (cx, cy, высота h) в координатах ИСХОДНОГО кадра -> картинка 1080xPH. Края за картинкой — бумага.
     boil_t — «кипение» линии в том же проходе выборки: второй проход (remap поверх готового кадра) мылил рисунок —
@@ -354,14 +362,25 @@ def prepare_src(reel_dir, sources):
     os.makedirs(os.path.join(reel_dir, "src"), exist_ok=True)
     for name, sp in sources.items():
         out = os.path.join(reel_dir, "src", name + ".png")
-        if os.path.exists(out): continue
+        # отпечаток исходника: кэш проверял только «файл есть», и замена рисунка под тем же fN оставляла старую
+        # картинку (рилс 15, 03.11: f5/f6 заменены, лист показывал прежние). Нет отпечатка — старый кэш, записать как есть
+        # (метод увеличения с тех пор сменился: пересборка изменила бы готовые рилсы)
+        sig = hashlib.md5(open(os.path.join(reel_dir, sp["frame"]), "rb").read() + repr(sp.get("erase_below")).encode()).hexdigest()
+        stamp = out + ".sig"
+        if os.path.exists(out):
+            if not os.path.exists(stamp):
+                open(stamp, "w").write(sig)
+            if open(stamp).read().strip() == sig:
+                continue
+            for f in (out, os.path.join(reel_dir, "src", name + "_c.png")):
+                if os.path.exists(f): os.remove(f)
         import upscale
         a = np.asarray(Image.open(os.path.join(reel_dir, sp["frame"])).convert("RGB"))
         b = upscale.upscale(a, 2).copy()
         if sp.get("erase_below"):
             y = int(sp["erase_below"] * 2)
             b[y:] = np.median(b[y - 100:y].reshape(-1, 3), axis=0).astype(np.uint8)
-        Image.fromarray(b).save(out)
+        Image.fromarray(b).save(out); open(stamp, "w").write(sig)
         print(f"  исходник {name}: {a.shape[1]}x{a.shape[0]} -> {b.shape[1]}x{b.shape[0]}")
     for name in sources:                               # бумага кадра -> ровный крем, как у длинных роликов (canvas.retint):
         out = os.path.join(reel_dir, "src", name + "_c.png")   # иначе белая бумага схемы читалась швом с полосой субтитров
@@ -1067,7 +1086,8 @@ def render_frame(reel_dir, t, shots, events, caps, words, times, tex, hook_clock
         # второй слой камеры: медленный поворот до 0.5° поверх дрейфа, на соседних планах в разные стороны
         sign = 1 if s.get("bi", 0) % 2 else -1   # одно направление на фразу (мысль): Tim Runia; правило длинного ролика
         rot += s.get("rot_drift", 0.5) * sign * ((t - s["t0"]) / max(1e-3, s["t1"] - s["t0"]) - 0.5)
-        base = grade(sharpen(sample(src, cx, cy, h / punch, shake=shake, rot=rot, boil_t=t, reflect=bool(s.get("anim")))))
+        base = grade(sharpen(sample(src, cx, cy, h / punch, shake=shake, rot=rot, boil_t=t,
+                                    reflect=bool(s.get("anim")) and not light_edges(src))))
         view = (cx, cy, h / punch)
         if s.get("whip"):
             k = 1 - ease_out((t - s["t0"]) / 0.18)

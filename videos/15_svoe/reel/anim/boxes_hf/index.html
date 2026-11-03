@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=2048, height=2900" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="lib/mesh_part.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 2048px; height: 2900px; overflow: hidden; background: #f7f3ea; }
+      #root { position: relative; width: 2048px; height: 2900px; overflow: hidden; }
+      .layer { position: absolute; left: 0; top: 0; width: 2048px; height: 2900px; }
+      .abs { position: absolute; display: block; }
+      svg.layer { overflow: visible; }
+      #dust circle { fill: #b9b3aa; }
+      #rays line, #edge { stroke: #18181a; stroke-linecap: round; fill: none; }
+    </style>
+  </head>
+  <body>
+    <!-- Хук рилса 15 «Чужое сдашь, а своё?»: мир сцены — рисунок s1_boxes ×2 от (0, 100), 2048×2900.
+         Слои — anim/kit_boxes.py (база рилса 13), положение слоёв подставляет boxes_hf.py из kit.json.
+         Правило 25 (владелец 03.11): с кадра 0 всё уже в движении — башня чужих коробок раскачивается в лапах, кот
+         шатается и подпрыгивает, верхняя коробка скачет; на ударном «своЁ» (data-vars.hit) башню кренит, верхняя
+         коробка взлетает, а от СВОЕЙ пыльной гитары поднимается пыль. Камеру, тряску, субтитры и звук даёт сборщик. -->
+    <div id="root" data-composition-id="main" data-start="0" data-duration="2.4" data-width="2048" data-height="2900"
+         data-vars='{"hit": 1.0}' data-motion-blur="on" data-layout-allow-overflow data-layout-allow-overlap>
+      <img id="bg" class="abs clip" src="assets/bg.png" style="left:0;top:0" data-start="0" data-duration="2.4" />
+      <svg id="dust" class="layer clip" width="2048" height="2900" viewBox="0 0 2048 2900" data-start="0" data-duration="2.4"></svg>
+      <div id="cat" class="layer clip" data-start="0" data-duration="2.4">
+        <div id="catHop" class="layer">
+          <canvas id="tail" class="abs" width="707" height="1003" style="left:0px;top:0px"></canvas>
+          <div id="towerG" class="layer">
+            <img id="tower" class="abs" src="assets/tower.png" style="left:0px;top:0px" />
+            <div id="box1G" class="layer">
+              <img id="box1" class="abs" src="assets/box1.png" style="left:0px;top:0px" />
+              <svg class="layer" width="2048" height="2900" viewBox="0 0 2048 2900"><path id="edge" d="" style="stroke-width:7" /></svg>
+            </div>
+            <svg id="rays" class="layer" width="2048" height="2900" viewBox="0 0 2048 2900"></svg>
+          </div>
+          <img id="body" class="abs" src="assets/body.png" style="left:0px;top:0px" />
+          <img id="sweat" class="abs" src="assets/sweat.png" style="left:0px;top:0px" />
+        </div>
+      </div>
+    </div>
+    <script>
+      const root = document.getElementById("root");
+      const V = JSON.parse(root.dataset.vars), H = V.hit, K = V.kit;
+      const NS = "http://www.w3.org/2000/svg";
+      const tl = gsap.timeline({ paused: true });
+      const px = (p) => `${p[0]}px ${p[1]}px`;
+      // низ верхней коробки: на рисунке его закрывала кромка второй — когда коробка взлетает, её дно рисуем пером
+      const [e0, e1] = K.box1_edge;
+      document.getElementById("edge").setAttribute("d", `M ${e0[0]} ${e0[1]} Q ${(e0[0] + e1[0]) / 2} ${(e0[1] + e1[1]) / 2 + 6} ${e1[0]} ${e1[1]}`);
+      // башня чужих коробок качается в лапах с кадра 0 — без разгона с нуля (правило 25: в кадре 0 уже на скорости);
+      // развороты кота сдвинуты на 0,1 с от разворотов башни и коробки: в первую секунду что-то движется всегда
+      // (первая версия разворачивала всех вместе — на 0,7 с рисунок вставал, 1,5 % < 2 %, правило 25 не пустило)
+      gsap.set("#towerG", { transformOrigin: px(K.paws) });
+      tl.fromTo("#towerG", { rotation: -9 }, { rotation: 6, duration: 0.2, ease: "none" }, 0);
+      tl.to("#towerG", { rotation: -5, duration: 0.2, ease: "sine.inOut" }, 0.2);
+      tl.to("#towerG", { rotation: 4.5, duration: 0.2, ease: "sine.inOut" }, 0.4);
+      tl.to("#towerG", { rotation: -4, duration: 0.2, ease: "sine.inOut" }, 0.6);
+      tl.to("#towerG", { rotation: 3, duration: Math.max(0.1, H - 0.88), ease: "sine.inOut" }, 0.8);
+      tl.to("#towerG", { rotation: 8, duration: 0.1, ease: "power3.out" }, H - 0.08);          // крен на «своЁ»
+      tl.to("#towerG", { rotation: 0, duration: 1.0, ease: "elastic.out(1.1, 0.32)" }, H + 0.02);
+      // кот шатается под весом в противофазе к башне, переступает и подпрыгивает
+      gsap.set("#catHop", { transformOrigin: px(K.feet) });
+      tl.fromTo("#catHop", { x: -40, y: -50, rotation: 3.0 }, { x: -6, y: -8, rotation: 0.4, duration: 0.1, ease: "none" }, 0);
+      tl.to("#catHop", { x: 24, y: 0, rotation: -2.2, duration: 0.2, ease: "sine.out" }, 0.1);
+      tl.to("#catHop", { x: -22, rotation: 2.0, duration: 0.2, ease: "sine.inOut" }, 0.3);
+      tl.to("#catHop", { y: -26, duration: 0.1, ease: "power2.out" }, 0.32);
+      tl.to("#catHop", { y: 0, duration: 0.1, ease: "power2.in" }, 0.42);
+      tl.to("#catHop", { x: 18, rotation: -1.6, duration: 0.2, ease: "sine.inOut" }, 0.5);
+      tl.to("#catHop", { x: -14, rotation: 1.2, duration: 0.2, ease: "sine.inOut" }, 0.7);
+      tl.to("#catHop", { y: -22, duration: 0.1, ease: "power2.out" }, 0.74);
+      tl.to("#catHop", { y: 0, duration: 0.1, ease: "power2.in" }, 0.84);
+      tl.to("#catHop", { x: 0, rotation: 0, y: 6, scaleY: 0.95, scaleX: 1.03, duration: Math.max(0.1, H - 0.94), ease: "sine.inOut" }, 0.9);
+      tl.to("#catHop", { y: -38, rotation: -2.4, scaleY: 1.05, scaleX: 0.98, duration: 0.11, ease: "power3.out" }, H - 0.04);
+      tl.to("#catHop", { y: 0, rotation: 0, scaleY: 1, scaleX: 1, duration: 0.6, ease: "elastic.out(1, 0.4)" }, H + 0.08);
+      // верхняя коробка скачет на башне всё время до удара, на ударе взлетает и падает обратно
+      gsap.set("#box1G", { transformOrigin: px(K.box1_pivot) });
+      tl.fromTo("#box1G", { y: -50, rotation: -7 }, { y: 0, rotation: 6, duration: 0.12, ease: "none" }, 0);
+      const hops = [[0.12, -30, -5], [0.37, -36, 6], [0.62, -28, -5], [0.87, -22, 4]];
+      for (const [t0, hy, hr] of hops) {
+        tl.to("#box1G", { y: hy, rotation: hr, duration: 0.12, ease: "power2.out" }, t0);
+        tl.to("#box1G", { y: 0, rotation: -hr * 0.6, duration: 0.13, ease: "power2.in" }, t0 + 0.12);
+      }
+      tl.to("#box1G", { y: -130, rotation: 14, duration: 0.17, ease: "power3.out" }, Math.max(1.12, H - 0.06));
+      tl.to("#box1G", { y: 0, rotation: 3, duration: 0.2, ease: "power2.in" }, Math.max(1.12, H - 0.06) + 0.19);
+      tl.to("#box1G", { y: -18, rotation: -2, duration: 0.1, ease: "power2.out" }, Math.max(1.12, H - 0.06) + 0.39);
+      tl.to("#box1G", { y: 0, rotation: 0, duration: 0.16, ease: "bounce.out" }, Math.max(1.12, H - 0.06) + 0.49);
+      // капли пота слетают с головы на каждом подскоке
+      tl.fromTo("#sweat", { x: 0, y: 0, opacity: 1 }, { x: 26, y: -22, duration: 0.2, ease: "power2.out" }, 0);
+      tl.to("#sweat", { x: 0, y: 0, duration: 0.25, ease: "sine.inOut" }, 0.2);
+      tl.to("#sweat", { x: 34, y: -30, duration: 0.14, ease: "power2.out" }, H - 0.04);
+      tl.to("#sweat", { x: 0, y: 0, duration: 0.4, ease: "sine.inOut" }, H + 0.14);
+      // штрихи вокруг верхней коробки на ударе — пером
+      const [bx, by] = K.box1_pivot;
+      for (let i = 0; i < 6; i++) {
+        const a = -Math.PI / 2 + (i - 2.5) * 0.5;
+        const g = document.createElementNS(NS, "g"), m = document.createElementNS(NS, "g"), l = document.createElementNS(NS, "line");
+        g.setAttribute("transform", `translate(${bx + 330 * Math.cos(a)} ${by - 230 + 260 * Math.sin(a)}) rotate(${(a * 180) / Math.PI})`);
+        l.setAttribute("x1", 0); l.setAttribute("y1", 0); l.setAttribute("x2", 70); l.setAttribute("y2", 0); l.style.strokeWidth = 12;
+        m.appendChild(l); g.appendChild(m); document.getElementById("rays").appendChild(g);
+        tl.set(m, { opacity: 0, scaleX: 0, svgOrigin: "0 0" }, 0);
+        tl.set(m, { opacity: 1 }, H + 0.02);
+        tl.to(m, { scaleX: 1, duration: 0.07, ease: "power3.out" }, H + 0.02);
+        tl.to(m, { x: 46, opacity: 0, duration: 0.24, ease: "power2.in" }, H + 0.14);
+      }
+      // своя гитара в пыли: на «своЁ» с неё поднимается облако пыли
+      const [gx, gy] = K.guitar;
+      for (let i = 0; i < 14; i++) {
+        const c = document.createElementNS(NS, "circle");
+        const ang = -Math.PI * (0.15 + 0.7 * ((i * 0.618) % 1)), d = 120 + 160 * ((i * 0.37) % 1);
+        c.setAttribute("cx", gx + 40 * Math.cos(i)); c.setAttribute("cy", gy - 120 + 60 * Math.sin(i * 1.7)); c.setAttribute("r", 18 + 14 * ((i * 0.53) % 1));
+        document.getElementById("dust").appendChild(c);
+        tl.set(c, { opacity: 0, scale: 0.3, svgOrigin: `${gx} ${gy}` }, 0);
+        tl.to(c, { opacity: 0.85, duration: 0.06 }, H + 0.02 + i * 0.01);
+        tl.to(c, { x: d * Math.cos(ang), y: d * Math.sin(ang), scale: 1.9, duration: 0.7, ease: "power2.out" }, H + 0.02 + i * 0.01);
+        tl.to(c, { opacity: 0, duration: 0.45, ease: "power1.in" }, H + 0.3 + i * 0.01);
+      }
+      meshPart({ canvas: document.getElementById("tail"), marg: 180, img: "assets/tail_body.png",
+                 flame: "assets/tail_flame.png", mesh: "assets/tail_mesh.json", angles: "assets/tail_angles.json", fps: 30 });
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

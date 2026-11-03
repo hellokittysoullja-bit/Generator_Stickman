@@ -2754,5 +2754,59 @@
   "quality": "medium",
   "price": 140625,
   "source": "scripts/reel_draw.py videos/14_ponedelnik/reel"
+ },
+ {
+  "file": "2026-11-03_gen_cx_gpt-image-2_03cacc5c.png",
+  "sha256": "03cacc5c109cfe35603506db92330dfff4d522e3ddcc299ebb749cc299566579",
+  "bytes": 2177244,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-03",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: a plain room on moving day. The main character stands on its hind legs on tiptoe, straining hard, holding high above its head with both front paws a tall wobbly tower of five plain cardboard boxes stacked one on another; the tower leans to one side; the character's face is tense and sweaty, eyes wide, one small sweat drop flies off its head; ears flat with effort. In the far lower left corner, with a wide gap of plain floor between it and the character, an acoustic guitar leans against the wall, covered in a thick grey layer of dust, a cobweb stretched from its neck to the wall. The flame on the tip of its tail burns bright. LAYOUT: the tower of boxes is big in the upper middle with plain wall around it and does not touch the top edge; the main character is whole in the middle below the tower; the dusty guitar is small and whole in the lower left corner, clearly separate; plain floor line; every box is plain and smooth with no tape marks, labels, letters or numbers. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 140625,
+  "source": "scripts/reel_draw.py videos/15_svoe/reel"
+ },
+ {
+  "file": "2026-11-03_gen_cx_gpt-image-2_a5bed903.png",
+  "sha256": "a5bed9036cffc5fecfcc4692d42a9c7f82eea78d5749145ea441c777c08c89eb",
+  "bytes": 2679192,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-03",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture made of two equal panels one above the other with a plain gap between them. TOP PANEL: a young man in a plain shirt stands at an open front door, arms crossed, looking at a plain wristwatch on his wrist, waiting impatiently, tapping one foot; the main character runs toward him from the left carrying one plain cardboard box, ears back with hurry. BOTTOM PANEL: a quiet plain room at dusk: an acoustic guitar leans against an empty plain chair, nobody is in the room, the chair is turned toward the window; soft grey shadows. The flame on the tip of the main character's tail burns bright. LAYOUT: both panels the same size; the man and the main character whole in the top panel; the guitar and the empty chair whole and centred in the bottom panel; the watch face is plain without numbers; no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 140625,
+  "source": "scripts/reel_draw.py videos/15_svoe/reel"
+ },
+ {
+  "file": "2026-11-03_gen_cx_gpt-image-2_d3e5ec6c.png",
+  "sha256": "d3e5ec6c65e700ca480f0aea109da11e6ca9e4f6b0cae77f74c8e0ec22e8f31f",
+  "bytes": 2474009,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-03",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: a thin plain wall divides the picture into two rooms side by side. LEFT ROOM: in the evening the main character sits on a plain chair playing an acoustic guitar, eyes happily closed, a big proud smile, a few small simple music notes float up from the guitar. RIGHT ROOM: a neighbour, a middle-aged man in striped pyjamas and slippers with messy hair, stands right at the wall and knocks on it with his fist, annoyed sleepy face, small shake lines around his fist. The flame on the tip of the main character's tail burns big, golden and bright with a few tiny sparks. LAYOUT: the dividing wall runs straight down the middle; the main character with the guitar is whole and large in the left room; the neighbour is whole in the right room; plain walls; no clock, no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 140625,
+  "source": "scripts/reel_draw.py videos/15_svoe/reel"
  }
 ]

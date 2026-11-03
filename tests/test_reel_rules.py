@@ -1358,3 +1358,46 @@ def test_you_includes_second_person_on_ash():
     for line in ("Чужое сдашь, а своё?", "Дашь себе минуту?", "Стоишь у двери?", "Опять с понедельника?"):
         assert bool(re.search(rr.YOU_RE, rr._norm(line))) == (line != "Опять с понедельника?"), line
 
+
+def test_src_cache_rebuilds_when_the_picture_is_replaced(tmp_path, monkeypatch):
+    """Рилс 15 (03.11): f5/f6 заменены другими картинками, а src/ отдавал прежние — кэш проверял только «файл есть»."""
+    import numpy as np
+    from PIL import Image
+    import reel
+    import upscale
+    monkeypatch.setattr(upscale, "upscale", lambda a, k: np.repeat(np.repeat(a, k, 0), k, 1))
+    d = tmp_path / "reel"; (d / "lib").mkdir(parents=True)
+    Image.fromarray(np.full((8, 8, 3), 40, np.uint8)).save(d / "lib" / "a.png")
+    reel.prepare_src(str(d), {"f5": {"frame": "lib/a.png"}})
+    first = np.asarray(Image.open(d / "src" / "f5.png")).copy()
+    reel.prepare_src(str(d), {"f5": {"frame": "lib/a.png"}})              # тот же рисунок — из кэша
+    assert (np.asarray(Image.open(d / "src" / "f5.png")) == first).all()
+    Image.fromarray(np.full((8, 8, 3), 200, np.uint8)).save(d / "lib" / "a.png")
+    reel.prepare_src(str(d), {"f5": {"frame": "lib/a.png"}})              # заменили — пересобрал
+    assert np.asarray(Image.open(d / "src" / "f5.png")).mean() > 150
+    (d / "src" / "f5.png.sig").unlink()                                    # старый кэш без отпечатка — не трогать
+    Image.fromarray(np.full((8, 8, 3), 90, np.uint8)).save(d / "lib" / "a.png")
+    reel.prepare_src(str(d), {"f5": {"frame": "lib/a.png"}})
+    assert np.asarray(Image.open(d / "src" / "f5.png")).mean() > 150
+
+
+def test_spot_and_circle_need_coordinates_before_render():
+    """Рилс 15 (03.11): прожектор без x/y/r прошёл проверку и уронил рендер на 20-й секунде."""
+    import reel_rules as rr
+    beats = [{"text": "Чужое сдашь, а своё?", "shots": [{"at": 0, "src": "f1"}],
+              "fx": [{"kind": "sfx", "name": "riser", "at": 0, "align": "start"}]},
+             {"text": "Другу поможешь.", "after_sfx": "riser", "shots": [{"at": 0, "src": "f1"}], "fx": [{"kind": "spot", "at": 0}]}]
+    errs = rr.check_spec({"beats": beats}, {"riser"})
+    assert any("spot" in e and "'x'" in e for e in errs)
+    beats[1]["fx"][0].update(x=1, y=2, r=3)
+    assert not any("spot" in e for e in rr.check_spec({"beats": beats}, {"riser"}))
+
+
+def test_scene_outside_is_paper_on_light_drawings_and_wall_at_night():
+    """Рилс 15 (03.11): влёт камеры за край светлого рисунка отражал гитару вторым экземпляром."""
+    import numpy as np
+    import reel
+    light = np.full((60, 40, 3), 240, np.uint8); light[20:40, 2:8] = 30
+    dark = np.full((60, 40, 3), 40, np.uint8)
+    assert reel.light_edges(light) and not reel.light_edges(dark)
+

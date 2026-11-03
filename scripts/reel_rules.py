@@ -780,6 +780,10 @@ def check_spec(spec, sfx_names):
         for e in b.get("fx", []):
             if e.get("kind") == "sfx" and e.get("name") not in sfx_names:
                 err.append(f"фраза {i}: звук «{e.get('name')}» — не из звуков владельца {sorted(sfx_names)}")
+            need = {"spot": ("x", "y", "r"), "circle": ("x", "y", "rx", "ry")}.get(e.get("kind"), ())
+            miss = [k for k in need if k not in e]
+            if miss:                                    # рилс 15 (03.11): рендер падал на середине с KeyError 'x'
+                err.append(f"фраза {i}: «{e['kind']}» без {miss} — центр и размер в пикселях исходника")
         for s in b.get("shots", []):
             if s.get("sound") and s["sound"] not in sfx_names:
                 err.append(f"фраза {i}: звук плана «{s['sound']}» — не из звуков владельца")
