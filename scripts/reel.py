@@ -832,9 +832,12 @@ def build(reel_dir, sheet=False, preview=False, force=False):
             print(f"  движение хука: 0–0,1 с {om['first']:.1%}, в среднем {om['mean']:.1%} на кадр, минимум {om['min']:.1%}"
                   f" на {om['min_at']:.2f} с")
             iron_errs += reel_rules.check_opening_motion(om)
+            if ((spec.get("passport") or {}).get("standard") or 0) >= reel_rules.HOOK_BASE_STANDARD:
+                iron_errs += reel_rules.check_base_motion(om)
+    iron_errs += reel_rules.check_hook_base(spec, words, times, spans, events, shots)   # база 26 (владелец 03.11)
     if iron_errs:
-        print("ЖЕЛЕЗНЫЕ ПРАВИЛА 25 (CLAUDE.md, первый раздел):\n" + "\n".join("  ✗ " + e for e in iron_errs))
-        raise SystemExit("не рендерю: железные правила 25 не обходятся, и --force тоже")
+        print("ЖЕЛЕЗНЫЕ ПРАВИЛА 25–26 (CLAUDE.md, первый раздел):\n" + "\n".join("  ✗ " + e for e in iron_errs))
+        raise SystemExit("не рендерю: железные правила 25–26 не обходятся, и --force тоже")
     import reel_geom                                  # до рендера: обрывки у краёв, кукла шире кадра, надпись на рисунке
     rule_errs += reel_geom.check(sys.modules[__name__], reel_dir, shots, events)
     rule_errs += reel_rules.check_knowledge(spec)                 # знания базы: маркетинг, воронка, бренд — у каждой фразы

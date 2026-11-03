@@ -1216,7 +1216,7 @@ def test_standard_23_hook_on_hyperframes_and_no_repeats_of_other_reels(tmp_path)
     d = tmp_path / "videos" / "14_x" / "reel"; (d / "anim").mkdir(parents=True); (d / "gen").mkdir()
     (d / "gen" / "a.png").write_bytes(b"own")
     (d / "anim" / "hook.py").write_text("import anim\n", encoding="utf-8")
-    spec = {"passport": {"standard": 25}, "sources": {"f1": {"frame": "gen/a.png"}},
+    spec = {"passport": {"standard": 26}, "sources": {"f1": {"frame": "gen/a.png"}},
             "beats": [{"text": "Все ушли, а ты?", "shots": [{"anim": "hook"}]},
                       {"text": "В шапке профиля я помогу тебе начать твоё дело, а также посижу с тобой пару минут"}]}
     errs = rr.check_hf_hook(spec, [], "videos/14_x/reel", str(d))
@@ -1400,4 +1400,41 @@ def test_scene_outside_is_paper_on_light_drawings_and_wall_at_night():
     light = np.full((60, 40, 3), 240, np.uint8); light[20:40, 2:8] = 30
     dark = np.full((60, 40, 3), 40, np.uint8)
     assert reel.light_edges(light) and not reel.light_edges(dark)
+
+
+def test_iron_rule_26_reel_base_dissonance_on_screen_broad_topic_hooks_cuts():
+    """Владелец 03.11: «больше набирают рилсы, где более общая тема, более мощный когнитивный диссонанс, больше крючков и
+    как можно сильнее с 0 секунды видно на экране хук… больше движения в начале — навсегда как база»."""
+    import copy
+    import reel_rules as rr
+    texts = ["Тихо, а тебе шумно?", "Ложишься спать, а в голове три радио. Но в конце покажу, как их выключить.",
+             "Я так лежал до трёх ночи?", "В опыте Масикампо и Баумайстера мысли стихали."]
+    spec, w, t, sp = _zone(texts, ["hook", "preblock", "story", "mechanism"], [0.1, 1.6, 6.0, 12.0],
+                           second_hook="если это не нервы, то что включает радио")
+    hook = spec["passport"]["hook"]
+    spec["passport"]["standard"] = 26
+    hook.update(first_line={"a": "тихо", "b": "шумно"}, reach="почти у каждого перед сном крутятся мысли",
+                hooks=[{"beat": 0, "what": "почему в тишине шумно"}, {"beat": 1, "what": "как выключить радио"},
+                       {"beat": 2, "what": "до трёх ночи — и что потом"}])
+    ev = [{"kind": "mark", "anchor": True, "text": "Тихо, а тебе шумно?", "t": 0.0, "speed": 2.0, "beat": 0}]
+    shots = [{"t0": 0.0}, {"t0": 1.6}, {"t0": 3.0}, {"t0": 4.4}, {"t0": 7.0}]
+    assert rr.check_hook_base(spec, w, t, sp, ev, shots) == []
+    bad = copy.deepcopy(ev); bad[0]["text"] = "Не спится"                                  # на экране нет столкновения
+    assert any("нет" in e and "тихо" in e for e in rr.check_hook_base(spec, w, t, sp, bad, shots))
+    slow = copy.deepcopy(ev); slow[0]["speed"] = 1.0                                       # проявляется к 0,6 с
+    assert any("к 0.60 с" in e for e in rr.check_hook_base(spec, w, t, sp, slow, shots))
+    assert any("смен плана" in e for e in rr.check_hook_base(spec, w, t, sp, ev, shots[:3]))
+    niche = copy.deepcopy(spec); niche["beats"][1]["text"] += " Это СДВГ."
+    w2 = w[:sp[1][1]] + ["Это", "СДВГ."] + w[sp[1][1]:]
+    t2 = t[:sp[1][1]] + [{"start": 5.0, "end": 5.3}, {"start": 5.4, "end": 5.7}] + t[sp[1][1]:]
+    sp2 = [sp[0], (sp[1][0], sp[1][1] + 2), (sp[2][0] + 2, sp[2][1] + 2), (sp[3][0] + 2, sp[3][1] + 2)]
+    assert any("сдвг" in e for e in rr.check_hook_base(niche, w2, t2, sp2, ev, shots))   # ниша до 10 с
+    few = copy.deepcopy(spec); few["passport"]["hook"]["hooks"] = few["passport"]["hook"]["hooks"][:2]
+    assert any("крючков" in e for e in rr.check_hook_base(few, w, t, sp, ev, shots))
+    narrow = copy.deepcopy(spec); narrow["passport"]["hook"]["reach"] = "людям с диагнозом"
+    assert any("reach" in e for e in rr.check_hook_base(narrow, w, t, sp, ev, shots))
+    spec["passport"]["standard"] = 25
+    assert rr.check_hook_base(spec, w, t, sp, bad, shots[:2]) == []                       # готовые рилсы — как были
+    assert rr.check_base_motion({"first": 0.106, "mean": 0.055, "min": 0.042, "min_at": 0.7})   # рилсу 15 мало
+    assert rr.check_base_motion({"first": 0.13, "mean": 0.07, "min": 0.035, "min_at": 0.7}) == []
 

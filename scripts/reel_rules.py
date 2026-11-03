@@ -1794,11 +1794,12 @@ def _is_new(spec, log, reel_dir):
 def check_hf_hook(spec, log=(), reel_dir="", abs_dir=None):
     pp = spec.get("passport") or {}
     std = pp.get("standard") or 0
-    if std < HOOK_ZONE_STANDARD and _is_new(spec, log, reel_dir):
-        return [f"новый рилс: нужен \"standard\": {HOOK_ZONE_STANDARD} — хук на HyperFrames (scripts/anim_hf.py, скилл "
+    if std < HOOK_BASE_STANDARD and _is_new(spec, log, reel_dir):
+        return [f"новый рилс: нужен \"standard\": {HOOK_BASE_STANDARD} — хук на HyperFrames (scripts/anim_hf.py, скилл "
                 "reel-anim), база рилса 13 (anim.save_layer, anim.inpaint_bg, tail_rig), ни одного повтора "
                 "рисунков и фраз прошлых рилсов, и ЖЕЛЕЗНЫЕ ПРАВИЛА 25: вторая фраза — второй крючок, никаких "
-                f"объяснений до {NO_EXPLAIN_SEC:.0f} с, движение рисунка с первого кадра не слабее планки 25"]
+                f"объяснений до {NO_EXPLAIN_SEC:.0f} с, движение рисунка с первого кадра не слабее планки 25, и БАЗА 26: "
+                "диссонанс крупно на экране с 0 с, общая тема, три крючка до 10 с, три склейки за 5 с"]
     if std < HF_STANDARD:
         return []
     s0 = ((spec.get("beats") or [{}])[0].get("shots") or [{}])[0]
@@ -1971,3 +1972,83 @@ def check_opening_motion(m):
         err.append(f"правило 25: на {m['min_at']:.2f} с рисунок почти стоит ({m['min']:.1%} < {OPEN_STILL_MIN:.0%}) — в "
                    "первую секунду ни одного «вдоха», движение без остановки")
     return err
+
+
+# ── ЖЕЛЕЗНОЕ ПРАВИЛО 26 — БАЗА РИЛСА (владелец 03.11: «стали больше набирать рилсы, где более общая тема, более
+# мощный когнитивный диссонанс, больше крючков и как можно сильнее с 0 секунды видно на экране хук… и больше движения
+# в начале — сделать навсегда как базу»). Не обходится: --force его не снимает. ─────────────────────────────────────
+HOOK_BASE_STANDARD = 26
+HOOK_ON_SCREEN_BY = 0.35    # хук-диссонанс крупно на экране целиком к 0,35 с (якорь пишется за 0,6/speed с)
+HOOKS_MIN = 3               # крючков до 10 с: хук, второй крючок и ещё хотя бы один (вопрос, обрыв, загадка, превью)
+CUTS_EARLY = (3, 5.0)       # не меньше 3 смен плана за первые 5 с — динамика монтажа с первой секунды
+NICHE_RE = (r"\bсдвг\w*|\bдиагноз\w*|\bсиндром\w*|\bрасстройств\w*|\bдофамин\w*|\bневролог\w*|\bпсихиатр\w*|"
+            r"\bтаблет\w*|\bаутизм\w*|\badhd\b|\bнейроотлич\w*")
+REACH_WORDS = r"\b(все|всех|каждый|каждого|почти|любой|любого|у всех|многие|многих|большинств\w*)\b"
+# движение рисунка хука выше планки 25 (10 / 5 / 2 %): рилс 15 — 10,6 / 5,5 / 4,2 %; база 26 — заметно сильнее
+BASE_FIRST_MIN, BASE_MEAN_MIN, BASE_STILL_MIN = 0.12, 0.065, 0.03
+
+
+def _stem(w):
+    w = _norm(w)
+    return w[:max(3, len(w) - 2)]
+
+
+def check_hook_base(spec, words, times, spans, events, shots):
+    """Железное правило 26, часть 1: что можно проверить по reel.json и раскладке.
+    1) Хук-диссонанс крупно на экране с 0 с: якорь (mark, anchor) стоит на 0 с, проявлен целиком к HOOK_ON_SCREEN_BY и
+       несёт ОБА столкнувшихся понятия первой строки (passport.hook.first_line a и b) — без звука тоже видно столкновение.
+    2) Общая тема: до 10 с и в якоре — ни одного нишевого слова (NICHE_RE), а passport.hook.reach говорит, у кого это
+       есть, словами «почти все / каждый / многие» — тема для всех, а не для узкой группы.
+    3) Больше крючков: passport.hook.hooks — не меньше HOOKS_MIN крючков во фразах, начатых до 10 с; хоть один — вопрос.
+    4) Динамика монтажа: не меньше 3 смен плана за первые 5 с."""
+    pp = spec.get("passport") or {}
+    if (pp.get("standard") or 0) < HOOK_BASE_STANDARD:
+        return []
+    err, beats = [], spec.get("beats") or []
+    hook = pp.get("hook") or {}
+    fl = hook.get("first_line") or {}
+    anchors = [e for e in events if e.get("kind") == "mark" and e.get("anchor") and e.get("beat") == 0]
+    if not anchors:
+        err.append("правило 26: нет якоря хука — диссонанс крупно на экране с 0 с")
+    for e in anchors:
+        by = e["t"] + 0.6 / e.get("speed", 1.0)
+        if e["t"] > 0.05 or by > HOOK_ON_SCREEN_BY + 1e-6:
+            err.append(f"правило 26: якорь «{e.get('text')}» целиком на экране к {by:.2f} с > {HOOK_ON_SCREEN_BY} с — "
+                       "диссонанс видно с 0 с (at 0, speed ≥ 1.8)")
+        low = _norm(e.get("text", ""))
+        miss = [x for x in (fl.get("a"), fl.get("b")) if not x or not re.search(r"\b" + re.escape(_stem(x)), low)]
+        if miss:
+            err.append(f"правило 26: в якоре «{e.get('text')}» нет {miss} — на экране оба столкнувшихся понятия первой "
+                       "строки (a и b), иначе без звука диссонанса не видно")
+    early = " ".join(clean(words[k]) for a, z in spans for k in range(a, z) if times[k]["start"] < NO_EXPLAIN_SEC)
+    early += " " + " ".join(e.get("text", "") for e in anchors)
+    for m in re.finditer(NICHE_RE, _norm(early)):
+        err.append(f"правило 26: «{m.group(0)}» до 10 с — тема сужается до ниши; общая тема для всех, ниша — позже")
+    reach = str(hook.get("reach") or "")
+    if not re.search(REACH_WORDS, _norm(reach)):
+        err.append("правило 26: passport.hook.reach — у кого это есть, словами «почти все / каждый / многие»: общая тема")
+    hooks = hook.get("hooks") or []
+    t0 = [times[a]["start"] for a, _ in spans]
+    good = [h for h in hooks if isinstance(h, dict) and isinstance(h.get("beat"), int) and 0 <= h["beat"] < len(t0)
+            and t0[h["beat"]] < NO_EXPLAIN_SEC and len(str(h.get("what", ""))) >= 8]
+    if len(good) < HOOKS_MIN:
+        err.append(f"правило 26: крючков до {NO_EXPLAIN_SEC:.0f} с {len(good)} < {HOOKS_MIN} — passport.hook.hooks: "
+                   '[{"beat": фраза, "what": какой вопрос сажает}], каждый во фразе, начатой до 10 с')
+    elif not any("?" in beats[h["beat"]]["text"] for h in good):
+        err.append("правило 26: среди крючков нет вопроса со знаком «?»")
+    n, sec = CUTS_EARLY
+    cuts = [x["t0"] for x in shots[1:] if x["t0"] < sec]
+    if len(cuts) < n:
+        err.append(f"правило 26: за первые {sec:.0f} с {len(cuts)} смен плана < {n} — динамика с первой секунды")
+    return err
+
+
+def check_base_motion(m):
+    """Железное правило 26, часть 2: рисунок хука движется сильнее планки 25."""
+    err = []
+    for key, lim, what in (("first", BASE_FIRST_MIN, "за первые 0,1 с"), ("mean", BASE_MEAN_MIN, "в среднем на кадр первой секунды"),
+                           ("min", BASE_STILL_MIN, "в самом спокойном кадре первой секунды")):
+        if m[key] < lim:
+            err.append(f"правило 26: {what} рисунок меняет {m[key]:.1%} < {lim:.1%} — база рилса: ещё динамичнее")
+    return err
+
