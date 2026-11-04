@@ -21,7 +21,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 KIT = ["bg.png", "body.png", "tail.png", "tail_body.png", "tail_flame.png", "tail_mesh.json", "clock.png", "minute.png",
        "hour.png", "hub.png", "drop0.png", "drop1.png", "drop2.png", "kit.json"]
 SOURCES = ["gen/d1_clock.png", "anim/kit_clock.py", "anim/clock_hf/index.html"] + [f"anim/kit/{k}" for k in KIT]
-VERSION = 1
+VERSION = 2
 FPS, DUR = 30, 2.4
 HIT_FRAC = 0.62                     # «опоздАл»: ударный третий слог
 PLACE = {n: n for n in ("body", "clock", "minute", "hour", "hub", "drop0", "drop1", "drop2")}
@@ -52,7 +52,8 @@ def _prepare(proj, v):
     mesh = json.load(open(os.path.join(proj, "assets", "tail_mesh.json")))
     tx, ty = _kit()["layers"]["tail"]["xy"]
     motion = tail_rig.extract_motion(proj, "tail", DUR)
-    ang = tail_rig.simulate(mesh, motion, (tx, ty), v["hit"], DUR)
+    p = dict(tail_rig.PHYS, whip_deg=5.0, inertia=0.15, wag_deg=5.0)   # хвост у левого края рисунка: хлёст и инерция прыжка выносили огонёк за край (лист 04.11)
+    ang = tail_rig.simulate(mesh, motion, (tx, ty), v["hit"], DUR, p=p)
     json.dump(ang, open(os.path.join(proj, "assets", "tail_angles.json"), "w"))
 
 
