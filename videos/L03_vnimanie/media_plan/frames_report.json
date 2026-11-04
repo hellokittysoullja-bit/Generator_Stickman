@@ -2,7 +2,7 @@
  "model": "cx/gpt-image-2.5",
  "size": "1536x1024",
  "quality": "medium",
- "look": "197bb015d9f4dbbb",
+ "look": "3cfec47a0ec211f8",
  "judge_model": null,
  "spent_this_run": 197550,
  "gateway": {
@@ -118,26 +118,26 @@
   {
    "index": 3,
    "key": "0b92e3a15dd2c610",
-   "sig": "ad6f4a71cd6448a5a4da",
-   "plan_sig": "1afec185d04d5350fa66",
+   "sig": "7e142077d9503174ae01",
+   "plan_sig": "ebcbbb7a1793c04ae674",
    "kind": "scene",
    "labels": [],
    "hero": false,
-   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. SCENE: on a small table a round glass fishbowl with one orange goldfish looking proud with its chin up; on the right a person sits on a sofa staring at a phone with a tiny confused face; between them floats a big round stopwatch with a blank face. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "prompt": "Reference image 1 shows only the drawing style: take from them the line work, shading and simplicity, never their content, characters or colour scheme (the colours come from the palette below). SCENE: on a small table a round glass fishbowl with one orange goldfish looking proud with its chin up; on the right a person sits on a sofa staring at a phone with a tiny confused face; between them floats a big round stopwatch with a blank face. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place, with the paper showing around it. Colours: black ink lines and soft grey washes on plain cream paper, like the style reference. Soft watercolour colour goes only on one or two things that matter in the picture, the main object and maybe one detail, each in its own natural muted colour (blue water, a green plant, a pink cushion, a red heart, a yellow lamp light), and not everything in the same orange; furniture, clothes, walls, floors and everything else stay ink and light grey. Some of the things are coloured, never all of them. The background always stays the plain cream paper, never a coloured wall or a tinted background. Never neon, never harsh. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
    "rounds": [],
    "path": "frames/004.png",
    "status": "unchecked",
-   "chosen": "f583c2703932d1425adc.png",
+   "chosen": "ae04b7f499d2349449e4.png",
    "labels_placed": [],
    "label_tries": [
     {
-     "variant": "f583c2703932d1425adc.png",
+     "variant": "ae04b7f499d2349449e4.png",
      "ok": true,
      "info": []
     }
    ],
    "candidates": {
-    "f583c2703932d1425adc.png": {
+    "ae04b7f499d2349449e4.png": {
      "text_ok": null,
      "grid": null,
      "answers": null,

@@ -3375,6 +3375,42 @@
   "source": "scripts/frame_generator.py videos/L03_vnimanie --confirm-spend"
  },
  {
+  "file": "2026-11-04_gen_cx_gpt-image-2_5_ee7a284e.png",
+  "sha256": "ee7a284e8f17a1b6846795ca3b8b97327beddd8494bc97db8d87578532eec315",
+  "bytes": 2395905,
+  "size": [
+   1531,
+   1027
+  ],
+  "date": "2026-11-04",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference image 1 shows only the drawing style: take from them the line work, shading and simplicity, never their content, characters or colour scheme (the colours come from the palette below). SCENE: on a small table a round glass fishbowl with one orange goldfish looking proud with its chin up; on the right a person sits on a sofa staring at a phone with a tiny confused face; between them floats a big round stopwatch with a blank face. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place, with the paper showing around it. Colours: hand-drawn black ink lines with soft watercolour on plain cream paper, like the style reference. Some of the things in the picture are coloured in soft natural tones: the main object and a few details, each in its own gentle colour (sage green, soft blue, dusty pink, warm wood, terracotta, mustard); the rest stays ink with light warm grey shading. The background always stays the plain cream paper, never a coloured wall or a tinted background. Never neon, never harsh. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1536x1024",
+  "quality": "medium",
+  "price": 197550,
+  "source": "scripts/frame_generator.py videos/L03_vnimanie --confirm-spend"
+ },
+ {
+  "file": "2026-11-04_gen_cx_gpt-image-2_5_efab5ce2.png",
+  "sha256": "efab5ce2a9e0b89c97bcba791d26b16bf71e3becfc95bf7cb249d9cc906f6320",
+  "bytes": 2271265,
+  "size": [
+   1531,
+   1027
+  ],
+  "date": "2026-11-04",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference image 1 shows only the drawing style: take from them the line work, shading and simplicity, never their content, characters or colour scheme (the colours come from the palette below). SCENE: on a small table a round glass fishbowl with one orange goldfish looking proud with its chin up; on the right a person sits on a sofa staring at a phone with a tiny confused face; between them floats a big round stopwatch with a blank face. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place, with the paper showing around it. Colours: black ink lines and soft grey washes on plain cream paper, like the style reference. Soft watercolour colour goes only on one or two things that matter in the picture, the main object and maybe one detail, each in its own natural muted colour (blue water, a green plant, a pink cushion, a red heart, a yellow lamp light), and not everything in the same orange; furniture, clothes, walls, floors and everything else stay ink and light grey. Some of the things are coloured, never all of them. The background always stays the plain cream paper, never a coloured wall or a tinted background. Never neon, never harsh. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1536x1024",
+  "quality": "medium",
+  "price": 197550,
+  "source": "scripts/frame_generator.py videos/L03_vnimanie --confirm-spend"
+ },
+ {
   "file": "2026-11-04_gen_cx_gpt-image-2_6aa9610a.png",
   "sha256": "6aa9610a0b2b12293c265efdc09322c7cbaabc67486b078b9d93df6cf8742e26",
   "bytes": 2410186,
