@@ -2980,13 +2980,16 @@
   ],
   "date": "2026-11-03",
   "kind": "генерация",
-  "used_in": [],
+  "used_in": [
+   "videos/18_otvet/reel/gen/a3_heart.png"
+  ],
   "model": "cx/gpt-image-2.5",
   "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: a plain cosy room in soft daylight. The main character sits on the floor holding one phone in its front paws, beaming with joy, eyes squeezed happily shut, mouth open in a happy smile; one big plain red heart pops out of the phone screen into the air with a few small sparkles around it. The flame on the tip of its tail burns big, golden and bright with a few tiny sparks. LAYOUT: the main character is whole and large in the lower middle; the red heart floats above the phone in clear space; plain wall; the phone screen is blank; no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
   "gen_size": "1024x1536",
   "quality": "medium",
   "price": 197550,
-  "source": "scripts/reel_draw.py videos/18_otvet/reel"
+  "source": "scripts/reel_draw.py videos/18_otvet/reel",
+  "origin": "GPT-Image-2 medium (scripts/reel_draw.py)"
  },
  {
   "file": "2026-11-03_gen_cx_gpt-image-2_5_943b60de.png",
@@ -3019,13 +3022,16 @@
   ],
   "date": "2026-11-03",
   "kind": "генерация",
-  "used_in": [],
+  "used_in": [
+   "videos/18_otvet/reel/gen/a2_long.png"
+  ],
   "model": "cx/gpt-image-2.5",
   "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: a plain room. The main character sits at a small plain desk holding one pencil, looking overwhelmed with wide eyes, while one very long sheet of paper rolls off the desk like a scroll, unrolling across the floor all the way to the bottom of the picture; the paper is covered with many plain wavy pencil lines, no letters. The flame on the tip of its tail is dim. LAYOUT: the character and the desk are whole in the upper half; the long unrolled paper fills the lower half, curling at the end; plain wall; no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
   "gen_size": "1024x1536",
   "quality": "medium",
   "price": 197550,
-  "source": "scripts/reel_draw.py videos/18_otvet/reel"
+  "source": "scripts/reel_draw.py videos/18_otvet/reel",
+  "origin": "GPT-Image-2 medium (scripts/reel_draw.py)"
  },
  {
   "file": "2026-11-03_gen_cx_gpt-image-2_5_c94d980c.png",
@@ -3168,7 +3174,8 @@
   ],
   "origin": "исправлен владельцем 03.11 (рилс 18, хук)",
   "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: a plain room in the daytime. The main character sits on the floor frozen, holding one phone in both front paws close to its face and staring at it with wide guilty eyes, ears flattened, one small sweat drop on its forehead; one plain empty speech bubble floats just above the phone. On the plain wall behind it hangs one plain tear-off calendar, and five blank calendar pages are flying off it through the air one after another, apart from each other. The flame on the tip of its tail is small and nervous. LAYOUT: the main character is big and whole, filling most of the height from the floor up to the middle of the picture, in the lower middle; the calendar and the flying blank pages are in the upper part, apart from the character; the phone screen is blank; no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
-  "model": "владелец (правка GPT-Image-2.5)"
+  "model": "владелец (правка GPT-Image-2.5)",
+  "price": 197550
  },
  {
   "file": "2026-11-03_owner_wait_phone_wide_2e1f3231.png",
@@ -3248,13 +3255,16 @@
   ],
   "date": "2026-11-04",
   "kind": "генерация",
-  "used_in": [],
+  "used_in": [
+   "look/style/1_colour.png"
+  ],
   "model": "cx/gpt-image-2.5",
   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, shading and simplicity, never their content, characters or colour scheme (the colours come from the palette below). Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: the main character sits proudly next to the same round fishbowl with the orange goldfish, chest out, eyes closed, smug smile, one paw on its chest; the goldfish looks at the character sideways. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: a colourful hand-drawn picture: black ink lines filled with soft watercolour colour on cream paper. Most things in the picture are coloured in their own natural colours: furniture in warm wood and soft blue, clothes and cushions in sage green, dusty pink, mustard and terracotta, plants green, screens softly lit, water light blue; the wall and floor get a light warm wash, never left plain grey. Colours are gentle and harmonious like a picture book, never neon, never harsh, never a dark background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
   "gen_size": "1536x1024",
   "quality": "medium",
   "price": 197550,
-  "source": "scripts/frame_generator.py videos/L03_vnimanie --confirm-spend"
+  "source": "scripts/frame_generator.py videos/L03_vnimanie --confirm-spend",
+  "origin": "образец стиля"
  },
  {
   "file": "2026-11-04_gen_cx_gpt-image-2_5_831ce67a.png",
@@ -3323,6 +3333,24 @@
   "used_in": [],
   "model": "cx/gpt-image-2.5",
   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, shading and simplicity, never their content, characters or colour scheme (the colours come from the palette below). Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: three equal panels in a row with plain gaps between them: in the first a round fishbowl with one orange goldfish; in the second a paw with one finger raised over a phone; in the third the main character calmly watches a long video on a laptop to the very end, the video progress bar under the picture full. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is a soft light watercolour wash in one calm colour that suits the mood (pale blue, warm peach, soft mint or light lavender) with a light coloured floor under the figures, calm and even, with no objects or marks in it; a specific place is drawn as that place, in colour. Colours: a colourful hand-drawn picture: black ink lines filled with soft watercolour colour on cream paper. Most things in the picture are coloured in their own natural colours: furniture in warm wood and soft blue, clothes and cushions in sage green, dusty pink, mustard and terracotta, plants green, screens softly lit, water light blue; the wall and floor get a light warm wash, never left plain grey. Colours are gentle and harmonious like a picture book, never neon, never harsh, never a dark background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1536x1024",
+  "quality": "medium",
+  "price": 197550,
+  "source": "scripts/frame_generator.py videos/L03_vnimanie --confirm-spend"
+ },
+ {
+  "file": "2026-11-04_gen_cx_gpt-image-2_5_d07e6012.png",
+  "sha256": "d07e6012701a186c723590b3fe320eae71096cdd2c640d0a2027906807f279bf",
+  "bytes": 2206469,
+  "size": [
+   1531,
+   1027
+  ],
+  "date": "2026-11-04",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, shading and simplicity, never their content, characters or colour scheme (the colours come from the palette below). Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: a laptop on a desk, the top edge of its browser is packed with dozens of tiny blank tabs squeezed in one row; the main character peeks from behind the laptop and counts the tabs on its paw with a surprised face. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is a soft light watercolour wash in one calm colour that suits the mood (pale blue, warm peach, soft mint or light lavender) with a light coloured floor under the figures, calm and even, with no objects or marks in it; a specific place is drawn as that place, in colour. Colours: a colourful hand-drawn picture: black ink lines filled with soft watercolour colour on cream paper. Most things in the picture are coloured in their own natural colours: furniture in warm wood and soft blue, clothes and cushions in sage green, dusty pink, mustard and terracotta, plants green, screens softly lit, water light blue; the wall and floor get a light warm wash, never left plain grey. Colours are gentle and harmonious like a picture book, never neon, never harsh, never a dark background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
   "gen_size": "1536x1024",
   "quality": "medium",
   "price": 197550,
@@ -3435,5 +3463,41 @@
   "quality": "medium",
   "price": 795000,
   "source": "scripts/frame_generator.py videos/L03_vnimanie --confirm-spend"
+ },
+ {
+  "file": "2026-11-04_videos_L03_vnimanie_frames_008_757c7b66.png",
+  "sha256": "757c7b66f952520ae760a52039a04bfd4801de5efef4a14b21d5cfb1db273196",
+  "bytes": 2256650,
+  "size": [
+   1774,
+   887
+  ],
+  "date": "2026-11-04",
+  "kind": "кадр эпизода",
+  "used_in": [
+   "videos/L03_vnimanie/frames/008.png"
+  ],
+  "origin": "Gemini 3.1 Flash Image (кадры длинных роликов)",
+  "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: three equal panels in a row with plain gaps between them: in the first a round fishbowl with one orange goldfish; in the second a paw with one finger raised over a phone; in the third the main character calmly watches a long video on a laptop to the very end, the video progress bar under the picture full. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "model": "cx/gpt-image-2.5",
+  "price": null
+ },
+ {
+  "file": "2026-11-04_videos_L03_vnimanie_frames_009_2bf55463.png",
+  "sha256": "2bf554637737185ac206eadd7c563eca8b2d588fc3f2a6953758dfb3d0dc0d1c",
+  "bytes": 2115006,
+  "size": [
+   1531,
+   1027
+  ],
+  "date": "2026-11-04",
+  "kind": "кадр эпизода",
+  "used_in": [
+   "videos/L03_vnimanie/frames/009.png"
+  ],
+  "origin": "Gemini 3.1 Flash Image (кадры длинных роликов)",
+  "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: a laptop on a desk, the top edge of its browser is packed with dozens of tiny blank tabs squeezed in one row; the main character peeks from behind the laptop and counts the tabs on its paw with a surprised face. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "model": "cx/gpt-image-2.5",
+  "price": null
  }
 ]

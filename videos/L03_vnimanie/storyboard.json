@@ -1,26 +1,15 @@
 {
- "note": "Раскадровка L03 (04.11, оркестратор; владелец: «полностью автономно»). new — GPT-Image-2 medium, частичный цвет (look/palette.txt); lib — библиотека, проверено глазами (scratchpad l03_lib_matches.json); absorb — время предыдущей картинке; ручной монтаж первых 3 минут — edit.json.",
+ "note": "Раскадровка L03 v2 (04.11, владелец: «как можно больше фотографий из библиотеки… чтобы не тратить токены»; всё, что сгенерировано 04.11 до этого, — только в библиотеку). new — 10 кадров GPT-Image-2.5 medium, цвет у предметов, фон — кремовая бумага.",
  "frames": {
   "1": {
-   "new": "the main character sits on a floor cushion holding a phone in one paw and flicking the screen upward with one finger of the other paw; three blank video cards fly up out of the screen one above another with clear gaps of empty paper between them and between the cards and the character; the character looks bored, half-closed eyes",
-   "hero": true,
-   "state": "ember",
-   "details": [
-    "the three flying video cards",
-    "the finger on the screen"
-   ],
+   "lib": "2026-10-23_videos_01_sdvg_pismo_reel_gen_r1_phone_e3b862b6.png",
+   "note": "хук: кот на полу, весь в светящемся телефоне — карточки роликов слетают с экрана (кодом в HyperFrames)",
    "anim": "scroll_hf",
-   "key": "не в лени",
-   "note": "хук: сцена HyperFrames — карточки роликов слетают вверх с каждым смахиванием, на «лени» лента замирает"
+   "key": "не в лени"
   },
   "2": {
-   "new": "extreme close-up: the main character's paw holds a phone, and one finger of the other paw is already stretched over the screen about to swipe; at the edge of the frame the character's face looks at the screen with interest and a little guilt; the screen shows a simple drawing of an open book",
-   "hero": true,
-   "state": "ember",
-   "details": [
-    "the stretched finger",
-    "the open book on the screen"
-   ]
+   "lib": "2026-10-26_videos_08_dvoinoy_reel_gen_q1_sofa_3bd96cbf.png",
+   "note": "«палец уже тянется пролистать» — палец над экраном посреди смахивания (вертикальный, кадрировать)"
   },
   "3": {
    "new": "a big phone in the center showing a video player with two small triangles pointing right (fast forward); under the video a comment bubble with three blank lines; to the right of the phone eight small blank video cards fly out in a row like playing cards thrown in the air",
@@ -50,27 +39,16 @@
    ]
   },
   "6": {
-   "new": "the main character sits on a floor cushion in front of an old television that shows a simple cartoon of a running mouse; the character's head is already turned away from the television toward a phone lying on the floor, the cartoon forgotten",
-   "hero": true,
-   "state": "ember",
-   "details": [
-    "the cartoon mouse on the television",
-    "the phone on the floor"
-   ]
+   "lib": "2026-10-27_gen_cx_gpt-image-2_e7c58406.png",
+   "note": "«не могу досмотреть мультик» — вечер, кот перед телевизором с пультом, усталый (вертикальный)"
   },
   "7": {
    "lib": "2026-10-26_gen_cx_gpt-image-2_93698237.png",
-   "note": "«сейчас читаю главу книги» — кот спокойно читает книгу, телефон в другой комнате (вертикальный, кадрировать на кота с книгой)"
+   "note": "«сейчас читаю главу книги» — кот спокойно читает, телефон в другой комнате (вертикальный)"
   },
   "8": {
-   "new": "three equal panels in a row with plain gaps between them: in the first a round fishbowl with one orange goldfish; in the second a paw with one finger raised over a phone; in the third the main character calmly watches a long video on a laptop to the very end, the video progress bar under the picture full",
-   "hero": true,
-   "state": "bright",
-   "details": [
-    "the fishbowl",
-    "the finger over the phone",
-    "the full progress bar"
-   ]
+   "absorb": true,
+   "note": "обещание трёх вещей — котик-ведущий перед размытым кадром 7, три слова жирным"
   },
   "9": {
    "new": "a laptop on a desk, the top edge of its browser is packed with dozens of tiny blank tabs squeezed in one row; the main character peeks from behind the laptop and counts the tabs on its paw with a surprised face",
@@ -92,43 +70,23 @@
    "key": "десятая секунда"
   },
   "11": {
-   "new": "two journalists with magnifying glasses search through tall piles of papers and folders on a big desk and find nothing; one of them shrugs with empty hands; a small round fishbowl with an orange goldfish stands at the corner of the desk",
-   "hero": false,
-   "state": null,
-   "details": [
-    "the journalist shrugging",
-    "the fishbowl"
-   ]
+   "lib": "2026-10-27_gen_cx_gpt-image-2_bb87085a.png",
+   "note": "«пошли искать, откуда взялась цифра» — кот вытаскивает пыльную папку из ящика"
   },
   "12": {
-   "new": "close-up: the orange goldfish in its round bowl with a slightly offended face; above the bowl a thought cloud holds a small stack of calendar pages, many months of them",
-   "hero": false,
-   "state": null,
-   "details": [
-    "the offended goldfish",
-    "the calendar pages in the thought cloud"
-   ]
+   "same": 5,
+   "note": "рыбка из хука: крупно на рыбку — «помнят месяцами, рыбку оклеветали»"
   },
   "13": {
    "absorb": true
   },
   "14": {
-   "new": "a researcher woman with short hair holds a stopwatch and sits beside a person working at a computer; the person's eyes have just jumped from the computer screen to a phone beside the keyboard; the researcher makes a mark on her clipboard",
-   "hero": false,
-   "state": null,
-   "details": [
-    "the stopwatch",
-    "the eyes jumping to the phone"
-   ]
+   "lib": "2026-10-28_gen_cx_gpt-image-2_a9c39817.png",
+   "note": "исследование: зал, люди за столами, исследователь с планшетом (L02)"
   },
   "15": {
-   "new": "a simple hand-drawn bar chart of three bars on paper getting shorter from left to right: a tall bar, a middle bar and a very short bar; a small round clock sits on top of each bar; no numbers and no words anywhere",
-   "hero": false,
-   "state": null,
-   "details": [
-    "the tall bar with its clock",
-    "the very short bar"
-   ]
+   "lib": "2026-10-27_gen_cx_gpt-image-2_21f374f2.png",
+   "note": "внимание тает: свечи от высокой к догоревшей — 2,5 мин → 75 с → 47 с (L01)"
   },
   "16": {
    "new": "the main character jumps mid-air from one small island to the next across calm water: on the first island stands a laptop, on the second a phone, on the third a television; a dotted line of earlier jumps connects the islands",
@@ -140,62 +98,34 @@
    ]
   },
   "17": {
-   "lib": "2026-10-26_videos_08_dvoinoy_reel_gen_q1_sofa_3bd96cbf.png",
-   "note": "«фильм поверх телефона» — телевизор включён, а кот листает телефон (вертикальный, кадрировать)"
+   "lib": "2026-10-25_gen_cx_gpt-image-2_834f59a5.png",
+   "note": "«фильм поверх телефона» — кот на диване у светящегося телевизора, виноватый взгляд (вертикальный)"
   },
   "18": {
-   "new": "the main character trudges back along a long winding path toward a small desk far away with an unfinished drawing on it; a big round wall clock hangs in the sky above the path; the character looks tired",
-   "hero": true,
-   "state": "ember",
-   "details": [
-    "the far away desk",
-    "the big clock"
-   ]
+   "lib": "2026-10-28_gen_cx_gpt-image-2_3614e0fd.png",
+   "note": "прерывание: коллега трогает за плечо, человек отворачивается от дела — цена прыжка (L02)"
   },
   "19": {
-   "new": "the main character sits in front of a laptop whose browser top edge is packed with dozens of tiny tabs, and from every tab a small object sticks out: a video card, a recipe card, a book, a shoe, a plant; the character holds its head with both paws, overwhelmed",
-   "hero": true,
-   "state": "ember",
-   "details": [
-    "the objects sticking out of the tabs",
-    "the overwhelmed face"
-   ]
+   "same": 9,
+   "note": "«вспомнил про вкладки» — те же вкладки из хука, петля закрыта"
   },
   "20": {
-   "new": "the main character stands next to a big round red button on a short pedestal and looks suspiciously at its own raised finger as if the finger were a stranger",
-   "hero": true,
-   "state": "ember",
-   "details": [
-    "the red button",
-    "the suspicious look at the finger"
-   ],
-   "key": "кто жмёт?"
+   "absorb": true
   },
   "21": {
-   "new": "close-up: the main character's paw holds a phone and the index finger is already swiping on its own with small motion lines, while the character's eyes look the other way at an open notebook in the other paw",
-   "hero": true,
-   "state": "ember",
-   "details": [
-    "the swiping finger",
-    "the eyes on the notebook"
-   ],
-   "key": "палец раньше тебя"
+   "same": 2,
+   "note": "«палец листает раньше, чем ты решаешь» — тот же палец из хука"
   },
   "22": {
    "absorb": true
   },
   "23": {
-   "new": "the main character sits holding a phone; on the screen a small woven bamboo basket; beside the character lies a pile of five tiny finished bamboo baskets; behind it a window with clouds and a sun that nobody looks at",
-   "hero": true,
-   "state": "ember",
-   "details": [
-    "the bamboo baskets",
-    "the ignored window"
-   ]
+   "lib": "2026-10-20_videos_02_sdvg_vremya_frames_001_f008509c.png",
+   "note": "погода → корзины: кот с телефоном удивлённо смотрит в окно, а там уже ночь"
   },
   "24": {
    "lib": "2026-11-03_gen_cx_gpt-image-2_5_4acbc328.png",
-   "note": "«а вдруг там лучше» — из телефона выскакивает красное сердце с искрами: маленькая награда ленты (вертикальный, кадрировать)"
+   "note": "«а вдруг там лучше» — из телефона выскакивает красное сердце (вертикальный)"
   },
   "25": {
    "new": "an old slot machine with three blank reels and a lever; the main character pulls the lever with hopeful eyes; a few coins lie on the floor",
@@ -208,109 +138,53 @@
    "key": "игровой автомат"
   },
   "26": {
-   "new": "a man in a sweater stands beside a giant phone whose screen turns into an endless paper scroll that runs down and off the bottom of the frame; the man holds his head with one hand and looks at the scroll with regret",
-   "hero": false,
-   "state": null,
-   "details": [
-    "the endless scroll",
-    "the man with regret"
-   ]
+   "lib": "2026-10-27_gen_cx_gpt-image-2_00c70140.png",
+   "note": "лента без дна: из телефона течёт бесконечная лента карточек (L01, L02)"
   },
   "27": {
-   "new": "in a plain lab room four people sit in a row; each has just put a phone down on the knee; above each head an empty thought cloud; one of them scratches the head trying to remember",
-   "hero": false,
-   "state": null,
-   "details": [
-    "the empty thought clouds",
-    "the person scratching the head"
-   ]
+   "lib": "2026-10-28_gen_cx_gpt-image-2_d24d5468.png",
+   "note": "память о планах: у кота три облачка мыслей, у людей по одному (L02)"
   },
   "28": {
-   "new": "the main character stands with a thought cloud above its head that holds a small drawing of a pencil and paper; a new blank video card slides into the cloud from the side and wipes the drawing away like an eraser, grey crumbs falling",
-   "hero": true,
-   "state": "ember",
-   "details": [
-    "the video card wiping the cloud",
-    "the falling crumbs"
-   ],
-   "key": "стирает мысль"
+   "absorb": true
   },
   "29": {
    "absorb": true
   },
   "30": {
-   "new": "an empty plain white room with one chair in the middle; a person sits alone on the chair with nothing to do; on a small table next to the chair a little box with one round button; a thin wire runs from the box to a band on the person's ankle; the person stares at the button",
-   "hero": false,
-   "state": null,
-   "details": [
-    "the button box",
-    "the person staring at the button"
-   ]
+   "lib": "2026-10-27_gen_cx_gpt-image-2_8319c7a6.png",
+   "note": "опыт Уилсона: кот один на стуле в пустой серой комнате, смотрит на дверь (L01, L02)"
   },
   "31": {
    "absorb": true
   },
   "32": {
-   "new": "two rows of chairs: in the upper row sit three men and two of them press a button on a little box with small zigzag sparks; in the lower row sit four women and one of them presses the button with small zigzag sparks, the others sit with folded hands",
-   "hero": false,
-   "state": null,
-   "details": [
-    "the two men pressing",
-    "the one woman pressing"
-   ]
+   "absorb": true
   },
   "33": {
-   "new": "the main character holds a phone that shows the slow calm beginning of a video, an empty field; the character's face droops with boredom; a small round clock beside it has its second hand pointing just after the top",
-   "hero": true,
-   "state": "ember",
-   "details": [
-    "the empty field on the screen",
-    "the bored face"
-   ],
-   "key": "первая скука"
+   "lib": "2026-10-25_gen_cx_gpt-image-2_53e40c7b.png",
+   "note": "первая секунда скуки: кот обмяк за столом, щека на лапе, скучает"
   },
   "34": {
    "absorb": true
   },
   "35": {
-   "new": "a crowd of different people of different ages and the main character among them, all holding phones; above every head floats a small grey cloud, some clouds bigger than others",
-   "hero": true,
-   "state": "ember",
-   "details": [
-    "the grey clouds",
-    "the character in the crowd"
-   ]
+   "absorb": true
   },
   "36": {
-   "new": "a person works on a sheet of paper at a desk and the main character sits calmly beside them watching; the person's phone lies face down at the far edge of the desk; nothing to scroll anywhere",
-   "hero": true,
-   "state": "bright",
-   "details": [
-    "the person writing",
-    "the face down phone"
-   ]
+   "lib": "2026-10-25_gen_cx_gpt-image-2_3210e6c7.png",
+   "note": "«в Напарнике… твоё дело и я рядом» — кот и человек работают рядом за одним столом"
   },
   "37": {
    "absorb": true
   },
   "38": {
-   "new": "the main character puts aside a huge heavy dumbbell with a relieved face and instead gently holds a small stopwatch in its paw",
-   "hero": true,
-   "state": "bright",
-   "details": [
-    "the heavy dumbbell",
-    "the small stopwatch"
-   ],
-   "key": "не сила воли"
+   "lib": "2026-10-23_videos_01_sdvg_pismo_reel_gen_r2_hourglass_2b638ebd.png",
+   "note": "«с той самой десятой секунды» — кот ставит маленькие песочные часы (кадрировать без конверта)"
   },
   "39": {
-   "new": "the main character drops a phone into a cardboard box and seals the box with wide tape, determined face, chin up",
-   "hero": true,
-   "state": "bright",
-   "details": [
-    "the tape",
-    "the determined face"
-   ]
+   "lib": "2026-10-28_gen_cx_gpt-image-2_2306fecb.png",
+   "note": "запрет: кот уносит телефон из комнаты через дверь (L02)"
   },
   "40": {
    "lib": "2026-10-25_videos_04_noch_reel_gen_n5_bed_side_bc498c2b.png",
@@ -320,13 +194,8 @@
    "absorb": true
   },
   "42": {
-   "new": "the main character sits at a table with a phone lying in front of it and calmly counts on its raised paws, as if counting to ten slowly, eyes on the phone",
-   "hero": true,
-   "state": "bright",
-   "details": [
-    "the counting paws",
-    "the phone on the table"
-   ]
+   "lib": "2026-10-28_gen_cx_gpt-image-2_9de03a1b.png",
+   "note": "«когда тянет пролистать, досчитай до десяти» — лапа зависла над перевёрнутым телефоном (L02)"
   },
   "43": {
    "new": "the main character rides a surfboard calmly on a big smooth wave; the wave rises behind it and gently falls flat at the far side",
@@ -341,58 +210,36 @@
    "absorb": true
   },
   "45": {
-   "new": "the main character sits very still with a funny strained face, one paw half raised toward an itchy spot on its back but not scratching it",
-   "hero": true,
-   "state": "bright",
-   "details": [
-    "the strained face",
-    "the half raised paw"
-   ],
-   "key": "не чеши"
+   "absorb": true
   },
   "46": {
    "absorb": true
   },
   "47": {
-   "new": "a laptop with only one big open window showing a blank video player; the desk around it is neat and empty; the main character watches the screen calmly with its paws folded",
-   "hero": true,
-   "state": "bright",
-   "details": [
-    "the one window",
-    "the calm character"
-   ]
+   "lib": "2026-10-27_gen_cx_gpt-image-2_2dfae49e.png",
+   "note": "одно окно: кот выходит из тёмной захламлённой комнаты в светлую пустую (L01)"
   },
   "48": {
-   "new": "the main character holds one small sheet of paper with a short list of lines and smiles with relief; behind it a laptop screen is clean and empty; through an open window a pile of tiny closed cupboards floats out of the room",
-   "hero": true,
-   "state": "golden",
-   "details": [
-    "the small sheet with the list",
-    "the cupboards floating out of the window"
-   ]
+   "lib": "2026-10-27_gen_cx_gpt-image-2_70857920.png",
+   "note": "32 вкладки на один листок: кот пишет на одном маленьком листе, гора бумаг в стороне (L01, L02)"
   },
   "49": {
    "absorb": true
   },
   "50": {
-   "new": "three flower pots in a row on a windowsill: a tiny seedling, a slightly bigger plant and a bigger one; the main character waters the tiny seedling with a small watering can",
-   "hero": true,
-   "state": "bright",
-   "details": [
-    "the three growing plants",
-    "the watering can"
-   ]
+   "lib": "2026-10-27_gen_cx_gpt-image-2_2c7bd8ff.png",
+   "note": "растить длинное понемногу: кот у лестницы ступает только на первую ступеньку (L01)"
   },
   "51": {
    "lib": "2026-10-28_gen_cx_gpt-image-2_bc9df0e7.png",
-   "note": "«ставишь таймер на десять минут, я сижу рядом» — кот рядом с ноутбуком, лапа на кухонном таймере (L02, сцена продукта)"
+   "note": "«ставишь таймер на десять минут, я сижу рядом» — кот у ноутбука, лапа на таймере (L02)"
   },
   "52": {
    "absorb": true
   },
   "53": {
    "same": 6,
-   "note": "отсылка к хуку: тот самый двухминутный мультик",
+   "note": "тот самый мультик из хука",
    "key": "тот мультик"
   },
   "54": {
@@ -415,37 +262,19 @@
    "key": "до титров"
   },
   "56": {
-   "new": "the main character holds out its paw and a small glowing spark flies back toward it along a dotted curved path, like a trained bird returning home; happy calm face",
-   "hero": true,
-   "state": "golden",
-   "details": [
-    "the returning spark",
-    "the open paw"
-   ]
+   "lib": "2026-10-28_gen_cx_gpt-image-2_70cf5dc4.png",
+   "note": "кульминация: бумеранг — внимание убегает и возвращается (L02)"
   },
   "57": {
-   "new": "three small scenes in a row with plain gaps: the main character counting on its paws; a laptop with one single window; a tiny seedling in a pot; under them the main character sits with a kitchen timer",
-   "hero": true,
-   "state": "golden",
-   "details": [
-    "the counting paws",
-    "the one window",
-    "the seedling"
-   ]
+   "absorb": true
   },
   "58": {
-   "new": "the main character turns and looks straight at the viewer with a warm proud smile; next to it a laptop shows a video with the progress bar filled to the very end",
-   "hero": true,
-   "state": "golden",
-   "details": [
-    "the warm look at the viewer",
-    "the full progress bar"
-   ],
-   "key": "ты здесь"
+   "lib": "2026-10-27_gen_cx_gpt-image-2_aa72005b.png",
+   "note": "«ты сейчас здесь»: кот на подушке приглашающе улыбается зрителю (L01)"
   },
   "59": {
    "lib": "2026-10-28_gen_cx_gpt-image-2_acb84422.png",
-   "note": "конец-хук на L02: телефон с пузырями против мыслей из головы — тот ролик (из его кадра)"
+   "note": "конец-хук на L02: телефон с пузырями против мыслей из головы"
   }
  }
 }

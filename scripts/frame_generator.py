@@ -95,10 +95,9 @@ def _tidy(text):
     return " ".join(text.split())
 
 
-NO_PLACE_BACKDROP = ("If the picture has no specific place, its background is a soft light watercolour wash in one "
-                     "calm colour that suits the mood (pale blue, warm peach, soft mint or light lavender) with a light "
-                     "coloured floor under the figures, calm and even, with no objects or marks in it; a specific "
-                     "place is drawn as that place, in colour")
+NO_PLACE_BACKDROP = ("If the picture has no specific place, its background is plain {paper} paper, even and "
+                     "untinted, even if the reference images use a darker or coloured paper; a specific place is drawn "
+                     "as that place, with the paper showing around it")
 
 
 def palette_without_hero(palette):
@@ -192,8 +191,8 @@ def build_prompt(frame, n_style, with_hero, hero_states=None, hero_marks=None, p
     if paper and frame.get("kind") in ("diagram", "caption"):
         parts.append(f"The whole background is plain {paper} paper, even and untinted, "
                      "even if the reference images use a darker or coloured paper")
-    elif paper:                                        # 04.11 владелец: «картинки блеклые… хотел цветные» — сцена без
-        parts.append(NO_PLACE_BACKDROP)                # места больше не на пустом белом листе, а на мягком цветном фоне
+    elif paper:                                        # фон — всегда бумага (владелец 04.11: «кремовая бумага… это нельзя
+        parts.append(NO_PLACE_BACKDROP.format(paper=paper))   # менять»): цвет — у предметов, а не у фона
     if palette and frame.get("kind") != "diagram":     # схемам цвет задаёт DIAGRAM_ARROW_COLOR и акварель
         parts.append(palette if with_hero else palette_without_hero(palette))
     parts.append(CLEAN_SURFACES)

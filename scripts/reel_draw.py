@@ -38,7 +38,7 @@ def data_url(p):
 
 def fg_backdrop():
     import frame_generator
-    return frame_generator.NO_PLACE_BACKDROP
+    return frame_generator.NO_PLACE_BACKDROP.format(paper="near-white")
 
 
 def prompt(scene, n_style):

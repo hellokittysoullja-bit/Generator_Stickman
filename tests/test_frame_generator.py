@@ -276,7 +276,7 @@ def test_diagram_and_caption_get_the_owner_background_scenes_keep_their_place(mo
         assert "plain near-white paper" in fg.build_prompt({"kind": kind, "labels": ["А"], "picture": "x"}, 3, False)
     scene = fg.build_prompt({"kind": "scene", "labels": [], "picture": "x"}, 3, False)
     assert "If the picture has no specific place" in scene and "a specific place is drawn as that place" in scene
-    assert "watercolour wash" in scene and "plain near-white" not in scene    # 04.11: сцена на цветном фоне, не на белом
+    assert "plain near-white paper" in scene and "wash" not in scene    # 04.11: фон — всегда бумага, цвет у предметов
     monkeypatch.setenv("DIAGRAM_BACKGROUND", "")
     assert "plain near-white" not in fg.build_prompt({"kind": "diagram", "labels": ["А"], "picture": "x"}, 3, False)
     assert "background is plain" not in fg.build_prompt({"kind": "diagram", "labels": ["А"], "picture": "x"}, 3, False)
@@ -467,10 +467,10 @@ def test_palette_is_coloured_and_keeps_colour_without_hero():
     import look as lk
     import frame_generator as fg
     pal = lk.load(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "look")).palette
-    assert "cream paper" in pal and "black ink" in pal and "watercolour colour" in pal and "Most things" in pal   # 04.11: цветные
-    assert "never neon" in pal and "stay ink and grey" not in pal
+    assert "cream paper" in pal and "black ink" in pal and "watercolour" in pal and "Some of the things" in pal   # 04.11: цветные — некоторые, мягко
+    assert "Never neon" in pal and "stay ink and grey" not in pal and "background always stays the plain cream paper" in pal
     out = fg.palette_without_hero(pal)
-    assert "main character" not in out and "watercolour colour" in out and "No warm colours" not in out
+    assert "main character" not in out and "watercolour" in out and "No warm colours" not in out
 
 
 def test_colours_come_from_palette_not_from_grey_style_samples():
