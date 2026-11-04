@@ -305,10 +305,12 @@ def plan_clip(fr, D, words, key=None, last_punch=-1e9, T0=0.0, zoom_in=True, fps
 HAND_SIZES = (104, 92, 80)     # рукописная подпись к предмету — мельче мысли (KEY_SIZES): это подпись, не мысль
 HAND_MAX_W = 0.40
 HAND_SIZES_ALL = (300, 260, 220, 190, 160, 130, 112, 96, 84, 74, 64)   # кегль экрана в окне раскладки
-HAND_MIN_FULL, HAND_MAX_FULL = 64, 96   # кегль на общем плане: не мельче 64 px (написанная на крупном плане кеглем 80 на
-                               # общем выходила 25 px — «палец раньше тебя», «волна желания», L03 04.11)
-HAND_HOLD_SEC = 1.5            # дописанная подпись стоит в кадре целиком не меньше (как мысль, shots.KEY_HOLD_SEC)
+HAND_MIN_FULL, HAND_MAX_FULL = 52, 76   # кегль на общем плане: подпись рядом с рисунком, а не поверх (было 64–96);
+                               # не мельче: написанная на крупном плане кеглем 80 на общем выходила 25 px (L03 04.11)
+HAND_HOLD_SEC = 2.35           # пока подпись видна (PENCIL_SHOW_SEC + уход) — она целиком в кадре
 HAND_PAD = 22                  # «точка» без рамки: предмет — квадрат ±HAND_PAD px холста вокруг неё
+PENCIL_SHOW_SEC = 2.0          # дописанная надпись карандашом стоит столько и уходит (не висит до конца картинки)
+PENCIL_FADE_SEC = 0.35
 HAND_TAIL = 0.6                # подпись дописывается не позже чем за 0,6 с до конца кадра: иначе её режет склейка
 
 
@@ -477,8 +479,6 @@ def hand_plan(fr, p, hand, D=None):
     # после удержания — подпись целиком или вне кадра; пока пишется и ещё HAND_HOLD_SEC — целиком в кадре. Удержание
     # последним: оно главнее. Пересекающиеся удержания — одной рамкой (L03, фр.54: «палец дёрнулся» выталкивал из
     # кадра только что написанное «20 минут про котов»)
-    for _t0, t1, _hb, wb in holds:
-        long_edit.keep_text(p["segments"], t1, wb, fr["SW"], fr["SH"])
     for s_ in p["segments"]:
         on = [hb for t0, t1, hb, wb in holds if t0 < s_["t1"] and s_["t0"] < t1]
         if on:
@@ -552,7 +552,8 @@ def render(fr, p, D, out, fps=24, end_fade=False, crf="18", anim=None, fx=None):
         L = writeon.layout(item["text"], item["size"], W, H, item["center"][0], item["center"][1], seed=seed,
                            max_w=KEY_MAX_W*W)
         ev, T = writeon.plan(L, fps, t0=t0, factor=item.get("speed", 1.0))
-        writes.append(dict(ink=writeon.Ink(L, ev, H, W), end=t0 + T, win=item["win"], baked=False))
+        writes.append(dict(ink=writeon.Ink(L, ev, H, W), end=t0 + T, win=item["win"], baked=False,
+                           life=t0 + T + PENCIL_SHOW_SEC))
         cues += [(e["t0"], e["t1"], e["kind"]) for e in ev]
     for h in p.get("hand") or []:              # рукописные подписи к предметам со стрелкой — тот же карандаш
         L = writeon.layout(h["text"], h["size"], W, H, h["center"][0], h["center"][1], seed=h["seed"],
@@ -560,7 +561,8 @@ def render(fr, p, D, out, fps=24, end_fade=False, crf="18", anim=None, fx=None):
         if h.get("arrow"):
             L = L + [writeon.arrow_letter(h["arrow"][0], h["arrow"][1], h["arrow"][2], h["size"], W, H, seed=h["seed"])]
         ev, T = writeon.plan(L, fps, t0=h["t"])
-        writes.append(dict(ink=writeon.Ink(L, ev, H, W), end=h["t"] + T, win=h["win"], baked=False))
+        writes.append(dict(ink=writeon.Ink(L, ev, H, W), end=h["t"] + T, win=h["win"], baked=False,
+                           life=h["t"] + T + PENCIL_SHOW_SEC))
         cues += [(e["t0"], e["t1"], e["kind"]) for e in ev]
     cues.sort()
     if fx:
@@ -627,6 +629,22 @@ def render(fr, p, D, out, fps=24, end_fade=False, crf="18", anim=None, fx=None):
                 f = doll.composite(f, t, win, W, H)
             for wr in writes:
                 if wr["baked"]:
+                    continue
+                if wr.get("life") is not None:        # надпись живёт, пока её читают, и уходит (владелец 04.11:
+                    if t >= wr["end"] + 1.0/fps:       # «карандаша слишком много» — висела до конца картинки)
+                        if "still" not in wr:
+                            wr["ink"].advance(wr["end"] + 1.0)
+                            wr["still"] = wr["ink"].alpha()
+                        al = wr["still"]*float(np.clip(1 - (t - wr["life"])/PENCIL_FADE_SEC, 0, 1))
+                        if t >= wr["life"] + PENCIL_FADE_SEC:
+                            wr["baked"] = True         # ушла: больше не рисуется
+                            continue
+                    else:
+                        wr["ink"].advance(t)
+                        al = wr["ink"].alpha()
+                    if al.any():
+                        al = _warp(al, wr["win"], win)
+                        f = f*(1 - al[..., None]) + INK*al[..., None]
                     continue
                 wr["ink"].advance(t)
                 al = wr["ink"].alpha()

@@ -37,7 +37,8 @@
     "note": "описание написано оркестратором 27.10"
    },
    "key_thought": null,
-   "anim": "scroll_hf"
+   "anim": "scroll_hf",
+   "accent": null
   },
   {
    "index": 1,
@@ -71,7 +72,9 @@
     "issues": [],
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
-   }
+   },
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 2,
@@ -105,7 +108,9 @@
     "issues": [],
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
-   }
+   },
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 3,
@@ -139,7 +144,9 @@
     "issues": [],
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
-   }
+   },
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 4,
@@ -173,7 +180,9 @@
     "issues": [],
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
-   }
+   },
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 5,
@@ -207,7 +216,9 @@
     "issues": [],
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
-   }
+   },
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 6,
@@ -230,7 +241,9 @@
    "picture": "a simple drawn scene illustrating: Сейчас я досматриваю ролики на двадцать минут и читаю главу книги за вечер.",
    "fallback": false,
    "absorb": false,
-   "board": "lib"
+   "board": "lib",
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 7,
@@ -265,7 +278,9 @@
     "issues": [],
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
-   }
+   },
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 8,
@@ -299,7 +314,9 @@
     "issues": [],
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
-   }
+   },
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 9,
@@ -334,7 +351,8 @@
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
    },
-   "key_thought": null
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 10,
@@ -369,7 +387,8 @@
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
    },
-   "key_thought": "откуда взялась"
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 11,
@@ -403,7 +422,9 @@
     "issues": [],
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
-   }
+   },
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 12,
@@ -426,7 +447,9 @@
    "picture": "a simple drawn scene illustrating: Но не спеши радоваться, потому что есть цифра, которая правда настоящая.",
    "fallback": false,
    "absorb": true,
-   "board": "absorb"
+   "board": "absorb",
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 13,
@@ -460,7 +483,9 @@
     "issues": [],
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
-   }
+   },
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 14,
@@ -494,7 +519,9 @@
     "issues": [],
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
-   }
+   },
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 15,
@@ -528,7 +555,9 @@
     "issues": [],
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
-   }
+   },
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 16,
@@ -551,7 +580,9 @@
    "picture": "a simple drawn scene illustrating: Даже фильм, давно отложенный на потом, через пять минут смотришь поверх телефона.",
    "fallback": false,
    "absorb": false,
-   "board": "lib"
+   "board": "lib",
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 17,
@@ -586,7 +617,8 @@
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
    },
-   "key_thought": "стоит дороже"
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 18,
@@ -620,7 +652,9 @@
     "issues": [],
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
-   }
+   },
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 19,
@@ -654,7 +688,9 @@
     "issues": [],
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
-   }
+   },
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 20,
@@ -688,7 +724,9 @@
     "issues": [],
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
-   }
+   },
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 21,
@@ -711,7 +749,9 @@
    "picture": "a simple drawn scene illustrating: Смотрю ролик, всё интересно, и вдруг на экране уже другой, а я не помню, как туда попал.",
    "fallback": false,
    "absorb": true,
-   "board": "absorb"
+   "board": "absorb",
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 22,
@@ -745,7 +785,9 @@
     "issues": [],
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
-   }
+   },
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 23,
@@ -768,7 +810,9 @@
    "picture": "a simple drawn scene illustrating: Каждое пролистывание обещает маленькое «а вдруг там лучше». Иногда там правда лучше, и мозг запоминает, что листать выгодно.",
    "fallback": false,
    "absorb": false,
-   "board": "lib"
+   "board": "lib",
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 24,
@@ -803,7 +847,8 @@
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
    },
-   "key_thought": null
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 25,
@@ -837,7 +882,9 @@
     "issues": [],
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
-   }
+   },
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 26,
@@ -872,7 +919,8 @@
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
    },
-   "key_thought": null
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 27,
@@ -906,7 +954,9 @@
     "issues": [],
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
-   }
+   },
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 28,
@@ -929,7 +979,9 @@
    "picture": "a simple drawn scene illustrating: Но есть причина ещё глубже, и она объясняет, почему бросаешь именно на десятой секунде.",
    "fallback": false,
    "absorb": true,
-   "board": "absorb"
+   "board": "absorb",
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 29,
@@ -964,7 +1016,8 @@
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
    },
-   "key_thought": "только думать"
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 30,
@@ -987,7 +1040,9 @@
    "picture": "a simple drawn scene illustrating: В комнате была кнопка, которая била током, и люди заранее знали, что это больно.",
    "fallback": false,
    "absorb": true,
-   "board": "absorb"
+   "board": "absorb",
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 31,
@@ -1021,7 +1076,9 @@
     "issues": [],
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
-   }
+   },
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 32,
@@ -1055,7 +1112,9 @@
     "issues": [],
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
-   }
+   },
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 33,
@@ -1078,7 +1137,9 @@
    "picture": "a simple drawn scene illustrating: Палец бежит не от видео. Он бежит от скуки, как те люди к кнопке.",
    "fallback": false,
    "absorb": true,
-   "board": "absorb"
+   "board": "absorb",
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 34,
@@ -1112,7 +1173,9 @@
     "issues": [],
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
-   }
+   },
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 35,
@@ -1146,7 +1209,9 @@
     "issues": [],
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
-   }
+   },
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 36,
@@ -1169,7 +1234,9 @@
    "picture": "a simple drawn scene illustrating: Так можно ли это вернуть?",
    "fallback": false,
    "absorb": true,
-   "board": "absorb"
+   "board": "absorb",
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 37,
@@ -1203,7 +1270,9 @@
     "issues": [],
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
-   }
+   },
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 38,
@@ -1237,7 +1306,9 @@
     "issues": [],
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
-   }
+   },
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 39,
@@ -1261,7 +1332,8 @@
    "fallback": false,
    "absorb": false,
    "board": "lib",
-   "key_thought": "сто штук"
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 40,
@@ -1284,7 +1356,9 @@
    "picture": "a simple drawn scene illustrating: Запрет не сработал, потому что я боролся с пальцем, а не со скукой.",
    "fallback": false,
    "absorb": true,
-   "board": "absorb"
+   "board": "absorb",
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 41,
@@ -1318,7 +1392,9 @@
     "issues": [],
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
-   }
+   },
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 42,
@@ -1353,7 +1429,8 @@
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
    },
-   "key_thought": null
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 43,
@@ -1376,7 +1453,9 @@
    "picture": "a simple drawn scene illustrating: Обычно десяти секунд хватает, чтобы скука прошла, а видео разогналось.",
    "fallback": false,
    "absorb": true,
-   "board": "absorb"
+   "board": "absorb",
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 44,
@@ -1410,7 +1489,9 @@
     "issues": [],
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
-   }
+   },
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 45,
@@ -1433,7 +1514,9 @@
    "picture": "a simple drawn scene illustrating: Хочешь попробовать прямо сейчас? Досмотри следующую минуту этого ролика без перемотки, а когда палец дёрнется, просто досчитай до десяти.",
    "fallback": false,
    "absorb": true,
-   "board": "absorb"
+   "board": "absorb",
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 46,
@@ -1467,7 +1550,9 @@
     "issues": [],
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
-   }
+   },
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 47,
@@ -1502,7 +1587,8 @@
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
    },
-   "key_thought": "один листок"
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 48,
@@ -1525,7 +1611,9 @@
    "picture": "a simple drawn scene illustrating: Половину того, что было на листке, мне так и не захотелось открыть.",
    "fallback": false,
    "absorb": true,
-   "board": "absorb"
+   "board": "absorb",
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 49,
@@ -1560,7 +1648,8 @@
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
    },
-   "key_thought": "без прыжков"
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 50,
@@ -1583,7 +1672,9 @@
    "picture": "a simple drawn scene illustrating: Это проще, когда рядом кто-то есть, и для этого есть «Напарник». Ставишь таймер на десять минут, я сижу рядом, пока ты смотришь урок, читаешь или делаешь дело. Я ничего не проверяю и ни за что не ругаю, я просто рядом.",
    "fallback": false,
    "absorb": false,
-   "board": "lib"
+   "board": "lib",
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 51,
@@ -1606,7 +1697,9 @@
    "picture": "a simple drawn scene illustrating: Это бесплатно, ссылка в описании. «Напарник» не лечит СДВГ, он просто помогает пережить первую скуку.",
    "fallback": false,
    "absorb": true,
-   "board": "absorb"
+   "board": "absorb",
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 52,
@@ -1630,7 +1723,8 @@
    "fallback": false,
    "absorb": false,
    "board": "same",
-   "key_thought": null
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 53,
@@ -1664,7 +1758,9 @@
     "issues": [],
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
-   }
+   },
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 54,
@@ -1699,7 +1795,8 @@
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
    },
-   "key_thought": null
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 55,
@@ -1734,7 +1831,8 @@
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
    },
-   "key_thought": null
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 56,
@@ -1769,7 +1867,9 @@
     "issues": [],
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
-   }
+   },
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 57,
@@ -1803,7 +1903,9 @@
     "issues": [],
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
-   }
+   },
+   "key_thought": null,
+   "accent": null
   },
   {
    "index": 58,
@@ -1826,7 +1928,9 @@
    "picture": "a simple drawn scene illustrating: Но бывает, что убегает не палец, а сами мысли, даже когда телефона рядом нет. Про это мой ролик «Почему ты отвлекаешься, даже без телефона», он уже здесь.",
    "fallback": false,
    "absorb": false,
-   "board": "lib"
+   "board": "lib",
+   "key_thought": null,
+   "accent": null
   }
  ],
  "stats": {

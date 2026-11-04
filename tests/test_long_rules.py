@@ -215,11 +215,6 @@ def test_long_hook_with_few_sounds_like_l02_is_caught(tmp_path):
     assert any("на 10 с" in e for e in errs) and any("разных звуков" in e for e in errs) and any("тишина" in e for e in errs)
 
 
-def test_long_video_needs_explanatory_labels(tmp_path):
-    errs = long_rules.hook_build(hooked(tmp_path, labels=False))
-    assert any(e.startswith("LABELS") for e in errs), errs
-
-
 def test_built_long_videos_are_legacy_and_not_rechecked(tmp_path):
     assert long_rules.hook_build(hooked(tmp_path, scene=HOOK_SCENE_OLD, sfx=[], labels=False, name="L02_otvlechenie")) == []
 
@@ -264,24 +259,29 @@ def test_video_hook_needs_new_pictures_often(tmp_path):
     assert any("картинок в видеохуке" in e for e in errs), errs
 
 
-def test_labels_by_meaning_not_by_timer():
-    """Владелец 04.11: надписей больше, «не в какое-то количество времени, а просто когда нужно, всегда»."""
-    assert "число" in long_rules.label_needs("Через сорок минут я знал, как плетут корзины.")
-    assert "имя" in long_rules.label_needs("Психолог Тимоти Уилсон оставлял людей одних.")
-    assert "приём" in long_rules.label_needs("Второй приём: одно окно.")
-    assert "Напарник" in long_rules.label_needs("Я котик из «Напарника».")
-    assert "кульминация" in long_rules.label_needs("Его просто приучили убегать.", climax="его просто приучили убегать")
-    assert long_rules.label_needs("Я так делал, и мне было легче.") == ""
-
-
-def test_label_can_be_declined_only_with_reason(tmp_path):
+def test_labels_are_rare_not_on_every_phrase(tmp_path):
+    """Владелец 04.11, вечер: «рисунков карандашом слишком много… даже там, где не надо» — надпись не на каждой фразе,
+    а не чаще одной в 5 с в хуке и не больше 3 на минуту дальше."""
     vd = hooked(tmp_path, labels=False)
-    errs = [e for e in long_rules.hook_build(vd) if e.startswith("LABELS")]
-    assert errs
-    n = errs[0].split("фраза ")[1].split()[0]
-    fx = {"phrases": {n: {"nolabel": {"why": "цифра уже на рисунке крупно"}}}}
-    (tmp_path / "L09_test" / "fx.json").write_text(json.dumps(fx, ensure_ascii=False), encoding="utf-8")
-    assert not any(f"фраза {n} " in e for e in long_rules.hook_build(vd))
+    assert not any(e.startswith("LABELS") for e in long_rules.hook_build(vd))     # без надписей — не ошибка
+    dense = {"10": {"hand": [{"text": "x", "word": "ты", "to": [1, 1], "why": "т"}] * 3,
+                    "bold": [{"text": "y", "word": "ты", "why": "т"}]}}
+    _fx(tmp_path, dense)
+    errs = long_rules.hook_build(vd)
+    assert any(e.startswith("LABELS") and "за минуту" in e for e in errs), errs
+    hook = {str(i): {"hand": [{"text": "x", "word": "ты", "to": [1, 1], "why": "т"}]} for i in range(1, 10)}
+    hook.update({str(i): {"bold": [{"text": "y", "word": "ты", "why": "т"}]} for i in range(1, 10)})
+    _fx(tmp_path, hook)
+    assert any(e.startswith("LABELS") and "видеохуке" in e for e in long_rules.hook_build(vd))
+
+
+def test_pencil_label_leaves_after_it_is_read():
+    """Дописанная надпись карандашом стоит PENCIL_SHOW_SEC и уходит, а не висит до конца картинки."""
+    import inspect
+    import frame_clip
+    assert 1.5 <= frame_clip.PENCIL_SHOW_SEC <= 3.0
+    src = inspect.getsource(frame_clip.render)
+    assert 'life=' in src and "PENCIL_FADE_SEC" in src
 
 
 def test_orchestrated_pencil_labels_are_never_dropped_by_timer():
@@ -354,12 +354,12 @@ def test_bold_text_may_not_outnumber_handwriting(tmp_path):
     bold = {str(i): {"bold": [{"text": "строка", "word": "ты", "why": "т"}]} for i in range(1, 13)}
     _fx(tmp_path, bold)
     assert any(e.startswith("TEXT-SHARE") for e in long_rules.hook_build(vd))
-    mixed = {str(i): ({"bold": [{"text": "строка", "word": "ты", "why": "т"}]} if i <= 4 else
-                      {"hand": [{"text": "палец", "word": "ты", "to": [100, 100], "why": "т"}]}) for i in range(1, 13)}
+    mixed = {str(i): ({"bold": [{"text": "строка", "word": "ты", "why": "т"}]} if i <= 2 else
+                      {"hand": [{"text": "палец", "word": "ты", "to": [100, 100], "why": "т"}]}) for i in (1, 2, 4, 6, 8, 10)}
     _fx(tmp_path, mixed)
     errs = long_rules.hook_build(vd)
     assert not any(e.startswith("TEXT-SHARE") for e in errs)
-    assert not any(e.startswith("LABELS") for e in errs), errs      # рукописная подпись — тоже надпись по смыслу
+    assert not any(e.startswith("LABELS") for e in errs), errs      # надписей мало — и это не ошибка
 
 
 def test_share_counts_pencil_thoughts_as_handwriting(tmp_path):

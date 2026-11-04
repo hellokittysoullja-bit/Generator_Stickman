@@ -566,28 +566,62 @@ def hook_build(video_dir):
     # 4а. планы ручного монтажа идут по порядку — тем же поиском слова, что у сборщика (long_edit.word_time): «я»,
     # «рядом», «это» звучат в длинном клипе не раз, и план вставал на первое вхождение (сборка L03 упала 04.11)
     err += _edit_order(video_dir, blocks, frames, starts)
-    # 5. надписи по смыслу, всегда: каждая фраза с числом, именем, приёмом, «Напарником» или кульминацией
+    # 5. надписи — только где добавляют то, чего нет ни в картинке, ни сразу на слух, и не чаще лимита (владелец 04.11,
+    # вечер: «рисунков карандашом слишком много… даже там, где не надо»; L03: 65 надписей на 7 мин — раз в 6,5 с)
     fp = os.path.join(video_dir, "fx.json")
     fx = (json.load(open(fp, encoding="utf-8")).get("phrases") or {}) if os.path.exists(fp) else {}
-    pp = os.path.join(video_dir, PASSPORT)
-    pas = json.load(open(pp, encoding="utf-8")) if os.path.exists(pp) else {}
-    climax = norm(pas.get("climax") or "")
-    beats = [(norm(x.get(k) or ""), what) for x in pas.get("points") or []
-             for k, what in (("rehook", "крючок пункта"), ("payoff_quote", "вывод пункта"))]
-    for i, b in enumerate(blocks):
-        n = str(i + 1)
-        v, fv = frames.get(n) or {}, fx.get(n) or {}
-        own = bool({"new", "lib", "same", "plan", "anim"} & set(v))     # карандаш пишется только на своей картинке
-        if (own and (v.get("key") or v.get("accent"))) or fv.get("bold") or fv.get("hand"):
-            continue
-        if _filled((fv.get("nolabel") or {}).get("why")):
-            continue
-        txt = script_parser.strip_pipeline_only_tags(b["text"])
-        why = ", ".join(x for x in [label_needs(txt, climax)] + [w for q, w in beats if q and q in norm(txt)] if x)
-        if why:
-            err.append(f"LABELS: фраза {n} ({why}) без надписи — рукописная подпись со стрелкой fx.json hand, карандаш "
-                       f"key/accent или жирная строка сверху; не нужна — fx.json phrases[{n}].nolabel.why: «{b['text'][:60]}»")
+    err += label_density(video_dir, blocks, frames, fx, starts, ends, hook_end)
     err += text_share(frames, fx)
+    return err
+
+
+HOOK_LABEL_EVERY = 5.0  # в видеохуке — не чаще одной надписи в 5 с (там ещё удары, хлёсты, прожектор)
+LABEL_WINDOW, LABEL_MAX = 60.0, 3   # после хука — не больше 3 надписей на любую минуту (одна в ~20 с)
+
+
+def label_times(video_dir, blocks, frames, fx, starts, ends):
+    """[(время, вид, текст)] всех надписей ролика: жирные и рукописные fx.json (на своём слове), мысль и акцент
+    карандашом раскадровки (на своей картинке, с начала фразы)."""
+    wt = _WORD_TIMES.get(os.path.abspath(video_dir))
+    out = []
+    for n, v in fx.items():
+        i = int(n) - 1
+        if not 0 <= i < len(blocks):
+            continue
+        for kind in ("bold", "hand"):
+            for e in v.get(kind) or []:
+                t = _word_t(blocks, starts, ends, [i], e["word"], wt) if e.get("word") else None
+                out.append((starts[i] if t is None else t, kind, e.get("text", "")))
+    for n, v in frames.items():
+        i = int(n) - 1
+        if 0 <= i < len(blocks) and {"new", "lib", "same", "plan", "anim"} & set(v):
+            out += [(starts[i], k, v[k]) for k in ("key", "accent") if v.get(k)]
+    return sorted(out)
+
+
+def label_density(video_dir, blocks, frames, fx, starts, ends, hook_end):
+    """Не больше одной надписи в HOOK_LABEL_EVERY с в видеохуке и LABEL_MAX на любые LABEL_WINDOW с после него.
+    Надпись ставится там, где добавляет то, чего нет ни в картинке, ни сразу на слух: число, имя, название приёма,
+    главный вывод. Повтор нарисованного («прыжок» у прыгающего кота, «скука» у скучающего) — не нужен."""
+    err = []
+    labels = label_times(video_dir, blocks, frames, fx, starts, ends)
+    zone = max(hook_end, VIDEO_HOOK_MIN_SEC)
+    hook = [x for x in labels if x[0] < zone]
+    cap = int(zone // HOOK_LABEL_EVERY)
+    if len(hook) > cap:
+        err.append(f"LABELS: в видеохуке {len(hook)} надписей за {zone:.0f} с > {cap} (одна в {HOOK_LABEL_EVERY:.0f} с) — "
+                   f"оставить те, что добавляют число, имя или суть, которых нет в картинке")
+    body = [x for x in labels if x[0] >= zone]
+    worst = None
+    for k, (t0, _, _) in enumerate(body):
+        inside = [x for x in body[k:] if x[0] < t0 + LABEL_WINDOW]
+        if len(inside) > LABEL_MAX and (worst is None or len(inside) > len(worst[1])):
+            worst = (t0, inside)
+    if worst:
+        t0, inside = worst
+        err.append(f"LABELS: с {int(t0 // 60)}:{int(t0 % 60):02d} за минуту {len(inside)} надписей > {LABEL_MAX} "
+                   f"({', '.join('«' + x[2] + '»' for x in inside)}) — надпись только там, где добавляет то, чего нет ни "
+                   f"в картинке, ни на слух: число, имя, приём, главный вывод")
     return err
 
 
