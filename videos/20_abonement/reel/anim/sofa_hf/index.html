@@ -51,10 +51,10 @@
       // кот: виноватая дрожь с кадра 0 (без разгона), каждые 0,05 с в другую сторону, и волной вжимается в подушку
       gsap.set("#catHop", { transformOrigin: px(K.feet) });
       const SH = 0.05;
-      tl.fromTo("#catHop", { x: 26, y: -22, rotation: 2.4, scaleY: 1.035 }, { x: -22, y: 4, rotation: -2.0, scaleY: 0.98, duration: SH, ease: "none" }, 0);
+      tl.fromTo("#catHop", { x: 48, y: -36, rotation: 4.0, scaleY: 1.05 }, { x: -42, y: 8, rotation: -3.6, scaleY: 0.975, duration: SH, ease: "none" }, 0);   // 04.11: сильнее — правило 26
       for (let i = 1, t = SH; t < H - 0.08; i++, t += SH) {
         const s = i % 2 ? 1 : -1, w = Math.sin(t * 6.3);
-        tl.to("#catHop", { x: s * (19 + 9 * Math.abs(w)) + 10 * w, y: -16 * Math.abs(w), rotation: s * (1.9 + 1.0 * Math.abs(w)),
+        tl.to("#catHop", { x: s * (30 + 14 * Math.abs(w)) + 14 * w, y: -26 * Math.abs(w), rotation: s * (3.0 + 1.4 * Math.abs(w)),
                            scaleY: 1 - 0.03 * w, duration: SH, ease: "none" }, t);
       }
       // удар карточкой по макушке: присел, прижался, пружина обратно
@@ -67,8 +67,8 @@
 
       // карточка: маятник на гвозде с кадра 0 (кадр 0 — середина взмаха, на скорости), срыв, падение, удар, отскок
       gsap.set("#card", { transformOrigin: `${K.nail[0] - K.card_xy[0]}px ${K.nail[1] - K.card_xy[1] + 14}px` });
-      const P = 0.32, AMP = 23, DROP = H - 0.3;
-      tl.fromTo("#card", { rotation: -AMP * 0.2 }, { rotation: AMP, duration: P / 2, ease: "sine.out" }, 0);
+      const P = 0.26, AMP = 34, DROP = H - 0.3;
+      tl.fromTo("#card", { rotation: -AMP * 0.7 }, { rotation: AMP, duration: P / 2, ease: "none" }, 0);   // кадр 0 — взмах уже на полной скорости
       let q = 0;
       for (let t = P / 2; t < DROP - 0.02; t += P, q++) {
         tl.to("#card", { rotation: (q % 2 ? 1 : -1) * AMP * (1 + 0.06 * q), duration: P, ease: "sine.inOut" }, t);
@@ -82,16 +82,16 @@
 
       // пакет: вздрагивает, будто кроссовки рвутся наружу; на ударе — подпрыгивает
       gsap.set("#bag", { transformOrigin: "50% 100%" });
-      tl.fromTo("#bag", { rotation: -1.6, y: -6 }, { rotation: 1.4, y: 0, duration: 0.09, ease: "none" }, 0);
+      tl.fromTo("#bag", { rotation: -2.6, y: -9 }, { rotation: 2.4, y: 0, duration: 0.09, ease: "none" }, 0);
       for (let i = 1, t = 0.09; t < 3.4; i++, t += 0.09) {
         const k = t > H && t < H + 0.4 ? 3 : 1;
-        tl.to("#bag", { rotation: (i % 2 ? -1 : 1) * 1.5 * k, y: (i % 2 ? -5 : 0) * k, duration: 0.09, ease: "sine.inOut" }, t);
+        tl.to("#bag", { rotation: (i % 2 ? -1 : 1) * 2.6 * k, y: (i % 2 ? -9 : 0) * k, duration: 0.09, ease: "sine.inOut" }, t);
       }
 
       // пыль над кроссовками: с кадра 0 частицы уже летят (фаза у каждой своя), на ударе — облако
       const dust = document.getElementById("dust");
       const dtop = K.dust_top;                                    // верх кроссовок
-      for (let i = 0; i < 26; i++) {
+      for (let i = 0; i < 40; i++) {
         const c = document.createElementNS(NS, "circle");
         const r = 7 + 11 * R(i), x0 = dtop[0] - 200 + 400 * R(i + 50), per = 1.1 + 0.8 * R(i + 90), ph = per * R(i + 7);
         c.setAttribute("cx", x0); c.setAttribute("cy", dtop[1]); c.setAttribute("r", r); dust.appendChild(c);

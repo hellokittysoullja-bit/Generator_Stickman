@@ -20,7 +20,7 @@ import tail_rig
 HERE = os.path.dirname(os.path.abspath(__file__))
 KIT = ["bg.png", "body.png", "tail.png", "tail_body.png", "tail_flame.png", "tail_mesh.json", "card.png", "bag.png", "kit.json"]
 SOURCES = ["gen/g1_hook.png", "anim/kit_sofa.py", "anim/sofa_hf/index.html"] + [f"anim/kit/{k}" for k in KIT]
-VERSION = 1
+VERSION = 3
 FPS, DUR = 30, 3.4
 HIT_FRAC = 0.25                     # «хОдишь»: ударный первый слог
 PLACE = {n: n for n in ("body", "card", "bag")}
