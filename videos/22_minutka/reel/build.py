@@ -38,7 +38,7 @@ def sh(at, src, key, **kw):
     f, t = W[key]; return dict(at=at, src=src, keep_window=True, **{"from": f}, to=t, **kw)
 
 
-HOOK = dict(text="Ляжешь на минутку, |а уже *ночь*?",
+HOOK = dict(text="Ляжешь на минутку, |а уже |*ночь*?",
             voice="[energetic] Ляжешь на минутку, а уже ночь?",
             anchor="Минутка? Уже ночь", a="минутку", b="ночь",
             belief="прилягу на минутку — и встану отдохнувшим; а раз провалялся до ночи, то я слабак",
@@ -65,8 +65,7 @@ beats = [
           dict(kind="mark", anchor=True, text=HOOK["anchor"], at=0, speed=2.4, x=520, y=215, size=104, marker=MARK,
                why="заголовок виден сразу: проявлен к 0,15 с")]),
  dict(text=T1, after_sfx="riser", voice=V1,
-      shots=[sh(0, "f1", "catp", anim="night_hf", zoom_in=0.15, why="«подушка, телефон»: морда над телефоном крупно"),
-             sh(ix(T1, "ещё"), "f4", "sinkf", whip=[560, 0], sound="swoosh", why="«ещё видео»: голова тонет в подушках"),
+      shots=[sh(ix(T1, "ещё"), "f1", "catp", anim="night_hf", zoom_in=0.15, sound="swoosh", why="«ещё видео»: морда над телефоном крупно (на «подушка, телефон» держится окно — уже ночь)"),
              sh(ix(T1, "и"), "f4", "sink", why="«и дня нет»: диван проглотил кота целиком"),
              sh(ix(T1, "Но"), "f2", "wakef", sound="fast_glitch", why="«но это не слабость»: поворот — кот проснулся, испуг"),
              sh(ix(T1, "и", 2), "f2", "wake", zoom_in=0.12, sound="swoosh_deep", why="превью «покажу, как тебе встать»: кот уже сидит, глаза открыты — как встать, не видно")],
