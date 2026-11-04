@@ -272,6 +272,9 @@ LABEL_NUM_RE = re.compile(
 LABEL_TERM_RE = re.compile(r"\b(при[её]м\w*|напарник\w*)\b")
 LONG_SFX_PER_10S = 4.0      # звуков в длинном ролике — не меньше 4 на каждые 10 с, по всему ролику (владелец 04.11:
 LONG_SFX_WINDOW = 10.0      # «звуки, единственное, не меньше 4 на 10 секунд, именно в длинных видео»)
+MANUAL_MONTAGE_SEC = 180    # первые 3 минуты — монтаж руками, без автоматики (владелец 04.11: «ручной у тебя будет на
+                            # 3 минуты… собственноручно, по смыслу, без шаблонности и автоматики»); хук 40–60 с — как рилс
+MANUAL_MAX_SHOT = 3.5       # план ручных минут после хука — не дольше нормы ролика (shots.MAX_VIEW_SEC)
 VIDEO_HOOK_MIN_SEC = 40     # «видеохук» — весь HOOK, но не короче 40 с (владелец 04.11: «первые 40–60 секунд… как рилс»)
 PICTURE_EVERY_SEC = 7.0     # новая картинка в видеохуке не реже раза в 7 с (рилс 17: 6 рисунков на 35 с)
 VIDEO_HOOK_MEAN_SHOT = 2.2  # средний план видеохука (рилс 17 — 1,67 с; L02 в хуке — автоматика до 3,5 с)
@@ -405,6 +408,39 @@ def label_needs(text, climax=""):
     return ", ".join(why)
 
 
+def _manual_minutes(video_dir, blocks, frames, starts, ends):
+    """Каждая картинка, которая начинается в первые MANUAL_MONTAGE_SEC, смонтирована руками в edit.json (у плана why);
+    планы не дольше MANUAL_MAX_SHOT (в хуке строже — _video_hook_montage)."""
+    err = []
+    ep = os.path.join(video_dir, "edit.json")
+    edit = (json.load(open(ep, encoding="utf-8")).get("frames") or {}) if os.path.exists(ep) else {}
+    pic = [i for i in range(len(blocks)) if {"new", "lib", "plan", "anim"} & set(frames.get(str(i + 1)) or {})]
+    for n, i in enumerate(pic):
+        if starts[i] >= MANUAL_MONTAGE_SEC:
+            break
+        nxt = pic[n + 1] if n + 1 < len(pic) else len(blocks)
+        f_end = starts[nxt] if nxt < len(blocks) else ends[-1]
+        sh = (edit.get(str(i + 1)) or {}).get("shots") or []
+        if not sh:
+            err.append(f"MANUAL: картинка фразы {i + 1} ({starts[i] / 60:.0f}:{starts[i] % 60:02.0f}) без ручного монтажа — "
+                       f"первые {MANUAL_MONTAGE_SEC // 60} минуты монтируются руками (edit.json, why у каждого плана)")
+            continue
+        ts = []
+        for k, p in enumerate(sh):
+            if not (p.get("why") or "").strip():
+                err.append(f"MANUAL: фраза {i + 1}, план {k + 1}: нет why")
+            t = starts[i] if k == 0 else _word_t(blocks, starts, ends, list(range(i, nxt)), p.get("at", 0.0))
+            if t is None:
+                err.append(f"MANUAL: фраза {i + 1}, план {k + 1}: слова «{p.get('at')}» нет в клипе картинки")
+                continue
+            ts.append(t)
+        ts = sorted(ts) + [f_end]
+        for a, b in zip(ts, ts[1:]):
+            if b - a > MANUAL_MAX_SHOT + 0.3 and a < MANUAL_MONTAGE_SEC:
+                err.append(f"MANUAL: план с {a / 60:.0f}:{a % 60:04.1f} идёт {b - a:.1f} с > {MANUAL_MAX_SHOT} — вторым планом по смыслу")
+    return err
+
+
 def hook_build(video_dir):
     """Дыры хука и надписей по раскадровке, сцене и звукам (пусто — как у нынешних рилсов). Без storyboard.json — []."""
     sb_path = os.path.join(video_dir, "storyboard.json")
@@ -470,7 +506,9 @@ def hook_build(video_dir):
             err.append(f"HOOK-SFX: тишина без звуков {gap:.1f} с с {at:.1f} с > {SOUND_GAP_MAX} с")
     # 3. видеохук смонтирован как рилс: ручной монтаж каждой картинки, планы 0,7–3 с, смены картинок, акценты
     err += _video_hook_montage(video_dir, blocks, frames, starts, ends, hook_n, fx_path=os.path.join(video_dir, "fx.json"))
-    # 4. надписи по смыслу, всегда: каждая фраза с числом, именем, приёмом, «Напарником» или кульминацией
+    # 4. первые 3 минуты — ручной монтаж каждой картинки (после хука — планы не дольше нормы ролика)
+    err += _manual_minutes(video_dir, blocks, frames, starts, ends)
+    # 5. надписи по смыслу, всегда: каждая фраза с числом, именем, приёмом, «Напарником» или кульминацией
     fp = os.path.join(video_dir, "fx.json")
     fx = (json.load(open(fp, encoding="utf-8")).get("phrases") or {}) if os.path.exists(fp) else {}
     pp = os.path.join(video_dir, PASSPORT)

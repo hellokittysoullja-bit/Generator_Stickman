@@ -195,7 +195,8 @@ def hooked(tmp_path, scene=HOOK_SCENE_HIT, sfx=None, labels=True, name="L09_test
 
 
 def test_long_hook_like_reels_passes_when_dense_and_hit(tmp_path):
-    assert long_rules.hook_build(hooked(tmp_path)) == []
+    errs = long_rules.hook_build(hooked(tmp_path))
+    assert [e for e in errs if not e.startswith("MANUAL")] == []      # минуты после хука — test_first_three_minutes_*
 
 
 def test_long_hook_without_storyboard_is_not_checked_yet(tmp_path):
@@ -299,3 +300,15 @@ def test_long_video_sounds_at_least_four_per_every_ten_seconds(tmp_path):
     json.dump([e for e in sfx if e["phrase"] <= 9], open(os.path.join(vd, "sfx.json"), "w", encoding="utf-8"))
     errs = [e for e in long_rules.hook_build(vd) if e.startswith("SFX")]      # хук плотный, а тело без звуков
     assert errs and "меньше 4 на 10 с" in errs[0], errs
+
+
+def test_first_three_minutes_are_hand_edited(tmp_path):
+    """Владелец 04.11: «ручной у тебя будет на 3 минуты… собственноручно… без шаблонности и автоматики»."""
+    vd = hooked(tmp_path)
+    errs = [e for e in long_rules.hook_build(vd) if e.startswith("MANUAL")]
+    assert any("фразы 11" in e and "без ручного монтажа" in e for e in errs), errs      # блок 1 начинается на ~45 с
+    ed = json.load(open(os.path.join(vd, "edit.json"), encoding="utf-8"))
+    ed["frames"]["11"] = {"shots": [{"win": [1, 1, 900], "why": "один план на весь блок"}]}
+    json.dump(ed, open(os.path.join(vd, "edit.json"), "w", encoding="utf-8"), ensure_ascii=False)
+    errs = [e for e in long_rules.hook_build(vd) if e.startswith("MANUAL")]
+    assert any("вторым планом" in e for e in errs), errs
