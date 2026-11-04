@@ -276,6 +276,7 @@ def test_diagram_and_caption_get_the_owner_background_scenes_keep_their_place(mo
         assert "plain near-white paper" in fg.build_prompt({"kind": kind, "labels": ["А"], "picture": "x"}, 3, False)
     scene = fg.build_prompt({"kind": "scene", "labels": [], "picture": "x"}, 3, False)
     assert "If the picture has no specific place" in scene and "a specific place is drawn as that place" in scene
+    assert "watercolour wash" in scene and "plain near-white" not in scene    # 04.11: сцена на цветном фоне, не на белом
     monkeypatch.setenv("DIAGRAM_BACKGROUND", "")
     assert "plain near-white" not in fg.build_prompt({"kind": "diagram", "labels": ["А"], "picture": "x"}, 3, False)
     assert "background is plain" not in fg.build_prompt({"kind": "diagram", "labels": ["А"], "picture": "x"}, 3, False)
@@ -458,7 +459,7 @@ def test_defect_question_sends_hero_reference_only_for_hero_frames(tmp_path):
     assert seen == [2, 1]
 
 
-def test_palette_is_partly_coloured_and_keeps_colour_without_hero():
+def test_palette_is_coloured_and_keeps_colour_without_hero():
     """Владелец 03.11: стиль прежний (тушь, кремовая бумага, рисунок), но цветной — «не всё, а что-то»: акварельный
     цвет у главного предмета и пары деталей, остальное тушь и серое. Без героя цвет предметов не должен
     превращаться в «всё серое» (запасная фраза palette_without_hero)."""
@@ -466,6 +467,15 @@ def test_palette_is_partly_coloured_and_keeps_colour_without_hero():
     import look as lk
     import frame_generator as fg
     pal = lk.load(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "look")).palette
-    assert "cream paper" in pal and "black ink" in pal and "watercolour colour" in pal and "stay ink and grey" in pal
+    assert "cream paper" in pal and "black ink" in pal and "watercolour colour" in pal and "Most things" in pal   # 04.11: цветные
+    assert "never neon" in pal and "stay ink and grey" not in pal
     out = fg.palette_without_hero(pal)
     assert "main character" not in out and "watercolour colour" in out and "No warm colours" not in out
+
+
+def test_colours_come_from_palette_not_from_grey_style_samples():
+    """Владелец 04.11: «почему у нас картинки всё равно какие-то блеклые… хотел цветные». Образцы стиля почти серые,
+    и «take from them the colors» перебивало палитру: у образцов берутся только линия и штриховка."""
+    import frame_generator as fg
+    p = fg.build_prompt({"kind": "scene", "picture": "a cat", "labels": []}, 2, False, palette="Colours: x.")
+    assert "line work, shading" in p and "colors, shading" not in p and "colour scheme" in p

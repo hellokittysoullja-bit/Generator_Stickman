@@ -1,0 +1,1048 @@
+{
+ "model": "cx/gpt-image-2.5",
+ "size": "1536x1024",
+ "quality": "medium",
+ "look": "197bb015d9f4dbbb",
+ "judge_model": null,
+ "spent_this_run": 197550,
+ "gateway": {
+  "base_url": "https://anymodel.org/v1",
+  "calls": 0,
+  "failures": 0,
+  "lost_bodies": 0,
+  "empty_answers": 0,
+  "spent": 0,
+  "spend_cap": 300000,
+  "dead": null,
+  "pause_wait_sec": 0.0,
+  "reasked": 0,
+  "empty_answer_reasked": 0
+ },
+ "frames": [
+  {
+   "index": 0,
+   "key": "e17edcd7809b2062",
+   "sig": "8504ec02a04ab175d429",
+   "plan_sig": "5cd26b591f4d2609b03e",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: the main character sits on a floor cushion holding a phone in one paw and flicking the screen upward with one finger of the other paw; three blank video cards fly up out of the screen one above another with clear gaps of empty paper between them and between the cards and the character; the character looks bored, half-closed eyes. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. Keep a calm area of plain empty background, about a third of the image, for handwriting added later. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/001.png",
+   "status": "unchecked",
+   "chosen": "724cb5de8d9ef144f7aa.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "724cb5de8d9ef144f7aa.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "724cb5de8d9ef144f7aa.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": []
+  },
+  {
+   "index": 1,
+   "key": "4bd3b3bf58835e02",
+   "sig": "713d06eb8ed027efb925",
+   "plan_sig": "f63c3eb56b2ec6a53541",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: extreme close-up: the main character's paw holds a phone, and one finger of the other paw is already stretched over the screen about to swipe; at the edge of the frame the character's face looks at the screen with interest and a little guilt; the screen shows a simple drawing of an open book. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/002.png",
+   "status": "unchecked",
+   "chosen": "d887609beebf9dc1d0c4.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "d887609beebf9dc1d0c4.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "d887609beebf9dc1d0c4.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": []
+  },
+  {
+   "index": 2,
+   "key": "bd063c5cb8118b41",
+   "sig": "3ae7e42f824fe6b778ae",
+   "plan_sig": "37572fb2127abe56123f",
+   "kind": "scene",
+   "labels": [],
+   "hero": false,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. SCENE: a big phone in the center showing a video player with two small triangles pointing right (fast forward); under the video a comment bubble with three blank lines; to the right of the phone eight small blank video cards fly out in a row like playing cards thrown in the air. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/003.png",
+   "status": "unchecked",
+   "chosen": "cf38afc9be1ab39ef3a4.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "cf38afc9be1ab39ef3a4.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "cf38afc9be1ab39ef3a4.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": []
+  },
+  {
+   "index": 3,
+   "key": "0b92e3a15dd2c610",
+   "sig": "ad6f4a71cd6448a5a4da",
+   "plan_sig": "1afec185d04d5350fa66",
+   "kind": "scene",
+   "labels": [],
+   "hero": false,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. SCENE: on a small table a round glass fishbowl with one orange goldfish looking proud with its chin up; on the right a person sits on a sofa staring at a phone with a tiny confused face; between them floats a big round stopwatch with a blank face. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/004.png",
+   "status": "unchecked",
+   "chosen": "f583c2703932d1425adc.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "f583c2703932d1425adc.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "f583c2703932d1425adc.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": []
+  },
+  {
+   "index": 4,
+   "key": "c036c23985851e6c",
+   "sig": "96996897c11e41193b11",
+   "plan_sig": "984dc918147759f6cda8",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, shading and simplicity, never their content, characters or colour scheme (the colours come from the palette below). Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: the main character sits proudly next to the same round fishbowl with the orange goldfish, chest out, eyes closed, smug smile, one paw on its chest; the goldfish looks at the character sideways. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is a soft light watercolour wash in one calm colour that suits the mood (pale blue, warm peach, soft mint or light lavender) with a light coloured floor under the figures, calm and even, with no objects or marks in it; a specific place is drawn as that place, in colour. Colours: a colourful hand-drawn picture: black ink lines filled with soft watercolour colour on cream paper. Most things in the picture are coloured in their own natural colours: furniture in warm wood and soft blue, clothes and cushions in sage green, dusty pink, mustard and terracotta, plants green, screens softly lit, water light blue; the wall and floor get a light warm wash, never left plain grey. Colours are gentle and harmonious like a picture book, never neon, never harsh, never a dark background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/005.png",
+   "status": "unchecked",
+   "chosen": "94c950d36f677162047a.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "94c950d36f677162047a.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "94c950d36f677162047a.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": []
+  },
+  {
+   "index": 5,
+   "key": "a2fd7c24a78cf96d",
+   "sig": "e664460fa553d7fbc09b",
+   "plan_sig": "bacf228641f70d9c38e2",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: the main character sits on a floor cushion in front of an old television that shows a simple cartoon of a running mouse; the character's head is already turned away from the television toward a phone lying on the floor, the cartoon forgotten. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [],
+   "path": "frames/006.png",
+   "status": "unchecked",
+   "chosen": "214809010e6dfa9a3a1d.png",
+   "labels_placed": [],
+   "label_tries": [
+    {
+     "variant": "214809010e6dfa9a3a1d.png",
+     "ok": true,
+     "info": []
+    }
+   ],
+   "candidates": {
+    "214809010e6dfa9a3a1d.png": {
+     "text_ok": null,
+     "grid": null,
+     "answers": null,
+     "vector": null,
+     "defects": null
+    }
+   },
+   "objects": []
+  },
+  {
+   "index": 6,
+   "key": "6d3f10a49bec5223",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "status": "ok",
+   "check": "eyes",
+   "source": "library",
+   "chosen": "lib_2026-10-26_gen_cx_gpt-image-2_93698237.png",
+   "path": "frames/007.png",
+   "objects": [],
+   "plan_sig": "4f5a93b0fbb90f95af60"
+  },
+  {
+   "index": 7,
+   "key": "72ed7ece458b8861",
+   "sig": "df2e7abcee19adce23ad",
+   "plan_sig": "2d554659c190e6a10c9a",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: three equal panels in a row with plain gaps between them: in the first a round fishbowl with one orange goldfish; in the second a paw with one finger raised over a phone; in the third the main character calmly watches a long video on a laptop to the very end, the video progress bar under the picture full. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [
+    {
+     "round": 0,
+     "variant": 0,
+     "error": "BudgetExhausted: потолок 6200000: потрачено 3180000, в полёте 2385000, нужно ещё до 795000"
+    }
+   ],
+   "path": null,
+   "candidates": {},
+   "label_tries": [],
+   "status": "failed"
+  },
+  {
+   "index": 8,
+   "key": "0713b782561bb84b",
+   "sig": "ba55ced94b33176baa21",
+   "plan_sig": "9f1fe579fe7bf6b12809",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: a laptop on a desk, the top edge of its browser is packed with dozens of tiny blank tabs squeezed in one row; the main character peeks from behind the laptop and counts the tabs on its paw with a surprised face. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [
+    {
+     "round": 0,
+     "variant": 0,
+     "error": "BudgetExhausted: потолок 6200000: потрачено 3180000, в полёте 2385000, нужно ещё до 795000"
+    }
+   ],
+   "path": null,
+   "candidates": {},
+   "label_tries": [],
+   "status": "failed"
+  },
+  {
+   "index": 9,
+   "key": "e31eb35f81f3f052",
+   "sig": "44c3b7e78774db015531",
+   "plan_sig": "0722609d62a1ab0eb60c",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: a big television screen with a video progress bar under the picture, its marker stopped at the very beginning; the main character is already walking out of the frame to the right looking down at a phone in its paws. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. Keep a calm area of plain empty background, about a third of the image, for handwriting added later. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [
+    {
+     "round": 0,
+     "variant": 0,
+     "error": "BudgetExhausted: потолок 6200000: потрачено 3180000, в полёте 2385000, нужно ещё до 795000"
+    }
+   ],
+   "path": null,
+   "candidates": {},
+   "label_tries": [],
+   "status": "failed"
+  },
+  {
+   "index": 10,
+   "key": "a443f06fe52de6e6",
+   "sig": "16b450290be72d0032af",
+   "plan_sig": "45b9b6f5138acf77e30a",
+   "kind": "scene",
+   "labels": [],
+   "hero": false,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. SCENE: two journalists with magnifying glasses search through tall piles of papers and folders on a big desk and find nothing; one of them shrugs with empty hands; a small round fishbowl with an orange goldfish stands at the corner of the desk. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [
+    {
+     "round": 0,
+     "variant": 0,
+     "error": "BudgetExhausted: потолок 6200000: потрачено 3180000, в полёте 2385000, нужно ещё до 795000"
+    }
+   ],
+   "path": null,
+   "candidates": {},
+   "label_tries": [],
+   "status": "failed"
+  },
+  {
+   "index": 11,
+   "key": "8e95f6623e7cc882",
+   "sig": "a4eb9b3ef87b752d9449",
+   "plan_sig": "b86fd25667847c8f3b32",
+   "kind": "scene",
+   "labels": [],
+   "hero": false,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. SCENE: close-up: the orange goldfish in its round bowl with a slightly offended face; above the bowl a thought cloud holds a small stack of calendar pages, many months of them. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [
+    {
+     "round": 0,
+     "variant": 0,
+     "error": "BudgetExhausted: потолок 6200000: потрачено 3180000, в полёте 2385000, нужно ещё до 795000"
+    }
+   ],
+   "path": null,
+   "candidates": {},
+   "label_tries": [],
+   "status": "failed"
+  },
+  {
+   "index": 13,
+   "key": "a7d7732d6e47c73c",
+   "sig": "3c6e65c1f9246903d0b1",
+   "plan_sig": "4869d10a45ce32bf89dc",
+   "kind": "scene",
+   "labels": [],
+   "hero": false,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. SCENE: a researcher woman with short hair holds a stopwatch and sits beside a person working at a computer; the person's eyes have just jumped from the computer screen to a phone beside the keyboard; the researcher makes a mark on her clipboard. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [
+    {
+     "round": 0,
+     "variant": 0,
+     "error": "BudgetExhausted: потолок 6200000: потрачено 3180000, в полёте 2385000, нужно ещё до 795000"
+    }
+   ],
+   "path": null,
+   "candidates": {},
+   "label_tries": [],
+   "status": "failed"
+  },
+  {
+   "index": 14,
+   "key": "17f16caa924770d6",
+   "sig": "632e574486acfd309044",
+   "plan_sig": "a197bdc8864dc7df572d",
+   "kind": "scene",
+   "labels": [],
+   "hero": false,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. SCENE: a simple hand-drawn bar chart of three bars on paper getting shorter from left to right: a tall bar, a middle bar and a very short bar; a small round clock sits on top of each bar; no numbers and no words anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [
+    {
+     "round": 0,
+     "variant": 0,
+     "error": "BudgetExhausted: потолок 6200000: потрачено 3180000, в полёте 2385000, нужно ещё до 795000"
+    }
+   ],
+   "path": null,
+   "candidates": {},
+   "label_tries": [],
+   "status": "failed"
+  },
+  {
+   "index": 15,
+   "key": "b68984957d1f0f83",
+   "sig": "d990bca393f8dcbcb8a8",
+   "plan_sig": "c93fde94f5d0a9b67d4e",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: the main character jumps mid-air from one small island to the next across calm water: on the first island stands a laptop, on the second a phone, on the third a television; a dotted line of earlier jumps connects the islands. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [
+    {
+     "round": 0,
+     "variant": 0,
+     "error": "BudgetExhausted: потолок 6200000: потрачено 3975000, в полёте 1590000, нужно ещё до 795000"
+    }
+   ],
+   "path": null,
+   "candidates": {},
+   "label_tries": [],
+   "status": "failed"
+  },
+  {
+   "index": 16,
+   "key": "9fa40c9c6839a8df",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "status": "ok",
+   "check": "eyes",
+   "source": "library",
+   "chosen": "lib_2026-10-26_videos_08_dvoinoy_reel_gen_q1_sofa_3bd96cbf.png",
+   "path": "frames/017.png",
+   "objects": [],
+   "plan_sig": "8077007defc832df5a2d"
+  },
+  {
+   "index": 17,
+   "key": "f955adf66a540fe1",
+   "sig": "db5fd9fcc98c277de8f4",
+   "plan_sig": "860250a0e890ee326d5f",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: the main character trudges back along a long winding path toward a small desk far away with an unfinished drawing on it; a big round wall clock hangs in the sky above the path; the character looks tired. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [
+    {
+     "round": 0,
+     "variant": 0,
+     "error": "BudgetExhausted: потолок 6200000: потрачено 3975000, в полёте 1590000, нужно ещё до 795000"
+    }
+   ],
+   "path": null,
+   "candidates": {},
+   "label_tries": [],
+   "status": "failed"
+  },
+  {
+   "index": 18,
+   "key": "c5fef077d8abaf03",
+   "sig": "c118d83f720fc8e6f0d6",
+   "plan_sig": "f9ddde4885857369fbc3",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: the main character sits in front of a laptop whose browser top edge is packed with dozens of tiny tabs, and from every tab a small object sticks out: a video card, a recipe card, a book, a shoe, a plant; the character holds its head with both paws, overwhelmed. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [
+    {
+     "round": 0,
+     "variant": 0,
+     "error": "BudgetExhausted: потолок 6200000: потрачено 3975000, в полёте 1590000, нужно ещё до 795000"
+    }
+   ],
+   "path": null,
+   "candidates": {},
+   "label_tries": [],
+   "status": "failed"
+  },
+  {
+   "index": 19,
+   "key": "485ae3ad0965c0f6",
+   "sig": "a0ca6d6879630887c44d",
+   "plan_sig": "6333ed3004dfeacc8d66",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: the main character stands next to a big round red button on a short pedestal and looks suspiciously at its own raised finger as if the finger were a stranger. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. Keep a calm area of plain empty background, about a third of the image, for handwriting added later. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [
+    {
+     "round": 0,
+     "variant": 0,
+     "error": "BudgetExhausted: потолок 6200000: потрачено 3975000, в полёте 1590000, нужно ещё до 795000"
+    }
+   ],
+   "path": null,
+   "candidates": {},
+   "label_tries": [],
+   "status": "failed"
+  },
+  {
+   "index": 20,
+   "key": "d9112642d2ff9dbd",
+   "sig": "479a129569e7321555d0",
+   "plan_sig": "83e53fb9024486bee0af",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: close-up: the main character's paw holds a phone and the index finger is already swiping on its own with small motion lines, while the character's eyes look the other way at an open notebook in the other paw. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. Keep a calm area of plain empty background, about a third of the image, for handwriting added later. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [
+    {
+     "round": 0,
+     "variant": 0,
+     "error": "BudgetExhausted: потолок 6200000: потрачено 3975000, в полёте 1590000, нужно ещё до 795000"
+    }
+   ],
+   "path": null,
+   "candidates": {},
+   "label_tries": [],
+   "status": "failed"
+  },
+  {
+   "index": 22,
+   "key": "fd04522b5bedea0c",
+   "sig": "f3e3ec7beed3b64ae6ef",
+   "plan_sig": "eca228f407081d3e6fd7",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: the main character sits holding a phone; on the screen a small woven bamboo basket; beside the character lies a pile of five tiny finished bamboo baskets; behind it a window with clouds and a sun that nobody looks at. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [
+    {
+     "round": 0,
+     "variant": 0,
+     "error": "BudgetExhausted: потолок 6200000: потрачено 3975000, в полёте 1590000, нужно ещё до 795000"
+    }
+   ],
+   "path": null,
+   "candidates": {},
+   "label_tries": [],
+   "status": "failed"
+  },
+  {
+   "index": 23,
+   "key": "414fc372493a40fb",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "status": "ok",
+   "check": "eyes",
+   "source": "library",
+   "chosen": "lib_2026-11-03_gen_cx_gpt-image-2_5_4acbc328.png",
+   "path": "frames/024.png",
+   "objects": [],
+   "plan_sig": "4b7616e6c5298863d814"
+  },
+  {
+   "index": 24,
+   "key": "f824f7eccb873d0d",
+   "sig": "05303c7df24b831e7820",
+   "plan_sig": "4ed7b324e8371c1ea7ce",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: an old slot machine with three blank reels and a lever; the main character pulls the lever with hopeful eyes; a few coins lie on the floor. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. Keep a calm area of plain empty background, about a third of the image, for handwriting added later. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [
+    {
+     "round": 0,
+     "variant": 0,
+     "error": "BudgetExhausted: потолок 6200000: потрачено 3975000, в полёте 1590000, нужно ещё до 795000"
+    }
+   ],
+   "path": null,
+   "candidates": {},
+   "label_tries": [],
+   "status": "failed"
+  },
+  {
+   "index": 25,
+   "key": "7b69aefc04a55202",
+   "sig": "a606de880127c0227deb",
+   "plan_sig": "e1a9a7f14fe2d727a992",
+   "kind": "scene",
+   "labels": [],
+   "hero": false,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. SCENE: a man in a sweater stands beside a giant phone whose screen turns into an endless paper scroll that runs down and off the bottom of the frame; the man holds his head with one hand and looks at the scroll with regret. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [
+    {
+     "round": 0,
+     "variant": 0,
+     "error": "BudgetExhausted: потолок 6200000: потрачено 3975000, в полёте 1590000, нужно ещё до 795000"
+    }
+   ],
+   "path": null,
+   "candidates": {},
+   "label_tries": [],
+   "status": "failed"
+  },
+  {
+   "index": 26,
+   "key": "61bec7f250db4f78",
+   "sig": "e2f57d2ceb14c729189c",
+   "plan_sig": "252e7de7a872703879cf",
+   "kind": "scene",
+   "labels": [],
+   "hero": false,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. SCENE: in a plain lab room four people sit in a row; each has just put a phone down on the knee; above each head an empty thought cloud; one of them scratches the head trying to remember. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [
+    {
+     "round": 0,
+     "variant": 0,
+     "error": "BudgetExhausted: потолок 6200000: потрачено 3975000, в полёте 1590000, нужно ещё до 795000"
+    }
+   ],
+   "path": null,
+   "candidates": {},
+   "label_tries": [],
+   "status": "failed"
+  },
+  {
+   "index": 27,
+   "key": "275d14d27662a403",
+   "sig": "ab8202e7f8ad6ac4ba98",
+   "plan_sig": "0105492ffd210dd10e8f",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: the main character stands with a thought cloud above its head that holds a small drawing of a pencil and paper; a new blank video card slides into the cloud from the side and wipes the drawing away like an eraser, grey crumbs falling. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. Keep a calm area of plain empty background, about a third of the image, for handwriting added later. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [
+    {
+     "round": 0,
+     "variant": 0,
+     "error": "BudgetExhausted: потолок 6200000: потрачено 3975000, в полёте 1590000, нужно ещё до 795000"
+    }
+   ],
+   "path": null,
+   "candidates": {},
+   "label_tries": [],
+   "status": "failed"
+  },
+  {
+   "index": 29,
+   "key": "633e2c512fc18c2e",
+   "sig": "706f244878c14070f322",
+   "plan_sig": "ba103abf73c6588b06f7",
+   "kind": "scene",
+   "labels": [],
+   "hero": false,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. SCENE: an empty plain white room with one chair in the middle; a person sits alone on the chair with nothing to do; on a small table next to the chair a little box with one round button; a thin wire runs from the box to a band on the person's ankle; the person stares at the button. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [
+    {
+     "round": 0,
+     "variant": 0,
+     "error": "BudgetExhausted: потолок 6200000: потрачено 3975000, в полёте 1590000, нужно ещё до 795000"
+    }
+   ],
+   "path": null,
+   "candidates": {},
+   "label_tries": [],
+   "status": "failed"
+  },
+  {
+   "index": 31,
+   "key": "b87b42191bffcae0",
+   "sig": "350e5948d0b92a2fb747",
+   "plan_sig": "8c4601c46aa25ff6bd14",
+   "kind": "scene",
+   "labels": [],
+   "hero": false,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. SCENE: two rows of chairs: in the upper row sit three men and two of them press a button on a little box with small zigzag sparks; in the lower row sit four women and one of them presses the button with small zigzag sparks, the others sit with folded hands. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [
+    {
+     "round": 0,
+     "variant": 0,
+     "error": "BudgetExhausted: потолок 6200000: потрачено 3975000, в полёте 1590000, нужно ещё до 795000"
+    }
+   ],
+   "path": null,
+   "candidates": {},
+   "label_tries": [],
+   "status": "failed"
+  },
+  {
+   "index": 32,
+   "key": "7ed358e4921bf623",
+   "sig": "941c2db890c04301e6b3",
+   "plan_sig": "6bcabaf36d6d53806b29",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: the main character holds a phone that shows the slow calm beginning of a video, an empty field; the character's face droops with boredom; a small round clock beside it has its second hand pointing just after the top. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. Keep a calm area of plain empty background, about a third of the image, for handwriting added later. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [
+    {
+     "round": 0,
+     "variant": 0,
+     "error": "BudgetExhausted: потолок 6200000: потрачено 3975000, в полёте 1590000, нужно ещё до 795000"
+    }
+   ],
+   "path": null,
+   "candidates": {},
+   "label_tries": [],
+   "status": "failed"
+  },
+  {
+   "index": 34,
+   "key": "4105b6ee2af147ee",
+   "sig": "d13088955a74371f4d78",
+   "plan_sig": "e10797e5b14e372bb854",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: a crowd of different people of different ages and the main character among them, all holding phones; above every head floats a small grey cloud, some clouds bigger than others. the small flame on the tip of the main character's tail has shrunk to a dim glowing ember with a thin wisp of grey smoke. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [
+    {
+     "round": 0,
+     "variant": 0,
+     "error": "BudgetExhausted: потолок 6200000: потрачено 3975000, в полёте 1590000, нужно ещё до 795000"
+    }
+   ],
+   "path": null,
+   "candidates": {},
+   "label_tries": [],
+   "status": "failed"
+  },
+  {
+   "index": 35,
+   "key": "c55fbf525f744ce0",
+   "sig": "84659b4d12fe4863a64a",
+   "plan_sig": "00b88c000eac93709310",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: a person works on a sheet of paper at a desk and the main character sits calmly beside them watching; the person's phone lies face down at the far edge of the desk; nothing to scroll anywhere. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [
+    {
+     "round": 0,
+     "variant": 0,
+     "error": "BudgetExhausted: потолок 6200000: потрачено 3975000, в полёте 1590000, нужно ещё до 795000"
+    }
+   ],
+   "path": null,
+   "candidates": {},
+   "label_tries": [],
+   "status": "failed"
+  },
+  {
+   "index": 37,
+   "key": "c0db4112cd9e53aa",
+   "sig": "a08e70fdd3295ae95a76",
+   "plan_sig": "1d5ad58fca3504e2dfa0",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: the main character puts aside a huge heavy dumbbell with a relieved face and instead gently holds a small stopwatch in its paw. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the main character is drawn big, at least a third of the image height. Keep a calm area of plain empty background, about a third of the image, for handwriting added later. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [
+    {
+     "round": 0,
+     "variant": 0,
+     "error": "BudgetExhausted: потолок 6200000: потрачено 3975000, в полёте 1590000, нужно ещё до 795000"
+    }
+   ],
+   "path": null,
+   "candidates": {},
+   "label_tries": [],
+   "status": "failed"
+  },
+  {
+   "index": 38,
+   "key": "445a4d8e0b9b0086",
+   "sig": "d585026e5fb27adec443",
+   "plan_sig": "6bdf966d481030b8ba58",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: the main character drops a phone into a cardboard box and seals the box with wide tape, determined face, chin up. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [
+    {
+     "round": 0,
+     "variant": 0,
+     "error": "BudgetExhausted: потолок 6200000: потрачено 3975000, в полёте 1590000, нужно ещё до 795000"
+    }
+   ],
+   "path": null,
+   "candidates": {},
+   "label_tries": [],
+   "status": "failed"
+  },
+  {
+   "index": 39,
+   "key": "4cc443684f965d55",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "status": "ok",
+   "check": "eyes",
+   "source": "library",
+   "chosen": "lib_2026-10-25_videos_04_noch_reel_gen_n5_bed_side_bc498c2b.png",
+   "path": "frames/040.png",
+   "objects": [],
+   "plan_sig": "5a0e266d5dadd9ed00bd"
+  },
+  {
+   "index": 41,
+   "key": "46827962a95d3328",
+   "sig": "655ac755e411f9bc5c0a",
+   "plan_sig": "222f30e9aee23124852c",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: the main character sits at a table with a phone lying in front of it and calmly counts on its raised paws, as if counting to ten slowly, eyes on the phone. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [
+    {
+     "round": 0,
+     "variant": 0,
+     "error": "BudgetExhausted: потолок 6200000: потрачено 3975000, в полёте 1590000, нужно ещё до 795000"
+    }
+   ],
+   "path": null,
+   "candidates": {},
+   "label_tries": [],
+   "status": "failed"
+  },
+  {
+   "index": 42,
+   "key": "52f9393b1fe23fd8",
+   "sig": "ef4dc87fc4a7c1198a14",
+   "plan_sig": "1e372411e5f8a831c54f",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: the main character rides a surfboard calmly on a big smooth wave; the wave rises behind it and gently falls flat at the far side. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [
+    {
+     "round": 0,
+     "variant": 0,
+     "error": "BudgetExhausted: потолок 6200000: потрачено 3975000, в полёте 1590000, нужно ещё до 795000"
+    }
+   ],
+   "path": null,
+   "candidates": {},
+   "label_tries": [],
+   "status": "failed"
+  },
+  {
+   "index": 44,
+   "key": "d3f950089677a907",
+   "sig": "ff103e02cf8ee3196247",
+   "plan_sig": "0c36f309caf988197bc5",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: the main character sits very still with a funny strained face, one paw half raised toward an itchy spot on its back but not scratching it. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the main character is drawn big, at least a third of the image height. Keep a calm area of plain empty background, about a third of the image, for handwriting added later. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [
+    {
+     "round": 0,
+     "variant": 0,
+     "error": "BudgetExhausted: потолок 6200000: потрачено 3975000, в полёте 1590000, нужно ещё до 795000"
+    }
+   ],
+   "path": null,
+   "candidates": {},
+   "label_tries": [],
+   "status": "failed"
+  },
+  {
+   "index": 46,
+   "key": "57c2712f29adce15",
+   "sig": "851d4bd021a0d4a0e5b2",
+   "plan_sig": "7a3290319009b54b5483",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: a laptop with only one big open window showing a blank video player; the desk around it is neat and empty; the main character watches the screen calmly with its paws folded. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [
+    {
+     "round": 0,
+     "variant": 0,
+     "error": "BudgetExhausted: потолок 6200000: потрачено 3975000, в полёте 1590000, нужно ещё до 795000"
+    }
+   ],
+   "path": null,
+   "candidates": {},
+   "label_tries": [],
+   "status": "failed"
+  },
+  {
+   "index": 47,
+   "key": "ecd6a80a6bed20bc",
+   "sig": "59591903f5a4df880cd3",
+   "plan_sig": "9985251322f1014810a9",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: the main character holds one small sheet of paper with a short list of lines and smiles with relief; behind it a laptop screen is clean and empty; through an open window a pile of tiny closed cupboards floats out of the room. the flame on the tip of the main character's tail burns tall and golden with small bright sparks flying off it. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [
+    {
+     "round": 0,
+     "variant": 0,
+     "error": "BudgetExhausted: потолок 6200000: потрачено 3975000, в полёте 1590000, нужно ещё до 795000"
+    }
+   ],
+   "path": null,
+   "candidates": {},
+   "label_tries": [],
+   "status": "failed"
+  },
+  {
+   "index": 49,
+   "key": "ae200e67bde22940",
+   "sig": "92a4ad8abc018cc731c5",
+   "plan_sig": "3b63668a1b5557fbf749",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: three flower pots in a row on a windowsill: a tiny seedling, a slightly bigger plant and a bigger one; the main character waters the tiny seedling with a small watering can. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [
+    {
+     "round": 0,
+     "variant": 0,
+     "error": "BudgetExhausted: потолок 6200000: потрачено 3975000, в полёте 1590000, нужно ещё до 795000"
+    }
+   ],
+   "path": null,
+   "candidates": {},
+   "label_tries": [],
+   "status": "failed"
+  },
+  {
+   "index": 50,
+   "key": "cd8989f7ed474ab2",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "status": "ok",
+   "check": "eyes",
+   "source": "library",
+   "chosen": "lib_2026-10-28_gen_cx_gpt-image-2_bc9df0e7.png",
+   "path": "frames/051.png",
+   "objects": [],
+   "plan_sig": "2b5ae5fba0e0097b559b"
+  },
+  {
+   "index": 52,
+   "key": "02d7f61837f47490",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "status": "ok",
+   "check": "eyes",
+   "source": "same:6",
+   "chosen": "214809010e6dfa9a3a1d.png",
+   "path": "frames/053.png",
+   "objects": [],
+   "plan_sig": "2e0f8507b06a78e8c672"
+  },
+  {
+   "index": 53,
+   "key": "0f1deb93a6601547",
+   "sig": "2ad661c75c8d748fb08f",
+   "plan_sig": "0e756889ed678b2c4ad5",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: the main character sits on a floor cushion in front of an old television showing a long cartoon about cats; one of its paws twitches toward a phone on the floor and the other paw catches it by the wrist. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [
+    {
+     "round": 0,
+     "variant": 0,
+     "error": "BudgetExhausted: потолок 6200000: потрачено 3975000, в полёте 1590000, нужно ещё до 795000"
+    }
+   ],
+   "path": null,
+   "candidates": {},
+   "label_tries": [],
+   "status": "failed"
+  },
+  {
+   "index": 54,
+   "key": "b572c1203d93be1d",
+   "sig": "15dc1fb9be6c7dbd5905",
+   "plan_sig": "a47217959a58853f2b68",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: the main character sits happily on a floor cushion in front of an old television showing rolling credits as plain lines; a bowl of popcorn beside it; the tail flame burns golden. the flame on the tip of the main character's tail burns tall and golden with small bright sparks flying off it. LAYOUT: the main character is drawn big, at least a third of the image height. Keep a calm area of plain empty background, about a third of the image, for handwriting added later. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [
+    {
+     "round": 0,
+     "variant": 0,
+     "error": "BudgetExhausted: потолок 6200000: потрачено 3975000, в полёте 1590000, нужно ещё до 795000"
+    }
+   ],
+   "path": null,
+   "candidates": {},
+   "label_tries": [],
+   "status": "failed"
+  },
+  {
+   "index": 55,
+   "key": "dfa7755d13901f55",
+   "sig": "5bc646ef486db7dbfd23",
+   "plan_sig": "2d2b318394ad827ccce7",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: the main character holds out its paw and a small glowing spark flies back toward it along a dotted curved path, like a trained bird returning home; happy calm face. the flame on the tip of the main character's tail burns tall and golden with small bright sparks flying off it. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [
+    {
+     "round": 0,
+     "variant": 0,
+     "error": "BudgetExhausted: потолок 6200000: потрачено 3975000, в полёте 1590000, нужно ещё до 795000"
+    }
+   ],
+   "path": null,
+   "candidates": {},
+   "label_tries": [],
+   "status": "failed"
+  },
+  {
+   "index": 56,
+   "key": "163e5ff90e1371a7",
+   "sig": "450e899369dbf1803c29",
+   "plan_sig": "02f1b09f2892220fca66",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: three small scenes in a row with plain gaps: the main character counting on its paws; a laptop with one single window; a tiny seedling in a pot; under them the main character sits with a kitchen timer. the flame on the tip of the main character's tail burns tall and golden with small bright sparks flying off it. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [
+    {
+     "round": 0,
+     "variant": 0,
+     "error": "BudgetExhausted: потолок 6200000: потрачено 3975000, в полёте 1590000, нужно ещё до 795000"
+    }
+   ],
+   "path": null,
+   "candidates": {},
+   "label_tries": [],
+   "status": "failed"
+  },
+  {
+   "index": 57,
+   "key": "7b8b98645888c090",
+   "sig": "474e34a914acbecda2a0",
+   "plan_sig": "e7d120ddebae9799d466",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: the main character turns and looks straight at the viewer with a warm proud smile; next to it a laptop shows a video with the progress bar filled to the very end. the flame on the tip of the main character's tail burns tall and golden with small bright sparks flying off it. LAYOUT: the main character is drawn big, at least a third of the image height. Keep a calm area of plain empty background, about a third of the image, for handwriting added later. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+   "rounds": [
+    {
+     "round": 0,
+     "variant": 0,
+     "error": "BudgetExhausted: потолок 6200000: потрачено 3975000, в полёте 1590000, нужно ещё до 795000"
+    }
+   ],
+   "path": null,
+   "candidates": {},
+   "label_tries": [],
+   "status": "failed"
+  },
+  {
+   "index": 58,
+   "key": "61264b80caa03bd8",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "status": "ok",
+   "check": "eyes",
+   "source": "library",
+   "chosen": "lib_2026-10-28_gen_cx_gpt-image-2_acb84422.png",
+   "path": "frames/059.png",
+   "objects": [],
+   "plan_sig": "0e5d8c656f5765e95553"
+  }
+ ]
+}

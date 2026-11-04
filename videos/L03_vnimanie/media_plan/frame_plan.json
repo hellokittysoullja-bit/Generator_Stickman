@@ -1,0 +1,1835 @@
+{
+ "version": 15,
+ "model": "orchestrator",
+ "has_hero": true,
+ "frames": [
+  {
+   "index": 0,
+   "section": "HOOK",
+   "text": "Ты не досмотришь это видео. И дело не в твоей лени.",
+   "key": "e17edcd7809b2062",
+   "spec": {
+    "focus": "Ты не досмотришь это видео. И дело не в твоей лени.",
+    "subject": "the three flying video cards",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the three flying video cards is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "the main character sits on a floor cushion holding a phone in one paw and flicking the screen upward with one finger of the other paw; three blank video cards fly up out of the screen one above another with clear gaps of empty paper between them and between the cards and the character; the character looks bored, half-closed eyes",
+   "fallback": false,
+   "details": [
+    "the three flying video cards",
+    "the finger on the screen"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": "ember",
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "key_thought": "не в лени",
+   "anim": "scroll_hf"
+  },
+  {
+   "index": 1,
+   "section": "HOOK",
+   "text": "Палец уже тянется пролистать, хотя тема тебе важна.",
+   "key": "4bd3b3bf58835e02",
+   "spec": {
+    "focus": "Палец уже тянется пролистать, хотя тема тебе важна.",
+    "subject": "the stretched finger",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the stretched finger is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "extreme close-up: the main character's paw holds a phone, and one finger of the other paw is already stretched over the screen about to swipe; at the edge of the frame the character's face looks at the screen with interest and a little guilt; the screen shows a simple drawing of an open book",
+   "fallback": false,
+   "details": [
+    "the stretched finger",
+    "the open book on the screen"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": "ember",
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   }
+  },
+  {
+   "index": 2,
+   "section": "HOOK",
+   "text": "Под одним роликом про внимание кто-то написал: «смотрел на скорости четыре икс с восемью перерывами на шортс».",
+   "key": "bd063c5cb8118b41",
+   "spec": {
+    "focus": "Под одним роликом про внимание кто-то написал: «смотрел на скорости четыре икс с",
+    "subject": "the two triangles",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the two triangles is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "a big phone in the center showing a video player with two small triangles pointing right (fast forward); under the video a comment bubble with three blank lines; to the right of the phone eight small blank video cards fly out in a row like playing cards thrown in the air",
+   "fallback": false,
+   "details": [
+    "the two triangles",
+    "the eight flying cards"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": null,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   }
+  },
+  {
+   "index": 3,
+   "section": "HOOK",
+   "text": "Говорят, теперь внимание у людей восемь секунд, меньше, чем у золотой рыбки.",
+   "key": "0b92e3a15dd2c610",
+   "spec": {
+    "focus": "Говорят, теперь внимание у людей восемь секунд, меньше, чем у золотой рыбки.",
+    "subject": "the goldfish in the bowl",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the goldfish in the bowl is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "on a small table a round glass fishbowl with one orange goldfish looking proud with its chin up; on the right a person sits on a sofa staring at a phone with a tiny confused face; between them floats a big round stopwatch with a blank face",
+   "fallback": false,
+   "details": [
+    "the goldfish in the bowl",
+    "the stopwatch"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": null,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   }
+  },
+  {
+   "index": 4,
+   "section": "HOOK",
+   "text": "Я котик из «Напарника», и я в это верил и даже немного гордился: ну, я же кот, мне можно.",
+   "key": "c036c23985851e6c",
+   "spec": {
+    "focus": "Я котик из «Напарника», и я в это верил и даже немного гордился: ну, я же кот, м",
+    "subject": "the proud face",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the proud face is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "the main character sits proudly next to the same round fishbowl with the orange goldfish, chest out, eyes closed, smug smile, one paw on its chest; the goldfish looks at the character sideways",
+   "fallback": false,
+   "details": [
+    "the proud face",
+    "the goldfish"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": "bright",
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   }
+  },
+  {
+   "index": 5,
+   "section": "HOOK",
+   "text": "А потом заметил, что не могу досмотреть мультик про котов. Двухминутный.",
+   "key": "a2fd7c24a78cf96d",
+   "spec": {
+    "focus": "А потом заметил, что не могу досмотреть мультик про котов. Двухминутный.",
+    "subject": "the cartoon mouse on the television",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the cartoon mouse on the television is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "the main character sits on a floor cushion in front of an old television that shows a simple cartoon of a running mouse; the character's head is already turned away from the television toward a phone lying on the floor, the cartoon forgotten",
+   "fallback": false,
+   "details": [
+    "the cartoon mouse on the television",
+    "the phone on the floor"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": "ember",
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   }
+  },
+  {
+   "index": 6,
+   "section": "HOOK",
+   "text": "Сейчас я досматриваю ролики на двадцать минут и читаю главу книги за вечер.",
+   "key": "6d3f10a49bec5223",
+   "spec": {
+    "focus": "Сейчас я досматриваю ролики на двадцать минут и читаю главу книги за вечер.",
+    "claims": [
+     {
+      "id": "core",
+      "text": "Сейчас я досматриваю ролики на двадцать минут и читаю главу книги за вечер.",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "a simple drawn scene illustrating: Сейчас я досматриваю ролики на двадцать минут и читаю главу книги за вечер.",
+   "fallback": false,
+   "absorb": false,
+   "board": "lib"
+  },
+  {
+   "index": 7,
+   "section": "HOOK",
+   "text": "За восемь минут покажу, правда ли твоё внимание стало как у рыбки, почему палец сам тянется пролистать и как снова досматривать то, что тебе правда интересно.",
+   "key": "72ed7ece458b8861",
+   "spec": {
+    "focus": "За восемь минут покажу, правда ли твоё внимание стало как у рыбки, почему палец ",
+    "subject": "the fishbowl",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the fishbowl is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "three equal panels in a row with plain gaps between them: in the first a round fishbowl with one orange goldfish; in the second a paw with one finger raised over a phone; in the third the main character calmly watches a long video on a laptop to the very end, the video progress bar under the picture full",
+   "fallback": false,
+   "details": [
+    "the fishbowl",
+    "the finger over the phone",
+    "the full progress bar"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": "bright",
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   }
+  },
+  {
+   "index": 8,
+   "section": "HOOK",
+   "text": "А пока проверь себя: сколько вкладок у тебя открыто прямо сейчас? Запомни число, оно ещё пригодится.",
+   "key": "0713b782561bb84b",
+   "spec": {
+    "focus": "А пока проверь себя: сколько вкладок у тебя открыто прямо сейчас? Запомни число,",
+    "subject": "the row of tiny tabs",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the row of tiny tabs is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "a laptop on a desk, the top edge of its browser is packed with dozens of tiny blank tabs squeezed in one row; the main character peeks from behind the laptop and counts the tabs on its paw with a surprised face",
+   "fallback": false,
+   "details": [
+    "the row of tiny tabs",
+    "the counting paw"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": "ember",
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   }
+  },
+  {
+   "index": 9,
+   "section": "BLOCK 1: ВОСЕМЬ СЕКУНД",
+   "text": "Почему ты бросаешь видео на десятой секунде?",
+   "key": "e31eb35f81f3f052",
+   "spec": {
+    "focus": "Почему ты бросаешь видео на десятой секунде?",
+    "subject": "the progress marker at the start",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the progress marker at the start is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "a big television screen with a video progress bar under the picture, its marker stopped at the very beginning; the main character is already walking out of the frame to the right looking down at a phone in its paws",
+   "fallback": false,
+   "details": [
+    "the progress marker at the start",
+    "the character walking away"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": "ember",
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "key_thought": "десятая секунда"
+  },
+  {
+   "index": 10,
+   "section": "BLOCK 1: ВОСЕМЬ СЕКУНД",
+   "text": "Начнём с рыбки. Цифру про восемь секунд в две тысячи пятнадцатом году разнесли по миру из отчёта одной компании. Журналисты Би-би-си потом пошли искать, откуда она взялась, и не нашли ни одного исследования.",
+   "key": "a443f06fe52de6e6",
+   "spec": {
+    "focus": "Начнём с рыбки. Цифру про восемь секунд в две тысячи пятнадцатом году разнесли п",
+    "subject": "the journalist shrugging",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the journalist shrugging is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "two journalists with magnifying glasses search through tall piles of papers and folders on a big desk and find nothing; one of them shrugs with empty hands; a small round fishbowl with an orange goldfish stands at the corner of the desk",
+   "fallback": false,
+   "details": [
+    "the journalist shrugging",
+    "the fishbowl"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": null,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   }
+  },
+  {
+   "index": 11,
+   "section": "BLOCK 1: ВОСЕМЬ СЕКУНД",
+   "text": "А золотые рыбки, кстати, помнят многое месяцами. Рыбку тоже оклеветали.",
+   "key": "8e95f6623e7cc882",
+   "spec": {
+    "focus": "А золотые рыбки, кстати, помнят многое месяцами. Рыбку тоже оклеветали.",
+    "subject": "the offended goldfish",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the offended goldfish is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "close-up: the orange goldfish in its round bowl with a slightly offended face; above the bowl a thought cloud holds a small stack of calendar pages, many months of them",
+   "fallback": false,
+   "details": [
+    "the offended goldfish",
+    "the calendar pages in the thought cloud"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": null,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   }
+  },
+  {
+   "index": 12,
+   "section": "BLOCK 1: ВОСЕМЬ СЕКУНД",
+   "text": "Но не спеши радоваться, потому что есть цифра, которая правда настоящая.",
+   "key": "1df2d996fa2f06fa",
+   "spec": {
+    "focus": "Но не спеши радоваться, потому что есть цифра, которая правда настоящая.",
+    "claims": [
+     {
+      "id": "core",
+      "text": "Но не спеши радоваться, потому что есть цифра, которая правда настоящая.",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "a simple drawn scene illustrating: Но не спеши радоваться, потому что есть цифра, которая правда настоящая.",
+   "fallback": false,
+   "absorb": true,
+   "board": "absorb"
+  },
+  {
+   "index": 13,
+   "section": "BLOCK 1: ВОСЕМЬ СЕКУНД",
+   "text": "Исследовательница внимания Глория Марк много лет засекала, сколько люди держат внимание на одном экране, прежде чем переключиться.",
+   "key": "a7d7732d6e47c73c",
+   "spec": {
+    "focus": "Исследовательница внимания Глория Марк много лет засекала, сколько люди держат в",
+    "subject": "the stopwatch",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the stopwatch is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "a researcher woman with short hair holds a stopwatch and sits beside a person working at a computer; the person's eyes have just jumped from the computer screen to a phone beside the keyboard; the researcher makes a mark on her clipboard",
+   "fallback": false,
+   "details": [
+    "the stopwatch",
+    "the eyes jumping to the phone"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": null,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   }
+  },
+  {
+   "index": 14,
+   "section": "BLOCK 1: ВОСЕМЬ СЕКУНД",
+   "text": "В две тысячи четвёртом году это было около двух с половиной минут, в двенадцатом году семьдесят пять секунд, а в последние годы около сорока семи секунд.",
+   "key": "17f16caa924770d6",
+   "spec": {
+    "focus": "В две тысячи четвёртом году это было около двух с половиной минут, в двенадцатом",
+    "subject": "the tall bar with its clock",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the tall bar with its clock is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "a simple hand-drawn bar chart of three bars on paper getting shorter from left to right: a tall bar, a middle bar and a very short bar; a small round clock sits on top of each bar; no numbers and no words anywhere",
+   "fallback": false,
+   "details": [
+    "the tall bar with its clock",
+    "the very short bar"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": null,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   }
+  },
+  {
+   "index": 15,
+   "section": "BLOCK 1: ВОСЕМЬ СЕКУНД",
+   "text": "Выходит, внимание не стало коротким, как у рыбки. Мы просто чаще прыгаем.",
+   "key": "b68984957d1f0f83",
+   "spec": {
+    "focus": "Выходит, внимание не стало коротким, как у рыбки. Мы просто чаще прыгаем.",
+    "subject": "the character mid-jump",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the character mid-jump is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "the main character jumps mid-air from one small island to the next across calm water: on the first island stands a laptop, on the second a phone, on the third a television; a dotted line of earlier jumps connects the islands",
+   "fallback": false,
+   "details": [
+    "the character mid-jump",
+    "the dotted line of jumps"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": "bright",
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   }
+  },
+  {
+   "index": 16,
+   "section": "BLOCK 1: ВОСЕМЬ СЕКУНД",
+   "text": "Даже фильм, давно отложенный на потом, через пять минут смотришь поверх телефона.",
+   "key": "9fa40c9c6839a8df",
+   "spec": {
+    "focus": "Даже фильм, давно отложенный на потом, через пять минут смотришь поверх телефона.",
+    "claims": [
+     {
+      "id": "core",
+      "text": "Даже фильм, давно отложенный на потом, через пять минут смотришь поверх телефона.",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "a simple drawn scene illustrating: Даже фильм, давно отложенный на потом, через пять минут смотришь поверх телефона.",
+   "fallback": false,
+   "absorb": false,
+   "board": "lib"
+  },
+  {
+   "index": 17,
+   "section": "BLOCK 1: ВОСЕМЬ СЕКУНД",
+   "text": "И каждый прыжок стоит дороже, чем кажется. В другой работе Глория Марк с коллегами посчитала, что к прерванному делу люди в среднем возвращаются только минут через двадцать пять.",
+   "key": "f955adf66a540fe1",
+   "spec": {
+    "focus": "И каждый прыжок стоит дороже, чем кажется. В другой работе Глория Марк с коллега",
+    "subject": "the far away desk",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the far away desk is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "the main character trudges back along a long winding path toward a small desk far away with an unfinished drawing on it; a big round wall clock hangs in the sky above the path; the character looks tired",
+   "fallback": false,
+   "details": [
+    "the far away desk",
+    "the big clock"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": "ember",
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   }
+  },
+  {
+   "index": 18,
+   "section": "BLOCK 1: ВОСЕМЬ СЕКУНД",
+   "text": "И тут я вспомнил про вкладки. Сколько у тебя получилось? У меня в тот вечер было тридцать две, и в каждой лежало что-то, что я собирался досмотреть потом.",
+   "key": "c5fef077d8abaf03",
+   "spec": {
+    "focus": "И тут я вспомнил про вкладки. Сколько у тебя получилось? У меня в тот вечер было",
+    "subject": "the objects sticking out of the tabs",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the objects sticking out of the tabs is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "the main character sits in front of a laptop whose browser top edge is packed with dozens of tiny tabs, and from every tab a small object sticks out: a video card, a recipe card, a book, a shoe, a plant; the character holds its head with both paws, overwhelmed",
+   "fallback": false,
+   "details": [
+    "the objects sticking out of the tabs",
+    "the overwhelmed face"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": "ember",
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   }
+  },
+  {
+   "index": 19,
+   "section": "BLOCK 1: ВОСЕМЬ СЕКУНД",
+   "text": "Прыгать можно научиться, а значит, можно научиться и не прыгать. Только кто нажимает на кнопку?",
+   "key": "485ae3ad0965c0f6",
+   "spec": {
+    "focus": "Прыгать можно научиться, а значит, можно научиться и не прыгать. Только кто нажи",
+    "subject": "the red button",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the red button is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "the main character stands next to a big round red button on a short pedestal and looks suspiciously at its own raised finger as if the finger were a stranger",
+   "fallback": false,
+   "details": [
+    "the red button",
+    "the suspicious look at the finger"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": "ember",
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "key_thought": "кто жмёт?"
+  },
+  {
+   "index": 20,
+   "section": "BLOCK 2: ПАЛЕЦ ЛИСТАЕТ САМ",
+   "text": "Замечаешь, что палец листает раньше, чем ты решаешь листать?",
+   "key": "d9112642d2ff9dbd",
+   "spec": {
+    "focus": "Замечаешь, что палец листает раньше, чем ты решаешь листать?",
+    "subject": "the swiping finger",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the swiping finger is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "close-up: the main character's paw holds a phone and the index finger is already swiping on its own with small motion lines, while the character's eyes look the other way at an open notebook in the other paw",
+   "fallback": false,
+   "details": [
+    "the swiping finger",
+    "the eyes on the notebook"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": "ember",
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "key_thought": "палец раньше тебя"
+  },
+  {
+   "index": 21,
+   "section": "BLOCK 2: ПАЛЕЦ ЛИСТАЕТ САМ",
+   "text": "Смотрю ролик, всё интересно, и вдруг на экране уже другой, а я не помню, как туда попал.",
+   "key": "ed4a6743ebafd4e2",
+   "spec": {
+    "focus": "Смотрю ролик, всё интересно, и вдруг на экране уже другой, а я не помню, как туда попал.",
+    "claims": [
+     {
+      "id": "core",
+      "text": "Смотрю ролик, всё интересно, и вдруг на экране уже другой, а я не помню, как туда попал.",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "a simple drawn scene illustrating: Смотрю ролик, всё интересно, и вдруг на экране уже другой, а я не помню, как туда попал.",
+   "fallback": false,
+   "absorb": true,
+   "board": "absorb"
+  },
+  {
+   "index": 22,
+   "section": "BLOCK 2: ПАЛЕЦ ЛИСТАЕТ САМ",
+   "text": "Однажды я открыл телефон, чтобы посмотреть погоду. Через сорок минут я знал, как плетут корзины из бамбука, а погоду так и не посмотрел.",
+   "key": "fd04522b5bedea0c",
+   "spec": {
+    "focus": "Однажды я открыл телефон, чтобы посмотреть погоду. Через сорок минут я знал, как",
+    "subject": "the bamboo baskets",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the bamboo baskets is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "the main character sits holding a phone; on the screen a small woven bamboo basket; beside the character lies a pile of five tiny finished bamboo baskets; behind it a window with clouds and a sun that nobody looks at",
+   "fallback": false,
+   "details": [
+    "the bamboo baskets",
+    "the ignored window"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": "ember",
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   }
+  },
+  {
+   "index": 23,
+   "section": "BLOCK 2: ПАЛЕЦ ЛИСТАЕТ САМ",
+   "text": "Каждое пролистывание обещает маленькое «а вдруг там лучше». Иногда там правда лучше, и мозг запоминает, что листать выгодно.",
+   "key": "414fc372493a40fb",
+   "spec": {
+    "focus": "Каждое пролистывание обещает маленькое «а вдруг там лучше». Иногда там правда лучше, и мозг запоминает, что листать выгодно.",
+    "claims": [
+     {
+      "id": "core",
+      "text": "Каждое пролистывание обещает маленькое «а вдруг там лучше». Иногда там правда лучше, и мозг запоминает, что листать выгодно.",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "a simple drawn scene illustrating: Каждое пролистывание обещает маленькое «а вдруг там лучше». Иногда там правда лучше, и мозг запоминает, что листать выгодно.",
+   "fallback": false,
+   "absorb": false,
+   "board": "lib"
+  },
+  {
+   "index": 24,
+   "section": "BLOCK 2: ПАЛЕЦ ЛИСТАЕТ САМ",
+   "text": "Так работает игровой автомат: выигрыш не каждый раз, но вдруг именно сейчас.",
+   "key": "f824f7eccb873d0d",
+   "spec": {
+    "focus": "Так работает игровой автомат: выигрыш не каждый раз, но вдруг именно сейчас.",
+    "subject": "the three reels",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the three reels is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "an old slot machine with three blank reels and a lever; the main character pulls the lever with hopeful eyes; a few coins lie on the floor",
+   "fallback": false,
+   "details": [
+    "the three reels",
+    "the hopeful eyes"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": "ember",
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "key_thought": "игровой автомат"
+  },
+  {
+   "index": 25,
+   "section": "BLOCK 2: ПАЛЕЦ ЛИСТАЕТ САМ",
+   "text": "А у ленты к тому же нет дна. Аза Раскин, который придумал бесконечную прокрутку, потом говорил, что жалеет: странице больше не за что зацепиться, чтобы ты остановился.",
+   "key": "7b69aefc04a55202",
+   "spec": {
+    "focus": "А у ленты к тому же нет дна. Аза Раскин, который придумал бесконечную прокрутку,",
+    "subject": "the endless scroll",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the endless scroll is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "a man in a sweater stands beside a giant phone whose screen turns into an endless paper scroll that runs down and off the bottom of the frame; the man holds his head with one hand and looks at the scroll with regret",
+   "fallback": false,
+   "details": [
+    "the endless scroll",
+    "the man with regret"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": null,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   }
+  },
+  {
+   "index": 26,
+   "section": "BLOCK 2: ПАЛЕЦ ЛИСТАЕТ САМ",
+   "text": "В две тысячи двадцать третьем году исследователи из Мюнхена проверили, что короткие ролики делают с памятью о планах. После ленты коротких видео людям было труднее вспомнить, что они собирались сделать.",
+   "key": "61bec7f250db4f78",
+   "spec": {
+    "focus": "В две тысячи двадцать третьем году исследователи из Мюнхена проверили, что корот",
+    "subject": "the empty thought clouds",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the empty thought clouds is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "in a plain lab room four people sit in a row; each has just put a phone down on the knee; above each head an empty thought cloud; one of them scratches the head trying to remember",
+   "fallback": false,
+   "details": [
+    "the empty thought clouds",
+    "the person scratching the head"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": null,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   }
+  },
+  {
+   "index": 27,
+   "section": "BLOCK 2: ПАЛЕЦ ЛИСТАЕТ САМ",
+   "text": "Каждый новый ролик немного стирает прошлую мысль.",
+   "key": "275d14d27662a403",
+   "spec": {
+    "focus": "Каждый новый ролик немного стирает прошлую мысль.",
+    "subject": "the video card wiping the cloud",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the video card wiping the cloud is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "the main character stands with a thought cloud above its head that holds a small drawing of a pencil and paper; a new blank video card slides into the cloud from the side and wipes the drawing away like an eraser, grey crumbs falling",
+   "fallback": false,
+   "details": [
+    "the video card wiping the cloud",
+    "the falling crumbs"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": "ember",
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "key_thought": "стирает мысль"
+  },
+  {
+   "index": 28,
+   "section": "BLOCK 2: ПАЛЕЦ ЛИСТАЕТ САМ",
+   "text": "Но есть причина ещё глубже, и она объясняет, почему бросаешь именно на десятой секунде.",
+   "key": "c80edbddb1656320",
+   "spec": {
+    "focus": "Но есть причина ещё глубже, и она объясняет, почему бросаешь именно на десятой секунде.",
+    "claims": [
+     {
+      "id": "core",
+      "text": "Но есть причина ещё глубже, и она объясняет, почему бросаешь именно на десятой секунде.",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "a simple drawn scene illustrating: Но есть причина ещё глубже, и она объясняет, почему бросаешь именно на десятой секунде.",
+   "fallback": false,
+   "absorb": true,
+   "board": "absorb"
+  },
+  {
+   "index": 29,
+   "section": "BLOCK 2: ПАЛЕЦ ЛИСТАЕТ САМ",
+   "text": "Психолог Тимоти Уилсон оставлял людей одних в пустой комнате на пятнадцать минут. Делать ничего нельзя, только думать.",
+   "key": "633e2c512fc18c2e",
+   "spec": {
+    "focus": "Психолог Тимоти Уилсон оставлял людей одних в пустой комнате на пятнадцать минут",
+    "subject": "the button box",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the button box is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "an empty plain white room with one chair in the middle; a person sits alone on the chair with nothing to do; on a small table next to the chair a little box with one round button; a thin wire runs from the box to a band on the person's ankle; the person stares at the button",
+   "fallback": false,
+   "details": [
+    "the button box",
+    "the person staring at the button"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": null,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   }
+  },
+  {
+   "index": 30,
+   "section": "BLOCK 2: ПАЛЕЦ ЛИСТАЕТ САМ",
+   "text": "В комнате была кнопка, которая била током, и люди заранее знали, что это больно.",
+   "key": "bdb2c780ec87cfcc",
+   "spec": {
+    "focus": "В комнате была кнопка, которая била током, и люди заранее знали, что это больно.",
+    "claims": [
+     {
+      "id": "core",
+      "text": "В комнате была кнопка, которая била током, и люди заранее знали, что это больно.",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "a simple drawn scene illustrating: В комнате была кнопка, которая била током, и люди заранее знали, что это больно.",
+   "fallback": false,
+   "absorb": true,
+   "board": "absorb"
+  },
+  {
+   "index": 31,
+   "section": "BLOCK 2: ПАЛЕЦ ЛИСТАЕТ САМ",
+   "text": "И всё равно две трети мужчин и четверть женщин нажимали её, лишь бы не сидеть наедине со своими мыслями.",
+   "key": "b87b42191bffcae0",
+   "spec": {
+    "focus": "И всё равно две трети мужчин и четверть женщин нажимали её, лишь бы не сидеть на",
+    "subject": "the two men pressing",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the two men pressing is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "two rows of chairs: in the upper row sit three men and two of them press a button on a little box with small zigzag sparks; in the lower row sit four women and one of them presses the button with small zigzag sparks, the others sit with folded hands",
+   "fallback": false,
+   "details": [
+    "the two men pressing",
+    "the one woman pressing"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": null,
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   }
+  },
+  {
+   "index": 32,
+   "section": "BLOCK 2: ПАЛЕЦ ЛИСТАЕТ САМ",
+   "text": "Вот что такое десятая секунда. Это первая секунда скуки, когда видео ещё не разогналось, а прошлое удовольствие уже кончилось.",
+   "key": "7ed358e4921bf623",
+   "spec": {
+    "focus": "Вот что такое десятая секунда. Это первая секунда скуки, когда видео ещё не разо",
+    "subject": "the empty field on the screen",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the empty field on the screen is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "the main character holds a phone that shows the slow calm beginning of a video, an empty field; the character's face droops with boredom; a small round clock beside it has its second hand pointing just after the top",
+   "fallback": false,
+   "details": [
+    "the empty field on the screen",
+    "the bored face"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": "ember",
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "key_thought": "первая скука"
+  },
+  {
+   "index": 33,
+   "section": "BLOCK 2: ПАЛЕЦ ЛИСТАЕТ САМ",
+   "text": "Палец бежит не от видео. Он бежит от скуки, как те люди к кнопке.",
+   "key": "7a1b66376ec09f89",
+   "spec": {
+    "focus": "Палец бежит не от видео. Он бежит от скуки, как те люди к кнопке.",
+    "claims": [
+     {
+      "id": "core",
+      "text": "Палец бежит не от видео. Он бежит от скуки, как те люди к кнопке.",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "a simple drawn scene illustrating: Палец бежит не от видео. Он бежит от скуки, как те люди к кнопке.",
+   "fallback": false,
+   "absorb": true,
+   "board": "absorb"
+  },
+  {
+   "index": 34,
+   "section": "BLOCK 2: ПАЛЕЦ ЛИСТАЕТ САМ",
+   "text": "С диагнозом или без, бегство от скуки знакомо почти всем, просто у кого-то оно быстрее.",
+   "key": "4105b6ee2af147ee",
+   "spec": {
+    "focus": "С диагнозом или без, бегство от скуки знакомо почти всем, просто у кого-то оно б",
+    "subject": "the grey clouds",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the grey clouds is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "a crowd of different people of different ages and the main character among them, all holding phones; above every head floats a small grey cloud, some clouds bigger than others",
+   "fallback": false,
+   "details": [
+    "the grey clouds",
+    "the character in the crowd"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": "ember",
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   }
+  },
+  {
+   "index": 35,
+   "section": "BLOCK 2: ПАЛЕЦ ЛИСТАЕТ САМ",
+   "text": "Поэтому в «Напарнике» я не показываю никакой ленты: там нечего листать, есть только ты, твоё дело и я рядом.",
+   "key": "c55fbf525f744ce0",
+   "spec": {
+    "focus": "Поэтому в «Напарнике» я не показываю никакой ленты: там нечего листать, есть тол",
+    "subject": "the person writing",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the person writing is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "a person works on a sheet of paper at a desk and the main character sits calmly beside them watching; the person's phone lies face down at the far edge of the desk; nothing to scroll anywhere",
+   "fallback": false,
+   "details": [
+    "the person writing",
+    "the face down phone"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": "bright",
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   }
+  },
+  {
+   "index": 36,
+   "section": "BLOCK 3: ДЕСЯТЬ СЕКУНД ОБРАТНО",
+   "text": "Так можно ли это вернуть?",
+   "key": "676dd66349e96a58",
+   "spec": {
+    "focus": "Так можно ли это вернуть?",
+    "claims": [
+     {
+      "id": "core",
+      "text": "Так можно ли это вернуть?",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "a simple drawn scene illustrating: Так можно ли это вернуть?",
+   "fallback": false,
+   "absorb": true,
+   "board": "absorb"
+  },
+  {
+   "index": 37,
+   "section": "BLOCK 3: ДЕСЯТЬ СЕКУНД ОБРАТНО",
+   "text": "Можно, и начинать надо не с силы воли, а с той самой десятой секунды.",
+   "key": "c0db4112cd9e53aa",
+   "spec": {
+    "focus": "Можно, и начинать надо не с силы воли, а с той самой десятой секунды.",
+    "subject": "the heavy dumbbell",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the heavy dumbbell is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "the main character puts aside a huge heavy dumbbell with a relieved face and instead gently holds a small stopwatch in its paw",
+   "fallback": false,
+   "details": [
+    "the heavy dumbbell",
+    "the small stopwatch"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": "bright",
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "key_thought": "не сила воли"
+  },
+  {
+   "index": 38,
+   "section": "BLOCK 3: ДЕСЯТЬ СЕКУНД ОБРАТНО",
+   "text": "Сначала у меня не вышло. Я решил, что больше никаких коротких роликов, смотрю только длинное.",
+   "key": "445a4d8e0b9b0086",
+   "spec": {
+    "focus": "Сначала у меня не вышло. Я решил, что больше никаких коротких роликов, смотрю то",
+    "subject": "the tape",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the tape is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "the main character drops a phone into a cardboard box and seals the box with wide tape, determined face, chin up",
+   "fallback": false,
+   "details": [
+    "the tape",
+    "the determined face"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": "bright",
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   }
+  },
+  {
+   "index": 39,
+   "section": "BLOCK 3: ДЕСЯТЬ СЕКУНД ОБРАТНО",
+   "text": "Продержался до вечера, а вечером посмотрел подряд, наверное, сто штук, как будто отыгрывался.",
+   "key": "4cc443684f965d55",
+   "spec": {
+    "focus": "Продержался до вечера, а вечером посмотрел подряд, наверное, сто штук, как будто отыгрывался.",
+    "claims": [
+     {
+      "id": "core",
+      "text": "Продержался до вечера, а вечером посмотрел подряд, наверное, сто штук, как будто отыгрывался.",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "a simple drawn scene illustrating: Продержался до вечера, а вечером посмотрел подряд, наверное, сто штук, как будто отыгрывался.",
+   "fallback": false,
+   "absorb": false,
+   "board": "lib"
+  },
+  {
+   "index": 40,
+   "section": "BLOCK 3: ДЕСЯТЬ СЕКУНД ОБРАТНО",
+   "text": "Запрет не сработал, потому что я боролся с пальцем, а не со скукой.",
+   "key": "2afd3988f880d02c",
+   "spec": {
+    "focus": "Запрет не сработал, потому что я боролся с пальцем, а не со скукой.",
+    "claims": [
+     {
+      "id": "core",
+      "text": "Запрет не сработал, потому что я боролся с пальцем, а не со скукой.",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "a simple drawn scene illustrating: Запрет не сработал, потому что я боролся с пальцем, а не со скукой.",
+   "fallback": false,
+   "absorb": true,
+   "board": "absorb"
+  },
+  {
+   "index": 41,
+   "section": "BLOCK 3: ДЕСЯТЬ СЕКУНД ОБРАТНО",
+   "text": "Поэтому первый приём такой: когда тянет пролистать, досчитай до десяти и посмотри, что будет дальше.",
+   "key": "46827962a95d3328",
+   "spec": {
+    "focus": "Поэтому первый приём такой: когда тянет пролистать, досчитай до десяти и посмотр",
+    "subject": "the counting paws",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the counting paws is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "the main character sits at a table with a phone lying in front of it and calmly counts on its raised paws, as if counting to ten slowly, eyes on the phone",
+   "fallback": false,
+   "details": [
+    "the counting paws",
+    "the phone on the table"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": "bright",
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   }
+  },
+  {
+   "index": 42,
+   "section": "BLOCK 3: ДЕСЯТЬ СЕКУНД ОБРАТНО",
+   "text": "Психолог Алан Марлатт называл это сёрфингом на волне желания. Тяга поднимается, как волна, держится недолго и спадает, если её не кормить.",
+   "key": "52f9393b1fe23fd8",
+   "spec": {
+    "focus": "Психолог Алан Марлатт называл это сёрфингом на волне желания. Тяга поднимается, ",
+    "subject": "the wave",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the wave is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "the main character rides a surfboard calmly on a big smooth wave; the wave rises behind it and gently falls flat at the far side",
+   "fallback": false,
+   "details": [
+    "the wave",
+    "the calm surfer"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": "bright",
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   }
+  },
+  {
+   "index": 43,
+   "section": "BLOCK 3: ДЕСЯТЬ СЕКУНД ОБРАТНО",
+   "text": "Обычно десяти секунд хватает, чтобы скука прошла, а видео разогналось.",
+   "key": "cf2a04429701171c",
+   "spec": {
+    "focus": "Обычно десяти секунд хватает, чтобы скука прошла, а видео разогналось.",
+    "claims": [
+     {
+      "id": "core",
+      "text": "Обычно десяти секунд хватает, чтобы скука прошла, а видео разогналось.",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "a simple drawn scene illustrating: Обычно десяти секунд хватает, чтобы скука прошла, а видео разогналось.",
+   "fallback": false,
+   "absorb": true,
+   "board": "absorb"
+  },
+  {
+   "index": 44,
+   "section": "BLOCK 3: ДЕСЯТЬ СЕКУНД ОБРАТНО",
+   "text": "Первые дни будет неудобно, как будто где-то чешется, а ты не чешешь.",
+   "key": "d3f950089677a907",
+   "spec": {
+    "focus": "Первые дни будет неудобно, как будто где-то чешется, а ты не чешешь.",
+    "subject": "the strained face",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the strained face is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "the main character sits very still with a funny strained face, one paw half raised toward an itchy spot on its back but not scratching it",
+   "fallback": false,
+   "details": [
+    "the strained face",
+    "the half raised paw"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": "bright",
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "key_thought": "не чеши"
+  },
+  {
+   "index": 45,
+   "section": "BLOCK 3: ДЕСЯТЬ СЕКУНД ОБРАТНО",
+   "text": "Хочешь попробовать прямо сейчас? Досмотри следующую минуту этого ролика без перемотки, а когда палец дёрнется, просто досчитай до десяти.",
+   "key": "b61ff4445ffc703d",
+   "spec": {
+    "focus": "Хочешь попробовать прямо сейчас? Досмотри следующую минуту этого ролика без перемотки, а когда палец дёрнется, просто досчитай до десяти.",
+    "claims": [
+     {
+      "id": "core",
+      "text": "Хочешь попробовать прямо сейчас? Досмотри следующую минуту этого ролика без перемотки, а когда палец дёрнется, просто досчитай до десяти.",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "a simple drawn scene illustrating: Хочешь попробовать прямо сейчас? Досмотри следующую минуту этого ролика без перемотки, а когда палец дёрнется, просто досчитай до десяти.",
+   "fallback": false,
+   "absorb": true,
+   "board": "absorb"
+  },
+  {
+   "index": 46,
+   "section": "BLOCK 3: ДЕСЯТЬ СЕКУНД ОБРАТНО",
+   "text": "Второй приём: одно окно. Смотришь одно, остальные вкладки закрыты, потому что каждая открытая вкладка тихо зовёт к себе.",
+   "key": "57c2712f29adce15",
+   "spec": {
+    "focus": "Второй приём: одно окно. Смотришь одно, остальные вкладки закрыты, потому что ка",
+    "subject": "the one window",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the one window is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "a laptop with only one big open window showing a blank video player; the desk around it is neat and empty; the main character watches the screen calmly with its paws folded",
+   "fallback": false,
+   "details": [
+    "the one window",
+    "the calm character"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": "bright",
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   }
+  },
+  {
+   "index": 47,
+   "section": "BLOCK 3: ДЕСЯТЬ СЕКУНД ОБРАТНО",
+   "text": "Свои тридцать две вкладки я не стал читать. Я выписал их названия на один листок, закрыл все до одной и почувствовал, будто из комнаты вынесли тридцать два шкафа.",
+   "key": "ecd6a80a6bed20bc",
+   "spec": {
+    "focus": "Свои тридцать две вкладки я не стал читать. Я выписал их названия на один листок",
+    "subject": "the small sheet with the list",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the small sheet with the list is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "the main character holds one small sheet of paper with a short list of lines and smiles with relief; behind it a laptop screen is clean and empty; through an open window a pile of tiny closed cupboards floats out of the room",
+   "fallback": false,
+   "details": [
+    "the small sheet with the list",
+    "the cupboards floating out of the window"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": "golden",
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   }
+  },
+  {
+   "index": 48,
+   "section": "BLOCK 3: ДЕСЯТЬ СЕКУНД ОБРАТНО",
+   "text": "Половину того, что было на листке, мне так и не захотелось открыть.",
+   "key": "bd166e957bbf4b52",
+   "spec": {
+    "focus": "Половину того, что было на листке, мне так и не захотелось открыть.",
+    "claims": [
+     {
+      "id": "core",
+      "text": "Половину того, что было на листке, мне так и не захотелось открыть.",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "a simple drawn scene illustrating: Половину того, что было на листке, мне так и не захотелось открыть.",
+   "fallback": false,
+   "absorb": true,
+   "board": "absorb"
+  },
+  {
+   "index": 49,
+   "section": "BLOCK 3: ДЕСЯТЬ СЕКУНД ОБРАТНО",
+   "text": "Третий приём: растить длинное понемногу. Не два часа сразу, а одно дело на десять минут без прыжков, завтра на двенадцать.",
+   "key": "ae200e67bde22940",
+   "spec": {
+    "focus": "Третий приём: растить длинное понемногу. Не два часа сразу, а одно дело на десят",
+    "subject": "the three growing plants",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the three growing plants is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "three flower pots in a row on a windowsill: a tiny seedling, a slightly bigger plant and a bigger one; the main character waters the tiny seedling with a small watering can",
+   "fallback": false,
+   "details": [
+    "the three growing plants",
+    "the watering can"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": "bright",
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   }
+  },
+  {
+   "index": 50,
+   "section": "BLOCK 3: ДЕСЯТЬ СЕКУНД ОБРАТНО",
+   "text": "Это проще, когда рядом кто-то есть, и для этого есть «Напарник». Ставишь таймер на десять минут, я сижу рядом, пока ты смотришь урок, читаешь или делаешь дело. Я ничего не проверяю и ни за что не ругаю, я просто рядом.",
+   "key": "cd8989f7ed474ab2",
+   "spec": {
+    "focus": "Это проще, когда рядом кто-то есть, и для этого есть «Напарник». Ставишь таймер на десять минут, я сижу рядом, пока ты смотришь урок, читаешь или делаешь дело. Я ничего не проверяю и ни за что не ругаю, я просто рядом.",
+    "claims": [
+     {
+      "id": "core",
+      "text": "Это проще, когда рядом кто-то есть, и для этого есть «Напарник». Ставишь таймер на десять минут, я сижу рядом, пока ты смотришь урок, читаешь или делаешь дело. Я ничего не проверяю и ни за что не ругаю, я просто рядом.",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "a simple drawn scene illustrating: Это проще, когда рядом кто-то есть, и для этого есть «Напарник». Ставишь таймер на десять минут, я сижу рядом, пока ты смотришь урок, читаешь или делаешь дело. Я ничего не проверяю и ни за что не ругаю, я просто рядом.",
+   "fallback": false,
+   "absorb": false,
+   "board": "lib"
+  },
+  {
+   "index": 51,
+   "section": "BLOCK 3: ДЕСЯТЬ СЕКУНД ОБРАТНО",
+   "text": "Это бесплатно, ссылка в описании. «Напарник» не лечит СДВГ, он просто помогает пережить первую скуку.",
+   "key": "104d144a7750fdf5",
+   "spec": {
+    "focus": "Это бесплатно, ссылка в описании. «Напарник» не лечит СДВГ, он просто помогает пережить первую скуку.",
+    "claims": [
+     {
+      "id": "core",
+      "text": "Это бесплатно, ссылка в описании. «Напарник» не лечит СДВГ, он просто помогает пережить первую скуку.",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "a simple drawn scene illustrating: Это бесплатно, ссылка в описании. «Напарник» не лечит СДВГ, он просто помогает пережить первую скуку.",
+   "fallback": false,
+   "absorb": true,
+   "board": "absorb"
+  },
+  {
+   "index": 52,
+   "section": "BLOCK 3: ДЕСЯТЬ СЕКУНД ОБРАТНО",
+   "text": "А теперь про тот двухминутный мультик.",
+   "key": "02d7f61837f47490",
+   "spec": {
+    "focus": "А теперь про тот двухминутный мультик.",
+    "claims": [
+     {
+      "id": "core",
+      "text": "А теперь про тот двухминутный мультик.",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "a simple drawn scene illustrating: А теперь про тот двухминутный мультик.",
+   "fallback": false,
+   "absorb": false,
+   "board": "same",
+   "key_thought": "тот мультик"
+  },
+  {
+   "index": 53,
+   "section": "BLOCK 3: ДЕСЯТЬ СЕКУНД ОБРАТНО",
+   "text": "Через пару недель таких десяти минут я сел смотреть длинный ролик про котов, на двадцать минут. На десятой секунде палец дёрнулся.",
+   "key": "0f1deb93a6601547",
+   "spec": {
+    "focus": "Через пару недель таких десяти минут я сел смотреть длинный ролик про котов, на ",
+    "subject": "the paw catching the paw",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the paw catching the paw is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "the main character sits on a floor cushion in front of an old television showing a long cartoon about cats; one of its paws twitches toward a phone on the floor and the other paw catches it by the wrist",
+   "fallback": false,
+   "details": [
+    "the paw catching the paw",
+    "the cartoon cats on the television"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": "bright",
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   }
+  },
+  {
+   "index": 54,
+   "section": "BLOCK 3: ДЕСЯТЬ СЕКУНД ОБРАТНО",
+   "text": "Я досчитал до десяти и досмотрел до конца, даже титры.",
+   "key": "b572c1203d93be1d",
+   "spec": {
+    "focus": "Я досчитал до десяти и досмотрел до конца, даже титры.",
+    "subject": "the rolling credits",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the rolling credits is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "the main character sits happily on a floor cushion in front of an old television showing rolling credits as plain lines; a bowl of popcorn beside it; the tail flame burns golden",
+   "fallback": false,
+   "details": [
+    "the rolling credits",
+    "the happy face"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": "golden",
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "key_thought": "до титров"
+  },
+  {
+   "index": 55,
+   "section": "BLOCK 3: ДЕСЯТЬ СЕКУНД ОБРАТНО",
+   "text": "Внимание не сломалось, его просто приучили убегать. А значит, его можно приучить и возвращаться.",
+   "key": "dfa7755d13901f55",
+   "spec": {
+    "focus": "Внимание не сломалось, его просто приучили убегать. А значит, его можно приучить",
+    "subject": "the returning spark",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the returning spark is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "the main character holds out its paw and a small glowing spark flies back toward it along a dotted curved path, like a trained bird returning home; happy calm face",
+   "fallback": false,
+   "details": [
+    "the returning spark",
+    "the open paw"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": "golden",
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   }
+  },
+  {
+   "index": 56,
+   "section": "FINAL",
+   "text": "Досчитать до десяти, одно окно и десять минут без прыжков. Ни одному из этих приёмов не нужна сила воли, а первые десять минут можно просидеть со мной в «Напарнике».",
+   "key": "163e5ff90e1371a7",
+   "spec": {
+    "focus": "Досчитать до десяти, одно окно и десять минут без прыжков. Ни одному из этих при",
+    "subject": "the counting paws",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the counting paws is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "three small scenes in a row with plain gaps: the main character counting on its paws; a laptop with one single window; a tiny seedling in a pot; under them the main character sits with a kitchen timer",
+   "fallback": false,
+   "details": [
+    "the counting paws",
+    "the one window",
+    "the seedling"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": "golden",
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   }
+  },
+  {
+   "index": 57,
+   "section": "FINAL",
+   "text": "И если ты сейчас здесь, в самом конце, значит, твоё внимание работает лучше, чем тебе казалось.",
+   "key": "7b8b98645888c090",
+   "spec": {
+    "focus": "И если ты сейчас здесь, в самом конце, значит, твоё внимание работает лучше, чем",
+    "subject": "the warm look at the viewer",
+    "claims": [
+     {
+      "id": "core",
+      "text": "the warm look at the viewer is clearly drawn",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": true,
+   "labels": [],
+   "picture": "the main character turns and looks straight at the viewer with a warm proud smile; next to it a laptop shows a video with the progress bar filled to the very end",
+   "fallback": false,
+   "details": [
+    "the warm look at the viewer",
+    "the full progress bar"
+   ],
+   "absorb": false,
+   "board": "new",
+   "hero_state": "golden",
+   "preflight": {
+    "issues": [],
+    "rewritten": false,
+    "note": "описание написано оркестратором 27.10"
+   },
+   "key_thought": "ты здесь"
+  },
+  {
+   "index": 58,
+   "section": "FINAL",
+   "text": "Но бывает, что убегает не палец, а сами мысли, даже когда телефона рядом нет. Про это мой ролик «Почему ты отвлекаешься, даже без телефона», он уже здесь.",
+   "key": "61264b80caa03bd8",
+   "spec": {
+    "focus": "Но бывает, что убегает не палец, а сами мысли, даже когда телефона рядом нет. Про это мой ролик «Почему ты отвлекаешься, даже без телефона», он уже здесь.",
+    "claims": [
+     {
+      "id": "core",
+      "text": "Но бывает, что убегает не палец, а сами мысли, даже когда телефона рядом нет. Про это мой ролик «Почему ты отвлекаешься, даже без телефона», он уже здесь.",
+      "tier": "must"
+     }
+    ]
+   },
+   "kind": "scene",
+   "hero": false,
+   "labels": [],
+   "picture": "a simple drawn scene illustrating: Но бывает, что убегает не палец, а сами мысли, даже когда телефона рядом нет. Про это мой ролик «Почему ты отвлекаешься, даже без телефона», он уже здесь.",
+   "fallback": false,
+   "absorb": false,
+   "board": "lib"
+  }
+ ],
+ "stats": {
+  "planned": 59,
+  "note": "план собран из раскадровки оркестратора (storyboard.json), планировщик модели не нужен"
+ },
+ "errors": {}
+}

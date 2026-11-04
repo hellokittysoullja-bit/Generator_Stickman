@@ -281,11 +281,16 @@ VIDEO_HOOK_MEAN_SHOT = 2.2  # средний план видеохука (рил
 HOOK_CAM_RE = re.compile(r"hook_cam\(\s*t\s*,\s*hit\s*=")
 
 
+_WORD_TIMES = {}            # video_dir -> время слов фраз из alignment (после озвучки), для _word_t
+
+
 def _phrase_times(video_dir, blocks):
     """Начало и длина каждой фразы: по alignment, если ролик озвучен, иначе оценка по словам (EST_WPS) и паузам."""
     try:
         from speech_timing import SpeechTiming
-        on = SpeechTiming(video_dir).onsets(blocks)
+        st = SpeechTiming(video_dir)
+        on = st.onsets(blocks)
+        _WORD_TIMES[os.path.abspath(video_dir)] = st.word_times if on else None
     except Exception:
         on = None
     est, acc = [], 0.0
@@ -297,13 +302,21 @@ def _phrase_times(video_dir, blocks):
     return starts, ends
 
 
-def _word_t(blocks, starts, ends, idx, at):
+def _word_t(blocks, starts, ends, idx, at, wt=None):
     """Время момента в клипе картинки (фразы idx, с 0: своя и поглощённые absorb): секунды от начала клипа или слово
     (["слово", k] — k-е вхождение, как в long_edit.word_time) — до озвучки по месту слова во фразе. Нет слова — None."""
     import script_parser
     if isinstance(at, (int, float)):
         return starts[idx[0]] + float(at)
     stem, k = (at, 1) if isinstance(at, str) else (at[0], int(at[1]))
+    if wt:                                   # ролик озвучен — настоящее время слова
+        for i in idx:
+            for w in (wt[i] if i < len(wt) else []):
+                if norm(w["word"]).startswith(norm(stem)):
+                    k -= 1
+                    if not k:
+                        return w["start"]
+        return None
     for i in idx:
         ws = words(script_parser.strip_pipeline_only_tags(blocks[i]["text"]))
         for j, w in enumerate(ws):
@@ -344,7 +357,7 @@ def _video_hook_montage(video_dir, blocks, frames, starts, ends, hook_n, fx_path
         for k, p in enumerate(sh):
             if not (p.get("why") or "").strip():
                 err.append(f"VIDEO-HOOK: фраза {i + 1}, план {k + 1}: нет why — монтаж со смыслом, а не ради склейки")
-            t = starts[i] if k == 0 else _word_t(blocks, starts, ends, list(range(i, nxt)), p.get("at", 0.0))
+            t = starts[i] if k == 0 else _word_t(blocks, starts, ends, list(range(i, nxt)), p.get("at", 0.0), _WORD_TIMES.get(os.path.abspath(video_dir)))
             if t is None:
                 err.append(f"VIDEO-HOOK: фраза {i + 1}, план {k + 1}: слова «{p.get('at')}» нет во фразе")
                 continue
@@ -422,14 +435,14 @@ def _manual_minutes(video_dir, blocks, frames, starts, ends):
         f_end = starts[nxt] if nxt < len(blocks) else ends[-1]
         sh = (edit.get(str(i + 1)) or {}).get("shots") or []
         if not sh:
-            err.append(f"MANUAL: картинка фразы {i + 1} ({starts[i] / 60:.0f}:{starts[i] % 60:02.0f}) без ручного монтажа — "
+            err.append(f"MANUAL: картинка фразы {i + 1} ({int(starts[i] // 60)}:{int(starts[i] % 60):02d}) без ручного монтажа — "
                        f"первые {MANUAL_MONTAGE_SEC // 60} минуты монтируются руками (edit.json, why у каждого плана)")
             continue
         ts = []
         for k, p in enumerate(sh):
             if not (p.get("why") or "").strip():
                 err.append(f"MANUAL: фраза {i + 1}, план {k + 1}: нет why")
-            t = starts[i] if k == 0 else _word_t(blocks, starts, ends, list(range(i, nxt)), p.get("at", 0.0))
+            t = starts[i] if k == 0 else _word_t(blocks, starts, ends, list(range(i, nxt)), p.get("at", 0.0), _WORD_TIMES.get(os.path.abspath(video_dir)))
             if t is None:
                 err.append(f"MANUAL: фраза {i + 1}, план {k + 1}: слова «{p.get('at')}» нет в клипе картинки")
                 continue
@@ -437,7 +450,7 @@ def _manual_minutes(video_dir, blocks, frames, starts, ends):
         ts = sorted(ts) + [f_end]
         for a, b in zip(ts, ts[1:]):
             if b - a > MANUAL_MAX_SHOT + 0.3 and a < MANUAL_MONTAGE_SEC:
-                err.append(f"MANUAL: план с {a / 60:.0f}:{a % 60:04.1f} идёт {b - a:.1f} с > {MANUAL_MAX_SHOT} — вторым планом по смыслу")
+                err.append(f"MANUAL: план с {int(a // 60)}:{a % 60:04.1f} идёт {b - a:.1f} с > {MANUAL_MAX_SHOT} — вторым планом по смыслу")
     return err
 
 
@@ -477,7 +490,7 @@ def hook_build(video_dir):
             continue
         t = starts[i] + e.get("at", 0.0)
         if "word" in e:                      # до озвучки слово — по его месту во фразе
-            t = _word_t(blocks, starts, ends, [i], e["word"])
+            t = _word_t(blocks, starts, ends, [i], e["word"], _WORD_TIMES.get(os.path.abspath(video_dir)))
             if t is None:
                 err.append(f"SFX: «{e.get('name')}»: слова «{e['word']}» нет во фразе {i + 1}")
                 continue
@@ -519,7 +532,8 @@ def hook_build(video_dir):
     for i, b in enumerate(blocks):
         n = str(i + 1)
         v, fv = frames.get(n) or {}, fx.get(n) or {}
-        if v.get("key") or v.get("accent") or fv.get("bold"):
+        own = bool({"new", "lib", "same", "plan", "anim"} & set(v))     # карандаш пишется только на своей картинке
+        if (own and (v.get("key") or v.get("accent"))) or fv.get("bold"):
             continue
         if _filled((fv.get("nolabel") or {}).get("why")):
             continue

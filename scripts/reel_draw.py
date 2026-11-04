@@ -36,14 +36,18 @@ def data_url(p):
     return "data:image/png;base64," + base64.b64encode(open(p, "rb").read()).decode()
 
 
+def fg_backdrop():
+    import frame_generator
+    return frame_generator.NO_PLACE_BACKDROP
+
+
 def prompt(scene, n_style):
     marks = open(os.path.join(ROOT, "look", "hero_marks.txt"), encoding="utf8").read().strip()
     palette = open(os.path.join(ROOT, "look", "palette.txt"), encoding="utf8").read().strip()
-    return (f"Reference images 1-{n_style} show only the drawing style: take from them the line work, colors, shading and "
-            f"simplicity, never their content or characters. Reference image {n_style + 1} is the main character: keep "
+    return (f"Reference images 1-{n_style} show only the drawing style: take from them the line work, shading and simplicity, "
+            f"never their content, characters or colour scheme (the colours come from the palette below). Reference image {n_style + 1} is the main character: keep "
             "exactly its head, face, colors, markings, body proportions; change only pose, action and expression. "
-            f"{marks}. SCENE: {scene} If the picture has no specific place, its background is plain near-white paper, "
-            f"even and untinted. {palette}. Every surface is clean and unmarked: blank paper, blank screens, plain "
+            f"{marks}. SCENE: {scene} {fg_backdrop()}. {palette}. Every surface is clean and unmarked: blank paper, blank screens, plain "
             "envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. "
             "Draw everything in exactly the drawing style of the style references.")
 
