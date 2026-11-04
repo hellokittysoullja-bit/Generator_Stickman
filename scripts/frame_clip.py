@@ -471,7 +471,9 @@ def hand_plan(fr, p, hand, D=None):
             placed.append(wb)
         if manual and wb is not None:
             # пока пишется и ещё HAND_HOLD_SEC — подпись целиком в кадре; дальше — целиком или вне кадра
-            long_edit.hold_text(p["segments"], t, t_end + HAND_HOLD_SEC, wb, fr["SW"], fr["SH"])
+            # и подпись, и то, на что показывает стрелка (L03: «Глория Марк» стояла, а стрелка уходила за край кадра)
+            hb = (min(wb[0], box[0]), min(wb[1], box[1]), max(wb[2], box[2]), max(wb[3], box[3])) if arr else wb
+            long_edit.hold_text(p["segments"], t, t_end + HAND_HOLD_SEC, hb, fr["SW"], fr["SH"])
             long_edit.keep_text(p["segments"], t_end + HAND_HOLD_SEC, wb, fr["SW"], fr["SH"])
     return p
 
