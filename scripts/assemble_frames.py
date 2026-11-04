@@ -405,7 +405,7 @@ def main(video_dir):
         # доля рукописного — по тому, что реально напишется (план), а не по заявленному: подпись или мысль, которой не
         # нашлось места, не считается (L03: заявлено 61 %, план дал 47 % — 10 подписей и 8 мыслей не встали)
         hand_n = sum(len(c.get("hand") or []) + bool(c.get("key")) + bool(c.get("accent")) for c in shot_log)
-        bold_n = sum(1 for j in jobs for e in j.get("fx") or [] if e["kind"] == "bold")
+        bold_n = sum(1 for j in jobs for e in j.get("fx") or [] if e["kind"] == "bold" and not e.get("narrator"))
         if hand_n + bold_n and hand_n/(hand_n + bold_n) < long_rules.HAND_SHARE_MIN - 1e-9:
             print(f"✗ TEXT-SHARE по плану: рукописных {hand_n}, жирных {bold_n} — {hand_n/(hand_n + bold_n):.0%} < "
                   f"{long_rules.HAND_SHARE_MIN:.0%}; что не встало — shots_report_plan.json, notes кадров")

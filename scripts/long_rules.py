@@ -590,6 +590,8 @@ def label_times(video_dir, blocks, frames, fx, starts, ends):
         if not 0 <= i < len(blocks):
             continue
         for kind in ("bold", "hand"):
+            if kind == "bold" and v.get("narrator"):    # строка кота-ведущего — его часть, её частоту держит
+                continue                                  # narrator_rhythm (раз в 1,5–3 мин)
             for e in v.get(kind) or []:
                 t = _word_t(blocks, starts, ends, [i], e["word"], wt) if e.get("word") else None
                 out.append((starts[i] if t is None else t, kind, e.get("text", "")))
@@ -637,6 +639,10 @@ def narrator_rhythm(fx, starts, ends):
     err = []
     total = ends[-1] if ends else 0.0
     ts = sorted(starts[int(n) - 1] for n, v in fx.items() if v.get("narrator") and 0 < int(n) <= len(starts))
+    for n, v in fx.items():                      # кот говорит со зрителем, сцена размыта — карандашу там не место,
+        if v.get("narrator") and not v.get("bold"):   # смысл несёт жирная строка (владелец 04.11)
+            err.append(f"NARRATOR: фраза {n} — кот-ведущий без жирной строки (fx.json bold): при размытом фоне смысл "
+                       f"всегда несёт жирный текст")
     early = [t for t in ts if t < NARRATOR_NOT_BEFORE]
     if early:
         err.append(f"NARRATOR: кот-ведущий на {early[0]:.1f} с — не в первые {NARRATOR_NOT_BEFORE:.0f} с ролика")
@@ -665,7 +671,7 @@ def text_share(frames, fx):
     hand = sum(len((fx.get(n) or {}).get("hand") or []) for n in fx)
     hand += sum(bool(v.get(k)) for v in frames.values() for k in ("key", "accent")
                 if {"new", "lib", "same", "plan", "anim"} & set(v))
-    bold = sum(len((fx.get(n) or {}).get("bold") or []) for n in fx)
+    bold = sum(len((fx.get(n) or {}).get("bold") or []) for n in fx if not (fx.get(n) or {}).get("narrator"))
     if hand + bold and hand/(hand + bold) < HAND_SHARE_MIN - 1e-9:
         return [f"TEXT-SHARE: рукописных надписей {hand}, жирных {bold} — рукописного {hand/(hand + bold):.0%} < "
                 f"{HAND_SHARE_MIN:.0%}: жирная строка — только поясняющая сверху, остальное — подпись рукой со стрелкой "

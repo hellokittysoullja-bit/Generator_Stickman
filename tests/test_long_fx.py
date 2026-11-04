@@ -49,9 +49,9 @@ def test_narrator_is_alive_within_a_short_appearance():
     assert steps.max() < 2.0                          # без рывков головы между кадрами
 
 
-def test_bold_text_outline_stays_weak():
-    # владелец дважды: «чуть-чуть сильнее» — обводка тонкая и полупрозрачная, не наклейка
-    assert fx.STROKE <= 3 and 0.8 <= fx.STROKE_ALPHA < 1.0
+def test_bold_text_outline_is_thick_black_like_reference():
+    # 28.10 — тонкая полупрозрачная; 04.11 по образцу канала Дани: «чуть сильнее обводку… на постоянке»
+    assert fx.STROKE >= 6 and fx.STROKE_ALPHA == 1.0
 
 
 def test_fx_json_needs_why(tmp_path):
@@ -74,7 +74,8 @@ def test_events_put_text_on_its_word_and_narrator_on_the_phrase():
     bold = next(e for e in ev if e["kind"] == "bold")
     assert (nar["t0"], nar["t1"]) == (1.9, 9.0)
     assert nar["words"][1]["start"] == 3.1 - 1.9 - fx.ENTER_SEC      # слова — от выхода кота
-    assert abs(bold["t0"] - 3.05) < 1e-9 and bold["t1"] == 9.0        # с котом — до конца фразы
+    ready = 1.9 + fx.ENTER_SEC + fx.GROW_SEC + fx.SETTLE_SEC + fx.BOLD_AFTER_NARRATOR
+    assert abs(bold["t0"] - max(3.05, ready)) < 1e-9 and bold["t1"] == 9.0   # на слове, но не раньше, чем кот сел
     plain = fx.events({"narrator": None, "bold": [{"text": "2 минуты", "word": "двух", "why": "x"}]},
                       1.9, 9.0, words, "", seed=1)
     assert plain[0]["t1"] - plain[0]["t0"] <= fx.BOLD_HOLD_SEC + 1e-9   # без кота строка не висит через склейки
@@ -86,12 +87,12 @@ def test_track_keeps_bold_text_off_the_narrator():
                    0.0, 3.0, [{"word": "Знакомо?", "start": 0.05, "end": 0.6}], "Знакомо?", seed=0)
     tr = fx.Track(ev, 3.0)
     f = np.full((fx.H, fx.W, 3), 240, np.float32)
-    out = tr.apply(f, 0.7)
+    out = tr.apply(f, 2.0)                                       # строка — после того, как кот вырос и сел
     b = next(e for e in tr.bold)
     box = tr.nar[0][2]
     o = b["obj"]
     assert o.cx + o.width/2 < box[0] or o.cy + o.h/2 < box[1]          # строка левее кота или выше него
-    assert o.size == fx.SIZE_NARRATOR                                   # под котом кегль полный
+    assert o.size >= 0.72*fx.SIZE_NARRATOR                              # под котом — крупно, длинное мельчает
     assert out.shape == f.shape and not np.array_equal(out, f)
 
 
@@ -103,7 +104,8 @@ def test_narrator_waits_until_written_thought_is_read():
     nar = next(e for e in out if e["kind"] == "narrator")
     assert nar["t0"] == 7.0 and abs(nar["words"][0]["start"] - (0.2 - 2.0)) < 1e-9
     bold = next(e for e in out if e["kind"] == "bold")
-    assert bold["narrator"] is False                 # встала до ведущего — строка без ведущего
+    ready = 7.0 + fx.ENTER_SEC + fx.GROW_SEC + fx.SETTLE_SEC + fx.BOLD_AFTER_NARRATOR
+    assert bold["narrator"] is True and bold["t0"] >= ready - 1e-9   # строка кота переезжает за котом (04.11)
     short = [dict(evs[0], t1=9.5), evs[1]]
     assert fx.after_writing(short, [7.9], 1.5)[0]["kind"] == "narrator_dropped"   # мысль почти до конца — ведущего нет
     assert fx.after_writing(evs, [1.0], 1.5)[0]["t0"] == 5.0                    # давно дописанная не мешает
@@ -152,3 +154,24 @@ def test_parallax_moves_near_more_than_far_and_is_identity_at_start():
     near = np.argwhere(out[60, :, 0] < 100).mean() - 99.5
     far = np.argwhere(out[15, :, 0] < 180).mean() - 24.5
     assert abs(near) > abs(far) + 3
+
+
+def test_narrator_text_comes_after_the_cat_and_leaves_with_it():
+    """Владелец 04.11: «никогда не так, что кот появился и сразу жирный шрифт… сначала кот, чисто, потом текст с
+    анимацией… и исчезает вместе с котом»."""
+    words = [{"word": "Хочешь", "start": 0.05, "end": 0.4}, {"word": "сейчас", "start": 0.5, "end": 0.9}]
+    spec = {"narrator": {"why": "x"}, "bold": [{"text": "попробуй", "word": "Хочешь", "why": "x"},
+                                               {"text": "сейчас", "word": "сейчас", "why": "x"}]}
+    ev = fx.events(spec, 0.0, 6.0, words, "Хочешь попробовать сейчас?", seed=0)
+    bold = sorted((e for e in ev if e["kind"] == "bold"), key=lambda e: e["t0"])
+    ready = fx.ENTER_SEC + fx.GROW_SEC + fx.SETTLE_SEC + fx.BOLD_AFTER_NARRATOR
+    assert bold[0]["t0"] >= ready - 1e-9                              # кот сначала вырос и сел, фон чистый
+    assert bold[1]["t0"] >= bold[0]["t0"] + fx.BOLD_MIN_SEC - 1e-9
+    assert bold[-1]["t1"] == 6.0                                       # последняя строка уходит вместе с котом
+    o = fx.BoldText("сейчас", 900, 300, size=120, t0=0.0)
+    f = np.full((fx.H, fx.W, 3), 240, np.float32)
+    shown = o.composite(f.copy(), 3.0, t_end=6.0)
+    leaving = o.composite(f.copy(), 6.0 - fx.BOLD_EXIT_SEC/2, t_end=6.0)
+    gone = o.composite(f.copy(), 6.0, t_end=6.0)
+    ink = lambda g: float((np.abs(g - f) > 30).mean())                 # noqa: E731
+    assert ink(shown) > ink(leaving) > ink(gone) == 0.0                 # уходит анимацией, а не щелчком

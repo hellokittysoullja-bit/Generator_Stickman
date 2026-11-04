@@ -19,9 +19,9 @@ from PIL import Image, ImageDraw
 
 W, H = 1920, 1080
 FONT_AXES = {"Weight": 900}
-STROKE = 3                 # слабая обводка: тонкая и полупрозрачная, не наклейка
-STROKE_ALPHA = 0.84          # владелец 28.10, дважды «чуть-чуть сильнее обводку»: 0.55 → 0.72 → 0.84
-SHADOW = (0, 5, 9, 0.55)   # dx, dy, blur, alpha: мягкая тень под буквами
+STROKE = 6                 # владелец 04.11 по образцу канала Дани: «чуть сильнее обводку, на постоянке»: 3 → 6 px
+STROKE_ALPHA = 1.0         # и чёрная, не полупрозрачная (28.10: 0.55 → 0.72 → 0.84; 04.11: 1.0)
+SHADOW = (0, 7, 8, 0.65)   # dx, dy, blur, alpha: мягкая тень под буквами
 GLOW = (14, 0.38)          # размытие и сила тёмного ореола: белое на кремовой бумаге без него не читается (пробник 28.10)
 
 
@@ -64,10 +64,13 @@ def focus_blur(f, t, t0, t1, sigma=20, dark=0.05, ramp=0.5, out=None, veil=VEIL)
 GROW_SEC, OVER, SETTLE_SEC = 0.4, 1.36, 0.55   # замер образца: 0,4 с рост до 136 %, 0,55 с плавная посадка к 100 %
 ENTER_SEC = 0.2            # сцена сначала резкая (образец: ~0,15 с), потом выходит кот
 EXIT_SEC = 0.3             # уход без склейки: обратный рост и сцена в фокус
+BOLD_AFTER_NARRATOR = 0.35   # строка кота-ведущего — только когда кот вырос и сел, и ещё через столько (владелец 04.11:
+                             # «никогда не так, что кот появился и сразу жирный шрифт… сначала кот, чисто, потом текст»)
+BOLD_EXIT_SEC = 0.28         # строка уходит анимацией (мельчает и тает), последняя строка кота — вместе с котом
 BOLD_HOLD_SEC = 2.4        # строка без кота стоит не дольше: камера режет планы, а строка стоит на экране
 BOLD_MIN_SEC = 1.1         # и не меньше: следующая строка той же фразы ждёт, пока эта допечатана и прочитана
-SIZE_NARRATOR, SIZE_PLAIN = 150, 150   # владелец 04.11: жирный «чуть побольше» — строка без кота 120 → 150 (+25 %);
-#                                       под котом и так 150: крупнее рядом с ним не помещается (замер «Знакомо?» 916 px)
+SIZE_NARRATOR, SIZE_PLAIN = 172, 172   # владелец 04.11: «чуть-чуть увеличить»: строка 120 → 150 → 172, под котом 150 → 172
+#                                       длинная строка у кота сама мельчает (free_spot: 0,85 и 0,72 кегля)
 BOLD_TOP_BAND = 0.36     # и только сверху, как поясняющая строка у Дани: центр строки в верхних 36 % кадра
 
 
@@ -290,9 +293,12 @@ class BoldText:
     def composite(self, f, t, t_end=None):
         if t < self.t0:
             return f
-        fade = 1.0
-        if t_end is not None and t > t_end - 0.18:
-            fade = max(0.0, (t_end - t)/0.18)
+        fade, sk = 1.0, 1.0
+        if t_end is not None and t > t_end - BOLD_EXIT_SEC:      # уход анимацией: мельчает и тает к t_end
+            k = max(0.0, (t_end - t)/BOLD_EXIT_SEC)
+            fade, sk = ease_out(k), 0.78 + 0.22*ease_out(k)
+            if fade <= 0.01:
+                return f
         left = self.cx - self.width/2
         u0 = t - self.t0
         f = np.array(f, np.float32)                 # буквы кладутся на месте — на копию кадра
@@ -305,7 +311,8 @@ class BoldText:
                     continue
                 g, pad = self._g(ch)
                 gx = self.cx + (left + x + w/2 - self.cx)*sc
-                f = _paste(f, g, gx + shake, self.cy, scale=sc, alpha=min(1.0, u*3)*fade, blur_x=(1 - u)*40)
+                gx = self.cx + (gx - self.cx)*sk
+                f = _paste(f, g, gx + shake, self.cy, scale=sc*sk, alpha=min(1.0, u*3)*fade, blur_x=(1 - u)*40)
             return f
         if self.style == "rise":
             wi = 0
@@ -318,7 +325,8 @@ class BoldText:
                     continue
                 u = min(1.0, d/0.28)
                 g, pad = self._g(ch)
-                f = _paste(f, g, left + x + w/2, self.cy + 70*(1 - ease_out(u)), alpha=ease_out(u)*fade)
+                f = _paste(f, g, self.cx + (left + x + w/2 - self.cx)*sk, self.cy + 70*(1 - ease_out(u)), scale=sk,
+                           alpha=ease_out(u)*fade)
             return f
         # letters: каждая буква выпрыгивает из маленькой с отскоком и лёгким поворотом (как в образце)
         for i, (ch, x, w) in enumerate(self.xs):
@@ -330,7 +338,8 @@ class BoldText:
             u = min(1.0, d/0.18)
             g, pad = self._g(ch)
             rot = (8 if i % 2 else -8)*(1 - u)
-            f = _paste(f, g, left + x + w/2, self.cy + 18*(1 - u), scale=max(0.05, back_out(u)), rot=rot, alpha=fade)
+            f = _paste(f, g, self.cx + (left + x + w/2 - self.cx)*sk, self.cy + 18*(1 - u), scale=max(0.05, back_out(u))*sk,
+                       rot=rot, alpha=fade)
         return f
 
 
@@ -408,7 +417,31 @@ def events(spec, t0, t1, words, text, seed=0):
             end = min(end, e["t0"] + BOLD_HOLD_SEC)
         e["t1"] = max(e["t0"] + 0.5, end)
         e["narrator"] = spec.get("narrator") is not None
-    return ev + bold
+    return bold_after_narrator(ev + bold)
+
+
+def bold_after_narrator(evs):
+    """Строки кота-ведущего: первая — не раньше, чем кот вырос, сел и прошло BOLD_AFTER_NARRATOR; следующая — когда
+    прошлая дописана (BOLD_MIN_SEC); последняя стоит до ухода кота и уходит вместе с ним. Не влезла — не ставится."""
+    out = [dict(e) for e in evs]
+    for e in out:
+        if e["kind"] != "narrator":
+            continue
+        ready = e["t0"] + ENTER_SEC + GROW_SEC + SETTLE_SEC + BOLD_AFTER_NARRATOR
+        t_from = e.get("t0_orig", e["t0"])          # кот вышел позже (after_writing) — его строки переезжают за ним
+        mine = sorted((b for b in out if b["kind"] == "bold" and b.get("narrator") and t_from - 1e-6 <= b["t0"] < e["t1"]),
+                      key=lambda b: b["t0"])
+        prev = None
+        for b in mine:
+            b["t0"] = max(b["t0"], ready, prev["t0"] + BOLD_MIN_SEC if prev else ready)
+            if b["t0"] > e["t1"] - 0.6:
+                b["kind"] = "bold_dropped"
+                continue
+            if prev:
+                prev["t1"] = b["t0"]
+            b["t1"] = e["t1"]
+            prev = b
+    return out
 
 
 def after_writing(evs, write_ends, hold):
@@ -429,14 +462,11 @@ def after_writing(evs, write_ends, hold):
                 if b["kind"] == "bold" and e["t0"] <= b["t0"] < e["t1"]:
                     b["narrator"] = False
             continue
-        for b in out:
-            if b["kind"] == "bold" and e["t0"] <= b["t0"] < start:
-                b["narrator"] = False
-                b["t1"] = min(b["t1"], b["t0"] + BOLD_HOLD_SEC)
         shift = start - e["t0"]
+        e["t0_orig"] = e.get("t0_orig", e["t0"])
         e["words"] = [dict(w, start=w["start"] - shift, end=w["end"] - shift) for w in e.get("words", [])]
         e["t0"] = start
-    return out
+    return bold_after_narrator(out)
 
 
 class Track:

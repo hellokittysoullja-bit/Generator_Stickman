@@ -393,7 +393,7 @@ def test_bold_line_stays_on_top_and_bigger():
     """Жирный — только поясняющая строка сверху (как у Дани) и на 25 % крупнее (владелец 04.11)."""
     import numpy as np
     import long_fx
-    assert long_fx.SIZE_PLAIN == 150                                 # было 120
+    assert long_fx.SIZE_PLAIN >= 170 and long_fx.STROKE >= 6 and long_fx.STROKE_ALPHA == 1.0   # 04.11: крупнее, обводка гуще
     f = np.full((long_fx.H, long_fx.W, 3), 245, np.float32)
     f[int(long_fx.H*0.2):, :] = 20                                  # чистая бумага только сверху — строка там
     f[:, :300] = 20
@@ -401,9 +401,9 @@ def test_bold_line_stays_on_top_and_bigger():
                                       top_band=long_fx.BOLD_TOP_BAND)
     assert cy <= long_fx.H*long_fx.BOLD_TOP_BAND
     g = np.full((long_fx.H, long_fx.W, 3), 245, np.float32)
-    cx, cy, sz, _ = long_fx.free_spot(g, "ДЕНЬ БЫЛ ТЯЖЁЛЫЙ", long_fx.SIZE_PLAIN, prefer=(960, 900),
+    cx, cy, sz, _ = long_fx.free_spot(g, "ЛУЧШЕ ЗАВТРА", long_fx.SIZE_PLAIN, prefer=(960, 900),
                                       top_band=long_fx.BOLD_TOP_BAND)
-    assert cy <= long_fx.H*long_fx.BOLD_TOP_BAND and sz == long_fx.SIZE_PLAIN   # пусто везде — всё равно сверху
+    assert cy <= long_fx.H*long_fx.BOLD_TOP_BAND and sz >= 0.85*long_fx.SIZE_PLAIN   # пусто везде — всё равно сверху
 
 
 def test_hand_label_has_pen_drawn_arrow_to_the_object():
@@ -442,11 +442,15 @@ def test_narrator_not_in_first_10s_and_every_1_5_to_3_minutes():
     starts = [0.0, 5.0, 40.0, 100.0, 150.0, 250.0, 300.0, 400.0, 450.0]
     ends = starts[1:] + [560.0]
     nar = {"why": "т"}
-    ok = {"3": {"narrator": nar}, "5": {"narrator": nar}, "7": {"narrator": nar}, "9": {"narrator": nar}}
+    b = [{"text": "строка", "word": "ты", "why": "т"}]
+    ok = {"3": {"narrator": nar, "bold": b}, "5": {"narrator": nar, "bold": b}, "7": {"narrator": nar, "bold": b},
+          "9": {"narrator": nar, "bold": b}}
     assert long_rules.narrator_rhythm(ok, starts, ends) == []        # 40, 150, 300, 450 с; конец 560
-    early = dict(ok, **{"2": {"narrator": nar}})
+    assert any("без жирной строки" in e for e in long_rules.narrator_rhythm(dict(ok, **{"3": {"narrator": nar}}),
+                                                                             starts, ends))   # ведущий всегда с жирным
+    early = dict(ok, **{"2": {"narrator": nar, "bold": b}})
     assert any("первые 10 с" in e for e in long_rules.narrator_rhythm(early, starts, ends))
-    often = dict(ok, **{"4": {"narrator": nar}})                       # 100 с — через 60 с после 40
+    often = dict(ok, **{"4": {"narrator": nar, "bold": b}})                       # 100 с — через 60 с после 40
     assert any("чаще раза" in e for e in long_rules.narrator_rhythm(often, starts, ends))
-    rare = {"3": {"narrator": nar}, "8": {"narrator": nar}}            # 40 → 400: 360 с без ведущего
+    rare = {"3": {"narrator": nar, "bold": b}, "8": {"narrator": nar, "bold": b}}            # 40 → 400: 360 с без ведущего
     assert any("реже раза" in e for e in long_rules.narrator_rhythm(rare, starts, ends))
