@@ -473,7 +473,7 @@ def _stage_beats(p, blocks, starts, ends, idx, video_dir):
         return []
     els = sp.get("items") or sp.get("cards") or []
     out = []
-    for at in [e.get("at") for e in els] + [sp.get("focus_at")]:
+    for at in [e.get("at") for e in els] + [sp.get("focus_at"), sp.get("overview_at")]:
         if at:
             t = _shot_t(video_dir, blocks, starts, ends, idx, at)     # тем же поиском слова, что у сборщика
             if t is not None:
@@ -506,6 +506,9 @@ def edit_sounds(video_dir, blocks, frames, starts, ends):
             if sp and ws is not None:                     # появления и сдвиги сцены на бумаге — на своих словах
                 els = sp.get("items") or sp.get("cards") or []
                 marks = [(e.get("at"), e.get("sound")) for e in els] + [(sp.get("focus_at"), sp.get("focus_sound"))]
+                if sp.get("type") == "board":         # доска: звук на каждом переезде камеры (long_board.sounds)
+                    marks = [(c.get("at"), c.get("sound", "fast_whoosh")) for c in els[1:]] + \
+                            [(sp.get("overview_at"), sp.get("overview_sound", "swoosh_deep"))]
                 for at, snd in marks:
                     if at and snd:
                         try:
@@ -631,9 +634,24 @@ def stage_checks(video_dir):
                 continue
             where = f"STAGE: фраза {n}, план {k}"
             kind = sp.get("type")
+            if kind == "board":                       # доска расследования (long_board)
+                cards = sp.get("cards") or []
+                if not 2 <= len(cards) <= 5:
+                    err.append(f"{where}: на доске {len(cards)} карточек — от двух до пяти (цепочка, а не стена)")
+                for j, c in enumerate(cards):
+                    if j and not c.get("at"):
+                        err.append(f"{where}: карточка {j + 1} без слова at — камера приходит на неё на слове")
+                    if len((c.get("caption") or "").split()) > 5:
+                        err.append(f"{where}: подпись карточки «{c['caption']}» длиннее пяти слов")
+                    if len(((c.get("note") or {}).get("lines")) or []) > 3:
+                        err.append(f"{where}: на стикере карточки {j + 1} больше трёх строк")
+                    src = c.get("src") or ""
+                    if src.startswith("lib:") and not os.path.exists(long_stage.resolve_src(src, video_dir)):
+                        err.append(f"{where}: в библиотеке нет {src[4:]}")
+                continue
             els = sp.get("items") if kind == "items" else sp.get("cards") if kind == "cards" else None
             if els is None:
-                err.append(f"{where}: вид сцены «{kind}» — items (вырезки) или cards (две карточки)")
+                err.append(f"{where}: вид сцены «{kind}» — items (вырезки), cards (две карточки) или board (доска)")
                 continue
             if kind == "items" and not 1 <= len(els) <= 3:
                 err.append(f"{where}: вырезок {len(els)} — от одной до трёх, иначе мелко и не читается")

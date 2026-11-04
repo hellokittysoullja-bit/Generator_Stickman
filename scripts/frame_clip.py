@@ -552,7 +552,11 @@ def _stage_frame(seg, t):
         sp = seg["stage"]
         items = sp["items"] if sp["type"] == "items" else sp["cards"]
         assets = [np.asarray(Image.open(it["_png"]).convert("RGBA")) for it in items]
-        _STAGES[key] = long_stage.Stage(sp, assets, seg["t1"] - seg["t0"])
+        if sp["type"] == "board":                      # доска расследования (long_board, владелец 04.11)
+            import long_board
+            _STAGES[key] = long_board.Board(sp, [a[..., :3] for a in assets], seg["t1"] - seg["t0"])
+        else:
+            _STAGES[key] = long_stage.Stage(sp, assets, seg["t1"] - seg["t0"])
     return _STAGES[key].frame(t - seg["t0"])
 
 

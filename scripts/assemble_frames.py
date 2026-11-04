@@ -102,7 +102,9 @@ def prepare_stages(video_dir, edits, report):
     import long_stage
     cache = os.path.join(video_dir, "media_plan", "stage_cache")
 
-    code = hashlib.sha256(open(long_stage.__file__, "rb").read()).hexdigest()[:12]   # правка вида сцены -> новый клип
+    import long_board
+    code = hashlib.sha256(open(long_stage.__file__, "rb").read() + open(long_board.__file__, "rb").read()
+                          ).hexdigest()[:12]                                  # правка вида сцены -> новый клип
 
     def phrase_src(n):
         return frame_source(video_dir, n - 1, report.get(n - 1) or {})[0]
@@ -115,6 +117,9 @@ def prepare_stages(video_dir, edits, report):
             items = sp["items"] if sp["type"] == "items" else sp["cards"]
             for it in items:
                 path = long_stage.resolve_src(it["src"], video_dir, phrase_src)
+                if sp["type"] == "board":                  # доска: фото-карточка рисуется из всей картинки
+                    it["_png"] = path
+                    continue
                 rgba = long_stage.card(path, cache) if sp["type"] == "cards" else \
                     long_stage.cutout(path, it.get("box"), it.get("poly"), cache, point=it.get("point"),
                                       solid=bool(it.get("solid")))

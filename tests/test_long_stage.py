@@ -217,3 +217,58 @@ def test_stage_labels_do_not_fade_before_a_tear():
     segs[0]["stage"]["hold_labels"] = False
     faded = long_stage.Stage(segs[0]["stage"], [_blob(), _blob(), _blob()], end + 0.02).frame(end)
     assert (held < 60).sum() > (faded < 60).sum()                               # чёрная обводка подписей на месте
+
+
+# --- доска расследования (владелец 04.11: «доску навсегда принимаю») ----------------------------------------------
+def _board(monkeypatch, n=4):
+    import long_board
+    monkeypatch.setattr(long_board, "cork", lambda bw, bh, seed=11: np.full((bh, bw, 3), 150, np.uint8))
+    words = [{"word": f"слово{k}", "start": 2.0*k, "end": 2.0*k + 0.4} for k in range(1, n + 2)]
+    spec = {"type": "board", "cards": [{"src": "x", "caption": f"карточка {k}", "at": f"слово{k}" if k else None,
+                                        "note": {"lines": ["заметка"]}} for k in range(n)],
+            "overview_at": f"слово{n + 1}"}
+    spec = long_stage.times(spec, lambda at: long_edit.word_time(at, words), 0.0)
+    pics = [np.full((200, 300, 3), 200, np.uint8) for _ in range(n)]
+    return long_board, spec, long_board.Board(spec, pics, 2.0*(n + 2))
+
+
+def test_board_camera_arrives_on_each_card_on_its_word_and_whooshes_while_moving(monkeypatch):
+    lb, spec, b = _board(monkeypatch)
+    for k in range(1, 4):
+        cx, cy, h, rot, stop, travel = b.camera(spec["cards"][k]["t"] + 0.01)
+        assert stop == k and travel is None                                    # на слове камера уже на карточке
+        _, _, _, _, _, moving = b.camera(spec["cards"][k]["t"] - 0.3)
+        assert moving is not None                                              # а чуть раньше — едет к ней
+    snd = long_stage.sounds(spec)
+    for t, name, _ in snd[:-1]:
+        assert b.camera(t)[5] is not None and name == "fast_whoosh"            # свист — посреди переезда
+    assert b.camera(spec["overview_t"] + 2.0)[4] == 4                           # в конце — вся доска
+
+
+def test_board_string_never_crosses_a_caption(monkeypatch):
+    """Нить идёт между верхами карточек и к стикерам над ними — не по подписи (v1: «Мюнхен» перечёркнут нитью)."""
+    import long_board
+    for n in range(2, 6):
+        bw, bh = long_board.board_size(n)
+        cards, notes = long_board.layout(n, bw, bh)
+        ch = long_board.CARD_W*2/3 + 30 + 140
+        pins = [(x, y - ch/2 + 30) for x, y in cards]
+        lines = [long_board.sag(pins[k], pins[k + 1]) for k in range(n - 1)]
+        lines += [long_board.sag(pins[k], (notes[k][0], notes[k][1] - 166), 0.03) for k in range(n)]
+        for x, y in cards:
+            x0, x1 = x - long_board.CARD_W/2 - 30, x + long_board.CARD_W/2 + 30
+            y0, y1 = y + ch/2 - 140, y + ch/2                                   # поле подписи
+            for pts in lines:
+                inside = (pts[:, 0] > x0) & (pts[:, 0] < x1) & (pts[:, 1] > y0) & (pts[:, 1] < y1)
+                assert not inside.any(), (n, x, y)
+
+
+def test_board_spec_is_checked(tmp_path):
+    bad = {"frames": {"5": {"shots": [{"why": "доска с одной карточкой", "stage": {"type": "board", "cards": [
+        {"src": "a", "caption": "одна две три четыре пять шесть"}]}},
+        {"why": "доска без слов у карточек", "at": "x", "stage": {"type": "board", "cards": [
+            {"src": "a"}, {"src": "b", "note": {"lines": ["1", "2", "3", "4"]}}]}}]}}}
+    (tmp_path / "edit.json").write_text(json.dumps(bad, ensure_ascii=False), encoding="utf-8")
+    err = long_rules.stage_checks(str(tmp_path))
+    assert any("от двух до пяти" in e for e in err) and any("длиннее пяти слов" in e for e in err)
+    assert any("без слова at" in e for e in err) and any("больше трёх строк" in e for e in err)

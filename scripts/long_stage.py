@@ -451,6 +451,9 @@ class Stage:
 
 def times(spec, word_time, t0):
     """Слова элементов -> секунды от начала плана; spec меняется на месте (поля t, focus_t)."""
+    if spec["type"] == "board":                       # доска расследования — свой модуль
+        import long_board
+        return long_board.times(spec, word_time, t0)
     key = "items" if spec["type"] == "items" else "cards"
     for k, it in enumerate(spec[key]):
         it["t"] = max(0.0, word_time(it["at"]) - t0) if it.get("at") else 0.0 + 0.15*k
@@ -462,6 +465,9 @@ def times(spec, word_time, t0):
 def beats(spec):
     """Секунды от начала плана всех событий сцены — появлений элементов и сдвига карточек, со звуком или без: это
     моменты на экране, к ним прилипает звук смысла на том же слове (long_sfx.snap)."""
+    if spec["type"] == "board":
+        import long_board
+        return long_board.beats(spec)
     key = "items" if spec["type"] == "items" else "cards"
     out = [it["t"] for it in spec[key] if "t" in it]
     if spec.get("focus_t") is not None:
@@ -471,6 +477,9 @@ def beats(spec):
 
 def sounds(spec):
     """[(секунды от начала плана, звук, why)] появлений и сдвигов сцены."""
+    if spec["type"] == "board":
+        import long_board
+        return long_board.sounds(spec)
     out = []
     key = "items" if spec["type"] == "items" else "cards"
     for it in spec[key]:
