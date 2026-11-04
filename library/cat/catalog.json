@@ -3635,6 +3635,24 @@
   "source": "scripts/reel_draw.py videos/19_opozdal/reel"
  },
  {
+  "file": "2026-11-04_gen_cx_gpt-image-2_5_862b239c.png",
+  "sha256": "862b239c4d36a24b60f1a61a17d81312d4e1de117b86d78360aea06e3f850e24",
+  "bytes": 2356588,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-04",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Image 1 is a finished drawing. Redraw exactly the same drawing: the same composition, framing, camera angle, scale, and the same position, size, pose and expression of the main character and of every object, the same line work. Image 2 is the main character's reference: keep exactly its head, face, colours and markings. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right The only change from image 1: Background: plain warm cream paper (#FAF7F0) everywhere around the figures, exactly like a blank sheet of drawing paper: no painted wall, no wall colour, no wallpaper, no floorboards or wood grain, no room corners; where something stands on the floor there is only one thin simple ink floor line or a soft light-grey shadow under it, the rest of the floor area is the same blank cream paper. Remove the wooden floor completely: no floorboards, no wood texture on the floor, the floor is the same blank cream paper with only a soft grey shadow under the stool, table and chairs. Remove the window and any sunlight patch on the wall: the wall is blank cream paper. Colours: black ink lines on cream paper in exactly the hand-drawn style of image 1; the main character and the objects (furniture, clock, clothes, shoes, bags, door, things in the paws) keep their soft watercolour colours from image 1, gentle and muted, never neon; only the background is uncoloured cream paper. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, blank clock faces, no letters or numbers anywhere.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "scripts/reel_recream.py videos/21_znayu/reel gen/k3_plan.png"
+ },
+ {
   "file": "2026-11-04_gen_cx_gpt-image-2_5_91386aab.png",
   "sha256": "91386aab20230c7ecf010ec17a4b80c4eb9b2c37d5062d6258f1998146524044",
   "bytes": 1895038,
@@ -3813,6 +3831,24 @@
   "quality": "medium",
   "price": 197550,
   "source": "scripts/reel_recream.py videos/19_opozdal/reel gen/d1_clock.png"
+ },
+ {
+  "file": "2026-11-04_gen_cx_gpt-image-2_5_c0eae5e8.png",
+  "sha256": "c0eae5e8875fb1241bf3f99c87e8e111c71523b7ccf957ed8d795952be9fe97b",
+  "bytes": 1916874,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-04",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Image 1 is a finished drawing. Redraw exactly the same drawing: the same composition, framing, camera angle, scale, and the same position, size, pose and expression of the main character and of every object, the same line work. Image 2 is the main character's reference: keep exactly its head, face, colours and markings. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right The only change from image 1: Background: plain warm cream paper (#FAF7F0) everywhere around the figures, exactly like a blank sheet of drawing paper: no painted wall, no wall colour, no wallpaper, no floorboards or wood grain, no room corners; where something stands on the floor there is only one thin simple ink floor line or a soft light-grey shadow under it, the rest of the floor area is the same blank cream paper. Remove the wooden floor completely: no floorboards, no wood texture on the floor, the floor is the same blank cream paper with only a soft grey shadow under the stool, table and chairs. Remove the window and any sunlight patch on the wall: the wall is blank cream paper. Colours: black ink lines on cream paper in exactly the hand-drawn style of image 1; the main character and the objects (furniture, clock, clothes, shoes, bags, door, things in the paws) keep their soft watercolour colours from image 1, gentle and muted, never neon; only the background is uncoloured cream paper. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, blank clock faces, no letters or numbers anywhere.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "scripts/reel_recream.py videos/21_znayu/reel gen/k4_table.png"
  },
  {
   "file": "2026-11-04_gen_cx_gpt-image-2_5_d80264fe.png",
