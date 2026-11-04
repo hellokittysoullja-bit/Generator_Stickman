@@ -492,7 +492,8 @@ def main(video_dir):
     clips = [r[0] if r else None for r in results]
     cues = [(jobs[k]["T0"] + a, jobs[k]["T0"] + b, kind, 0.0) for k, r in enumerate(results) if r
             for a, b, kind in r[1]]
-    with open(os.path.join(mp, "shots_report.json"), "w", encoding="utf-8") as fh:
+    with open(os.path.join(mp, "shots_report.json" if pick is None else "shots_report_preview.json"), "w",
+              encoding="utf-8") as fh:                     # пробник не затирает отчёты настоящей сборки
         json.dump({"punch_gap_sec": shots.PUNCH_GAP_SEC, "key_gap_sec": KEY_GAP_SEC, "clips": shot_log},
                   fh, ensure_ascii=False, indent=1)
     views = sum(len(c.get("views", [])) for c in shot_log)
@@ -568,7 +569,8 @@ def main(video_dir):
                 cut_sounds.append(dict(name=e["sound"], t=round(clip_at[k] + dt, 4), gain_db=e.get("sound_gain", 0.0),
                                        why=f"надпись «{e['text']}»: {e.get('sound_why') or ''}"))
     rep = long_sfx.build(video_dir, starts, speech.word_times if timing == "phrase_lock" else [], total, voice, sfx_wav,
-                         cut_sounds=cut_sounds, cuts=sorted(set(screen_cuts)))
+                         cut_sounds=cut_sounds, cuts=sorted(set(screen_cuts)),
+                         report="sfx_report.json" if pick is None else "sfx_report_preview.json")
     if rep:
         mixed = os.path.join(work, "premix_sfx.wav")
         run(["ffmpeg", "-y", "-v", "error", "-i", premix, "-i", sfx_wav, "-filter_complex",

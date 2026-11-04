@@ -105,7 +105,7 @@ def snap(events, cuts):
     return events
 
 
-def build(video_dir, starts, word_times, total, voice_wav, out_wav, cut_sounds=(), cuts=()):
+def build(video_dir, starts, word_times, total, voice_wav, out_wav, cut_sounds=(), cuts=(), report="sfx_report.json"):
     """Дорожка звуков ролика в out_wav или None (нет ни sfx.json, ни звуков склеек). cut_sounds — звуки планов
     монтажа (edit.json "sound") на настоящем времени склейки, как в рилсах (reel.sound_plan): пик звука ровно на
     склейке. Ошибки — исключение: ролик с неслышным или оглушающим звуком не собирается."""
@@ -123,7 +123,7 @@ def build(video_dir, starts, word_times, total, voice_wav, out_wav, cut_sounds=(
     events.sort(key=lambda e: e["t"])
     st, rep = track(events, total, voice_wav)
     errs += rep["errors"]
-    with open(os.path.join(video_dir, "media_plan", "sfx_report.json"), "w", encoding="utf-8") as fh:
+    with open(os.path.join(video_dir, "media_plan", report), "w", encoding="utf-8") as fh:
         json.dump(dict(rep, errors=errs), fh, ensure_ascii=False, indent=1)
     if errs:
         raise SystemExit("Звуки ролика: " + "; ".join(errs))
