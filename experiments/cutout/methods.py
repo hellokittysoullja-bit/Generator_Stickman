@@ -193,3 +193,11 @@ def sam2b(rgb, box, pos, neg):
 
 def sam2b_matte(rgb, box, pos, neg):
     return _matte(rgb, sam2b(rgb, box, pos, neg), box)
+
+
+def anim_cut(rgb, box, pos, neg):
+    """Боевой вариант из scripts/anim.py: SAM 2.1 + матирование + усы."""
+    import sys
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "scripts"))
+    import anim
+    return anim.cut_sam(rgb, box, pos, neg)

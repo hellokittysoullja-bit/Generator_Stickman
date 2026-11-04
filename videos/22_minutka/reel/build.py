@@ -194,7 +194,7 @@ caption = ("Ляжешь на минутку, а уже ночь? Это не с
 assert len(QUOTE) == len(beats)
 matrix, inventory = transfer(beats, MAP, QUOTE, len(cands))
 passport = dict(
- standard=28, hook_type="диссонанс", account="основной аккаунт владельца",
+ standard=28, hook_type="вопрос", account="основной аккаунт владельца",
  roles=["hook", "preblock", "story", "cta", "mechanism", "answer", "payoff"],
  answer=dict(beat=5, do="отдыхай сидя, а будильник клади через комнату"),
  tricks=dict(dissonance=0, callout=1, preblock=1, riddle=1, preview=1, mechanism=4,

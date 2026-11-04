@@ -1838,8 +1838,9 @@ def _is_new(spec, log, reel_dir):
 def check_hf_hook(spec, log=(), reel_dir="", abs_dir=None):
     pp = spec.get("passport") or {}
     std = pp.get("standard") or 0
-    if std < HOOK_FLY_STANDARD and _is_new(spec, log, reel_dir):
-        return [f"новый рилс: нужен \"standard\": {HOOK_FLY_STANDARD} — хук на HyperFrames (scripts/anim_hf.py, скилл "
+    if std < LIVE_STANDARD and _is_new(spec, log, reel_dir):
+        return [f"новый рилс: нужен \"standard\": {LIVE_STANDARD} — ПРАВИЛО 30: в хуке движется и мир (пустое место "
+                "рисунка оживляет код, passport.hook.world), слои — anim.cut_sam; хук на HyperFrames (scripts/anim_hf.py, скилл "
                 "reel-anim), база рилса 13 (anim.save_layer, anim.inpaint_bg, tail_rig), ни одного повтора "
                 "рисунков и фраз прошлых рилсов, и ЖЕЛЕЗНЫЕ ПРАВИЛА 25: вторая фраза — второй крючок, никаких "
                 f"объяснений до {NO_EXPLAIN_SEC:.0f} с, движение рисунка с первого кадра не слабее планки 25, и БАЗА 26: "
@@ -1883,6 +1884,41 @@ def check_anim_base(spec, abs_dir):
         errs.append("фон под вырезанными слоями не через anim.inpaint_bg (силуэт предмета рельефом, рваный плинтус)")
     if re.search(r"save_layer\([^)]*[\"']tail[\"']", allsrc) and "tail_rig." not in allsrc:
         errs.append("слой хвоста есть, а сетки с физикой нет — хвост гнётся через scripts/tail_rig.py (образец — door_hf)")
+    std = (spec.get("passport") or {}).get("standard") or 0
+    if std >= LIVE_STANDARD:
+        if "cut_sam(" not in allsrc:
+            errs.append("правило 30: слои режутся anim.cut_sam (SAM 2.1 по точкам + матирование + усы) — телефон в лапах, "
+                        "огонёк, усы целиком, без подушки и линий мебели (стенд experiments/cutout, 04.11)")
+        errs += check_live_world(spec, d)
+    return errs
+
+
+# Правило 30 (владелец 04.11 о рилсе 22: «то, что ты сделал в 22-м, теперь у нас будет всегда… двигаться как в 22-м
+# всё»): в хуке движется не только герой, но и мир вокруг — пустое место рисунка (окно, экран, лист, телевизор,
+# зеркало), заказанное пустым, наполняет код композиции по смыслу хука (в 22-м: таймлапс неба день → ночь, солнце,
+# облака, на ударе луна и звёзды). passport.hook.world = {"area": что за место, "motion": что в нём происходит и как
+# это говорит тему}; в композиции хука — свой слой, нарисованный кодом (svg или canvas, не только хвост и штрихи).
+LIVE_STANDARD = 30
+LIVE_SKIP = ("tail", "rays")       # слои, которые были и раньше: хвост сеткой, штрихи удара — это не «мир»
+
+
+def check_live_world(spec, anim_dir):
+    w = (((spec.get("passport") or {}).get("hook") or {}).get("world") or {})
+    errs = []
+    for k in ("area", "motion"):
+        if len(str(w.get(k, "")).strip()) < 10:
+            errs.append(f"правило 30: passport.hook.world.{k} не описан — в хуке движется и мир: пустое место рисунка "
+                        "(окно, экран, лист…) оживляет код по смыслу хука (образец — рилс 22, таймлапс неба в окне)")
+    htmls = [os.path.join(r, f) for r, _d, fs in os.walk(anim_dir) for f in fs if f == "index.html"]
+    live = False
+    for h in htmls:
+        t = open(h, encoding="utf-8").read()
+        ids = re.findall(r'<(?:svg|canvas)[^>]*\bid="([^"]+)"', t)
+        if any(i not in LIVE_SKIP for i in ids):
+            live = True
+    if htmls and not live:
+        errs.append("правило 30: в композиции хука нет слоя, который рисует код (svg/canvas кроме хвоста и штрихов "
+                    "удара) — мир вокруг героя стоит; образец — videos/22_minutka/reel/anim/night_hf/index.html")
     return errs
 
 

@@ -10,3 +10,5 @@ scenedetect>=0.6.6        # второе мнение о склейках в п�
 pytest-xdist>=3.5          # pytest -n auto: суита 7.5 -> 4.6 мин на 4 ядрах
 ruff>=0.5                  # линт: ruff check scripts tests
 pymunk>=7.3
+pymatting>=1.1   # матирование края слоёв (anim.matte_alpha), MIT
+huggingface_hub>=0.20   # загрузка SAM 2.1 ONNX (anim._sam_sessions), Apache-2.0

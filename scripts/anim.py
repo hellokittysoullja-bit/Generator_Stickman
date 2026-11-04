@@ -554,7 +554,7 @@ def fill_hole(img, hole, valid=None, sigs=(10, 25, 60), grain_from=None, feather
     return img * (1 - a) + out * a
 
 
-def save_layer(out_dir, name, img, mask, layers, keep_attached_=True, soft=0.8):
+def save_layer(out_dir, name, img, mask, layers, keep_attached_=True, soft=0.8, alpha=None):
     """ОБЩИЙ шаг нарезки слоя сцены HyperFrames (стандарт 24, образец — рилс 13): край без бумажных зубцов
     (trim_paper_edge), без обрывков рамки и пола (keep_attached), мягкий край soft px, без бумажной каймы (defringe),
     проверка «нет оторванных кусков» (detached_share) — потом PNG в out_dir/<name>.png и рамка в layers[name].
@@ -564,6 +564,8 @@ def save_layer(out_dir, name, img, mask, layers, keep_attached_=True, soft=0.8):
     if keep_attached_:
         m = keep_attached(m)
     a = cv2.GaussianBlur(m.astype(np.float32), (0, 0), soft)
+    if alpha is not None:          # готовая мягкая альфа (cut_sam: матирование и усы) — держим её внутри очищенной маски
+        a = np.clip(alpha, 0, 1).astype(np.float32) * (cv2.dilate(m.astype(np.uint8), np.ones((9, 9), np.uint8)) > 0)
     ys, xs = np.where(a > 0.02)
     x0, y0, x1, y1 = xs.min() - 6, ys.min() - 6, xs.max() + 7, ys.max() + 7
     im = np.dstack([np.asarray(img)[y0:y1, x0:x1], 255 * a[y0:y1, x0:x1]]).clip(0, 255).astype(np.uint8)
@@ -863,3 +865,146 @@ def scene_files(reel_dir, name):
     """Файлы сцены для подписи кэша клипов: код сцены и исходные рисунки."""
     mod = scene(reel_dir, name)
     return [os.path.join(reel_dir, "anim", name + ".py")] + [os.path.join(reel_dir, p) for p in getattr(mod, "SOURCES", [])]
+
+
+# ── Нарезка по точкам: SAM 2.1 + матирование края + усы (владелец 04.11: «чтобы всё цепляло: телефон в лапах,
+# огонёк, усы… главное — лучшее качество») ────────────────────────────────────────────────────────────────────────
+# Стенд experiments/cutout (три рисунка, лист compare_3methods.jpg): нынешняя нарезка по туши цепляет линии мебели и
+# куски бумаги; BiRefNet вырезает прижатую подушку и фон за телефоном, ест усы (33–147 с, 9 ГБ); SAM 2.1 по точкам
+# «кот / не кот» понимает границу предметов, матирование closed-form даёт мягкий край без каймы (3–6 с, 2 ГБ). Чего не
+# хватало SAM — усы поверх светлых предметов: их возвращает whisker_alpha.
+SAM_REPO, SAM_ZIP = "vietanhdev/segment-anything-2.1-onnx-models", "sam2.1_hiera_small_20260221.zip"   # Apache-2.0
+MODEL_DIR = os.environ.get("STICKMAN_MODELS", os.path.expanduser("~/.cache/stickman_models"))
+_SAM = {}
+
+
+def _sam_sessions():
+    """Кодировщик и декодер SAM 2.1 Hiera-Small (ONNX, CPU): качаются один раз в MODEL_DIR."""
+    if "enc" not in _SAM:
+        import zipfile
+        import onnxruntime as ort
+        d = os.path.join(MODEL_DIR, "sam21s")
+        enc_p = os.path.join(d, "sam2.1_hiera_small.encoder.onnx")
+        if not os.path.exists(enc_p):
+            from huggingface_hub import hf_hub_download
+            z = hf_hub_download(SAM_REPO, SAM_ZIP, local_dir=MODEL_DIR)
+            with zipfile.ZipFile(z) as f:
+                f.extractall(d)
+            for root, _dirs, files in os.walk(d):          # архив кладёт файлы во вложенную папку
+                for fn in files:
+                    if fn.endswith(".onnx") and root != d:
+                        os.replace(os.path.join(root, fn), os.path.join(d, fn))
+        o = ort.SessionOptions(); o.intra_op_num_threads = os.cpu_count() or 4
+        _SAM["enc"] = ort.InferenceSession(enc_p, o, providers=["CPUExecutionProvider"])
+        _SAM["dec"] = ort.InferenceSession(os.path.join(d, "sam2.1_hiera_small.decoder.onnx"), o,
+                                           providers=["CPUExecutionProvider"])
+    return _SAM["enc"], _SAM["dec"]
+
+
+def _fill_small_holes(m, max_share=0.02):
+    """Дыры внутри маски (экран телефона, подушечки лап) — заливкой; большая «дыра» — фон, её не трогать."""
+    m = (m > 0).astype(np.uint8)
+    n, lab, st, _ = cv2.connectedComponentsWithStats(1 - m, connectivity=4)
+    for i in range(1, n):
+        x, y, w, h, a = st[i]
+        if a < max_share * m.size and x > 0 and y > 0 and x + w < m.shape[1] and y + h < m.shape[0]:
+            m[lab == i] = 1
+    return m
+
+
+def sam_mask(img, box, pos, neg=()):
+    """Маска предмета по точкам (координаты рисунка): pos — «это он», neg — «это не он» (подушка, мебель, соседний
+    предмет). Кадр SAM — вырез рамки box, растянутый в 1024; точки за рамкой выбрасываются (сбивали SAM — стенд 04.11);
+    бумага у края рамки сама добавляется как «не он»; из трёх ответов SAM берётся согласный с точками; мелкие дыры
+    внутри — заливкой. Возвращает uint8 0/1 размером рисунка."""
+    rgb = np.clip(np.asarray(img), 0, 255).astype(np.uint8)
+    x0, y0, x1, y1 = [int(v) for v in box]; crop = rgb[y0:y1, x0:x1]; h, w = crop.shape[:2]
+    enc, dec = _sam_sessions()
+    mean, std = np.array([0.485, 0.456, 0.406], np.float32), np.array([0.229, 0.224, 0.225], np.float32)
+    x = (cv2.resize(crop, (1024, 1024), interpolation=cv2.INTER_AREA).astype(np.float32) / 255 - mean) / std
+    f0, f1, emb = enc.run(None, {"image": x.transpose(2, 0, 1)[None].astype(np.float32)})
+    pl = [((px, py), 1) for px, py in pos] + [((px, py), 0) for px, py in neg]
+    pl = [((px, py), lb) for (px, py), lb in pl if x0 <= px < x1 and y0 <= py < y1]
+    g = crop.mean(2); sat = crop.max(2).astype(int) - crop.min(2)
+    for fx, fy in [(0.04, 0.04), (0.5, 0.03), (0.96, 0.04), (0.03, 0.5), (0.97, 0.5), (0.04, 0.96), (0.5, 0.97), (0.96, 0.96)]:
+        px, py = int(fx * (w - 1)), int(fy * (h - 1))
+        if g[py, px] > 225 and sat[py, px] < 30:
+            pl.append(((px + x0, py + y0), 0))
+    pts = [((px - x0) * 1024 / w, (py - y0) * 1024 / h) for (px, py), _ in pl] + [(0, 0), (1023, 1023)]
+    lab = [lb for _, lb in pl] + [2, 3]
+    masks, iou = dec.run(None, {"image_embed": emb, "high_res_feats_0": f0, "high_res_feats_1": f1,
+                                "point_coords": np.array([pts], np.float32), "point_labels": np.array([lab], np.float32),
+                                "mask_input": np.zeros((1, 1, 256, 256), np.float32), "has_mask_input": np.zeros(1, np.float32)})
+    best, score = None, -1e9
+    for k in range(masks.shape[1]):
+        m = cv2.resize(masks[0][k].astype(np.float32), (w, h), interpolation=cv2.INTER_LINEAR) > 0
+        hit = sum(m[int(py - y0), int(px - x0)] == (lb == 1) for (px, py), lb in pl)
+        border = np.concatenate([m[0], m[-1], m[:, 0], m[:, -1]]).mean()
+        sc = hit * 10 - border * 20 + float(iou[0][k])
+        if sc > score:
+            best, score = m, sc
+    out = np.zeros(rgb.shape[:2], np.uint8); out[y0:y1, x0:x1] = _fill_small_holes(best)
+    return out
+
+
+def matte_alpha(img, mask, box, inner=8, outer=14, scale=0.5):
+    """Мягкая альфа по исходным пикселям: тримап из маски (сжатие — точно предмет, кайма — неизвестно) → pymatting
+    closed-form на половинном размере. Край без бумажной каймы и без лесенки нейросети."""
+    from pymatting import estimate_alpha_cf
+    rgb = np.clip(np.asarray(img), 0, 255).astype(np.uint8)
+    x0, y0, x1, y1 = [int(v) for v in box]
+    m = (mask[y0:y1, x0:x1] > 0).astype(np.uint8); crop = rgb[y0:y1, x0:x1]
+    fg = cv2.erode(m, np.ones((inner, inner), np.uint8)); grow = cv2.dilate(m, np.ones((outer, outer), np.uint8))
+    tri = np.where(fg > 0, 1.0, 0.0); tri[(grow > 0) & (fg == 0)] = 0.5
+    sm = cv2.resize(crop, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA).astype(np.float64) / 255
+    ts = cv2.resize(tri, (sm.shape[1], sm.shape[0]), interpolation=cv2.INTER_NEAREST)
+    a = cv2.resize(estimate_alpha_cf(sm, ts).astype(np.float32), (crop.shape[1], crop.shape[0]), interpolation=cv2.INTER_LINEAR)
+    a[tri == 1] = 1; a[tri == 0] = 0
+    out = np.zeros(rgb.shape[:2], np.float32); out[y0:y1, x0:x1] = np.clip(a, 0, 1)
+    return out
+
+
+WHISKER_REACH = 150    # px ×2: дальше от контура усы не торчат; линия мебели уходит дальше — это не ус
+WHISKER_INK = 105      # яркость туши уса (0..255): светлее — это тень или фактура бумаги
+WHISKER_SPREAD = 5.0   # px: поперечный разброс штриха; у уса 1–3, у контура капли или дуги подлокотника — больше
+
+
+def whisker_alpha(img, mask, reach=WHISKER_REACH, ink=WHISKER_INK):
+    """Усы и кончики шерсти, которые SAM отрезал: тонкие тёмные штрихи, растущие от контура и кончающиеся рядом с ним
+    (кусок туши касается маски и не доходит до края полосы reach). Линии мебели длинные — уходят за полосу — не
+    берутся. Альфа уса — по темноте пикселя относительно бумаги рядом (мягкий край штриха сохраняется)."""
+    rgb = np.clip(np.asarray(img), 0, 255).astype(np.uint8)
+    L = cv2.cvtColor(rgb, cv2.COLOR_RGB2GRAY).astype(np.float32)
+    m = (mask > 0).astype(np.uint8)
+    ring = cv2.dilate(m, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * reach + 1, 2 * reach + 1))) & (1 - m)
+    dark = ((L < ink) & (ring > 0)).astype(np.uint8)
+    touch = cv2.dilate(m, np.ones((5, 5), np.uint8)) & (1 - m)
+    edge = cv2.dilate(m, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * reach - 9, 2 * reach - 9)))
+    outer = ring & (1 - edge)                                        # внешняя кромка полосы
+    n, lab, st, _ = cv2.connectedComponentsWithStats(dark, connectivity=8)
+    keep = np.zeros_like(m)
+    for i in range(1, n):
+        comp = lab == i
+        if not ((comp & (touch > 0)).any() and not (comp & (outer > 0)).any() and 40 < st[i, 4] < 6000):
+            continue
+        ys, xs = np.nonzero(comp)
+        c = np.cov(np.stack([xs, ys]).astype(np.float64))
+        l1, l2 = sorted(np.linalg.eigvalsh(c))[::-1]
+        if np.sqrt(max(l2, 0)) < WHISKER_SPREAD and np.sqrt(l1) > 4 * np.sqrt(max(l2, 0.25)):   # почти прямой тонкий штрих:
+            keep |= comp.astype(np.uint8)                                                     # контур капли, листка, дуга — нет
+    if not keep.any():
+        return np.zeros(m.shape, np.float32)
+    soft = cv2.dilate(keep, np.ones((5, 5), np.uint8)) & ring
+    paper = cv2.dilate(L * (1 - soft) + 255 * soft, np.ones((15, 15), np.uint8))   # бумага рядом со штрихом
+    a = np.clip((paper - L) / np.maximum(paper - 30, 1), 0, 1) * soft
+    return a.astype(np.float32)
+
+
+def cut_sam(img, box, pos, neg=(), whiskers=True):
+    """Альфа предмета: SAM 2.1 по точкам → матирование края → усы. Для слоя — save_layer(..., mask=alpha > 0.5,
+    alpha=alpha). Огонёк, телефон в лапах, ботинок — отдельные точки pos; подушка, мебель, соседний предмет — neg."""
+    m = sam_mask(img, box, pos, neg)
+    a = matte_alpha(img, m, box)
+    if whiskers:
+        a = np.maximum(a, whisker_alpha(img, m))
+    return a

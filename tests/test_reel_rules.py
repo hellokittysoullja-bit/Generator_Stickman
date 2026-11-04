@@ -1214,7 +1214,7 @@ def test_standard_23_hook_on_hyperframes_and_no_repeats_of_other_reels(tmp_path)
     d = tmp_path / "videos" / "14_x" / "reel"; (d / "anim").mkdir(parents=True); (d / "gen").mkdir()
     (d / "gen" / "a.png").write_bytes(b"own")
     (d / "anim" / "hook.py").write_text("import anim\n", encoding="utf-8")
-    spec = {"passport": {"standard": 28}, "sources": {"f1": {"frame": "gen/a.png"}},
+    spec = {"passport": {"standard": rr.LIVE_STANDARD}, "sources": {"f1": {"frame": "gen/a.png"}},   # новый рилс — с 04.11 не ниже 30
             "beats": [{"text": "Все ушли, а ты?", "shots": [{"anim": "hook"}]},
                       {"text": "В шапке профиля я помогу тебе начать твоё дело, а также посижу с тобой пару минут"}]}
     errs = rr.check_hf_hook(spec, [], "videos/14_x/reel", str(d))
@@ -1521,3 +1521,20 @@ def test_rule_29_sounds_not_fewer_than_reference_reel_17():
     hole = [p for p in good if not 10 < p["peak"] < 16]
     assert any("тишина" in e for e in reel_rules.check_sound_density(hole, 35.0, 28))
     assert reel_rules.check_sound_density(few, 35.0, 26) == []      # готовые рилсы ниже 28 не трогаем
+
+
+def test_rule_30_live_world_and_sam_cut(tmp_path):
+    """Владелец 04.11 о рилсе 22: «то, что ты сделал в 22-м, теперь у нас будет всегда». Стандарт 30: в хуке движется
+    и мир — пустое место рисунка оживляет код (passport.hook.world + слой svg/canvas в композиции), слои — anim.cut_sam."""
+    d = tmp_path / "anim"; (d / "sc_hf").mkdir(parents=True)
+    (d / "kit_x.py").write_text("anim.save_layer(...)\nanim.inpaint_bg(...)\n", encoding="utf-8")
+    (d / "sc_hf" / "index.html").write_text('<canvas id="tail"></canvas><svg id="rays"></svg>', encoding="utf-8")
+    spec = {"passport": {"standard": 30, "hook": {}}, "beats": []}
+    errs = reel_rules.check_anim_base(spec, str(tmp_path))
+    assert any("cut_sam" in e for e in errs) and any("world" in e for e in errs) and any("svg/canvas" in e for e in errs)
+    (d / "kit_x.py").write_text("a = anim.cut_sam(img, box, pos)\nanim.save_layer(...)\nanim.inpaint_bg(...)\n", encoding="utf-8")
+    (d / "sc_hf" / "index.html").write_text('<canvas id="tail"></canvas><svg id="sky"></svg>', encoding="utf-8")
+    spec["passport"]["hook"]["world"] = {"area": "окно с пустым стеклом", "motion": "таймлапс неба: день → ночь, луна"}
+    assert reel_rules.check_anim_base(spec, str(tmp_path)) == []
+    spec["passport"]["standard"] = 28                                   # готовые рилсы — как были
+    assert reel_rules.check_live_world is not None and reel_rules.check_anim_base({"passport": {"standard": 28}}, str(tmp_path)) == []

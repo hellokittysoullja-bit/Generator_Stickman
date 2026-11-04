@@ -298,3 +298,36 @@ def test_inpaint_bg_continues_scene_line_and_leaves_no_silhouette(tmp_path):
     assert np.abs(out[hole] - truth[hole]).mean() < 8                # силуэта предмета нет
     again = anim.inpaint_bg(img, hole, cache_dir=str(tmp_path))
     assert np.array_equal(out, again)                                # второй раз — из кэша, то же самое
+
+
+def test_whiskers_kept_outlines_and_furniture_lines_dropped():
+    """Нарезка по точкам (04.11): ус — тонкий прямой штрих от контура — возвращается в слой; контур капли рядом,
+    дуга мебели и длинная линия, уходящая далеко, — нет."""
+    img = np.full((600, 600, 3), 245, np.uint8)
+    cv2.circle(img, (300, 300), 100, (60, 60, 60), -1)                     # «кот»
+    mask = np.zeros((600, 600), np.uint8); cv2.circle(mask, (300, 300), 100, 1, -1)
+    cv2.line(img, (400, 300), (480, 290), (20, 20, 20), 2)                 # ус
+    cv2.circle(img, (300, 160), 25, (20, 20, 20), 2)                       # контур капли у головы
+    cv2.line(img, (200, 300), (0, 300), (20, 20, 20), 3)                   # линия дивана — уходит далеко
+    a = anim.whisker_alpha(img, mask)
+    assert a[293:297, 440:460].max() > 0.5                                 # ус есть
+    assert a[130:140, 290:310].max() < 0.05                                # контура капли нет
+    assert a[298:302, 120:180].max() < 0.05                                # линии дивана нет
+
+
+def test_fill_small_holes_keeps_background_between_parts():
+    m = np.zeros((200, 200), np.uint8); m[20:180, 20:180] = 1; m[50:60, 50:60] = 0     # дырка-экран внутри
+    m[:, 100:102] = 0                                                                  # щель до края — фон
+    f = anim._fill_small_holes(m)
+    assert f[55, 55] == 1 and f[5, 101] == 0 and f[100, 101] == 0
+
+
+def test_save_layer_keeps_soft_alpha(tmp_path):
+    img = np.full((120, 120, 3), 240, np.uint8); img[30:90, 30:90] = 40
+    alpha = np.zeros((120, 120), np.float32); alpha[30:90, 30:90] = 1; alpha[30:90, 90:94] = 0.4
+    layers = {}
+    anim.save_layer(str(tmp_path), "x", img, (alpha > 0.5).astype(np.uint8), layers, alpha=alpha)
+    from PIL import Image
+    a = np.asarray(Image.open(tmp_path / "x.png"))[..., 3]
+    x0, y0 = layers["x"]["xy"]
+    assert 60 < a[60 - y0, 91 - x0] < 140                                   # мягкий край сохранён, а не размыт заново

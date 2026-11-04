@@ -33,5 +33,11 @@
   "clock": 44.7,
   "peak_rss_gb": 9.54,
   "tips": 32.9
+ },
+ "anim_cut": {
+  "sofa": 11.2,
+  "clock": 10.6,
+  "tips": 8.7,
+  "peak_rss_gb": 2.17
  }
 }
