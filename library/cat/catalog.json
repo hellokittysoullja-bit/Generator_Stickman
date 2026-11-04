@@ -3275,6 +3275,24 @@
   "source": "scripts/frame_generator.py videos/L03_vnimanie --confirm-spend"
  },
  {
+  "file": "2026-11-04_gen_cx_gpt-image-2_5_8b82a630.png",
+  "sha256": "8b82a63040933afbc14882713c9e5a3734ace3a98ffae9f631916dcdfa88a961",
+  "bytes": 2238564,
+  "size": [
+   1536,
+   1024
+  ],
+  "date": "2026-11-04",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, shading and simplicity, never their content, characters or colour scheme (the colours come from the palette below). SCENE: a big phone in the center showing a video player with two small triangles pointing right (fast forward); under the video a comment bubble with three blank lines; to the right of the phone eight small blank video cards fly out in a row like playing cards thrown in the air. If the picture has no specific place, its background is a soft light watercolour wash in one calm colour that suits the mood (pale blue, warm peach, soft mint or light lavender) with a light coloured floor under the figures, calm and even, with no objects or marks in it; a specific place is drawn as that place, in colour. Colours: a colourful hand-drawn picture: black ink lines filled with soft watercolour colour on cream paper. Most things in the picture are coloured in their own natural colours: furniture in warm wood and soft blue, clothes and cushions in sage green, dusty pink, mustard and terracotta, plants green, screens softly lit, water light blue; the wall and floor get a light warm wash, never left plain grey. Colours are gentle and harmonious like a picture book, never neon, never harsh, never a dark background. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1536x1024",
+  "quality": "medium",
+  "price": 197550,
+  "source": "scripts/frame_generator.py videos/L03_vnimanie --confirm-spend"
+ },
+ {
   "file": "2026-11-04_gen_cx_gpt-image-2_5_9a1e1ba0.png",
   "sha256": "9a1e1ba0bd5a821c388fca461ef9a2ae9c583c02ce82eeb72f46f0ee2abd1005",
   "bytes": 2448338,
@@ -3287,6 +3305,24 @@
   "used_in": [],
   "model": "cx/gpt-image-2.5",
   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, shading and simplicity, never their content, characters or colour scheme (the colours come from the palette below). Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: the main character sits proudly next to the same round fishbowl with the orange goldfish, chest out, eyes closed, smug smile, one paw on its chest; the goldfish looks at the character sideways. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is a soft light watercolour wash in one calm colour that suits the mood (pale blue, warm peach, soft mint or light lavender) with a light coloured floor under the figures, calm and even, with no objects or marks in it; a specific place is drawn as that place, in colour. Colours: a colourful hand-drawn picture: black ink lines filled with soft watercolour colour on cream paper. Most things in the picture are coloured in their own natural colours: furniture in warm wood and soft blue, clothes and cushions in sage green, dusty pink, mustard and terracotta, plants green, screens softly lit, water light blue; the wall and floor get a light warm wash, never left plain grey. Colours are gentle and harmonious like a picture book, never neon, never harsh, never a dark background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1536x1024",
+  "quality": "medium",
+  "price": 197550,
+  "source": "scripts/frame_generator.py videos/L03_vnimanie --confirm-spend"
+ },
+ {
+  "file": "2026-11-04_gen_cx_gpt-image-2_5_b3c440cd.png",
+  "sha256": "b3c440cdec5fe9fab24951dfbb8a7366f98596511b175aa751c3576bcad456b9",
+  "bytes": 2350961,
+  "size": [
+   1774,
+   887
+  ],
+  "date": "2026-11-04",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, shading and simplicity, never their content, characters or colour scheme (the colours come from the palette below). Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: three equal panels in a row with plain gaps between them: in the first a round fishbowl with one orange goldfish; in the second a paw with one finger raised over a phone; in the third the main character calmly watches a long video on a laptop to the very end, the video progress bar under the picture full. the flame on the tip of the main character's tail burns big and bright orange. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is a soft light watercolour wash in one calm colour that suits the mood (pale blue, warm peach, soft mint or light lavender) with a light coloured floor under the figures, calm and even, with no objects or marks in it; a specific place is drawn as that place, in colour. Colours: a colourful hand-drawn picture: black ink lines filled with soft watercolour colour on cream paper. Most things in the picture are coloured in their own natural colours: furniture in warm wood and soft blue, clothes and cushions in sage green, dusty pink, mustard and terracotta, plants green, screens softly lit, water light blue; the wall and floor get a light warm wash, never left plain grey. Colours are gentle and harmonious like a picture book, never neon, never harsh, never a dark background. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
   "gen_size": "1536x1024",
   "quality": "medium",
   "price": 197550,
