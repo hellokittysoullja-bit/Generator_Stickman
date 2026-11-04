@@ -186,7 +186,7 @@ def hooked(tmp_path, scene=HOOK_SCENE_HIT, sfx=None, labels=True, name="L09_test
     names = ["fast_whoosh", "swoosh", "shock", "oof", "riser", "fast_glitch"]
     if sfx is None:                          # плотно: ~каждые 1,3 с, шесть разных
         sfx = [{"name": names[k % 6], "phrase": 1 + k // 4, "at": 1.3 * (k % 4), "why": "тест"} for k in range(36)]
-        sfx += [{"name": names[k % 6], "phrase": 10 + k // 40, "at": 1.25 * (k % 40), "why": "тест"} for k in range(160)]
+        sfx += [{"name": names[k % 6], "phrase": 10, "at": 2.7 * k, "why": "тест"} for k in range(120)]   # 3,7 на 10 с
     (vd / "sfx.json").write_text(json.dumps(sfx, ensure_ascii=False), encoding="utf-8")
     if edit:
         ed = {str(i): {"shots": shots or REEL_SHOTS} for i in range(1, 11)}
@@ -292,14 +292,28 @@ def test_orchestrated_pencil_labels_are_never_dropped_by_timer():
     assert af.labels_for(job, 10.0, written, 2, manual=False)[:2] == (None, None)   # без раскадровки — прежний бюджет
 
 
-def test_long_video_sounds_at_least_four_per_every_ten_seconds(tmp_path):
+def test_long_video_sounds_at_least_three_per_every_ten_seconds(tmp_path):
     """Владелец 04.11: «звуки… не меньше 4 на 10 секунд, именно в длинных видео» — по всему ролику, каждый кусок."""
     vd = hooked(tmp_path)
     assert not [e for e in long_rules.hook_build(vd) if e.startswith("SFX")]
     sfx = json.load(open(os.path.join(vd, "sfx.json"), encoding="utf-8"))
     json.dump([e for e in sfx if e["phrase"] <= 9], open(os.path.join(vd, "sfx.json"), "w", encoding="utf-8"))
     errs = [e for e in long_rules.hook_build(vd) if e.startswith("SFX")]      # хук плотный, а тело без звуков
-    assert errs and "меньше 4 на 10 с" in errs[0], errs
+    assert errs and any("меньше 3 на 10 с" in e for e in errs), errs
+
+
+def test_long_video_sounds_float_three_to_four_not_more(tmp_path):
+    """Владелец 04.11, вечер: «было 4, теперь 3… слишком много звуков… плавающие 3–4, по смыслу, не хардкод»."""
+    vd = hooked(tmp_path)
+    sfx = json.load(open(os.path.join(vd, "sfx.json"), encoding="utf-8"))
+    dense = [e for e in sfx if e["phrase"] <= 9] + [{"name": "swoosh", "phrase": 10, "at": 1.3 * k, "why": "т"}
+                                                    for k in range(260)]
+    json.dump(dense, open(os.path.join(vd, "sfx.json"), "w", encoding="utf-8"))
+    assert any("в среднем" in e for e in long_rules.hook_build(vd))          # 7,7 на 10 с — слишком часто
+    gap = [e for e in sfx if e["phrase"] <= 9] + [{"name": "swoosh", "phrase": 10, "at": t, "why": "т"}
+                                                  for t in [0.5, 3, 8.5, 9.5, 11.5, 15, 19.5, 19.9, 21, 24, 26, 29.5]]
+    json.dump(gap, open(os.path.join(vd, "sfx.json"), "w", encoding="utf-8"))
+    assert any("тишина без звуков" in e and e.startswith("SFX") for e in long_rules.hook_build(vd))
 
 
 def test_first_three_minutes_are_hand_edited(tmp_path):

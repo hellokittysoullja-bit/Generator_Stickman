@@ -270,8 +270,11 @@ LABEL_NUM_RE = re.compile(
     r"тридцат\w*|сорок\w*|пятьдесят|пятидесяти|шестьдесят|семьдесят|семидесяти|восемьдесят|девяносто|сто|ста|"
     r"сотн\w*|тысяч\w*|половин\w*|треть|трети|четверть|четверти|двухминутн\w*)\b")
 LABEL_TERM_RE = re.compile(r"\b(при[её]м\w*|напарник\w*)\b")
-LONG_SFX_PER_10S = 4.0      # звуков в длинном ролике — не меньше 4 на каждые 10 с, по всему ролику (владелец 04.11:
-LONG_SFX_WINDOW = 10.0      # «звуки, единственное, не меньше 4 на 10 секунд, именно в длинных видео»)
+LONG_SFX_PER_10S = 3.0      # звуков в длинном ролике — не меньше 3 в каждом куске 10 с (владелец 04.11, вечер: «было 4,
+LONG_SFX_WINDOW = 10.0      # теперь 3… как будто слишком много звуков… плавающие 3–4, по смыслу, не хардкод шаблон»)
+LONG_SFX_MEAN_MAX = 4.0     # и в среднем после хука не больше 4 на 10 с: кусок с важным событием может нести 5–6,
+                            # тогда соседние тише; хук — по правилам рилса (там звуков больше, правило 29)
+LONG_SFX_GAP_MAX = 6.0      # после хука тишина без звуков не длиннее 6 с (L03 до правки: 4,6 звука на 10 с)
 MANUAL_MONTAGE_SEC = 180    # первые 3 минуты — монтаж руками, без автоматики (владелец 04.11: «ручной у тебя будет на
                             # 3 минуты… собственноручно, по смыслу, без шаблонности и автоматики»); хук 40–60 с — как рилс
 MANUAL_MAX_SHOT = 3.5       # план ручных минут после хука — не дольше нормы ролика (shots.MAX_VIEW_SEC)
@@ -508,7 +511,7 @@ def hook_build(video_dir):
     elif not HOOK_CAM_RE.search(open(path, encoding="utf-8").read()):
         err.append(f"HOOK-MOTION: anim/{a}.py — камера не anim.hook_cam(t, hit=…): влёт без удара на ударном слоге "
                    "слабее эталона рилс 17 (правило 29)")
-    # 2. звуки — во всём длинном ролике не меньше 4 на каждые 10 с (владелец 04.11); в хуке ещё ≥ 5 разных и тишина ≤ 3,5 с
+    # 2. звуки — в каждом куске 10 с не меньше 3, после хука в среднем не больше 4 (владелец 04.11); в хуке ещё ≥ 5 разных и тишина ≤ 3,5 с
     sp = os.path.join(video_dir, "sfx.json")
     ev = json.load(open(sp, encoding="utf-8")) if os.path.exists(sp) else []
     peaks, hook_kinds = [], set()
@@ -535,6 +538,16 @@ def hook_build(video_dir):
         got = sum(lo <= p < hi for p in peaks)
         if hi - lo >= 3 and got < math.floor(need):
             thin.append(f"{int(lo // 60)}:{int(lo % 60):02d}–{int(hi // 60)}:{int(hi % 60):02d} ({got})")
+    body = sorted(p for p in peaks if hook_end <= p < total)
+    if total - hook_end >= LONG_SFX_WINDOW:
+        mean = len(body)/(total - hook_end)*LONG_SFX_WINDOW
+        if mean > LONG_SFX_MEAN_MAX + 1e-9:
+            err.append(f"SFX: после хука в среднем {mean:.1f} звука на 10 с > {LONG_SFX_MEAN_MAX:.0f} — слишком часто "
+                       f"(владелец 04.11): оставить удары на событиях, свисты на смене картинки, звуки на смысловых словах")
+        pts = [hook_end] + body + [total]
+        gap, at = max((b - a_, a_) for a_, b in zip(pts, pts[1:]))
+        if gap > LONG_SFX_GAP_MAX:
+            err.append(f"SFX: тишина без звуков {gap:.1f} с с {int(at // 60)}:{int(at % 60):02d} > {LONG_SFX_GAP_MAX:.0f} с")
     if thin:
         err.append(f"SFX: звуков меньше {LONG_SFX_PER_10S:.0f} на 10 с в {len(thin)} кусках из "
                    f"{int(math.ceil(total / LONG_SFX_WINDOW))}: {', '.join(thin[:8])}{' …' if len(thin) > 8 else ''} — "
