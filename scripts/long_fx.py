@@ -66,7 +66,9 @@ ENTER_SEC = 0.2            # сцена сначала резкая (образ�
 EXIT_SEC = 0.3             # уход без склейки: обратный рост и сцена в фокус
 BOLD_HOLD_SEC = 2.4        # строка без кота стоит не дольше: камера режет планы, а строка стоит на экране
 BOLD_MIN_SEC = 1.1         # и не меньше: следующая строка той же фразы ждёт, пока эта допечатана и прочитана
-SIZE_NARRATOR, SIZE_PLAIN = 150, 120
+SIZE_NARRATOR, SIZE_PLAIN = 150, 150   # владелец 04.11: жирный «чуть побольше» — строка без кота 120 → 150 (+25 %);
+#                                       под котом и так 150: крупнее рядом с ним не помещается (замер «Знакомо?» 916 px)
+BOLD_TOP_BAND = 0.36     # и только сверху, как поясняющая строка у Дани: центр строки в верхних 36 % кадра
 
 
 def narrator_scale(t):
@@ -229,7 +231,7 @@ def _paste(f, rgba, cx, cy, scale=1.0, rot=0.0, alpha=1.0, blur_x=0):
     return f
 
 
-def free_spot(f, text, size, prefer=None, margin=0.05, bottom=0.12, sizes=(1.0, 0.85, 0.72), avoid=None):
+def free_spot(f, text, size, prefer=None, margin=0.05, bottom=0.12, sizes=(1.0, 0.85, 0.72), avoid=None, top_band=None):
     """Где поставить жирную строку, чтобы она не легла на рисунок (пробник 28.10: «2 минуты» на ухе кота, потом на
     стопке бумаг и за краем кадра). Чернила — пиксели темнее бумаги кадра больше чем на 28; окно строки с запасом
     скользит по кадру внутри полей (снизу — место плеера). Лучшее — с наименьшей долей чернил, при равенстве ближе к
@@ -249,7 +251,10 @@ def free_spot(f, text, size, prefer=None, margin=0.05, bottom=0.12, sizes=(1.0, 
         _, _, tw, th = _glyphs(text, sz)
         bw, bh = int(tw + 0.12*sz), int(th*0.9 + 0.12*sz)
         xs = range(int(W*margin), int(W*(1 - margin)) - bw, 16)
-        ys = range(int(H*margin), int(H*(1 - bottom)) - bh, 16)
+        y_hi = int(H*(1 - bottom)) - bh
+        if top_band is not None:                    # строка только сверху: её центр не ниже top_band высоты кадра
+            y_hi = min(y_hi, int(H*top_band - bh/2))
+        ys = range(int(H*margin), max(int(H*margin) + 1, y_hi), 16)
         for y in ys:
             for x in xs:
                 share = (ii[y + bh, x + bw] - ii[y, x + bw] - ii[y + bh, x] + ii[y, x])/(bw*bh)
@@ -260,6 +265,10 @@ def free_spot(f, text, size, prefer=None, margin=0.05, bottom=0.12, sizes=(1.0, 
         if best is not None and best[4] <= 0.015:
             break
     _, cx, cy, sz, share = best
+    if top_band is not None and share > 0.015:     # сверху всё занято рисунком: строка на рисунке хуже, чем ниже
+        alt = free_spot(f, text, size, prefer=prefer, margin=margin, bottom=bottom, sizes=sizes, avoid=avoid)
+        if alt[3] < share:
+            return alt
     return cx, cy, sz, share
 
 
@@ -342,7 +351,29 @@ def load(video_dir):
         for b in bold:
             if not (b.get("why") or "").strip() or not (b.get("text") or "").strip():
                 raise ValueError(f"fx.json, фраза {k}: у жирной строки нет text или why")
-        out[int(k) - 1] = dict(narrator=nar, bold=bold)
+        hand = v.get("hand") or []
+        for h in hand:
+            if not (h.get("why") or "").strip() or not (h.get("text") or "").strip() or not h.get("to"):
+                raise ValueError(f"fx.json, фраза {k}: у рукописной подписи нет text, to или why")
+        out[int(k) - 1] = dict(narrator=nar, bold=bold, hand=hand)
+    return out
+
+
+def hand_events(spec, t0, t1, words):
+    """Рукописные подписи фразы (fx.json hand) с моментом письма в секундах клипа: на слове word (n-е вхождение —
+    "nth", с 1), без слова — в начале фразы. Подпись, которую не успеть начать за 0,6 с до конца фразы, не ставится."""
+    out = []
+    for h in spec.get("hand") or []:
+        w = None
+        if h.get("word"):
+            st = _stem(h["word"])
+            hits = [x for x in words if _stem(x["word"]) == st] or [x for x in words if _stem(x["word"]).startswith(st)]
+            n = int(h.get("nth", 1)) - 1
+            w = hits[n] if 0 <= n < len(hits) else None
+        at = w["start"] - 0.05 if w else t0 + 0.3
+        at = max(t0, at)
+        if at < t1 - 0.6:
+            out.append(dict(text=h["text"], t=round(at, 3), to=h["to"], at=h.get("at"), arrow=h.get("arrow", True)))
     return out
 
 
@@ -436,8 +467,8 @@ class Track:
                 continue
             if e["obj"] is None:
                 if e["narrator"]:          # под котом сцена размыта: строке мешает только сам кот, кегль полный
-                    cx, cy, sz, _ = free_spot(np.full_like(f, 245), e["text"], SIZE_NARRATOR, prefer=(W*0.33, H*0.3),
-                                              avoid=box)
+                    cx, cy, sz, _ = free_spot(np.full_like(f, 245), e["text"], SIZE_NARRATOR, prefer=(W*0.33, H*0.2),
+                                              avoid=box, top_band=BOLD_TOP_BAND)
                 else:
                     # место — по всем кадрам, пока строка стоит, а не по первому: камера режет планы, и строка,
                     # чистая на первом кадре, ложилась на голову кота следующего (критик L02: «Напарник», «≈ 800»)
@@ -445,7 +476,8 @@ class Track:
                     if self.peek is not None:
                         for tt in (0.5*(e["t0"] + e["t1"]), e["t1"] - 0.05):
                             g = np.minimum(g, np.asarray(self.peek(min(tt, self.D - 1e-3)), np.float32))
-                    cx, cy, sz, _ = free_spot(g, e["text"], SIZE_PLAIN, prefer=(W/2, H*0.2), avoid=box)
+                    cx, cy, sz, _ = free_spot(g, e["text"], SIZE_PLAIN, prefer=(W/2, H*0.16), avoid=box,
+                                              top_band=BOLD_TOP_BAND)
                 e["obj"] = BoldText(e["text"], cx, cy, size=sz, style=e["style"], t0=e["t0"])
             f = e["obj"].composite(f, t, t_end=e["t1"])
         return f

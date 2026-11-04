@@ -302,6 +302,82 @@ def plan_clip(fr, D, words, key=None, last_punch=-1e9, T0=0.0, zoom_in=True, fps
     return p
 
 
+HAND_SIZES = (104, 92, 80)     # рукописная подпись к предмету — мельче мысли (KEY_SIZES): это подпись, не мысль
+HAND_MAX_W = 0.40
+HAND_PAD = 22                  # «точка» без рамки: предмет — квадрат ±HAND_PAD px холста вокруг неё
+
+
+def hand_target(fr, to):
+    """Рамка предмета подписи в координатах холста. to — [x, y] или [x0, y0, x1, y1] в пикселях исходного рисунка
+    (как окна edit.json) либо роль предмета от судьи («subject», «hero», «hero_head», «detail»…)."""
+    if isinstance(to, str):
+        return next((tuple(o["box"]) for o in fr["objects"] if o.get("role") == to or o.get("name") == to), None)
+    ox, oy = fr["off"]
+    if len(to) == 2:
+        return (to[0] + ox - HAND_PAD, to[1] + oy - HAND_PAD, to[0] + ox + HAND_PAD, to[1] + oy + HAND_PAD)
+    return (to[0] + ox, to[1] + oy, to[2] + ox, to[3] + oy)
+
+
+def hand_layout(fr, text, box, win, at=None, seed=13, arrow=True):
+    """Рукописная подпись к предмету box (холст) в окне win: раскладка букв и стрелка тем же карандашом.
+    Место — пустая бумага рядом с предметом (placement.choose: не на рисунке, стрелка не режет рисунок); at — центр
+    подписи в пикселях исходного рисунка, если место выбрано руками. None — места нет."""
+    scr = _screen(np.asarray(Image.fromarray(fr["final_rgb"]).resize(
+        (fr["SW"]*UPSCALE, fr["SH"]*UPSCALE), Image.BILINEAR)), win, UPSCALE)
+    s_ = W/(win[2] - win[0])
+    obj = ((box[0] - win[0])*s_, (box[1] - win[1])*s_, (box[2] - win[0])*s_, (box[3] - win[1])*s_)
+    if obj[2] < 0 or obj[3] < 0 or obj[0] > W or obj[1] > H:
+        return None                                   # предмета нет в кадре — подписывать нечего
+
+    def wh(sz):
+        return writeon.measure(text, sz, HAND_MAX_W*W)
+    b = placement.busy_map(scr)
+    res = None
+    for size in HAND_SIZES:
+        tw, th = wh(size)
+        if at is not None:
+            cx, cy = (at[0] + fr["off"][0] - win[0])*s_, (at[1] + fr["off"][1] - win[1])*s_
+            tb = (cx - tw/2, cy - th/2, cx + tw/2, cy + th/2)
+            res = dict(center=(cx, cy), arrow=placement.arrow_points(tb, obj, th, b))
+            break
+        r = placement.choose(scr, obj, (tw, th), b=b)
+        if r:
+            res = r
+            break
+    if res is None:
+        return None
+    letters = writeon.layout(text, size, W, H, res["center"][0], res["center"][1], seed=seed, max_w=HAND_MAX_W*W)
+    arr = res.get("arrow") if arrow else None
+    if arr:
+        letters = letters + [writeon.arrow_letter(arr[0], arr[1], arr[2], size, W, H, seed=seed)]
+    return letters, res["center"], size, arr
+
+
+def hand_plan(fr, p, hand):
+    """Рукописные подписи кадра (fx.json hand) — в окне плана, где их пишут; после письма планы держат подпись со
+    стрелкой целиком или вне кадра (long_edit.keep_text). hand — [{text, t (с от начала клипа), to, at?, arrow?}]."""
+    p["hand"] = []
+    manual = any(s.get("kind") == "manual" for s in p["segments"])
+    for k, h in enumerate(sorted(hand or [], key=lambda h: h["t"])):
+        box = hand_target(fr, h["to"])
+        if box is None:
+            p["notes"].append(f"подпись «{h['text']}»: предмет {h['to']} не найден — не пишется")
+            continue
+        win = long_edit.window_at(long_edit.active(p["segments"], h["t"]), h["t"]) if manual \
+            else shots.window_at(p, h["t"], fr["SW"], fr["SH"])
+        res = hand_layout(fr, h["text"], box, win, at=h.get("at"), seed=13 + k, arrow=h.get("arrow", True))
+        if res is None:
+            p["notes"].append(f"подпись «{h['text']}»: в плане момента нет места или предмета — не пишется")
+            continue
+        letters, center, size, arr = res
+        p["hand"].append(dict(text=h["text"], t=h["t"], win=win, center=center, size=size, arrow=arr, seed=13 + k,
+                              target=box))
+        wb = letters_box_world(letters, win)
+        if manual and wb is not None:
+            long_edit.keep_text(p["segments"], h["t"], wb, fr["SW"], fr["SH"])
+    return p
+
+
 def _warp(alpha, src_win, dst_win):
     """Альфа в экранных координатах окна src_win -> экранные координаты окна dst_win."""
     s_src = W/(src_win[2] - src_win[0]); s_dst = W/(dst_win[2] - dst_win[0])
@@ -368,6 +444,14 @@ def render(fr, p, D, out, fps=24, end_fade=False, crf="18", anim=None, fx=None):
                            max_w=KEY_MAX_W*W)
         ev, T = writeon.plan(L, fps, t0=t0, factor=item.get("speed", 1.0))
         writes.append(dict(ink=writeon.Ink(L, ev, H, W), end=t0 + T, win=item["win"], baked=False))
+        cues += [(e["t0"], e["t1"], e["kind"]) for e in ev]
+    for h in p.get("hand") or []:              # рукописные подписи к предметам со стрелкой — тот же карандаш
+        L = writeon.layout(h["text"], h["size"], W, H, h["center"][0], h["center"][1], seed=h["seed"],
+                           max_w=HAND_MAX_W*W)
+        if h.get("arrow"):
+            L = L + [writeon.arrow_letter(h["arrow"][0], h["arrow"][1], h["arrow"][2], h["size"], W, H, seed=h["seed"])]
+        ev, T = writeon.plan(L, fps, t0=h["t"])
+        writes.append(dict(ink=writeon.Ink(L, ev, H, W), end=h["t"] + T, win=h["win"], baked=False))
         cues += [(e["t0"], e["t1"], e["kind"]) for e in ev]
     cues.sort()
     if fx:

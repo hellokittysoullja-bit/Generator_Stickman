@@ -360,3 +360,42 @@ class Ink:
         c = self.cov + self.front*(1 - self.cov)
         a[y0:y1, x0:x1] = np.clip(c*1.15, 0, 1)*self.mask[y0:y1, x0:x1]*self.grain*self.tone
         return a
+
+
+# ---------------- стрелка тем же карандашом (рукописная подпись к предмету, владелец 04.11)
+
+def _bezier(p0, c, p1, n):
+    u = np.linspace(0, 1, n)[:, None]
+    return (1 - u)**2*np.asarray(p0) + 2*(1 - u)*u*np.asarray(c) + u**2*np.asarray(p1)
+
+
+def arrow_letter(p0, p1, bend, size, W, H, seed=1):
+    """Стрелка от надписи к предмету как «буква» раскладки: штрихи пера (древко дугой, затем два уса наконечника) и
+    маска того же вида, что у букв. p0, p1 — (x, y) экрана, bend — изгиб в долях длины. Пишется после слов надписи
+    тем же Ink, со звуком карандаша (plan даёт штрихам время по длине)."""
+    rng = np.random.default_rng(seed)
+    p0, p1 = np.asarray(p0, float), np.asarray(p1, float)
+    d = p1 - p0
+    L = float(np.hypot(*d)) + 1e-9
+    nrm = np.array([-d[1], d[0]])/L
+    c = (p0 + p1)/2 + nrm*bend*L + rng.uniform(-0.02, 0.02)*L*nrm
+    shaft = _bezier(p0, c, p1, max(12, int(L/3)))
+    tang = shaft[-1] - shaft[-4]
+    tang /= np.hypot(*tang) + 1e-9
+    head = max(14.0, 0.34*size)
+    barbs = []
+    for sgn in (1, -1):
+        a = np.radians(152*sgn + rng.uniform(-6, 6))
+        rot = np.array([[np.cos(a), -np.sin(a)], [np.sin(a), np.cos(a)]])
+        end = shaft[-1] + rot @ tang*head
+        barbs.append(np.linspace(shaft[-1], end, max(6, int(head/3))))
+    r = max(2.2, 0.052*size)
+    im = Image.new("L", (W, H), 0)
+    dr = ImageDraw.Draw(im)
+    for pts in [shaft] + barbs:
+        dr.line([tuple(q) for q in pts], fill=255, width=int(round(2*r)), joint="curve")
+        for q in (pts[0], pts[-1]):
+            dr.ellipse((q[0] - r, q[1] - r, q[0] + r, q[1] + r), fill=255)
+    soft = ndimage.gaussian_filter(np.asarray(im, np.float32)/255, 0.6)
+    strokes = [dict(path=pts[:, ::-1].copy(), r=np.full(len(pts), r), kind="stroke") for pts in [shaft] + barbs]
+    return dict(ch="→", size=size, word=10**6, soft=soft, dots=[], _strokes=strokes)

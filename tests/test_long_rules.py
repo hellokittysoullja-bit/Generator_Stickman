@@ -328,3 +328,78 @@ def test_manual_shots_never_cut_a_written_thought():
     for s in segs:
         for w in (s["win"], s["win_to"]):
             assert camera.inside(box, w) or camera.overlap_share(w, box) <= long_edit.TEXT_EDGE
+
+
+def _fx(tmp_path, phrases, name="L09_test"):
+    (tmp_path / name / "fx.json").write_text(json.dumps({"phrases": phrases}, ensure_ascii=False), encoding="utf-8")
+
+
+def test_bold_text_may_not_outnumber_handwriting(tmp_path):
+    """Владелец 04.11 по L03: «90 % занимает жирный шрифт… хочу 60 % рисованный и только 40 % жирный»."""
+    vd = hooked(tmp_path, labels=False)
+    bold = {str(i): {"bold": [{"text": "строка", "word": "ты", "why": "т"}]} for i in range(1, 13)}
+    _fx(tmp_path, bold)
+    assert any(e.startswith("TEXT-SHARE") for e in long_rules.hook_build(vd))
+    mixed = {str(i): ({"bold": [{"text": "строка", "word": "ты", "why": "т"}]} if i <= 4 else
+                      {"hand": [{"text": "палец", "word": "ты", "to": [100, 100], "why": "т"}]}) for i in range(1, 13)}
+    _fx(tmp_path, mixed)
+    errs = long_rules.hook_build(vd)
+    assert not any(e.startswith("TEXT-SHARE") for e in errs)
+    assert not any(e.startswith("LABELS") for e in errs), errs      # рукописная подпись — тоже надпись по смыслу
+
+
+def test_share_counts_pencil_thoughts_as_handwriting(tmp_path):
+    vd = hooked(tmp_path)                                           # 12 карандашных мыслей раскадровки
+    _fx(tmp_path, {str(i): {"bold": [{"text": "строка", "word": "ты", "why": "т"}]} for i in range(1, 8)})
+    assert not any(e.startswith("TEXT-SHARE") for e in long_rules.hook_build(vd))
+
+
+def test_hand_label_needs_target_and_reason(tmp_path):
+    import long_fx
+    vd = hooked(tmp_path)
+    _fx(tmp_path, {"2": {"hand": [{"text": "палец", "word": "ты", "why": "т"}]}})
+    with pytest.raises(ValueError):
+        long_fx.load(vd)
+    _fx(tmp_path, {"2": {"hand": [{"text": "палец", "word": "ты", "to": "subject", "why": "т"}]}})
+    assert long_fx.load(vd)[1]["hand"][0]["to"] == "subject"
+
+
+def test_hand_label_is_written_on_its_word():
+    import long_fx
+    words = [{"word": "Палец", "start": 0.4, "end": 0.7}, {"word": "тянется", "start": 0.8, "end": 1.2},
+             {"word": "палец", "start": 2.0, "end": 2.3}]
+    spec = {"hand": [{"text": "палец", "word": "палец", "nth": 2, "to": [1, 1], "why": "т"},
+                     {"text": "поздно", "word": "палец", "to": [1, 1], "why": "т"}]}
+    ev = long_fx.hand_events(spec, 0.0, 3.0, words)
+    assert [round(e["t"], 2) for e in ev] == [1.95, 0.35]
+    assert [e["t"] for e in long_fx.hand_events(spec, 0.0, 2.4, words)] == [0.35]   # вторая не успевает — не ставится
+
+
+def test_bold_line_stays_on_top_and_bigger():
+    """Жирный — только поясняющая строка сверху (как у Дани) и на 25 % крупнее (владелец 04.11)."""
+    import numpy as np
+    import long_fx
+    assert long_fx.SIZE_PLAIN == 150                                 # было 120
+    f = np.full((long_fx.H, long_fx.W, 3), 245, np.float32)
+    f[int(long_fx.H*0.2):, :] = 20                                  # чистая бумага только сверху — строка там
+    f[:, :300] = 20
+    cx, cy, sz, _ = long_fx.free_spot(f, "ДЕНЬ БЫЛ ТЯЖЁЛЫЙ", long_fx.SIZE_PLAIN, prefer=(960, 600),
+                                      top_band=long_fx.BOLD_TOP_BAND)
+    assert cy <= long_fx.H*long_fx.BOLD_TOP_BAND
+    g = np.full((long_fx.H, long_fx.W, 3), 245, np.float32)
+    cx, cy, sz, _ = long_fx.free_spot(g, "ДЕНЬ БЫЛ ТЯЖЁЛЫЙ", long_fx.SIZE_PLAIN, prefer=(960, 900),
+                                      top_band=long_fx.BOLD_TOP_BAND)
+    assert cy <= long_fx.H*long_fx.BOLD_TOP_BAND and sz == long_fx.SIZE_PLAIN   # пусто везде — всё равно сверху
+
+
+def test_hand_label_has_pen_drawn_arrow_to_the_object():
+    """Подпись к предмету пишется карандашом и стрелка к нему — тем же пером, со своими штрихами (как схема эп.01)."""
+    import numpy as np
+    import writeon
+    a = writeon.arrow_letter((300, 300), (700, 520), 0.18, 96, 1920, 1080)
+    ev, T = writeon.plan([a], 24)
+    assert len(ev) == 3 and T > 0.1                                 # древко и два уса наконечника
+    ys, xs = np.nonzero(a["soft"] > 0.5)
+    assert xs.min() < 320 and xs.max() > 680                        # от надписи до предмета
+    tip = ev[0]["path"][-1]
+    assert abs(tip[1] - 700) < 2 and abs(tip[0] - 520) < 2          # кончик — у предмета (path в (y, x))

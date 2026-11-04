@@ -377,6 +377,7 @@ def _video_hook_montage(video_dir, blocks, frames, starts, ends, hook_n, fx_path
     for i in zn:
         v = fx.get(str(i + 1)) or {}
         acc += [("bold", starts[i])] * len(v.get("bold") or [])
+        acc += [("hand", starts[i])] * len(v.get("hand") or [])
         if v.get("narrator"):
             acc.append(("narrator", starts[i]))
     cuts = sorted(set(round(c, 2) for c in cuts))
@@ -564,16 +565,36 @@ def hook_build(video_dir):
         n = str(i + 1)
         v, fv = frames.get(n) or {}, fx.get(n) or {}
         own = bool({"new", "lib", "same", "plan", "anim"} & set(v))     # карандаш пишется только на своей картинке
-        if (own and (v.get("key") or v.get("accent"))) or fv.get("bold"):
+        if (own and (v.get("key") or v.get("accent"))) or fv.get("bold") or fv.get("hand"):
             continue
         if _filled((fv.get("nolabel") or {}).get("why")):
             continue
         txt = script_parser.strip_pipeline_only_tags(b["text"])
         why = ", ".join(x for x in [label_needs(txt, climax)] + [w for q, w in beats if q and q in norm(txt)] if x)
         if why:
-            err.append(f"LABELS: фраза {n} ({why}) без надписи — жирный текст fx.json или карандаш key/accent; не нужна — "
-                       f"fx.json phrases[{n}].nolabel.why: «{b['text'][:60]}»")
+            err.append(f"LABELS: фраза {n} ({why}) без надписи — рукописная подпись со стрелкой fx.json hand, карандаш "
+                       f"key/accent или жирная строка сверху; не нужна — fx.json phrases[{n}].nolabel.why: «{b['text'][:60]}»")
+    err += text_share(frames, fx)
     return err
+
+
+HAND_SHARE_MIN = 0.60   # владелец 04.11: рукописного (подписи со стрелками, мысль, акцент) не меньше 60 %, жирного ≤ 40 %
+
+
+def text_share(frames, fx):
+    """Доля рукописного среди надписей ролика (владелец 04.11, по L03: «90 % занимает жирный шрифт, а я хочу, чтобы 60 %
+    рисованный и только 40 % жирный… вдумчиво, не пихать»). Рукописное — fx.json hand (подпись со стрелкой к предмету),
+    карандаш key и accent раскадровки; жирное — fx.json bold. Доля добирается не новыми подписями ради числа, а тем,
+    что жирная строка остаётся только там, где сверху нужно пояснение (мысль героя, суть), остальное — рукой у предмета."""
+    hand = sum(len((fx.get(n) or {}).get("hand") or []) for n in fx)
+    hand += sum(bool(v.get(k)) for v in frames.values() for k in ("key", "accent")
+                if {"new", "lib", "same", "plan", "anim"} & set(v))
+    bold = sum(len((fx.get(n) or {}).get("bold") or []) for n in fx)
+    if hand + bold and hand/(hand + bold) < HAND_SHARE_MIN - 1e-9:
+        return [f"TEXT-SHARE: рукописных надписей {hand}, жирных {bold} — рукописного {hand/(hand + bold):.0%} < "
+                f"{HAND_SHARE_MIN:.0%}: жирная строка — только поясняющая сверху, остальное — подпись рукой со стрелкой "
+                f"к предмету (fx.json hand) или мысль карандашом; новых подписей ради доли не добавлять"]
+    return []
 
 
 def main():

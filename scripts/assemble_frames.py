@@ -326,7 +326,7 @@ def main(video_dir):
                       f"{[round(v) for v in doll_look['drawn_sat']]})")
             mascot = dict(text=blocks[i]["text"], state=pf.get("hero_state"), action=pf.get("hero_action"), seed=k,
                           mood=pf.get("hero_mood"), look=doll_look)
-        fx = []
+        fx, hand = [], []
         for b in range(i, nxt):
             if b not in fx_spec:
                 continue
@@ -334,7 +334,8 @@ def main(video_dir):
             p1 = min(durs[k], (starts[b + 1] if b + 1 < len(starts) else total) - kept_starts[k])
             ws = [w for w in words if p0 - 0.05 <= w["start"] < p1]
             fx += long_fx.events(fx_spec[b], p0, p1, ws, blocks[b]["text"], seed=b)
-        jobs.append(dict(src=src, recs=recs, objects=rec.get("objects") or [], work=work, tex=tex_path, fx=fx,
+            hand += long_fx.hand_events(fx_spec[b], p0, p1, ws)
+        jobs.append(dict(src=src, recs=recs, objects=rec.get("objects") or [], work=work, tex=tex_path, fx=fx, hand=hand,
                          seed=k, key=(pf.get("key_thought") or "").strip() or None, words=words, mascot=mascot,
                          accent=(pf.get("accent") or "").strip() or None,
                          dur=durs[k], T0=kept_starts[k], end_fade=(k == len(kept) - 1),
@@ -370,6 +371,8 @@ def main(video_dir):
             p["segments"] = long_edit.segments(fr, edits[kept[k]]["shots"], job["words"], job["dur"])
             p["punch_at"] = None
             long_edit.relayout_text(fr, p, frame_clip)
+        if job.get("hand"):                                # рукописные подписи со стрелкой (fx.json hand, 04.11)
+            frame_clip.hand_plan(fr, p, job["hand"])
         job["plan"] = p
         h = hashlib.sha256(open(job["src"], "rb").read()).hexdigest()[:12]
         scene_sig = hashlib.sha256(open(job["anim"], "rb").read()).hexdigest()[:12] if job.get("anim") else None
@@ -391,6 +394,7 @@ def main(video_dir):
                          # до этого момента дописанная мысль стоит на экране: приёмка не считает такой план длинным
                          "key_hold_until": next((round(h["t1"], 2) for h in p.get("holds", []) if h["kind"] == "key"), None),
                          "accent": (p.get("accent") or {}).get("text") if p.get("accent_time") is not None else None,
+                         "hand": [[h["text"], round(h["t"], 2)] for h in p.get("hand") or []],
                          # кот-ведущий перед размытой сценой: живой персонаж говорит со зрителем, склеек под ним нет
                          "narrator": [[round(e["t0"], 2), round(e["t1"], 2)] for e in job.get("fx") or []
                                       if e["kind"] == "narrator"],
