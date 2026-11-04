@@ -166,4 +166,55 @@ def relayout_text(fr, p, frame_clip):
             continue
         _, center, size = res
         item.update(win=win, center=center, size=size)
+        box = frame_clip.letters_box_world(res[0], win)
+        if box is not None:                       # дописанное: дальше в кадре целиком или нет вовсе
+            keep_text(p["segments"], t, box, fr["SW"], fr["SH"])
     return p
+
+
+TEXT_EDGE = 0.02          # как shots.TEXT_EDGE_OVERLAP: больше этой доли надписи на краю кадра — обрывок
+
+
+def _fits(win, box):
+    return camera.inside(box, win) or camera.overlap_share(win, box) <= TEXT_EDGE
+
+
+def fit_text(win, box, SW, SH):
+    """Окно, в котором надпись box целиком или её нет вовсе (L03, 04.11: крупный ручной план резал рукописную мысль
+    до «тс», «только д…»). Сначала сдвиг, чтобы надпись вошла целиком; не входит — окно шире (до 1,6×);
+    иначе сдвиг, чтобы надпись ушла из кадра."""
+    if _fits(win, box):
+        return win
+    w, h = win[2] - win[0], win[3] - win[1]
+    bw, bh = box[2] - box[0], box[3] - box[1]
+    cx, cy = camera.center(win)
+    for k in (1.0, 1.15, 1.3, 1.45, 1.6):
+        ww, hh = w*k, h*k
+        if bw <= ww*0.96 and bh <= hh*0.96:
+            nx = min(max(cx, box[2] - ww/2 + ww*0.02), box[0] + ww/2 - ww*0.02)
+            ny = min(max(cy, box[3] - hh/2 + hh*0.02), box[1] + hh/2 - hh*0.02)
+            cand = camera.window(nx, ny, ww, SW, SH)
+            if camera.inside(box, cand):
+                return cand
+    best = None                               # надпись не входит: сдвинуть окно, чтобы её не было вовсе
+    for dx, dy in ((box[2] - win[0] + 2, 0), (box[0] - win[2] - 2, 0), (0, box[3] - win[1] + 2), (0, box[1] - win[3] - 2)):
+        cand = camera.window(cx + dx, cy + dy, w, SW, SH)
+        if _fits(cand, box) and (best is None or abs(dx) + abs(dy) < best[0]):
+            best = (abs(dx) + abs(dy), cand)
+    return best[1] if best else win
+
+
+def keep_text(segs, t, box, SW, SH):
+    """Все планы после момента письма t: надпись целиком или вне кадра (и в начале, и в конце проводки)."""
+    prev_to = None
+    for s in segs:
+        if s["t1"] <= t:
+            prev_to = s["win_to"]
+            continue
+        if s["t0"] > t or not camera.inside(box, s["win"]):
+            s["win"] = fit_text(s["win"], box, SW, SH)
+        s["win_to"] = fit_text(s["win_to"], box, SW, SH)
+        if s.get("punch_from") is not None and prev_to is not None:
+            s["punch_from"] = prev_to
+        prev_to = s["win_to"]
+    return segs

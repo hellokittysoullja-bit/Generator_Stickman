@@ -312,3 +312,19 @@ def test_first_three_minutes_are_hand_edited(tmp_path):
     json.dump(ed, open(os.path.join(vd, "edit.json"), "w", encoding="utf-8"), ensure_ascii=False)
     errs = [e for e in long_rules.hook_build(vd) if e.startswith("MANUAL")]
     assert any("вторым планом" in e for e in errs), errs
+
+
+def test_manual_shots_never_cut_a_written_thought():
+    """L03 04.11: после того как мысль дописана, ручной крупный план резал её до «тс», «только д…». Теперь каждый
+    следующий план показывает надпись целиком или не задевает её вовсе."""
+    import camera
+    import long_edit
+    SW, SH = 3000, 1688
+    box = (2000, 300, 2600, 420)                       # дописанная мысль справа вверху
+    segs = [dict(t0=0, t1=2, win=camera.window(1500, 844, 3000, SW, SH), win_to=camera.window(1500, 844, 2900, SW, SH)),
+            dict(t0=2, t1=4, win=camera.window(2100, 500, 900, SW, SH), win_to=camera.window(2100, 500, 860, SW, SH)),
+            dict(t0=4, t1=6, win=camera.window(1700, 900, 1400, SW, SH), win_to=camera.window(1700, 900, 1350, SW, SH))]
+    long_edit.keep_text(segs, 1.0, box, SW, SH)
+    for s in segs:
+        for w in (s["win"], s["win_to"]):
+            assert camera.inside(box, w) or camera.overlap_share(w, box) <= long_edit.TEXT_EDGE

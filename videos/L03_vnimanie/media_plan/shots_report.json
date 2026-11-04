@@ -318,9 +318,9 @@
    ],
    "labels_at": [],
    "punch": null,
-   "key": null,
-   "key_at": null,
-   "key_hold_until": null,
+   "key": "откуда взялась",
+   "key_at": 9.14,
+   "key_hold_until": 12.85,
    "accent": null,
    "narrator": [],
    "notes": []
@@ -517,9 +517,9 @@
    ],
    "labels_at": [],
    "punch": null,
-   "key": null,
-   "key_at": null,
-   "key_hold_until": null,
+   "key": "стоит дороже",
+   "key_at": 1.16,
+   "key_hold_until": 4.63,
    "accent": null,
    "narrator": [
     [
@@ -823,7 +823,9 @@
    "key_hold_until": null,
    "accent": null,
    "narrator": [],
-   "notes": []
+   "notes": [
+    "главной мысли «стирает мысль» нет места на кадре — не пишется"
+   ]
   },
   {
    "index": 29,
@@ -884,12 +886,14 @@
    ],
    "labels_at": [],
    "punch": null,
-   "key": null,
-   "key_at": null,
-   "key_hold_until": null,
+   "key": "только думать",
+   "key_at": 6.62,
+   "key_hold_until": 10.16,
    "accent": null,
    "narrator": [],
-   "notes": []
+   "notes": [
+    "план 5.0-9.5 с без смены: другого плана без разреза рисунка нет"
+   ]
   },
   {
    "index": 32,
@@ -954,9 +958,9 @@
    ],
    "labels_at": [],
    "punch": null,
-   "key": null,
-   "key_at": null,
-   "key_hold_until": null,
+   "key": "первая секунда скуки",
+   "key_at": 2.56,
+   "key_hold_until": 7.04,
    "accent": null,
    "narrator": [],
    "notes": []
@@ -1000,9 +1004,9 @@
    ],
    "labels_at": [],
    "punch": null,
-   "key": null,
-   "key_at": null,
-   "key_hold_until": null,
+   "key": "я рядом",
+   "key_at": 6.71,
+   "key_hold_until": 9.41,
    "accent": null,
    "narrator": [],
    "notes": []
@@ -1104,9 +1108,9 @@
    ],
    "labels_at": [],
    "punch": null,
-   "key": null,
-   "key_at": null,
-   "key_hold_until": null,
+   "key": "сто штук",
+   "key_at": 3.44,
+   "key_hold_until": 6.37,
    "accent": null,
    "narrator": [],
    "notes": []
@@ -1218,7 +1222,9 @@
      27.92
     ]
    ],
-   "notes": []
+   "notes": [
+    "главной мысли «досчитай до десяти» нет места на кадре — не пишется"
+   ]
   },
   {
    "index": 46,
@@ -1301,9 +1307,9 @@
    ],
    "labels_at": [],
    "punch": null,
-   "key": null,
-   "key_at": null,
-   "key_hold_until": null,
+   "key": "один листок",
+   "key_at": 4.0,
+   "key_hold_until": 7.2,
    "accent": null,
    "narrator": [],
    "notes": []
@@ -1339,12 +1345,14 @@
    ],
    "labels_at": [],
    "punch": null,
-   "key": null,
-   "key_at": null,
-   "key_hold_until": null,
+   "key": "без прыжков",
+   "key_at": 5.56,
+   "key_hold_until": 8.84,
    "accent": null,
    "narrator": [],
-   "notes": []
+   "notes": [
+    "план 3.2-9.0 с без смены: другого плана без разреза рисунка нет"
+   ]
   },
   {
    "index": 50,
@@ -1405,9 +1413,9 @@
    ],
    "labels_at": [],
    "punch": null,
-   "key": null,
-   "key_at": null,
-   "key_hold_until": null,
+   "key": "просто рядом",
+   "key_at": 13.12,
+   "key_hold_until": 16.42,
    "accent": null,
    "narrator": [
     [
@@ -1551,7 +1559,9 @@
    "key_hold_until": null,
    "accent": null,
    "narrator": [],
-   "notes": []
+   "notes": [
+    "главной мысли «можно приучить» нет места в плане момента — не пишется"
+   ]
   },
   {
    "index": 57,
