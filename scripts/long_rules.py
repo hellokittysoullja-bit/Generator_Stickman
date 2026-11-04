@@ -460,6 +460,57 @@ def _manual_minutes(video_dir, blocks, frames, starts, ends):
     return err
 
 
+CUT_WHY_RE = re.compile(r"склейк|смена плана|новая картинка|переход на|влёт картинки", re.I)
+GENERIC_WHY_RE = re.compile(r"\W*(общий|средний|крупный|ещё один|другой)?\s*(план|кадр)\W*|\W*смена плана\W*|\W*склейка\W*",
+                            re.I)
+
+
+def edit_sounds(video_dir, blocks, frames, starts, ends):
+    """[(время, фраза, звук)] звуков склеек: план монтажа с "sound" — на начале своего плана (первый — на начале
+    картинки), тем же поиском слова, что у сборщика."""
+    ep = os.path.join(video_dir, "edit.json")
+    if not os.path.exists(ep):
+        return []
+    import long_edit
+    edit = json.load(open(ep, encoding="utf-8")).get("frames") or {}
+    wt = _WORD_TIMES.get(os.path.abspath(video_dir))
+    pic = [i for i in range(len(blocks)) if {"new", "lib", "same", "plan", "anim"} & set(frames.get(str(i + 1)) or {})]
+    out = []
+    for n, i in enumerate(pic):
+        nxt = pic[n + 1] if n + 1 < len(pic) else len(blocks)
+        ws = [dict(word=w["word"], start=w["start"] - starts[i]) for k in range(i, nxt) for w in wt[k]] if wt else None
+        for k, p in enumerate((edit.get(str(i + 1)) or {}).get("shots") or []):
+            if not p.get("sound"):
+                continue
+            if k == 0:
+                t = starts[i]
+            elif ws is not None:
+                try:
+                    t = starts[i] + long_edit.word_time(p.get("at", 0.0), ws)
+                except ValueError:
+                    continue
+            else:
+                t = _word_t(blocks, starts, ends, list(range(i, nxt)), p.get("at", 0.0))
+            if t is not None:
+                out.append((t, i, p["sound"]))
+    return out
+
+
+def generic_whys(video_dir):
+    """Планы монтажа без смысла в why («общий план», «смена плана»): склейка ради ритма, а не по смыслу."""
+    ep = os.path.join(video_dir, "edit.json")
+    if not os.path.exists(ep):
+        return []
+    err = []
+    for n, v in (json.load(open(ep, encoding="utf-8")).get("frames") or {}).items():
+        for k, p in enumerate(v.get("shots") or [], 1):
+            w = (p.get("why") or "").strip()
+            if GENERIC_WHY_RE.fullmatch(w) or len(w.split()) < 2:
+                err.append(f"EDIT-WHY: фраза {n}, план {k}: «{w}» — зачем план по смыслу (что зритель видит и на каком "
+                           f"слове), а не «общий план»")
+    return err
+
+
 def _edit_order(video_dir, blocks, frames, starts):
     wt = _WORD_TIMES.get(os.path.abspath(video_dir))
     ep = os.path.join(video_dir, "edit.json")
@@ -520,16 +571,24 @@ def hook_build(video_dir):
         if not 0 <= i < len(blocks):
             err.append(f"SFX: «{e.get('name')}»: фразы {e.get('phrase')} нет")
             continue
-        t = starts[i] + e.get("at", 0.0)
-        if "word" in e:                      # до озвучки слово — по его месту во фразе
-            t = _word_t(blocks, starts, ends, [i], e["word"], _WORD_TIMES.get(os.path.abspath(video_dir)))
-            if t is None:
-                err.append(f"SFX: «{e.get('name')}»: слова «{e['word']}» нет во фразе {i + 1}")
-                continue
-            t += e.get("offset", 0.0)
-        peaks.append(t)
+        if "word" not in e:                  # секунды от начала фразы промахиваются (L03: 3 свиста на 0,5–0,9 с мимо)
+            err.append(f"SFX: «{e.get('name')}» во фразе {i + 1} без слова — звук на слово (word) или на склейку "
+                       f"(edit.json, \"sound\" у плана): тогда он встаёт точно")
+            continue
+        if CUT_WHY_RE.search(e.get("why") or ""):
+            err.append(f"SFX: «{e.get('name')}» во фразе {i + 1} — «{e.get('why')}»: звук склейки ставится у плана "
+                       f"монтажа (edit.json \"sound\"), тогда его пик ровно на склейке, как в рилсах")
+        t = _word_t(blocks, starts, ends, [i], e["word"], _WORD_TIMES.get(os.path.abspath(video_dir)))
+        if t is None:
+            err.append(f"SFX: «{e.get('name')}»: слова «{e['word']}» нет во фразе {i + 1}")
+            continue
+        peaks.append(t + e.get("offset", 0.0))
         if i < hook_n:
             hook_kinds.add(e.get("name"))
+    for t, i, name in edit_sounds(video_dir, blocks, frames, starts, ends):   # звуки склеек из монтажа
+        peaks.append(t)
+        if i < hook_n:
+            hook_kinds.add(name)
     total = ends[-1] if ends else 0.0
     thin = []
     for a in range(0, int(math.ceil(total / LONG_SFX_WINDOW))):
@@ -566,6 +625,7 @@ def hook_build(video_dir):
     # 4а. планы ручного монтажа идут по порядку — тем же поиском слова, что у сборщика (long_edit.word_time): «я»,
     # «рядом», «это» звучат в длинном клипе не раз, и план вставал на первое вхождение (сборка L03 упала 04.11)
     err += _edit_order(video_dir, blocks, frames, starts)
+    err += generic_whys(video_dir)
     # 5. надписи — только где добавляют то, чего нет ни в картинке, ни сразу на слух, и не чаще лимита (владелец 04.11,
     # вечер: «рисунков карандашом слишком много… даже там, где не надо»; L03: 65 надписей на 7 мин — раз в 6,5 с)
     fp = os.path.join(video_dir, "fx.json")

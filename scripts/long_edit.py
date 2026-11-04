@@ -91,7 +91,8 @@ def segments(fr, shots, words, D):
                    punch_from=prev if s.get("punch") and prev is not None else None,
                    shake=float(s.get("shake", 0)), whip=s.get("whip"),
                    spot=(sp[0] + ox, sp[1] + oy, sp[2]) if sp else None,
-                   parallax=_parallax(s.get("parallax")))
+                   parallax=_parallax(s.get("parallax")),
+                   sound=s.get("sound"), sound_gain=float(s.get("sound_gain", 0.0)), sound_why=s.get("sound_why"))
         segs.append(seg)
         prev = win_to
     for a, b in zip(segs, segs[1:]):          # хлёст смазывает и уходящий план

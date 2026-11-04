@@ -467,7 +467,8 @@ def test_palette_is_coloured_and_keeps_colour_without_hero():
     import look as lk
     import frame_generator as fg
     pal = lk.load(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "look")).palette
-    assert "cream paper" in pal and "black ink" in pal and "watercolour" in pal and "Some of the things" in pal   # 04.11: цветные — некоторые, мягко
+    # 04.11: цветные — некоторые, мягко
+    assert "cream paper" in pal and "black ink" in pal and "watercolour" in pal and "Some of the things" in pal
     assert "Never neon" in pal and "stay ink and grey" not in pal and "background always stays the plain cream paper" in pal
     out = fg.palette_without_hero(pal)
     assert "main character" not in out and "watercolour" in out and "No warm colours" not in out

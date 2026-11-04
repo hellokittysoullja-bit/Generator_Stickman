@@ -14,8 +14,8 @@ WORDS = [[{"word": "Сколько", "start": 0.1, "end": 0.5}, {"word": "пон
 def test_word_and_offset_resolve_to_absolute_time():
     ev, errs = long_sfx.resolve([{"name": "fast_whoosh", "phrase": 1, "word": "понедельник", "offset": 0.1, "why": "лист"},
                                  {"name": "riser", "phrase": 2, "at": 0.0, "why": "поворот"}], STARTS, WORDS)
-    assert errs == []
-    assert [round(e["t"], 2) for e in ev] == [3.1, 6.0]
+    assert [round(e["t"], 2) for e in ev] == [3.1]
+    assert len(errs) == 1 and "без слова" in errs[0]          # 04.11: секунды от начала фразы — промах, не время
 
 
 def test_sound_without_reason_or_unknown_or_missing_word_is_an_error():
@@ -23,3 +23,9 @@ def test_sound_without_reason_or_unknown_or_missing_word_is_an_error():
                                 {"name": "music_sting", "phrase": 1, "at": 0, "why": "x"},
                                 {"name": "oof", "phrase": 2, "word": "никогда", "why": "x"}], STARTS, WORDS)
     assert len(errs) == 3
+
+
+def test_word_sound_next_to_a_cut_lands_on_the_cut_frame():
+    """Склейка видна на кадре (24 к/с — до 42 мс после слова); звук на слове рядом встаёт на этот кадр, далёкий — нет."""
+    ev = long_sfx.snap([{"t": 3.10}, {"t": 5.0}], [3.125, 6.0])
+    assert [e["t"] for e in ev] == [3.125, 5.0]

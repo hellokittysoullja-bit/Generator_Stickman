@@ -164,10 +164,21 @@ HOOK_SCENE_OLD = "import anim\nclass Scene:\n    def cam(self, t):\n        retu
 
 
 HOOK_LINE = "Ты не досмотришь это видео, и палец уже тянется листать дальше."
-REEL_SHOTS = [{"win": [800, 500, 1500], "why": "общий"},
-              {"at": "это", "win": [700, 450, 900], "punch": True, "why": "удар-наезд"},
-              {"at": "палец", "win": [900, 520, 800], "shake": 8, "spot": [900, 520, 300], "why": "палец"},
-              {"at": "листать", "win": [800, 500, 1200], "whip": "left", "why": "хлёст"}]
+REEL_SHOTS = [{"win": [800, 500, 1500], "why": "весь кот с телефоном"},
+              {"at": "это", "win": [700, 450, 900], "punch": True, "why": "«это видео» — удар-наезд на экран"},
+              {"at": "палец", "win": [900, 520, 800], "shake": 8, "spot": [900, 520, 300], "why": "«палец уже тянется» — палец крупно"},
+              {"at": "листать", "win": [800, 500, 1200], "whip": "left", "why": "«листать дальше» — хлёст как свайп"}]
+
+
+def _on_word(events):
+    """Звуки тестов — на слово (секунды от начала фразы запрещены с 04.11): первое слово фразы + сдвиг."""
+    out = []
+    for e in events:
+        if "word" not in e:
+            e = dict(e)
+            e["word"], e["offset"] = ("Ты" if e["phrase"] <= 9 else "Знаешь"), e.pop("at", 0.0)
+        out.append(e)
+    return out
 
 
 def hooked(tmp_path, scene=HOOK_SCENE_HIT, sfx=None, labels=True, name="L09_test", edit=True, shots=None):
@@ -187,7 +198,7 @@ def hooked(tmp_path, scene=HOOK_SCENE_HIT, sfx=None, labels=True, name="L09_test
     if sfx is None:                          # плотно: ~каждые 1,3 с, шесть разных
         sfx = [{"name": names[k % 6], "phrase": 1 + k // 4, "at": 1.3 * (k % 4), "why": "тест"} for k in range(36)]
         sfx += [{"name": names[k % 6], "phrase": 10, "at": 2.7 * k, "why": "тест"} for k in range(120)]   # 3,7 на 10 с
-    (vd / "sfx.json").write_text(json.dumps(sfx, ensure_ascii=False), encoding="utf-8")
+    (vd / "sfx.json").write_text(json.dumps(_on_word(sfx), ensure_ascii=False), encoding="utf-8")
     if edit:
         ed = {str(i): {"shots": shots or REEL_SHOTS} for i in range(1, 11)}
         (vd / "edit.json").write_text(json.dumps({"frames": ed}, ensure_ascii=False), encoding="utf-8")
@@ -297,7 +308,7 @@ def test_long_video_sounds_at_least_three_per_every_ten_seconds(tmp_path):
     vd = hooked(tmp_path)
     assert not [e for e in long_rules.hook_build(vd) if e.startswith("SFX")]
     sfx = json.load(open(os.path.join(vd, "sfx.json"), encoding="utf-8"))
-    json.dump([e for e in sfx if e["phrase"] <= 9], open(os.path.join(vd, "sfx.json"), "w", encoding="utf-8"))
+    json.dump(_on_word([e for e in sfx if e["phrase"] <= 9]), open(os.path.join(vd, "sfx.json"), "w", encoding="utf-8"))
     errs = [e for e in long_rules.hook_build(vd) if e.startswith("SFX")]      # хук плотный, а тело без звуков
     assert errs and any("меньше 3 на 10 с" in e for e in errs), errs
 
@@ -308,11 +319,11 @@ def test_long_video_sounds_float_three_to_four_not_more(tmp_path):
     sfx = json.load(open(os.path.join(vd, "sfx.json"), encoding="utf-8"))
     dense = [e for e in sfx if e["phrase"] <= 9] + [{"name": "swoosh", "phrase": 10, "at": 1.3 * k, "why": "т"}
                                                     for k in range(260)]
-    json.dump(dense, open(os.path.join(vd, "sfx.json"), "w", encoding="utf-8"))
+    json.dump(_on_word(dense), open(os.path.join(vd, "sfx.json"), "w", encoding="utf-8"))
     assert any("в среднем" in e for e in long_rules.hook_build(vd))          # 7,7 на 10 с — слишком часто
     gap = [e for e in sfx if e["phrase"] <= 9] + [{"name": "swoosh", "phrase": 10, "at": t, "why": "т"}
                                                   for t in [0.5, 3, 8.5, 9.5, 11.5, 15, 19.5, 19.9, 21, 24, 26, 29.5]]
-    json.dump(gap, open(os.path.join(vd, "sfx.json"), "w", encoding="utf-8"))
+    json.dump(_on_word(gap), open(os.path.join(vd, "sfx.json"), "w", encoding="utf-8"))
     assert any("тишина без звуков" in e and e.startswith("SFX") for e in long_rules.hook_build(vd))
 
 
@@ -454,3 +465,45 @@ def test_narrator_not_in_first_10s_and_every_1_5_to_3_minutes():
     assert any("чаще раза" in e for e in long_rules.narrator_rhythm(often, starts, ends))
     rare = {"3": {"narrator": nar, "bold": b}, "8": {"narrator": nar, "bold": b}}            # 40 → 400: 360 с без ведущего
     assert any("реже раза" in e for e in long_rules.narrator_rhythm(rare, starts, ends))
+
+
+def test_sound_without_word_or_announcing_a_cut_is_rejected(tmp_path):
+    """Владелец 04.11: «максимальная точность звуков… никогда не промахивались». Секунды от начала фразы промахивались
+    (L03: три свиста на 0,5–0,9 с мимо склейки); звук склейки ставится у плана монтажа и встаёт ровно на склейку."""
+    vd = hooked(tmp_path)
+    sfx = json.load(open(os.path.join(vd, "sfx.json"), encoding="utf-8"))
+    bad = sfx + [{"name": "swoosh", "phrase": 2, "at": 0.4, "why": "т"},
+                 {"name": "swoosh", "phrase": 3, "word": "Ты", "why": "склейка на экран"}]
+    json.dump(bad, open(os.path.join(vd, "sfx.json"), "w", encoding="utf-8"))
+    errs = [e for e in long_rules.hook_build(vd) if e.startswith("SFX")]
+    assert any("без слова" in e for e in errs) and any("у плана монтажа" in e for e in errs), errs
+
+
+def test_cut_sound_from_montage_counts_and_lands_on_the_cut(tmp_path):
+    vd = hooked(tmp_path, shots=[dict(REEL_SHOTS[0], sound="swoosh")] + REEL_SHOTS[1:])
+    ts = long_rules.edit_sounds(vd, *_ctx(vd))
+    assert ts and all(name == "swoosh" for _, _, name in ts)
+    import long_sfx
+    ev, errs = long_sfx.resolve([{"name": "swoosh", "phrase": 1, "at": 0.3, "why": "т"}], [0.0], [[]])
+    assert not ev and "без слова" in errs[0]
+
+
+def test_sound_on_word_takes_the_same_occurrence_as_the_cut():
+    import long_sfx
+    words = [[{"word": "я", "start": 0.2, "end": 0.3}, {"word": "сидел", "start": 0.4, "end": 0.8},
+              {"word": "я", "start": 1.5, "end": 1.6}]]
+    ev, errs = long_sfx.resolve([{"name": "swoosh", "phrase": 1, "word": ["я", 2], "why": "т"}], [0.0], words)
+    assert not errs and abs(ev[0]["t"] - 1.5) < 1e-9
+
+
+def test_plan_reason_must_say_why_not_just_wide_shot(tmp_path):
+    vd = hooked(tmp_path, shots=[dict(REEL_SHOTS[0], why="общий план")] + REEL_SHOTS[1:])
+    assert any(e.startswith("EDIT-WHY") for e in long_rules.hook_build(vd))
+
+
+def _ctx(vd):
+    import script_parser
+    blocks = script_parser.parse_blocks(os.path.join(vd, "script.txt"))
+    starts, ends = long_rules._phrase_times(vd, blocks)
+    frames = dict(json.load(open(os.path.join(vd, "storyboard.json"), encoding="utf-8"))["frames"])
+    return blocks, frames, starts, ends

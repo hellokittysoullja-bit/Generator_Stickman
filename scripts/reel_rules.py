@@ -1184,7 +1184,8 @@ FIRST_MOTION_MIN = 0.003    # доля пикселей сцены хука, и�
 
 def check_hook_start(spec, log=(), reel_dir="", abs_dir=None):
     """Начало как в рилсе 08 — у каждого нового рилса (владелец 26.10: «закрепи навсегда на автомате, чтоб было такое
-    начало, более динамичное, как в 8»): сцена хука берёт камеру из anim.hook_cam (с 03.11 — влёт правила 28, не слабее эталона рилса 17, с перелётом и
+    начало, более динамичное, как в 8»): сцена хука берёт камеру из anim.hook_cam (с 03.11 — влёт правила 28, не слабее эталона рилса 17,
+    с перелётом и
     поворотом), а не пишет свою. Что рисунок двигается с первого кадра, меряет reel.py (anim.first_frame_motion)."""
     pp = spec.get("passport") or {}
     std, beats = pp.get("standard") or 0, spec.get("beats") or []
@@ -1203,7 +1204,8 @@ def check_hook_start(spec, log=(), reel_dir="", abs_dir=None):
         return []                                       # сцены нет — об этом скажет check_hook_motion
     code = open(p, encoding="utf8").read()
     if "hook_cam(" not in code:
-        return [f"хук: сцена anim/{s0['anim']}.py пишет свою камеру — возьмите anim.hook_cam(t, hit=…) (влёт правила 28, эталон — рилс 17), "
+        return [f"хук: сцена anim/{s0['anim']}.py пишет свою камеру — возьмите anim.hook_cam(t, hit=…) "
+                f"(влёт правила 28, эталон — рилс 17), "
                 "удар и тряску на слове добавляйте поверх"]
     if std >= HOOK_FLY_STANDARD and not re.search(r"hook_cam\(\s*t\s*,\s*hit\s*=", code):
         return [f"правило 28: сцена anim/{s0['anim']}.py зовёт anim.hook_cam(t) без удара — нужен anim.hook_cam(t, hit=…) "

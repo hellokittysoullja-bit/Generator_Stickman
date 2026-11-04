@@ -686,4 +686,9 @@ def render(fr, p, D, out, fps=24, end_fade=False, crf="18", anim=None, fx=None):
 def plan_record(p):
     """План в JSON-виде для отчёта."""
     # кортежи json пишет сам; numpy-скаляры — числом, а не строкой (иначе смена типа одного поля меняла бы хэш клипа)
-    return json.loads(json.dumps(p, default=lambda o: o.item() if isinstance(o, np.generic) else str(o)))
+    r = json.loads(json.dumps(p, default=lambda o: o.item() if isinstance(o, np.generic) else str(o)))
+    for sg in r.get("segments") or []:            # звук склейки — дорожка звука, не картинка: клип не перерисовывается
+        sg.pop("sound", None)
+        sg.pop("sound_gain", None)
+        sg.pop("sound_why", None)
+    return r

@@ -45,7 +45,8 @@ def prompt(scene, n_style):
     marks = open(os.path.join(ROOT, "look", "hero_marks.txt"), encoding="utf8").read().strip()
     palette = open(os.path.join(ROOT, "look", "palette.txt"), encoding="utf8").read().strip()
     return (f"Reference images 1-{n_style} show only the drawing style: take from them the line work, shading and simplicity, "
-            f"never their content, characters or colour scheme (the colours come from the palette below). Reference image {n_style + 1} is the main character: keep "
+            "never their content, characters or colour scheme (the colours come from the palette below). "
+            f"Reference image {n_style + 1} is the main character: keep "
             "exactly its head, face, colors, markings, body proportions; change only pose, action and expression. "
             f"{marks}. SCENE: {scene} {fg_backdrop()}. {palette}. Every surface is clean and unmarked: blank paper, blank screens, plain "
             "envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. "

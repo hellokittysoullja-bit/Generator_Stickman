@@ -39,6 +39,7 @@ Usage: python scripts/assemble_frames.py <video_dir>"""
 import glob
 import hashlib
 import json
+import math
 import os
 import subprocess
 import sys
@@ -480,7 +481,19 @@ def main(video_dir):
         print(f"  Музыка: {os.path.basename(music)}, {gain:+.1f} дБ ({why})")
     import long_sfx                                       # звуки на событиях (videos/NN/sfx.json), как в рилсах
     sfx_wav = os.path.join(work, "sfx.wav")
-    rep = long_sfx.build(video_dir, starts, speech.word_times if timing == "phrase_lock" else [], total, voice, sfx_wav)
+    # время склейки на экране — кадр, на котором она видна: клип k начинается на сумме округлённых до кадра длин
+    # прошлых клипов, план внутри клипа — на первом кадре не раньше своего слова (до 42 мс после слова при 24 к/с)
+    clip_at = [sum(durs[:k]) for k in range(len(jobs))]
+    screen_cuts, cut_sounds = [], []
+    for k, j in enumerate(jobs):
+        for sg in (j.get("plan") or {}).get("segments", []):
+            t = round(clip_at[k] + math.ceil(sg["t0"]*FPS - 1e-6)/FPS, 4)
+            screen_cuts.append(t)
+            if sg.get("sound"):
+                cut_sounds.append(dict(name=sg["sound"], t=t, gain_db=sg.get("sound_gain", 0.0),
+                                       why=f"склейка: {sg.get('sound_why') or sg.get('why', '')}"))
+    rep = long_sfx.build(video_dir, starts, speech.word_times if timing == "phrase_lock" else [], total, voice, sfx_wav,
+                         cut_sounds=cut_sounds, cuts=sorted(set(screen_cuts)))
     if rep:
         mixed = os.path.join(work, "premix_sfx.wav")
         run(["ffmpeg", "-y", "-v", "error", "-i", premix, "-i", sfx_wav, "-filter_complex",
