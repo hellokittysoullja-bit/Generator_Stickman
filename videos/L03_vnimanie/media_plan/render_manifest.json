@@ -1,0 +1,301 @@
+{
+ "total_blocks": 59,
+ "timing": "phrase_lock",
+ "clips": [
+  {
+   "index": 0,
+   "status": "ok",
+   "dur": 4.1667
+  },
+  {
+   "index": 1,
+   "status": "ok",
+   "dur": 4.0417
+  },
+  {
+   "index": 2,
+   "status": "ok",
+   "dur": 6.9167
+  },
+  {
+   "index": 3,
+   "status": "ok",
+   "dur": 5.125
+  },
+  {
+   "index": 4,
+   "status": "ok",
+   "dur": 7.0
+  },
+  {
+   "index": 5,
+   "status": "ok",
+   "dur": 4.875
+  },
+  {
+   "index": 6,
+   "status": "ok",
+   "dur": 15.1667
+  },
+  {
+   "index": 7,
+   "status": "absorbed",
+   "reason": "failed"
+  },
+  {
+   "index": 8,
+   "status": "ok",
+   "dur": 6.875
+  },
+  {
+   "index": 9,
+   "status": "ok",
+   "dur": 3.125
+  },
+  {
+   "index": 10,
+   "status": "ok",
+   "dur": 13.125
+  },
+  {
+   "index": 11,
+   "status": "ok",
+   "dur": 10.8333
+  },
+  {
+   "index": 12,
+   "status": "absorbed",
+   "reason": "no_frame"
+  },
+  {
+   "index": 13,
+   "status": "ok",
+   "dur": 8.1667
+  },
+  {
+   "index": 14,
+   "status": "ok",
+   "dur": 9.7917
+  },
+  {
+   "index": 15,
+   "status": "ok",
+   "dur": 5.4583
+  },
+  {
+   "index": 16,
+   "status": "ok",
+   "dur": 5.25
+  },
+  {
+   "index": 17,
+   "status": "ok",
+   "dur": 11.7083
+  },
+  {
+   "index": 18,
+   "status": "ok",
+   "dur": 17.0417
+  },
+  {
+   "index": 19,
+   "status": "absorbed",
+   "reason": "no_frame"
+  },
+  {
+   "index": 20,
+   "status": "ok",
+   "dur": 10.375
+  },
+  {
+   "index": 21,
+   "status": "absorbed",
+   "reason": "no_frame"
+  },
+  {
+   "index": 22,
+   "status": "ok",
+   "dur": 8.9583
+  },
+  {
+   "index": 23,
+   "status": "ok",
+   "dur": 9.0
+  },
+  {
+   "index": 24,
+   "status": "ok",
+   "dur": 6.0
+  },
+  {
+   "index": 25,
+   "status": "ok",
+   "dur": 10.9583
+  },
+  {
+   "index": 26,
+   "status": "ok",
+   "dur": 22.75
+  },
+  {
+   "index": 27,
+   "status": "absorbed",
+   "reason": "no_frame"
+  },
+  {
+   "index": 28,
+   "status": "absorbed",
+   "reason": "no_frame"
+  },
+  {
+   "index": 29,
+   "status": "ok",
+   "dur": 20.7083
+  },
+  {
+   "index": 30,
+   "status": "absorbed",
+   "reason": "no_frame"
+  },
+  {
+   "index": 31,
+   "status": "absorbed",
+   "reason": "no_frame"
+  },
+  {
+   "index": 32,
+   "status": "ok",
+   "dur": 19.4583
+  },
+  {
+   "index": 33,
+   "status": "absorbed",
+   "reason": "no_frame"
+  },
+  {
+   "index": 34,
+   "status": "absorbed",
+   "reason": "no_frame"
+  },
+  {
+   "index": 35,
+   "status": "ok",
+   "dur": 10.0417
+  },
+  {
+   "index": 36,
+   "status": "absorbed",
+   "reason": "no_frame"
+  },
+  {
+   "index": 37,
+   "status": "ok",
+   "dur": 5.5
+  },
+  {
+   "index": 38,
+   "status": "ok",
+   "dur": 6.5833
+  },
+  {
+   "index": 39,
+   "status": "ok",
+   "dur": 10.6667
+  },
+  {
+   "index": 40,
+   "status": "absorbed",
+   "reason": "no_frame"
+  },
+  {
+   "index": 41,
+   "status": "ok",
+   "dur": 6.875
+  },
+  {
+   "index": 42,
+   "status": "ok",
+   "dur": 27.9167
+  },
+  {
+   "index": 43,
+   "status": "absorbed",
+   "reason": "no_frame"
+  },
+  {
+   "index": 44,
+   "status": "absorbed",
+   "reason": "no_frame"
+  },
+  {
+   "index": 45,
+   "status": "absorbed",
+   "reason": "no_frame"
+  },
+  {
+   "index": 46,
+   "status": "ok",
+   "dur": 9.2917
+  },
+  {
+   "index": 47,
+   "status": "ok",
+   "dur": 15.0833
+  },
+  {
+   "index": 48,
+   "status": "absorbed",
+   "reason": "no_frame"
+  },
+  {
+   "index": 49,
+   "status": "ok",
+   "dur": 9.0417
+  },
+  {
+   "index": 50,
+   "status": "ok",
+   "dur": 21.9583
+  },
+  {
+   "index": 51,
+   "status": "absorbed",
+   "reason": "no_frame"
+  },
+  {
+   "index": 52,
+   "status": "ok",
+   "dur": 2.7917
+  },
+  {
+   "index": 53,
+   "status": "ok",
+   "dur": 8.8333
+  },
+  {
+   "index": 54,
+   "status": "ok",
+   "dur": 4.375
+  },
+  {
+   "index": 55,
+   "status": "ok",
+   "dur": 17.3333
+  },
+  {
+   "index": 56,
+   "status": "absorbed",
+   "reason": "no_frame"
+  },
+  {
+   "index": 57,
+   "status": "ok",
+   "dur": 6.1667
+  },
+  {
+   "index": 58,
+   "status": "ok",
+   "dur": 9.7083
+  }
+ ]
+}

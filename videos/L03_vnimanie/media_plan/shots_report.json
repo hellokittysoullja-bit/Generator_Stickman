@@ -1,0 +1,1639 @@
+{
+ "punch_gap_sec": 15.0,
+ "key_gap_sec": 10.0,
+ "clips": [
+  {
+   "index": 0,
+   "duration": 4.167,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     1.12,
+     "manual"
+    ],
+    [
+     2.08,
+     "manual"
+    ],
+    [
+     2.96,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [],
+   "notes": [
+    "главная мысль не успевает дописаться и постоять к концу кадра — не пишется"
+   ]
+  },
+  {
+   "index": 1,
+   "duration": 4.042,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     0.97,
+     "manual"
+    ],
+    [
+     2.21,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [],
+   "notes": []
+  },
+  {
+   "index": 2,
+   "duration": 6.917,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     1.63,
+     "manual"
+    ],
+    [
+     3.07,
+     "manual"
+    ],
+    [
+     4.47,
+     "manual"
+    ],
+    [
+     5.71,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [],
+   "notes": []
+  },
+  {
+   "index": 3,
+   "duration": 5.125,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     1.76,
+     "manual"
+    ],
+    [
+     3.6,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [],
+   "notes": [
+    "план 0.0-5.1 с без смены: другого плана без разреза рисунка нет"
+   ]
+  },
+  {
+   "index": 4,
+   "duration": 7.0,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     2.16,
+     "manual"
+    ],
+    [
+     3.52,
+     "manual"
+    ],
+    [
+     4.48,
+     "manual"
+    ],
+    [
+     5.84,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [],
+   "notes": []
+  },
+  {
+   "index": 5,
+   "duration": 4.875,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     1.42,
+     "manual"
+    ],
+    [
+     3.3,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [],
+   "notes": []
+  },
+  {
+   "index": 6,
+   "duration": 15.167,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     1.76,
+     "manual"
+    ],
+    [
+     3.2,
+     "manual"
+    ],
+    [
+     5.12,
+     "manual"
+    ],
+    [
+     6.92,
+     "manual"
+    ],
+    [
+     9.28,
+     "manual"
+    ],
+    [
+     11.97,
+     "manual"
+    ],
+    [
+     14.0,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [
+    [
+     5.12,
+     15.17
+    ]
+   ],
+   "notes": []
+  },
+  {
+   "index": 8,
+   "duration": 6.875,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     1.96,
+     "manual"
+    ],
+    [
+     3.44,
+     "manual"
+    ],
+    [
+     4.32,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [],
+   "notes": []
+  },
+  {
+   "index": 9,
+   "duration": 3.125,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     1.45,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [],
+   "notes": [
+    "главная мысль не успевает дописаться — не пишется"
+   ]
+  },
+  {
+   "index": 10,
+   "duration": 13.125,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     1.88,
+     "manual"
+    ],
+    [
+     4.16,
+     "manual"
+    ],
+    [
+     6.96,
+     "manual"
+    ],
+    [
+     8.68,
+     "manual"
+    ],
+    [
+     11.67,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [],
+   "notes": []
+  },
+  {
+   "index": 11,
+   "duration": 10.833,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     2.4,
+     "manual"
+    ],
+    [
+     3.6,
+     "manual"
+    ],
+    [
+     5.8,
+     "manual"
+    ],
+    [
+     7.92,
+     "manual"
+    ],
+    [
+     9.27,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [],
+   "notes": []
+  },
+  {
+   "index": 13,
+   "duration": 8.167,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     1.4,
+     "manual"
+    ],
+    [
+     2.88,
+     "manual"
+    ],
+    [
+     4.32,
+     "manual"
+    ],
+    [
+     6.64,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [],
+   "notes": []
+  },
+  {
+   "index": 14,
+   "duration": 9.792,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     2.8,
+     "manual"
+    ],
+    [
+     5.0,
+     "manual"
+    ],
+    [
+     7.88,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [
+    [
+     0.0,
+     9.79
+    ]
+   ],
+   "notes": []
+  },
+  {
+   "index": 15,
+   "duration": 5.458,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     1.6,
+     "manual"
+    ],
+    [
+     4.16,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [],
+   "notes": [
+    "план 0.0-5.5 с без смены: другого плана без разреза рисунка нет"
+   ]
+  },
+  {
+   "index": 16,
+   "duration": 5.25,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     2.12,
+     "manual"
+    ],
+    [
+     3.64,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [],
+   "notes": []
+  },
+  {
+   "index": 17,
+   "duration": 11.708,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     1.76,
+     "manual"
+    ],
+    [
+     3.75,
+     "manual"
+    ],
+    [
+     5.59,
+     "manual"
+    ],
+    [
+     8.72,
+     "manual"
+    ],
+    [
+     10.42,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [
+    [
+     0.0,
+     11.68
+    ]
+   ],
+   "notes": [
+    "план 0.0-11.7 с без смены: другого плана без разреза рисунка нет"
+   ]
+  },
+  {
+   "index": 18,
+   "duration": 17.042,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     1.27,
+     "manual"
+    ],
+    [
+     2.95,
+     "manual"
+    ],
+    [
+     5.03,
+     "manual"
+    ],
+    [
+     6.74,
+     "manual"
+    ],
+    [
+     8.5,
+     "manual"
+    ],
+    [
+     9.98,
+     "manual"
+    ],
+    [
+     11.75,
+     "manual"
+    ],
+    [
+     14.55,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [],
+   "notes": []
+  },
+  {
+   "index": 20,
+   "duration": 10.375,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     1.45,
+     "manual"
+    ],
+    [
+     2.81,
+     "manual"
+    ],
+    [
+     4.04,
+     "manual"
+    ],
+    [
+     6.33,
+     "manual"
+    ],
+    [
+     9.21,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [],
+   "notes": []
+  },
+  {
+   "index": 22,
+   "duration": 8.958,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     2.32,
+     "manual"
+    ],
+    [
+     3.52,
+     "manual"
+    ],
+    [
+     5.28,
+     "manual"
+    ],
+    [
+     7.65,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [],
+   "notes": [
+    "план 0.0-9.0 с без смены: другого плана без разреза рисунка нет"
+   ]
+  },
+  {
+   "index": 23,
+   "duration": 9.0,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     2.72,
+     "manual"
+    ],
+    [
+     4.08,
+     "manual"
+    ],
+    [
+     6.0,
+     "manual"
+    ],
+    [
+     7.76,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [],
+   "notes": []
+  },
+  {
+   "index": 24,
+   "duration": 6.0,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     1.08,
+     "manual"
+    ],
+    [
+     1.96,
+     "manual"
+    ],
+    [
+     3.72,
+     "manual"
+    ],
+    [
+     4.68,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": 4.63,
+   "accent": null,
+   "narrator": [],
+   "notes": [
+    "key «игровой автомат» не пишется: в ручном плане нет места"
+   ]
+  },
+  {
+   "index": 25,
+   "duration": 10.958,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     1.36,
+     "manual"
+    ],
+    [
+     2.48,
+     "manual"
+    ],
+    [
+     4.4,
+     "manual"
+    ],
+    [
+     6.08,
+     "manual"
+    ],
+    [
+     8.36,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [],
+   "notes": []
+  },
+  {
+   "index": 26,
+   "duration": 22.75,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     2.68,
+     "manual"
+    ],
+    [
+     5.6,
+     "manual"
+    ],
+    [
+     7.04,
+     "manual"
+    ],
+    [
+     8.68,
+     "manual"
+    ],
+    [
+     10.76,
+     "manual"
+    ],
+    [
+     12.54,
+     "manual"
+    ],
+    [
+     14.19,
+     "manual"
+    ],
+    [
+     16.32,
+     "manual"
+    ],
+    [
+     17.67,
+     "manual"
+    ],
+    [
+     19.87,
+     "manual"
+    ],
+    [
+     21.07,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [],
+   "notes": []
+  },
+  {
+   "index": 29,
+   "duration": 20.708,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     2.87,
+     "manual"
+    ],
+    [
+     3.7,
+     "manual"
+    ],
+    [
+     4.99,
+     "manual"
+    ],
+    [
+     6.98,
+     "manual"
+    ],
+    [
+     8.65,
+     "manual"
+    ],
+    [
+     9.85,
+     "manual"
+    ],
+    [
+     12.29,
+     "manual"
+    ],
+    [
+     14.27,
+     "manual"
+    ],
+    [
+     15.47,
+     "manual"
+    ],
+    [
+     16.43,
+     "manual"
+    ],
+    [
+     17.55,
+     "manual"
+    ],
+    [
+     19.39,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [],
+   "notes": []
+  },
+  {
+   "index": 32,
+   "duration": 19.458,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     0.8,
+     "manual"
+    ],
+    [
+     2.56,
+     "manual"
+    ],
+    [
+     3.44,
+     "manual"
+    ],
+    [
+     5.04,
+     "manual"
+    ],
+    [
+     6.4,
+     "manual"
+    ],
+    [
+     7.44,
+     "manual"
+    ],
+    [
+     8.8,
+     "manual"
+    ],
+    [
+     10.42,
+     "manual"
+    ],
+    [
+     12.1,
+     "manual"
+    ],
+    [
+     13.56,
+     "manual"
+    ],
+    [
+     14.93,
+     "manual"
+    ],
+    [
+     15.88,
+     "manual"
+    ],
+    [
+     18.2,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [],
+   "notes": []
+  },
+  {
+   "index": 35,
+   "duration": 10.042,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     1.42,
+     "manual"
+    ],
+    [
+     3.19,
+     "manual"
+    ],
+    [
+     4.91,
+     "manual"
+    ],
+    [
+     5.71,
+     "manual"
+    ],
+    [
+     6.71,
+     "manual"
+    ],
+    [
+     7.41,
+     "manual"
+    ],
+    [
+     8.56,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [],
+   "notes": []
+  },
+  {
+   "index": 37,
+   "duration": 5.5,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     1.84,
+     "manual"
+    ],
+    [
+     3.64,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [],
+   "notes": [
+    "план 0.0-5.5 с без смены: другого плана без разреза рисунка нет"
+   ]
+  },
+  {
+   "index": 38,
+   "duration": 6.583,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     0.88,
+     "manual"
+    ],
+    [
+     1.72,
+     "manual"
+    ],
+    [
+     3.4,
+     "manual"
+    ],
+    [
+     4.52,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [],
+   "notes": []
+  },
+  {
+   "index": 39,
+   "duration": 10.667,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     2.01,
+     "manual"
+    ],
+    [
+     3.44,
+     "manual"
+    ],
+    [
+     4.76,
+     "manual"
+    ],
+    [
+     6.26,
+     "manual"
+    ],
+    [
+     7.98,
+     "manual"
+    ],
+    [
+     9.46,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [],
+   "notes": []
+  },
+  {
+   "index": 41,
+   "duration": 6.875,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     1.88,
+     "manual"
+    ],
+    [
+     3.24,
+     "manual"
+    ],
+    [
+     4.56,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [],
+   "notes": []
+  },
+  {
+   "index": 42,
+   "duration": 27.917,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     1.95,
+     "manual"
+    ],
+    [
+     3.95,
+     "manual"
+    ],
+    [
+     5.07,
+     "manual"
+    ],
+    [
+     6.99,
+     "manual"
+    ],
+    [
+     8.43,
+     "manual"
+    ],
+    [
+     10.02,
+     "manual"
+    ],
+    [
+     11.62,
+     "manual"
+    ],
+    [
+     13.14,
+     "manual"
+    ],
+    [
+     15.45,
+     "manual"
+    ],
+    [
+     17.05,
+     "manual"
+    ],
+    [
+     19.33,
+     "manual"
+    ],
+    [
+     22.14,
+     "manual"
+    ],
+    [
+     24.62,
+     "manual"
+    ],
+    [
+     26.1,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [
+    [
+     19.33,
+     27.92
+    ]
+   ],
+   "notes": []
+  },
+  {
+   "index": 46,
+   "duration": 9.292,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     1.28,
+     "manual"
+    ],
+    [
+     3.55,
+     "manual"
+    ],
+    [
+     4.51,
+     "manual"
+    ],
+    [
+     5.95,
+     "manual"
+    ],
+    [
+     8.03,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [],
+   "notes": []
+  },
+  {
+   "index": 47,
+   "duration": 15.083,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     1.92,
+     "manual"
+    ],
+    [
+     2.88,
+     "manual"
+    ],
+    [
+     5.04,
+     "manual"
+    ],
+    [
+     6.48,
+     "manual"
+    ],
+    [
+     8.32,
+     "manual"
+    ],
+    [
+     10.72,
+     "manual"
+    ],
+    [
+     12.04,
+     "manual"
+    ],
+    [
+     13.92,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [],
+   "notes": []
+  },
+  {
+   "index": 49,
+   "duration": 9.042,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     1.56,
+     "manual"
+    ],
+    [
+     3.24,
+     "manual"
+    ],
+    [
+     4.68,
+     "manual"
+    ],
+    [
+     6.25,
+     "manual"
+    ],
+    [
+     7.08,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [],
+   "notes": []
+  },
+  {
+   "index": 50,
+   "duration": 21.958,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     3.28,
+     "manual"
+    ],
+    [
+     4.64,
+     "manual"
+    ],
+    [
+     6.24,
+     "manual"
+    ],
+    [
+     7.68,
+     "manual"
+    ],
+    [
+     10.0,
+     "manual"
+    ],
+    [
+     12.28,
+     "manual"
+    ],
+    [
+     13.56,
+     "manual"
+    ],
+    [
+     14.62,
+     "manual"
+    ],
+    [
+     15.62,
+     "manual"
+    ],
+    [
+     17.62,
+     "manual"
+    ],
+    [
+     19.44,
+     "manual"
+    ],
+    [
+     20.82,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [
+    [
+     14.62,
+     21.96
+    ]
+   ],
+   "notes": []
+  },
+  {
+   "index": 52,
+   "duration": 2.792,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     1.61,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [],
+   "notes": [
+    "главная мысль не успевает дописаться — не пишется"
+   ]
+  },
+  {
+   "index": 53,
+   "duration": 8.833,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     2.36,
+     "manual"
+    ],
+    [
+     4.84,
+     "manual"
+    ],
+    [
+     6.04,
+     "manual"
+    ],
+    [
+     7.16,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [],
+   "notes": []
+  },
+  {
+   "index": 54,
+   "duration": 4.375,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     1.52,
+     "manual"
+    ],
+    [
+     3.12,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [],
+   "notes": [
+    "главная мысль не успевает дописаться и постоять к концу кадра — не пишется"
+   ]
+  },
+  {
+   "index": 55,
+   "duration": 17.333,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     2.72,
+     "manual"
+    ],
+    [
+     5.44,
+     "manual"
+    ],
+    [
+     6.71,
+     "manual"
+    ],
+    [
+     8.47,
+     "manual"
+    ],
+    [
+     10.15,
+     "manual"
+    ],
+    [
+     12.03,
+     "manual"
+    ],
+    [
+     14.15,
+     "manual"
+    ],
+    [
+     16.26,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [],
+   "notes": []
+  },
+  {
+   "index": 57,
+   "duration": 6.167,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     0.92,
+     "manual"
+    ],
+    [
+     2.6,
+     "manual"
+    ],
+    [
+     4.36,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [],
+   "notes": [
+    "план 0.0-6.2 с без смены: другого плана без разреза рисунка нет"
+   ]
+  },
+  {
+   "index": 58,
+   "duration": 9.708,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     1.48,
+     "manual"
+    ],
+    [
+     2.52,
+     "manual"
+    ],
+    [
+     3.72,
+     "manual"
+    ],
+    [
+     4.68,
+     "manual"
+    ],
+    [
+     5.76,
+     "manual"
+    ],
+    [
+     6.72,
+     "manual"
+    ],
+    [
+     7.8,
+     "manual"
+    ],
+    [
+     9.16,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "narrator": [],
+   "notes": []
+  }
+ ]
+}
