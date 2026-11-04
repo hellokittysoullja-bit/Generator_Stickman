@@ -434,3 +434,19 @@ def test_hand_label_sits_on_paper_next_to_object_and_skips_object_out_of_frame()
     sx, sy = cx*SW/1920, cy*SH/1080
     assert not (420 <= sx <= 540 and 220 <= sy <= 320)              # подпись не на предмете
     assert frame_clip.hand_layout(fr, "палец", box, (600, 0, 960, 202)) is None   # предмета нет в кадре
+
+
+def test_narrator_not_in_first_10s_and_every_1_5_to_3_minutes():
+    """Владелец 04.11: кот-ведущий «не в первые 10 секунд видео, не чаще одного раза в 1,5–2 минуты и не реже раза
+    в 3 минуты»."""
+    starts = [0.0, 5.0, 40.0, 100.0, 150.0, 250.0, 300.0, 400.0, 450.0]
+    ends = starts[1:] + [560.0]
+    nar = {"why": "т"}
+    ok = {"3": {"narrator": nar}, "5": {"narrator": nar}, "7": {"narrator": nar}, "9": {"narrator": nar}}
+    assert long_rules.narrator_rhythm(ok, starts, ends) == []        # 40, 150, 300, 450 с; конец 560
+    early = dict(ok, **{"2": {"narrator": nar}})
+    assert any("первые 10 с" in e for e in long_rules.narrator_rhythm(early, starts, ends))
+    often = dict(ok, **{"4": {"narrator": nar}})                       # 100 с — через 60 с после 40
+    assert any("чаще раза" in e for e in long_rules.narrator_rhythm(often, starts, ends))
+    rare = {"3": {"narrator": nar}, "8": {"narrator": nar}}            # 40 → 400: 360 с без ведущего
+    assert any("реже раза" in e for e in long_rules.narrator_rhythm(rare, starts, ends))

@@ -571,6 +571,7 @@ def hook_build(video_dir):
     fp = os.path.join(video_dir, "fx.json")
     fx = (json.load(open(fp, encoding="utf-8")).get("phrases") or {}) if os.path.exists(fp) else {}
     err += label_density(video_dir, blocks, frames, fx, starts, ends, hook_end)
+    err += narrator_rhythm(fx, starts, ends)
     err += text_share(frames, fx)
     return err
 
@@ -622,6 +623,34 @@ def label_density(video_dir, blocks, frames, fx, starts, ends, hook_end):
         err.append(f"LABELS: с {int(t0 // 60)}:{int(t0 % 60):02d} за минуту {len(inside)} надписей > {LABEL_MAX} "
                    f"({', '.join('«' + x[2] + '»' for x in inside)}) — надпись только там, где добавляет то, чего нет ни "
                    f"в картинке, ни на слух: число, имя, приём, главный вывод")
+    return err
+
+
+NARRATOR_NOT_BEFORE = 10.0                 # кот-ведущий (размытый фон) — не в первые 10 с ролика
+NARRATOR_MIN_GAP, NARRATOR_MAX_GAP = 90.0, 180.0   # не чаще раза в 1,5 мин и не реже раза в 3 мин (владелец 04.11)
+
+
+def narrator_rhythm(fx, starts, ends):
+    """Кот-ведущий перед размытой сценой (fx.json narrator): не раньше 10-й секунды, между выходами не меньше 1,5 мин и
+    не больше 3 мин (и от начала ролика до первого, и от последнего до конца). Где именно — по смыслу: прямое
+    обращение к зрителю (why обязателен, long_fx.load)."""
+    err = []
+    total = ends[-1] if ends else 0.0
+    ts = sorted(starts[int(n) - 1] for n, v in fx.items() if v.get("narrator") and 0 < int(n) <= len(starts))
+    early = [t for t in ts if t < NARRATOR_NOT_BEFORE]
+    if early:
+        err.append(f"NARRATOR: кот-ведущий на {early[0]:.1f} с — не в первые {NARRATOR_NOT_BEFORE:.0f} с ролика")
+    def mmss(t):
+        return f"{int(t // 60)}:{int(t % 60):02d}"
+    for a, b in zip(ts, ts[1:]):
+        if b - a < NARRATOR_MIN_GAP:
+            err.append(f"NARRATOR: выходы на {mmss(a)} и {mmss(b)} — через {b - a:.0f} с, чаще раза в "
+                       f"{NARRATOR_MIN_GAP / 60:.1f} мин")
+    if total > NARRATOR_MAX_GAP:
+        for a, b in zip([0.0] + ts, ts + [total]):
+            if b - a > NARRATOR_MAX_GAP:
+                err.append(f"NARRATOR: с {mmss(a)} до {mmss(b)} нет кота-ведущего {b - a:.0f} с — реже раза в "
+                           f"{NARRATOR_MAX_GAP / 60:.0f} мин: поставить на прямое обращение к зрителю в этом куске")
     return err
 
 
