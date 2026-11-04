@@ -366,6 +366,9 @@ def _video_hook_montage(video_dir, blocks, frames, starts, ends, hook_n, fx_path
                 err.append(f"VIDEO-HOOK: фраза {i + 1}, план {k + 1}: слова «{p.get('at')}» нет во фразе")
                 continue
             cuts.append(t)
+            cuts += _stage_beats(p, blocks, starts, ends, list(range(i, nxt)), video_dir)
+            if p.get("stage"):
+                acc.append(("stage", t))
             for kind in ("punch", "shake", "spot", "whip", "parallax"):
                 if p.get(kind):
                     acc.append((kind, t))
@@ -453,11 +456,28 @@ def _manual_minutes(video_dir, blocks, frames, starts, ends):
                 err.append(f"MANUAL: фраза {i + 1}, план {k + 1}: слова «{p.get('at')}» нет в клипе картинки")
                 continue
             ts.append(t)
+            ts += _stage_beats(p, blocks, starts, ends, list(range(i, nxt)), video_dir)
         ts = sorted(ts) + [f_end]
         for a, b in zip(ts, ts[1:]):
             if b - a > MANUAL_MAX_SHOT + 0.3 and a < MANUAL_MONTAGE_SEC:
                 err.append(f"MANUAL: план с {int(a // 60)}:{a % 60:04.1f} идёт {b - a:.1f} с > {MANUAL_MAX_SHOT} — вторым планом по смыслу")
     return err
+
+
+def _stage_beats(p, blocks, starts, ends, idx, video_dir):
+    """Моменты внутри сцены на бумаге (появление элемента, сдвиг карточки) — для темпа они как склейки: сцена с тремя
+    событиями за 4 с не «план 4 с»."""
+    sp = p.get("stage")
+    if not sp:
+        return []
+    els = sp.get("items") or sp.get("cards") or []
+    out = []
+    for at in [e.get("at") for e in els] + [sp.get("focus_at")]:
+        if at:
+            t = _word_t(blocks, starts, ends, idx, at, _WORD_TIMES.get(os.path.abspath(video_dir)))
+            if t is not None:
+                out.append(t)
+    return out
 
 
 CUT_WHY_RE = re.compile(r"склейк|смена плана|новая картинка|переход на|влёт картинки", re.I)
@@ -480,6 +500,16 @@ def edit_sounds(video_dir, blocks, frames, starts, ends):
         nxt = pic[n + 1] if n + 1 < len(pic) else len(blocks)
         ws = [dict(word=w["word"], start=w["start"] - starts[i]) for k in range(i, nxt) for w in wt[k]] if wt else None
         for k, p in enumerate((edit.get(str(i + 1)) or {}).get("shots") or []):
+            sp = p.get("stage")
+            if sp and ws is not None:                     # появления и сдвиги сцены на бумаге — на своих словах
+                els = sp.get("items") or sp.get("cards") or []
+                marks = [(e.get("at"), e.get("sound")) for e in els] + [(sp.get("focus_at"), sp.get("focus_sound"))]
+                for at, snd in marks:
+                    if at and snd:
+                        try:
+                            out.append((starts[i] + long_edit.word_time(at, ws), i, snd))
+                        except ValueError:
+                            pass
             if not p.get("sound"):
                 continue
             if k == 0:
@@ -494,6 +524,40 @@ def edit_sounds(video_dir, blocks, frames, starts, ends):
             if t is not None:
                 out.append((t, i, p["sound"]))
     return out
+
+
+def stage_checks(video_dir):
+    """Сцены на бумаге (edit.json "stage", long_stage): вид items (1–3 вырезки) или cards (ровно две карточки), у
+    вырезки — рамка box или многоугольник poly, исходник существует, подпись — до трёх слов."""
+    ep = os.path.join(video_dir, "edit.json")
+    if not os.path.exists(ep):
+        return []
+    import long_stage
+    err = []
+    for n, v in (json.load(open(ep, encoding="utf-8")).get("frames") or {}).items():
+        for k, p in enumerate(v.get("shots") or [], 1):
+            sp = p.get("stage")
+            if not sp:
+                continue
+            where = f"STAGE: фраза {n}, план {k}"
+            kind = sp.get("type")
+            els = sp.get("items") if kind == "items" else sp.get("cards") if kind == "cards" else None
+            if els is None:
+                err.append(f"{where}: вид сцены «{kind}» — items (вырезки) или cards (две карточки)")
+                continue
+            if kind == "items" and not 1 <= len(els) <= 3:
+                err.append(f"{where}: вырезок {len(els)} — от одной до трёх, иначе мелко и не читается")
+            if kind == "cards" and len(els) != 2:
+                err.append(f"{where}: карточек {len(els)} — ровно две (сравнение, одна уезжает, другая на весь экран)")
+            for e in els:
+                src = e.get("src") or ""
+                if kind == "items" and not (e.get("box") or e.get("poly")):
+                    err.append(f"{where}: у вырезки {src} нет рамки box или многоугольника poly")
+                if src.startswith("lib:") and not os.path.exists(long_stage.resolve_src(src, video_dir)):
+                    err.append(f"{where}: в библиотеке нет {src[4:]}")
+                if len((e.get("label") or "").split()) > 3:
+                    err.append(f"{where}: подпись «{e['label']}» длиннее трёх слов")
+    return err
 
 
 def generic_whys(video_dir):
@@ -626,6 +690,7 @@ def hook_build(video_dir):
     # «рядом», «это» звучат в длинном клипе не раз, и план вставал на первое вхождение (сборка L03 упала 04.11)
     err += _edit_order(video_dir, blocks, frames, starts)
     err += generic_whys(video_dir)
+    err += stage_checks(video_dir)
     # 5. надписи — только где добавляют то, чего нет ни в картинке, ни сразу на слух, и не чаще лимита (владелец 04.11,
     # вечер: «рисунков карандашом слишком много… даже там, где не надо»; L03: 65 надписей на 7 мин — раз в 6,5 с)
     fp = os.path.join(video_dir, "fx.json")

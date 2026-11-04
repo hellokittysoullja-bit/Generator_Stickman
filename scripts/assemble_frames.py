@@ -96,6 +96,37 @@ def frame_source(video_dir, i, rec):
     return os.path.join(video_dir, "frames", f"{i + 1:03d}.png"), []
 
 
+def prepare_stages(video_dir, edits, report):
+    """Вырезки и карточки сцен на бумаге (edit.json "stage") — один раз, с кэшем в media_plan/stage_cache; путь
+    готового PNG — в поле _png элемента (его читает отрисовка клипа)."""
+    import long_stage
+    cache = os.path.join(video_dir, "media_plan", "stage_cache")
+
+    code = hashlib.sha256(open(long_stage.__file__, "rb").read()).hexdigest()[:12]   # правка вида сцены -> новый клип
+
+    def phrase_src(n):
+        return frame_source(video_dir, n - 1, report.get(n - 1) or {})[0]
+    for v in edits.values():
+        for sh in v.get("shots") or []:
+            sp = sh.get("stage")
+            if not sp:
+                continue
+            sp["_code"] = code
+            items = sp["items"] if sp["type"] == "items" else sp["cards"]
+            for it in items:
+                path = long_stage.resolve_src(it["src"], video_dir, phrase_src)
+                rgba = long_stage.card(path, cache) if sp["type"] == "cards" else \
+                    long_stage.cutout(path, it.get("box"), it.get("poly"), cache)
+                key = hashlib.sha256(rgba.tobytes() + str(rgba.shape).encode()).hexdigest()[:16]   # весь PNG: у
+                # вырезок верх — прозрачные строки, по началу байтов две разные вырезки совпали бы
+                out = os.path.join(cache, f"use_{key}.png")
+                if not os.path.exists(out):
+                    from PIL import Image
+                    os.makedirs(cache, exist_ok=True)
+                    Image.fromarray(rgba).save(out)
+                it["_png"] = out
+
+
 def load_plan_frames(video_dir):
     try:
         return {f["index"]: f for f in json.load(open(os.path.join(video_dir, "media_plan", "frame_plan.json"),
@@ -347,6 +378,7 @@ def main(video_dir):
         list(ex.map(_warm, jobs))
     import long_edit
     edits = long_edit.load(video_dir)
+    prepare_stages(video_dir, edits, report)
     manual_labels = os.path.exists(os.path.join(video_dir, "storyboard.json"))   # надписи по смыслу, без таймера
     last_punch, last_key, shot_log, written = -1e9, -1e9, [], []
     for k, job in enumerate(jobs):                         # план — по порядку: наезды и мысли не чаще порога
@@ -427,6 +459,21 @@ def main(video_dir):
             return job["out"], json.load(open(c))
         return None
 
+    only = os.environ.get("ASSEMBLE_ONLY")              # «7,16,56» — только клипы картинок этих фраз, с голосом, без
+    if only:                                            # сборки всего ролика: проверить правку за минуты, а не за 20
+        want = {int(x) - 1 for x in only.split(",") if x.strip()}
+        pick = [k for k, i in enumerate(kept) if i in want]
+        with ProcessPoolExecutor(workers) as ex:
+            rs = list(ex.map(_render, [jobs[k] for k in pick if cached(jobs[k]) is None]))
+        del rs
+        for k in pick:
+            clip = jobs[k]["out"]
+            outp = os.path.join(mp, f"preview_{kept[k] + 1:03d}.mp4")
+            run(["ffmpeg", "-y", "-v", "error", "-i", clip, "-ss", f"{jobs[k]['T0']:.3f}", "-t", f"{jobs[k]['dur']:.3f}",
+                 "-i", audio, "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-c:a", "aac", outp])
+            print(f"Пробный клип: {outp}")
+        return 0
+
     results = [cached(j) for j in jobs]
     todo = [k for k, r in enumerate(results) if r is None]
     with ProcessPoolExecutor(workers) as ex:
@@ -492,6 +539,12 @@ def main(video_dir):
             if sg.get("sound"):
                 cut_sounds.append(dict(name=sg["sound"], t=t, gain_db=sg.get("sound_gain", 0.0),
                                        why=f"склейка: {sg.get('sound_why') or sg.get('why', '')}"))
+            if sg.get("stage"):                            # появления и сдвиги сцены на бумаге — на своём кадре
+                import long_stage
+                for dt, name, why in long_stage.sounds(sg["stage"]):
+                    te = round(clip_at[k] + math.ceil((sg["t0"] + dt)*FPS - 1e-6)/FPS, 4)
+                    screen_cuts.append(te)
+                    cut_sounds.append(dict(name=name, t=te, why=why))
     rep = long_sfx.build(video_dir, starts, speech.word_times if timing == "phrase_lock" else [], total, voice, sfx_wav,
                          cut_sounds=cut_sounds, cuts=sorted(set(screen_cuts)))
     if rep:

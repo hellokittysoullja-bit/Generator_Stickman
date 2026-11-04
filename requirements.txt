@@ -10,3 +10,4 @@ scenedetect>=0.6.6        # второе мнение о склейках в п�
 pytest-xdist>=3.5          # pytest -n auto: суита 7.5 -> 4.6 мин на 4 ядрах
 ruff>=0.5                  # линт: ruff check scripts tests
 pymunk>=7.3
+rembg[cpu]==2.0.86        # вырезки для сцен на бумаге длинного ролика (long_stage, birefnet-general-lite)

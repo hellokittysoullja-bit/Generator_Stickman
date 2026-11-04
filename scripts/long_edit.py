@@ -66,6 +66,15 @@ def _parallax(p):
     return dict(dx=dp.DX, dz=dp.DZ) if p is True else dict(dx=float(p.get("dx", dp.DX)), dz=float(p.get("dz", dp.DZ)))
 
 
+def _stage(spec, words, t0):
+    """Сцена на бумаге (long_stage): копия с временами элементов от начала плана — по словам, как склейки."""
+    if not spec:
+        return None
+    import copy
+    import long_stage
+    return long_stage.times(copy.deepcopy(spec), lambda at: word_time(at, words), t0)
+
+
 def segments(fr, shots, words, D):
     """Ручные планы -> сегменты камеры (kind="manual") в координатах холста."""
     if not shots:
@@ -80,8 +89,13 @@ def segments(fr, shots, words, D):
     segs, prev = [], None
     for i, (s, t0) in enumerate(zip(shots, ts)):
         t1 = ts[i + 1] if i + 1 < len(ts) else D
-        win = _win(fr, s["win"])
-        if s.get("to"):
+        if s.get("stage") and not s.get("win"):            # сцена на бумаге рисуется сама, камера рисунка ей не нужна
+            win = win_to = camera.full_window(fr["SW"], fr["SH"])
+        else:
+            win = _win(fr, s["win"])
+        if s.get("stage") and not s.get("win"):
+            pass
+        elif s.get("to"):
             win_to = _win(fr, s["to"])
         else:
             cx, cy = camera.center(win)
@@ -92,7 +106,8 @@ def segments(fr, shots, words, D):
                    shake=float(s.get("shake", 0)), whip=s.get("whip"),
                    spot=(sp[0] + ox, sp[1] + oy, sp[2]) if sp else None,
                    parallax=_parallax(s.get("parallax")),
-                   sound=s.get("sound"), sound_gain=float(s.get("sound_gain", 0.0)), sound_why=s.get("sound_why"))
+                   sound=s.get("sound"), sound_gain=float(s.get("sound_gain", 0.0)), sound_why=s.get("sound_why"),
+                   stage=_stage(s.get("stage"), words, t0))
         segs.append(seg)
         prev = win_to
     for a, b in zip(segs, segs[1:]):          # хлёст смазывает и уходящий план

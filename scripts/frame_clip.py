@@ -487,6 +487,21 @@ def hand_plan(fr, p, hand, D=None):
     return p
 
 
+_STAGES = {}
+
+
+def _stage_frame(seg, t):
+    """Кадр сцены на бумаге плана seg в момент клипа t. Элементы — PNG, приготовленные сборщиком (поле _png)."""
+    import long_stage
+    key = id(seg)
+    if key not in _STAGES:
+        sp = seg["stage"]
+        items = sp["items"] if sp["type"] == "items" else sp["cards"]
+        assets = [np.asarray(Image.open(it["_png"]).convert("RGBA")) for it in items]
+        _STAGES[key] = long_stage.Stage(sp, assets, seg["t1"] - seg["t0"])
+    return _STAGES[key].frame(t - seg["t0"])
+
+
 def _warp(alpha, src_win, dst_win):
     """Альфа в экранных координатах окна src_win -> экранные координаты окна dst_win."""
     s_src = W/(src_win[2] - src_win[0]); s_dst = W/(dst_win[2] - dst_win[0])
@@ -612,6 +627,16 @@ def render(fr, p, D, out, fps=24, end_fade=False, crf="18", anim=None, fx=None):
                 win = _cam_window(win, cam, SW, SH)
             seg = next((s_ for s_ in p["segments"] if s_["t0"] <= t < s_["t1"]), p["segments"][-1])
             manual = seg.get("kind") == "manual"
+            if seg.get("stage"):                       # сцена на бумаге (long_stage) вместо окна рисунка
+                f = _stage_frame(seg, t)
+                f = long_edit.whip(f, seg, t)
+                if track is not None:
+                    f = track.apply(np.asarray(f, np.float32), t)
+                if end_fade and t > D - END_FADE_SEC:
+                    a = camera.ease_io((t - (D - END_FADE_SEC))/END_FADE_SEC)
+                    f = f*(1 - a) + canvas.CREAM*a
+                proc.stdin.write(np.clip(f, 0, 255).round().astype(np.uint8).tobytes())
+                continue
             if manual:                                 # ручной монтаж: тряска на ударе
                 dx, dy = long_edit.shake_px(seg, t)
                 if dx or dy:
