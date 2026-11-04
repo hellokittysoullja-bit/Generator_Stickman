@@ -41,3 +41,4 @@ experiments/birefnet/out/cache/
 experiments/birefnet/out/cmp_frames/
 experiments/birefnet/out/kit_bir/
 experiments/birefnet/out/mask_birefnet.png
+experiments/cutout/out/*.npy
