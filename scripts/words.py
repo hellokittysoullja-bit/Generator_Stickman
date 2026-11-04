@@ -32,3 +32,15 @@ def in_text(phrase, text):
     have = [norm(t) for t in (text or "").split()]
     want = significant(phrase)
     return bool(want) and all(any(same(w, h) for h in have) for w in want)
+
+
+def bare(w):
+    """Слово, как его пишут в edit.json / sfx.json / fx.json: только буквы и цифры, нижний регистр."""
+    return re.sub(r"[^а-яёa-z0-9]", "", (w or "").lower())
+
+
+def occurrences(stem, words):
+    """Слова фразы (dict с "word"), которыми может быть stem: точное совпадение важнее начала слова. Одно правило
+    у склейки монтажа, звука на слове и надписи: «["слово", k]» в разных файлах — одно и то же вхождение."""
+    st = bare(stem)
+    return [w for w in words if bare(w["word"]) == st] or [w for w in words if bare(w["word"]).startswith(st)]

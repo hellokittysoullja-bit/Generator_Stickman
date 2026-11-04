@@ -196,15 +196,6 @@ class _FakeHTTPResponse:
         return self._payload
 
 
-class _FakeHTTPError(Exception):
-    def __init__(self, code, payload):
-        self.code = code
-        self._payload = json.dumps(payload).encode("utf-8") if payload is not None else b""
-
-    def read(self):
-        return self._payload
-
-
 def _patch_urlopen(monkeypatch, responder):
     """responder(request) -> _FakeHTTPResponse (успех) или ("error", code, payload)
     (ошибка — оборачивается в настоящий urllib.error.HTTPError, чтобы except-ветка

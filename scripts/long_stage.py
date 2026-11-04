@@ -24,11 +24,11 @@ import numpy as np
 from PIL import Image
 
 import canvas
+from easing import ease_io, ease_out
 
 W, H = 1920, 1080
 VIGNETTE = 0.07          # края на 7 % темнее центра: бумага не пустая, но и не «сцена в луче» образца
 GRAIN = 0.012
-POP_SEC = 0.35           # выскакивание вырезки с перелётом
 SLIDE_SEC = 0.5          # карточка уезжает за край / встаёт в центр
 GROUP_SEC = 0.45          # группа раздвигается под новый элемент
 ZOOM_SEC = 0.6           # карточка на весь экран
@@ -40,16 +40,6 @@ VERSION = 4              # смена вида — смена подписи к�
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _BG = None
-
-
-def ease_io(u):
-    u = min(1.0, max(0.0, u))
-    return u*u*(3 - 2*u)
-
-
-def ease_out(u):
-    u = min(1.0, max(0.0, u))
-    return 1 - (1 - u)**3
 
 
 def back_out(u, s=1.7):

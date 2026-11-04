@@ -1,5 +1,16 @@
 # Кодовое слово: «ЖИВОЙ КОТ»
 
+> **Чистка 04.11.** Код опытов, которые не взяты или заменены, удалён из рабочей папки; выводы ниже остаются.
+> Удалено: `cut.py`, `boxes.json`, `inpaint.py` (заменены `scripts/long_stage.py` и `scripts/inpaint.py`), `alive.py` и
+> `puppet.py` (заменены куклой `doll/`), `klein.py` (FLUX Klein не правит референс), `remotion/` (Remotion не взят 28.10),
+> `n8n_wf.json` (качества не даёт), `gl/bench.py` и `doll/gl_backend.py` (ModernGL не взят), `Rig.frame_hd` и
+> `doll/render_hd.py` (не взяты, под новые слои не переделаны), `doll/doll.py` (первая сцена, заменена `doll_rig.py`),
+> `doll/gen_wave.py`, `doll/fixfoot.py`, `doll/assets/hero_wave*.png` («машет» отклонено владельцем 07.10; оригиналы
+> картинок — в `library/cat/originals/`), `doll/flame_ab.py` (сравнение сделано), `doll/test_rig_fps.py` (не запускался:
+> лежал вне `tests/`; проверка моргания на 24 к/с перенесена в `tests/test_regressions_0810.py`). Всё — в истории git
+> до коммита 75e64fb: `git show 75e64fb:experiments/alive_cat/<путь>`. Отложенные жесты лап (`gen_reach_left*`, `rotleg.py`,
+> `rotdemo.py`) оставлены: владелец их отложил, не отклонил.
+
 Услышав его, открыть этот файл и продолжить отсюда. Опыт 06.10, бесплатный, на старых кадрах (ep2 + 01_sdvg_pismo).
 
 ## Что проверено

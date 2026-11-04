@@ -33,6 +33,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "scripts"))
 import reel_rules  # noqa: E402  (после пути к scripts)
+from easing import ease_io, ease_out  # noqa: E402
 
 W, H, FPS = 1080, 1920, 30
 PAPER = np.array([250, 247, 240], np.float32)          # #FAF7F0, как у длинных роликов (canvas.py)
@@ -252,15 +253,6 @@ def render_chunk(words, idx, active, fade_ahead=True, pop=1.0):
 def ease_out_back(u, s=2.2):
     u = min(max(u, 0.0), 1.0) - 1
     return 1 + (s + 1) * u ** 3 + s * u ** 2
-
-def ease_out(u):
-    u = min(max(u, 0.0), 1.0)
-    return 1 - (1 - u) ** 3
-
-def ease_io(u):
-    u = min(max(u, 0.0), 1.0)
-    return u * u * (3 - 2 * u)
-
 
 # ----------------------------------------------------------------------------- картинка
 _SRC = {}
@@ -954,6 +946,7 @@ def _code_sig():
     """Подпись кода картинки: правка reel.py, модуля движения, библиотеки звуков или рига куклы перерисовывает все планы."""
     h = hashlib.md5()
     for p in (os.path.abspath(__file__), os.path.join(SFX_DIR, "library.json"), os.path.join(ROOT, "scripts", "anim.py"),
+              os.path.join(ROOT, "scripts", "easing.py"),
               os.path.join(ROOT, "experiments", "alive_cat", "doll", "doll_rig.py"),
               os.path.join(ROOT, "experiments", "alive_cat", "doll", "rig.json")):
         if os.path.exists(p): h.update(open(p, "rb").read())

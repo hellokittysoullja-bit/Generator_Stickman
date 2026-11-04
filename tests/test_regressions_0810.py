@@ -192,6 +192,17 @@ def test_doll_blinks_are_spaced_and_quiet_before_the_cut():
     assert doll_rig.thin_blinks([1.0, 3.0], 7.0, keep=[1.1]) == [1.1, 3.0]
 
 
+
+def test_doll_blink_is_seen_at_the_assembler_frame_rate():
+    """Сборщик идёт на 24 к/с: в худшей фазе моргания кадров с закрытым веком не меньше двух — иначе моргание
+    проскакивает между кадрами и кот «не моргает» (план куклы в секундах, не в кадрах)."""
+    import assemble_frames
+    import doll_rig
+    fps = assemble_frames.FPS
+    worst = min(sum(1 for i in range(3 * fps) if doll_rig.plan(3.0, [{"t": 1.0 + ph, "do": "blink"}], seed=5)(i / fps)["lid"] >= 0.999)
+                for ph in np.linspace(0, 1 / fps, 25, endpoint=False))
+    assert worst >= 2
+
 def test_qc_thresholds_follow_the_planner_constants():
     import montage_qc as mq
     assert mq.HOOK_ZONE_SEC == shots.HOOK_ZONE_SEC

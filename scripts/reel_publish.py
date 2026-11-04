@@ -24,7 +24,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import reel        # noqa: E402
 import reel_rules  # noqa: E402
 
-GRID_Y0, GRID_Y1 = 240, 1680   # сетка профиля показывает центр 1080×1440 (3:4) — текст обложки внутри
+GRID_Y1 = 1680   # низ сетки профиля: она показывает центр 1080×1440 (3:4) — текст обложки внутри
 
 
 def utm_link(brand, reel_dir, version):

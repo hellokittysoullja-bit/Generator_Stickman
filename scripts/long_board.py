@@ -19,6 +19,8 @@ import cv2
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
+from easing import ease_io
+
 W, H = 1920, 1080
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CAVEAT = os.path.join(ROOT, "assets", "fonts", "Caveat-Variable.ttf")
@@ -359,11 +361,6 @@ class Board:
                              borderMode=cv2.BORDER_REFLECT)
         blur = cv2.GaussianBlur(out, (0, 0), DOF_SIGMA if travel is None else DOF_SIGMA_TRAVEL)
         return out*(1 - self.dof[..., None]) + blur*self.dof[..., None]
-
-
-def ease_io(u):
-    u = min(1.0, max(0.0, u))
-    return u*u*(3 - 2*u)
 
 
 def _smooth(t, seed, f=0.6):

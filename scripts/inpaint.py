@@ -227,10 +227,6 @@ def _bands(x):
     return out
 
 
-def _mad(v):
-    return 1.4826 * float(np.median(np.abs(v - np.median(v)))) if v.size else 0.0
-
-
 def stationary_grain(src, clean, box, T=48, seed=7):
     """Зерно в рамке box=(x0,y0,x1,y1): случайные куски src с чистой бумаги, окна Ханна с перекрытием 50 %,
     сумма делится на sqrt(Σw²) — дисперсия ровная, швов нет, отражений нет."""

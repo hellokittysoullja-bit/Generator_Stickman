@@ -25,7 +25,6 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SR = 48000
 FILES = [os.path.join(ROOT, "assets", "sfx", f) for f in ("pencil_a.mp3", "pencil_b.mp3")]
 PENCIL_GAP_LU = float(os.environ.get("PENCIL_GAP_LU", "14"))
-LABEL_GAIN_DB = -7.0
 
 
 def _load(p):

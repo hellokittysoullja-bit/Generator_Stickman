@@ -11,15 +11,10 @@
 и «не слышно» — те же пороги. Выход — дорожка wav длиной ролика; сводит её assemble_frames до loudnorm."""
 import json
 import os
-import re
 
 import numpy as np
 
 import reel
-
-
-def _stem(w):
-    return re.sub(r"[^а-яёa-z0-9]", "", w.lower())
 
 
 def resolve(events, starts, word_times):

@@ -560,30 +560,6 @@ class Rig:
         return reg * (1 - w[..., None]) + src * w[..., None]
 
 
-    def frame_hd(self, st, t):
-        """Кадр сразу 1920x1080: изгиб и увеличение одним пересчётом (INTER_CUBIC) — края резче,
-        чем remap + отдельный Lanczos-апскейл."""
-        cat = self.cat_layer(st, t); r = self.r
-        if not hasattr(self, "_hd"):
-            sc = 1920 / self.W; off = (self.H * sc - 1080) / 2
-            Oy, Ox = np.mgrid[0:1080, 0:1920].astype(np.float32)
-            Px = (Ox + .5) / sc - .5; Py = (Oy + off + .5) / sc - .5
-            x0, y0, x1, y1 = self.bb
-            ix = np.clip(np.round(Px).astype(int) - x0, 0, x1 - x0 - 1); iy = np.clip(np.round(Py).astype(int) - y0, 0, y1 - y0 - 1)
-            inside = (Px >= x0) & (Px < x1) & (Py >= y0) & (Py < y1)
-            self._hd = dict(Px=Px, Py=Py, inside=inside, wh=self.w_head[iy, ix] * inside, we=self.w_ear[iy, ix] * inside, wt=self.w_tail[iy, ix] * inside)
-        h = self._hd; X, Y = h["Px"].copy(), h["Py"].copy()
-        def rot(X, Y, p, deg, w):
-            if abs(deg) < 1e-3: return X, Y
-            a = np.float32(-np.radians(deg)) * w; c, s = np.cos(a), np.sin(a); dx, dy = X - p[0], Y - p[1]
-            return p[0] + c * dx - s * dy, p[1] + s * dx + c * dy
-        b = st["breath"] * (1 - .02 * st.get("squash", 0)); fl = r["floor_y"]
-        Y = fl - (fl - Y) / b
-        X, Y = rot(X, Y, r["tail_base"], st["tail"], h["wt"]); X, Y = rot(X, Y, r["ear_base"], st["ear"], h["we"]); X, Y = rot(X, Y, r["neck"], st["head"], h["wh"])
-        c = cv2.remap(np.ascontiguousarray(cat, np.float32), X.astype(np.float32), Y.astype(np.float32), cv2.INTER_CUBIC, borderMode=cv2.BORDER_CONSTANT)
-        a = np.clip(c[..., 3:4], 0, 255) / 255 * h["inside"][..., None]
-        return np.clip(self.paper * (1 - a) + np.clip(c[..., :3], 0, 255) * a, 0, 255).astype(np.uint8)
-
     def _warp_core(self, cat, st):
         """Одна общая деформация на весь кадр (как раньше) и два раздельных слоя — голова и тело
         с хвостом — только в прямоугольнике, где голова встречается с хвостом (self.conflict).

@@ -17,11 +17,11 @@
 (главная мысль, акцент) раскладываются заново в окне того плана, где их пишут."""
 import json
 import os
-import re
 
 import numpy as np
 
 import camera
+import words as wordmatch
 
 PUNCH_SNAP = 0.25
 SPOT_IN = 0.25
@@ -37,17 +37,12 @@ def load(video_dir):
     return {int(k) - 1: v for k, v in json.load(open(path, encoding="utf-8")).get("frames", {}).items()}
 
 
-def _stem(w):
-    return re.sub(r"[^а-яёa-z0-9]", "", w.lower())
-
-
 def word_time(at, words):
     """Время начала плана в клипе. Слово ищется по началу (без знаков и регистра); k-е вхождение — ["слово", k]."""
     if isinstance(at, (int, float)):
         return float(at)
     stem, k = (at, 1) if isinstance(at, str) else (at[0], int(at[1]))
-    hits = [w["start"] for w in words if _stem(w["word"]) == _stem(stem)] or \
-        [w["start"] for w in words if _stem(w["word"]).startswith(_stem(stem))]   # точное слово важнее начала
+    hits = [w["start"] for w in wordmatch.occurrences(stem, words)]
     if len(hits) < k:
         raise ValueError(f"слова «{stem}» (вхождение {k}) нет в клипе")
     return hits[k - 1]

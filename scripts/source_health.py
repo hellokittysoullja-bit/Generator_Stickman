@@ -121,17 +121,3 @@ def host(name, **params):
         if h is None:
             h = _REGISTRY[name] = Host(name, **params)
         return h
-
-
-def reset_all():
-    """Новый прогон — новый счёт (тесты, повторный main())."""
-    with _REG_LOCK:
-        for h in _REGISTRY.values():
-            h.reset()
-
-
-def snapshot():
-    """{хост: счётчики} — для отчёта прогона."""
-    with _REG_LOCK:
-        return {name: dict(h.stats, rate=(None if h.interval <= 0 else round(h.rate, 3)))
-                for name, h in _REGISTRY.items()}

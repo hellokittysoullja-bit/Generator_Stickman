@@ -13,7 +13,6 @@
 prepare() — дорогая часть, общая для плана и рендера (холст, увеличение,
 карта занятости); plan_clip() — план с учётом наезда в прошлом кадре
 (последовательно по ролику); render() — клип в mp4 (параллельно)."""
-import hashlib
 import math
 import json
 import os
@@ -48,10 +47,6 @@ def upscale_sig():
     """Способ и версия увеличения рисунка — в ключ кэша клипа (02.11: после смены на waifu2x сборщик брал старые
     клипы, и ролик выходил прежним до байта)."""
     return f"{upscale.method()}:{upscale.VERSION}:{os.environ.get('UPSCALE_NEURAL', '1')}"
-
-
-def _hash(*parts):
-    return hashlib.sha256("|".join(str(p) for p in parts).encode()).hexdigest()[:16]
 
 
 def prepare(src_path, recs, objects, work, seed=0, tex=None):
@@ -303,7 +298,6 @@ def plan_clip(fr, D, words, key=None, last_punch=-1e9, T0=0.0, zoom_in=True, fps
     return p
 
 
-HAND_SIZES = (104, 92, 80)     # рукописная подпись к предмету — мельче мысли (KEY_SIZES): это подпись, не мысль
 HAND_MAX_W = 0.40
 HAND_SIZES_ALL = (300, 260, 220, 190, 160, 130, 112, 96, 84, 74, 64)   # кегль экрана в окне раскладки
 HAND_MIN_FULL, HAND_MAX_FULL = 52, 76   # кегль на общем плане: подпись рядом с рисунком, а не поверх (было 64–96);

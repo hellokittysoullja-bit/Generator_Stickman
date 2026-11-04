@@ -51,18 +51,3 @@ def test_speech_timing_uses_the_one_tag_vocabulary():
     import script_parser
     import speech_timing
     assert speech_timing.ALIGNMENT_TAG_SPAN_RE is script_parser.ALIGNMENT_TAG_SPAN_RE
-
-def _sp():
-    sys.path.insert(0, SCRIPTS_DIR)
-    import script_parser
-    return script_parser
-
-
-
-
-
-
-
-
-
-

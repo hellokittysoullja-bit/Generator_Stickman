@@ -17,6 +17,9 @@ import cv2
 import numpy as np
 from PIL import Image, ImageDraw
 
+import words as wordmatch
+from easing import ease_out
+
 W, H = 1920, 1080
 FONT_AXES = {"Weight": 900}
 STROKE = 6                 # владелец 04.11 по образцу канала Дани: «чуть сильнее обводку, на постоянке»: 3 → 6 px
@@ -34,11 +37,6 @@ def back_out(u, s=1.7):
     """Перелёт к 1 с отскоком (как поп слов в субтитрах рилсов)."""
     u = min(max(u, 0.0), 1.0) - 1
     return 1 + u*u*((s + 1)*u + s)
-
-
-def ease_out(u):
-    u = min(max(u, 0.0), 1.0)
-    return 1 - (1 - u)**3
 
 
 # --------------------------------------------------------------------------- размытие под ведущим
@@ -375,8 +373,7 @@ def hand_events(spec, t0, t1, words):
     for h in spec.get("hand") or []:
         w = None
         if h.get("word"):
-            st = _stem(h["word"])
-            hits = [x for x in words if _stem(x["word"]) == st] or [x for x in words if _stem(x["word"]).startswith(st)]
+            hits = wordmatch.occurrences(h["word"], words)
             n = int(h.get("nth", 1)) - 1
             w = hits[n] if 0 <= n < len(hits) else None
         at = w["start"] - 0.05 if w else t0 + 0.3
@@ -395,11 +392,6 @@ def _sound(d):
     return dict(sound=d["sound"], sound_gain=float(d.get("sound_gain", 0.0)), sound_why=d.get("sound_why") or d.get("why"))
 
 
-def _stem(w):
-    import re
-    return re.sub(r"[^а-яёa-z0-9]", "", w.lower())
-
-
 def events(spec, t0, t1, words, text, seed=0):
     """События одной фразы в секундах клипа. words — слова фразы (start/end от начала клипа)."""
     ev = []
@@ -411,9 +403,7 @@ def events(spec, t0, t1, words, text, seed=0):
     for b in spec.get("bold") or []:
         w = None
         if b.get("word"):
-            st = _stem(b["word"])
-            w = next((x for x in words if _stem(x["word"]) == st), None) or \
-                next((x for x in words if _stem(x["word"]).startswith(st)), None)
+            w = next(iter(wordmatch.occurrences(b["word"], words)), None)
         at = w["start"] - 0.05 if w else t0 + 0.3          # немое превью без alignment: в начале фразы
         bold.append(dict(kind="bold", text=b["text"], t0=max(t0, at), style=b.get("style", "letters"), **_sound(b)))
     bold.sort(key=lambda e: e["t0"])

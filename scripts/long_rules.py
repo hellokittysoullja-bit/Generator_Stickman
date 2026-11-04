@@ -261,16 +261,6 @@ def check(video_dir, final=False, items=None):
 # первые 10 с — ниже эталона рилс 17. Пороги — те же, что у рилсов (reel_rules, правила 28–29), без своих чисел.
 LEGACY = {"L01_potom", "L02_otvlechenie"}
 EST_WPS = 2.4               # темп L02 до озвучки (слов в секунду); после озвучки — время слов из alignment
-# Надписи — не по таймеру, а по смыслу, всегда (владелец 04.11: «их должно быть больше… не в какое-то количество
-# времени, а просто когда нужно, всегда»). Фраза, где звучит число, имя или название, приём, «Напарник» или
-# кульминация, несёт надпись: жирный текст fx.json или карандаш (key / accent раскадровки). Не нужна — fx.json
-# phrases[N].nolabel = {"why": …} словами.
-LABEL_NUM_RE = re.compile(
-    r"\b(\d+|два|две|двух|двум|три|тр[её]х|четыре|четыр[её]х|пять|пяти|шесть|шести|семь|семи|восемь|восьми|восемью|"
-    r"девять|девяти|десять|десяти|десят(ая|ой|ую|ый|ом)|одиннадцат\w*|двенадцат\w*|пятнадцат\w*|двадцат\w*|"
-    r"тридцат\w*|сорок\w*|пятьдесят|пятидесяти|шестьдесят|семьдесят|семидесяти|восемьдесят|девяносто|сто|ста|"
-    r"сотн\w*|тысяч\w*|половин\w*|треть|трети|четверть|четверти|двухминутн\w*)\b")
-LABEL_TERM_RE = re.compile(r"\b(при[её]м\w*|напарник\w*)\b")
 LONG_SFX_PER_10S = 3.0      # звуков в длинном ролике — не меньше 3 в каждом куске 10 с (владелец 04.11, вечер: «было 4,
 LONG_SFX_WINDOW = 10.0      # теперь 3… как будто слишком много звуков… плавающие 3–4, по смыслу, не хардкод шаблон»)
 LONG_SFX_MEAN_MAX = 4.0     # и в среднем после хука не больше 4 на 10 с: кусок с важным событием может нести 5–6,
@@ -410,24 +400,6 @@ def _video_hook_montage(video_dir, blocks, frames, starts, ends, hook_n, fx_path
     if len(kinds) < ACCENT_KINDS_MIN:
         err.append(f"VIDEO-HOOK: видов акцентов {len(kinds)} ({', '.join(sorted(kinds)) or 'нет'}) < {ACCENT_KINDS_MIN}")
     return err
-
-
-def label_needs(text, climax=""):
-    """Почему фразе нужна надпись на экране (пусто — не нужна): число, имя или название, приём, «Напарник», кульминация."""
-    low = text.lower()
-    why = []
-    if LABEL_NUM_RE.search(low):
-        why.append("число")
-    for sent in re.split(r"(?<=[.!?…])\s+", text):
-        toks = [t.strip("«»\"'(),:;—–-.!?") for t in sent.split()][1:]
-        if any(t and t[0].isupper() and t != "Я" and not t.lower().startswith("напарник") for t in toks):
-            why.append("имя или название")
-            break
-    if LABEL_TERM_RE.search(low):
-        why.append("приём или «Напарник»")
-    if climax and climax in norm(text):
-        why.append("кульминация")
-    return ", ".join(why)
 
 
 def _manual_minutes(video_dir, blocks, frames, starts, ends):

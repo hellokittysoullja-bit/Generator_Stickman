@@ -46,6 +46,7 @@ import sys
 from concurrent.futures import ProcessPoolExecutor
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import easing  # noqa: E402
 import env  # noqa: E402
 
 EXIT_OK, EXIT_FAILED, EXIT_WARN = 0, 1, 2
@@ -103,7 +104,7 @@ def prepare_stages(video_dir, edits, report):
     cache = os.path.join(video_dir, "media_plan", "stage_cache")
 
     import long_board
-    code = hashlib.sha256(open(long_stage.__file__, "rb").read() + open(long_board.__file__, "rb").read()
+    code = hashlib.sha256(b"".join(open(m.__file__, "rb").read() for m in (long_stage, long_board, easing))
                           ).hexdigest()[:12]                                  # правка вида сцены -> новый клип
 
     def phrase_src(n):
@@ -438,7 +439,8 @@ def main(video_dir):
         scene_sig = hashlib.sha256(open(job["anim"], "rb").read()).hexdigest()[:12] if job.get("anim") else None
         head = [h, scene_sig] if scene_sig else [h]          # клипы без сцены — прежний ключ кэша
         if job["fx"]:                                         # клипы без эффектов — прежний ключ кэша
-            head += [frame_clip.without_sound(job["fx"]), hashlib.sha256(open(long_fx.__file__, "rb").read()).hexdigest()[:12]]
+            head += [frame_clip.without_sound(job["fx"]), hashlib.sha256(open(long_fx.__file__, "rb").read()
+                                                                        + open(easing.__file__, "rb").read()).hexdigest()[:12]]
         sig = hashlib.sha256(json.dumps(head + [job["recs"], job["objects"], frame_clip.plan_record(p), job["dur"],
                                          job["end_fade"], job["seed"], FPS, CRF, frame_clip.RENDER_VERSION,
                                          canvas.TEXTURE, frame_clip.UPSCALE, frame_clip.upscale_sig()],

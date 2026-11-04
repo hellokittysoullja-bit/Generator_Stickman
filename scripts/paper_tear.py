@@ -8,6 +8,8 @@ import functools
 import cv2
 import numpy as np
 
+from easing import ease_io
+
 VERSION = 1               # правка вида разрыва — смена ключа клипа (long_edit кладёт её в план)
 TEAR_SEC = 0.6            # весь разрыв: надрыв 0.22 доли, дальше половинки улетают
 PULL = 0.22               # доля времени на надрыв: щель в несколько пикселей, лист дёргается
@@ -32,11 +34,6 @@ def _masks(w, h, seed):
         r = cv2.GaussianBlur(((d < rim) & (m > 0)).astype(np.float32), (0, 0), 0.7)
         rims.append(r)
     return left, rims[0], rims[1]
-
-
-def ease_io(u):
-    u = min(1.0, max(0.0, u))
-    return u*u*(3 - 2*u)
 
 
 def compose(before, after, u, seed=7):
