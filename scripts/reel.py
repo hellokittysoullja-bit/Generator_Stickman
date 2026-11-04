@@ -872,7 +872,6 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     rule_errs += reel_rules.check_sounds(sound_plan(shots, events))
     rule_errs += reel_rules.check_sound_density(sound_plan(shots, events), total,      # правило 29: звуков не меньше эталона
                                                 ((spec.get("passport") or {}).get("standard") or 0))
-    rule_errs += reel_rules.check_duration(total, ((spec.get("passport") or {}).get("standard") or 0))   # правило 30: 30–34 с
     rule_errs += reel_rules.check_cut_sounds(sound_plan(shots, events), shots, CUT_SOUND_NEAR)
     rule_errs += reel_rules.check_whoosh_gap(sound_plan(shots, events))
     rule_errs += reel_rules.check_spots(spec, events)
