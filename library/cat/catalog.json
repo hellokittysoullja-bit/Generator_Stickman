@@ -3257,6 +3257,24 @@
   "source": "videos/21_znayu/reel/draw_color.py"
  },
  {
+  "file": "2026-11-04_gen_cx_gpt-image-2_5_13fc985e.png",
+  "sha256": "13fc985e13b9122a1d27bae0e08dd99a7d1634b3dd54d0b73e01b75c77672a21",
+  "bytes": 2247919,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-04",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: the main character sits upright and relaxed on a plain wooden chair with a cup of tea in its paws, resting calmly; on the far side of the picture, across the room, one round alarm clock stands alone on a small shelf. LAYOUT: the cat on the chair whole on the left half, the alarm clock small but clear on the shelf on the right, clear empty floor between them; the clock face is blank; no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink lines on cream paper in exactly the hand-drawn style of the style references; the main character and the objects are softly painted with gentle muted watercolour, each in its own natural colour, never neon; the background is plain warm cream paper like a blank drawing sheet (владелец 04.11): no painted walls, no wall colour, no floorboards, no sky colour, only one thin ink floor line or a soft light-grey shadow under things that stand. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "videos/22_minutka/reel/draw_color.py"
+ },
+ {
   "file": "2026-11-04_gen_cx_gpt-image-2_5_19109087.png",
   "sha256": "1910908756040db36b4f4bd7d05e30fcf15f36eeff18a95b77e6be618e8a313e",
   "bytes": 2660362,
@@ -3563,6 +3581,24 @@
   "source": "scripts/reel_draw.py videos/21_znayu/reel"
  },
  {
+  "file": "2026-11-04_gen_cx_gpt-image-2_5_69845f5b.png",
+  "sha256": "69845f5b6a5ce3cc1231503506859dcd673b9b9f238b19110532c3009dcc9c5c",
+  "bytes": 2385418,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-04",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: the same cosy living room at night, lit only by one small lamp. The main character jolts upright on the sofa, wide-awake shocked eyes, fur standing up, ears up, the phone sliding off its chest, one paw on its head in panic; on the wall one plain window shows a dark night sky with one round moon and a few stars. LAYOUT: the cat big and whole on the sofa in the lower middle, the window in the upper part; the phone screen is blank; no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink lines on cream paper in exactly the hand-drawn style of the style references; the main character and the objects are softly painted with gentle muted watercolour, each in its own natural colour, never neon; the background is plain warm cream paper like a blank drawing sheet (владелец 04.11): no painted walls, no wall colour, no floorboards, no sky colour, only one thin ink floor line or a soft light-grey shadow under things that stand. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "videos/22_minutka/reel/draw_color.py"
+ },
+ {
   "file": "2026-11-04_gen_cx_gpt-image-2_5_715872b5.png",
   "sha256": "715872b5a18c2a530c6d7129a595cb615d0853b7b74014db6d185e55c53410e4",
   "bytes": 2462082,
@@ -3669,6 +3705,24 @@
   "quality": "medium",
   "price": 197550,
   "source": "scripts/reel_recream.py videos/21_znayu/reel gen/k3_plan.png"
+ },
+ {
+  "file": "2026-11-04_gen_cx_gpt-image-2_5_92f9d24e.png",
+  "sha256": "92f9d24e30d6d8e49b365727d9e4b9919325231528bbf4ca2c3f1a14f1b5ecbb",
+  "bytes": 2404206,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-04",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: a funny metaphor: the main character is sinking deep into a huge soft sofa as if into quicksand, only its head, one paw holding a phone and the tip of its tail with a tiny dim flame stick out of the soft cushions, the cushions bulge around it; a sleepy surrendered face. LAYOUT: the huge sofa fills the lower two thirds, the cat's head in the middle; no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink lines on cream paper in exactly the hand-drawn style of the style references; the main character and the objects are softly painted with gentle muted watercolour, each in its own natural colour, never neon; the background is plain warm cream paper like a blank drawing sheet (владелец 04.11): no painted walls, no wall colour, no floorboards, no sky colour, only one thin ink floor line or a soft light-grey shadow under things that stand. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "videos/22_minutka/reel/draw_color.py"
  },
  {
   "file": "2026-11-04_gen_cx_gpt-image-2_5_9721931f.png",
@@ -3779,6 +3833,24 @@
   "source": "videos/21_znayu/reel/draw_color.py"
  },
  {
+  "file": "2026-11-04_gen_cx_gpt-image-2_5_aef2619a.png",
+  "sha256": "aef2619aebb5af8823d435d0e7f6811094a38a48b274d95ff5d45552f079f99d",
+  "bytes": 2306813,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-04",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: a cosy living room. The main character lies on its back on a small plain sofa, head on a pillow, holding one phone up above its face with both front paws, eyes heavy and half closed, a sleepy guilty little smile; its tail hangs down off the sofa. On the wall above the sofa there is one plain square window with an empty blank pane and a simple frame, nothing visible through it. LAYOUT: the sofa with the cat is whole and big across the lower half; the window is in the upper middle with plenty of empty wall around it; the phone screen is blank; no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink lines on cream paper in exactly the hand-drawn style of the style references; the main character and the objects are softly painted with gentle muted watercolour, each in its own natural colour, never neon; the background is plain warm cream paper like a blank drawing sheet (владелец 04.11): no painted walls, no wall colour, no floorboards, no sky colour, only one thin ink floor line or a soft light-grey shadow under things that stand. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "videos/22_minutka/reel/draw_color.py"
+ },
+ {
   "file": "2026-11-04_gen_cx_gpt-image-2_5_b354df6b.png",
   "sha256": "b354df6b1ba7680ec2471a5deac03adfb7118a5b161481d631d8b4aaeb5657e4",
   "bytes": 2456658,
@@ -3851,6 +3923,24 @@
   "source": "scripts/reel_recream.py videos/21_znayu/reel gen/k4_table.png"
  },
  {
+  "file": "2026-11-04_gen_cx_gpt-image-2_5_d082ed95.png",
+  "sha256": "d082ed9551a38560fc47157a60e59ff01e20082959440d0b7ae4ff909442245e",
+  "bytes": 2375880,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-04",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: the main character sits on the floor facing the viewer, smiling warmly and confidently, holding one round alarm clock out toward the viewer in both front paws like an offer; its tail flame burns bright. LAYOUT: the cat big and whole in the lower middle, the alarm clock close to the viewer; plain wall; the clock face is blank; no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink lines on cream paper in exactly the hand-drawn style of the style references; the main character and the objects are softly painted with gentle muted watercolour, each in its own natural colour, never neon; the background is plain warm cream paper like a blank drawing sheet (владелец 04.11): no painted walls, no wall colour, no floorboards, no sky colour, only one thin ink floor line or a soft light-grey shadow under things that stand. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "videos/22_minutka/reel/draw_color.py"
+ },
+ {
   "file": "2026-11-04_gen_cx_gpt-image-2_5_d4f38b9a.png",
   "sha256": "d4f38b9a8c232bf6b718ad332c5cf1e71a9bd3e0eaa20f5c4dc22610c11ce7cf",
   "bytes": 2530001,
@@ -3885,6 +3975,24 @@
   "quality": "medium",
   "price": 197550,
   "source": "videos/21_znayu/reel/draw_color.py"
+ },
+ {
+  "file": "2026-11-04_gen_cx_gpt-image-2_5_de868051.png",
+  "sha256": "de868051703712f84227353dfc1ad89dc1351419fc08ef77ca4d2fcdcc30ec4d",
+  "bytes": 2236208,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-04",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: the main character walks briskly and happily across the room toward the viewer holding one round alarm clock high in one paw like a trophy, a proud happy face with eyes half closed, mid-step; its tail flame burns big and golden with a few tiny sparks. LAYOUT: the cat big and whole in the middle; the clock face is blank; no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink lines on cream paper in exactly the hand-drawn style of the style references; the main character and the objects are softly painted with gentle muted watercolour, each in its own natural colour, never neon; the background is plain warm cream paper like a blank drawing sheet (владелец 04.11): no painted walls, no wall colour, no floorboards, no sky colour, only one thin ink floor line or a soft light-grey shadow under things that stand. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "videos/22_minutka/reel/draw_color.py"
  },
  {
   "file": "2026-11-04_gen_cx_gpt-image-2_5_f1e3f5dc.png",

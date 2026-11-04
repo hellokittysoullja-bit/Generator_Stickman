@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=2048, height=3072" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="lib/mesh_part.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 2048px; height: 3072px; overflow: hidden; background: #faf7f0; }
+      #root { position: relative; width: 2048px; height: 3072px; overflow: hidden; }
+      .layer { position: absolute; left: 0; top: 0; width: 2048px; height: 3072px; }
+      .abs { position: absolute; display: block; }
+      svg.layer { overflow: visible; }
+      #rays line { stroke: #18181a; stroke-linecap: round; }
+    </style>
+  </head>
+  <body>
+    <!-- Хук рилса 22 «Ляжешь на минутку, а уже ночь?»: мир сцены — рисунок p1_hook ×2, 2048×3072. Слои — anim/kit_night.py,
+         положение слоёв подставляет night_hf.py из kit.json, раму окна — kit.pane.
+         С кадра 0 всё в движении: в окне таймлапс — облака несутся по небу, небо темнеет от голубого к закату, солнце
+         падает за нижний край рамы; кот лениво листает телефон и ёрзает, телефон дёргается от свайпов. На ударном
+         «нОчь» (data-vars.hit) небо щёлкает в ночь, выскакивают луна и звёзды, кот вздрагивает и подпрыгивает, вокруг
+         головы — штрихи испуга. Камеру, звук и субтитры даёт сборщик. -->
+    <div id="root" data-composition-id="main" data-start="0" data-duration="3.4" data-width="2048" data-height="3072"
+         data-vars='{"hit": 1.4}' data-motion-blur="on" data-layout-allow-overflow data-layout-allow-overlap>
+      <img id="bg" class="abs clip" src="assets/bg.png" style="left:0;top:0" data-start="0" data-duration="3.4" />
+      <svg id="sky" class="layer" width="2048" height="3072" viewBox="0 0 2048 3072">
+        <defs><clipPath id="pane"><rect id="paneClip" x="0" y="0" width="10" height="10" /></clipPath></defs>
+        <g clip-path="url(#pane)">
+          <rect id="skyFill" x="0" y="0" width="10" height="10" fill="#9fd4f2" />
+          <rect id="dusk" x="0" y="0" width="10" height="10" fill="#f19a5a" opacity="0" />
+          <rect id="night" x="0" y="0" width="10" height="10" fill="#1d2550" opacity="0" />
+          <circle id="sun" cx="0" cy="0" r="120" fill="#ffd34d" stroke="#18181a" stroke-width="7" />
+          <g id="clouds"></g>
+          <g id="moonG"><circle id="moon" cx="0" cy="0" r="105" fill="#fff1b8" stroke="#18181a" stroke-width="7" />
+            <circle id="moonCut" cx="0" cy="0" r="92" fill="#1d2550" /></g>
+          <g id="stars"></g>
+        </g>
+      </svg>
+      <div id="cat" class="layer clip" data-start="0" data-duration="3.4">
+        <div id="catHop" class="layer">
+          <canvas id="tail" class="abs" width="837" height="953" style="left:0px;top:0px"></canvas>
+          <img id="body" class="abs" src="assets/body.png" style="left:0px;top:0px" />
+        </div>
+        <svg id="rays" class="layer" width="2048" height="3072" viewBox="0 0 2048 3072"></svg>
+      </div>
+    </div>
+    <script>
+      const root = document.getElementById("root");
+      const V = JSON.parse(root.dataset.vars), H = V.hit, K = V.kit;
+      const NS = "http://www.w3.org/2000/svg";
+      const tl = gsap.timeline({ paused: true });
+      const px = (p) => `${p[0]}px ${p[1]}px`;
+      const R = (i) => { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+      const [X0, Y0, X1, Y1] = K.pane, PW = X1 - X0, PH = Y1 - Y0, CX = (X0 + X1) / 2;
+      for (const id of ["paneClip", "skyFill", "dusk", "night"]) {
+        const r = document.getElementById(id);
+        r.setAttribute("x", X0); r.setAttribute("y", Y0); r.setAttribute("width", PW); r.setAttribute("height", PH);
+      }
+
+      // небо: с кадра 0 уже темнеет (без разгона), к удару — закат, на ударе щёлк в ночь
+      tl.fromTo("#dusk", { opacity: 0.15 }, { opacity: 0.85, duration: H - 0.05, ease: "none" }, 0);
+      tl.fromTo("#night", { opacity: 0.0 }, { opacity: 0.35, duration: H - 0.05, ease: "power1.in" }, 0);
+      tl.to("#night", { opacity: 1, duration: 0.06, ease: "none" }, H - 0.05);
+      tl.set("#dusk", { opacity: 0 }, H + 0.01);
+
+      // солнце: падает по дуге с кадра 0 на скорости и уходит за нижний край рамы к удару
+      tl.fromTo("#sun", { attr: { cx: X0 + PW * 0.22, cy: Y0 + PH * 0.18 } },
+                        { attr: { cx: X0 + PW * 0.78, cy: Y1 + 160 }, duration: H, ease: "power1.in" }, 0);
+
+      // облака: таймлапс — несутся через окно с кадра 0, каждое со своей фазой
+      const clouds = document.getElementById("clouds");
+      for (let i = 0; i < 7; i++) {
+        const g = document.createElementNS(NS, "g"), y = Y0 + PH * (0.12 + 0.75 * R(i + 3)), s = 0.7 + 0.6 * R(i + 9);
+        for (let k = 0; k < 3; k++) {
+          const e = document.createElementNS(NS, "ellipse");
+          e.setAttribute("cx", (k - 1) * 70 * s); e.setAttribute("cy", (k === 1 ? -30 : 0) * s);
+          e.setAttribute("rx", (k === 1 ? 90 : 70) * s); e.setAttribute("ry", (k === 1 ? 60 : 45) * s);
+          e.setAttribute("fill", "#ffffff"); e.setAttribute("stroke", "#18181a"); e.setAttribute("stroke-width", 6);
+          g.appendChild(e);
+        }
+        clouds.appendChild(g);
+        const per = 0.55 + 0.35 * R(i + 20), ph = per * R(i + 30), span = PW + 500;
+        for (let t = -ph; t < 3.4; t += per) {
+          const t0 = Math.max(0, t), u0 = (t0 - t) / per;
+          tl.fromTo(g, { x: X1 + 250 - span * u0, y: y, opacity: t0 < H ? 1 : 0.35 },
+                       { x: X1 + 250 - span, y: y, duration: per - (t0 - t), ease: "none" }, t0);
+        }
+      }
+
+      // луна: на ударе выскакивает с перелётом; звёзды хлопают одна за другой
+      tl.set("#moonG", { opacity: 0, scale: 0.2, svgOrigin: `${X0 + PW * 0.7} ${Y0 + PH * 0.32}` }, 0);
+      for (const id of ["#moon", "#moonCut"]) tl.set(id, { attr: { cx: X0 + PW * 0.7, cy: Y0 + PH * 0.32 } }, 0);
+      tl.set("#moonCut", { attr: { cx: X0 + PW * 0.7 + 48, cy: Y0 + PH * 0.32 - 30 } }, 0);
+      tl.to("#moonG", { opacity: 1, scale: 1.25, duration: 0.09, ease: "power3.out" }, H);
+      tl.to("#moonG", { scale: 1, duration: 0.45, ease: "elastic.out(1, 0.4)" }, H + 0.09);
+      const stars = document.getElementById("stars");
+      for (let i = 0; i < 9; i++) {
+        const p = document.createElementNS(NS, "path"), sx = X0 + PW * (0.1 + 0.8 * R(i + 40)), sy = Y0 + PH * (0.1 + 0.75 * R(i + 50));
+        const r = 26 + 16 * R(i + 60);
+        p.setAttribute("d", `M${sx} ${sy - r} L${sx + r * 0.3} ${sy - r * 0.3} L${sx + r} ${sy} L${sx + r * 0.3} ${sy + r * 0.3} L${sx} ${sy + r} L${sx - r * 0.3} ${sy + r * 0.3} L${sx - r} ${sy} L${sx - r * 0.3} ${sy - r * 0.3} Z`);
+        p.setAttribute("fill", "#fff3a8"); p.setAttribute("stroke", "#18181a"); p.setAttribute("stroke-width", 4);
+        stars.appendChild(p);
+        tl.set(p, { opacity: 0, scale: 0, svgOrigin: `${sx} ${sy}` }, 0);
+        tl.to(p, { opacity: 1, scale: 1.3, duration: 0.07, ease: "power3.out" }, H + 0.03 + 0.05 * i);
+        tl.to(p, { scale: 0.85, duration: 0.25, ease: "sine.inOut", yoyo: true, repeat: 3 }, H + 0.1 + 0.05 * i);
+      }
+
+      // кот: лениво листает телефон — ёрзает и дёргается от свайпов с кадра 0, без разгона
+      gsap.set("#catHop", { transformOrigin: px(K.feet) });
+      const SH = 0.06;
+      tl.fromTo("#catHop", { x: 30, y: -16, rotation: 1.8 }, { x: -26, y: 6, rotation: -1.6, duration: SH, ease: "none" }, 0);
+      for (let i = 1, t = SH; t < H - 0.06; i++, t += SH) {
+        const s = i % 2 ? 1 : -1, w = Math.sin(t * 7.1);
+        tl.to("#catHop", { x: s * (24 + 10 * Math.abs(w)), y: -14 * Math.abs(w), rotation: s * (1.6 + 0.8 * Math.abs(w)),
+                           duration: SH, ease: "none" }, t);
+      }
+      // удар «нОчь»: вздрогнул и подлетел над диваном, пружина обратно
+      tl.to("#catHop", { x: 0, y: -120, rotation: -3, scaleY: 1.08, scaleX: 0.95, duration: 0.08, ease: "power3.out" }, H);
+      tl.to("#catHop", { y: 18, scaleY: 0.93, scaleX: 1.05, rotation: 1.5, duration: 0.12, ease: "power2.in" }, H + 0.1);
+      tl.to("#catHop", { y: 0, scaleY: 1, scaleX: 1, rotation: 0, duration: 0.6, ease: "elastic.out(1, 0.35)" }, H + 0.22);
+      for (let i = 0, t = H + 0.85; t < 3.4; i++, t += 0.16) {
+        tl.to("#catHop", { x: (i % 2 ? 1 : -1) * 7, y: (i % 2 ? -4 : 2), duration: 0.16, ease: "sine.inOut" }, t);
+      }
+      // штрихи испуга вокруг головы
+      const hx = K.head[0], hy = K.head[1];
+      for (let k = 0; k < 7; k++) {
+        const a = -Math.PI / 2 + (k - 3) * 0.42;
+        const g = document.createElementNS(NS, "g"), m = document.createElementNS(NS, "g"), l = document.createElementNS(NS, "line");
+        g.setAttribute("transform", `translate(${hx + 360 * Math.cos(a)} ${hy - 160 + 280 * Math.sin(a)}) rotate(${(a * 180) / Math.PI})`);
+        l.setAttribute("x1", 0); l.setAttribute("y1", 0); l.setAttribute("x2", 80); l.setAttribute("y2", 0); l.style.strokeWidth = 13;
+        m.appendChild(l); g.appendChild(m); document.getElementById("rays").appendChild(g);
+        tl.set(m, { opacity: 0, scaleX: 0, svgOrigin: "0 0" }, 0);
+        tl.set(m, { opacity: 1 }, H + 0.02);
+        tl.to(m, { scaleX: 1, duration: 0.07, ease: "power3.out" }, H + 0.02);
+        tl.to(m, { x: 46, opacity: 0, duration: 0.26, ease: "power2.in" }, H + 0.2);
+      }
+      meshPart({ canvas: document.getElementById("tail"), marg: 180, img: "assets/tail_body.png",
+                 flame: "assets/tail_flame.png", mesh: "assets/tail_mesh.json", angles: "assets/tail_angles.json", fps: 30 });
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
