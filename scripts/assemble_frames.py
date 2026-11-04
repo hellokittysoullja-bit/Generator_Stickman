@@ -401,7 +401,7 @@ def main(video_dir):
                                       if e["kind"] == "narrator"],
                          "notes": p["notes"]})
 
-    if manual_labels and not os.path.basename(video_dir) in long_rules.LEGACY:
+    if manual_labels and os.path.basename(video_dir) not in long_rules.LEGACY:
         # доля рукописного — по тому, что реально напишется (план), а не по заявленному: подпись или мысль, которой не
         # нашлось места, не считается (L03: заявлено 61 %, план дал 47 % — 10 подписей и 8 мыслей не встали)
         hand_n = sum(len(c.get("hand") or []) + bool(c.get("key")) + bool(c.get("accent")) for c in shot_log)

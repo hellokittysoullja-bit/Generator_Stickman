@@ -29,6 +29,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "главная мысль не успевает дописаться и постоять к концу кадра — не пишется"
@@ -57,6 +58,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": []
   },
@@ -91,8 +93,11 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
-   "notes": []
+   "notes": [
+    "подпись «×4 и 8 перерывов»: в плане момента нет места или предмета — не пишется"
+   ]
   },
   {
    "index": 3,
@@ -117,6 +122,12 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [
+    [
+     "8 секунд?",
+     1.71
+    ]
+   ],
    "narrator": [],
    "notes": [
     "план 0.0-5.1 с без смены: другого плана без разреза рисунка нет"
@@ -153,6 +164,12 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [
+    [
+     "котик из «Напарника»",
+     0.11
+    ]
+   ],
    "narrator": [],
    "notes": []
   },
@@ -179,8 +196,11 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
-   "notes": []
+   "notes": [
+    "подпись «2 минуты»: в плане момента нет места или предмета — не пишется"
+   ]
   },
   {
    "index": 6,
@@ -225,6 +245,12 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [
+    [
+     "20 минут и глава",
+     1.71
+    ]
+   ],
    "narrator": [
     [
      5.12,
@@ -260,6 +286,12 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [
+    [
+     "сколько вкладок?",
+     1.91
+    ]
+   ],
    "narrator": [],
    "notes": []
   },
@@ -282,6 +314,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "главная мысль не успевает дописаться — не пишется"
@@ -322,6 +355,7 @@
    "key_at": 9.14,
    "key_hold_until": 12.85,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": []
   },
@@ -360,6 +394,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": []
   },
@@ -394,6 +429,12 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [
+    [
+     "Глория Марк",
+     1.35
+    ]
+   ],
    "narrator": [],
    "notes": []
   },
@@ -424,6 +465,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": []
   },
@@ -450,9 +492,11 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
-    "план 0.0-5.5 с без смены: другого плана без разреза рисунка нет"
+    "план 0.0-5.5 с без смены: другого плана без разреза рисунка нет",
+    "подпись «прыжок»: в плане момента нет места или предмета — не пишется"
    ]
   },
   {
@@ -478,6 +522,12 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [
+    [
+     "фильм «на потом»",
+     0.31
+    ]
+   ],
    "narrator": [],
    "notes": []
   },
@@ -516,9 +566,12 @@
    "key_at": 1.16,
    "key_hold_until": 4.63,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
-    "план 0.0-11.7 с без смены: другого плана без разреза рисунка нет"
+    "план 0.0-11.7 с без смены: другого плана без разреза рисунка нет",
+    "подпись «прервали»: в плане момента нет места или предмета — не пишется",
+    "подпись «≈ 25 минут»: в плане момента нет места или предмета — не пишется"
    ]
   },
   {
@@ -568,8 +621,11 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
-   "notes": []
+   "notes": [
+    "подпись «32 вкладки»: в плане момента нет места или предмета — не пишется"
+   ]
   },
   {
    "index": 20,
@@ -606,6 +662,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": []
   },
@@ -640,6 +697,16 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [
+    [
+     "погода?",
+     2.27
+    ],
+    [
+     "40 минут спустя",
+     3.47
+    ]
+   ],
    "narrator": [],
    "notes": [
     "план 0.0-9.0 с без смены: другого плана без разреза рисунка нет"
@@ -676,8 +743,11 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
-   "notes": []
+   "notes": [
+    "подпись «а вдруг там лучше?»: в плане момента нет места или предмета — не пишется"
+   ]
   },
   {
    "index": 24,
@@ -710,6 +780,7 @@
    "key_at": null,
    "key_hold_until": 4.63,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "key «игровой автомат» не пишется: в ручном плане нет места"
@@ -750,6 +821,12 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [
+    [
+     "нет дна",
+     1.31
+    ]
+   ],
    "narrator": [],
    "notes": []
   },
@@ -812,6 +889,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "главной мысли «стирает мысль» нет места на кадре — не пишется"
@@ -880,6 +958,12 @@
    "key_at": 6.62,
    "key_hold_until": 10.16,
    "accent": null,
+   "hand": [
+    [
+     "15 минут",
+     3.65
+    ]
+   ],
    "narrator": [],
    "notes": [
     "план 5.0-9.5 с без смены: другого плана без разреза рисунка нет"
@@ -952,6 +1036,12 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [
+    [
+     "скука",
+     3.39
+    ]
+   ],
    "narrator": [],
    "notes": []
   },
@@ -998,6 +1088,16 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [
+    [
+     "ты и твоё дело",
+     4.86
+    ],
+    [
+     "я рядом",
+     6.66
+    ]
+   ],
    "narrator": [],
    "notes": []
   },
@@ -1024,9 +1124,11 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
-    "план 0.0-5.5 с без смены: другого плана без разреза рисунка нет"
+    "план 0.0-5.5 с без смены: другого плана без разреза рисунка нет",
+    "подпись «десятая секунда»: в плане момента нет места или предмета — не пишется"
    ]
   },
   {
@@ -1060,6 +1162,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": []
   },
@@ -1102,6 +1205,7 @@
    "key_at": 3.44,
    "key_hold_until": 6.37,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": []
   },
@@ -1132,6 +1236,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": []
   },
@@ -1206,6 +1311,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [
     [
      19.33,
@@ -1251,6 +1357,12 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [
+    [
+     "вкладки зовут",
+     7.98
+    ]
+   ],
    "narrator": [],
    "notes": []
   },
@@ -1301,6 +1413,12 @@
    "key_at": 4.0,
    "key_hold_until": 7.2,
    "accent": null,
+   "hand": [
+    [
+     "32 вкладки",
+     0.27
+    ]
+   ],
    "narrator": [],
    "notes": []
   },
@@ -1339,6 +1457,7 @@
    "key_at": 5.56,
    "key_hold_until": 8.84,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "план 3.2-9.0 с без смены: другого плана без разреза рисунка нет"
@@ -1407,6 +1526,12 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [
+    [
+     "10 минут вместе",
+     5.07
+    ]
+   ],
    "narrator": [
     [
      14.62,
@@ -1434,6 +1559,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "главная мысль не успевает дописаться — не пишется"
@@ -1470,8 +1596,16 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [
+    [
+     "палец дёрнулся",
+     7.47
+    ]
+   ],
    "narrator": [],
-   "notes": []
+   "notes": [
+    "подпись «20 минут про котов»: в плане момента нет места или предмета — не пишется"
+   ]
   },
   {
    "index": 54,
@@ -1496,6 +1630,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "главная мысль не успевает дописаться и постоять к концу кадра — не пишется"
@@ -1548,6 +1683,12 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [
+    [
+     "убегает и возвращается",
+     2.67
+    ]
+   ],
    "narrator": [],
    "notes": [
     "главной мысли «можно приучить» нет места в плане момента — не пишется"
@@ -1580,6 +1721,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "план 0.0-6.2 с без смены: другого плана без разреза рисунка нет"
@@ -1632,8 +1774,11 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
-   "notes": []
+   "notes": [
+    "подпись «мысли убегают»: в плане момента нет места или предмета — не пишется"
+   ]
   }
  ]
 }
