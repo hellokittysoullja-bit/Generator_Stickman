@@ -8,12 +8,11 @@ ROOT = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
 sys.path.insert(0, os.path.join(ROOT, "scripts"))
 import reel_draw  # noqa: E402
 
-PALETTE = ("Colours: black ink lines on cream paper in exactly the hand-drawn style of the style references, and most of "
-           "the picture is softly coloured with gentle transparent watercolour washes: walls, floor, furniture, clothes "
-           "and objects each in its own natural muted colour (pale warm yellow or soft sky-blue walls, honey wooden floor, "
-           "soft green, dusty pink, muted red, warm orange), light like a children's picture book; the paper texture shows "
-           "through; never neon, never acid, never flat digital fill, never one single colour for everything. The main "
-           "character stays black with green eyes, orange cheek marks and an orange tail flame")
+PALETTE = ("Colours: black ink lines on cream paper in exactly the hand-drawn style of the style references; the main "
+           "character and the objects are softly painted with gentle muted watercolour, each in its own natural colour, never neon; "
+           "the background is plain warm cream paper like a blank drawing sheet (владелец 04.11): no painted walls, no wall colour, "
+           "no floorboards, no sky colour, only one thin ink floor line or a soft light-grey shadow under things that stand. The "
+           "main character stays black with green eyes, orange cheek marks and an orange tail flame")
 _orig_open = open
 
 

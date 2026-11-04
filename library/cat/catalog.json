@@ -3257,6 +3257,42 @@
   "source": "videos/21_znayu/reel/draw_color.py"
  },
  {
+  "file": "2026-11-04_gen_cx_gpt-image-2_5_19109087.png",
+  "sha256": "1910908756040db36b4f4bd7d05e30fcf15f36eeff18a95b77e6be618e8a313e",
+  "bytes": 2660362,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-04",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: a plain cosy living room. The main character sits on a sofa holding one tiny round kitchen timer in both front paws close to its chest with a calm, naive little smile; above its head floats one small thought cloud with one tiny plain timer inside; right behind the sofa on the wall hangs one very big round wall clock with a plain blank face and two hands, much bigger than the character's head. The flame on its tail is small and calm. LAYOUT: the character on the sofa is big and whole in the lower half; the thought cloud above its head; the big wall clock in the upper part, clearly separate; no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink lines on cream paper in exactly the hand-drawn style of the style references, and most of the picture is softly coloured with gentle transparent watercolour washes: walls, floor, furniture, clothes and objects each in its own natural muted colour (pale warm yellow or soft sky-blue walls, honey wooden floor, soft green, dusty pink, muted red, warm orange), light like a children's picture book; the paper texture shows through; never neon, never acid, never flat digital fill, never one single colour for everything. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "videos/19_opozdal/reel/draw_color.py"
+ },
+ {
+  "file": "2026-11-04_gen_cx_gpt-image-2_5_1c6630af.png",
+  "sha256": "1c6630af142aab08738478568d53d2ef8ec0605688b84c0ca7cb7e921f9816f0",
+  "bytes": 1775747,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-04",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Image 1 is a finished drawing. Redraw exactly the same drawing: the same composition, framing, camera angle, scale, and the same position, size, pose and expression of the main character and of every object, the same line work. Image 2 is the main character's reference: keep exactly its head, face, colours and markings. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right The only change from image 1: Background: plain warm cream paper (#FAF7F0) everywhere around the figures, exactly like a blank sheet of drawing paper: no painted wall, no wall colour, no wallpaper, no floorboards or wood grain, no room corners; where something stands on the floor there is only one thin simple ink floor line or a soft light-grey shadow under it, the rest of the floor area is the same blank cream paper. Colours: black ink lines on cream paper in exactly the hand-drawn style of image 1; the main character and the objects (furniture, clock, clothes, shoes, bags, door, things in the paws) keep their soft watercolour colours from image 1, gentle and muted, never neon; only the background is uncoloured cream paper. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, blank clock faces, no letters or numbers anywhere.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "scripts/reel_recream.py videos/19_opozdal/reel gen/d2_sock.png"
+ },
+ {
   "file": "2026-11-04_gen_cx_gpt-image-2_5_21f82d9a.png",
   "sha256": "21f82d9a876d77eefc1b01a933e4fcbd60c7b9900f76a137264c169f10de191e",
   "bytes": 2659332,
@@ -3275,6 +3311,24 @@
   "source": "videos/21_znayu/reel/draw_color.py"
  },
  {
+  "file": "2026-11-04_gen_cx_gpt-image-2_5_23890a3f.png",
+  "sha256": "23890a3f54210ed646cc1c4f3a29d35a2c4ef6758363d2e103ac226e94b7ab4a",
+  "bytes": 1781509,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-04",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Image 1 is a finished drawing. Redraw exactly the same drawing: the same composition, framing, camera angle, scale, and the same position, size, pose and expression of the main character and of every object, the same line work. Image 2 is the main character's reference: keep exactly its head, face, colours and markings. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right The only change from image 1: Background: plain warm cream paper (#FAF7F0) everywhere around the figures, exactly like a blank sheet of drawing paper: no painted wall, no wall colour, no wallpaper, no floorboards or wood grain, no room corners; where something stands on the floor there is only one thin simple ink floor line or a soft light-grey shadow under it, the rest of the floor area is the same blank cream paper. Colours: black ink lines on cream paper in exactly the hand-drawn style of image 1; the main character and the objects (furniture, clock, clothes, shoes, bags, door, things in the paws) keep their soft watercolour colours from image 1, gentle and muted, never neon; only the background is uncoloured cream paper. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, blank clock faces, no letters or numbers anywhere.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "scripts/reel_recream.py videos/21_znayu/reel gen/k1_tips.png"
+ },
+ {
   "file": "2026-11-04_gen_cx_gpt-image-2_5_322ad94c.png",
   "sha256": "322ad94c86206579ea52ed7460e1fe0d65d164a408c75006a96713f5b14c1d38",
   "bytes": 2611236,
@@ -3291,6 +3345,24 @@
   "quality": "medium",
   "price": 197550,
   "source": "videos/19_opozdal/reel/draw_color.py"
+ },
+ {
+  "file": "2026-11-04_gen_cx_gpt-image-2_5_383cfccf.png",
+  "sha256": "383cfccf1c22853a19eabbaba25fbb06bc0b7c5e130dd48c36f2fa845e0142b7",
+  "bytes": 1705674,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-04",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Image 1 is a finished drawing. Redraw exactly the same drawing: the same composition, framing, camera angle, scale, and the same position, size, pose and expression of the main character and of every object, the same line work. Image 2 is the main character's reference: keep exactly its head, face, colours and markings. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right The only change from image 1: Background: plain warm cream paper (#FAF7F0) everywhere around the figures, exactly like a blank sheet of drawing paper: no painted wall, no wall colour, no wallpaper, no floorboards or wood grain, no room corners; where something stands on the floor there is only one thin simple ink floor line or a soft light-grey shadow under it, the rest of the floor area is the same blank cream paper. Colours: black ink lines on cream paper in exactly the hand-drawn style of image 1; the main character and the objects (furniture, clock, clothes, shoes, bags, door, things in the paws) keep their soft watercolour colours from image 1, gentle and muted, never neon; only the background is uncoloured cream paper. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, blank clock faces, no letters or numbers anywhere.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "scripts/reel_recream.py videos/20_abonement/reel gen/g1_hook.png"
  },
  {
   "file": "2026-11-04_gen_cx_gpt-image-2_5_3bf372ca.png",
@@ -3345,6 +3417,60 @@
   "quality": "medium",
   "price": 197550,
   "source": "scripts/reel_draw.py videos/20_abonement/reel"
+ },
+ {
+  "file": "2026-11-04_gen_cx_gpt-image-2_5_4de8eec6.png",
+  "sha256": "4de8eec6ad4b5f4c5c7a23169c58db6960523a4c37c833764e86ebaa8c298afc",
+  "bytes": 2002117,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-04",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Image 1 is a finished drawing. Redraw exactly the same drawing: the same composition, framing, camera angle, scale, and the same position, size, pose and expression of the main character and of every object, the same line work. Image 2 is the main character's reference: keep exactly its head, face, colours and markings. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right The only change from image 1: Background: plain warm cream paper (#FAF7F0) everywhere around the figures, exactly like a blank sheet of drawing paper: no painted wall, no wall colour, no wallpaper, no floorboards or wood grain, no room corners; where something stands on the floor there is only one thin simple ink floor line or a soft light-grey shadow under it, the rest of the floor area is the same blank cream paper. Colours: black ink lines on cream paper in exactly the hand-drawn style of image 1; the main character and the objects (furniture, clock, clothes, shoes, bags, door, things in the paws) keep their soft watercolour colours from image 1, gentle and muted, never neon; only the background is uncoloured cream paper. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, blank clock faces, no letters or numbers anywhere.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "scripts/reel_recream.py videos/19_opozdal/reel gen/d2_sock.png"
+ },
+ {
+  "file": "2026-11-04_gen_cx_gpt-image-2_5_6540c7a1.png",
+  "sha256": "6540c7a1143104159a85c22dee6fb4ccd61b8c98a23d0866971ebedc900607a5",
+  "bytes": 2468334,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-04",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: right outside a front door in the morning. The main character walks out of an open front door calmly and lightly, fully dressed, one plain bag over its shoulder, both shoes on, a relaxed happy face with half-closed eyes, mid-step; one small green bush by the door. The flame on its tail burns bright and even. LAYOUT: the character is big and whole in the lower middle, the open door frame behind it on one side; no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink lines on cream paper in exactly the hand-drawn style of the style references; the main character and the objects are softly painted with gentle muted watercolour, each in its own natural colour, never neon; the background is plain warm cream paper like a blank drawing sheet (владелец 04.11): no painted walls, no wall colour, no floorboards, no sky colour, only one thin ink floor line or a soft light-grey shadow under things that stand. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "videos/19_opozdal/reel/draw_color.py d6_out"
+ },
+ {
+  "file": "2026-11-04_gen_cx_gpt-image-2_5_6667ac63.png",
+  "sha256": "6667ac638318e9f8ad7d4b5a0c44c56169bf65874b70bde6e9379c4b18b10a18",
+  "bytes": 1921832,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-04",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Image 1 is a finished drawing. Redraw exactly the same drawing: the same composition, framing, camera angle, scale, and the same position, size, pose and expression of the main character and of every object, the same line work. Image 2 is the main character's reference: keep exactly its head, face, colours and markings. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right The only change from image 1: Background: plain warm cream paper (#FAF7F0) everywhere around the figures, exactly like a blank sheet of drawing paper: no painted wall, no wall colour, no wallpaper, no floorboards or wood grain, no room corners; where something stands on the floor there is only one thin simple ink floor line or a soft light-grey shadow under it, the rest of the floor area is the same blank cream paper. Colours: black ink lines on cream paper in exactly the hand-drawn style of image 1; the main character and the objects (furniture, clock, clothes, shoes, bags, door, things in the paws) keep their soft watercolour colours from image 1, gentle and muted, never neon; only the background is uncoloured cream paper. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, blank clock faces, no letters or numbers anywhere.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "scripts/reel_recream.py videos/20_abonement/reel gen/g1_hook.png"
  },
  {
   "file": "2026-11-04_gen_cx_gpt-image-2_5_68b5e494.png",
@@ -3491,6 +3617,42 @@
   "source": "scripts/reel_draw.py videos/20_abonement/reel"
  },
  {
+  "file": "2026-11-04_gen_cx_gpt-image-2_5_a530ce92.png",
+  "sha256": "a530ce92714b21438c3714738fa85332b7e88da0802bf62f0d40646ffb2736ea",
+  "bytes": 2334581,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-04",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: the same small hallway in the bright morning, sunlight from a small window. A funny cartoon moment: the main character, sleepy with ruffled fur, has caught one hind paw on a packed sports bag lying on the floor in front of the closed front door and is tumbling forward over it, front paws stretched out ahead, eyes wide open in comic surprise, ears back, a few small motion lines behind it. The flame on the tip of its tail flares up bright. LAYOUT: the bag is on the floor in the lower middle; the main character is whole and large, leaning far forward just above the bag, in the middle of the picture; the closed door is on the right; no letters or numbers anywhere. COLOUR (this picture is a COLOURED illustration, this overrides any ink-only or grey colour note): the same hand-drawn black ink line style; the main character and the objects (furniture, door, bag, clothes, equipment, things in the paws) are softly painted with muted watercolour, each in its own gentle natural colour, never neon, never acid; the background is plain warm cream paper like a blank drawing sheet: no painted walls, no wall colour, no floorboards, no sky colour, only one thin ink floor line or a soft light-grey shadow under things that stand. The main character stays black with green eyes, orange cheek marks and an orange tail flame. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. The main character stays black with green eyes, orange cheek marks and an orange tail flame.. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "scripts/reel_draw.py videos/20_abonement/reel --only"
+ },
+ {
+  "file": "2026-11-04_gen_cx_gpt-image-2_5_a560ac80.png",
+  "sha256": "a560ac804e6a0f5fb516029f7283df8ccbfbc99369adf7ceedb802300e6e8c9e",
+  "bytes": 1927500,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-04",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Image 1 is a finished drawing. Redraw exactly the same drawing: the same composition, framing, camera angle, scale, and the same position, size, pose and expression of the main character and of every object, the same line work. Image 2 is the main character's reference: keep exactly its head, face, colours and markings. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right The only change from image 1: Background: plain warm cream paper (#FAF7F0) everywhere around the figures, exactly like a blank sheet of drawing paper: no painted wall, no wall colour, no wallpaper, no floorboards or wood grain, no room corners; where something stands on the floor there is only one thin simple ink floor line or a soft light-grey shadow under it, the rest of the floor area is the same blank cream paper. Colours: black ink lines on cream paper in exactly the hand-drawn style of image 1; the main character and the objects (furniture, clock, clothes, shoes, bags, door, things in the paws) keep their soft watercolour colours from image 1, gentle and muted, never neon; only the background is uncoloured cream paper. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, blank clock faces, no letters or numbers anywhere.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "scripts/reel_recream.py videos/20_abonement/reel gen/g1_hook.png"
+ },
+ {
   "file": "2026-11-04_gen_cx_gpt-image-2_5_a5ec08c6.png",
   "sha256": "a5ec08c629d5d50582149db725f287f4d4f68ec468e0c4961c0fd60e9e129d59",
   "bytes": 3026354,
@@ -3507,6 +3669,42 @@
   "quality": "medium",
   "price": 197550,
   "source": "videos/21_znayu/reel/draw_color.py"
+ },
+ {
+  "file": "2026-11-04_gen_cx_gpt-image-2_5_b354df6b.png",
+  "sha256": "b354df6b1ba7680ec2471a5deac03adfb7118a5b161481d631d8b4aaeb5657e4",
+  "bytes": 2456658,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-04",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: the bright entrance of a small gym in the morning. The main character walks in through the open glass door carrying one sports bag over its shoulder, head up, a proud happy smile with eyes half closed; behind it inside one treadmill and one rack of dumbbells. The flame on the tip of its tail burns big and golden with a few tiny sparks. LAYOUT: the main character is whole and large in the lower middle, stepping toward the viewer through the doorway; the gym equipment is small in the background; no people; no letters, numbers or signs anywhere. COLOUR (this picture is a COLOURED illustration, this overrides any ink-only or grey colour note): the same hand-drawn black ink line style; the main character and the objects (furniture, door, bag, clothes, equipment, things in the paws) are softly painted with muted watercolour, each in its own gentle natural colour, never neon, never acid; the background is plain warm cream paper like a blank drawing sheet: no painted walls, no wall colour, no floorboards, no sky colour, only one thin ink floor line or a soft light-grey shadow under things that stand. The main character stays black with green eyes, orange cheek marks and an orange tail flame. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink lines and soft grey washes on cream paper, in exactly the hand-drawn style of the style references. Soft watercolour colour goes only on a few things that matter in the picture, the main object and one or two details, each in its own natural muted colour (a pink brain, a red heart, a green plant, an orange alarm clock, warm lamp light), while walls, floors and everything else stay ink and grey; never neon, never a fully coloured background. The main character stays black with green eyes, orange cheek marks and an orange tail flame.. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "scripts/reel_draw.py videos/20_abonement/reel --only"
+ },
+ {
+  "file": "2026-11-04_gen_cx_gpt-image-2_5_be3805ae.png",
+  "sha256": "be3805aee157d9afee83469c11f9c34dbc38d29103e69a2888dcba99b3bde749",
+  "bytes": 1821889,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-04",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Image 1 is a finished drawing. Redraw exactly the same drawing: the same composition, framing, camera angle, scale, and the same position, size, pose and expression of the main character and of every object, the same line work. Image 2 is the main character's reference: keep exactly its head, face, colours and markings. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right The only change from image 1: Background: plain warm cream paper (#FAF7F0) everywhere around the figures, exactly like a blank sheet of drawing paper: no painted wall, no wall colour, no wallpaper, no floorboards or wood grain, no room corners; where something stands on the floor there is only one thin simple ink floor line or a soft light-grey shadow under it, the rest of the floor area is the same blank cream paper. Colours: black ink lines on cream paper in exactly the hand-drawn style of image 1; the main character and the objects (furniture, clock, clothes, shoes, bags, door, things in the paws) keep their soft watercolour colours from image 1, gentle and muted, never neon; only the background is uncoloured cream paper. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, blank clock faces, no letters or numbers anywhere.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "scripts/reel_recream.py videos/19_opozdal/reel gen/d1_clock.png"
  },
  {
   "file": "2026-11-04_gen_cx_gpt-image-2_5_d80264fe.png",
@@ -3543,5 +3741,23 @@
   "quality": "medium",
   "price": 197550,
   "source": "videos/19_opozdal/reel/draw_color.py"
+ },
+ {
+  "file": "2026-11-04_gen_cx_gpt-image-2_5_f81a6739.png",
+  "sha256": "f81a6739756e5c03fc8dba8e2d8b7023209694d60343e64dc530696e60ac6efe",
+  "bytes": 1841609,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-04",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Image 1 is a finished drawing. Redraw exactly the same drawing: the same composition, framing, camera angle, scale, and the same position, size, pose and expression of the main character and of every object, the same line work. Image 2 is the main character's reference: keep exactly its head, face, colours and markings. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right The only change from image 1: Background: plain warm cream paper (#FAF7F0) everywhere around the figures, exactly like a blank sheet of drawing paper: no painted wall, no wall colour, no wallpaper, no floorboards or wood grain, no room corners; where something stands on the floor there is only one thin simple ink floor line or a soft light-grey shadow under it, the rest of the floor area is the same blank cream paper. Colours: black ink lines on cream paper in exactly the hand-drawn style of image 1; the main character and the objects (furniture, clock, clothes, shoes, bags, door, things in the paws) keep their soft watercolour colours from image 1, gentle and muted, never neon; only the background is uncoloured cream paper. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, blank clock faces, no letters or numbers anywhere.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "scripts/reel_recream.py videos/20_abonement/reel gen/g1_hook.png"
  }
 ]

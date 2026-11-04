@@ -22,9 +22,9 @@ OUT = os.path.join(HERE, "kit")
 CACHE = os.path.join(REEL, ".cache", "anim")
 ORIGIN = (0, 0)
 SIZE = (2048, 3072)
-CLOCK_C = (982, 762)              # ось стрелок
+CLOCK_C = (973, 765)              # ось стрелок
 NAIL = (982, 88)                  # гвоздь подвеса — ось качания часов
-FACE_R, RIM_R0, RIM_R1 = 470, 470, 590
+FACE_R, RIM_R0, RIM_R1 = 495, 495, 585
 HANGER_BOX = (800, 30, 1170, 240)
 CAT_POLY = [(520, 1500), (1000, 1420), (1200, 1450), (1240, 1600), (1300, 1720), (1450, 1790), (1460, 2200),
             (1420, 2560), (1200, 2570), (1160, 2850), (500, 2860), (520, 2620), (600, 2500), (430, 2430), (420, 2200),
@@ -103,7 +103,7 @@ def main():
     hang = np.zeros((H, Wd), bool); hang[y0:y1, x0:x1] = True
     hanger = hang & ((sat > 35) | (L < 70)) & (r >= RIM_R0)
     clock = fill_holes(cv2.morphologyEx((rim | hanger | (r < RIM_R0)).astype(np.uint8), cv2.MORPH_CLOSE, np.ones((7, 7), np.uint8)))
-    clock &= ((r < 575) | hang).astype(np.uint8)
+    clock &= ((r < 590) | hang).astype(np.uint8)
     # кот: тушь и шерсть (тёмное) внутри многоугольника, всё внутри контура — коту (глаза, рот, шарф, ботинки)
     # капли пота: голубая заливка и её тушь, каждая отдельно (ink_objects слил их в одно пятно с ухом)
     bx0, by0, bx1, by1 = DROPS_BOX
@@ -138,6 +138,14 @@ def main():
     for m in [full | flame_all] + drops:
         hole = cv2.dilate(m.astype(np.uint8), np.ones((15, 15), np.uint8)) > 0
         bg = anim.inpaint_bg(bg, hole, cache_dir=CACHE)
+    # крошки туши, оставшиеся на бумаге от вырезанного кота и капель (фон теперь кремовый, 04.11): мелкие тёмные пятна
+    # левее двери — заливкой; дверь и тень на полу не трогаются
+    Lb = lab_l(bg)
+    crumbs = ((Lb < 70) & (xx < 1600) & (yy < 2700)).astype(np.uint8)
+    n, lab, st, _ = cv2.connectedComponentsWithStats(cv2.dilate(crumbs, np.ones((5, 5), np.uint8)))
+    small = np.isin(lab, [i for i in range(1, n) if st[i, 4] < 20000])
+    if small.any():
+        bg = anim.inpaint_bg(bg, cv2.dilate(small.astype(np.uint8), np.ones((15, 15), np.uint8)) > 0, cache_dir=CACHE)
     Ap, Afp, bg = anim.paper_like(A), anim.paper_like(Af), anim.paper_like(bg)
     Ap_tail = Ap
     if tail_fill.any():
