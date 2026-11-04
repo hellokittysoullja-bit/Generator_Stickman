@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=2048, height=3072" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="lib/mesh_part.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 2048px; height: 3072px; overflow: hidden; background: #f3dcb8; }
+      #root { position: relative; width: 2048px; height: 3072px; overflow: hidden; }
+      .layer { position: absolute; left: 0; top: 0; width: 2048px; height: 3072px; }
+      .abs { position: absolute; display: block; }
+      svg.layer { overflow: visible; }
+      #rays line { stroke: #18181a; stroke-linecap: round; }
+      #dust circle { fill: #b3a794; filter: blur(3px); }
+    </style>
+  </head>
+  <body>
+    <!-- Хук рилса 20 «Купил абонемент, а не ходишь?»: мир сцены — рисунок g1_hook ×2, 2048×3072. Слои — anim/kit_sofa.py,
+         положение слоёв подставляет sofa_hf.py из kit.json.
+         С кадра 0 всё в движении: карточка абонемента качается маятником на гвозде, кот ёрзает и вжимается в подушку
+         виноватой дрожью, над пыльными кроссовками клубится пыль, пакет вздрагивает. За ~0,3 с до ударного «хОдишь»
+         (data-vars.hit) верёвка срывается с гвоздя, карточка падает и на ударе бьёт кота по макушке: кот приседает, уши
+         прижаты, карточка отскакивает и улетает за диван, из пакета вырывается облако пыли. Камеру, звук и субтитры даёт
+         сборщик. -->
+    <div id="root" data-composition-id="main" data-start="0" data-duration="3.4" data-width="2048" data-height="3072"
+         data-vars='{"hit": 1.25}' data-motion-blur="on" data-layout-allow-overflow data-layout-allow-overlap>
+      <img id="bg" class="abs clip" src="assets/bg.png" style="left:0;top:0" data-start="0" data-duration="3.4" />
+      <img id="bag" class="abs clip" src="assets/bag.png" style="left:0px;top:0px" data-start="0" data-duration="3.4" />
+      <svg id="dust" class="layer" width="2048" height="3072" viewBox="0 0 2048 3072"></svg>
+      <div id="cat" class="layer clip" data-start="0" data-duration="3.4">
+        <div id="catHop" class="layer">
+          <canvas id="tail" class="abs" width="766" height="739" style="left:0px;top:0px"></canvas>
+          <img id="body" class="abs" src="assets/body.png" style="left:0px;top:0px" />
+        </div>
+        <svg id="rays" class="layer" width="2048" height="3072" viewBox="0 0 2048 3072"></svg>
+      </div>
+      <div id="cardFall" class="layer">
+        <img id="card" class="abs clip" src="assets/card.png" style="left:0px;top:0px" data-start="0" data-duration="3.4" />
+      </div>
+    </div>
+    <script>
+      const root = document.getElementById("root");
+      const V = JSON.parse(root.dataset.vars), H = V.hit, K = V.kit;
+      const NS = "http://www.w3.org/2000/svg";
+      const tl = gsap.timeline({ paused: true });
+      const px = (p) => `${p[0]}px ${p[1]}px`;
+      const R = (i) => { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };   // детерминированный шум
+
+      // кот: виноватая дрожь с кадра 0 (без разгона), каждые 0,05 с в другую сторону, и волной вжимается в подушку
+      gsap.set("#catHop", { transformOrigin: px(K.feet) });
+      const SH = 0.05;
+      tl.fromTo("#catHop", { x: 26, y: -22, rotation: 2.4, scaleY: 1.035 }, { x: -22, y: 4, rotation: -2.0, scaleY: 0.98, duration: SH, ease: "none" }, 0);
+      for (let i = 1, t = SH; t < H - 0.08; i++, t += SH) {
+        const s = i % 2 ? 1 : -1, w = Math.sin(t * 6.3);
+        tl.to("#catHop", { x: s * (19 + 9 * Math.abs(w)) + 10 * w, y: -16 * Math.abs(w), rotation: s * (1.9 + 1.0 * Math.abs(w)),
+                           scaleY: 1 - 0.03 * w, duration: SH, ease: "none" }, t);
+      }
+      // удар карточкой по макушке: присел, прижался, пружина обратно
+      tl.to("#catHop", { x: 0, y: 46, rotation: 0, scaleY: 0.88, scaleX: 1.07, duration: 0.07, ease: "power3.out" }, H);
+      tl.to("#catHop", { y: -24, scaleY: 1.04, scaleX: 0.98, rotation: 2.5, duration: 0.14, ease: "power2.out" }, H + 0.09);
+      tl.to("#catHop", { y: 0, scaleY: 1, scaleX: 1, rotation: 0, duration: 0.7, ease: "elastic.out(1, 0.35)" }, H + 0.23);
+      for (let i = 0, t = H + 0.93; t < 3.4; i++, t += 0.18) {                  // после удара — мелкая дрожь не гаснет до конца
+        tl.to("#catHop", { x: (i % 2 ? 1 : -1) * 6, y: (i % 2 ? -4 : 2), duration: 0.18, ease: "sine.inOut" }, t);
+      }
+
+      // карточка: маятник на гвозде с кадра 0 (кадр 0 — середина взмаха, на скорости), срыв, падение, удар, отскок
+      gsap.set("#card", { transformOrigin: `${K.nail[0] - K.card_xy[0]}px ${K.nail[1] - K.card_xy[1] + 14}px` });
+      const P = 0.32, AMP = 23, DROP = H - 0.3;
+      tl.fromTo("#card", { rotation: -AMP * 0.2 }, { rotation: AMP, duration: P / 2, ease: "sine.out" }, 0);
+      let q = 0;
+      for (let t = P / 2; t < DROP - 0.02; t += P, q++) {
+        tl.to("#card", { rotation: (q % 2 ? 1 : -1) * AMP * (1 + 0.06 * q), duration: P, ease: "sine.inOut" }, t);
+      }
+      gsap.set("#cardFall", { transformOrigin: px(K.card_c) });
+      tl.to("#cardFall", { x: K.hit_dx, y: K.hit_dy, rotation: 28, duration: H - DROP, ease: "power2.in" }, DROP);
+      tl.to("#card", { rotation: 0, duration: H - DROP, ease: "power1.in" }, DROP);
+      tl.to("#cardFall", { x: K.hit_dx + 260, y: K.hit_dy - 170, rotation: 75, duration: 0.2, ease: "power2.out" }, H);
+      tl.to("#cardFall", { x: K.hit_dx + 520, y: K.hit_dy + 900, rotation: 170, duration: 0.55, ease: "power2.in" }, H + 0.2);
+      tl.set("#cardFall", { opacity: 0 }, H + 0.75);
+
+      // пакет: вздрагивает, будто кроссовки рвутся наружу; на ударе — подпрыгивает
+      gsap.set("#bag", { transformOrigin: "50% 100%" });
+      tl.fromTo("#bag", { rotation: -1.6, y: -6 }, { rotation: 1.4, y: 0, duration: 0.09, ease: "none" }, 0);
+      for (let i = 1, t = 0.09; t < 3.4; i++, t += 0.09) {
+        const k = t > H && t < H + 0.4 ? 3 : 1;
+        tl.to("#bag", { rotation: (i % 2 ? -1 : 1) * 1.5 * k, y: (i % 2 ? -5 : 0) * k, duration: 0.09, ease: "sine.inOut" }, t);
+      }
+
+      // пыль над кроссовками: с кадра 0 частицы уже летят (фаза у каждой своя), на ударе — облако
+      const dust = document.getElementById("dust");
+      const dtop = K.dust_top;                                    // верх кроссовок
+      for (let i = 0; i < 26; i++) {
+        const c = document.createElementNS(NS, "circle");
+        const r = 7 + 11 * R(i), x0 = dtop[0] - 200 + 400 * R(i + 50), per = 1.1 + 0.8 * R(i + 90), ph = per * R(i + 7);
+        c.setAttribute("cx", x0); c.setAttribute("cy", dtop[1]); c.setAttribute("r", r); dust.appendChild(c);
+        for (let t = -ph; t < 3.4; t += per) {
+          const t0 = Math.max(0, t), u0 = (t0 - t) / per;
+          tl.fromTo(c, { y: -320 * u0, x: 40 * Math.sin(u0 * 6 + i), opacity: 0.6 * (1 - u0) },
+                       { y: -320, x: 40 * Math.sin(6 + i), opacity: 0, duration: per - (t0 - t), ease: "none" }, t0);
+        }
+      }
+      for (let i = 0; i < 16; i++) {                               // облако на ударе
+        const c = document.createElementNS(NS, "circle"), a = Math.PI * (1.05 + 0.9 * R(i + 200));
+        c.setAttribute("cx", dtop[0]); c.setAttribute("cy", dtop[1] + 40); c.setAttribute("r", 14 + 22 * R(i + 300)); dust.appendChild(c);
+        tl.set(c, { opacity: 0 }, 0);
+        tl.fromTo(c, { x: 0, y: 0, opacity: 0.9, scale: 0.4 },
+                     { x: 420 * Math.cos(a), y: 360 * Math.sin(a) - 80, opacity: 0, scale: 1.6, duration: 0.7, ease: "power2.out" }, H + 0.02);
+      }
+
+      // штрихи удара вокруг макушки
+      const hx = K.head[0], hy = K.head[1];
+      for (let k = 0; k < 7; k++) {
+        const a = -Math.PI / 2 + (k - 3) * 0.4;
+        const g = document.createElementNS(NS, "g"), m = document.createElementNS(NS, "g"), l = document.createElementNS(NS, "line");
+        g.setAttribute("transform", `translate(${hx + 330 * Math.cos(a)} ${hy - 120 + 260 * Math.sin(a)}) rotate(${(a * 180) / Math.PI})`);
+        l.setAttribute("x1", 0); l.setAttribute("y1", 0); l.setAttribute("x2", 74); l.setAttribute("y2", 0); l.style.strokeWidth = 13;
+        m.appendChild(l); g.appendChild(m); document.getElementById("rays").appendChild(g);
+        tl.set(m, { opacity: 0, scaleX: 0, svgOrigin: "0 0" }, 0);
+        tl.set(m, { opacity: 1 }, H + 0.02);
+        tl.to(m, { scaleX: 1, duration: 0.07, ease: "power3.out" }, H + 0.02);
+        tl.to(m, { x: 46, opacity: 0, duration: 0.26, ease: "power2.in" }, H + 0.18);
+      }
+      meshPart({ canvas: document.getElementById("tail"), marg: 180, img: "assets/tail_body.png",
+                 flame: "assets/tail_flame.png", mesh: "assets/tail_mesh.json", angles: "assets/tail_angles.json", fps: 30 });
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
