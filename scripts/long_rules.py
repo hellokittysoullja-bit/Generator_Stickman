@@ -357,7 +357,8 @@ def _video_hook_montage(video_dir, blocks, frames, starts, ends, hook_n, fx_path
         for k, p in enumerate(sh):
             if not (p.get("why") or "").strip():
                 err.append(f"VIDEO-HOOK: фраза {i + 1}, план {k + 1}: нет why — монтаж со смыслом, а не ради склейки")
-            t = starts[i] if k == 0 else _word_t(blocks, starts, ends, list(range(i, nxt)), p.get("at", 0.0), _WORD_TIMES.get(os.path.abspath(video_dir)))
+            t = starts[i] if k == 0 else _word_t(blocks, starts, ends, list(range(i, nxt)), p.get("at", 0.0),
+                                                    _WORD_TIMES.get(os.path.abspath(video_dir)))
             if t is None:
                 err.append(f"VIDEO-HOOK: фраза {i + 1}, план {k + 1}: слова «{p.get('at')}» нет во фразе")
                 continue
@@ -442,7 +443,8 @@ def _manual_minutes(video_dir, blocks, frames, starts, ends):
         for k, p in enumerate(sh):
             if not (p.get("why") or "").strip():
                 err.append(f"MANUAL: фраза {i + 1}, план {k + 1}: нет why")
-            t = starts[i] if k == 0 else _word_t(blocks, starts, ends, list(range(i, nxt)), p.get("at", 0.0), _WORD_TIMES.get(os.path.abspath(video_dir)))
+            t = starts[i] if k == 0 else _word_t(blocks, starts, ends, list(range(i, nxt)), p.get("at", 0.0),
+                                                    _WORD_TIMES.get(os.path.abspath(video_dir)))
             if t is None:
                 err.append(f"MANUAL: фраза {i + 1}, план {k + 1}: слова «{p.get('at')}» нет в клипе картинки")
                 continue
@@ -451,6 +453,32 @@ def _manual_minutes(video_dir, blocks, frames, starts, ends):
         for a, b in zip(ts, ts[1:]):
             if b - a > MANUAL_MAX_SHOT + 0.3 and a < MANUAL_MONTAGE_SEC:
                 err.append(f"MANUAL: план с {int(a // 60)}:{a % 60:04.1f} идёт {b - a:.1f} с > {MANUAL_MAX_SHOT} — вторым планом по смыслу")
+    return err
+
+
+def _edit_order(video_dir, blocks, frames, starts):
+    wt = _WORD_TIMES.get(os.path.abspath(video_dir))
+    ep = os.path.join(video_dir, "edit.json")
+    if not wt or not os.path.exists(ep):
+        return []
+    import long_edit
+    edit = json.load(open(ep, encoding="utf-8")).get("frames") or {}
+    pic = [i for i in range(len(blocks)) if {"new", "lib", "same", "plan", "anim"} & set(frames.get(str(i + 1)) or {})]
+    err = []
+    for n, i in enumerate(pic):
+        nxt = pic[n + 1] if n + 1 < len(pic) else len(blocks)
+        ws = [dict(word=w["word"], start=w["start"] - starts[i]) for k in range(i, nxt) for w in wt[k]]
+        prev = 0.0
+        for k, p in enumerate(((edit.get(str(i + 1)) or {}).get("shots") or [])[1:], 2):
+            try:
+                t = long_edit.word_time(p.get("at", 0.0), ws)
+            except ValueError as e:
+                err.append(f"EDIT-ORDER: фраза {i + 1}, план {k}: {e}")
+                continue
+            if t <= prev + 0.3:
+                err.append(f"EDIT-ORDER: фраза {i + 1}, план {k} «{p.get('at')}» на {t:.2f} с не после прошлого ({prev:.2f} с): "
+                           "слово звучит в клипе не раз — [\"слово\", номер вхождения]")
+            prev = max(prev, t)
     return err
 
 
@@ -521,6 +549,9 @@ def hook_build(video_dir):
     err += _video_hook_montage(video_dir, blocks, frames, starts, ends, hook_n, fx_path=os.path.join(video_dir, "fx.json"))
     # 4. первые 3 минуты — ручной монтаж каждой картинки (после хука — планы не дольше нормы ролика)
     err += _manual_minutes(video_dir, blocks, frames, starts, ends)
+    # 4а. планы ручного монтажа идут по порядку — тем же поиском слова, что у сборщика (long_edit.word_time): «я»,
+    # «рядом», «это» звучат в длинном клипе не раз, и план вставал на первое вхождение (сборка L03 упала 04.11)
+    err += _edit_order(video_dir, blocks, frames, starts)
     # 5. надписи по смыслу, всегда: каждая фраза с числом, именем, приёмом, «Напарником» или кульминацией
     fp = os.path.join(video_dir, "fx.json")
     fx = (json.load(open(fp, encoding="utf-8")).get("phrases") or {}) if os.path.exists(fp) else {}
