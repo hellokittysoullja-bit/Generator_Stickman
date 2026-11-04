@@ -1008,3 +1008,67 @@ def cut_sam(img, box, pos, neg=(), whiskers=True):
     if whiskers:
         a = np.maximum(a, whisker_alpha(img, m))
     return a
+
+
+# ── Фон под слоями — чистая подложка (04.11, стенд experiments/fill): LaMa оставляла призраки (серое пятно шерсти,
+# силуэт головы), MI-GAN дорисовывала мусорные линии; модель картинок, перерисовавшая ТОТ ЖЕ рисунок без героя,
+# достроила подушку и спинку дивана целиком. В кадр идёт только внутри дыры, после совмещения (ECC) и плавной
+# поправки тона по краю. Один платный рисунок на сцену (cx/gpt-image-2.5 medium, 197 550), кэш по содержимому.
+PLATE_MODEL, PLATE_SIZE, PLATE_Q = "cx/gpt-image-2.5", "1024x1536", "medium"
+PLATE_PROMPT = ("Image 1 is a finished drawing. Redraw exactly the same drawing, the same room, furniture, objects, "
+                "framing, scale, line work, colours and paper, but WITHOUT {what}: the place where it was shows what is "
+                "behind it, the sofa, pillow, floor, wall or furniture continue naturally with their own lines and "
+                "colours, as if it had never been there. Nothing else changes: every other object stays in exactly the "
+                "same place and size. No letters or numbers anywhere.")
+
+
+def _fuse_plate(rgb, plate_rgb, hole):
+    h, w = rgb.shape[:2]
+    P = cv2.resize(plate_rgb, (w, h), interpolation=cv2.INTER_CUBIC).astype(np.float32)
+    g1 = cv2.cvtColor(np.clip(rgb, 0, 255).astype(np.uint8), cv2.COLOR_RGB2GRAY).astype(np.float32)
+    g2 = cv2.cvtColor(np.clip(P, 0, 255).astype(np.uint8), cv2.COLOR_RGB2GRAY).astype(np.float32)
+    keep = (~cv2.dilate(hole.astype(np.uint8), np.ones((61, 61), np.uint8)).astype(bool)).astype(np.uint8)
+    M = np.eye(2, 3, dtype=np.float32); sc = 0.25
+    try:
+        a1, a2 = cv2.resize(g1, None, fx=sc, fy=sc), cv2.resize(g2, None, fx=sc, fy=sc)
+        km = cv2.resize(keep, (a1.shape[1], a1.shape[0]), interpolation=cv2.INTER_NEAREST)
+        _, M = cv2.findTransformECC(a1, a2, M, cv2.MOTION_AFFINE,
+                                    (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 200, 1e-6), km, 5)
+        M[:, 2] /= sc
+    except cv2.error:
+        M = np.eye(2, 3, dtype=np.float32)
+    P = cv2.warpAffine(P, M, (w, h), flags=cv2.INTER_CUBIC | cv2.WARP_INVERSE_MAP, borderMode=cv2.BORDER_REPLICATE)
+    out_ = (~cv2.dilate(hole.astype(np.uint8), np.ones((9, 9), np.uint8)).astype(bool)).astype(np.float32)
+    d = (np.asarray(rgb, np.float32) - P) * out_[..., None]
+    num = cv2.GaussianBlur(d, (0, 0), 45); den = cv2.GaussianBlur(out_, (0, 0), 45)[..., None]
+    P = P + num / np.maximum(den, 1e-3)                    # тон подложки к тону рисунка, плавно внутрь дыры
+    soft = cv2.GaussianBlur(cv2.dilate(hole.astype(np.uint8), np.ones((9, 9), np.uint8)).astype(np.float32), (0, 0), 4)[..., None]
+    return np.asarray(rgb, np.float32) * (1 - soft) + P * soft
+
+
+def plate_bg(img, hole, cache_dir, what="the black cat and anything it is holding"):
+    """Фон под вырезанными слоями: чистая подложка от модели картинок (кэш в cache_dir по содержимому рисунка и what),
+    вставленная только в дыру. Сбой шлюза — прежняя anim.inpaint_bg, с пометкой в выводе."""
+    import base64
+    import hashlib
+    from PIL import Image
+    rgb = np.clip(np.asarray(img), 0, 255).astype(np.uint8)
+    os.makedirs(cache_dir, exist_ok=True)
+    key = hashlib.md5(rgb.tobytes()[::97] + what.encode()).hexdigest()[:12]
+    p = os.path.join(cache_dir, f"plate_{key}.png")
+    if not os.path.exists(p):
+        try:
+            import sys
+            sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+            import env; env.load_env()
+            import llm_gateway
+            import io
+            buf = io.BytesIO(); Image.fromarray(rgb).resize((1024, 1536), Image.LANCZOS).save(buf, "PNG")
+            url = "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode()
+            ims, _ = llm_gateway.Gateway(spend_cap=210000).image(PLATE_MODEL, PLATE_PROMPT.format(what=what), PLATE_SIZE,
+                                                                 PLATE_Q, images=[url], timeout=600)
+            open(p, "wb").write(ims[0])
+        except Exception as e:                                   # noqa: BLE001 — фон нужен в любом случае
+            print(f"  чистая подложка не получена ({e}) — заливка LaMa")
+            return inpaint_bg(np.asarray(img, np.float32), hole, cache_dir=cache_dir)
+    return _fuse_plate(np.asarray(img, np.float32), np.asarray(Image.open(p).convert("RGB")), hole)

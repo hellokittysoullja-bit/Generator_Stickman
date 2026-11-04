@@ -331,3 +331,16 @@ def test_save_layer_keeps_soft_alpha(tmp_path):
     a = np.asarray(Image.open(tmp_path / "x.png"))[..., 3]
     x0, y0 = layers["x"]["xy"]
     assert 60 < a[60 - y0, 91 - x0] < 140                                   # мягкий край сохранён, а не размыт заново
+
+
+def test_plate_fused_only_in_hole_and_toned_to_drawing():
+    """Чистая подложка (04.11): вне дыры кадр — исходный рисунок; внутри — подложка, тон подтянут к рисунку (подложка
+    с другим оттенком стены не даёт пятна), сдвиг подложки на пару пикселей снимается совмещением."""
+    rgb = np.full((400, 300, 3), 240, np.float32); cv2.line(rgb, (0, 200), (299, 200), (20, 20, 20), 3)
+    plate = rgb.copy() * 0.95                                          # подложка темнее на 5 %
+    plate = np.roll(plate, 2, axis=1)
+    hole = np.zeros((400, 300), bool); hole[150:250, 100:200] = True
+    out = anim._fuse_plate(rgb, plate.astype(np.uint8), hole)
+    assert np.abs(out[20:60, 20:60] - rgb[20:60, 20:60]).max() < 1     # вне дыры — рисунок
+    assert abs(out[170, 150].mean() - 240) < 4                         # внутри — тон стены рисунка
+    assert out[200, 150].mean() < 120                                   # линия внутри дыры на месте

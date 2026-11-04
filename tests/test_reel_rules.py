@@ -1532,7 +1532,9 @@ def test_rule_30_live_world_and_sam_cut(tmp_path):
     spec = {"passport": {"standard": 30, "hook": {}}, "beats": []}
     errs = reel_rules.check_anim_base(spec, str(tmp_path))
     assert any("cut_sam" in e for e in errs) and any("world" in e for e in errs) and any("svg/canvas" in e for e in errs)
-    (d / "kit_x.py").write_text("a = anim.cut_sam(img, box, pos)\nanim.save_layer(...)\nanim.inpaint_bg(...)\n", encoding="utf-8")
+    assert any("plate_bg" in e for e in errs)
+    (d / "kit_x.py").write_text("a = anim.cut_sam(img, box, pos)\nanim.save_layer(...)\nanim.inpaint_bg(...)\n"
+                                "bg = anim.plate_bg(img, hole, cache)\n", encoding="utf-8")
     (d / "sc_hf" / "index.html").write_text('<canvas id="tail"></canvas><svg id="sky"></svg>', encoding="utf-8")
     spec["passport"]["hook"]["world"] = {"area": "окно с пустым стеклом", "motion": "таймлапс неба: день → ночь, луна"}
     assert reel_rules.check_anim_base(spec, str(tmp_path)) == []

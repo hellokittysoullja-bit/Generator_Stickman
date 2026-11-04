@@ -1886,6 +1886,9 @@ def check_anim_base(spec, abs_dir):
         errs.append("слой хвоста есть, а сетки с физикой нет — хвост гнётся через scripts/tail_rig.py (образец — door_hf)")
     std = (spec.get("passport") or {}).get("standard") or 0
     if std >= LIVE_STANDARD:
+        if "plate_bg(" not in allsrc:
+            errs.append("правило 30: фон под слоями — anim.plate_bg (чистая подложка от модели картинок, только в дыре; "
+                        "LaMa оставляла призраки шерсти и силуэт головы — стенд experiments/fill, 04.11)")
         if "cut_sam(" not in allsrc:
             errs.append("правило 30: слои режутся anim.cut_sam (SAM 2.1 по точкам + матирование + усы) — телефон в лапах, "
                         "огонёк, усы целиком, без подушки и линий мебели (стенд experiments/cutout, 04.11)")
