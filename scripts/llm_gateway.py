@@ -536,6 +536,20 @@ class Gateway:
             with self._lock:
                 self.reserved -= reserve
         images = [base64.b64decode(d["b64_json"]) for d in (r.get("data") or []) if d.get("b64_json")]
+        if not images:                           # 04.11: провайдер отдал ссылку вместо base64 — картинка оплачена, скачать
+            for d in r.get("data") or []:
+                u = d.get("url") if isinstance(d, dict) else None
+                if u and u.startswith("data:image"):
+                    images.append(base64.b64decode(u.split(",", 1)[1]))
+                elif u:
+                    try:
+                        with urllib.request.urlopen(u, timeout=120) as f:
+                            images.append(f.read())
+                    except Exception as e:       # noqa: BLE001 — ссылка протухла: отчёт ниже
+                        print(f"  картинка по ссылке не скачалась: {e}", file=sys.stderr)
+            if not images:
+                print(f"  пустой ответ {model}: ключи {sorted(r.keys()) if isinstance(r, dict) else type(r)}, "
+                      f"data={str(r.get('data') if isinstance(r, dict) else r)[:300]} error={str(r.get('error') if isinstance(r, dict) else '')[:400]}", file=sys.stderr)
         price = self.image_cost(model, size, quality, len(images)) if images else 0
         with self._lock:
             self.spent += price

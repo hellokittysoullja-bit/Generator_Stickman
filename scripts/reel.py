@@ -1004,8 +1004,11 @@ def segment_key(reel_dir, fps, n0, n1, i, shots, events, caps, words, times, hoo
                at=[round(times[j]["start"], 4) for j in c["idx"]], ap=c.get("appear"))
           for c in caps if c["t0"] < t1 + 0.5 and c["t1"] > t0 - 0.5]
     hc = hook_clock if hook_clock and hook_clock["t0"] < t1 and hook_clock["t_end"] > t0 else None
-    blob = json.dumps(_plain(dict(v=code_sig, fps=fps, n=[n0, n1], shots=shots[max(0, i - 1):i + 2], ev=ev, caps=cp,
-                                  clock=hc, total=round(total, 4), src=src_sig, ph=PH)), sort_keys=True, default=str)
+    d_ = dict(v=code_sig, fps=fps, n=[n0, n1], shots=shots[max(0, i - 1):i + 2], ev=ev, caps=cp,
+              clock=hc, total=round(total, 4), src=src_sig, ph=PH)
+    if CAP_COLORS != {"active": ACTIVE, "key": KEY}:     # свой цвет субтитров (рилс 20): другие кадры; прежние ключи не меняются
+        d_["cap_colors"] = CAP_COLORS
+    blob = json.dumps(_plain(d_), sort_keys=True, default=str)
     return hashlib.md5(blob.encode()).hexdigest()[:16]
 
 _JOB = None
@@ -1013,6 +1016,8 @@ def _init_job(job):
     """Состояние сборки для процесса-рисовальщика: планы, события, субтитры и раскладка (PH из reel.json)."""
     global _JOB, PH, CAP_CY, PIC_TOP
     _JOB = job[:10]; PH, CAP_CY, PIC_TOP = job[10], job[11], job[12]
+    if len(job) > 13:                       # цвета субтитров своего рилса: процесс spawn начинает с умолчаний (04.11, рилс 20)
+        CAP_COLORS.update(job[13])
 
 def _render_segment(job):
     """Один план в свой файл. Кадр зависит только от времени и плана (кэши кипения, зерна, куклы — по времени), поэтому
@@ -1042,7 +1047,7 @@ def render_video(reel_dir, vid, fps, total, shots, events, caps, words, times, t
         key = segment_key(reel_dir, fps, n0, n1, i, shots, events, caps, words, times, hook_clock, total, code_sig)
         path = os.path.join(cache, f"seg_{fps}_{key}.mp4"); used.add(os.path.basename(path)); segs.append(path)
         if not os.path.exists(path): todo.append((i, n0, n1, path))
-    job = (reel_dir, fps, shots, events, caps, words, times, tex, hook_clock, total, PH, CAP_CY, PIC_TOP)
+    job = (reel_dir, fps, shots, events, caps, words, times, tex, hook_clock, total, PH, CAP_CY, PIC_TOP, dict(CAP_COLORS))
     jobs = max(1, min(int(os.environ.get("REEL_JOBS", os.cpu_count() or 1)), len(todo)))
     if jobs > 1:                                      # планы независимы: каждый — свой процесс и свой файл x264
         import multiprocessing as mp                  # spawn, не fork: fork при живых потоках OpenCV вешал процессы
