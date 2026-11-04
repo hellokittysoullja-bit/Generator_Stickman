@@ -305,6 +305,8 @@ def plan_clip(fr, D, words, key=None, last_punch=-1e9, T0=0.0, zoom_in=True, fps
 HAND_SIZES = (104, 92, 80)     # рукописная подпись к предмету — мельче мысли (KEY_SIZES): это подпись, не мысль
 HAND_MAX_W = 0.40
 HAND_PAD = 22                  # «точка» без рамки: предмет — квадрат ±HAND_PAD px холста вокруг неё
+HAND_SCAN_SEC, HAND_SCAN_STEP = 3.0, 0.25   # нет места на слове — ищем момент до 3 с позже
+HAND_MIN_TAIL = 1.2            # подпись начинается не позже чем за 1,2 с до конца кадра: успеть написать и прочесть
 
 
 def hand_target(fr, to):
@@ -332,6 +334,8 @@ def hand_layout(fr, text, box, win, at=None, seed=13, arrow=True):
     def wh(sz):
         return writeon.measure(text, sz, HAND_MAX_W*W)
     b = placement.busy_map(scr)
+    point = obj
+    obj = _blob_box(b, obj)                           # подпись встаёт у края предмета, а не у точки в его середине
     res = None
     for size in HAND_SIZES:
         tw, th = wh(size)
@@ -347,13 +351,75 @@ def hand_layout(fr, text, box, win, at=None, seed=13, arrow=True):
     if res is None:
         return None
     letters = writeon.layout(text, size, W, H, res["center"][0], res["center"][1], seed=seed, max_w=HAND_MAX_W*W)
-    arr = res.get("arrow") if arrow else None
+    arr, why = _hand_arrow(b, res["center"], wh(size), obj, point) if arrow else (None, "стрелка не нужна")
+    if why:
+        _HAND_WHY[text] = why
     if arr:
         letters = letters + [writeon.arrow_letter(arr[0], arr[1], arr[2], size, W, H, seed=seed)]
     return letters, res["center"], size, arr
 
 
-def hand_plan(fr, p, hand):
+_HAND_WHY = {}
+HAND_TIP_INK = 0.35            # кончик стрелки — там, где от предмета начинается бумага (busy_map ниже порога)
+HAND_SHAFT_BUSY = 0.45         # древко по рисунку гуще этого — стрелки нет, только подпись рядом (0,25 снимал 6 из 33)
+
+
+HAND_BLOB_INK = 0.5            # предмет вокруг точки-цели — связный рисунок гуще этого
+HAND_BLOB_MAX = 0.30           # не больше трети кадра по каждой стороне: слитый рисунок — окрестность точки
+
+
+def _blob_box(b, box):
+    """Рамка предмета вокруг точки-цели по карте занятости: связная область рисунка, содержащая центр точки, но не
+    шире HAND_BLOB_MAX кадра по каждой стороне (вся сцена бывает одним куском). Цель-рамку не трогает."""
+    if (box[2] - box[0]) > 0.12*b.shape[1] or (box[3] - box[1]) > 0.12*b.shape[0]:
+        return box
+    from scipy import ndimage
+    cx, cy = int((box[0] + box[2])/2), int((box[1] + box[3])/2)
+    if not (0 <= cx < b.shape[1] and 0 <= cy < b.shape[0]) or b[cy, cx] < HAND_BLOB_INK:
+        return box
+    lab, _ = ndimage.label(b >= HAND_BLOB_INK)
+    ys, xs = np.nonzero(lab == lab[cy, cx])
+    hw, hh = HAND_BLOB_MAX*b.shape[1]/2, HAND_BLOB_MAX*b.shape[0]/2
+    x0, x1 = max(xs.min(), cx - hw), min(xs.max(), cx + hw)
+    y0, y1 = max(ys.min(), cy - hh), min(ys.max(), cy + hh)
+    return (float(x0), float(y0), float(x1), float(y1))
+
+
+def _hand_arrow(b, center, twh, obj, point=None):
+    """Стрелка от подписи к предмету: кончик у края рисунка предмета, а не в его середине (цель — точка внутри
+    предмета; прежняя стрелка в точку шла по самому рисунку, и проверка «не режет рисунок» её молча снимала — замер
+    на синтетике). (p0, p1, изгиб) или None."""
+    tw, th = twh
+    tb = (center[0] - tw/2, center[1] - th/2, center[0] + tw/2, center[1] + th/2)
+    p0, _, bend = placement.arrow_points(tb, obj, th, b)
+    tgt = point or obj
+    oc = np.array([(tgt[0] + tgt[2])/2, (tgt[1] + tgt[3])/2])
+    d = np.asarray(p0) - oc
+    L = float(np.hypot(*d))
+    if L < 1:
+        return None, "подпись на предмете"
+    d /= L
+    def at(q):
+        return float(b[int(np.clip(q[1], 0, b.shape[0] - 1)), int(np.clip(q[0], 0, b.shape[1] - 1))])
+    # «бумага» — уровень там, где стоит подпись (светлый экран, серая стена — тоже фон для неё), а не ноль
+    ground = at(np.asarray(p0))
+    tip = None
+    for s_ in np.arange(0.0, L, 4.0):
+        q = oc + d*s_
+        if at(q) < max(HAND_TIP_INK, ground + 0.12):
+            tip = oc + d*min(L, s_ + 10)
+            break
+    if tip is None:
+        return None, "от точки до подписи сплошной рисунок"
+    if np.hypot(*(np.asarray(p0) - tip)) < 0.6*th:
+        return None, "подпись вплотную к предмету"
+    busy = placement._line_busy(b, p0, tuple(tip))
+    if busy > HAND_SHAFT_BUSY:
+        return None, f"древко пошло бы по рисунку ({busy:.2f})"
+    return (tuple(map(float, p0)), tuple(map(float, tip)), float(bend)), None
+
+
+def hand_plan(fr, p, hand, D=None):
     """Рукописные подписи кадра (fx.json hand) — в окне плана, где их пишут; после письма планы держат подпись со
     стрелкой целиком или вне кадра (long_edit.keep_text). hand — [{text, t (с от начала клипа), to, at?, arrow?}]."""
     p["hand"] = []
@@ -363,18 +429,32 @@ def hand_plan(fr, p, hand):
         if box is None:
             p["notes"].append(f"подпись «{h['text']}»: предмет {h['to']} не найден — не пишется")
             continue
-        win = long_edit.window_at(long_edit.active(p["segments"], h["t"]), h["t"]) if manual \
-            else shots.window_at(p, h["t"], fr["SW"], fr["SH"])
-        res = hand_layout(fr, h["text"], box, win, at=h.get("at"), seed=13 + k, arrow=h.get("arrow", True))
+        res, t = None, h["t"]
+        # на слове план крупный и предмета в нём нет (или нет бумаги рядом) — ближайший момент после слова, где есть:
+        # подпись чуть позже слова лучше, чем никакой (L03: 10 из 28 подписей не встали на самом слове)
+        for dt in [0.0] + [HAND_SCAN_STEP*j for j in range(1, int(HAND_SCAN_SEC/HAND_SCAN_STEP) + 1)]:
+            t = h["t"] + dt
+            if D is not None and t > D - HAND_MIN_TAIL:
+                break
+            win = long_edit.window_at(long_edit.active(p["segments"], t), t) if manual \
+                else shots.window_at(p, t, fr["SW"], fr["SH"])
+            res = hand_layout(fr, h["text"], box, win, at=h.get("at"), seed=13 + k, arrow=h.get("arrow", True))
+            if res is not None:
+                break
         if res is None:
-            p["notes"].append(f"подпись «{h['text']}»: в плане момента нет места или предмета — не пишется")
+            p["notes"].append(f"подпись «{h['text']}»: ни в плане слова, ни {HAND_SCAN_SEC:.0f} с после него нет места "
+                              f"или предмета — не пишется")
             continue
+        if t > h["t"] + 1e-6:
+            p["notes"].append(f"подпись «{h['text']}»: на слове места нет — пишется на {t - h['t']:.2f} с позже")
         letters, center, size, arr = res
-        p["hand"].append(dict(text=h["text"], t=h["t"], win=win, center=center, size=size, arrow=arr, seed=13 + k,
+        if arr is None and h.get("arrow", True):
+            p["notes"].append(f"подпись «{h['text']}»: без стрелки — {_HAND_WHY.pop(h['text'], 'места нет')}")
+        p["hand"].append(dict(text=h["text"], t=t, win=win, center=center, size=size, arrow=arr, seed=13 + k,
                               target=box))
         wb = letters_box_world(letters, win)
         if manual and wb is not None:
-            long_edit.keep_text(p["segments"], h["t"], wb, fr["SW"], fr["SH"])
+            long_edit.keep_text(p["segments"], t, wb, fr["SW"], fr["SH"])
     return p
 
 

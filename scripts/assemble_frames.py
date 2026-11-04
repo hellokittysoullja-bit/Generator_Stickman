@@ -372,7 +372,7 @@ def main(video_dir):
             p["punch_at"] = None
             long_edit.relayout_text(fr, p, frame_clip)
         if job.get("hand"):                                # рукописные подписи со стрелкой (fx.json hand, 04.11)
-            frame_clip.hand_plan(fr, p, job["hand"])
+            frame_clip.hand_plan(fr, p, job["hand"], D=job["dur"])
         job["plan"] = p
         h = hashlib.sha256(open(job["src"], "rb").read()).hexdigest()[:12]
         scene_sig = hashlib.sha256(open(job["anim"], "rb").read()).hexdigest()[:12] if job.get("anim") else None
@@ -394,11 +394,31 @@ def main(video_dir):
                          # до этого момента дописанная мысль стоит на экране: приёмка не считает такой план длинным
                          "key_hold_until": next((round(h["t1"], 2) for h in p.get("holds", []) if h["kind"] == "key"), None),
                          "accent": (p.get("accent") or {}).get("text") if p.get("accent_time") is not None else None,
-                         "hand": [[h["text"], round(h["t"], 2)] for h in p.get("hand") or []],
+                         "hand": [[h["text"], round(h["t"], 2), "стрелка" if h.get("arrow") else "без стрелки"]
+                                  for h in p.get("hand") or []],
                          # кот-ведущий перед размытой сценой: живой персонаж говорит со зрителем, склеек под ним нет
                          "narrator": [[round(e["t0"], 2), round(e["t1"], 2)] for e in job.get("fx") or []
                                       if e["kind"] == "narrator"],
                          "notes": p["notes"]})
+
+    if manual_labels and not os.path.basename(video_dir) in long_rules.LEGACY:
+        # доля рукописного — по тому, что реально напишется (план), а не по заявленному: подпись или мысль, которой не
+        # нашлось места, не считается (L03: заявлено 61 %, план дал 47 % — 10 подписей и 8 мыслей не встали)
+        hand_n = sum(len(c.get("hand") or []) + bool(c.get("key")) + bool(c.get("accent")) for c in shot_log)
+        bold_n = sum(1 for j in jobs for e in j.get("fx") or [] if e["kind"] == "bold")
+        if hand_n + bold_n and hand_n/(hand_n + bold_n) < long_rules.HAND_SHARE_MIN - 1e-9:
+            print(f"✗ TEXT-SHARE по плану: рукописных {hand_n}, жирных {bold_n} — {hand_n/(hand_n + bold_n):.0%} < "
+                  f"{long_rules.HAND_SHARE_MIN:.0%}; что не встало — shots_report_plan.json, notes кадров")
+            with open(os.path.join(mp, "shots_report_plan.json"), "w", encoding="utf-8") as fh:
+                json.dump({"clips": shot_log}, fh, ensure_ascii=False, indent=1)
+            return EXIT_FAILED
+        print(f"Надписи: рукописных {hand_n} (подписи со стрелкой и мысли), жирных строк {bold_n} — "
+              f"рукописного {hand_n/max(1, hand_n + bold_n):.0%}")
+    if os.environ.get("ASSEMBLE_PLAN_ONLY") == "1":       # план и раскладка надписей без рендера — проверить до 20 минут сборки
+        with open(os.path.join(mp, "shots_report_plan.json"), "w", encoding="utf-8") as fh:
+            json.dump({"clips": shot_log}, fh, ensure_ascii=False, indent=1)
+        print("Только план: media_plan/shots_report_plan.json")
+        return 0
 
     def cached(job):
         c = job["out"] + ".cues.json"

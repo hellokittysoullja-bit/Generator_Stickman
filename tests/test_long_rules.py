@@ -417,3 +417,20 @@ def test_hand_label_has_pen_drawn_arrow_to_the_object():
     assert xs.min() < 320 and xs.max() > 680                        # от надписи до предмета
     tip = ev[0]["path"][-1]
     assert abs(tip[1] - 700) < 2 and abs(tip[0] - 520) < 2          # кончик — у предмета (path в (y, x))
+
+
+def test_hand_label_sits_on_paper_next_to_object_and_skips_object_out_of_frame():
+    import numpy as np
+    import frame_clip
+    SW, SH = 960, 540
+    img = np.full((SH, SW, 3), 245, np.uint8)
+    img[220:320, 420:540] = 20                                      # предмет посередине
+    fr = dict(final_rgb=img, SW=SW, SH=SH, off=(0, 0), objects=[])
+    box = frame_clip.hand_target(fr, [480, 270])
+    res = frame_clip.hand_layout(fr, "палец", box, (0, 0, SW, SH))
+    assert res is not None
+    letters, (cx, cy), size, arr = res
+    assert letters[-1]["ch"] == "→" and arr is not None             # стрелка тем же пером — последней «буквой»
+    sx, sy = cx*SW/1920, cy*SH/1080
+    assert not (420 <= sx <= 540 and 220 <= sy <= 320)              # подпись не на предмете
+    assert frame_clip.hand_layout(fr, "палец", box, (600, 0, 960, 202)) is None   # предмета нет в кадре

@@ -4,8 +4,7 @@
   "1": {
    "lib": "2026-10-23_videos_01_sdvg_pismo_reel_gen_r1_phone_e3b862b6.png",
    "note": "хук: кот на полу, весь в светящемся телефоне — карточки роликов слетают с экрана (кодом в HyperFrames)",
-   "anim": "scroll_hf",
-   "key": "не в лени"
+   "anim": "scroll_hf"
   },
   "2": {
    "lib": "2026-10-26_videos_08_dvoinoy_reel_gen_q1_sofa_3bd96cbf.png",
@@ -66,8 +65,7 @@
    "details": [
     "the progress marker at the start",
     "the character walking away"
-   ],
-   "key": "десятая секунда"
+   ]
   },
   "11": {
    "lib": "2026-10-27_gen_cx_gpt-image-2_bb87085a.png",
@@ -136,8 +134,7 @@
    "details": [
     "the three reels",
     "the hopeful eyes"
-   ],
-   "key": "игровой автомат"
+   ]
   },
   "26": {
    "lib": "2026-10-27_gen_cx_gpt-image-2_00c70140.png",
@@ -145,8 +142,7 @@
   },
   "27": {
    "lib": "2026-10-28_gen_cx_gpt-image-2_d24d5468.png",
-   "note": "память о планах: у кота три облачка мыслей, у людей по одному (L02)",
-   "key": "стирает мысль"
+   "note": "память о планах: у кота три облачка мыслей, у людей по одному (L02)"
   },
   "28": {
    "absorb": true
@@ -209,8 +205,7 @@
    "details": [
     "the wave",
     "the calm surfer"
-   ],
-   "key": "досчитай до десяти"
+   ]
   },
   "44": {
    "absorb": true
@@ -247,8 +242,7 @@
   },
   "53": {
    "same": 6,
-   "note": "тот самый мультик из хука",
-   "key": "тот мультик"
+   "note": "тот самый мультик из хука"
   },
   "54": {
    "new": "the main character sits on a floor cushion in front of an old television showing a long cartoon about cats; one of its paws twitches toward a phone on the floor and the other paw catches it by the wrist",
@@ -266,13 +260,11 @@
    "details": [
     "the rolling credits",
     "the happy face"
-   ],
-   "key": "до титров"
+   ]
   },
   "56": {
    "lib": "2026-10-28_gen_cx_gpt-image-2_70cf5dc4.png",
-   "note": "кульминация: бумеранг — внимание убегает и возвращается (L02)",
-   "key": "можно приучить"
+   "note": "кульминация: бумеранг — внимание убегает и возвращается (L02)"
   },
   "57": {
    "absorb": true

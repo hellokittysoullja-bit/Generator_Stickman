@@ -36,7 +36,7 @@
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
    },
-   "key_thought": "не в лени",
+   "key_thought": null,
    "anim": "scroll_hf"
   },
   {
@@ -334,7 +334,7 @@
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
    },
-   "key_thought": "десятая секунда"
+   "key_thought": null
   },
   {
    "index": 10,
@@ -803,7 +803,7 @@
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
    },
-   "key_thought": "игровой автомат"
+   "key_thought": null
   },
   {
    "index": 25,
@@ -872,7 +872,7 @@
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
    },
-   "key_thought": "стирает мысль"
+   "key_thought": null
   },
   {
    "index": 27,
@@ -1353,7 +1353,7 @@
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
    },
-   "key_thought": "досчитай до десяти"
+   "key_thought": null
   },
   {
    "index": 43,
@@ -1630,7 +1630,7 @@
    "fallback": false,
    "absorb": false,
    "board": "same",
-   "key_thought": "тот мультик"
+   "key_thought": null
   },
   {
    "index": 53,
@@ -1699,7 +1699,7 @@
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
    },
-   "key_thought": "до титров"
+   "key_thought": null
   },
   {
    "index": 55,
@@ -1734,7 +1734,7 @@
     "rewritten": false,
     "note": "описание написано оркестратором 27.10"
    },
-   "key_thought": "можно приучить"
+   "key_thought": null
   },
   {
    "index": 56,
