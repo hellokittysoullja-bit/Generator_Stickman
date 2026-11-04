@@ -28,18 +28,19 @@ COLOURS = ("Colours: black ink lines on cream paper in exactly the hand-drawn st
            "stays black with green eyes, orange cheek marks and an orange tail flame.")
 
 
-def prompt():
+def prompt(extra=""):
     marks = open(os.path.join(ROOT, "look", "hero_marks.txt"), encoding="utf8").read().strip()
     return ("Image 1 is a finished drawing. Redraw exactly the same drawing: the same composition, framing, camera angle, "
             "scale, and the same position, size, pose and expression of the main character and of every object, the same "
             "line work. Image 2 is the main character's reference: keep exactly its head, face, colours and markings. "
-            + marks + " The only change from image 1: " + BACKGROUND + " " + COLOURS + " Every surface is clean and "
+            + marks + " The only change from image 1: " + BACKGROUND + " " + (extra + " " if extra else "") + COLOURS + " Every surface is clean and "
             "unmarked: blank paper, blank screens, blank clock faces, no letters or numbers anywhere.")
 
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("reel_dir"); ap.add_argument("files", nargs="+")
     ap.add_argument("--dry", action="store_true")
+    ap.add_argument("--extra", default="", help="уточнение к фону для этого рисунка (что ещё убрать: пол, окно…)")
     a = ap.parse_args()
     import env; env.load_env()
     import llm_gateway
@@ -49,7 +50,7 @@ def main():
     if price > reel_draw.MAX_PRICE:
         raise SystemExit(f"цена {price} > {reel_draw.MAX_PRICE}")
     if a.dry:
-        print(prompt()); return
+        print(prompt(a.extra)); return
     hero = os.path.join(ROOT, "look", "hero.png")
     for rel in a.files:
         src = os.path.join(a.reel_dir, rel)
@@ -57,7 +58,7 @@ def main():
         os.makedirs(os.path.dirname(keep), exist_ok=True)
         if not os.path.exists(keep):
             shutil.copy2(src, keep)
-        p = prompt()
+        p = prompt(a.extra)
         ims, paid = G.image(reel_draw.MODEL, p, reel_draw.SIZE, reel_draw.QUALITY,
                             images=[reel_draw.data_url(keep), reel_draw.data_url(hero)], timeout=600)
         open(src, "wb").write(ims[0])
