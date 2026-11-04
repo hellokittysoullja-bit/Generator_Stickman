@@ -35,3 +35,9 @@ videos/*/media_plan/upscale/
 videos/*/anim/hf/assets/
 videos/*/media_plan/anim_cache/
 videos/*/reel_proto/
+
+# эксперимент BiRefNet (04.11): кэш рендера и кадры сравнения, в git — только итог
+experiments/birefnet/out/cache/
+experiments/birefnet/out/cmp_frames/
+experiments/birefnet/out/kit_bir/
+experiments/birefnet/out/mask_birefnet.png
