@@ -260,3 +260,31 @@ def test_video_hook_needs_new_pictures_often(tmp_path):
     json.dump(sb, open(os.path.join(vd, "storyboard.json"), "w", encoding="utf-8"))
     errs = long_rules.hook_build(vd)
     assert any("картинок в видеохуке" in e for e in errs), errs
+
+
+def test_labels_by_meaning_not_by_timer():
+    """Владелец 04.11: надписей больше, «не в какое-то количество времени, а просто когда нужно, всегда»."""
+    assert "число" in long_rules.label_needs("Через сорок минут я знал, как плетут корзины.")
+    assert "имя" in long_rules.label_needs("Психолог Тимоти Уилсон оставлял людей одних.")
+    assert "приём" in long_rules.label_needs("Второй приём: одно окно.")
+    assert "Напарник" in long_rules.label_needs("Я котик из «Напарника».")
+    assert "кульминация" in long_rules.label_needs("Его просто приучили убегать.", climax="его просто приучили убегать")
+    assert long_rules.label_needs("Я так делал, и мне было легче.") == ""
+
+
+def test_label_can_be_declined_only_with_reason(tmp_path):
+    vd = hooked(tmp_path, labels=False)
+    errs = [e for e in long_rules.hook_build(vd) if e.startswith("LABELS")]
+    assert errs
+    n = errs[0].split("фраза ")[1].split()[0]
+    fx = {"phrases": {n: {"nolabel": {"why": "цифра уже на рисунке крупно"}}}}
+    (tmp_path / "L09_test" / "fx.json").write_text(json.dumps(fx, ensure_ascii=False), encoding="utf-8")
+    assert not any(f"фраза {n} " in e for e in long_rules.hook_build(vd))
+
+
+def test_orchestrated_pencil_labels_are_never_dropped_by_timer():
+    import assemble_frames as af
+    job = {"key": "до титров", "accent": "двадцать минут", "T0": 12.0}
+    written = [(10.0, 3)]                                   # 2 с назад уже написано 3 слова
+    assert af.labels_for(job, 10.0, written, 2, manual=True)[:2] == ("до титров", "двадцать минут")
+    assert af.labels_for(job, 10.0, written, 2, manual=False)[:2] == (None, None)   # без раскадровки — прежний бюджет

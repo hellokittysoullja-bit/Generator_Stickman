@@ -132,6 +132,20 @@ def writing_budget(written, T0, key, accent, reserved=0):
     return key, accent, notes
 
 
+def labels_for(job, last_key, written, reserved, manual):
+    """Главная мысль и акцент кадра. manual — надписи расставил оркестратор по смыслу (есть storyboard.json): владелец
+    04.11 — «их должно быть больше… не в какое-то количество времени, а просто когда нужно, всегда»; таймер не режет
+    ни одной (место на экране и время письма проверяет frame_clip.plan_clip). Без раскадровки (мысли пишет модель
+    планировщика) — прежний бюджет брендбука: мысль не чаще KEY_GAP_SEC и 1–3 слова за WRITE_WINDOW_SEC."""
+    if manual:
+        return job["key"], job.get("accent"), []
+    key = job["key"] if job["key"] and job["T0"] - last_key >= KEY_GAP_SEC else None
+    notes = [f"главная мысль «{job['key']}» пропущена: прошлая {job['T0'] - last_key:.1f} с назад"] \
+        if job["key"] and not key else []
+    key, accent, why = writing_budget(written, job["T0"], key, job.get("accent"), reserved)
+    return key, accent, notes + why
+
+
 def _prepare(job):
     import frame_clip
     return frame_clip.prepare(job["src"], job["recs"], job["objects"], job["work"], seed=job["seed"],
@@ -331,16 +345,13 @@ def main(video_dir):
         list(ex.map(_warm, jobs))
     import long_edit
     edits = long_edit.load(video_dir)
+    manual_labels = os.path.exists(os.path.join(video_dir, "storyboard.json"))   # надписи по смыслу, без таймера
     last_punch, last_key, shot_log, written = -1e9, -1e9, [], []
     for k, job in enumerate(jobs):                         # план — по порядку: наезды и мысли не чаще порога
         fr = _prepare(job)
-        key = job["key"] if job["key"] and job["T0"] - last_key >= KEY_GAP_SEC else None
-        if job["key"] and not key:
-            shot_log.append({"index": kept[k], "note": f"главная мысль «{job['key']}» пропущена: прошлая "
-                                                      f"{job['T0'] - last_key:.1f} с назад"})
         reserved = sum(len(j["key"].split()) for j in jobs[k + 1:]
                        if j.get("key") and j["T0"] < job["T0"] + WRITE_WINDOW_SEC)
-        key, accent, why = writing_budget(written, job["T0"], key, job.get("accent"), reserved)
+        key, accent, why = labels_for(job, last_key, written, reserved, manual_labels)
         shot_log += [{"index": kept[k], "note": n} for n in why]
         p = frame_clip.plan_clip(fr, job["dur"], job["words"], key=key, last_punch=last_punch,
                                  T0=job["T0"], zoom_in=(k % 2 == 0), fps=FPS, accent=accent, mascot=job.get("mascot"),

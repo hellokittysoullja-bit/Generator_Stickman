@@ -259,8 +259,16 @@ def check(video_dir, final=False, items=None):
 # первые 10 с — ниже эталона рилс 17. Пороги — те же, что у рилсов (reel_rules, правила 28–29), без своих чисел.
 LEGACY = {"L01_potom", "L02_otvlechenie"}
 EST_WPS = 2.4               # темп L02 до озвучки (слов в секунду); после озвучки — время слов из alignment
-LABEL_EVERY_SEC = 30        # поясняющая надпись (жирный текст fx.json, мысль key или акцент accent) не реже раза в 30 с
-LABEL_GAP_MAX = 45          # и без дыры больше 45 с между надписями
+# Надписи — не по таймеру, а по смыслу, всегда (владелец 04.11: «их должно быть больше… не в какое-то количество
+# времени, а просто когда нужно, всегда»). Фраза, где звучит число, имя или название, приём, «Напарник» или
+# кульминация, несёт надпись: жирный текст fx.json или карандаш (key / accent раскадровки). Не нужна — fx.json
+# phrases[N].nolabel = {"why": …} словами.
+LABEL_NUM_RE = re.compile(
+    r"\b(\d+|два|две|двух|двум|три|тр[её]х|четыре|четыр[её]х|пять|пяти|шесть|шести|семь|семи|восемь|восьми|восемью|"
+    r"девять|девяти|десять|десяти|десят(ая|ой|ую|ый|ом)|одиннадцат\w*|двенадцат\w*|пятнадцат\w*|двадцат\w*|"
+    r"тридцат\w*|сорок\w*|пятьдесят|пятидесяти|шестьдесят|семьдесят|семидесяти|восемьдесят|девяносто|сто|ста|"
+    r"сотн\w*|тысяч\w*|половин\w*|треть|трети|четверть|четверти|двухминутн\w*)\b")
+LABEL_TERM_RE = re.compile(r"\b(при[её]м\w*|напарник\w*)\b")
 VIDEO_HOOK_MIN_SEC = 40     # «видеохук» — весь HOOK, но не короче 40 с (владелец 04.11: «первые 40–60 секунд… как рилс»)
 PICTURE_EVERY_SEC = 7.0     # новая картинка в видеохуке не реже раза в 7 с (рилс 17: 6 рисунков на 35 с)
 VIDEO_HOOK_MEAN_SHOT = 2.2  # средний план видеохука (рилс 17 — 1,67 с; L02 в хуке — автоматика до 3,5 с)
@@ -308,7 +316,7 @@ def _video_hook_montage(video_dir, blocks, frames, starts, ends, hook_n, fx_path
     err = []
     zone = max(ends[hook_n - 1] if hook_n else 0.0, VIDEO_HOOK_MIN_SEC)
     zn = [i for i in range(len(blocks)) if starts[i] < zone - 0.5]          # фразы видеохука (с 0)
-    pic = [i for i in zn if (frames.get(str(i + 1)) or {}) and not {"absorb", "same"} & set(frames[str(i + 1)])]
+    pic = [i for i in zn if {"new", "lib", "plan", "anim"} & set(frames.get(str(i + 1)) or {})]   # своя картинка
     if not pic or pic[0] != 0:
         err.append("VIDEO-HOOK: у первой фразы нет своей картинки в раскадровке")
         return err
@@ -376,6 +384,24 @@ def _video_hook_montage(video_dir, blocks, frames, starts, ends, hook_n, fx_path
     return err
 
 
+def label_needs(text, climax=""):
+    """Почему фразе нужна надпись на экране (пусто — не нужна): число, имя или название, приём, «Напарник», кульминация."""
+    low = text.lower()
+    why = []
+    if LABEL_NUM_RE.search(low):
+        why.append("число")
+    for sent in re.split(r"(?<=[.!?…])\s+", text):
+        toks = [t.strip("«»\"'(),:;—–-.!?") for t in sent.split()][1:]
+        if any(t and t[0].isupper() and t != "Я" and not t.lower().startswith("напарник") for t in toks):
+            why.append("имя или название")
+            break
+    if LABEL_TERM_RE.search(low):
+        why.append("приём или «Напарник»")
+    if climax and climax in norm(text):
+        why.append("кульминация")
+    return ", ".join(why)
+
+
 def hook_build(video_dir):
     """Дыры хука и надписей по раскадровке, сцене и звукам (пусто — как у нынешних рилсов). Без storyboard.json — []."""
     sb_path = os.path.join(video_dir, "storyboard.json")
@@ -433,20 +459,26 @@ def hook_build(video_dir):
             err.append(f"HOOK-SFX: тишина без звуков {gap:.1f} с с {at:.1f} с > {SOUND_GAP_MAX} с")
     # 3. видеохук смонтирован как рилс: ручной монтаж каждой картинки, планы 0,7–3 с, смены картинок, акценты
     err += _video_hook_montage(video_dir, blocks, frames, starts, ends, hook_n, fx_path=os.path.join(video_dir, "fx.json"))
-    # 4. поясняющие надписи по всему ролику (субтитров нет, текст на экране — надписи)
+    # 4. надписи по смыслу, всегда: каждая фраза с числом, именем, приёмом, «Напарником» или кульминацией
     fp = os.path.join(video_dir, "fx.json")
     fx = (json.load(open(fp, encoding="utf-8")).get("phrases") or {}) if os.path.exists(fp) else {}
-    lab = sorted({int(k) for k, v in frames.items() if str(k).isdigit() and (v.get("key") or v.get("accent"))}
-                 | {int(k) for k, v in fx.items() if v.get("bold")})
-    total = ends[-1] if ends else 0.0
-    need = int(total // LABEL_EVERY_SEC)
-    if len(lab) < need:
-        err.append(f"LABELS: поясняющих надписей {len(lab)} на {total / 60:.1f} мин < {need} (одна на "
-                   f"{LABEL_EVERY_SEC} с): жирный текст fx.json на цифрах и обещаниях, мысль key или акцент accent")
-    pts = [0.0] + [starts[i - 1] for i in lab if 0 < i <= len(starts)] + [total]
-    gap, at = max((b - a_, a_) for a_, b in zip(pts, pts[1:]))
-    if gap > LABEL_GAP_MAX:
-        err.append(f"LABELS: {gap:.0f} с без единой надписи с {at / 60:.1f} мин > {LABEL_GAP_MAX} с")
+    pp = os.path.join(video_dir, PASSPORT)
+    pas = json.load(open(pp, encoding="utf-8")) if os.path.exists(pp) else {}
+    climax = norm(pas.get("climax") or "")
+    beats = [(norm(x.get(k) or ""), what) for x in pas.get("points") or []
+             for k, what in (("rehook", "крючок пункта"), ("payoff_quote", "вывод пункта"))]
+    for i, b in enumerate(blocks):
+        n = str(i + 1)
+        v, fv = frames.get(n) or {}, fx.get(n) or {}
+        if v.get("key") or v.get("accent") or fv.get("bold"):
+            continue
+        if _filled((fv.get("nolabel") or {}).get("why")):
+            continue
+        txt = script_parser.strip_pipeline_only_tags(b["text"])
+        why = ", ".join(x for x in [label_needs(txt, climax)] + [w for q, w in beats if q and q in norm(txt)] if x)
+        if why:
+            err.append(f"LABELS: фраза {n} ({why}) без надписи — жирный текст fx.json или карандаш key/accent; не нужна — "
+                       f"fx.json phrases[{n}].nolabel.why: «{b['text'][:60]}»")
     return err
 
 
