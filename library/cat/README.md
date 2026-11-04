@@ -1,10 +1,10 @@
 # Библиотека оригиналов: кот и всё, что сгенерировано
 
-Картинок: **212**, 427 МБ. Оригиналы — `originals/` байт в байт, как пришли из модели (PNG без пересжатия); `thumbs/` — превью для этой страницы; `catalog.json` — промпт, модель, цена, где используется.
+Картинок: **213**, 430 МБ. Оригиналы — `originals/` байт в байт, как пришли из модели (PNG без пересжатия); `thumbs/` — превью для этой страницы; `catalog.json` — промпт, модель, цена, где используется.
 
 Пополняется сама: каждая генерация через шлюз (`llm_gateway.Gateway.image`) кладёт картинку сюда, включая забракованные варианты. Собрать уже лежащее в репозитории: `python scripts/cat_library.py --scan`.
 
-## генерация (156)
+## генерация (157)
 
 | превью | оригинал | где | промпт |
 |---|---|---|---|
@@ -160,6 +160,7 @@
 | ![](thumbs/2026-11-04_gen_cx_gpt-image-2_5_b3b8e9f6.jpg) | [2026-11-04_gen_cx_gpt-image-2_5_b3b8e9f6.png](originals/2026-11-04_gen_cx_gpt-image-2_5_b3b8e9f6.png)<br>1024×1536, 2026-11-04 | scripts/reel_recream.py videos/19_opozdal/reel gen/d2_sock.png | Image 1 is a finished drawing. Redraw exactly the same drawing: the same composition, framing, camera angle, scale, and the same position, size, pose and expression of the main character and of every object, the same lin… |
 | ![](thumbs/2026-11-04_gen_cx_gpt-image-2_5_be3805ae.jpg) | [2026-11-04_gen_cx_gpt-image-2_5_be3805ae.png](originals/2026-11-04_gen_cx_gpt-image-2_5_be3805ae.png)<br>1024×1536, 2026-11-04 | scripts/reel_recream.py videos/19_opozdal/reel gen/d1_clock.png | Image 1 is a finished drawing. Redraw exactly the same drawing: the same composition, framing, camera angle, scale, and the same position, size, pose and expression of the main character and of every object, the same lin… |
 | ![](thumbs/2026-11-04_gen_cx_gpt-image-2_5_c0eae5e8.jpg) | [2026-11-04_gen_cx_gpt-image-2_5_c0eae5e8.png](originals/2026-11-04_gen_cx_gpt-image-2_5_c0eae5e8.png)<br>1024×1536, 2026-11-04 | scripts/reel_recream.py videos/21_znayu/reel gen/k4_table.png | Image 1 is a finished drawing. Redraw exactly the same drawing: the same composition, framing, camera angle, scale, and the same position, size, pose and expression of the main character and of every object, the same lin… |
+| ![](thumbs/2026-11-04_gen_cx_gpt-image-2_5_d4f38b9a.jpg) | [2026-11-04_gen_cx_gpt-image-2_5_d4f38b9a.png](originals/2026-11-04_gen_cx_gpt-image-2_5_d4f38b9a.png)<br>1024×1536, 2026-11-04 | videos/19_opozdal/reel_v2/draw_color.py | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
 | ![](thumbs/2026-11-04_gen_cx_gpt-image-2_5_d80264fe.jpg) | [2026-11-04_gen_cx_gpt-image-2_5_d80264fe.png](originals/2026-11-04_gen_cx_gpt-image-2_5_d80264fe.png)<br>1024×1536, 2026-11-04 | videos/21_znayu/reel/draw_color.py | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
 | ![](thumbs/2026-11-04_gen_cx_gpt-image-2_5_f1e3f5dc.jpg) | [2026-11-04_gen_cx_gpt-image-2_5_f1e3f5dc.png](originals/2026-11-04_gen_cx_gpt-image-2_5_f1e3f5dc.png)<br>1024×1536, 2026-11-04 | scripts/reel_recream.py videos/21_znayu/reel gen/k4_table.png | Image 1 is a finished drawing. Redraw exactly the same drawing: the same composition, framing, camera angle, scale, and the same position, size, pose and expression of the main character and of every object, the same lin… |
 | ![](thumbs/2026-11-04_gen_cx_gpt-image-2_5_f2663085.jpg) | [2026-11-04_gen_cx_gpt-image-2_5_f2663085.png](originals/2026-11-04_gen_cx_gpt-image-2_5_f2663085.png)<br>1024×1536, 2026-11-04 | videos/19_opozdal/reel/draw_color.py | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |

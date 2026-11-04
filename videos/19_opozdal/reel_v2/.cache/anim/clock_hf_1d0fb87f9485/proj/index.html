@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=2048, height=3072" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="lib/mesh_part.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 2048px; height: 3072px; overflow: hidden; background: #f7f3ea; }
+      #root { position: relative; width: 2048px; height: 3072px; overflow: hidden; }
+      .layer { position: absolute; left: 0; top: 0; width: 2048px; height: 3072px; }
+      .abs { position: absolute; display: block; }
+      svg.layer { overflow: visible; }
+      #rays line { stroke: #18181a; stroke-linecap: round; }
+    </style>
+  </head>
+  <body>
+    <!-- Хук рилса 19 «Встал рано, а ты опоздал?»: мир сцены — рисунок d1_clock ×2, 2048×3072. Слои — anim/kit_clock.py,
+         положение слоёв подставляет clock_hf.py из kit.json.
+         С кадра 0 всё в движении: огромные часы раскачиваются на гвозде, минутная стрелка летит по кругу (время
+         утекает), часовая ползёт; кот в одном ботинке мечется с лапы на лапу, капли пота слетают с головы. На ударном
+         «опоздАл» (data-vars.hit) стрелки с размаху встают, часы дёргаются, кот подпрыгивает от ужаса, капли брызгают,
+         вокруг головы штрихи. Камеру, звук и субтитры даёт сборщик. -->
+    <div id="root" data-composition-id="main" data-start="0" data-duration="2.4" data-width="2048" data-height="3072"
+         data-vars='{"hit": 8.224, "kit": {"feet": [850, 2800], "head": [1000, 1880], "clock_c": [973, 765], "nail": [982, 88]}}' data-motion-blur="on" data-layout-allow-overflow data-layout-allow-overlap>
+      <img id="bg" class="abs clip" src="assets/bg.png" style="left:0;top:0" data-start="0" data-duration="2.4" />
+      <div id="clockSwing" class="layer clip" data-start="0" data-duration="2.4">
+        <img id="clock" class="abs" src="assets/clock.png" style="left:403px;top:53px" />
+        <img id="hour" class="abs" src="assets/hour.png" style="left:743px;top:625px" />
+        <img id="minute" class="abs" src="assets/minute.png" style="left:981px;top:344px" />
+        <img id="hub" class="abs" src="assets/hub.png" style="left:906px;top:701px" />
+      </div>
+      <div id="cat" class="layer clip" data-start="0" data-duration="2.4">
+        <div id="catHop" class="layer">
+          <canvas id="tail" class="abs" width="874" height="1390" style="left:-74px;top:1388px"></canvas>
+          <img id="body" class="abs" src="assets/body.png" style="left:421px;top:1451px" />
+        </div>
+        <svg id="rays" class="layer" width="2048" height="3072" viewBox="0 0 2048 3072"></svg>
+      </div>
+      <img id="drop0" class="abs clip" src="assets/drop0.png" style="left:1212px;top:1459px" data-start="0" data-duration="2.4" />
+      <img id="drop1" class="abs clip" src="assets/drop1.png" style="left:1257px;top:1563px" data-start="0" data-duration="2.4" />
+      <img id="drop2" class="abs clip" src="assets/drop2.png" style="left:1294px;top:1673px" data-start="0" data-duration="2.4" />
+    </div>
+    <script>
+      const root = document.getElementById("root");
+      const V = JSON.parse(root.dataset.vars), H = V.hit, K = V.kit;
+      const NS = "http://www.w3.org/2000/svg";
+      const tl = gsap.timeline({ paused: true });
+      const px = (p) => `${p[0]}px ${p[1]}px`;
+      const around = (id, p) => { const e = document.querySelector(id); gsap.set(e, { transformOrigin: `${p[0] - e.offsetLeft}px ${p[1] - e.offsetTop}px` }); };
+      // часы: раскачиваются на гвозде с кадра 0 (уже на ходу, без разгона), на «опоздАл» — рывок и затухание
+      gsap.set("#clockSwing", { transformOrigin: px(K.nail) });
+      const SW = 0.15;
+      tl.fromTo("#clockSwing", { rotation: -4.5 }, { rotation: 4.5, duration: SW, ease: "sine.inOut" }, 0);
+      for (let i = 1, t = SW; t < H - 0.05; i++, t += SW) {
+        tl.to("#clockSwing", { rotation: (i % 2 ? -1 : 1) * (4.5 + 1.2 * Math.sin(t * 9)), duration: SW, ease: "sine.inOut" }, t);
+      }
+      tl.to("#clockSwing", { rotation: 12, duration: 0.07, ease: "power3.out" }, H);
+      tl.to("#clockSwing", { rotation: 0, duration: 0.9, ease: "elastic.out(1.1, 0.28)" }, H + 0.07);
+      // стрелки: минутная летит по кругу (2,6 оборота в секунду), часовая ползёт; на ударе встают с перелётом
+      around("#minute", K.clock_c); around("#hour", K.clock_c);
+      const MV = 940, HV = 80;
+      tl.fromTo("#minute", { rotation: 0 }, { rotation: MV * H, duration: H, ease: "none" }, 0);
+      tl.to("#minute", { rotation: MV * H + 34, duration: 0.06, ease: "power2.out" }, H);
+      tl.to("#minute", { rotation: MV * H + 18, duration: 0.5, ease: "elastic.out(1.2, 0.3)" }, H + 0.06);
+      tl.fromTo("#hour", { rotation: 0 }, { rotation: HV * H, duration: H, ease: "none" }, 0);
+      tl.to("#hour", { rotation: HV * H + 8, duration: 0.5, ease: "elastic.out(1.2, 0.3)" }, H);
+      // кот мечется с лапы на лапу: шаг 0,16 с с кадра 0 (подскок, крен, рывок вбок)
+      gsap.set("#catHop", { transformOrigin: px(K.feet) });
+      const ST = 0.16;
+      tl.fromTo("#catHop", { x: -26, y: -44, rotation: -4.5 }, { x: 20, y: 0, rotation: 3, duration: ST / 2, ease: "none" }, 0);
+      for (let i = 0, t = ST / 2; t < H - 0.1; i++, t += ST / 2) {
+        const up = i % 2 === 0, side = Math.floor(i / 2) % 2 ? 1 : -1;
+        tl.to("#catHop", up ? { x: side * 28, y: -48 - 12 * (i % 3), rotation: side * 4.5, scaleY: 1.03, duration: ST / 2, ease: "sine.out" }
+                            : { x: -side * 10, y: 0, rotation: -side * 1.5, scaleY: 0.97, duration: ST / 2, ease: "power2.in" }, t);
+      }
+      // «опоздАл»: присел — подпрыгнул от ужаса — приземлился пружиной
+      tl.to("#catHop", { x: 0, y: 36, rotation: 0, scaleY: 0.88, scaleX: 1.07, duration: 0.08, ease: "power3.in" }, H - 0.08);
+      tl.to("#catHop", { y: -170, scaleY: 1.1, scaleX: 0.95, rotation: 3, duration: 0.17, ease: "power3.out" }, H);
+      tl.to("#catHop", { y: 0, scaleY: 1, scaleX: 1, rotation: 0, duration: 0.75, ease: "bounce.out" }, H + 0.17);
+      // капли пота: срываются с головы и улетают вверх-вправо, каждая в своей фазе; на ударе — брызгами
+      ["#drop0", "#drop1", "#drop2"].forEach((id, j) => {
+        gsap.set(id, { transformOrigin: "50% 50%" });
+        const per = 0.42 + 0.06 * j, dx = 120 + 30 * j, dy = -70 + 50 * j, ph = (0.3 * j) % per;
+        tl.fromTo(id, { x: dx * (ph / per) - 30, y: dy * (ph / per) + 20, opacity: 1, scale: 0.9 },
+                  { x: dx - 30, y: dy + 20, opacity: 0.2, scale: 1.15, duration: per - ph, ease: "power1.in" }, 0);
+        for (let t = per - ph; t < H; t += per) {
+          tl.set(id, { x: -30, y: 20, opacity: 1, scale: 0.85 }, t);
+          tl.to(id, { x: dx - 30, y: dy + 20, opacity: 0.2, scale: 1.15, duration: Math.min(per, H - t), ease: "power1.in" }, t);
+        }
+        tl.set(id, { x: 0, y: 0, opacity: 1, scale: 1 }, H);
+        tl.to(id, { x: 260 + 90 * j, y: -220 + 160 * j, rotation: 40 * (j - 1), opacity: 0, scale: 1.3, duration: 0.5, ease: "power2.out" }, H + 0.01 * j);
+      });
+      // штрихи ужаса вокруг головы на «опоздАл»
+      const hx = K.head[0], hy = K.head[1];
+      for (let k = 0; k < 7; k++) {
+        const a = -Math.PI / 2 + (k - 3) * 0.42;
+        const g = document.createElementNS(NS, "g"), m = document.createElementNS(NS, "g"), l = document.createElementNS(NS, "line");
+        g.setAttribute("transform", `translate(${hx + 560 * Math.cos(a)} ${hy - 80 + 460 * Math.sin(a)}) rotate(${(a * 180) / Math.PI})`);
+        l.setAttribute("x1", 0); l.setAttribute("y1", 0); l.setAttribute("x2", 80); l.setAttribute("y2", 0); l.style.strokeWidth = 13;
+        m.appendChild(l); g.appendChild(m); document.getElementById("rays").appendChild(g);
+        tl.set(m, { opacity: 0, scaleX: 0, svgOrigin: "0 0" }, 0);
+        tl.set(m, { opacity: 1 }, H + 0.02);
+        tl.to(m, { scaleX: 1, duration: 0.07, ease: "power3.out" }, H + 0.02);
+        tl.to(m, { x: 50, opacity: 0, duration: 0.26, ease: "power2.in" }, H + 0.18);
+      }
+      meshPart({ canvas: document.getElementById("tail"), marg: 180, img: "assets/tail_body.png",
+                 flame: "assets/tail_flame.png", mesh: "assets/tail_mesh.json", angles: "assets/tail_angles.json", fps: 30 });
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
