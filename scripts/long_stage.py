@@ -36,7 +36,7 @@ CARD_H = 470             # высота карточки в паре
 CARD_RADIUS = 34
 ITEM_H = 0.40            # высота вырезки по умолчанию — доля кадра
 LABEL_SIZE = 96
-VERSION = 3              # смена вида — смена подписи клипа (3: вырезка SAM + край по туши, 04.11)
+VERSION = 4              # смена вида — смена подписи клипа (3: вырезка SAM + край по туши; 4: стикеры, 04.11)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _BG = None
@@ -45,6 +45,11 @@ _BG = None
 def ease_io(u):
     u = min(1.0, max(0.0, u))
     return u*u*(3 - 2*u)
+
+
+def ease_out(u):
+    u = min(1.0, max(0.0, u))
+    return 1 - (1 - u)**3
 
 
 def back_out(u, s=1.7):
@@ -333,12 +338,40 @@ def place(f, rgba, cx, cy, h_px, alpha=1.0, rot=0.0, shadow=True):
     return f*(1 - a) + out[..., :3]*a
 
 
+# --- стикеры (владелец 04.11, пробник 1: «первое берём… уже нормально») ----------------------------------------------
+STICKER_BORDER = 0.055    # белая обводка — доля высоты вырезки
+SLAP_SEC = 0.20           # стикер шлёпается на бумагу: сверху и крупнее (1.25 → 1 с перелётом), тень растёт
+BOIL_FPS = 12             # «живая» бумага: после посадки стикер чуть дрожит 12 раз в секунду, как рисованная анимация
+BOIL_PX, BOIL_DEG = 1.6, 0.45
+STICKER_ROT = (-4.0, 3.0, -2.5)   # стикеры наклеены не по линейке
+
+
+def sticker(rgba):
+    """Вырезка -> стикер: белая скруглённая обводка по контуру."""
+    rgba = np.asarray(rgba, np.float32)
+    r = max(6, int(rgba.shape[0]*STICKER_BORDER))
+    pad = r + 4
+    a = np.pad(rgba[..., 3], pad)/255.0
+    rgb = np.pad(rgba[..., :3], ((pad, pad), (pad, pad), (0, 0)), constant_values=255)
+    k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2*r + 1, 2*r + 1))
+    border = cv2.GaussianBlur(cv2.dilate((a > 0.5).astype(np.uint8), k).astype(np.float32), (0, 0), 1.2)
+    out = rgb*a[..., None] + np.array([255, 254, 250], np.float32)*(1 - a[..., None])
+    return np.dstack([out, np.maximum(a, border)*255]).astype(np.float32)
+
+
+def boil(t, k):
+    """Дрожь стикера k: новое смещение и поворот каждые 1/BOIL_FPS с, у каждого своё."""
+    rng = np.random.default_rng(1000*k + int(t*BOIL_FPS))
+    return rng.uniform(-BOIL_PX, BOIL_PX), rng.uniform(-BOIL_PX, BOIL_PX), rng.uniform(-BOIL_DEG, BOIL_DEG)
+
+
 class Stage:
     """Сцена плана: assets — RGBA элементов, времена — от начала плана (с)."""
 
     def __init__(self, spec, assets, dur):
         import long_fx
-        self.spec, self.assets, self.dur = spec, assets, dur
+        self.spec, self.dur = spec, dur
+        self.assets = [sticker(a) for a in assets] if spec["type"] == "items" else assets
         self.labels, self.label_x = [], []
         if spec["type"] == "items":
             n = len(spec["items"])
@@ -383,10 +416,14 @@ class Stage:
             for k, it in enumerate(sp["items"]):
                 if t < it["t"]:
                     continue
-                u = (t - it["t"])/POP_SEC
+                u = t - it["t"]
+                land = min(1.0, u/SLAP_SEC)                       # шлепок: сверху и крупнее, с перелётом
+                sc = 1.25 - 0.25*back_out(land, 2.2)
+                bx, by, br = boil(t, k) if land >= 1 else (0.0, 0.0, 0.0)
                 h = H*it.get("h", ITEM_H if n > 2 else 0.58)
-                f = place(f, self.assets[k], self.xs[k] + dx, H*(0.50 if n > 2 else 0.56), h*max(0.05, back_out(u)),
-                          alpha=min(1.0, u*3))
+                f = place(f, self.assets[k], self.xs[k] + dx + bx,
+                          H*(0.50 if n > 2 else 0.56) - 30*(1 - ease_out(land)) + by, h*sc,
+                          alpha=min(1.0, u/0.06), rot=STICKER_ROT[k % len(STICKER_ROT)] + br, shadow=land > 0.5)
         else:
             ft = sp.get("focus_t")
             fk = sp.get("focus", 1)

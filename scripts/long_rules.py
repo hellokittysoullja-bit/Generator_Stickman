@@ -621,6 +621,11 @@ def stage_checks(video_dir):
     err = []
     for n, v in (json.load(open(ep, encoding="utf-8")).get("frames") or {}).items():
         for k, p in enumerate(v.get("shots") or [], 1):
+            if p.get("tear") and k == 1:
+                err.append(f"TEAR: фраза {n}, план 1 — рваная бумага рвёт кадр прошлого плана той же картинки; на "
+                           f"первом плане его нет (он в чужом клипе) — поставить на следующий план")
+            if p.get("tear") and not p.get("sound"):
+                err.append(f"TEAR: фраза {n}, план {k} — разрыв бумаги без звука: у плана нужен \"sound\" (движение)")
             sp = p.get("stage")
             if not sp:
                 continue

@@ -170,3 +170,35 @@ def test_cutout_falls_back_when_sam_is_not_available(monkeypatch):
         raise RuntimeError("нет модели")
     monkeypatch.setattr(long_stage, "_sam_masks", boom)
     assert long_stage._sam_object("x.png", np.zeros((10, 10, 3), np.uint8), (0, 0, 5, 5)) is None
+
+
+# --- стикеры и рваная бумага (владелец 04.11: «первое берём») ----------------------------------------------------
+def test_items_are_stickers_with_a_white_border_that_boils_twelve_times_a_second():
+    st = long_stage.sticker(_blob())
+    assert st.shape[0] > _blob().shape[0]                                      # обводка снаружи
+    a = st[..., 3]
+    edge = st[(a > 200) & (np.asarray(np.pad(_blob()[..., 3], (st.shape[0] - 200)//2)) == 0)]
+    assert edge.size and edge[..., :3].mean() > 240                             # и она белая
+    assert long_stage.boil(0.01, 0) == long_stage.boil(0.07, 0)                 # одна поза на 1/12 с
+    assert long_stage.boil(0.01, 0) != long_stage.boil(0.10, 0)
+
+
+def test_paper_tear_starts_on_the_old_frame_and_ends_on_the_new():
+    import paper_tear
+    before = np.full((108, 192, 3), 30.0, np.float32)
+    after = np.full((108, 192, 3), 220.0, np.float32)
+    first = paper_tear.compose(before, after, 0.0)
+    last = paper_tear.compose(before, after, 1.0)
+    assert first.mean() < 70                                                    # лист ещё цел
+    assert abs(last.mean() - 220) < 8                                           # лист улетел
+    big = np.full((540, 960, 3), 30.0, np.float32)
+    mid = paper_tear.compose(big, np.full((540, 960, 3), 220.0, np.float32), 0.35)
+    assert (mid > 240).any()                                                    # белые волокна рваного края
+
+
+def test_tear_needs_a_previous_shot_and_its_own_sound(tmp_path):
+    bad = {"frames": {"3": {"shots": [{"why": "первый план и сразу разрыв", "tear": True, "sound": "swoosh"},
+                                      {"why": "разрыв без звука", "at": "x", "tear": True}]}}}
+    (tmp_path / "edit.json").write_text(json.dumps(bad, ensure_ascii=False), encoding="utf-8")
+    err = long_rules.stage_checks(str(tmp_path))
+    assert any("план 1" in e and "TEAR" in e for e in err) and any("без звука" in e for e in err)

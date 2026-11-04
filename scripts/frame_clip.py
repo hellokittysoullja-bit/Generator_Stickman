@@ -26,6 +26,7 @@ import camera
 import canvas
 import labels as labels_mod
 import long_edit
+import paper_tear
 import placement
 import shots
 import upscale
@@ -627,6 +628,17 @@ def render(fr, p, D, out, fps=24, end_fade=False, crf="18", anim=None, fx=None):
         if assemble and full is not world:
             full = mascot_live.bake_shadow(full, p["mascot"], SW, SH, UPSCALE)
     prev_world, fade_from, fade_len = None, None, shots.LABEL_FADE_SEC
+    torn = {"last": None, "seg": None, "img": None}
+
+    def emit(f, seg, t):
+        """Кадр в ffmpeg; план с "tear" открывается рваной бумагой: рвётся последний кадр прошлого плана."""
+        if seg.get("tear") and torn["last"] is not None and t - seg["t0"] < paper_tear.TEAR_SEC:
+            if torn["seg"] is not seg:
+                torn["seg"], torn["img"] = seg, torn["last"]
+            f = paper_tear.compose(torn["img"], f, (t - seg["t0"])/paper_tear.TEAR_SEC)
+        else:
+            torn["last"] = f
+        proc.stdin.write(np.clip(f, 0, 255).round().astype(np.uint8).tobytes())
     tmp = out + ".tmp.mp4"
     proc = subprocess.Popen(["ffmpeg", "-y", "-v", "error", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}",
                              "-r", str(fps), "-i", "-", "-frames:v", str(n), "-c:v", "libx264", "-preset", "medium",
@@ -666,7 +678,7 @@ def render(fr, p, D, out, fps=24, end_fade=False, crf="18", anim=None, fx=None):
                 if end_fade and t > D - END_FADE_SEC:
                     a = camera.ease_io((t - (D - END_FADE_SEC))/END_FADE_SEC)
                     f = f*(1 - a) + canvas.CREAM*a
-                proc.stdin.write(np.clip(f, 0, 255).round().astype(np.uint8).tobytes())
+                emit(f, seg, t)
                 continue
             if manual:                                 # ручной монтаж: тряска на ударе
                 dx, dy = long_edit.shake_px(seg, t)
@@ -728,7 +740,7 @@ def render(fr, p, D, out, fps=24, end_fade=False, crf="18", anim=None, fx=None):
             if end_fade and t > D - END_FADE_SEC:
                 a = camera.ease_io((t - (D - END_FADE_SEC))/END_FADE_SEC)
                 f = f*(1 - a) + canvas.CREAM*a
-            proc.stdin.write(np.clip(f, 0, 255).round().astype(np.uint8).tobytes())
+            emit(f, seg, t)
         proc.stdin.close()
         if proc.wait() != 0:
             raise RuntimeError("ffmpeg не записал клип")

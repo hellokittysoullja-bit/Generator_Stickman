@@ -66,6 +66,14 @@ def _parallax(p):
     return dict(dx=dp.DX, dz=dp.DZ) if p is True else dict(dx=float(p.get("dx", dp.DX)), dz=float(p.get("dz", dp.DZ)))
 
 
+def _tear(on):
+    """План открывается рваной бумагой (paper_tear): в плане — версия разрыва, чтобы его правка перерисовала клип."""
+    if not on:
+        return None
+    import paper_tear
+    return paper_tear.VERSION
+
+
 def _stage(spec, words, t0):
     """Сцена на бумаге (long_stage): копия с временами элементов от начала плана — по словам, как склейки."""
     if not spec:
@@ -107,7 +115,7 @@ def segments(fr, shots, words, D):
                    spot=(sp[0] + ox, sp[1] + oy, sp[2]) if sp else None,
                    parallax=_parallax(s.get("parallax")),
                    sound=s.get("sound"), sound_gain=float(s.get("sound_gain", 0.0)), sound_why=s.get("sound_why"),
-                   stage=_stage(s.get("stage"), words, t0))
+                   stage=_stage(s.get("stage"), words, t0), tear=_tear(s.get("tear")))
         segs.append(seg)
         prev = win_to
     for a, b in zip(segs, segs[1:]):          # хлёст смазывает и уходящий план
