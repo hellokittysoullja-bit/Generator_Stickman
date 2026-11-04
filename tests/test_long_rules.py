@@ -186,6 +186,7 @@ def hooked(tmp_path, scene=HOOK_SCENE_HIT, sfx=None, labels=True, name="L09_test
     names = ["fast_whoosh", "swoosh", "shock", "oof", "riser", "fast_glitch"]
     if sfx is None:                          # плотно: ~каждые 1,3 с, шесть разных
         sfx = [{"name": names[k % 6], "phrase": 1 + k // 4, "at": 1.3 * (k % 4), "why": "тест"} for k in range(36)]
+        sfx += [{"name": names[k % 6], "phrase": 10 + k // 40, "at": 1.25 * (k % 40), "why": "тест"} for k in range(160)]
     (vd / "sfx.json").write_text(json.dumps(sfx, ensure_ascii=False), encoding="utf-8")
     if edit:
         ed = {str(i): {"shots": shots or REEL_SHOTS} for i in range(1, 11)}
@@ -288,3 +289,13 @@ def test_orchestrated_pencil_labels_are_never_dropped_by_timer():
     written = [(10.0, 3)]                                   # 2 с назад уже написано 3 слова
     assert af.labels_for(job, 10.0, written, 2, manual=True)[:2] == ("до титров", "двадцать минут")
     assert af.labels_for(job, 10.0, written, 2, manual=False)[:2] == (None, None)   # без раскадровки — прежний бюджет
+
+
+def test_long_video_sounds_at_least_four_per_every_ten_seconds(tmp_path):
+    """Владелец 04.11: «звуки… не меньше 4 на 10 секунд, именно в длинных видео» — по всему ролику, каждый кусок."""
+    vd = hooked(tmp_path)
+    assert not [e for e in long_rules.hook_build(vd) if e.startswith("SFX")]
+    sfx = json.load(open(os.path.join(vd, "sfx.json"), encoding="utf-8"))
+    json.dump([e for e in sfx if e["phrase"] <= 9], open(os.path.join(vd, "sfx.json"), "w", encoding="utf-8"))
+    errs = [e for e in long_rules.hook_build(vd) if e.startswith("SFX")]      # хук плотный, а тело без звуков
+    assert errs and "меньше 4 на 10 с" in errs[0], errs

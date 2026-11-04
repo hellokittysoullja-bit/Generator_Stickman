@@ -10,6 +10,7 @@ kind=code проверяется здесь по script.txt и long_passport.jso
 {"how": ...} или {"skip": ...}. make_video.py зовёт check() до первого платного шага и не идёт дальше при ошибке.
 Код 0 — чисто, 1 — есть дыры."""
 import json
+import math
 import os
 import re
 import sys
@@ -269,6 +270,8 @@ LABEL_NUM_RE = re.compile(
     r"тридцат\w*|сорок\w*|пятьдесят|пятидесяти|шестьдесят|семьдесят|семидесяти|восемьдесят|девяносто|сто|ста|"
     r"сотн\w*|тысяч\w*|половин\w*|треть|трети|четверть|четверти|двухминутн\w*)\b")
 LABEL_TERM_RE = re.compile(r"\b(при[её]м\w*|напарник\w*)\b")
+LONG_SFX_PER_10S = 4.0      # звуков в длинном ролике — не меньше 4 на каждые 10 с, по всему ролику (владелец 04.11:
+LONG_SFX_WINDOW = 10.0      # «звуки, единственное, не меньше 4 на 10 секунд, именно в длинных видео»)
 VIDEO_HOOK_MIN_SEC = 40     # «видеохук» — весь HOOK, но не короче 40 с (владелец 04.11: «первые 40–60 секунд… как рилс»)
 PICTURE_EVERY_SEC = 7.0     # новая картинка в видеохуке не реже раза в 7 с (рилс 17: 6 рисунков на 35 с)
 VIDEO_HOOK_MEAN_SHOT = 2.2  # средний план видеохука (рилс 17 — 1,67 с; L02 в хуке — автоматика до 3,5 с)
@@ -408,7 +411,7 @@ def hook_build(video_dir):
     if os.path.basename(os.path.normpath(video_dir)) in LEGACY or not os.path.exists(sb_path):
         return []
     import script_parser
-    from reel_rules import SOUND_DENSITY_MIN, SOUND_GAP_MAX, SOUND_KINDS_MIN
+    from reel_rules import SOUND_GAP_MAX, SOUND_KINDS_MIN
     err = []
     sb = json.load(open(sb_path, encoding="utf-8"))
     frames = dict(sb.get("frames") or [])
@@ -427,33 +430,41 @@ def hook_build(video_dir):
     elif not HOOK_CAM_RE.search(open(path, encoding="utf-8").read()):
         err.append(f"HOOK-MOTION: anim/{a}.py — камера не anim.hook_cam(t, hit=…): влёт без удара на ударном слоге "
                    "слабее эталона рилс 17 (правило 29)")
-    # 2. звуки хука — плотность рилса (≥ 5 на 10 с, ≥ 5 разных, тишина ≤ 3,5 с)
+    # 2. звуки — во всём длинном ролике не меньше 4 на каждые 10 с (владелец 04.11); в хуке ещё ≥ 5 разных и тишина ≤ 3,5 с
     sp = os.path.join(video_dir, "sfx.json")
     ev = json.load(open(sp, encoding="utf-8")) if os.path.exists(sp) else []
-    peaks, kinds = [], set()
+    peaks, hook_kinds = [], set()
     for e in ev:
         i = int(e.get("phrase", 0)) - 1
-        if not 0 <= i < hook_n:
+        if not 0 <= i < len(blocks):
+            err.append(f"SFX: «{e.get('name')}»: фразы {e.get('phrase')} нет")
             continue
         t = starts[i] + e.get("at", 0.0)
         if "word" in e:                      # до озвучки слово — по его месту во фразе
-            ws = words(script_parser.strip_pipeline_only_tags(blocks[i]["text"]))
-            stem = norm(e["word"])
-            k = next((j for j, w in enumerate(ws) if norm(w).startswith(stem)), None)
-            if k is None:
-                err.append(f"HOOK-SFX: «{e.get('name')}»: слова «{e['word']}» нет во фразе {i + 1}")
+            t = _word_t(blocks, starts, ends, [i], e["word"])
+            if t is None:
+                err.append(f"SFX: «{e.get('name')}»: слова «{e['word']}» нет во фразе {i + 1}")
                 continue
-            t = starts[i] + (ends[i] - starts[i]) * k / max(1, len(ws)) + e.get("offset", 0.0)
-        peaks.append(t); kinds.add(e.get("name"))
+            t += e.get("offset", 0.0)
+        peaks.append(t)
+        if i < hook_n:
+            hook_kinds.add(e.get("name"))
+    total = ends[-1] if ends else 0.0
+    thin = []
+    for a in range(0, int(math.ceil(total / LONG_SFX_WINDOW))):
+        lo, hi = a * LONG_SFX_WINDOW, min(total, (a + 1) * LONG_SFX_WINDOW)
+        need = LONG_SFX_PER_10S * (hi - lo) / LONG_SFX_WINDOW
+        got = sum(lo <= p < hi for p in peaks)
+        if hi - lo >= 3 and got < math.floor(need):
+            thin.append(f"{int(lo // 60)}:{int(lo % 60):02d}–{int(hi // 60)}:{int(hi % 60):02d} ({got})")
+    if thin:
+        err.append(f"SFX: звуков меньше {LONG_SFX_PER_10S:.0f} на 10 с в {len(thin)} кусках из "
+                   f"{int(math.ceil(total / LONG_SFX_WINDOW))}: {', '.join(thin[:8])}{' …' if len(thin) > 8 else ''} — "
+                   "свист на смене картинки и плана, удар на событии рисунка, звук на смысловом слове (sfx.json, why)")
     if hook_end:
-        dens = len(peaks) / hook_end * 10
-        if dens < SOUND_DENSITY_MIN:
-            err.append(f"HOOK-SFX: в хуке ({hook_end:.0f} с) звуков {len(peaks)} — {dens:.1f} на 10 с < "
-                       f"{SOUND_DENSITY_MIN} (эталон рилс 17 — 5,7): свист на каждой склейке, удар на событии рисунка, "
-                       "звук на смысловом слове")
-        if len(kinds) < SOUND_KINDS_MIN:
-            err.append(f"HOOK-SFX: разных звуков в хуке {len(kinds)} < {SOUND_KINDS_MIN}")
-        pts = [0.0] + sorted(peaks) + [hook_end]
+        if len(hook_kinds) < SOUND_KINDS_MIN:
+            err.append(f"HOOK-SFX: разных звуков в хуке {len(hook_kinds)} < {SOUND_KINDS_MIN}")
+        pts = [0.0] + sorted(p for p in peaks if p < hook_end) + [hook_end]
         gap, at = max((b - a_, a_) for a_, b in zip(pts, pts[1:]))
         if gap > SOUND_GAP_MAX:
             err.append(f"HOOK-SFX: тишина без звуков {gap:.1f} с с {at:.1f} с > {SOUND_GAP_MAX} с")
