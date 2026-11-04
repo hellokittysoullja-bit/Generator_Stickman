@@ -202,3 +202,18 @@ def test_tear_needs_a_previous_shot_and_its_own_sound(tmp_path):
     (tmp_path / "edit.json").write_text(json.dumps(bad, ensure_ascii=False), encoding="utf-8")
     err = long_rules.stage_checks(str(tmp_path))
     assert any("план 1" in e and "TEAR" in e for e in err) and any("без звука" in e for e in err)
+
+
+def test_stage_labels_do_not_fade_before_a_tear():
+    """Лист с подписями рвётся целиком: перед планом с "tear" подписи сцены не тают (L03, фраза 56)."""
+    fr = {"SW": 2528, "SH": 1696, "off": (0, 0)}
+    segs = long_edit.segments(fr, [{"why": "три приёма тремя предметами на бумаге", "stage": _items()},
+                                   {"at": "десять", "win": [500, 500, 600], "why": "лист рвётся, под ним морда",
+                                    "tear": True, "sound": "swoosh"}], WORDS, 5.0)
+    assert segs[0]["stage"].get("hold_labels") and segs[1]["tear"]
+    st = long_stage.Stage(segs[0]["stage"], [_blob(), _blob(), _blob()], segs[0]["t1"] - segs[0]["t0"])
+    end = segs[0]["t1"] - segs[0]["t0"] - 0.02
+    held = st.frame(end)
+    segs[0]["stage"]["hold_labels"] = False
+    faded = long_stage.Stage(segs[0]["stage"], [_blob(), _blob(), _blob()], end + 0.02).frame(end)
+    assert (held < 60).sum() > (faded < 60).sum()                               # чёрная обводка подписей на месте

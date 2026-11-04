@@ -121,6 +121,8 @@ def segments(fr, shots, words, D):
     for a, b in zip(segs, segs[1:]):          # хлёст смазывает и уходящий план
         if b.get("whip"):
             a["whip_out"] = b["whip"]
+        if b.get("tear") and a.get("stage"):  # лист рвётся вместе с подписями: они не тают перед разрывом
+            a["stage"]["hold_labels"] = True
     return segs
 
 

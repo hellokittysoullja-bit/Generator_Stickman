@@ -444,7 +444,8 @@ class Stage:
                 f = place(f, self.assets[k], x, y, h, rot=(1.5 if k else -1.5)*(1 - enter), shadow=h < H)
         for (lb, end), x0 in zip(self.labels, self.label_x):
             lb.cx = x0 + dx                        # подпись едет со своим элементом
-            f = lb.composite(f, t, t_end=end if end is not None else self.dur)
+            hold = self.spec.get("hold_labels")    # следующий план рвёт лист — подписи рвутся вместе с ним
+            f = lb.composite(f, t, t_end=None if hold else (end if end is not None else self.dur))
         return f
 
 
