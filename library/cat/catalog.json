@@ -3851,6 +3851,24 @@
   "source": "videos/22_minutka/reel/draw_color.py"
  },
  {
+  "file": "2026-11-04_gen_cx_gpt-image-2_5_af50912b.png",
+  "sha256": "af50912bcd05ecf3d7cee7a083afdec1fcf84abf3664e6f6a3a79e093a8ec547",
+  "bytes": 2112127,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-04",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Image 1 is a finished drawing. Redraw exactly the same drawing, the same room, furniture, objects, framing, scale, line work, colours and paper, but WITHOUT the black cat and without anything it is holding: the place where the cat was shows what is behind it — the sofa, pillow, floor or wall continue naturally with their own lines and colours, as if the cat had never been there. Nothing else changes: every other object stays in exactly the same place and size. No letters or numbers anywhere.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "experiments/fill/clean_plate.py sofa"
+ },
+ {
   "file": "2026-11-04_gen_cx_gpt-image-2_5_b354df6b.png",
   "sha256": "b354df6b1ba7680ec2471a5deac03adfb7118a5b161481d631d8b4aaeb5657e4",
   "bytes": 2456658,
