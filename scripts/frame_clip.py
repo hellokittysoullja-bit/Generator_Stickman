@@ -304,9 +304,12 @@ def plan_clip(fr, D, words, key=None, last_punch=-1e9, T0=0.0, zoom_in=True, fps
 
 HAND_SIZES = (104, 92, 80)     # рукописная подпись к предмету — мельче мысли (KEY_SIZES): это подпись, не мысль
 HAND_MAX_W = 0.40
+HAND_SIZES_ALL = (300, 260, 220, 190, 160, 130, 112, 96, 84, 74, 64)   # кегль экрана в окне раскладки
+HAND_MIN_FULL, HAND_MAX_FULL = 64, 96   # кегль на общем плане: не мельче 64 px (написанная на крупном плане кеглем 80 на
+                               # общем выходила 25 px — «палец раньше тебя», «волна желания», L03 04.11)
+HAND_HOLD_SEC = 1.5            # дописанная подпись стоит в кадре целиком не меньше (как мысль, shots.KEY_HOLD_SEC)
 HAND_PAD = 22                  # «точка» без рамки: предмет — квадрат ±HAND_PAD px холста вокруг неё
-HAND_SCAN_SEC, HAND_SCAN_STEP = 3.0, 0.25   # нет места на слове — ищем момент до 3 с позже
-HAND_MIN_TAIL = 1.2            # подпись начинается не позже чем за 1,2 с до конца кадра: успеть написать и прочесть
+HAND_TAIL = 0.6                # подпись дописывается не позже чем за 0,6 с до конца кадра: иначе её режет склейка
 
 
 def hand_target(fr, to):
@@ -320,7 +323,7 @@ def hand_target(fr, to):
     return (to[0] + ox, to[1] + oy, to[2] + ox, to[3] + oy)
 
 
-def hand_layout(fr, text, box, win, at=None, seed=13, arrow=True):
+def hand_layout(fr, text, box, win, at=None, seed=13, arrow=True, avoid=()):
     """Рукописная подпись к предмету box (холст) в окне win: раскладка букв и стрелка тем же карандашом.
     Место — пустая бумага рядом с предметом (placement.choose: не на рисунке, стрелка не режет рисунок); at — центр
     подписи в пикселях исходного рисунка, если место выбрано руками. None — места нет."""
@@ -334,10 +337,16 @@ def hand_layout(fr, text, box, win, at=None, seed=13, arrow=True):
     def wh(sz):
         return writeon.measure(text, sz, HAND_MAX_W*W)
     b = placement.busy_map(scr)
+    for a in avoid:                                   # уже стоящие надписи кадра — как рисунок (L03: «погода?» и
+        ax0, ay0 = int((a[0] - win[0])*s_) - 30, int((a[1] - win[1])*s_) - 30     # «40 минут спустя» наползали)
+        ax1, ay1 = int((a[2] - win[0])*s_) + 30, int((a[3] - win[1])*s_) + 30
+        b[max(0, ay0):max(0, ay1), max(0, ax0):max(0, ax1)] = 1.0
     point = obj
     obj = _blob_box(b, obj)                           # подпись встаёт у края предмета, а не у точки в его середине
     res = None
-    for size in HAND_SIZES:
+    k_full = (win[2] - win[0])/fr["SW"]               # доля холста в окне: 1 — общий план
+    sizes = [z for z in HAND_SIZES_ALL if z*k_full >= HAND_MIN_FULL and z*k_full <= HAND_MAX_FULL]
+    for size in sizes:
         tw, th = wh(size)
         if at is not None:
             cx, cy = (at[0] + fr["off"][0] - win[0])*s_, (at[1] + fr["off"][1] - win[1])*s_
@@ -424,37 +433,46 @@ def hand_plan(fr, p, hand, D=None):
     стрелкой целиком или вне кадра (long_edit.keep_text). hand — [{text, t (с от начала клипа), to, at?, arrow?}]."""
     p["hand"] = []
     manual = any(s.get("kind") == "manual" for s in p["segments"])
+    placed = []                                        # рамки надписей кадра на холсте: мысль, акцент, прошлые подписи
+    for kind in ("key", "accent"):
+        it = p.get(kind)
+        if it and p.get(f"{kind}_time") is not None:
+            L = writeon.layout(it["text"], it["size"], W, H, it["center"][0], it["center"][1], max_w=KEY_MAX_W*W)
+            wb = letters_box_world(L, it["win"])
+            if wb is not None:
+                placed.append(wb)
     for k, h in enumerate(sorted(hand or [], key=lambda h: h["t"])):
         box = hand_target(fr, h["to"])
         if box is None:
             p["notes"].append(f"подпись «{h['text']}»: предмет {h['to']} не найден — не пишется")
             continue
-        res, t = None, h["t"]
-        # на слове план крупный и предмета в нём нет (или нет бумаги рядом) — ближайший момент после слова, где есть:
-        # подпись чуть позже слова лучше, чем никакой (L03: 10 из 28 подписей не встали на самом слове)
-        for dt in [0.0] + [HAND_SCAN_STEP*j for j in range(1, int(HAND_SCAN_SEC/HAND_SCAN_STEP) + 1)]:
-            t = h["t"] + dt
-            if D is not None and t > D - HAND_MIN_TAIL:
-                break
-            win = long_edit.window_at(long_edit.active(p["segments"], t), t) if manual \
-                else shots.window_at(p, t, fr["SW"], fr["SH"])
-            res = hand_layout(fr, h["text"], box, win, at=h.get("at"), seed=13 + k, arrow=h.get("arrow", True))
-            if res is not None:
-                break
+        # раскладка — по всему рисунку (там больше бумаги и цель всегда видна), как у мысли карандашом; планы, пока
+        # подпись пишется и читается, расширяются до неё (hold_text). Прежняя раскладка в окне момента на тесных ручных
+        # планах L03 не находила места у 9 из 33 подписей, а написанная на крупном плане на общем выходила в 25 px
+        t = h["t"]
+        win = camera.full_window(fr["SW"], fr["SH"])
+        res = hand_layout(fr, h["text"], box, win, at=h.get("at"), seed=13 + k, arrow=h.get("arrow", True),
+                          avoid=placed)
         if res is None:
-            p["notes"].append(f"подпись «{h['text']}»: ни в плане слова, ни {HAND_SCAN_SEC:.0f} с после него нет места "
-                              f"или предмета — не пишется")
+            p["notes"].append(f"подпись «{h['text']}»: на рисунке нет места рядом с предметом — не пишется")
             continue
-        if t > h["t"] + 1e-6:
-            p["notes"].append(f"подпись «{h['text']}»: на слове места нет — пишется на {t - h['t']:.2f} с позже")
         letters, center, size, arr = res
         if arr is None and h.get("arrow", True):
             p["notes"].append(f"подпись «{h['text']}»: без стрелки — {_HAND_WHY.pop(h['text'], 'места нет')}")
-        p["hand"].append(dict(text=h["text"], t=t, win=win, center=center, size=size, arrow=arr, seed=13 + k,
-                              target=box))
+        dur = writeon.plan(letters, 24)[1]
+        if D is not None and t + dur > D - HAND_TAIL:     # слово в конце кадра — начать раньше, чтобы успеть дописать
+            t = max(0.0, D - HAND_TAIL - dur)
+            p["notes"].append(f"подпись «{h['text']}»: слово в конце кадра — пишется с {t:.2f} с, раньше слова")
+        t_end = t + dur
+        p["hand"].append(dict(text=h["text"], t=t, end=t_end, win=win, center=center, size=size, arrow=arr,
+                              seed=13 + k, target=box))
         wb = letters_box_world(letters, win)
+        if wb is not None:
+            placed.append(wb)
         if manual and wb is not None:
-            long_edit.keep_text(p["segments"], t, wb, fr["SW"], fr["SH"])
+            # пока пишется и ещё HAND_HOLD_SEC — подпись целиком в кадре; дальше — целиком или вне кадра
+            long_edit.hold_text(p["segments"], t, t_end + HAND_HOLD_SEC, wb, fr["SW"], fr["SH"])
+            long_edit.keep_text(p["segments"], t_end + HAND_HOLD_SEC, wb, fr["SW"], fr["SH"])
     return p
 
 

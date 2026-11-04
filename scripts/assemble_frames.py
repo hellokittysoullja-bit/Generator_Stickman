@@ -394,7 +394,7 @@ def main(video_dir):
                          # до этого момента дописанная мысль стоит на экране: приёмка не считает такой план длинным
                          "key_hold_until": next((round(h["t1"], 2) for h in p.get("holds", []) if h["kind"] == "key"), None),
                          "accent": (p.get("accent") or {}).get("text") if p.get("accent_time") is not None else None,
-                         "hand": [[h["text"], round(h["t"], 2), "стрелка" if h.get("arrow") else "без стрелки"]
+                         "hand": [[h["text"], round(h["t"], 2), "стрелка" if h.get("arrow") else "без стрелки", round(h["end"], 2)]
                                   for h in p.get("hand") or []],
                          # кот-ведущий перед размытой сценой: живой персонаж говорит со зрителем, склеек под ним нет
                          "narrator": [[round(e["t0"], 2), round(e["t1"], 2)] for e in job.get("fx") or []

@@ -204,6 +204,36 @@ def fit_text(win, box, SW, SH):
     return best[1] if best else win
 
 
+def show_text(win, box, SW, SH):
+    """Окно, в котором надпись box целиком: сдвиг, потом шире — вплоть до всего холста. Для времени, пока надпись
+    пишется и читается (подпись рукой, L03 04.11: «скука» и «игровой автомат» уходили из кадра следующим крупным
+    планом через полсекунды после того, как дописаны)."""
+    if camera.inside(box, win):
+        return win
+    w = win[2] - win[0]
+    cx, cy = camera.center(win)
+    k = 1.0
+    while True:
+        ww = min(SW, w*k)
+        hh = ww*SH/SW
+        nx = min(max(cx, box[2] - ww/2 + ww*0.02), box[0] + ww/2 - ww*0.02)
+        ny = min(max(cy, box[3] - hh/2 + hh*0.02), box[1] + hh/2 - hh*0.02)
+        cand = camera.window(nx, ny, ww, SW, SH)
+        if camera.inside(box, cand) or ww >= SW:
+            return cand
+        k *= 1.12
+
+
+def hold_text(segs, t0, t1, box, SW, SH):
+    """Планы, идущие в [t0, t1), показывают надпись box целиком (и начало, и конец проводки)."""
+    for s in segs:
+        if s["t1"] <= t0 or s["t0"] >= t1:
+            continue
+        s["win"] = show_text(s["win"], box, SW, SH)
+        s["win_to"] = show_text(s["win_to"], box, SW, SH)
+    return segs
+
+
 def keep_text(segs, t, box, SW, SH):
     """Все планы после момента письма t: надпись целиком или вне кадра (и в начале, и в конце проводки)."""
     prev_to = None
