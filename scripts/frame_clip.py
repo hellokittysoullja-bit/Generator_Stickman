@@ -433,6 +433,7 @@ def hand_plan(fr, p, hand, D=None):
     стрелкой целиком или вне кадра (long_edit.keep_text). hand — [{text, t (с от начала клипа), to, at?, arrow?}]."""
     p["hand"] = []
     manual = any(s.get("kind") == "manual" for s in p["segments"])
+    holds = []                                         # (начало, конец удержания, рамка с целью, рамка подписи)
     placed = []                                        # рамки надписей кадра на холсте: мысль, акцент, прошлые подписи
     for kind in ("key", "accent"):
         it = p.get(kind)
@@ -470,11 +471,19 @@ def hand_plan(fr, p, hand, D=None):
         if wb is not None:
             placed.append(wb)
         if manual and wb is not None:
-            # пока пишется и ещё HAND_HOLD_SEC — подпись целиком в кадре; дальше — целиком или вне кадра
             # и подпись, и то, на что показывает стрелка (L03: «Глория Марк» стояла, а стрелка уходила за край кадра)
             hb = (min(wb[0], box[0]), min(wb[1], box[1]), max(wb[2], box[2]), max(wb[3], box[3])) if arr else wb
-            long_edit.hold_text(p["segments"], t, t_end + HAND_HOLD_SEC, hb, fr["SW"], fr["SH"])
-            long_edit.keep_text(p["segments"], t_end + HAND_HOLD_SEC, wb, fr["SW"], fr["SH"])
+            holds.append((t, t_end + HAND_HOLD_SEC, hb, wb))
+    # после удержания — подпись целиком или вне кадра; пока пишется и ещё HAND_HOLD_SEC — целиком в кадре. Удержание
+    # последним: оно главнее. Пересекающиеся удержания — одной рамкой (L03, фр.54: «палец дёрнулся» выталкивал из
+    # кадра только что написанное «20 минут про котов»)
+    for _t0, t1, _hb, wb in holds:
+        long_edit.keep_text(p["segments"], t1, wb, fr["SW"], fr["SH"])
+    for s_ in p["segments"]:
+        on = [hb for t0, t1, hb, wb in holds if t0 < s_["t1"] and s_["t0"] < t1]
+        if on:
+            u = (min(b[0] for b in on), min(b[1] for b in on), max(b[2] for b in on), max(b[3] for b in on))
+            long_edit.hold_text([s_], s_["t0"], s_["t1"], u, fr["SW"], fr["SH"])
     return p
 
 
