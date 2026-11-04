@@ -116,7 +116,8 @@ def prepare_stages(video_dir, edits, report):
             for it in items:
                 path = long_stage.resolve_src(it["src"], video_dir, phrase_src)
                 rgba = long_stage.card(path, cache) if sp["type"] == "cards" else \
-                    long_stage.cutout(path, it.get("box"), it.get("poly"), cache)
+                    long_stage.cutout(path, it.get("box"), it.get("poly"), cache, point=it.get("point"),
+                                      solid=bool(it.get("solid")))
                 key = hashlib.sha256(rgba.tobytes() + str(rgba.shape).encode()).hexdigest()[:16]   # весь PNG: у
                 # вырезок верх — прозрачные строки, по началу байтов две разные вырезки совпали бы
                 out = os.path.join(cache, f"use_{key}.png")
@@ -125,6 +126,7 @@ def prepare_stages(video_dir, edits, report):
                     os.makedirs(cache, exist_ok=True)
                     Image.fromarray(rgba).save(out)
                 it["_png"] = out
+    long_stage.sam_close()                                 # 4 ГБ SAM не держим во время рендера
 
 
 def load_plan_frames(video_dir):

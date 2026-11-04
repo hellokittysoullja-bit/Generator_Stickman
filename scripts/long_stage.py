@@ -36,7 +36,7 @@ CARD_H = 470             # высота карточки в паре
 CARD_RADIUS = 34
 ITEM_H = 0.40            # высота вырезки по умолчанию — доля кадра
 LABEL_SIZE = 96
-VERSION = 2              # смена вида — смена подписи клипа
+VERSION = 3              # смена вида — смена подписи клипа (3: вырезка SAM + край по туши, 04.11)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _BG = None
@@ -85,10 +85,180 @@ def _paper_like(img):
     return canvas.retint(img, col) if canvas.is_paper(col, share) else img
 
 
-def cutout(path, box=None, poly=None, cache_dir=None):
-    """RGBA-вырезка предмета (uint8). poly — многоугольник по сетке рисунка; иначе box и нейросеть по контуру,
-    из маски — самый большой предмет (соседи у края рамки прочь). Кэш — по файлу и рамке."""
-    key = hashlib.sha256(json.dumps([os.path.basename(path), os.path.getsize(path), box, poly, VERSION]).encode()).hexdigest()[:16]
+# --- вырезка предмета: SAM по рамке + край по туши (владелец 04.11: «обрезается без каких-либо других объектов») -----
+# Замер на пяти трудных местах L03 (песочные часы с лапой кота сверху, ноутбук рядом с котом, аквариум на табурете,
+# кружка на столе, кот с телефоном рядом с конвертом): BiRefNet по рамке брал соседей — лапу, шерсть, линию стола, дым —
+# и пробивал дыры в стекле; SAM, которому указан предмет, соседей не берёт, но рвёт контур и захватывает просветы
+# бумаги. Край по туши чинит это правилами рисунка на бумаге (refine). Остаток: тонкие детали, которые SAM срезал
+# сильнее 2 px (верх ручки кружки), не возвращаются.
+SAM_BAND = 2          # тушь у края маски SAM, которая возвращается предмету: SAM срезает контур на 1–2 px
+PAPER_TONE_TOL = 4    # область внутри предмета может быть фоном, только если её тон — тон бумаги снаружи (±4)…
+SOLID_BRIDGE = 7      # "solid": щели до 14 px в контуре сплошного предмета закрываются (правая страница книги L03)
+COLOUR_SAT = 90       # цветное — насыщенность выше этого (огонёк ~200, серая тушь и бумага < 40)
+ATTACH_MAX = 0.15     # присоединяется цветная часть меньше 15 % предмета
+HOLE_SAM_MAX = 0.08   # …и SAM покрыл её меньше чем на 8 % (просвет ручки 0,0; страница книги 0,14)
+SEAL = 4              # разрыв линии до 2·SEAL px считается закрытым (замер: страницы книги L03, фраза 7)
+SAM_TIMEOUT = 300     # на картинку: загрузка модели ~12 с и ~5 с на маску на четырёх ядрах
+
+
+def _sam_job(path, box, point):
+    """Две маски — по рамке и по рамке с точкой (SAM из rembg, ~4 ГБ памяти)."""
+    from rembg import new_session, remove
+    sess = new_session("sam")
+    img = Image.open(path).convert("RGB")
+    out = []
+    for prompt in ([{"type": "rectangle", "data": list(box), "label": 1}],
+                   [{"type": "rectangle", "data": list(box), "label": 1},
+                    {"type": "point", "data": list(point), "label": 1}]):
+        out.append((np.asarray(remove(img, session=sess, only_mask=True, sam_prompt=prompt)) > 127).astype(np.uint8))
+    return out
+
+
+def _sam_masks(path, box, point):
+    """SAM в отдельном процессе обычным запуском этого файла: память отпускается сразу, и нет multiprocessing,
+    который зависает, когда главный скрипт не файл (тест, stdin)."""
+    import subprocess
+    import sys
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        out = os.path.join(d, "m.npz")
+        subprocess.run([sys.executable, os.path.abspath(__file__), "--sam", path, json.dumps(list(box)),
+                        json.dumps(list(point)), out], check=True, timeout=SAM_TIMEOUT, capture_output=True)
+        z = np.load(out)
+        return [z["a"], z["b"]]
+
+
+def sam_close():
+    """Совместимость: SAM живёт в своём подпроцессе и уходит вместе с ним."""
+    return None
+
+
+def _bbox_iou(m, box):
+    ys, xs = np.nonzero(m)
+    if not len(ys):
+        return 0.0
+    b = (xs.min(), ys.min(), xs.max() + 1, ys.max() + 1)
+    ix = max(0, min(b[2], box[2]) - max(b[0], box[0]))
+    iy = max(0, min(b[3], box[3]) - max(b[1], box[1]))
+    inter = ix*iy
+    return inter/((b[2] - b[0])*(b[3] - b[1]) + (box[2] - box[0])*(box[3] - box[1]) - inter)
+
+
+def pick_mask(masks, box):
+    """Из масок SAM — та, что лучше заполняет рамку; при равных рамках — сплошная (по одной рамке SAM терял стекло
+    песочных часов: 45 тыс. пикселей против 60 тыс.)."""
+    scored = [(round(_bbox_iou(m, box), 2), int(m.sum()), k) for k, m in enumerate(masks)]
+    return masks[max(scored)[2]]
+
+
+def _fill_holes(m):
+    h, w = m.shape
+    ff = m.copy()
+    cv2.floodFill(ff, np.zeros((h + 2, w + 2), np.uint8), (0, 0), 1)
+    return m | (1 - ff)
+
+
+def ink_map(img):
+    """Что нарисовано на бумаге: тушь (тёмное) и цветная заливка."""
+    img = np.clip(img, 0, 255).astype(np.uint8)
+    hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
+    g = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    return ((g < 205) | (hsv[..., 1] > 60)).astype(np.uint8)
+
+
+def refine(img, sam, band=SAM_BAND, solid=False):
+    """Маска SAM -> предмет рисунка на бумаге (float 0..1).
+    1. Маска SAM и тушь в узкой полосе у её края (контур, который SAM срезал).
+    2. Бумага, до которой можно дойти от края картинки, не переступая туши (щели в линии до 2·SEAL px закрыты), — фон, даже
+       если SAM её захватил (просвет между хвостом и телом), и кайма бумаги у контура тоже.
+    3. Закрытая линиями область внутри предмета — его поверхность (страница, экран, стекло, заливка ручки). Фоном,
+       видным сквозь предмет (просвет ручки), она считается, только если и тон — бумага снаружи, и SAM её не покрыл;
+       такой просвет уходит вместе с тонкими линиями фона в нём (стол за ручкой).
+    solid=True (элемент сцены "solid") — предмет сплошной по смыслу: закрытые контуром области заливаются целиком
+       (страница книги, которую SAM не покрыл, а контур открыт шире SEAL).
+    Цветная часть, касающаяся предмета и меньше его (огонёк на хвосте), присоединяется к нему.
+    4. Остаётся одна связная часть, пересекающая ядро SAM."""
+    m = (sam > 0).astype(np.uint8)
+    k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2*band + 1, 2*band + 1))
+    zone, core = cv2.dilate(m, k), cv2.erode(m, k)
+    ink = ink_map(img)
+    obj = ((m > 0) | ((zone - core > 0) & (ink > 0))).astype(np.uint8)
+    # разрывы в линии рисунка (контур книги, кружки) до SEAL px закрываются только для поиска внешней бумаги: иначе
+    # бумага снаружи затекала на страницы книги; широкий просвет (между хвостом и телом) остаётся открытым
+    seal = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2*SEAL + 1, 2*SEAL + 1))
+    paper = (1 - cv2.dilate(ink, seal)).astype(np.uint8)
+    _, lab = cv2.connectedComponents(paper, 4)
+    border = np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))
+    outside = np.isin(lab, border[border > 0]).astype(np.uint8)
+    obj &= 1 - (cv2.dilate(outside, seal) & (1 - ink))
+    g = cv2.cvtColor(np.clip(img, 0, 255).astype(np.uint8), cv2.COLOR_RGB2GRAY).astype(np.float32)
+    tone = float(np.median(g[outside > 0])) if outside.any() else 245.0
+    inner = paper & (1 - outside) & _fill_holes(zone)        # и большие дыры SAM посреди предмета (страницы книги)
+    ni, il, ist, _ = cv2.connectedComponentsWithStats(inner, 4)
+    area = max(1, int(obj.sum()))
+    for j in range(1, ni):
+        hole = il == j
+        # фон, видный сквозь предмет (просвет ручки), уходит, только когда об этом говорят оба признака: тон той же
+        # бумаги, что снаружи, и SAM его почти не покрыл. Замер L03: просвет ручки — тон 253 при 253, SAM 0,0;
+        # страница книги — тон 245 при бумаге 246 (тоном не отличить), SAM 0,14; поверхность предмета остаётся
+        background = abs(g[hole].mean() - tone) <= PAPER_TONE_TOL and m[hole].mean() < HOLE_SAM_MAX
+        if not background or ist[j, cv2.CC_STAT_AREA] < 0.004*area:
+            obj[hole] = 1
+            continue
+        gone = cv2.morphologyEx(hole.astype(np.uint8), cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7)))
+        obj[gone > 0] = 0
+    if solid:          # предмет сплошной по смыслу (открытая книга, экран): всё, что внутри его контура, — его
+        close = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2*SOLID_BRIDGE + 1, 2*SOLID_BRIDGE + 1))
+        near = cv2.dilate(zone, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (31, 31)))   # контур, который SAM недобрал
+        edge = ink & near & (1 - obj)
+        closed = cv2.morphologyEx(obj | edge, cv2.MORPH_CLOSE, close)
+        full = _fill_holes(closed)
+        filled = cv2.dilate(full & (1 - closed), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7)))
+        ne, el = cv2.connectedComponents(edge, 8)                   # линия у края, которая ничего не замкнула
+        stray = edge & ~np.isin(el, np.unique(el[(filled > 0) & (edge > 0)]))   # (спинка стула), — соседу
+        deep = cv2.erode(full, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2*SOLID_BRIDGE + 3, 2*SOLID_BRIDGE + 3)))
+        obj = obj | (full & (1 - closed)) | (closed & deep) | (edge & (1 - stray.astype(np.uint8)))
+        # закрытие разрывов у внешнего края не берётся: там оно ловит бумагу между прядями шерсти (крупинки у головы)
+    # цветная часть, которая касается предмета и меньше его, — его (огонёк на хвосте: SAM считает его отдельным);
+    # серые линии соседей так не присоединяются
+    hsv = cv2.cvtColor(np.clip(img, 0, 255).astype(np.uint8), cv2.COLOR_RGB2HSV)
+    colour = ((hsv[..., 1] > COLOUR_SAT) & (hsv[..., 2] > 60)).astype(np.uint8) & (1 - obj)
+    nc, cl, cst, _ = cv2.connectedComponentsWithStats(colour, 8)
+    touch = np.unique(cl[(cv2.dilate(obj, np.ones((7, 7), np.uint8)) > 0) & (colour > 0)])
+    area = max(1, int(obj.sum()))
+    for j in touch[touch > 0]:
+        if cst[j, cv2.CC_STAT_AREA] < ATTACH_MAX*area:
+            piece = (cl == j).astype(np.uint8)
+            obj |= cv2.morphologyEx(piece | (ink & cv2.dilate(piece, np.ones((7, 7), np.uint8))), cv2.MORPH_CLOSE,
+                                    np.ones((5, 5), np.uint8))
+    n, lab, st, _ = cv2.connectedComponentsWithStats(obj, 8)
+    keep = np.unique(lab[(core > 0) & (obj > 0)])
+    keep = keep[keep > 0]
+    if len(keep):
+        obj = (lab == keep[np.argmax(st[keep, cv2.CC_STAT_AREA])]).astype(np.uint8)
+    return cv2.GaussianBlur(obj.astype(np.float32), (0, 0), 0.7)
+
+
+def _sam_object(path, img, box, point=None, solid=False):
+    """Маска предмета в рамке: SAM (в своём процессе) + край по туши; без SAM — None (вызывающий берёт BiRefNet)."""
+    point = point or ((box[0] + box[2])//2, (box[1] + box[3])//2)
+    try:
+        masks = _sam_masks(path, box, point)
+    except Exception as e:                           # нет модели, нет памяти — прежний способ, не падение сборки
+        print(f"  вырезка {os.path.basename(path)}: SAM не сработал ({e}) — BiRefNet по рамке")
+        return None
+    m = pick_mask(masks, box)
+    if not m.any():
+        return None
+    return refine(img, m, solid=solid)
+
+
+def cutout(path, box=None, poly=None, cache_dir=None, point=None, solid=False):
+    """RGBA-вырезка предмета (uint8). poly — многоугольник по сетке рисунка; иначе box (+ по желанию point — точка на
+    предмете): SAM по рамке и край по туши (refine), запасной путь — BiRefNet по рамке и самый большой кусок.
+    Кэш — по файлу, рамке, точке и версии."""
+    key = hashlib.sha256(json.dumps([os.path.basename(path), os.path.getsize(path), box, poly, point, solid,
+                                     VERSION]).encode()).hexdigest()[:16]
     cp = os.path.join(cache_dir, f"cut_{key}.png") if cache_dir else None
     if cp and os.path.exists(cp):
         return np.asarray(Image.open(cp).convert("RGBA"))
@@ -97,6 +267,8 @@ def cutout(path, box=None, poly=None, cache_dir=None):
         m = np.zeros(img.shape[:2], np.uint8)
         cv2.fillPoly(m, [np.int32(poly)], 1)
         m = cv2.GaussianBlur(m.astype(np.float32), (0, 0), 1.0)
+    elif box and (sm := _sam_object(path, np.asarray(Image.open(path).convert("RGB")), box, point, solid)) is not None:
+        m = sm
     else:
         global _SESSION
         from rembg import new_session, remove
@@ -269,3 +441,9 @@ def sounds(spec):
     if spec.get("focus_sound") and spec.get("focus_t") is not None:
         out.append((spec["focus_t"], spec["focus_sound"], "карточка на весь экран"))
     return out
+
+
+if __name__ == "__main__" and len(__import__("sys").argv) == 6 and __import__("sys").argv[1] == "--sam":
+    import sys
+    _a, _b = _sam_job(sys.argv[2], json.loads(sys.argv[3]), json.loads(sys.argv[4]))
+    np.savez_compressed(sys.argv[5], a=_a, b=_b)

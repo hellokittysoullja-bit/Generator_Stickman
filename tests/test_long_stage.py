@@ -89,3 +89,84 @@ def test_every_stage_moment_is_on_screen_even_without_its_own_sound():
     sp = long_stage.times(_items(), lambda at: long_edit.word_time(at, WORDS), 0.4)
     assert [round(t, 2) for t in long_stage.beats(sp)] == [0.0, 1.4, 2.6]
     assert len(long_stage.sounds(sp)) == 1
+
+
+# --- вырезка: SAM + край по туши (владелец 04.11: «обрезается без каких-либо других объектов») ---------------------
+PAPER = (250, 248, 242)
+
+
+def _sheet():
+    return np.full((300, 400, 3), PAPER, np.uint8)
+
+
+def _ring(img, c, r, w=4, color=(20, 20, 20)):
+    import cv2
+    cv2.circle(img, c, r, color, w)
+
+
+def test_refine_keeps_the_object_and_drops_a_touching_neighbour():
+    """Сосед касается предмета (лапа на песочных часах): SAM его не взял — край по туши не дорастит его обратно."""
+    import cv2
+    img = _sheet()
+    cv2.rectangle(img, (100, 100), (200, 220), (90, 90, 90), -1)          # предмет
+    cv2.rectangle(img, (200, 60), (300, 110), (20, 20, 20), -1)           # сосед касается угла
+    sam = np.zeros(img.shape[:2], np.uint8)
+    sam[101:220, 101:199] = 1                                              # SAM срезал край на 1–2 px
+    a = long_stage.refine(img, sam) > 0.5
+    assert a[150, 150] and a[100, 100] and a[219, 199]                    # контур возвращён
+    assert not a[70, 260] and not a[105, 250]                             # сосед — нет
+
+
+def test_refine_keeps_a_drawn_surface_sam_punched_through():
+    """Страница в рамке (тон чуть темнее бумаги): дыра SAM посреди неё — всё равно предмет."""
+    import cv2
+    img = _sheet()
+    cv2.rectangle(img, (130, 90), (260, 210), (20, 20, 20), 4)
+    img[94:207, 134:257] = (238, 236, 230)
+    sam = np.zeros(img.shape[:2], np.uint8)
+    sam[90:211, 130:261] = 1
+    sam[120:180, 160:230] = 0
+    a = long_stage.refine(img, sam) > 0.5
+    assert a[150, 195] and a[100, 195]
+
+
+def test_refine_drops_paper_seen_through_a_handle():
+    """Просвет ручки — той же бумаги, что снаружи, и SAM его не покрыл: прозрачный; само кольцо — предмет."""
+    import cv2
+    img = _sheet()
+    _ring(img, (200, 150), 60)
+    sam = np.zeros(img.shape[:2], np.uint8)
+    cv2.circle(sam, (200, 150), 62, 1, -1)
+    cv2.circle(sam, (200, 150), 57, 0, -1)                                # SAM — по самой линии (кружка L03: 0,0)
+    a = long_stage.refine(img, sam) > 0.5
+    assert a[150, 140] and a[90, 200]                                      # кольцо
+    assert not a[150, 200]                                                 # просвет
+
+
+def test_refine_attaches_a_small_coloured_part_sam_left_out():
+    """Огонёк на хвосте: цветная часть, касающаяся предмета и меньше его, — его; серая линия соседа — нет."""
+    import cv2
+    img = _sheet()
+    cv2.circle(img, (150, 170), 60, (30, 30, 30), -1)
+    cv2.circle(img, (150, 95), 14, (240, 120, 20), -1)                    # огонёк касается сверху
+    cv2.line(img, (215, 120), (215, 230), (120, 120, 120), 3)             # серая линия рядом (спинка стула)
+    sam = np.zeros(img.shape[:2], np.uint8)
+    cv2.circle(sam, (150, 170), 59, 1, -1)
+    a = long_stage.refine(img, sam) > 0.5
+    assert a[95, 150] and not a[170, 215]
+
+
+def test_sam_pick_prefers_the_solid_mask_when_both_fill_the_box():
+    box = (10, 10, 110, 110)
+    solid = np.zeros((200, 200), np.uint8)
+    solid[10:110, 10:110] = 1
+    hollow = solid.copy()
+    hollow[30:90, 30:90] = 0
+    assert long_stage.pick_mask([hollow, solid], box) is solid
+
+
+def test_cutout_falls_back_when_sam_is_not_available(monkeypatch):
+    def boom(*a, **k):
+        raise RuntimeError("нет модели")
+    monkeypatch.setattr(long_stage, "_sam_masks", boom)
+    assert long_stage._sam_object("x.png", np.zeros((10, 10, 3), np.uint8), (0, 0, 5, 5)) is None
