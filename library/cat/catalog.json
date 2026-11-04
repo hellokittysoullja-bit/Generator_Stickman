@@ -3419,6 +3419,24 @@
   "source": "scripts/reel_draw.py videos/20_abonement/reel"
  },
  {
+  "file": "2026-11-04_gen_cx_gpt-image-2_5_4bf8fd8c.png",
+  "sha256": "4bf8fd8c95befacfea36fdda1988db80408a766d1ba23bd59246f147ee22d1b0",
+  "bytes": 2403651,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-04",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Image 1 is a finished drawing. Redraw exactly the same drawing: the same composition, framing, camera angle, scale, and the same position, size, pose and expression of the main character and of every object, the same line work. Image 2 is the main character's reference: keep exactly its head, face, colours and markings. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right The only change from image 1: Background: plain warm cream paper (#FAF7F0) everywhere around the figures, exactly like a blank sheet of drawing paper: no painted wall, no wall colour, no wallpaper, no floorboards or wood grain, no room corners; where something stands on the floor there is only one thin simple ink floor line or a soft light-grey shadow under it, the rest of the floor area is the same blank cream paper. Colours: black ink lines on cream paper in exactly the hand-drawn style of image 1; the main character and the objects (furniture, clock, clothes, shoes, bags, door, things in the paws) keep their soft watercolour colours from image 1, gentle and muted, never neon; only the background is uncoloured cream paper. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, blank clock faces, no letters or numbers anywhere.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "scripts/reel_recream.py videos/21_znayu/reel gen/k1_tips.png"
+ },
+ {
   "file": "2026-11-04_gen_cx_gpt-image-2_5_4de8eec6.png",
   "sha256": "4de8eec6ad4b5f4c5c7a23169c58db6960523a4c37c833764e86ebaa8c298afc",
   "bytes": 2002117,
@@ -3581,6 +3599,24 @@
   "source": "scripts/reel_draw.py videos/19_opozdal/reel"
  },
  {
+  "file": "2026-11-04_gen_cx_gpt-image-2_5_9721931f.png",
+  "sha256": "9721931fbfa91740b3cf2ae9c78b7fe2fdc8cab5db629160857ac9e2e280a93d",
+  "bytes": 1750362,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-04",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Image 1 is a finished drawing. Redraw exactly the same drawing: the same composition, framing, camera angle, scale, and the same position, size, pose and expression of the main character and of every object, the same line work. Image 2 is the main character's reference: keep exactly its head, face, colours and markings. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right The only change from image 1: Background: plain warm cream paper (#FAF7F0) everywhere around the figures, exactly like a blank sheet of drawing paper: no painted wall, no wall colour, no wallpaper, no floorboards or wood grain, no room corners; where something stands on the floor there is only one thin simple ink floor line or a soft light-grey shadow under it, the rest of the floor area is the same blank cream paper. Colours: black ink lines on cream paper in exactly the hand-drawn style of image 1; the main character and the objects (furniture, clock, clothes, shoes, bags, door, things in the paws) keep their soft watercolour colours from image 1, gentle and muted, never neon; only the background is uncoloured cream paper. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, blank clock faces, no letters or numbers anywhere.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "scripts/reel_recream.py videos/19_opozdal/reel gen/d2_sock.png"
+ },
+ {
   "file": "2026-11-04_gen_cx_gpt-image-2_5_9c9f41af.png",
   "sha256": "9c9f41afbbdd3509fc7a835e4eff2fd3e669e583229b4ced0947ac0517bb630f",
   "bytes": 2282706,
@@ -3687,6 +3723,24 @@
   "quality": "medium",
   "price": 197550,
   "source": "scripts/reel_draw.py videos/20_abonement/reel --only"
+ },
+ {
+  "file": "2026-11-04_gen_cx_gpt-image-2_5_b3b8e9f6.png",
+  "sha256": "b3b8e9f6ff0618d2015d61547f8f2c0be93377a4baa10734a08fc72ae603de14",
+  "bytes": 1972710,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-04",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Image 1 is a finished drawing. Redraw exactly the same drawing: the same composition, framing, camera angle, scale, and the same position, size, pose and expression of the main character and of every object, the same line work. Image 2 is the main character's reference: keep exactly its head, face, colours and markings. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right The only change from image 1: Background: plain warm cream paper (#FAF7F0) everywhere around the figures, exactly like a blank sheet of drawing paper: no painted wall, no wall colour, no wallpaper, no floorboards or wood grain, no room corners; where something stands on the floor there is only one thin simple ink floor line or a soft light-grey shadow under it, the rest of the floor area is the same blank cream paper. Colours: black ink lines on cream paper in exactly the hand-drawn style of image 1; the main character and the objects (furniture, clock, clothes, shoes, bags, door, things in the paws) keep their soft watercolour colours from image 1, gentle and muted, never neon; only the background is uncoloured cream paper. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, blank clock faces, no letters or numbers anywhere.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "scripts/reel_recream.py videos/19_opozdal/reel gen/d2_sock.png"
  },
  {
   "file": "2026-11-04_gen_cx_gpt-image-2_5_be3805ae.png",

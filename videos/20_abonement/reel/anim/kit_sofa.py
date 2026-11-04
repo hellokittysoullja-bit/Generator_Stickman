@@ -93,12 +93,24 @@ def main():
         bg = anim.inpaint_bg(bg, hole, cache_dir=CACHE)
         if m is full:                     # LaMa дорисовала под котом тёмный призрак щеки — его видно, когда кот ёрзает:
             ring = cv2.dilate(hole.astype(np.uint8), np.ones((41, 41), np.uint8)).astype(bool) & ~hole   # тёмное → тон дивана
-            ring &= (A.mean(2) > 120) & ((A.max(2) - A.min(2)) < 40)
+            sat_ = A.max(2) - A.min(2); g_ = A.mean(2)
+            ring &= (g_ > 140) & (g_ < 215) & (sat_ > 6) & (sat_ < 40)      # только ткань дивана: не кремовая стена, не подушка
             sofa = np.median(A[ring], 0)
-            gb = bg.mean(2); fix = hole & (gb < 135)
+            gb = bg.mean(2); fix = hole & (gb < sofa.mean() - 14)          # тёмный призрак кота — в тон дивана, линии остаются
             fix[2040:] = False                                             # тень кота на сиденье — оставить
             soft = cv2.GaussianBlur(fix.astype(np.float32), (0, 0), 6)[..., None]
             bg = bg * (1 - soft) + (sofa * 0.97) * soft
+    # стена теперь чистая бумага (владелец 04.11): дыра от таблички и верёвок — ровным тоном бумаги с её зерном, без
+    # призрака рамки (LaMa оставляла бледный прямоугольник, а табличка в хуке падает и открывает стену целиком)
+    ch = cv2.dilate(card, np.ones((31, 31), np.uint8)) > 0
+    pring = cv2.dilate(ch.astype(np.uint8), np.ones((61, 61), np.uint8)).astype(bool) & ~ch
+    paper = np.median(A[pring], 0)
+    rng = np.random.default_rng(20)
+    grain = cv2.GaussianBlur(rng.normal(0, 1, A.shape[:2]).astype(np.float32), (0, 0), 0.8)
+    grain *= float((A - cv2.GaussianBlur(A, (0, 0), 3))[100:400, 100:400].std()) / max(float(grain.std()), 1e-6)
+    soft = cv2.GaussianBlur(ch.astype(np.float32), (0, 0), 8)[..., None]
+    soft = np.maximum(soft, ch[..., None].astype(np.float32))
+    bg = bg * (1 - soft) + (paper + grain[..., None]) * soft
     Ap = A
     Ap_tail = Ap
     if tail_fill.any():
