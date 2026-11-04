@@ -238,6 +238,8 @@ def check(video_dir, final=False, items=None):
         d = got.get(it["id"])
         if not isinstance(d, dict) or not (_filled(d.get("how")) or _filled(d.get("skip"))):
             err.append(f"{it['id']}: нет решения — {it['rule']}")
+    # хук и надписи — как у нынешних рилсов, с раскадровки
+    err += hook_build(video_dir)
     # F1–F4 проверки готового ролика
     if final:
         fc = p.get("final_checks") or {}
@@ -248,6 +250,105 @@ def check(video_dir, final=False, items=None):
                              ("outsider", "F4", "показа вступления человеку не из ниши")):
             if not _filled(fc.get(k)):
                 err.append(f"{rid}: нет {what} (final_checks.{k})")
+    return err
+
+
+# ── Хук длинного ролика — как у нынешних рилсов (владелец 04.11: «проверь, динамичный ли хук как в рилсах нынешних и
+# имеются ли все sfx… субтитры не надо, но не забывай про все надписи поясняющие»). Действует с раскадровки
+# (storyboard.json) для всех длинных роликов, кроме двух уже собранных (LEGACY): у L01/L02 влёт без удара и 5 звуков за
+# первые 10 с — ниже эталона рилс 17. Пороги — те же, что у рилсов (reel_rules, правила 28–29), без своих чисел.
+LEGACY = {"L01_potom", "L02_otvlechenie"}
+EST_WPS = 2.4               # темп L02 до озвучки (слов в секунду); после озвучки — время слов из alignment
+LABEL_EVERY_SEC = 30        # поясняющая надпись (жирный текст fx.json, мысль key или акцент accent) не реже раза в 30 с
+LABEL_GAP_MAX = 45          # и без дыры больше 45 с между надписями
+HOOK_CAM_RE = re.compile(r"hook_cam\(\s*t\s*,\s*hit\s*=")
+
+
+def _phrase_times(video_dir, blocks):
+    """Начало и длина каждой фразы: по alignment, если ролик озвучен, иначе оценка по словам (EST_WPS) и паузам."""
+    try:
+        from speech_timing import SpeechTiming
+        on = SpeechTiming(video_dir).onsets(blocks)
+    except Exception:
+        on = None
+    est, acc = [], 0.0
+    for b in blocks:
+        est.append(acc)
+        acc += max(1, b["words"]) / EST_WPS + b.get("pause_after", 0.0)
+    starts = [0.0] + list(on[1:]) if on else est
+    ends = starts[1:] + [acc if not on else starts[-1] + max(1, blocks[-1]["words"]) / EST_WPS]
+    return starts, ends
+
+
+def hook_build(video_dir):
+    """Дыры хука и надписей по раскадровке, сцене и звукам (пусто — как у нынешних рилсов). Без storyboard.json — []."""
+    sb_path = os.path.join(video_dir, "storyboard.json")
+    if os.path.basename(os.path.normpath(video_dir)) in LEGACY or not os.path.exists(sb_path):
+        return []
+    import script_parser
+    from reel_rules import SOUND_DENSITY_MIN, SOUND_GAP_MAX, SOUND_KINDS_MIN
+    err = []
+    sb = json.load(open(sb_path, encoding="utf-8"))
+    frames = dict(sb.get("frames") or [])
+    blocks = script_parser.parse_blocks(os.path.join(video_dir, "script.txt"))
+    hook_n = sum(1 for b in blocks if b.get("section") == "HOOK")
+    starts, ends = _phrase_times(video_dir, blocks)
+    hook_end = ends[hook_n - 1] if hook_n else 0.0
+    # 1. сцена движения на первой фразе, влёт с ударом (правила 28–29)
+    a = (frames.get("1") or {}).get("anim")
+    path = os.path.join(video_dir, "anim", f"{a}.py") if a else None
+    if not a:
+        err.append("HOOK-MOTION: у первой фразы нет сцены движения (storyboard frames[1].anim) — хук стоит, как "
+                   "фото; нужен рисунок, который двигается с кадра 0 (скилл reel-anim, HyperFrames)")
+    elif not os.path.exists(path):
+        err.append(f"HOOK-MOTION: сцены anim/{a}.py ещё нет — хук без движения не собирается")
+    elif not HOOK_CAM_RE.search(open(path, encoding="utf-8").read()):
+        err.append(f"HOOK-MOTION: anim/{a}.py — камера не anim.hook_cam(t, hit=…): влёт без удара на ударном слоге "
+                   "слабее эталона рилс 17 (правило 29)")
+    # 2. звуки хука — плотность рилса (≥ 5 на 10 с, ≥ 5 разных, тишина ≤ 3,5 с)
+    sp = os.path.join(video_dir, "sfx.json")
+    ev = json.load(open(sp, encoding="utf-8")) if os.path.exists(sp) else []
+    peaks, kinds = [], set()
+    for e in ev:
+        i = int(e.get("phrase", 0)) - 1
+        if not 0 <= i < hook_n:
+            continue
+        t = starts[i] + e.get("at", 0.0)
+        if "word" in e:                      # до озвучки слово — по его месту во фразе
+            ws = words(script_parser.strip_pipeline_only_tags(blocks[i]["text"]))
+            stem = norm(e["word"])
+            k = next((j for j, w in enumerate(ws) if norm(w).startswith(stem)), None)
+            if k is None:
+                err.append(f"HOOK-SFX: «{e.get('name')}»: слова «{e['word']}» нет во фразе {i + 1}")
+                continue
+            t = starts[i] + (ends[i] - starts[i]) * k / max(1, len(ws)) + e.get("offset", 0.0)
+        peaks.append(t); kinds.add(e.get("name"))
+    if hook_end:
+        dens = len(peaks) / hook_end * 10
+        if dens < SOUND_DENSITY_MIN:
+            err.append(f"HOOK-SFX: в хуке ({hook_end:.0f} с) звуков {len(peaks)} — {dens:.1f} на 10 с < "
+                       f"{SOUND_DENSITY_MIN} (эталон рилс 17 — 5,7): свист на каждой склейке, удар на событии рисунка, "
+                       "звук на смысловом слове")
+        if len(kinds) < SOUND_KINDS_MIN:
+            err.append(f"HOOK-SFX: разных звуков в хуке {len(kinds)} < {SOUND_KINDS_MIN}")
+        pts = [0.0] + sorted(peaks) + [hook_end]
+        gap, at = max((b - a_, a_) for a_, b in zip(pts, pts[1:]))
+        if gap > SOUND_GAP_MAX:
+            err.append(f"HOOK-SFX: тишина без звуков {gap:.1f} с с {at:.1f} с > {SOUND_GAP_MAX} с")
+    # 3. поясняющие надписи по всему ролику (субтитров нет, текст на экране — надписи)
+    fp = os.path.join(video_dir, "fx.json")
+    fx = (json.load(open(fp, encoding="utf-8")).get("phrases") or {}) if os.path.exists(fp) else {}
+    lab = sorted({int(k) for k, v in frames.items() if str(k).isdigit() and (v.get("key") or v.get("accent"))}
+                 | {int(k) for k, v in fx.items() if v.get("bold")})
+    total = ends[-1] if ends else 0.0
+    need = int(total // LABEL_EVERY_SEC)
+    if len(lab) < need:
+        err.append(f"LABELS: поясняющих надписей {len(lab)} на {total / 60:.1f} мин < {need} (одна на "
+                   f"{LABEL_EVERY_SEC} с): жирный текст fx.json на цифрах и обещаниях, мысль key или акцент accent")
+    pts = [0.0] + [starts[i - 1] for i in lab if 0 < i <= len(starts)] + [total]
+    gap, at = max((b - a_, a_) for a_, b in zip(pts, pts[1:]))
+    if gap > LABEL_GAP_MAX:
+        err.append(f"LABELS: {gap:.0f} с без единой надписи с {at / 60:.1f} мин > {LABEL_GAP_MAX} с")
     return err
 
 

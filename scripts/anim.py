@@ -242,6 +242,19 @@ def _hook28_zoom(t, p):
     return snap * over
 
 
+def zoom_blur(img, spread, n=9):
+    """Радиальное размытие влёта (правило 28): среднее n копий кадра, увеличенных от 1 до 1 + spread вокруг центра —
+    центр резкий, края тянутся к краю кадра, как у быстрого наезда камерой. Кладут его сборщики: reel.py и
+    frame_clip.py (хук длинного ролика) — по cam["zoom_blur"] сцены."""
+    h, w = img.shape[:2]
+    acc = img.astype(np.float32)
+    for i in range(1, n):
+        k = 1 + spread * i / (n - 1)
+        M = np.float32([[k, 0, w / 2 * (1 - k)], [0, k, h / 2 * (1 - k)]])
+        acc += cv2.warpAffine(img, M, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+    return np.clip(acc / n, 0, 255).astype(img.dtype)
+
+
 def hook_cam(t, hit=None):
     """Камера первого плана хука в момент t (правило 28, по умолчанию): сильный влёт с отскоком, поворот с возвратом,
     боковой занос, радиальное размытие движения (`zoom_blur` — доля радиуса, на которую тянется край кадра; его кладёт

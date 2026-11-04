@@ -449,6 +449,9 @@ def render(fr, p, D, out, fps=24, end_fade=False, crf="18", anim=None, fx=None):
                 elif al.any():
                     al = _warp(al, wr["win"], win)
                     f = f*(1 - al[..., None]) + INK*al[..., None]
+            if cam.get("zoom_blur", 0.0) > 0.002:      # правило 28 и в длинном: размытие влёта, пока камера летит
+                import anim as anim_mod
+                f = anim_mod.zoom_blur(np.asarray(f, np.float32), cam["zoom_blur"])
             if cam.get("rot"):
                 f = _roll(f, cam["rot"])
             if manual:                                 # прожектор и хлёст — поверх картинки, под затемнением конца

@@ -156,3 +156,69 @@ def test_make_video_stops_before_paid_steps_without_structure(tmp_path):
     assert r.returncode != 0
     assert "Структура длинного ролика" in r.stdout + r.stderr
     assert "План кадров" not in r.stdout                  # до планировщика (модель) дело не дошло
+
+
+# ── Хук длинного ролика как у нынешних рилсов (владелец 04.11) ────────────────────────────────────────────────────
+HOOK_SCENE_HIT = "import anim\nclass Scene:\n    def cam(self, t):\n        return anim.hook_cam(t, hit=0.4)\n"
+HOOK_SCENE_OLD = "import anim\nclass Scene:\n    def cam(self, t):\n        return anim.hook_cam(t)\n"
+
+
+def hooked(tmp_path, scene=HOOK_SCENE_HIT, sfx=None, labels=True, name="L09_test"):
+    vd = tmp_path / name
+    vd.mkdir()
+    hook = " [pause] ".join(["Ты не досмотришь это видео, и палец уже тянется листать дальше."] * 6)
+    script = SCRIPT.replace(SCRIPT[SCRIPT.index("=== HOOK ===") + 13:SCRIPT.index("=== BLOCK 1")], hook + "\n\n")
+    (vd / "script.txt").write_text(script, encoding="utf-8")
+    frames = [["1", {"lib": "x.png", "anim": "hook"}]] + [[str(i), {"lib": "x.png", "key": "мысль"} if labels else
+                                                          {"lib": "x.png"}] for i in range(2, 13)]
+    (vd / "storyboard.json").write_text(json.dumps({"frames": frames}, ensure_ascii=False), encoding="utf-8")
+    if scene is not None:
+        (vd / "anim").mkdir()
+        (vd / "anim" / "hook.py").write_text(scene, encoding="utf-8")
+    names = ["fast_whoosh", "swoosh", "shock", "oof", "riser", "fast_glitch"]
+    if sfx is None:                          # плотно: каждые ~0,7 с, шесть разных
+        sfx = [{"name": names[k % 6], "phrase": 1 + k // 6, "at": 0.7 * (k % 6), "why": "тест"} for k in range(36)]
+    (vd / "sfx.json").write_text(json.dumps(sfx, ensure_ascii=False), encoding="utf-8")
+    return str(vd)
+
+
+def test_long_hook_like_reels_passes_when_dense_and_hit(tmp_path):
+    assert long_rules.hook_build(hooked(tmp_path)) == []
+
+
+def test_long_hook_without_storyboard_is_not_checked_yet(tmp_path):
+    assert long_rules.hook_build(make(tmp_path)) == []
+
+
+@pytest.mark.parametrize("scene, part", [(None, "сцены anim/hook.py ещё нет"), (HOOK_SCENE_OLD, "hook_cam(t, hit=")])
+def test_long_hook_needs_scene_with_hit_fly_in(tmp_path, scene, part):
+    errs = long_rules.hook_build(hooked(tmp_path, scene=scene))
+    assert any(e.startswith("HOOK-MOTION") and part in e for e in errs), errs
+
+
+def test_long_hook_with_few_sounds_like_l02_is_caught(tmp_path):
+    sparse = [{"name": "fast_whoosh", "phrase": 1, "at": 0.0, "why": "т"}, {"name": "riser", "phrase": 2, "at": 0, "why": "т"}]
+    errs = long_rules.hook_build(hooked(tmp_path, sfx=sparse))
+    assert any("на 10 с" in e for e in errs) and any("разных звуков" in e for e in errs) and any("тишина" in e for e in errs)
+
+
+def test_long_video_needs_explanatory_labels(tmp_path):
+    errs = long_rules.hook_build(hooked(tmp_path, labels=False))
+    assert any(e.startswith("LABELS") for e in errs), errs
+
+
+def test_built_long_videos_are_legacy_and_not_rechecked(tmp_path):
+    assert long_rules.hook_build(hooked(tmp_path, scene=HOOK_SCENE_OLD, sfx=[], labels=False, name="L02_otvlechenie")) == []
+
+
+def test_long_assembly_applies_fly_in_motion_blur():
+    """Сборщик длинного ролика кладёт размытие влёта cam['zoom_blur'] сцены, как reel.py (до 04.11 терял его)."""
+    import inspect
+    import frame_clip
+    src = inspect.getsource(frame_clip.render)
+    assert 'cam.get("zoom_blur"' in src and "zoom_blur(" in src
+    import numpy as np
+    import anim
+    import reel
+    img = np.zeros((90, 160, 3), np.uint8); img[:, ::8] = 255
+    assert np.array_equal(reel.zoom_blur(img, 0.06), anim.zoom_blur(img, 0.06))

@@ -1084,15 +1084,9 @@ def hook_fill(reel_dir, s, t=None):
     return dict(h=(rows[-1] - rows[0] + 1) / ink.shape[0], w=(cols[-1] - cols[0] + 1) / ink.shape[1])
 
 def zoom_blur(img, spread, n=9):
-    """Радиальное размытие влёта (правило 28): среднее n копий кадра, увеличенных от 1 до 1 + spread вокруг центра —
-    центр резкий, края тянутся к краю кадра, как у быстрого наезда камерой."""
-    h, w = img.shape[:2]
-    acc = img.astype(np.float32)
-    for i in range(1, n):
-        k = 1 + spread * i / (n - 1)
-        M = np.float32([[k, 0, w / 2 * (1 - k)], [0, k, h / 2 * (1 - k)]])
-        acc += cv2.warpAffine(img, M, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
-    return np.clip(acc / n, 0, 255).astype(img.dtype)
+    """Радиальное размытие влёта (правило 28) — общая функция `anim.zoom_blur`: та же и в длинном ролике."""
+    import anim
+    return anim.zoom_blur(img, spread, n)
 
 def motion_blur(img, dx, dy):
     k = int(max(abs(dx), abs(dy)))

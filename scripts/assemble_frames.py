@@ -225,6 +225,14 @@ def main(video_dir):
     from speech_timing import SpeechTiming
 
     video_dir = os.path.abspath(video_dir)
+    import long_rules
+    if long_rules.is_long(video_dir):                # хук и надписи как у рилсов (04.11): без них длинный не собирается
+        holes = long_rules.hook_build(video_dir)
+        for h in holes:
+            print("✗", h)
+        if holes:
+            print("Хук длинного ролика ниже нынешних рилсов — сборка остановлена (python scripts/long_rules.py).")
+            return EXIT_FAILED
     speech = SpeechTiming(video_dir)
     blocks = script_parser.parse_blocks(os.path.join(video_dir, "script.txt"))
     audio = find_audio(video_dir)
