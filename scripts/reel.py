@@ -67,6 +67,17 @@ WHITE = (255, 255, 255); INK = (18, 18, 20)
 ACTIVE = (255, 210, 63)        # активное слово (караоке) — тёплый жёлтый
 KEY = (255, 138, 31)           # ключевое слово — цвет огонька героя, единственный тёплый цвет бренда
 RED = (214, 52, 40)            # стрелки и пометки — как красные стрелки схем
+CAP_COLORS = {"active": ACTIVE, "key": KEY}   # цвета субтитров; reel.json "caption_colors" меняет их только у своего рилса
+CAPTION_PALETTES = {"red": {"active": (235, 45, 45), "key": (235, 45, 45)}}   # эксперимент владельца 04.11 (рилс 20)
+
+
+def apply_caption_colors(spec):
+    """reel.json "caption_colors": имя палитры (CAPTION_PALETTES) или {"active": [r,g,b], "key": [r,g,b]}; нет — как было.
+    Меняется только цвет активного и ключевого слова; белые буквы, обводка, тень, шрифт, кегль — те же."""
+    v = spec.get("caption_colors")
+    pal = CAPTION_PALETTES[v] if isinstance(v, str) else (v or {})
+    CAP_COLORS.update(active=tuple(pal.get("active", ACTIVE)), key=tuple(pal.get("key", KEY)))
+    return CAP_COLORS
 CUT_LEAD = 2 / FPS             # склейка за 2 кадра до слова: картинка «тянет» глаз раньше звука
 
 
@@ -221,7 +232,8 @@ def render_chunk(words, idx, active, fade_ahead=True, pop=1.0):
     от метрик шрифта, а не от букв: «у/д/щ» не сдвигают группу). Белые буквы, тонкая тёмная обводка, мягкая
     тень; активное слово — жёлтым (караоке), ключевое — оранжевым. Цвет — единственное отличие слов."""
     f = cap_font(); st = CAP_STROKE; space = f.getlength(" ")
-    parts = [(cap_text(words[j]), (KEY if j <= active else WHITE) if "*" in words[j] else (ACTIVE if j == active else WHITE))
+    ck, ca = CAP_COLORS["key"], CAP_COLORS["active"]
+    parts = [(cap_text(words[j]), (ck if j <= active else WHITE) if "*" in words[j] else (ca if j == active else WHITE))
              for j in idx]                      # ключевое слово вспыхивает оранжевым, когда до него дошло чтение
     fade = [fade_ahead and j > active for j in idx]   # ещё не «произнесённые» слова: CAP_AHEAD_ALPHA (0 — их нет)
     tw = sum(tracked(f, t) for t, _ in parts) + space * (len(parts) - 1)
@@ -696,6 +708,7 @@ def hook_split_errors(words, times, spans):
 def build(reel_dir, sheet=False, preview=False, force=False):
     global WHOOSH_VARIETY
     spec = json.load(open(os.path.join(reel_dir, "reel.json"), encoding="utf8"))
+    apply_caption_colors(spec)                        # цвета субтитров своего рилса (по умолчанию — прежние)
     WHOOSH_VARIETY = bool(spec.get("whoosh_variety"))
     import reel_rules                                  # правила рилса кодом: хук, riser с 0 с, звуки владельца, планы ≤ 3 с
     rule_errs = reel_rules.check_spec(spec, set(SFX))
