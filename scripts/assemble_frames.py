@@ -252,6 +252,26 @@ def find_audio(video_dir):
     return None
 
 
+PREVIEW_EDGE_IN, PREVIEW_EDGE_OUT = 0.01, 0.04   # края пробника: без щелчка на обрыве и без начала чужого слова
+
+
+def preview_clips(video_dir, work, premix, af, total, picks):
+    """Пробные клипы (ASSEMBLE_ONLY): видео клипа + кусок мастер-дорожки ролика на его экранном времени. Мастер считается
+    по всей дорожке, как у final.mp4, поэтому громкость и звуки в пробнике те же, что будут в ролике. Края — короткое
+    затухание: в ролике звук там непрерывен, а отдельный кусок иначе щёлкает и ловит первый слог следующей фразы
+    (картинка меняется на кадре после начала голоса, до 42 мс)."""
+    master = os.path.join(work, "master_preview.wav")
+    run(["ffmpeg", "-y", "-v", "error", "-i", premix, "-af", af, "-ar", "48000", "-t", f"{total:.3f}", master])
+    for i, clip, at, dur in picks:
+        outp = os.path.join(video_dir, "media_plan", f"preview_{i + 1:03d}.mp4")
+        run(["ffmpeg", "-y", "-v", "error", "-i", clip, "-ss", f"{at:.4f}", "-t", f"{dur:.4f}", "-i", master,
+             "-af", f"afade=t=in:d={PREVIEW_EDGE_IN},afade=t=out:st={max(0.0, dur - PREVIEW_EDGE_OUT):.4f}:"
+                    f"d={PREVIEW_EDGE_OUT}",
+             "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", outp])
+        print(f"Пробный клип: {outp}")
+    return EXIT_OK
+
+
 def music_file(video_dir=None):
     """Своя дорожка ролика (videos/NN/music/) главнее общей assets/music: у каждого ролика может быть своя музыка."""
     for d in ([os.path.join(video_dir, "music")] if video_dir else []) + [os.path.join(env.ROOT, "assets", "music")]:
@@ -411,7 +431,7 @@ def main(video_dir):
         scene_sig = hashlib.sha256(open(job["anim"], "rb").read()).hexdigest()[:12] if job.get("anim") else None
         head = [h, scene_sig] if scene_sig else [h]          # клипы без сцены — прежний ключ кэша
         if job["fx"]:                                         # клипы без эффектов — прежний ключ кэша
-            head += [job["fx"], hashlib.sha256(open(long_fx.__file__, "rb").read()).hexdigest()[:12]]
+            head += [frame_clip.without_sound(job["fx"]), hashlib.sha256(open(long_fx.__file__, "rb").read()).hexdigest()[:12]]
         sig = hashlib.sha256(json.dumps(head + [job["recs"], job["objects"], frame_clip.plan_record(p), job["dur"],
                                          job["end_fade"], job["seed"], FPS, CRF, frame_clip.RENDER_VERSION,
                                          canvas.TEXTURE, frame_clip.UPSCALE, frame_clip.upscale_sig()],
@@ -459,23 +479,13 @@ def main(video_dir):
             return job["out"], json.load(open(c))
         return None
 
-    only = os.environ.get("ASSEMBLE_ONLY")              # «7,16,56» — только клипы картинок этих фраз, с голосом, без
-    if only:                                            # сборки всего ролика: проверить правку за минуты, а не за 20
-        want = {int(x) - 1 for x in only.split(",") if x.strip()}
-        pick = [k for k, i in enumerate(kept) if i in want]
-        with ProcessPoolExecutor(workers) as ex:
-            rs = list(ex.map(_render, [jobs[k] for k in pick if cached(jobs[k]) is None]))
-        del rs
-        for k in pick:
-            clip = jobs[k]["out"]
-            outp = os.path.join(mp, f"preview_{kept[k] + 1:03d}.mp4")
-            run(["ffmpeg", "-y", "-v", "error", "-i", clip, "-ss", f"{jobs[k]['T0']:.3f}", "-t", f"{jobs[k]['dur']:.3f}",
-                 "-i", audio, "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-c:a", "aac", outp])
-            print(f"Пробный клип: {outp}")
-        return 0
-
+    # ASSEMBLE_ONLY="7,16,56" — только клипы картинок этих фраз, без сборки всего ролика: проверить правку за минуты.
+    # Звук пробника — кусок той же дорожки, что у final.mp4 (голос, звуки склеек, сцен и надписей, карандаш, мастер),
+    # а не голый голос: пробник с голым голосом прятал промахи звуков и обрывал слова на краях (04.11).
+    only = os.environ.get("ASSEMBLE_ONLY")
+    pick = [k for k, i in enumerate(kept) if i in {int(x) - 1 for x in only.split(",") if x.strip()}] if only else None
     results = [cached(j) for j in jobs]
-    todo = [k for k, r in enumerate(results) if r is None]
+    todo = [k for k, r in enumerate(results) if r is None and (pick is None or k in pick)]
     with ProcessPoolExecutor(workers) as ex:
         for k, r in zip(todo, ex.map(_render, [jobs[k] for k in todo])):
             results[k] = r
@@ -496,22 +506,27 @@ def main(video_dir):
               f"Кадры без рамок предметов: {no_obj or 'нет'}. Дозаполнить: python scripts/objects.py <video_dir> "
               f"(модель — OBJECTS_MODEL), затем собрать снова.")
     failed = [kept[k] + 1 for k, c in enumerate(clips) if not c]
-    with open(os.path.join(mp, "render_manifest.json"), "w", encoding="utf-8") as fh:
+    with open(os.path.join(mp, "render_manifest.json" if pick is None else "render_manifest_preview.json"), "w",
+              encoding="utf-8") as fh:                     # пробник не затирает отчёт настоящей сборки
         status = {i: {"index": i, "status": "ok" if clips[k] else "failed", "dur": round(durs[k], 4)}
                   for k, i in enumerate(kept)}
         status.update({a["index"]: {"index": a["index"], "status": "absorbed", "reason": a["reason"]}
                        for a in absorbed})
         json.dump({"total_blocks": len(blocks), "timing": timing, "clips": [status[i] for i in sorted(status)]},
                   fh, ensure_ascii=False, indent=1)
+    if pick is not None:
+        failed = [kept[k] + 1 for k in pick if not clips[k]]
     if failed:
         print(f"СТОП: клипы не собраны {failed} — final.mp4 НЕ собирается (перезапуск достроит только их).")
         return EXIT_FAILED
 
-    lst = os.path.join(work, "concat.txt")
-    with open(lst, "w", encoding="utf-8") as fh:
-        fh.writelines(f"file '{c}'\n" for c in clips)
-    video = os.path.join(work, "video.mp4")
-    run(["ffmpeg", "-y", "-v", "error", "-f", "concat", "-safe", "0", "-i", lst, "-c", "copy", video])
+    video = None
+    if pick is None:
+        lst = os.path.join(work, "concat.txt")
+        with open(lst, "w", encoding="utf-8") as fh:
+            fh.writelines(f"file '{c}'\n" for c in clips)
+        video = os.path.join(work, "video.mp4")
+        run(["ffmpeg", "-y", "-v", "error", "-f", "concat", "-safe", "0", "-i", lst, "-c", "copy", video])
 
     # --- звук: цепочка старого генератора
     voice = am.process_voice(audio, os.path.join(work, "voice_processed.wav"))
@@ -541,10 +556,17 @@ def main(video_dir):
                                        why=f"склейка: {sg.get('sound_why') or sg.get('why', '')}"))
             if sg.get("stage"):                            # появления и сдвиги сцены на бумаге — на своём кадре
                 import long_stage
-                for dt, name, why in long_stage.sounds(sg["stage"]):
-                    te = round(clip_at[k] + math.ceil((sg["t0"] + dt)*FPS - 1e-6)/FPS, 4)
-                    screen_cuts.append(te)
-                    cut_sounds.append(dict(name=name, t=te, why=why))
+
+                def on_screen(dt, t0=sg["t0"], at=clip_at[k]):
+                    return round(at + math.ceil((t0 + dt)*FPS - 1e-6)/FPS, 4)
+                screen_cuts += [on_screen(dt) for dt in long_stage.beats(sg["stage"])]   # и без своего звука: к
+                for dt, name, why in long_stage.sounds(sg["stage"]):                    # ним прилипает звук слова
+                    cut_sounds.append(dict(name=name, t=on_screen(dt), why=why))
+        for dt, e in frame_clip.text_moments(j.get("plan") or {}, j.get("fx"), FPS):   # кадр надписи
+            screen_cuts.append(round(clip_at[k] + dt, 4))
+            if e.get("sound"):
+                cut_sounds.append(dict(name=e["sound"], t=round(clip_at[k] + dt, 4), gain_db=e.get("sound_gain", 0.0),
+                                       why=f"надпись «{e['text']}»: {e.get('sound_why') or ''}"))
     rep = long_sfx.build(video_dir, starts, speech.word_times if timing == "phrase_lock" else [], total, voice, sfx_wav,
                          cut_sounds=cut_sounds, cuts=sorted(set(screen_cuts)))
     if rep:
@@ -579,6 +601,8 @@ def main(video_dir):
     fade_st = max(0.0, total - 2.0) if last is None else min(max(0.0, total - 0.25), last + 0.08)
     af = am.build_master_af(am.measure_loudnorm_stats(premix), fade_st, 0.05, voiceless=voiceless,
                             fade_out_d=max(0.15, total - fade_st))
+    if pick is not None:
+        return preview_clips(video_dir, work, premix, af, total, [(kept[k], clips[k], clip_at[k], durs[k]) for k in pick])
     final = os.path.join(video_dir, "final.mp4")
     run(["ffmpeg", "-y", "-v", "error", "-i", video, "-i", premix, "-af", af, "-map", "0:v", "-map", "1:a",
          "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-t", f"{total:.3f}",

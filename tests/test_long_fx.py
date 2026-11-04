@@ -175,3 +175,20 @@ def test_narrator_text_comes_after_the_cat_and_leaves_with_it():
     gone = o.composite(f.copy(), 6.0, t_end=6.0)
     ink = lambda g: float((np.abs(g - f) > 30).mean())                 # noqa: E731
     assert ink(shown) > ink(leaving) > ink(gone) == 0.0                 # уходит анимацией, а не щелчком
+
+
+def test_text_sound_lands_where_the_line_is_seen_after_the_narrator_sat():
+    """Звук строки — у самой строки: строка ведущего сдвинута за кота (BOLD_AFTER_NARRATOR), и её звук едет с ней
+    (L03, фраза 8: свист «строка влетает» был на слове, на 1,5 с раньше строки). В подпись клипа звук не входит."""
+    import frame_clip
+    words = [{"word": "покажу", "start": 0.3, "end": 0.6}, {"word": "рыбка", "start": 0.7, "end": 1.0}]
+    spec = {"narrator": {"why": "обещание"}, "bold": [{"text": "рыбка?", "word": "рыбка", "why": "вопрос",
+                                                       "sound": "fast_whoosh"}]}
+    ev = fx.events(spec, 0.0, 6.0, words, "покажу рыбка")
+    snd = frame_clip.text_sounds({}, ev, 24)
+    bold = next(e for e in frame_clip.final_fx({}, ev, 24) if e["kind"] == "bold")
+    assert len(snd) == 1 and snd[0][1] == "fast_whoosh"
+    assert snd[0][0] >= bold["t0"] - 1e-9 and snd[0][0] - bold["t0"] < 1/24
+    assert bold["t0"] > 0.7 + 0.5                       # строка не на слове, а после того, как кот сел
+    rec = frame_clip.plan_record({"hand": [{"text": "×4", "sound": "swoosh", "sound_why": "т"}], "segments": []})
+    assert "sound" not in rec["hand"][0]

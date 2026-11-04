@@ -81,3 +81,11 @@ def test_stage_spec_is_checked(tmp_path):
     err = long_rules.stage_checks(str(tmp_path))
     assert any("нет рамки" in e for e in err) and any("длиннее трёх слов" in e for e in err)
     assert any("ровно две" in e for e in err) and any("grid" in e for e in err)
+
+
+def test_every_stage_moment_is_on_screen_even_without_its_own_sound():
+    """Звук смысла на слове появления элемента прилипает к его кадру, даже если у элемента своего звука нет (L03,
+    фраза 7: level_up на «двадцать» звучал на 36 мс раньше кота с книгой)."""
+    sp = long_stage.times(_items(), lambda at: long_edit.word_time(at, WORDS), 0.4)
+    assert [round(t, 2) for t in long_stage.beats(sp)] == [0.0, 1.4, 2.6]
+    assert len(long_stage.sounds(sp)) == 1

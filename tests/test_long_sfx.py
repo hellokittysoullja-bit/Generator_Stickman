@@ -29,3 +29,9 @@ def test_word_sound_next_to_a_cut_lands_on_the_cut_frame():
     """Склейка видна на кадре (24 к/с — до 42 мс после слова); звук на слове рядом встаёт на этот кадр, далёкий — нет."""
     ev = long_sfx.snap([{"t": 3.10}, {"t": 5.0}], [3.125, 6.0])
     assert [e["t"] for e in ev] == [3.125, 5.0]
+
+
+def test_whoosh_snaps_to_motion_further_than_a_meaning_sound():
+    """Свист рядом со склейкой — её звук (до MOTION_SNAP_SEC), звук смысла прилипает только вплотную (SNAP_SEC)."""
+    ev = long_sfx.snap([{"t": 3.0, "name": "fast_whoosh"}, {"t": 3.0, "name": "level_up"}], [3.125])
+    assert [e["t"] for e in ev] == [3.125, 3.0]

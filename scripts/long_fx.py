@@ -382,8 +382,17 @@ def hand_events(spec, t0, t1, words):
         at = w["start"] - 0.05 if w else t0 + 0.3
         at = max(t0, at)
         if at < t1 - 0.6:
-            out.append(dict(text=h["text"], t=round(at, 3), to=h["to"], at=h.get("at"), arrow=h.get("arrow", True)))
+            out.append(dict(text=h["text"], t=round(at, 3), to=h["to"], at=h.get("at"), arrow=h.get("arrow", True),
+                            **_sound(h)))
     return out
+
+
+def _sound(d):
+    """Звук надписи (fx.json "sound", по желанию "sound_gain"): сборщик ставит его на кадр, где надпись видна, — после
+    всех сдвигов строки (кот-ведущий сел, мысль дописана). why звука — why самой надписи."""
+    if not d.get("sound"):
+        return {}
+    return dict(sound=d["sound"], sound_gain=float(d.get("sound_gain", 0.0)), sound_why=d.get("sound_why") or d.get("why"))
 
 
 def _stem(w):
@@ -406,7 +415,7 @@ def events(spec, t0, t1, words, text, seed=0):
             w = next((x for x in words if _stem(x["word"]) == st), None) or \
                 next((x for x in words if _stem(x["word"]).startswith(st)), None)
         at = w["start"] - 0.05 if w else t0 + 0.3          # немое превью без alignment: в начале фразы
-        bold.append(dict(kind="bold", text=b["text"], t0=max(t0, at), style=b.get("style", "letters")))
+        bold.append(dict(kind="bold", text=b["text"], t0=max(t0, at), style=b.get("style", "letters"), **_sound(b)))
     bold.sort(key=lambda e: e["t0"])
     for i in range(1, len(bold)):                          # строка не сменяется недопечатанной (критик L02, финал:
         bold[i]["t0"] = max(bold[i]["t0"], bold[i - 1]["t0"] + BOLD_MIN_SEC)   # «маленький ш» 0,7 с)

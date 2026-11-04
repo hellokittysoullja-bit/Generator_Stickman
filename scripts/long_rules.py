@@ -19,6 +19,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 from reel_rules import human_issues  # noqa: E402  (тот же «человеческий текст», что у рилсов)
+from long_sfx import MOTION_SNAP_SEC, MOTION_SOUNDS  # noqa: E402  (свист — звук движения: правило и сборка одни)
 
 CHECKLIST = os.path.join(ROOT, "docs", "long_knowledge", "checklist.json")
 PASSPORT = "long_passport.json"
@@ -474,12 +475,13 @@ def _stage_beats(p, blocks, starts, ends, idx, video_dir):
     out = []
     for at in [e.get("at") for e in els] + [sp.get("focus_at")]:
         if at:
-            t = _word_t(blocks, starts, ends, idx, at, _WORD_TIMES.get(os.path.abspath(video_dir)))
+            t = _shot_t(video_dir, blocks, starts, ends, idx, at)     # тем же поиском слова, что у сборщика
             if t is not None:
                 out.append(t)
     return out
 
 
+TEXT_WHY_RE = re.compile(r"влета|на экран|появля|надпис|строк[аиуе]|подпис|пишется|дописан", re.I)
 CUT_WHY_RE = re.compile(r"склейк|смена плана|новая картинка|переход на|влёт картинки", re.I)
 GENERIC_WHY_RE = re.compile(r"\W*(общий|средний|крупный|ещё один|другой)?\s*(план|кадр)\W*|\W*смена плана\W*|\W*склейка\W*",
                             re.I)
@@ -523,6 +525,89 @@ def edit_sounds(video_dir, blocks, frames, starts, ends):
                 t = _word_t(blocks, starts, ends, list(range(i, nxt)), p.get("at", 0.0))
             if t is not None:
                 out.append((t, i, p["sound"]))
+    return out
+
+
+def motion_events(video_dir, blocks, frames, starts, ends):
+    """Моменты движения на экране по ручному монтажу (edit.json): начало картинки, склейки планов, появления и сдвиги
+    сцены на бумаге — тем же поиском слова, что у сборщика. Картинки без ручного монтажа — None (их склейки выбирает
+    сборщик, до сборки их нет)."""
+    ep = os.path.join(video_dir, "edit.json")
+    edit = (json.load(open(ep, encoding="utf-8")).get("frames") or {}) if os.path.exists(ep) else {}
+    pic = [i for i in range(len(blocks)) if {"new", "lib", "same", "plan", "anim"} & set(frames.get(str(i + 1)) or {})]
+    out = []
+    for n, i in enumerate(pic):
+        nxt = pic[n + 1] if n + 1 < len(pic) else len(blocks)
+        shots = (edit.get(str(i + 1)) or {}).get("shots")
+        if not shots or (frames.get(str(i + 1)) or {}).get("anim"):   # сцена движения: рисунок движется сам, свист
+            out.append((i, nxt, None))                                  # на её событии законен (рилсы так же)
+            continue
+        idx = list(range(i, nxt))
+        ts = [starts[i]]
+        for k, p in enumerate(shots):
+            if k:
+                t = _shot_t(video_dir, blocks, starts, ends, idx, p.get("at", 0.0))
+                if t is not None:
+                    ts.append(t)
+            ts += _stage_beats(p, blocks, starts, ends, idx, video_dir)
+        out.append((i, nxt, ts))
+    return out
+
+
+def _shot_t(video_dir, blocks, starts, ends, idx, at):
+    """Время плана тем же поиском слова, что у сборщика (long_edit.word_time: сначала слово целиком, потом начало)."""
+    wt = _WORD_TIMES.get(os.path.abspath(video_dir))
+    if wt:
+        import long_edit
+        ws = [dict(word=w["word"], start=w["start"] - starts[idx[0]]) for k in idx for w in wt[k]]
+        try:
+            return starts[idx[0]] + long_edit.word_time(at, ws)
+        except ValueError:
+            return None
+    return _word_t(blocks, starts, ends, idx, at)
+
+
+def motion_sounds(video_dir, blocks, frames, starts, ends, motion):
+    """Свист из sfx.json — только на движении (long_sfx.MOTION_SOUNDS): не дальше MOTION_SNAP_SEC от склейки или
+    появления элемента сцены (сборщик ставит его ровно на их кадр). Свист в пустоту — ошибка: звук движения у события
+    (план edit.json, элемент сцены, надпись fx.json "sound") или звук смысла на слове."""
+    err = []
+    spans = motion_events(video_dir, blocks, frames, starts, ends)
+    for t, i, e in motion:
+        span = next((s for s in spans if s[0] <= i < s[1]), None)
+        if span is None or span[2] is None:
+            continue
+        d = min(abs(t - m) for m in span[2])
+        if d > MOTION_SNAP_SEC + 1e-6:
+            err.append(f"SFX: свист «{e['name']}» во фразе {i + 1} на «{e['word']}» ({e.get('why')}) — в {d:.2f} с от "
+                       f"ближайшего движения на экране: звук движения ставится у самого события (план edit.json "
+                       f"\"sound\", элемент сцены, надпись fx.json \"sound\") или меняется на звук смысла")
+    return err
+
+
+def text_sounds(video_dir, blocks, starts, ends):
+    """[(время, фраза, звук)] звуков надписей fx.json ("sound" у bold/hand, у подписи — с приставкой «hand:»): на слове
+    надписи, строка кота-ведущего —
+    не раньше, чем он сел (long_fx.bold_after_narrator; точное время ставит сборщик по отрисовке)."""
+    fp = os.path.join(video_dir, "fx.json")
+    if not os.path.exists(fp):
+        return []
+    import long_fx
+    ready = long_fx.ENTER_SEC + long_fx.GROW_SEC + long_fx.SETTLE_SEC + long_fx.BOLD_AFTER_NARRATOR
+    out = []
+    for n, v in (json.load(open(fp, encoding="utf-8")).get("phrases") or {}).items():
+        i = int(n) - 1
+        if not 0 <= i < len(blocks):
+            continue
+        for kind in ("bold", "hand"):
+            for e in v.get(kind) or []:
+                if not e.get("sound"):
+                    continue
+                t = _shot_t(video_dir, blocks, starts, ends, [i], e["word"]) if e.get("word") else None
+                t = starts[i] + 0.3 if t is None else t
+                if kind == "bold" and v.get("narrator"):
+                    t = max(t, starts[i] + ready)
+                out.append((t, i, ("hand:" if kind == "hand" else "") + e["sound"]))
     return out
 
 
@@ -629,7 +714,7 @@ def hook_build(video_dir):
     # 2. звуки — в каждом куске 10 с не меньше 3, после хука в среднем не больше 4 (владелец 04.11); в хуке ещё ≥ 5 разных и тишина ≤ 3,5 с
     sp = os.path.join(video_dir, "sfx.json")
     ev = json.load(open(sp, encoding="utf-8")) if os.path.exists(sp) else []
-    peaks, hook_kinds = [], set()
+    peaks, hook_kinds, motion = [], set(), []
     for e in ev:
         i = int(e.get("phrase", 0)) - 1
         if not 0 <= i < len(blocks):
@@ -642,17 +727,34 @@ def hook_build(video_dir):
         if CUT_WHY_RE.search(e.get("why") or ""):
             err.append(f"SFX: «{e.get('name')}» во фразе {i + 1} — «{e.get('why')}»: звук склейки ставится у плана "
                        f"монтажа (edit.json \"sound\"), тогда его пик ровно на склейке, как в рилсах")
-        t = _word_t(blocks, starts, ends, [i], e["word"], _WORD_TIMES.get(os.path.abspath(video_dir)))
-        if t is None:
+        elif TEXT_WHY_RE.search(e.get("why") or ""):
+            err.append(f"SFX: «{e.get('name')}» во фразе {i + 1} — «{e.get('why')}»: звук надписи ставится у самой "
+                       f"надписи (fx.json bold/hand \"sound\") — сборщик кладёт его на кадр, где она видна, после всех "
+                       f"сдвигов (кот-ведущий, дописанная мысль)")
+        t = _shot_t(video_dir, blocks, starts, ends, [i], e["word"])   # тем же поиском, что long_sfx.resolve:
+        if t is None:                                                    # «кот» — это «кот,», а не «котик»
             err.append(f"SFX: «{e.get('name')}»: слова «{e['word']}» нет во фразе {i + 1}")
             continue
         peaks.append(t + e.get("offset", 0.0))
+        if e.get("name") in MOTION_SOUNDS:
+            motion.append((t + e.get("offset", 0.0), i, e))
         if i < hook_n:
             hook_kinds.add(e.get("name"))
     for t, i, name in edit_sounds(video_dir, blocks, frames, starts, ends):   # звуки склеек из монтажа
         peaks.append(t)
         if i < hook_n:
             hook_kinds.add(name)
+    for t, i, name in text_sounds(video_dir, blocks, starts, ends):          # звуки надписей (fx.json "sound")
+        if name.startswith("hand:"):
+            name = name[5:]
+            if name in MOTION_SOUNDS:     # подпись не влетает — её пишет карандаш со своим звуком
+                err.append(f"SFX: свист «{name}» на рукописной подписи во фразе {i + 1}: подпись пишется карандашом "
+                           f"(его звук уже есть), а не влетает — свист без движения; звук смысла — можно")
+                continue
+        peaks.append(t)
+        if i < hook_n:
+            hook_kinds.add(name)
+    err += motion_sounds(video_dir, blocks, frames, starts, ends, motion)
     total = ends[-1] if ends else 0.0
     thin = []
     for a in range(0, int(math.ceil(total / LONG_SFX_WINDOW))):

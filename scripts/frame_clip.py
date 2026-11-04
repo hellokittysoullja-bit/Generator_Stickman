@@ -468,7 +468,7 @@ def hand_plan(fr, p, hand, D=None):
             p["notes"].append(f"подпись «{h['text']}»: слово в конце кадра — пишется с {t:.2f} с, раньше слова")
         t_end = t + dur
         p["hand"].append(dict(text=h["text"], t=t, end=t_end, win=win, center=center, size=size, arrow=arr,
-                              seed=13 + k, target=box))
+                              seed=13 + k, target=box, **_sound_of(h)))
         wb = letters_box_world(letters, win)
         if wb is not None:
             placed.append(wb)
@@ -488,6 +488,59 @@ def hand_plan(fr, p, hand, D=None):
 
 
 _STAGES = {}
+
+
+def _writes(p, fps):
+    """Всё, что пишется карандашом в клипе: главная мысль, акцент, подписи со стрелкой — штрихи и звук карандаша."""
+    writes, cues = [], []
+    for item, t0, seed in ((p.get("key"), p.get("key_time"), 9), (p.get("accent"), p.get("accent_time"), 11)):
+        if not item or t0 is None:
+            continue
+        L = writeon.layout(item["text"], item["size"], W, H, item["center"][0], item["center"][1], seed=seed,
+                           max_w=KEY_MAX_W*W)
+        ev, T = writeon.plan(L, fps, t0=t0, factor=item.get("speed", 1.0))
+        writes.append(dict(ink=writeon.Ink(L, ev, H, W), end=t0 + T, win=item["win"], baked=False,
+                           life=t0 + T + PENCIL_SHOW_SEC))
+        cues += [(e["t0"], e["t1"], e["kind"]) for e in ev]
+    for h in p.get("hand") or []:              # рукописные подписи к предметам со стрелкой — тот же карандаш
+        L = writeon.layout(h["text"], h["size"], W, H, h["center"][0], h["center"][1], seed=h["seed"],
+                           max_w=HAND_MAX_W*W)
+        if h.get("arrow"):
+            L = L + [writeon.arrow_letter(h["arrow"][0], h["arrow"][1], h["arrow"][2], h["size"], W, H, seed=h["seed"])]
+        ev, T = writeon.plan(L, fps, t0=h["t"])
+        writes.append(dict(ink=writeon.Ink(L, ev, H, W), end=h["t"] + T, win=h["win"], baked=False,
+                           life=h["t"] + T + PENCIL_SHOW_SEC))
+        cues += [(e["t0"], e["t1"], e["kind"]) for e in ev]
+    cues.sort()
+    return writes, cues
+
+
+def final_fx(p, fx, fps, writes=None):
+    """События эффектов клипа в том виде, в каком они рисуются: кот-ведущий не уводит в размытие недописанную мысль
+    (критик L02: «его возвращают» ушла в размытие на «его возвраща-»), его строки — после того, как он сел. Одна
+    функция и для отрисовки, и для звуков надписей: звук не может разойтись с тем, когда строка видна."""
+    import long_fx
+    if writes is None:
+        writes = _writes(p, fps)[0]
+    return long_fx.after_writing(fx, [w["end"] for w in writes], shots.KEY_HOLD_SEC)
+
+
+def text_moments(p, fx, fps):
+    """[(секунды клипа, событие)] появлений надписей на первом кадре, где они видны: строка — после всех сдвигов
+    (кот-ведущий сел, мысль дописана), подпись — с первым штрихом. Событие несёт свой звук, если он задан."""
+    out = []
+    for e in final_fx(p, fx, fps) if fx else []:
+        if e["kind"] == "bold":
+            out.append((math.ceil(e["t0"]*fps - 1e-6)/fps, e))
+    for h in p.get("hand") or []:
+        out.append((math.ceil(h["t"]*fps - 1e-6)/fps, h))
+    return sorted(out, key=lambda x: x[0])
+
+
+def text_sounds(p, fx, fps):
+    """[(секунды клипа, звук, поправка дБ, why)] звуков надписей (fx.json bold/hand "sound") — на кадре надписи."""
+    return [(t, e["sound"], e.get("sound_gain", 0.0), f"надпись «{e['text']}»: {e.get('sound_why') or ''}")
+            for t, e in text_moments(p, fx, fps) if e.get("sound")]
 
 
 def _stage_frame(seg, t):
@@ -559,32 +612,10 @@ def render(fr, p, D, out, fps=24, end_fade=False, crf="18", anim=None, fx=None):
     n = max(1, int(round(D*fps)))
     lab_t = list(p["label_times"])
     shown = [False]*len(fr["recs"])
-    # всё, что пишется карандашом: главная мысль и акцент — один и тот же карандаш и звук
-    writes, cues = [], []
-    for item, t0, seed in ((p.get("key"), p.get("key_time"), 9), (p.get("accent"), p.get("accent_time"), 11)):
-        if not item or t0 is None:
-            continue
-        L = writeon.layout(item["text"], item["size"], W, H, item["center"][0], item["center"][1], seed=seed,
-                           max_w=KEY_MAX_W*W)
-        ev, T = writeon.plan(L, fps, t0=t0, factor=item.get("speed", 1.0))
-        writes.append(dict(ink=writeon.Ink(L, ev, H, W), end=t0 + T, win=item["win"], baked=False,
-                           life=t0 + T + PENCIL_SHOW_SEC))
-        cues += [(e["t0"], e["t1"], e["kind"]) for e in ev]
-    for h in p.get("hand") or []:              # рукописные подписи к предметам со стрелкой — тот же карандаш
-        L = writeon.layout(h["text"], h["size"], W, H, h["center"][0], h["center"][1], seed=h["seed"],
-                           max_w=HAND_MAX_W*W)
-        if h.get("arrow"):
-            L = L + [writeon.arrow_letter(h["arrow"][0], h["arrow"][1], h["arrow"][2], h["size"], W, H, seed=h["seed"])]
-        ev, T = writeon.plan(L, fps, t0=h["t"])
-        writes.append(dict(ink=writeon.Ink(L, ev, H, W), end=h["t"] + T, win=h["win"], baked=False,
-                           life=h["t"] + T + PENCIL_SHOW_SEC))
-        cues += [(e["t0"], e["t1"], e["kind"]) for e in ev]
-    cues.sort()
+    writes, cues = _writes(p, fps)
     if fx:
         import long_fx
-        # кот-ведущий не уводит в размытие недописанную мысль (критик L02: «его возвращают» ушла в размытие на
-        # «его возвраща-», целиком видна 0,25 с): ведущий выходит, когда мысль дописана и простояла KEY_HOLD_SEC
-        fx = long_fx.after_writing(fx, [w["end"] for w in writes], shots.KEY_HOLD_SEC)
+        fx = final_fx(p, fx, fps, writes)
         def peek(tt):                                  # кадр плана в момент tt без надписей — куда встанет строка
             return _screen(world, shots.window_at(p, tt, SW, SH), UPSCALE)
         track = long_fx.Track(fx, D, peek=peek)
@@ -708,12 +739,24 @@ def render(fr, p, D, out, fps=24, end_fade=False, crf="18", anim=None, fx=None):
     return cues
 
 
+SOUND_KEYS = ("sound", "sound_gain", "sound_why")
+
+
+def _sound_of(d):
+    """Поля звука события (склейки, надписи) — едут с событием в дорожку звука, в картинку не входят."""
+    return {k: d[k] for k in SOUND_KEYS if d.get(k) is not None}
+
+
+def without_sound(items):
+    """Копии событий без полей звука — для подписи клипа: правка звука не перерисовывает видео."""
+    return [{k: v for k, v in it.items() if k not in SOUND_KEYS} for it in items or []]
+
+
 def plan_record(p):
     """План в JSON-виде для отчёта."""
     # кортежи json пишет сам; numpy-скаляры — числом, а не строкой (иначе смена типа одного поля меняла бы хэш клипа)
     r = json.loads(json.dumps(p, default=lambda o: o.item() if isinstance(o, np.generic) else str(o)))
-    for sg in r.get("segments") or []:            # звук склейки — дорожка звука, не картинка: клип не перерисовывается
-        sg.pop("sound", None)
-        sg.pop("sound_gain", None)
-        sg.pop("sound_why", None)
+    for key in ("segments", "hand"):              # звук склейки и надписи — дорожка звука, не картинка
+        if r.get(key):
+            r[key] = without_sound(r[key])
     return r

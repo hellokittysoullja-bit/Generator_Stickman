@@ -194,7 +194,7 @@ def hooked(tmp_path, scene=HOOK_SCENE_HIT, sfx=None, labels=True, name="L09_test
     if scene is not None:
         (vd / "anim").mkdir()
         (vd / "anim" / "hook.py").write_text(scene, encoding="utf-8")
-    names = ["fast_whoosh", "swoosh", "shock", "oof", "riser", "fast_glitch"]
+    names = ["level_up", "typing", "shock", "oof", "riser", "fast_glitch"]   # звуки смысла: свист — только на движении
     if sfx is None:                          # плотно: ~каждые 1,3 с, шесть разных
         sfx = [{"name": names[k % 6], "phrase": 1 + k // 4, "at": 1.3 * (k % 4), "why": "тест"} for k in range(36)]
         sfx += [{"name": names[k % 6], "phrase": 10, "at": 2.7 * k, "why": "тест"} for k in range(120)]   # 3,7 на 10 с
@@ -291,7 +291,7 @@ def test_pencil_label_leaves_after_it_is_read():
     import inspect
     import frame_clip
     assert 1.5 <= frame_clip.PENCIL_SHOW_SEC <= 3.0
-    src = inspect.getsource(frame_clip.render)
+    src = inspect.getsource(frame_clip.render) + inspect.getsource(frame_clip._writes)
     assert 'life=' in src and "PENCIL_FADE_SEC" in src
 
 
@@ -507,3 +507,32 @@ def _ctx(vd):
     starts, ends = long_rules._phrase_times(vd, blocks)
     frames = dict(json.load(open(os.path.join(vd, "storyboard.json"), encoding="utf-8"))["frames"])
     return blocks, frames, starts, ends
+
+
+def test_whoosh_must_sit_on_motion_not_in_the_air(tmp_path):
+    """Свист — звук движения (04.11, L03: свист «третий приём» остался на «прыжков», где ничего не появляется; свист
+    «строка влетает» звучал на 1,5 с раньше строки). На склейке — можно, в пустоту — ошибка, у надписи — у надписи."""
+    vd = hooked(tmp_path)
+    ok = long_rules.hook_build(vd)
+    assert not any("свист" in e for e in ok), ok
+    sfx = json.load(open(os.path.join(vd, "sfx.json"), encoding="utf-8"))
+    air = sfx + [{"name": "fast_whoosh", "phrase": 2, "word": "дальше", "why": "просто так"},       # «листать» — склейка,
+                 {"name": "swoosh", "phrase": 2, "word": "листать", "why": "хлёст как свайп"},     # «дальше» — пусто
+                 {"name": "fast_whoosh", "phrase": 3, "word": "палец", "why": "«палец» на экране"}]
+    json.dump(air, open(os.path.join(vd, "sfx.json"), "w", encoding="utf-8"), ensure_ascii=False)
+    errs = long_rules.hook_build(vd)
+    assert any("свист «fast_whoosh» во фразе 2 на «дальше»" in e for e in errs), errs
+    assert not any("на «листать»" in e for e in errs)
+    assert any("у самой надписи" in e and "фразе 3" in e for e in errs)
+
+
+def test_whoosh_on_handwriting_is_rejected_and_text_sounds_count(tmp_path):
+    vd = hooked(tmp_path)
+    fx = {"phrases": {"10": {"hand": [{"text": "×4", "word": "Знаешь", "to": [10, 10], "why": "число",
+                                       "sound": "fast_whoosh"}],
+                             "bold": [{"text": "суть", "word": "Знаешь", "why": "вывод", "sound": "level_up"}]}}}
+    json.dump(fx, open(os.path.join(vd, "fx.json"), "w", encoding="utf-8"), ensure_ascii=False)
+    errs = long_rules.hook_build(vd)
+    assert any("рукописной подписи" in e for e in errs)
+    blocks, frames, starts, ends = _ctx(vd)
+    assert sorted(n for _, _, n in long_rules.text_sounds(vd, blocks, starts, ends)) == ["hand:fast_whoosh", "level_up"]

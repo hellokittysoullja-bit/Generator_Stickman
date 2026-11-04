@@ -85,16 +85,22 @@ def track(events, total, voice_wav):
 
 
 SNAP_SEC = 0.06    # звук на слове ближе этого к склейке встаёт ровно на кадр склейки: глаз и ухо видят одно событие
+# Свист — звук движения: он звучит только там, где на экране что-то движется (склейка, хлёст, элемент сцены влетает).
+# Живой промах L03 (04.11): после замены планов сценой свист «третий приём» остался на слове «прыжков», где ничего не
+# появляется, а таймер выскакивал молча; свист «строка влетает» звучал на 1,5 с раньше строки (её сдвинул кот-ведущий).
+MOTION_SOUNDS = ("swoosh", "fast_whoosh", "swoosh_deep")
+MOTION_SNAP_SEC = 0.15   # свист на слове ближе этого к движению — ровно на его кадр; дальше — ошибка правил (long_rules)
 
 
 def snap(events, cuts):
-    """Звук на слове ближе SNAP_SEC к склейке — ровно на кадр склейки (на месте, events меняются)."""
+    """Звук на слове ближе SNAP_SEC к склейке (свист — ближе MOTION_SNAP_SEC) — ровно на кадр склейки (на месте)."""
     import bisect
     cuts = sorted(cuts)
     for e in events:
         k = bisect.bisect_left(cuts, e["t"])
         near = min((cuts[j] for j in (k - 1, k) if 0 <= j < len(cuts)), key=lambda c: abs(c - e["t"]), default=None)
-        if near is not None and abs(near - e["t"]) <= SNAP_SEC:
+        win = MOTION_SNAP_SEC if e.get("name") in MOTION_SOUNDS else SNAP_SEC
+        if near is not None and abs(near - e["t"]) <= win:
             e["t"] = near
     return events
 

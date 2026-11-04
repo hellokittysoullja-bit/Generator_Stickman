@@ -249,6 +249,16 @@ def times(spec, word_time, t0):
     return spec
 
 
+def beats(spec):
+    """Секунды от начала плана всех событий сцены — появлений элементов и сдвига карточек, со звуком или без: это
+    моменты на экране, к ним прилипает звук смысла на том же слове (long_sfx.snap)."""
+    key = "items" if spec["type"] == "items" else "cards"
+    out = [it["t"] for it in spec[key] if "t" in it]
+    if spec.get("focus_t") is not None:
+        out.append(spec["focus_t"])
+    return sorted(out)
+
+
 def sounds(spec):
     """[(секунды от начала плана, звук, why)] появлений и сдвигов сцены."""
     out = []
