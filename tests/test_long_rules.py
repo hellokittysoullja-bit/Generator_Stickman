@@ -163,22 +163,33 @@ HOOK_SCENE_HIT = "import anim\nclass Scene:\n    def cam(self, t):\n        retu
 HOOK_SCENE_OLD = "import anim\nclass Scene:\n    def cam(self, t):\n        return anim.hook_cam(t)\n"
 
 
-def hooked(tmp_path, scene=HOOK_SCENE_HIT, sfx=None, labels=True, name="L09_test"):
+HOOK_LINE = "Ты не досмотришь это видео, и палец уже тянется листать дальше."
+REEL_SHOTS = [{"win": [800, 500, 1500], "why": "общий"},
+              {"at": "это", "win": [700, 450, 900], "punch": True, "why": "удар-наезд"},
+              {"at": "палец", "win": [900, 520, 800], "shake": 8, "spot": [900, 520, 300], "why": "палец"},
+              {"at": "листать", "win": [800, 500, 1200], "whip": "left", "why": "хлёст"}]
+
+
+def hooked(tmp_path, scene=HOOK_SCENE_HIT, sfx=None, labels=True, name="L09_test", edit=True, shots=None):
+    """Длинный ролик с видеохуком из 9 фраз (~45 с), смонтированным как рилс."""
     vd = tmp_path / name
     vd.mkdir()
-    hook = " [pause] ".join(["Ты не досмотришь это видео, и палец уже тянется листать дальше."] * 6)
+    hook = " [pause] ".join([HOOK_LINE] * 9)
     script = SCRIPT.replace(SCRIPT[SCRIPT.index("=== HOOK ===") + 13:SCRIPT.index("=== BLOCK 1")], hook + "\n\n")
     (vd / "script.txt").write_text(script, encoding="utf-8")
-    frames = [["1", {"lib": "x.png", "anim": "hook"}]] + [[str(i), {"lib": "x.png", "key": "мысль"} if labels else
-                                                          {"lib": "x.png"}] for i in range(2, 13)]
+    frames = [["1", {"lib": "x.png", "anim": "hook", "key": "мысль"}]] + [
+        [str(i), {"lib": "x.png", "key": "мысль"} if labels else {"lib": "x.png"}] for i in range(2, 13)]
     (vd / "storyboard.json").write_text(json.dumps({"frames": frames}, ensure_ascii=False), encoding="utf-8")
     if scene is not None:
         (vd / "anim").mkdir()
         (vd / "anim" / "hook.py").write_text(scene, encoding="utf-8")
     names = ["fast_whoosh", "swoosh", "shock", "oof", "riser", "fast_glitch"]
-    if sfx is None:                          # плотно: каждые ~0,7 с, шесть разных
-        sfx = [{"name": names[k % 6], "phrase": 1 + k // 6, "at": 0.7 * (k % 6), "why": "тест"} for k in range(36)]
+    if sfx is None:                          # плотно: ~каждые 1,3 с, шесть разных
+        sfx = [{"name": names[k % 6], "phrase": 1 + k // 4, "at": 1.3 * (k % 4), "why": "тест"} for k in range(36)]
     (vd / "sfx.json").write_text(json.dumps(sfx, ensure_ascii=False), encoding="utf-8")
+    if edit:
+        ed = {str(i): {"shots": shots or REEL_SHOTS} for i in range(1, 11)}
+        (vd / "edit.json").write_text(json.dumps({"frames": ed}, ensure_ascii=False), encoding="utf-8")
     return str(vd)
 
 
@@ -222,3 +233,30 @@ def test_long_assembly_applies_fly_in_motion_blur():
     import reel
     img = np.zeros((90, 160, 3), np.uint8); img[:, ::8] = 255
     assert np.array_equal(reel.zoom_blur(img, 0.06), anim.zoom_blur(img, 0.06))
+
+
+def test_video_hook_slideshow_without_manual_montage_is_caught(tmp_path):
+    """Владелец 04.11: первые 40–60 с длинного — «видеохук», спроектированный как рилс, «не просто слайд-шоу»."""
+    errs = long_rules.hook_build(hooked(tmp_path, edit=False))
+    assert any("без ручного монтажа" in e for e in errs), errs
+
+
+@pytest.mark.parametrize("shots, part", [
+    ([{"win": [1, 1, 900], "why": "один план на всю картинку"}], "> 3.0"),
+    ([{"win": [1, 1, 900], "why": "а"}, {"at": "листать", "win": [1, 1, 800], "why": "б"}], "первая склейка"),
+    ([{"win": [1, 1, 900], "why": "а"}, {"at": "это", "win": [1, 1, 800], "why": "б"},
+      {"at": "палец", "win": [1, 1, 700], "why": "в"}, {"at": "листать", "win": [1, 1, 600], "why": "г"}], "акцентов"),
+    ([{"win": [1, 1, 900]}, {"at": "это", "win": [1, 1, 800], "punch": True, "why": "б"}], "нет why"),
+])
+def test_video_hook_montage_like_reel(tmp_path, shots, part):
+    errs = long_rules.hook_build(hooked(tmp_path, shots=shots))
+    assert any(e.startswith("VIDEO-HOOK") and part in e for e in errs), errs
+
+
+def test_video_hook_needs_new_pictures_often(tmp_path):
+    vd = hooked(tmp_path)
+    sb = json.load(open(os.path.join(vd, "storyboard.json"), encoding="utf-8"))
+    sb["frames"] = [sb["frames"][0]] + [[k, {"absorb": True}] for k, _ in sb["frames"][1:]]
+    json.dump(sb, open(os.path.join(vd, "storyboard.json"), "w", encoding="utf-8"))
+    errs = long_rules.hook_build(vd)
+    assert any("картинок в видеохуке" in e for e in errs), errs

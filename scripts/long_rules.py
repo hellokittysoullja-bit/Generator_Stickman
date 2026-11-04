@@ -261,6 +261,9 @@ LEGACY = {"L01_potom", "L02_otvlechenie"}
 EST_WPS = 2.4               # темп L02 до озвучки (слов в секунду); после озвучки — время слов из alignment
 LABEL_EVERY_SEC = 30        # поясняющая надпись (жирный текст fx.json, мысль key или акцент accent) не реже раза в 30 с
 LABEL_GAP_MAX = 45          # и без дыры больше 45 с между надписями
+VIDEO_HOOK_MIN_SEC = 40     # «видеохук» — весь HOOK, но не короче 40 с (владелец 04.11: «первые 40–60 секунд… как рилс»)
+PICTURE_EVERY_SEC = 7.0     # новая картинка в видеохуке не реже раза в 7 с (рилс 17: 6 рисунков на 35 с)
+VIDEO_HOOK_MEAN_SHOT = 2.2  # средний план видеохука (рилс 17 — 1,67 с; L02 в хуке — автоматика до 3,5 с)
 HOOK_CAM_RE = re.compile(r"hook_cam\(\s*t\s*,\s*hit\s*=")
 
 
@@ -278,6 +281,99 @@ def _phrase_times(video_dir, blocks):
     starts = [0.0] + list(on[1:]) if on else est
     ends = starts[1:] + [acc if not on else starts[-1] + max(1, blocks[-1]["words"]) / EST_WPS]
     return starts, ends
+
+
+def _word_t(blocks, starts, ends, idx, at):
+    """Время момента в клипе картинки (фразы idx, с 0: своя и поглощённые absorb): секунды от начала клипа или слово
+    (["слово", k] — k-е вхождение, как в long_edit.word_time) — до озвучки по месту слова во фразе. Нет слова — None."""
+    import script_parser
+    if isinstance(at, (int, float)):
+        return starts[idx[0]] + float(at)
+    stem, k = (at, 1) if isinstance(at, str) else (at[0], int(at[1]))
+    for i in idx:
+        ws = words(script_parser.strip_pipeline_only_tags(blocks[i]["text"]))
+        for j, w in enumerate(ws):
+            if norm(w).startswith(norm(stem)):
+                k -= 1
+                if not k:
+                    return starts[i] + (ends[i] - starts[i]) * j / max(1, len(ws))
+    return None
+
+
+def _video_hook_montage(video_dir, blocks, frames, starts, ends, hook_n, fx_path):
+    """Видеохук длинного ролика спроектирован как рилс (владелец 04.11: «не просто слайд-шоу»). Зона — весь HOOK, но не
+    короче VIDEO_HOOK_MIN_SEC. Пороги — рилсовые (reel_rules): план MIN_SHOT_SEC–MAX_SHOT_SEC, первая склейка ≤
+    FIRST_CUT_SEC, акцентов ≥ ACCENT_PER_10S на 10 с и ≥ ACCENT_KINDS_MIN видов."""
+    from reel_rules import ACCENT_KINDS_MIN, ACCENT_PER_10S, FIRST_CUT_SEC, MAX_SHOT_SEC, MIN_SHOT_SEC
+    err = []
+    zone = max(ends[hook_n - 1] if hook_n else 0.0, VIDEO_HOOK_MIN_SEC)
+    zn = [i for i in range(len(blocks)) if starts[i] < zone - 0.5]          # фразы видеохука (с 0)
+    pic = [i for i in zn if (frames.get(str(i + 1)) or {}) and not {"absorb", "same"} & set(frames[str(i + 1)])]
+    if not pic or pic[0] != 0:
+        err.append("VIDEO-HOOK: у первой фразы нет своей картинки в раскадровке")
+        return err
+    need = int(zone // PICTURE_EVERY_SEC)
+    if len(pic) < need:
+        err.append(f"VIDEO-HOOK: картинок в видеохуке ({zone:.0f} с) {len(pic)} < {need} — новая картинка не реже раза в "
+                   f"{PICTURE_EVERY_SEC:.0f} с, как в рилсе (рилс 17: 6 на 35 с)")
+    ep = os.path.join(video_dir, "edit.json")
+    edit = (json.load(open(ep, encoding="utf-8")).get("frames") or {}) if os.path.exists(ep) else {}
+    cuts, acc, missing = [], [], False
+    for n, i in enumerate(pic):
+        nxt = pic[n + 1] if n + 1 < len(pic) else zn[-1] + 1
+        sh = (edit.get(str(i + 1)) or {}).get("shots") or []
+        if not sh:
+            err.append(f"VIDEO-HOOK: картинка фразы {i + 1} без ручного монтажа (edit.json) — в видеохуке нет "
+                       "автоматической раскладки, каждый план со смыслом и why, как в рилсе")
+            missing = True
+            continue
+        for k, p in enumerate(sh):
+            if not (p.get("why") or "").strip():
+                err.append(f"VIDEO-HOOK: фраза {i + 1}, план {k + 1}: нет why — монтаж со смыслом, а не ради склейки")
+            t = starts[i] if k == 0 else _word_t(blocks, starts, ends, list(range(i, nxt)), p.get("at", 0.0))
+            if t is None:
+                err.append(f"VIDEO-HOOK: фраза {i + 1}, план {k + 1}: слова «{p.get('at')}» нет во фразе")
+                continue
+            cuts.append(t)
+            for kind in ("punch", "shake", "spot", "whip", "parallax"):
+                if p.get(kind):
+                    acc.append((kind, t))
+    if (frames.get("1") or {}).get("anim"):
+        acc.append(("anim", 0.0))
+    for i in zn:
+        v = frames.get(str(i + 1)) or {}
+        for kind in ("key", "accent"):
+            if v.get(kind):
+                acc.append((kind, starts[i]))
+    fx = (json.load(open(fx_path, encoding="utf-8")).get("phrases") or {}) if os.path.exists(fx_path) else {}
+    for i in zn:
+        v = fx.get(str(i + 1)) or {}
+        acc += [("bold", starts[i])] * len(v.get("bold") or [])
+        if v.get("narrator"):
+            acc.append(("narrator", starts[i]))
+    cuts = sorted(set(round(c, 2) for c in cuts))
+    if not missing and cuts:
+        if len(cuts) > 1 and cuts[1] > FIRST_CUT_SEC + 0.02:
+            err.append(f"VIDEO-HOOK: первая склейка на {cuts[1]:.1f} с > {FIRST_CUT_SEC} — «решают первые 1–2 секунды»")
+        cuts = [c for c in cuts if c < zone]                 # за краем видеохука — обычный монтаж ролика
+        plans = [(a, b - a) for a, b in zip(cuts, cuts[1:] + [min(zone, ends[zn[-1]])]) if b > a]
+        for a, d in plans:
+            if d > MAX_SHOT_SEC + 0.05:
+                err.append(f"VIDEO-HOOK: план с {a:.1f} с идёт {d:.1f} с > {MAX_SHOT_SEC} — разрежьте вторым планом")
+            elif d < MIN_SHOT_SEC - 0.05:
+                err.append(f"VIDEO-HOOK: план с {a:.1f} с идёт {d:.2f} с < {MIN_SHOT_SEC} — не читается")
+        if plans:
+            mean = sum(d for _, d in plans) / len(plans)
+            if mean > VIDEO_HOOK_MEAN_SHOT:
+                err.append(f"VIDEO-HOOK: средний план {mean:.1f} с > {VIDEO_HOOK_MEAN_SHOT} (рилс 17 — 1,67 с) — больше смен плана")
+    rate = len(acc) / zone * 10
+    if rate < ACCENT_PER_10S:
+        err.append(f"VIDEO-HOOK: акцентов {len(acc)} за {zone:.0f} с — {rate:.1f} на 10 с < {ACCENT_PER_10S}: удар-наезд, "
+                   "тряска, прожектор, хлёст, жирный текст, мысль карандашом, котик-ведущий — на смысловых словах")
+    kinds = {k for k, _ in acc}
+    if len(kinds) < ACCENT_KINDS_MIN:
+        err.append(f"VIDEO-HOOK: видов акцентов {len(kinds)} ({', '.join(sorted(kinds)) or 'нет'}) < {ACCENT_KINDS_MIN}")
+    return err
 
 
 def hook_build(video_dir):
@@ -335,7 +431,9 @@ def hook_build(video_dir):
         gap, at = max((b - a_, a_) for a_, b in zip(pts, pts[1:]))
         if gap > SOUND_GAP_MAX:
             err.append(f"HOOK-SFX: тишина без звуков {gap:.1f} с с {at:.1f} с > {SOUND_GAP_MAX} с")
-    # 3. поясняющие надписи по всему ролику (субтитров нет, текст на экране — надписи)
+    # 3. видеохук смонтирован как рилс: ручной монтаж каждой картинки, планы 0,7–3 с, смены картинок, акценты
+    err += _video_hook_montage(video_dir, blocks, frames, starts, ends, hook_n, fx_path=os.path.join(video_dir, "fx.json"))
+    # 4. поясняющие надписи по всему ролику (субтитров нет, текст на экране — надписи)
     fp = os.path.join(video_dir, "fx.json")
     fx = (json.load(open(fp, encoding="utf-8")).get("phrases") or {}) if os.path.exists(fp) else {}
     lab = sorted({int(k) for k, v in frames.items() if str(k).isdigit() and (v.get("key") or v.get("accent"))}
