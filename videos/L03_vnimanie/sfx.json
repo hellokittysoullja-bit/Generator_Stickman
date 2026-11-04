@@ -1048,5 +1048,132 @@
   "phrase": 59,
   "word": "ролик",
   "why": "появляется следующий ролик"
+ },
+ {
+  "name": "fast_whoosh",
+  "phrase": 11,
+  "at": 4.11,
+  "why": "склейка: смена плана",
+  "auto_cut": true
+ },
+ {
+  "name": "swoosh",
+  "phrase": 18,
+  "at": 5.53,
+  "why": "склейка: смена плана",
+  "auto_cut": true
+ },
+ {
+  "name": "fast_whoosh",
+  "phrase": 18,
+  "at": 8.66,
+  "why": "склейка: смена плана",
+  "auto_cut": true
+ },
+ {
+  "name": "swoosh",
+  "phrase": 18,
+  "at": 1.7,
+  "why": "склейка: смена плана",
+  "auto_cut": true
+ },
+ {
+  "name": "fast_whoosh",
+  "phrase": 26,
+  "at": 8.3,
+  "why": "склейка: смена плана",
+  "auto_cut": true
+ },
+ {
+  "name": "swoosh",
+  "phrase": 58,
+  "at": 6.14,
+  "why": "склейка: смена плана",
+  "auto_cut": true
+ },
+ {
+  "name": "swoosh",
+  "phrase": 27,
+  "word": "Мюнхена",
+  "why": "склейка к исследованию в Мюнхене"
+ },
+ {
+  "name": "fast_whoosh",
+  "phrase": 27,
+  "word": "ролики",
+  "why": "короткие ролики — щелчок ленты"
+ },
+ {
+  "name": "fast_whoosh",
+  "phrase": 35,
+  "word": "диагнозом",
+  "why": "«с диагнозом или без» — поворот камеры"
+ },
+ {
+  "name": "swoosh",
+  "phrase": 36,
+  "word": "Напарнике",
+  "why": "«в Напарнике» — появляется место без ленты"
+ },
+ {
+  "name": "typing",
+  "phrase": 42,
+  "word": "досчитай",
+  "why": "счёт на лапах"
+ },
+ {
+  "name": "swoosh_deep",
+  "phrase": 43,
+  "word": "Марлатт",
+  "why": "имя психолога на экране"
+ },
+ {
+  "name": "fast_whoosh",
+  "phrase": 47,
+  "word": "вкладка",
+  "why": "вкладка зовёт к себе"
+ },
+ {
+  "name": "keyboard_soft",
+  "phrase": 48,
+  "word": "закрыл",
+  "why": "закрыл все вкладки щелчками"
+ },
+ {
+  "name": "fast_whoosh",
+  "phrase": 51,
+  "word": "десять",
+  "why": "«десять минут» на таймере"
+ },
+ {
+  "name": "fast_whoosh",
+  "phrase": 51,
+  "word": "урок",
+  "why": "ты смотришь урок — смена плана"
+ },
+ {
+  "name": "fast_whoosh",
+  "phrase": 54,
+  "word": "недель",
+  "why": "«через пару недель» — время прошло"
+ },
+ {
+  "name": "swoosh",
+  "phrase": 54,
+  "word": "длинный",
+  "why": "длинный ролик про котов"
+ },
+ {
+  "name": "fast_whoosh",
+  "phrase": 59,
+  "word": "палец",
+  "why": "«убегает не палец» — смена плана"
+ },
+ {
+  "name": "fast_whoosh",
+  "phrase": 59,
+  "word": "телефона",
+  "why": "«даже без телефона» — название ролика на экране",
+  "offset": 0.0
  }
 ]

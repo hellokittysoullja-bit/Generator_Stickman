@@ -335,7 +335,7 @@ def _video_hook_montage(video_dir, blocks, frames, starts, ends, hook_n, fx_path
     err = []
     zone = max(ends[hook_n - 1] if hook_n else 0.0, VIDEO_HOOK_MIN_SEC)
     zn = [i for i in range(len(blocks)) if starts[i] < zone - 0.5]          # фразы видеохука (с 0)
-    pic = [i for i in zn if {"new", "lib", "plan", "anim"} & set(frames.get(str(i + 1)) or {})]   # своя картинка
+    pic = [i for i in zn if {"new", "lib", "same", "plan", "anim"} & set(frames.get(str(i + 1)) or {})]   # своя картинка
     if not pic or pic[0] != 0:
         err.append("VIDEO-HOOK: у первой фразы нет своей картинки в раскадровке")
         return err
@@ -427,7 +427,7 @@ def _manual_minutes(video_dir, blocks, frames, starts, ends):
     err = []
     ep = os.path.join(video_dir, "edit.json")
     edit = (json.load(open(ep, encoding="utf-8")).get("frames") or {}) if os.path.exists(ep) else {}
-    pic = [i for i in range(len(blocks)) if {"new", "lib", "plan", "anim"} & set(frames.get(str(i + 1)) or {})]
+    pic = [i for i in range(len(blocks)) if {"new", "lib", "same", "plan", "anim"} & set(frames.get(str(i + 1)) or {})]
     for n, i in enumerate(pic):
         if starts[i] >= MANUAL_MONTAGE_SEC:
             break
