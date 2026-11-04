@@ -19,7 +19,7 @@ import tail_rig
 HERE = os.path.dirname(os.path.abspath(__file__))
 KIT = ["bg.png", "body.png", "tail.png", "tail_body.png", "tail_flame.png", "tail_mesh.json", "kit.json"]
 SOURCES = ["gen/p1_hook.png", "anim/kit_night.py", "anim/night_hf/index.html"] + [f"anim/kit/{k}" for k in KIT]
-VERSION = 1
+VERSION = 2
 FPS, DUR = 30, 3.4
 HIT_FRAC = 0.3                      # «нОчь»: ударный слог
 PLACE = {n: n for n in ("body",)}
