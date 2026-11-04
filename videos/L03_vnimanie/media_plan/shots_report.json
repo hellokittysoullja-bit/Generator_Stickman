@@ -424,12 +424,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
-   "narrator": [
-    [
-     0.0,
-     9.79
-    ]
-   ],
+   "narrator": [],
    "notes": []
   },
   {
@@ -521,12 +516,7 @@
    "key_at": 1.16,
    "key_hold_until": 4.63,
    "accent": null,
-   "narrator": [
-    [
-     0.0,
-     11.68
-    ]
-   ],
+   "narrator": [],
    "notes": [
     "план 0.0-11.7 с без смены: другого плана без разреза рисунка нет"
    ]
@@ -958,9 +948,9 @@
    ],
    "labels_at": [],
    "punch": null,
-   "key": "первая секунда скуки",
-   "key_at": 2.56,
-   "key_hold_until": 7.04,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
    "accent": null,
    "narrator": [],
    "notes": []
@@ -1004,9 +994,9 @@
    ],
    "labels_at": [],
    "punch": null,
-   "key": "я рядом",
-   "key_at": 6.71,
-   "key_hold_until": 9.41,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
    "accent": null,
    "narrator": [],
    "notes": []
@@ -1413,9 +1403,9 @@
    ],
    "labels_at": [],
    "punch": null,
-   "key": "просто рядом",
-   "key_at": 13.12,
-   "key_hold_until": 16.42,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
    "accent": null,
    "narrator": [
     [
