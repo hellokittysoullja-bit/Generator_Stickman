@@ -1521,3 +1521,11 @@ def test_rule_29_sounds_not_fewer_than_reference_reel_17():
     hole = [p for p in good if not 10 < p["peak"] < 16]
     assert any("тишина" in e for e in reel_rules.check_sound_density(hole, 35.0, 28))
     assert reel_rules.check_sound_density(few, 35.0, 26) == []      # готовые рилсы ниже 28 не трогаем
+
+
+def test_rule_30_reel_length_30_to_34_seconds():
+    """Владелец 04.11: рилс 30–34 с, ни больше, ни меньше; готовые рилсы (стандарт < 30) не трогаются."""
+    assert reel_rules.check_duration(31.5, 30) == []
+    assert reel_rules.check_duration(30.0, 30) == [] and reel_rules.check_duration(34.0, 30) == []
+    assert reel_rules.check_duration(29.6, 30) and reel_rules.check_duration(34.4, 30)
+    assert reel_rules.check_duration(40.8, 28) == []
