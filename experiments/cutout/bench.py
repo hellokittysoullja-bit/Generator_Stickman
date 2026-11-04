@@ -21,15 +21,15 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "out")
 CASES = {
     "sofa": dict(img="videos/22_minutka/reel/.cache/anim/p1_hook_x2.png", box=(250, 1300, 1700, 2850),
-                 pos=[(700, 1900), (1100, 2050), (1450, 2400), (1100, 1700)], neg=[(420, 2050), (900, 2500), (1000, 900)],
+                 pos=[(700, 1900), (1100, 2050), (1450, 2400), (1100, 1700), (1290, 2690)], neg=[(420, 2050), (900, 2500), (1000, 900)],
                  zooms={"усы и подушка": (250, 1650, 750, 2150), "телефон": (950, 1500, 1250, 1950),
                         "огонёк": (1150, 2500, 1650, 2850)}),
     "clock": dict(img="videos/19_opozdal/reel/.cache/anim/d1_clock_x2.png", box=(60, 1350, 1500, 2900),
-                  pos=[(850, 1900), (850, 2400), (250, 2000), (1150, 2450)], neg=[(980, 760), (1800, 2000), (600, 2950)],
+                  pos=[(850, 1900), (850, 2400), (250, 2000), (1150, 2450), (300, 1960)], neg=[(980, 760), (1800, 2000), (600, 2950)],
                   zooms={"усы и капли": (1050, 1450, 1500, 1950), "огонёк": (60, 1500, 560, 2100),
                          "ботинок": (1050, 2200, 1450, 2650)}),
     "tips": dict(img="videos/21_znayu/reel/.cache/anim/k1_tips_x2.png", box=(40, 1200, 1500, 2900),
-                 pos=[(880, 1900), (880, 2500), (300, 2400)], neg=[(1700, 2000), (300, 1500), (900, 600)],
+                 pos=[(880, 1900), (880, 2500), (300, 2400), (310, 2160)], neg=[(1700, 2000), (300, 1500), (900, 600)],
                  zooms={"листки на голове": (650, 1250, 1350, 1650), "усы": (1150, 1600, 1600, 2000),
                         "огонёк": (40, 2000, 560, 2500)}),
 }
@@ -56,13 +56,15 @@ def sheet(rgb, alpha, case, title):
     return S
 
 
-def run(method):
+def run(method, only=None):
     import methods
     fn = getattr(methods, method)
     os.makedirs(OUT, exist_ok=True)
     stats_p = os.path.join(OUT, "stats.json")
     stats = json.load(open(stats_p)) if os.path.exists(stats_p) else {}
     for key, case in CASES.items():
+        if only and key not in only:
+            continue
         rgb = np.asarray(Image.open(os.path.join(ROOT, case["img"])).convert("RGB"))
         t = time.time()
         alpha = np.clip(fn(rgb, case["box"], case["pos"], case["neg"]).astype(np.float32), 0, 1)
@@ -76,4 +78,4 @@ def run(method):
 
 
 if __name__ == "__main__":
-    run(sys.argv[1])
+    run(sys.argv[1], sys.argv[2:] or None)

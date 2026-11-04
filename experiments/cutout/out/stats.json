@@ -4,5 +4,34 @@
   "clock": 0.7,
   "tips": 0.5,
   "peak_rss_gb": 0.55
+ },
+ "sam2": {
+  "sofa": 4.1,
+  "clock": 2.0,
+  "tips": 1.8,
+  "peak_rss_gb": 2.02
+ },
+ "sam2_matte": {
+  "sofa": 6.1,
+  "clock": 3.5,
+  "tips": 5.6,
+  "peak_rss_gb": 2.3
+ },
+ "sam2u_matte": {
+  "sofa": 8.8,
+  "clock": 3.9,
+  "tips": 4.0,
+  "peak_rss_gb": 2.15
+ },
+ "sam2b_matte": {
+  "sofa": 6.0,
+  "clock": 3.1,
+  "tips": 3.5,
+  "peak_rss_gb": 2.16
+ },
+ "birefnet": {
+  "clock": 44.7,
+  "peak_rss_gb": 9.54,
+  "tips": 32.9
  }
 }
