@@ -782,8 +782,7 @@
     "note": "описание написано оркестратором 27.10"
    },
    "absorb": false,
-   "board": "new",
-   "key_thought": "другая комната"
+   "board": "new"
   },
   {
    "index": 19,
@@ -1352,8 +1351,7 @@
    },
    "absorb": false,
    "board": "new",
-   "hero_state": "bright",
-   "key_thought": "сделать меньше"
+   "hero_state": "bright"
   },
   {
    "index": 33,

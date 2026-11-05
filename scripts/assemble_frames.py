@@ -208,15 +208,49 @@ def load_scene(path, fr, words):
     return mod.Scene(fr, words, frame_clip.UPSCALE)
 
 
-STALL_SEC = 1200    # ни один клип не дорисовался за 20 мин — пул завис (05.11, пробник L02: процесс клипа умер молча,
-                    # сборка ждала его результат 40 мин); пул убивается, недорисованные клипы — в новый пул
+STALL_SEC = 600     # пул завис, если ни один клип не дорисовался И процессы пула (с детьми) не тратят процессор
+                    # столько секунд (05.11, пробник L02: задача клипа потерялась, сборка ждала 40 мин). Только по
+                    # времени без готового клипа нельзя: длинный клип с котом-ведущим честно рисуется дольше 20 мин,
+                    # и первая версия защиты убивала его дважды — сборка L02 встала на клипах 5 и 38
 POOL_TRIES = 2
+POLL_SEC = 30
 
 
-def render_all(jobs, workers, render=None, stall=STALL_SEC, tries=POOL_TRIES):
-    """Клипы параллельно, без вечного ожидания: если за stall секунд не дорисовался ни один клип или пул сломался,
-    процессы пула убиваются, а недоделанные клипы идут в новый пул (до tries раз). {номер: результат}."""
+def _tree_cpu(pids):
+    """Процессорное время (тики) процессов pids и всех их потомков по /proc; None — не Linux."""
+    try:
+        stat = {}
+        for d in os.listdir("/proc"):
+            if d.isdigit():
+                try:
+                    with open(f"/proc/{d}/stat") as fh:
+                        f = fh.read().rsplit(")", 1)[1].split()
+                    stat[int(d)] = (int(f[1]), int(f[11]) + int(f[12]))   # ppid, utime + stime
+                except (OSError, IndexError, ValueError):
+                    continue
+    except OSError:
+        return None
+    kids = {}
+    for pid, (pp, _) in stat.items():
+        kids.setdefault(pp, []).append(pid)
+    todo, seen, total = list(pids), set(), 0
+    while todo:
+        pid = todo.pop()
+        if pid in seen or pid not in stat:
+            continue
+        seen.add(pid)
+        total += stat[pid][1]
+        todo += kids.get(pid, [])
+    return total
+
+
+def render_all(jobs, workers, render=None, stall=STALL_SEC, tries=POOL_TRIES, poll=None):
+    """Клипы параллельно, без вечного ожидания: пул завис, если за stall секунд не дорисовался ни один клип и его
+    процессы не тратили процессор (медленный клип работает — его не трогаем), или пул сломался; тогда процессы пула
+    убиваются, а недоделанные клипы идут в новый пул (до tries раз). {номер: результат}."""
+    import time
     render = render or _render
+    poll = poll or min(POLL_SEC, max(0.5, stall/4))
     out, todo = {}, list(range(len(jobs)))
     for attempt in range(tries):
         if not todo:
@@ -224,17 +258,25 @@ def render_all(jobs, workers, render=None, stall=STALL_SEC, tries=POOL_TRIES):
         ex = ProcessPoolExecutor(workers)
         fut = {ex.submit(render, jobs[k]): k for k in todo}
         pending, stuck = set(fut), False
+        last, cpu = time.time(), None
         try:
             while pending:
-                done, pending = wait(pending, timeout=stall, return_when=FIRST_COMPLETED)
-                if not done:
-                    stuck = True
-                    break
+                done, pending = wait(pending, timeout=poll, return_when=FIRST_COMPLETED)
                 for f in done:
                     try:
                         out[fut[f]] = f.result()
                     except BrokenProcessPool:
                         stuck = True
+                if stuck:
+                    break
+                now = time.time()
+                c = _tree_cpu(list(getattr(ex, "_processes", {}) or {}))
+                if done or (c is not None and cpu is not None and c > cpu):
+                    last = now
+                cpu = c
+                if now - last > stall:
+                    stuck = True
+                    break
         finally:
             if stuck:
                 for pr in list(getattr(ex, "_processes", {}).values()):

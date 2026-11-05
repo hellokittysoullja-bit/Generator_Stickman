@@ -159,8 +159,7 @@
    "details": [
     "the phone in the paws",
     "the doorway"
-   ],
-   "key": "другая комната"
+   ]
   },
   "20": {
    "same": 7,
@@ -270,8 +269,7 @@
    "details": [
     "the huge sheet",
     "the small card"
-   ],
-   "key": "сделать меньше"
+   ]
   },
   "34": {
    "lib": "2026-10-27_gen_cx_gpt-image-2_8319c7a6.png",

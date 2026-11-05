@@ -34,3 +34,19 @@ def test_stalled_clip_is_rendered_again_instead_of_waiting_forever(tmp_path):
 def test_dead_worker_does_not_lose_its_clip(tmp_path):
     jobs = [dict(k=k, flag=str(tmp_path / "die")) for k in range(3)]
     assert af.render_all(jobs, 2, render=_die_once, stall=30) == {0: 0, 1: 10, 2: 20}
+
+
+def _busy_slow(job):
+    with open(job["flag"], "a") as fh:                         # сколько раз клип начинали
+        fh.write("x")
+    end = time.time() + 4
+    while time.time() < end:                                   # честно работает дольше stall
+        sum(range(1000))
+    return job["k"]
+
+
+def test_slow_but_working_clip_is_not_killed(tmp_path):
+    """L02 05.11: первая защита убивала длинные клипы с котом-ведущим, которые просто рисовались дольше 20 мин."""
+    flag = tmp_path / "starts"
+    assert af.render_all([dict(k=7, flag=str(flag))], 1, render=_busy_slow, stall=2) == {0: 7}
+    assert flag.read_text() == "x"                             # один запуск, без перезапуска
