@@ -1587,6 +1587,7 @@ def test_mix_loudness_and_riser_audible_under_voice():
     assert abs(reel.lufs(y, sr) - reel.MIX_LUFS) < 1.0
     assert float(np.abs(y).max()) <= reel.MIX_PEAK + 0.01
     assert reel.DUCK_DB_BY_NAME["riser"] > reel.DUCK_DB                       # riser под голосом слышен
+    assert reel.RISER_BOOST_DB >= 10 and reel.RISER_CEIL_DB < 0               # тело riser поднято, пик ниже голоса
     vt = (0.3 * np.sin(2 * np.pi * 220 * t))[:, None].repeat(2, 1).astype(np.float32)
     st = (0.3 * rng.standard_normal(len(t)))[:, None].repeat(2, 1).astype(np.float32)
     rms = lambda a: 20 * np.log10(np.sqrt((a ** 2).mean()) + 1e-9)
