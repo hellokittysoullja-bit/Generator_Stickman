@@ -592,6 +592,13 @@ SFX_OFF_TARGET = 4.0       # дальше 4 дБ от цели роли — на
 # ответе «таз» звук почти как голос (RMS −3…+4,5 дБ), у 22 — до +13,7 дБ: слово тонет. Теперь звук на словах опускается
 # до DUCK_DB к голосу (по окнам 20 мс, атака 10 мс, отпускание 120 мс), а в паузах и на склейках звучит полностью.
 DUCK_DB = -10.0
+# riser — нарастание ПОД словами хука (его смысл — «сейчас будет важное», пик ложится в склейку после слов): при −10
+# его в хуке не было слышно вовсе (рилс 24: 30–35 дБ под голосом; владелец 05.11: «звук райзер тоже пофикси»)
+DUCK_DB_BY_NAME = {"riser": -4.0}
+# Громкость микса: Lumean даёт голос около −16 LUFS, микс выходил −17…−17,5 (рилс 24), тише обычных −14 у роликов в
+# ленте и на телефоне (владелец 05.11: «голос почему-то не слышно»). Микс доводится до MIX_LUFS, пики держит лимитер.
+MIX_LUFS = -14.0
+MIX_PEAK = 0.89            # −1 dBFS
 DUCK_WIN, DUCK_ATTACK, DUCK_RELEASE = 0.02, 0.01, 0.12
 DUCK_VOICE_FLOOR = -45.0   # тише — голоса нет, звук не трогаем
 SOFT_DB = {"zoom": -5.0, "new_picture": -3.0, "same_picture": -6.0}   # переходные звуки — фактура, тише своей роли
@@ -1534,7 +1541,42 @@ def sound_levels(plan, sfx_mono, vp, words=None):
         out.append(r)
     return out, err, warn
 
-def duck_under_voice(st, vt, sr=None):
+def lufs(x, sr=None):
+    """Интегральная громкость (EBU R128) стерео float — замер ffmpeg ebur128."""
+    sr = sr or SR
+    p = subprocess.run(["ffmpeg", "-hide_banner", "-f", "f32le", "-ar", str(sr), "-ac", "2", "-i", "-", "-af", "ebur128",
+                        "-f", "null", "-"], input=np.ascontiguousarray(x, np.float32).tobytes(), capture_output=True)
+    m = re.findall(r"I:\s+(-?[\d.]+) LUFS", p.stderr.decode("utf8", "replace"))
+    return float(m[-1]) if m else None
+
+
+def loud_mix(tr, sr=None):
+    """Микс к MIX_LUFS: усиление по замеру, пики выше MIX_PEAK — мягкий лимитер ffmpeg (атака 5 мс, отпускание 60 мс),
+    а не срез всего микса вниз (тот возвращал голос в тишину). Без замера — как было."""
+    sr = sr or SR
+    i = lufs(tr, sr)
+    if i is None or i < -70:
+        return tr
+
+    def limit(x):
+        if float(np.abs(x).max()) <= MIX_PEAK:
+            return x
+        p = subprocess.run(["ffmpeg", "-v", "error", "-f", "f32le", "-ar", str(sr), "-ac", "2", "-i", "-", "-af",
+                            f"alimiter=limit={MIX_PEAK}:attack=5:release=60:level=disabled:latency=1", "-f", "f32le", "-"],
+                           input=np.ascontiguousarray(x, np.float32).tobytes(), capture_output=True, check=True)
+        y = np.frombuffer(p.stdout, np.float32).reshape(-1, 2)
+        out = np.zeros_like(x); out[:min(len(y), len(x))] = y[:len(x)]
+        return out
+    x = tr
+    for _ in range(3):                                # лимитер срезает пики и чуть громкость — догоняем замером
+        i = lufs(x, sr)
+        if i is None or abs(MIX_LUFS - i) < 0.3:
+            break
+        x = limit(x * np.float32(10 ** ((MIX_LUFS - i) / 20)))
+    return np.minimum(np.maximum(x, -MIX_PEAK), MIX_PEAK).astype(np.float32)
+
+
+def duck_under_voice(st, vt, sr=None, duck_db=None):
     """Приглушить дорожку звуков st там, где говорит голос vt: RMS звука в окне не выше голоса + DUCK_DB. Огибающая
     усиления — минимум по окну атаки и сглаживание отпусканием, без щелчков. Возвращает (новая st, глубина по окнам дБ)."""
     sr = sr or SR
@@ -1543,7 +1585,8 @@ def duck_under_voice(st, vt, sr=None):
         return st, np.zeros(0, np.float32)
     rms = lambda a: np.sqrt((a[:n * h].reshape(n, h, -1) ** 2).mean(axis=(1, 2))) + 1e-9
     v_db, s_db = 20 * np.log10(rms(vt)), 20 * np.log10(rms(st))
-    g_db = np.where(v_db > DUCK_VOICE_FLOOR, np.minimum(0.0, v_db + DUCK_DB - s_db), 0.0)
+    duck_db = DUCK_DB if duck_db is None else duck_db
+    g_db = np.where(v_db > DUCK_VOICE_FLOOR, np.minimum(0.0, v_db + duck_db - s_db), 0.0)
     a = max(1, int(round(DUCK_ATTACK / DUCK_WIN))); r = max(1, int(round(DUCK_RELEASE / DUCK_WIN)))
     from numpy.lib.stride_tricks import sliding_window_view
     from scipy.ndimage import uniform_filter1d
@@ -1577,6 +1620,7 @@ def mix_audio(path, total, shots, events, spec, voiced=False, voice=None, words=
         if m > 0: vt[i:i + m] += x[:m]
     vp = voice_p95(np.abs(vt).max(1)) if voice else VOICE_P95_NOMINAL   # пик по громкому каналу — как нормирует sfx()
     st = np.zeros((n, 2), np.float32)
+    tracks = {}                                       # звуки со своей глубиной приглушения (riser) — отдельно
     plan = sound_plan(shots, events)
     for p in plan:
         if p["role"] == "meme" and on_word(p["peak"], words):
@@ -1595,13 +1639,21 @@ def mix_audio(path, total, shots, events, spec, voiced=False, voice=None, words=
         i = int(t0 * SR)
         if i < 0: x = x[-i:]; i = 0
         m = min(len(x), n - i)
-        if m > 0: st[i:i + m] += x[:m]
+        if m > 0:
+            st[i:i + m] += x[:m]
+            if p["name"] in DUCK_DB_BY_NAME:
+                tracks.setdefault(p["name"], np.zeros((n, 2), np.float32))[i:i + m] += x[:m]
     levels = sound_levels(plan, np.abs(st).max(1), vp, words)
     if voice:
-        st, _ = duck_under_voice(st, vt)
+        rest = st - sum(tracks.values()) if tracks else st
+        st, _ = duck_under_voice(rest, vt)
+        for name, x in tracks.items():
+            st = st + duck_under_voice(x, vt, duck_db=DUCK_DB_BY_NAME[name])[0]
     tr = vt + st
+    if voice:
+        tr = loud_mix(tr)
     peak = float(np.abs(tr).max())
-    if peak > 0.89: tr *= 0.89 / peak                 # наложение двух звуков не клипует: пик не выше -1 dBFS
+    if peak > MIX_PEAK: tr *= MIX_PEAK / peak         # наложение двух звуков не клипует: пик не выше -1 dBFS
     pcm = (np.clip(tr, -1, 1) * 32767).astype(np.int16)
     with wave.open(path, "wb") as w:
         w.setnchannels(2); w.setsampwidth(2); w.setframerate(SR); w.writeframes(pcm.tobytes())
