@@ -102,8 +102,8 @@ class Rig:
         self.iris = np.asarray(Image.open(P("iris"))).astype(np.float32)
         self.E = _load_npy(P("eyes")); self.M = _load_npy(P("eye_masks"))
         if r.get("lama") and not os.path.isabs(r["lama"]): r["lama"] = os.path.join(base, r["lama"])
-        for pz in list((r.get("poses") or {}).values()) + ([r["wave"]] if isinstance(r.get("wave"), dict) else []):
-            for k in ("image", "mask"):                      # пути поз и взмаха тоже от папки рига
+        for pz in (r.get("poses") or {}).values():
+            for k in ("image", "mask"):                      # пути поз тоже от папки рига
                 if pz.get(k) and not os.path.isabs(pz[k]): pz[k] = os.path.join(base, pz[k])
         H, W = self.alpha.shape; self.H, self.W = H, W
         m = self.alpha > 128
@@ -187,25 +187,6 @@ class Rig:
             return (slice(ys.min(), ys.max() + 1), slice(xs.min(), xs.max() + 1)) if len(ys) else None
         self.sl = {"head": box(self.w_head), "ear": box(self.w_ear), "tail": box(self.w_tail)}
         self.sl.update({"paw_" + k: box(w) for k, w in self.w_paw.items()})
-        # поза «машет»: тело с поднятой лапой (платная правка эталона + убранная лишняя ступня)
-        self.wave = None
-        if r.get("wave"):
-            wv = r["wave"]
-            rs = np.asarray(Image.open(wv["image"]).convert("RGB")).astype(np.float32)
-            ra = np.asarray(Image.open(wv["mask"])).astype(np.float32)
-            Hm, Wm = np.mgrid[0:H, 0:W]
-            arm = (ra > 128) & ~ndimage.binary_dilation(self.alpha > 128, iterations=2) & (Wm < wv["arm_max_x"]) & (Hm < wv["arm_max_y"])
-            lab, n = ndimage.label(arm); keep = np.argmax(ndimage.sum(arm, lab, range(1, n + 1))) + 1
-            arm = ndimage.binary_fill_holes(ndimage.binary_dilation(lab == keep, iterations=4)) & (ra > 8)
-            arm_a = (ndimage.gaussian_filter(arm.astype(np.float32), 0.8) * ra).astype(np.float32)
-            outside = ~ndimage.binary_dilation(self.alpha > 128, iterations=1)   # вне силуэта эталона — только лапа
-            body_a = np.where(outside & ndimage.binary_dilation(arm, iterations=3), 0, ra).astype(np.float32)
-            fur_r = rs.copy()                                  # морда та же, что в эталоне: глаза — из системы глаз
-            for (mi, mw, mp) in self.M:
-                ww = ndimage.binary_dilation(mw, iterations=8); fur_r[ww] = self.fur[ww]
-            pv = np.array(wv["pivot"], np.float32); tip = np.array(wv["tip"], np.float32); v = tip - pv
-            wgt = smooth((((Wm - pv[0]) * v[0] + (Hm - pv[1]) * v[1]) / (v @ v)) * 1.6).astype(np.float32)
-            self.wave = dict(fur=fur_r, body_a=body_a, arm=np.dstack([rs, arm_a]), w=wgt, pivot=pv, down=wv["down_deg"])
         self.poses = {}
         for name, pz in (r.get("poses") or {}).items():
             rs = np.asarray(Image.open(pz["image"]).convert("RGB")).astype(np.float32)
@@ -484,32 +465,19 @@ class Rig:
 
     def cat_layer(self, st, t):
         r = self.r
-        wave = st.get("wave")                       # None или (подъём 0..1, угол маха)
-        if wave and self.wave and wave[0] >= 0.35:
-            wv = self.wave
-            cat = np.dstack([self.face(st["look"], st["lid"], wv["fur"]), wv["body_a"]])
-            k = (wave[0] - .35) / .65
-            settle = wv["down"] * np.exp(-4 * k) * np.cos(7 * k)               # доворот с отскоком
-            ang = np.radians(settle + wave[1])
-            Hh, Ww = self.H, self.W; Ym, Xm = np.mgrid[0:Hh, 0:Ww].astype(np.float32)
-            a2 = -ang * wv["w"]; c, s_ = np.cos(a2), np.sin(a2); dx, dy = Xm - wv["pivot"][0], Ym - wv["pivot"][1]
-            armw = remap(wv["arm"], wv["pivot"][0] + c * dx - s_ * dy, wv["pivot"][1] + s_ * dx + c * dy)
-            aa = armw[..., 3:4] / 255
-            cat = np.dstack([cat[..., :3] * (1 - aa) + armw[..., :3] * aa, np.maximum(cat[..., 3], armw[..., 3])])
+        fc = st.get("face")
+        if fc and fc[0] == "sleep" and "sleep_eyes" in self.faces and fc[1] > 0.66:
+            cat = self.base4.copy()                                   # глаза закрыты насовсем: мех без глаз, дуги — заплаткой
         else:
-            fc = st.get("face")
-            if fc and fc[0] == "sleep" and "sleep_eyes" in self.faces and fc[1] > 0.66:
-                cat = self.base4.copy()                                   # глаза закрыты насовсем: мех без глаз, дуги — заплаткой
-            else:
-                lid = st["lid"]
-                if fc and fc[0] == "sleep" and "sleep_eyes" in self.faces: lid = max(lid, float(smooth(min(1., fc[1] * 2.0))))  # сначала веки смыкаются
-                cat = self.face4(st["look"], lid, self.base4)
+            lid = st["lid"]
+            if fc and fc[0] == "sleep" and "sleep_eyes" in self.faces: lid = max(lid, float(smooth(min(1., fc[1] * 2.0))))  # сначала веки смыкаются
+            cat = self.face4(st["look"], lid, self.base4)
         pz = st.get("pose")                          # (имя позы, доля 0..1) — смена позы за 2 кадра
         if pz and pz[1] > 0 and pz[0] in self.poses:
             P = self.poses[pz[0]]
             other = self.face4(st["look"], st["lid"], P["base4"])
             k = np.float32(pz[1]); cat = cat * (1 - k) + other * k
-        self._apply_face(cat, st, wave, pz)
+        self._apply_face(cat, st, pz)
         fx0, fy0, fx1, fy1 = r["flame_box"]                                 # огонёк — в своих координатах
         # рамка с запасом на бумагу: в старой рамке кончик пламени (3 px от верха) при сдвиге вверх
         # упирался в её край и срезался плоско (7% кадров), а мех хвоста, пересекающий её бок,
@@ -530,11 +498,11 @@ class Rig:
             cat[Y0b:Y1b, X0b:X1b] = self._flame_state(cat[Y0b:Y1b, X0b:X1b], fs)
         return cat
 
-    def _apply_face(self, cat, st, wave, pz):
+    def _apply_face(self, cat, st, pz):
         """Лицо-эмоция поверх основного: рот с язычком (глаза остаются живыми — взгляд и моргание работают) или дуги
         закрытых глаз. Только в основной позе: в жесте лапы лицо остаётся прежним."""
         fc = st.get("face")
-        if not fc or (wave and wave[0] >= .35) or (pz and pz[1] > 0): return
+        if not fc or (pz and pz[1] > 0): return
         name, k = fc
         key = {"happy": "happy_mouth", "sleep": "sleep_eyes"}.get(name)
         P = self.faces.get(key)
@@ -758,7 +726,6 @@ def plan(dur, actions, seed=7):
         look_x += [(t, look_x[-1][1]), (t + .25, g), (t + .25 + hold, g), (t + .5 + hold, 0.)]
         t += hold + rng.uniform(2.5, 5)
     paws = {"left": ([], []), "right": ([], [])}
-    WV = []
     POSE = []
     FACES = []
     gaze_blinks = []
@@ -793,9 +760,6 @@ def plan(dur, actions, seed=7):
             POSE.append((t0, t0 + a.get("dur", 2.0), "paw_up"))
         elif kind == "pose":                    # любая поза из rig.json, поверх текущей
             POSE.append((t0, t0 + a.get("dur", 1.5), a["name"]))
-        elif kind == "wave":                    # помахать: подъём 0.2 с, n взмахов, опускание
-            n = a.get("n", 2); up = .2; per = .42
-            WV.append((t0, t0 + up, t0 + up + n * per, t0 + up + n * per + .22, per))
         elif kind == "face":                    # лицо-эмоция: happy (язык) или sleep (дуги); держится до конца клипа или dur
             FACES.append((t0, a["name"], a.get("dur"), a.get("fx", True)))
         elif kind == "blink":
@@ -817,12 +781,6 @@ def plan(dur, actions, seed=7):
             for t1 in (e, e + .25):
                 d = (t - t1) / .11
                 if 0 <= d < 2: ear += -10 * np.sin(np.pi * d / 2) ** 2
-        wave = None
-        for (a0, a1, a2_, a3, per) in WV:
-            if a0 <= t <= a3:
-                lift = smooth((t - a0) / (a1 - a0)) if t < a1 else (1 - smooth((t - a2_) / (a3 - a2_)) if t > a2_ else 1.)
-                sw = 12 * np.sin(2 * np.pi * (t - a1) / per) if a1 <= t <= a2_ else 0.
-                wave = (float(lift), float(sw))
         pose = None; squash = 0.
         best = None
         for (p0, p1, name) in POSE:
@@ -841,7 +799,7 @@ def plan(dur, actions, seed=7):
                 if ffx and k > 0.02: fx = ("stars" if fname == "happy" else "zzz", k, f0 + (0.0 if fname == "happy" else .55 * tin))
                 if fname == "sleep":                 # спит: голова опускается, дыхание глубже и реже
                     hd += -3.4 * k; br = 1 + (.012 + .010 * k) * np.sin(2 * np.pi * t / (2.6 + 1.0 * k))
-        return dict(pose=pose, face=face, fx=fx, squash=squash, wave=wave, look=(key(t, look_x), key(t, look_y)), lid=lid, head=hd, ear=ear,
+        return dict(pose=pose, face=face, fx=fx, squash=squash, look=(key(t, look_x), key(t, look_y)), lid=lid, head=hd, ear=ear,
                     tail=float(4.3 * np.tanh(fbm(np.float32(t / 3.1), 53))) if TAIL_NOISE else 4 * np.sin(2 * np.pi * t / 3.1),
                     breath=br,
                     paws={k: (key(t, sorted(v[0])), key(t, sorted(v[1]))) for k, v in paws.items()})

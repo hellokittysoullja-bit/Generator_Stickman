@@ -5,8 +5,8 @@
 > `puppet.py` (заменены куклой `doll/`), `klein.py` (FLUX Klein не правит референс), `remotion/` (Remotion не взят 28.10),
 > `n8n_wf.json` (качества не даёт), `gl/bench.py` и `doll/gl_backend.py` (ModernGL не взят), `Rig.frame_hd` и
 > `doll/render_hd.py` (не взяты, под новые слои не переделаны), `doll/doll.py` (первая сцена, заменена `doll_rig.py`),
-> `doll/gen_wave.py`, `doll/fixfoot.py`, `doll/assets/hero_wave*.png` («машет» отклонено владельцем 07.10; оригиналы
-> картинок — в `library/cat/originals/`), `doll/flame_ab.py` (сравнение сделано), `doll/test_rig_fps.py` (не запускался:
+> `doll/gen_wave.py`, `doll/fixfoot.py`, `doll/assets/hero_wave*.png` и ветка «машет» в `doll_rig.py` (отклонено
+> владельцем 07.10; оригиналы картинок — в `library/cat/originals/`; кадры куклы после правки побайтно те же), `doll/flame_ab.py` (сравнение сделано), `doll/test_rig_fps.py` (не запускался:
 > лежал вне `tests/`; проверка моргания на 24 к/с перенесена в `tests/test_regressions_0810.py`). Всё — в истории git
 > до коммита 75e64fb: `git show 75e64fb:experiments/alive_cat/<путь>`. Отложенные жесты лап (`gen_reach_left*`, `rotleg.py`,
 > `rotdemo.py`) оставлены: владелец их отложил, не отклонил.
