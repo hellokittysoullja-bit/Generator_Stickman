@@ -63,13 +63,14 @@
    ]
   },
   "7": {
-   "new": "medium shot: the main character lies comfortably on its back on a soft rug, holding one phone above its face with both paws, an amused relaxed face; out of the phone's blank glowing screen spills a very long paper ribbon made of small blank cards, it loops across the rug and piles into a big soft heap right beside the character",
    "hero": true,
    "state": null,
    "details": [
     "the phone in the paws",
     "the heap of blank cards"
-   ]
+   ],
+   "lib": "2026-11-05_gen_cx_gpt-image-2_lenta_fixed_38d3cbe9.png",
+   "note": "кот в ленте — исправленный вариант владельца 05.11 (был new 00c70140); задание рисунка было: medium shot: the main character lies comfortably on its back on a soft rug, holding one phone above its face with both p…"
   },
   "8": {
    "absorb": true

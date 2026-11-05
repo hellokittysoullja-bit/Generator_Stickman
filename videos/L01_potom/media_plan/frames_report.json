@@ -595,8 +595,8 @@
    "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot: the main character lies comfortably on its back on a soft rug, holding one phone above its face with both paws, an amused relaxed face; out of the phone's blank glowing screen spills a very long paper ribbon made of small blank cards, it loops across the rug and piles into a big soft heap right beside the character. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
    "rounds": [],
    "path": "frames/007.png",
-   "status": "unchecked",
-   "chosen": "f79cc757a4c3b17b7e6b.png",
+   "status": "ok",
+   "chosen": "lib_2026-11-05_gen_cx_gpt-image-2_lenta_fixed_38d3cbe9.png",
    "labels_placed": [],
    "label_tries": [
     {
@@ -614,56 +614,10 @@
      "defects": null
     }
    },
-   "objects": [
-    {
-     "name": "the phone in the paws",
-     "role": "subject",
-     "word": null,
-     "box": [
-      535.9,
-      199.2,
-      719.6,
-      410.8
-     ],
-     "why": null
-    },
-    {
-     "name": "the heap of blank cards",
-     "role": "detail",
-     "word": null,
-     "box": [
-      719.6,
-      256.8,
-      1377.9,
-      575.1
-     ],
-     "why": null
-    },
-    {
-     "name": "the head of a black cartoon cat",
-     "role": "hero_head",
-     "word": null,
-     "box": [
-      300.1,
-      256.8,
-      643.0,
-      534.0
-     ],
-     "why": null
-    },
-    {
-     "name": "a black cartoon cat",
-     "role": "hero",
-     "word": null,
-     "box": [
-      300.1,
-      256.8,
-      1224.8,
-      831.9
-     ],
-     "why": null
-    }
-   ]
+   "objects": [],
+   "check": "eyes",
+   "source": "library",
+   "note": "исправленный вариант владельца 05.11: телефон повёрнут экраном к коту (было — экраном к зрителю)"
   },
   {
    "index": 8,
