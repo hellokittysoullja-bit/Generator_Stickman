@@ -43,7 +43,8 @@ import math
 import os
 import subprocess
 import sys
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import FIRST_COMPLETED, ProcessPoolExecutor, wait
+from concurrent.futures.process import BrokenProcessPool
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import easing  # noqa: E402
@@ -205,6 +206,44 @@ def load_scene(path, fr, words):
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod.Scene(fr, words, frame_clip.UPSCALE)
+
+
+STALL_SEC = 1200    # ни один клип не дорисовался за 20 мин — пул завис (05.11, пробник L02: процесс клипа умер молча,
+                    # сборка ждала его результат 40 мин); пул убивается, недорисованные клипы — в новый пул
+POOL_TRIES = 2
+
+
+def render_all(jobs, workers, render=None, stall=STALL_SEC, tries=POOL_TRIES):
+    """Клипы параллельно, без вечного ожидания: если за stall секунд не дорисовался ни один клип или пул сломался,
+    процессы пула убиваются, а недоделанные клипы идут в новый пул (до tries раз). {номер: результат}."""
+    render = render or _render
+    out, todo = {}, list(range(len(jobs)))
+    for attempt in range(tries):
+        if not todo:
+            break
+        ex = ProcessPoolExecutor(workers)
+        fut = {ex.submit(render, jobs[k]): k for k in todo}
+        pending, stuck = set(fut), False
+        try:
+            while pending:
+                done, pending = wait(pending, timeout=stall, return_when=FIRST_COMPLETED)
+                if not done:
+                    stuck = True
+                    break
+                for f in done:
+                    try:
+                        out[fut[f]] = f.result()
+                    except BrokenProcessPool:
+                        stuck = True
+        finally:
+            if stuck:
+                for pr in list(getattr(ex, "_processes", {}).values()):
+                    pr.kill()
+            ex.shutdown(wait=not stuck, cancel_futures=True)
+        todo = [k for k in todo if k not in out]
+        if todo and attempt + 1 < tries:
+            print(f"ВНИМАНИЕ: пул клипов завис или сломался — заново {len(todo)} клип(ов)")
+    return out
 
 
 def _render(job):
@@ -495,9 +534,8 @@ def main(video_dir):
     pick = [k for k, i in enumerate(kept) if i in {int(x) - 1 for x in only.split(",") if x.strip()}] if only else None
     results = [cached(j) for j in jobs]
     todo = [k for k, r in enumerate(results) if r is None and (pick is None or k in pick)]
-    with ProcessPoolExecutor(workers) as ex:
-        for k, r in zip(todo, ex.map(_render, [jobs[k] for k in todo])):
-            results[k] = r
+    for i, r in render_all([jobs[k] for k in todo], workers).items():
+        results[todo[i]] = r
     clips = [r[0] if r else None for r in results]
     cues = [(jobs[k]["T0"] + a, jobs[k]["T0"] + b, kind, 0.0) for k, r in enumerate(results) if r
             for a, b, kind in r[1]]
