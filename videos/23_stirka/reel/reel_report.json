@@ -369,8 +369,18 @@
    "soft": false,
    "gain_db": 0.0,
    "vs_voice_db": -12.0,
-   "with_overlap_db": -12.1,
+   "with_overlap_db": -12.3,
    "target_db": -12.0
+  },
+  {
+   "name": "riser",
+   "role": "whoosh",
+   "peak": 1.65,
+   "soft": false,
+   "gain_db": 10.0,
+   "vs_voice_db": -2.0,
+   "with_overlap_db": -0.6,
+   "target_db": -2.0
   },
   {
    "name": "shock",
@@ -379,18 +389,8 @@
    "soft": false,
    "gain_db": 0.0,
    "vs_voice_db": -8.0,
-   "with_overlap_db": -5.7,
+   "with_overlap_db": -0.6,
    "target_db": -8.0
-  },
-  {
-   "name": "riser",
-   "role": "whoosh",
-   "peak": 1.787,
-   "soft": false,
-   "gain_db": 0.0,
-   "vs_voice_db": -12.0,
-   "with_overlap_db": -5.7,
-   "target_db": -12.0
   },
   {
    "name": "swoosh",
@@ -585,6 +585,12 @@
  ],
  "events": [
   {
+   "kind": "sfx",
+   "t": 0.0,
+   "beat": 0,
+   "name": "riser"
+  },
+  {
    "kind": "mark",
    "t": 0.0,
    "beat": 0
@@ -594,12 +600,6 @@
    "t": 0.137,
    "beat": 0,
    "name": "fast_whoosh"
-  },
-  {
-   "kind": "sfx",
-   "t": 0.137,
-   "beat": 0,
-   "name": "riser"
   },
   {
    "kind": "shake",
