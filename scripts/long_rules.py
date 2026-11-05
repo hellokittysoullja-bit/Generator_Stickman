@@ -301,27 +301,23 @@ def _phrase_times(video_dir, blocks):
 
 def _word_t(blocks, starts, ends, idx, at, wt=None):
     """Время момента в клипе картинки (фразы idx, с 0: своя и поглощённые absorb): секунды от начала клипа или слово
-    (["слово", k] — k-е вхождение, как в long_edit.word_time) — до озвучки по месту слова во фразе. Нет слова — None."""
+    (["слово", k] — k-е вхождение). Слово ищется тем же правилом, что у сборщика (words.occurrences: точное совпадение
+    важнее начала слова) — иначе проверка ставит склейку на «вот-вот», а сборщик на «Вот». До озвучки — по месту слова
+    во фразе. Нет слова — None."""
     import script_parser
+    import words as wordmatch
     if isinstance(at, (int, float)):
         return starts[idx[0]] + float(at)
     stem, k = (at, 1) if isinstance(at, str) else (at[0], int(at[1]))
     if wt:                                   # ролик озвучен — настоящее время слова
+        ws = [w for i in idx for w in (wt[i] if i < len(wt) else [])]
+    else:
+        ws = []
         for i in idx:
-            for w in (wt[i] if i < len(wt) else []):
-                if norm(w["word"]).startswith(norm(stem)):
-                    k -= 1
-                    if not k:
-                        return w["start"]
-        return None
-    for i in idx:
-        ws = words(script_parser.strip_pipeline_only_tags(blocks[i]["text"]))
-        for j, w in enumerate(ws):
-            if norm(w).startswith(norm(stem)):
-                k -= 1
-                if not k:
-                    return starts[i] + (ends[i] - starts[i]) * j / max(1, len(ws))
-    return None
+            tw = words(script_parser.strip_pipeline_only_tags(blocks[i]["text"]))
+            ws += [{"word": w, "start": starts[i] + (ends[i] - starts[i]) * j / max(1, len(tw))} for j, w in enumerate(tw)]
+    hits = wordmatch.occurrences(stem, ws)
+    return hits[k - 1]["start"] if 0 < k <= len(hits) else None
 
 
 def _video_hook_montage(video_dir, blocks, frames, starts, ends, hook_n, fx_path):

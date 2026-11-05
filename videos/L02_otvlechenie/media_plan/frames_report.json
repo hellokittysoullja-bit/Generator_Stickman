@@ -92,13 +92,13 @@
      "why": null
     }
    ],
-   "plan_sig": "df760b0bf1a9c302d92f"
+   "plan_sig": "36c0f1cb7fb1f3dea657"
   },
   {
    "index": 1,
    "key": "21f0357245b7652e",
    "sig": "104966d3a74fc71267dd",
-   "plan_sig": "8573efa020d5aaa84f1b",
+   "plan_sig": "be9ad90edac2760412bb",
    "kind": "scene",
    "labels": [],
    "hero": true,
@@ -186,7 +186,7 @@
    "index": 2,
    "key": "f4d6b3525c467b10",
    "sig": "2f68dec90b94b512bbb5",
-   "plan_sig": "5cfa7c72feab407067ec",
+   "plan_sig": "90936002eaab6aafb787",
    "kind": "scene",
    "labels": [],
    "hero": true,
@@ -279,66 +279,10 @@
    "status": "ok",
    "check": "eyes",
    "source": "library",
-   "chosen": "lib_2026-10-27_gen_cx_gpt-image-2_00c70140.png",
+   "chosen": "lib_2026-11-05_gen_cx_gpt-image-2_lenta_fixed_38d3cbe9.png",
    "path": "frames/004.png",
-   "objects": [
-    {
-     "name": "the blank sheet of paper",
-     "role": "detail",
-     "word": null,
-     "box": [
-      535.9,
-      205.4,
-      704.3,
-      410.8
-     ],
-     "why": null
-    },
-    {
-     "name": "the cup of tea with no steam",
-     "role": "detail",
-     "word": null,
-     "box": null,
-     "why": "не найден"
-    },
-    {
-     "name": "the flame on the tip of the tail of a black cartoon cat",
-     "role": "detail",
-     "word": null,
-     "box": [
-      1025.8,
-      493.0,
-      1132.9,
-      605.9
-     ],
-     "why": null
-    },
-    {
-     "name": "the head of a black cartoon cat",
-     "role": "hero_head",
-     "word": null,
-     "box": [
-      306.2,
-      256.8,
-      689.0,
-      534.0
-     ],
-     "why": null
-    },
-    {
-     "name": "a black cartoon cat",
-     "role": "hero",
-     "word": null,
-     "box": [
-      306.2,
-      256.8,
-      1224.8,
-      821.6
-     ],
-     "why": null
-    }
-   ],
-   "plan_sig": "6512977f8905f847d561"
+   "objects": [],
+   "plan_sig": "07d2c0794d6e1b8e5f1c"
   },
   {
    "index": 4,
@@ -408,13 +352,13 @@
      "why": null
     }
    ],
-   "plan_sig": "bd1ed465111217d46764"
+   "plan_sig": "d943dd967da2601cf2cb"
   },
   {
    "index": 6,
    "key": "167e33b20d5010ac",
    "sig": "d07a7716f84ef5784d3c",
-   "plan_sig": "0d2d84dfd9231ff51d4b",
+   "plan_sig": "91c792be092d45507538",
    "kind": "scene",
    "labels": [],
    "hero": false,
@@ -480,10 +424,24 @@
    ]
   },
   {
+   "index": 7,
+   "key": "61d1fadf773db0ea",
+   "kind": "scene",
+   "labels": [],
+   "hero": true,
+   "status": "ok",
+   "check": "eyes",
+   "source": "library",
+   "chosen": "lib_2026-10-20_videos_02_sdvg_vremya_frames_005_c430181c.png",
+   "path": "frames/008.png",
+   "objects": [],
+   "plan_sig": "ddb34a7adbbee742fff5"
+  },
+  {
    "index": 8,
    "key": "46dcfe4f076fe5b4",
    "sig": "c84a114096c6978204d8",
-   "plan_sig": "75efbf4f39edfd9ba848",
+   "plan_sig": "6185233c4fe0ff2ab638",
    "kind": "scene",
    "labels": [],
    "hero": true,
@@ -576,7 +534,7 @@
    "index": 9,
    "key": "df5d5205b457e1d2",
    "sig": "45a70cdb187320353250",
-   "plan_sig": "89c5e69fe6d4906be36c",
+   "plan_sig": "cdacbbd8d4abf9a908f2",
    "kind": "scene",
    "labels": [],
    "hero": false,
@@ -633,7 +591,7 @@
    "index": 10,
    "key": "7d29671723d8c339",
    "sig": "88e9b6395d740cc43d9a",
-   "plan_sig": "e9905f78ba4deb19b001",
+   "plan_sig": "c71cf5e83c25dd5cf196",
    "kind": "scene",
    "labels": [],
    "hero": false,
@@ -697,7 +655,7 @@
    "index": 12,
    "key": "a94352ea2bc144da",
    "sig": "199ebcdba7b930684dd2",
-   "plan_sig": "6de21a57abd90bbaec9d",
+   "plan_sig": "73ed7fe79db308cb4a3c",
    "kind": "scene",
    "labels": [],
    "hero": false,
@@ -754,7 +712,7 @@
    "index": 13,
    "key": "d9a86e9935066075",
    "sig": "5fce88b87b81672ffa22",
-   "plan_sig": "7939ac0ca69023472a35",
+   "plan_sig": "0c8c679383130e7aa97e",
    "kind": "scene",
    "labels": [],
    "hero": true,
@@ -842,7 +800,7 @@
    "index": 14,
    "key": "694e435bf2c6f121",
    "sig": "2687380d2aff7dbc20f1",
-   "plan_sig": "47cab7d6bad3e180019d",
+   "plan_sig": "2124cf75b6ffc3faca86",
    "kind": "scene",
    "labels": [],
    "hero": true,
@@ -935,7 +893,7 @@
    "index": 16,
    "key": "aaa2150a06e862bc",
    "sig": "7b4f7d1d1fb415c2d7bc",
-   "plan_sig": "49452d4bc00dc11424e7",
+   "plan_sig": "34f0f7f103bcebc2fe16",
    "kind": "scene",
    "labels": [],
    "hero": false,
@@ -992,7 +950,7 @@
    "index": 18,
    "key": "74914a17e6ef81a9",
    "sig": "83e733b3db374313d6d8",
-   "plan_sig": "310a86bf7be30f497582",
+   "plan_sig": "55c2a79cbe7c7ae50b05",
    "kind": "scene",
    "labels": [],
    "hero": true,
@@ -1139,7 +1097,7 @@
      "why": "не найден"
     }
    ],
-   "plan_sig": "d972f8b4189c2874adf4"
+   "plan_sig": "db35465f885f9bbf6be4"
   },
   {
    "index": 20,
@@ -1204,7 +1162,7 @@
      "why": null
     }
    ],
-   "plan_sig": "d79691be52cea83fa35d"
+   "plan_sig": "9cfea9063b086f439000"
   },
   {
    "index": 21,
@@ -1279,13 +1237,13 @@
      "why": null
     }
    ],
-   "plan_sig": "b8c5e1a3fff4d23ac2c7"
+   "plan_sig": "716e24c46a6142466ebb"
   },
   {
    "index": 22,
    "key": "83af1d1bd057b558",
    "sig": "8c7173cd91332cfd551b",
-   "plan_sig": "68b406994ba1ca4326c7",
+   "plan_sig": "84ceed49294272033f2e",
    "kind": "scene",
    "labels": [],
    "hero": false,
@@ -1342,7 +1300,7 @@
    "index": 24,
    "key": "5039f167990ba3a7",
    "sig": "b389bb8200a9732b1543",
-   "plan_sig": "c8920c534a601fc427d2",
+   "plan_sig": "bb71827b72aa7ac1ec6e",
    "kind": "scene",
    "labels": [],
    "hero": false,
@@ -1399,7 +1357,7 @@
    "index": 26,
    "key": "2004405b231a8c07",
    "sig": "cdd98d56c6193dc83a3d",
-   "plan_sig": "f5185ed34ef5c65d48bc",
+   "plan_sig": "eb1a4f67294c9ef18391",
    "kind": "scene",
    "labels": [],
    "hero": true,
@@ -1492,7 +1450,7 @@
    "index": 28,
    "key": "08d4bb6c3218bf4c",
    "sig": "82749557bca5b389de10",
-   "plan_sig": "cc301c8c8c28d6fd5ba3",
+   "plan_sig": "97aff18aabbda917599c",
    "kind": "scene",
    "labels": [],
    "hero": true,
@@ -1585,7 +1543,7 @@
    "index": 29,
    "key": "349a119fcf8f3682",
    "sig": "d0f1ed4003ca1af41789",
-   "plan_sig": "a88cae6b63d6062f3358",
+   "plan_sig": "57f395c6ba09cd3b5b6b",
    "kind": "scene",
    "labels": [],
    "hero": true,
@@ -1678,7 +1636,7 @@
    "index": 30,
    "key": "ecf6ac1770c4ce2f",
    "sig": "f86563c64c20cfdc3f40",
-   "plan_sig": "101e51fb7cec3e20eaef",
+   "plan_sig": "45c7b80be08df165221b",
    "kind": "scene",
    "labels": [],
    "hero": true,
@@ -1806,13 +1764,13 @@
      "why": "не найден"
     }
    ],
-   "plan_sig": "bc2806aff10f9ad4bbd2"
+   "plan_sig": "9091e4f54b8b41a11e9c"
   },
   {
    "index": 32,
    "key": "9f0dc66e5d8cc1a9",
    "sig": "91d7d48bf5ada10b6819",
-   "plan_sig": "1da554163f5fcf8ae1b9",
+   "plan_sig": "51c0e2fa8648d133b185",
    "kind": "scene",
    "labels": [],
    "hero": true,
@@ -1974,13 +1932,13 @@
      "why": null
     }
    ],
-   "plan_sig": "0fa21e0e125886076172"
+   "plan_sig": "6c7e18c9e206f726d679"
   },
   {
    "index": 35,
    "key": "4a4242b1dc8414cf",
    "sig": "1ac7dcd5e15ddc37d7a1",
-   "plan_sig": "735c793a4aeb08478a12",
+   "plan_sig": "bdc99c93ebde44ddcb83",
    "kind": "scene",
    "labels": [],
    "hero": true,
@@ -2073,7 +2031,7 @@
    "index": 36,
    "key": "e68ca0b71e227638",
    "sig": "4a3682b42bbfcb658a33",
-   "plan_sig": "5d9dbe6c5bcb98cb171e",
+   "plan_sig": "aaf9621300dab0b74bc4",
    "kind": "scene",
    "labels": [],
    "hero": true,
@@ -2220,7 +2178,7 @@
      "why": null
     }
    ],
-   "plan_sig": "94dc34a365d563a8a9b0"
+   "plan_sig": "3a2ce212b4b005ad4775"
   },
   {
    "index": 40,
@@ -2302,13 +2260,13 @@
      "why": null
     }
    ],
-   "plan_sig": "632e1870cb13aea946bc"
+   "plan_sig": "8df48bc27b1fd1c20f03"
   },
   {
    "index": 41,
    "key": "a404a7222b670fde",
    "sig": "94214c5dbdb851b87819",
-   "plan_sig": "c2e7ec46ad34cdecc2d0",
+   "plan_sig": "1f90a8964ca1009eb482",
    "kind": "scene",
    "labels": [],
    "hero": true,
@@ -2453,13 +2411,13 @@
      "why": null
     }
    ],
-   "plan_sig": "8848d35153cc0b2aef99"
+   "plan_sig": "1909f184f1680d18d830"
   },
   {
    "index": 44,
    "key": "0cf9fd284f3b5f40",
    "sig": "e3170c1ae469103e8066",
-   "plan_sig": "49bcc5cf0d13b2dd4045",
+   "plan_sig": "04b92d32f1a3822c8c05",
    "kind": "scene",
    "labels": [],
    "hero": true,
@@ -2547,7 +2505,7 @@
    "index": 45,
    "key": "906022add3ce39da",
    "sig": "3f4e2d097e921fe3a1ba",
-   "plan_sig": "280c4f2f2b9bc1bc3767",
+   "plan_sig": "61aca78017d52a285c69",
    "kind": "scene",
    "labels": [],
    "hero": true,
@@ -2675,13 +2633,13 @@
      "why": null
     }
    ],
-   "plan_sig": "92b5e5736c8ebd182dae"
+   "plan_sig": "3676c2007be3fe2a69c0"
   },
   {
    "index": 47,
    "key": "f07338970ab4be9b",
    "sig": "a8954d2e490ba81bc97c",
-   "plan_sig": "392d16c93afb0d151ccf",
+   "plan_sig": "976336b1d2e4a64bc424",
    "kind": "scene",
    "labels": [],
    "hero": true,
@@ -2774,7 +2732,7 @@
    "index": 49,
    "key": "8ddaae1bb5e82e71",
    "sig": "bb2745520655da68274a",
-   "plan_sig": "9d791ba18941012a2619",
+   "plan_sig": "a4f5d577c8e49365c810",
    "kind": "scene",
    "labels": [],
    "hero": false,
@@ -2831,7 +2789,7 @@
    "index": 50,
    "key": "557d4237209c45f4",
    "sig": "9eb4013ce958e3301a8e",
-   "plan_sig": "e139058d2be6b3c2a3ee",
+   "plan_sig": "4b5463dee4981c24b544",
    "kind": "scene",
    "labels": [],
    "hero": true,
@@ -2924,7 +2882,7 @@
    "index": 51,
    "key": "c7e7fbd1d7e17293",
    "sig": "af00b004702f25e303aa",
-   "plan_sig": "f2885367c6fb4974d435",
+   "plan_sig": "5f9542dcdcf7ad0479b4",
    "kind": "scene",
    "labels": [],
    "hero": true,
@@ -3093,7 +3051,7 @@
      "why": null
     }
    ],
-   "plan_sig": "771ffe5ddd7003b26ff3"
+   "plan_sig": "72191502674dfa0d080b"
   },
   {
    "index": 54,
@@ -3129,7 +3087,7 @@
      "why": "не найден"
     }
    ],
-   "plan_sig": "da0acc9517b13c9e4082"
+   "plan_sig": "4591f1323508f9c91201"
   },
   {
    "index": 55,
@@ -3180,7 +3138,7 @@
      "why": null
     }
    ],
-   "plan_sig": "de2dcccbce85d9df3b90"
+   "plan_sig": "7a6428c591f03c0b5037"
   },
   {
    "index": 57,
@@ -3252,13 +3210,13 @@
      "why": "не найден"
     }
    ],
-   "plan_sig": "476f75991577bf2ca988"
+   "plan_sig": "0960792a7f9de545f35a"
   },
   {
    "index": 58,
    "key": "fc9d9ca5c22b0319",
    "sig": "a0e3b592f44974d08327",
-   "plan_sig": "c7436d759ed0d68343be",
+   "plan_sig": "7584ecbf1c0c28010ee6",
    "kind": "scene",
    "labels": [],
    "hero": false,
@@ -3391,7 +3349,7 @@
      "why": null
     }
    ],
-   "plan_sig": "20a7139fb11e86550c91"
+   "plan_sig": "0df516bd43937ded6ad1"
   }
  ]
 }

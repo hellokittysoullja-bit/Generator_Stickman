@@ -31,7 +31,7 @@
    "chosen": "lib_2026-10-23_videos_01_sdvg_pismo_reel_gen_r1_phone_e3b862b6.png",
    "path": "frames/001.png",
    "objects": [],
-   "plan_sig": "b5daa181f2b842868703"
+   "plan_sig": "09650fe2d1a1499e0628"
   },
   {
    "index": 1,
@@ -228,7 +228,7 @@
    "index": 9,
    "key": "e31eb35f81f3f052",
    "sig": "62eaa8fff740a8b959b6",
-   "plan_sig": "d6cedd4449a4b5163daf",
+   "plan_sig": "9ba4688d3bd2c113469d",
    "kind": "scene",
    "labels": [],
    "hero": true,
@@ -268,7 +268,7 @@
    "chosen": "lib_2026-10-27_gen_cx_gpt-image-2_bb87085a.png",
    "path": "frames/011.png",
    "objects": [],
-   "plan_sig": "c94430e9a9f15a4e0eed"
+   "plan_sig": "dc19d595271c28567b98"
   },
   {
    "index": 11,
@@ -370,7 +370,7 @@
    "chosen": "lib_2026-10-28_gen_cx_gpt-image-2_3614e0fd.png",
    "path": "frames/018.png",
    "objects": [],
-   "plan_sig": "ab17a17293e79fb23996"
+   "plan_sig": "d6129d9dedd63e5dbb43"
   },
   {
    "index": 18,
@@ -453,7 +453,7 @@
    "index": 24,
    "key": "f824f7eccb873d0d",
    "sig": "1bb47f46e3d2109c7e5f",
-   "plan_sig": "e61a63e1963d3bd9282d",
+   "plan_sig": "7eb2ba89e9fae7255a9c",
    "kind": "scene",
    "labels": [],
    "hero": true,
@@ -490,7 +490,7 @@
    "status": "ok",
    "check": "eyes",
    "source": "library",
-   "chosen": "lib_2026-10-27_gen_cx_gpt-image-2_00c70140.png",
+   "chosen": "lib_2026-11-05_gen_cx_gpt-image-2_lenta_fixed_38d3cbe9.png",
    "path": "frames/026.png",
    "objects": [],
    "plan_sig": "478fbbde7eead932be08"
@@ -507,7 +507,7 @@
    "chosen": "lib_2026-10-28_gen_cx_gpt-image-2_d24d5468.png",
    "path": "frames/027.png",
    "objects": [],
-   "plan_sig": "f40e88b22b72cbf34de4"
+   "plan_sig": "dd72d4ebb6ffeff0fe0e"
   },
   {
    "index": 27,
@@ -542,7 +542,7 @@
    "chosen": "lib_2026-10-27_gen_cx_gpt-image-2_8319c7a6.png",
    "path": "frames/030.png",
    "objects": [],
-   "plan_sig": "1d92fad5e82d543400f7"
+   "plan_sig": "7c6ea675f9f251e8e082"
   },
   {
    "index": 31,
@@ -654,7 +654,7 @@
    "chosen": "lib_2026-10-25_videos_04_noch_reel_gen_n5_bed_side_bc498c2b.png",
    "path": "frames/040.png",
    "objects": [],
-   "plan_sig": "4e06c341055aea518bdf"
+   "plan_sig": "83dbcbf4bd13235738f0"
   },
   {
    "index": 41,
@@ -674,7 +674,7 @@
    "index": 42,
    "key": "52f9393b1fe23fd8",
    "sig": "4e2f37614a6e36e7bfa2",
-   "plan_sig": "1defc840250a7d0172f8",
+   "plan_sig": "0ba902a4862647995bf6",
    "kind": "scene",
    "labels": [],
    "hero": true,
@@ -749,7 +749,7 @@
    "chosen": "lib_2026-10-27_gen_cx_gpt-image-2_70857920.png",
    "path": "frames/048.png",
    "objects": [],
-   "plan_sig": "9514289cd5ccae72c7ac"
+   "plan_sig": "89ac4eb060cd2557bd9b"
   },
   {
    "index": 49,
@@ -763,7 +763,7 @@
    "chosen": "lib_2026-10-27_gen_cx_gpt-image-2_2c7bd8ff.png",
    "path": "frames/050.png",
    "objects": [],
-   "plan_sig": "b3386555ad2d31f3827b"
+   "plan_sig": "c2390c826eb2c6534118"
   },
   {
    "index": 50,
@@ -791,7 +791,7 @@
    "chosen": "lib_2026-10-27_gen_cx_gpt-image-2_e7c58406.png",
    "path": "frames/053.png",
    "objects": [],
-   "plan_sig": "30a780b9c7f5a2904fee"
+   "plan_sig": "95465fa09d873d156c78"
   },
   {
    "index": 53,
@@ -829,7 +829,7 @@
    "index": 54,
    "key": "b572c1203d93be1d",
    "sig": "bdba11f6f33fcba44c72",
-   "plan_sig": "79bb24dbdf9ddd05b933",
+   "plan_sig": "06464931c2c974318297",
    "kind": "scene",
    "labels": [],
    "hero": true,
@@ -869,7 +869,7 @@
    "chosen": "lib_2026-10-28_gen_cx_gpt-image-2_70cf5dc4.png",
    "path": "frames/056.png",
    "objects": [],
-   "plan_sig": "31a1424cb63271c17f5d"
+   "plan_sig": "eeeb1a3c2ef6bf3030a2"
   },
   {
    "index": 56,

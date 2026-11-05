@@ -496,6 +496,16 @@ def test_sound_on_word_takes_the_same_occurrence_as_the_cut():
     assert not errs and abs(ev[0]["t"] - 1.5) < 1e-9
 
 
+def test_rule_check_finds_the_word_where_the_assembler_cuts():
+    """Проверка правил искала слово по началу («Вот» находило «вот-вот» раньше), сборщик — точное совпадение первым:
+    L02 05.11 получил ложный план 4,4 с, которого в сборке нет. Правило одно — words.occurrences."""
+    import long_edit
+    ws = [{"word": "вот-вот", "start": 1.0}, {"word": "закипит.", "start": 1.5}, {"word": "Вот", "start": 4.0}]
+    blocks = [{"text": "вот-вот закипит. Вот"}]
+    t_rule = long_rules._word_t(blocks, [0.0], [5.0], [0], "Вот", [ws])
+    assert t_rule == long_edit.word_time("Вот", ws) == 4.0
+
+
 def test_plan_reason_must_say_why_not_just_wide_shot(tmp_path):
     vd = hooked(tmp_path, shots=[dict(REEL_SHOTS[0], why="общий план")] + REEL_SHOTS[1:])
     assert any(e.startswith("EDIT-WHY") for e in long_rules.hook_build(vd))

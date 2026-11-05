@@ -4,7 +4,7 @@
 
 Пополняется сама: каждая генерация через шлюз (`llm_gateway.Gateway.image`) кладёт картинку сюда, включая забракованные варианты. Собрать уже лежащее в репозитории: `python scripts/cat_library.py --scan`.
 
-## генерация (141)
+## генерация (140)
 
 | превью | оригинал | где | промпт |
 |---|---|---|---|
@@ -27,7 +27,6 @@
 | ![](thumbs/2026-10-26_gen_cx_gpt-image-2_9a794049.jpg) | [2026-10-26_gen_cx_gpt-image-2_9a794049.png](originals/2026-10-26_gen_cx_gpt-image-2_9a794049.png)<br>1024×1536, 2026-10-26 | `videos/10_ideal/reel/gen/i1_blank.png` | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
 | ![](thumbs/2026-10-26_gen_cx_gpt-image-2_c6aea160.jpg) | [2026-10-26_gen_cx_gpt-image-2_c6aea160.png](originals/2026-10-26_gen_cx_gpt-image-2_c6aea160.png)<br>1024×1536, 2026-10-26 | `videos/07_potom/reel/gen/p2_stranger.png` | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
 | ![](thumbs/2026-10-26_gen_cx_gpt-image-2_f1c90703.jpg) | [2026-10-26_gen_cx_gpt-image-2_f1c90703.png](originals/2026-10-26_gen_cx_gpt-image-2_f1c90703.png)<br>1024×1536, 2026-10-26 | `videos/07_potom/reel/gen/p3_list.png` | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
-| ![](thumbs/2026-10-27_gen_cx_gpt-image-2_00c70140.jpg) | [2026-10-27_gen_cx_gpt-image-2_00c70140.png](originals/2026-10-27_gen_cx_gpt-image-2_00c70140.png)<br>1531×1027, 2026-10-27 | scripts/frame_generator.py videos/L01_potom --only | Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, col… |
 | ![](thumbs/2026-10-27_gen_cx_gpt-image-2_02e06ff8.jpg) | [2026-10-27_gen_cx_gpt-image-2_02e06ff8.png](originals/2026-10-27_gen_cx_gpt-image-2_02e06ff8.png)<br>1531×1027, 2026-10-27 | scripts/frame_generator.py videos/L01_potom --only | Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, col… |
 | ![](thumbs/2026-10-27_gen_cx_gpt-image-2_06cd8dc6.jpg) | [2026-10-27_gen_cx_gpt-image-2_06cd8dc6.png](originals/2026-10-27_gen_cx_gpt-image-2_06cd8dc6.png)<br>1774×887, 2026-10-27 | scripts/frame_generator.py videos/L01_potom --only | Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, col… |
 | ![](thumbs/2026-10-27_gen_cx_gpt-image-2_130b28c0.jpg) | [2026-10-27_gen_cx_gpt-image-2_130b28c0.png](originals/2026-10-27_gen_cx_gpt-image-2_130b28c0.png)<br>1774×887, 2026-10-27 | scripts/frame_generator.py videos/L01_potom --only | Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, col… |
@@ -149,6 +148,12 @@
 | ![](thumbs/2026-11-04_gen_cx_gpt-image-2_cd1fc3c8.jpg) | [2026-11-04_gen_cx_gpt-image-2_cd1fc3c8.png](originals/2026-11-04_gen_cx_gpt-image-2_cd1fc3c8.png)<br>1536×1024, 2026-11-04 | scripts/frame_generator.py videos/L03_vnimanie --confirm-spend | Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, col… |
 | ![](thumbs/2026-11-04_gen_cx_gpt-image-2_e152ec19.jpg) | [2026-11-04_gen_cx_gpt-image-2_e152ec19.png](originals/2026-11-04_gen_cx_gpt-image-2_e152ec19.png)<br>1531×1027, 2026-11-04 | scripts/frame_generator.py videos/L03_vnimanie --confirm-spend | Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. SCENE: a big phone in the center showing a video player with two small tr… |
 | ![](thumbs/2026-11-04_gen_cx_gpt-image-2_e9982307.jpg) | [2026-11-04_gen_cx_gpt-image-2_e9982307.png](originals/2026-11-04_gen_cx_gpt-image-2_e9982307.png)<br>1531×1027, 2026-11-04 | scripts/frame_generator.py videos/L03_vnimanie --confirm-spend | Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, col… |
+
+## генерация (исправлена владельцем) (1)
+
+| превью | оригинал | где | промпт |
+|---|---|---|---|
+| ![](thumbs/2026-11-05_gen_cx_gpt-image-2_lenta_fixed_38d3cbe9.jpg) | [2026-11-05_gen_cx_gpt-image-2_lenta_fixed_38d3cbe9.png](originals/2026-11-05_gen_cx_gpt-image-2_lenta_fixed_38d3cbe9.png)<br>1672×941, 2026-11-05 | `videos/L02_otvlechenie (фраза 4), videos/L03_vnimanie (фраза 26)` | Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, col… |
 
 ## герой: состояние (3)
 
