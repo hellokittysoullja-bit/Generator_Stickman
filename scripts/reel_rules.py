@@ -798,7 +798,15 @@ def check_spec(spec, sfx_names):
         start = spec.get("lead_in", 0.0) + e.get("dt", 0.0) if e.get("at", 0) == 0 and not e.get("after") else None
         if e.get("align") != "start" or start is None or start > RISER_START_MAX:
             err.append('riser должен начинаться с 0 с: {"at": 0, "align": "start", "dt": -lead_in}')
-    if beats[1].get("after_sfx") != "riser":
+    std = (spec.get("passport") or {}).get("standard") or 0
+    if std >= VOICE_OVER_RISER_STANDARD:
+        # владелец 05.11: «чтобы и райзер был одновременно слышен, и голос… чтобы не было тихих мест, когда голос
+        # прерывается»: голос хука и второй фразы идёт подряд, riser — просто поверх, голос его не ждёт
+        if beats[0].get("gaps"):
+            err.append("голос хука с паузой (gaps): голос не ждёт riser, они звучат одновременно (владелец 05.11)")
+        if beats[1].get("after_sfx") == "riser":
+            err.append('вторая фраза ждёт пик riser ("after_sfx": "riser") — голос прерывается; уберите (владелец 05.11)')
+    elif beats[1].get("after_sfx") != "riser":
         err.append('вторая фраза должна вставать на пик riser: "after_sfx": "riser"')
     if spec.get("picture_h", 1380) < MIN_PICTURE_H:
         err.append(f"picture_h {spec.get('picture_h')} < {MIN_PICTURE_H}: низ экрана будет пустой бумагой")
@@ -919,7 +927,7 @@ def check_hook_gap(times, spans, beats):
             f"мёртвая пауза > {HOOK_GAP_MAX}: riser первой фразы \"dt\": {dt:.2f} (пик раньше, звучит всё так же с 0 с)"]
 
 
-def check_timeline(shots, events, sfx_peaks, caps=None, total=None):
+def check_timeline(shots, events, sfx_peaks, caps=None, total=None, riser_cut=True):
     """Правила по рассчитанному таймингу: длина планов, первая склейка, пик riser на склейке; с субтитрами (caps —
     [{t0, t1, text}]) ещё: хук дочитывается до первой склейки, группа субтитров не идёт через склейку, последняя
     группа успевает прочитаться."""
@@ -965,7 +973,7 @@ def check_timeline(shots, events, sfx_peaks, caps=None, total=None):
     if len(shots) > 1 and shots[1]["t0"] > FIRST_CUT_SEC:
         err.append(f"первая склейка на {shots[1]['t0']:.2f} с > {FIRST_CUT_SEC}: хук без смены картинки")
     for e in events:
-        if e.get("kind") == "sfx" and e.get("name") == "riser":
+        if riser_cut and e.get("kind") == "sfx" and e.get("name") == "riser":
             peak = e["t"] + (sfx_peaks["riser"] if e.get("align") == "start" else 0.0)
             gap = min(abs(peak - s["t0"]) for s in shots[1:]) if len(shots) > 1 else 9.0
             if gap > RISER_PEAK_ON_CUT:
@@ -1902,6 +1910,7 @@ def check_anim_base(spec, abs_dir):
 # облака, на ударе луна и звёзды). passport.hook.world = {"area": что за место, "motion": что в нём происходит и как
 # это говорит тему}; в композиции хука — свой слой, нарисованный кодом (svg или canvas, не только хвост и штрихи).
 LIVE_STANDARD = 30
+VOICE_OVER_RISER_STANDARD = 30   # владелец 05.11: голос не ждёт riser — ни паузы в хуке, ни after_sfx, пик не на склейке
 LIVE_SKIP = ("tail", "rays")       # слои, которые были и раньше: хвост сеткой, штрихи удара — это не «мир»
 
 

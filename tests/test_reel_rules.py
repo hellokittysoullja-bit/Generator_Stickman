@@ -949,7 +949,7 @@ def test_sound_level_follows_role_from_voice(tmp_path):
     got = {x["name"]: x["vs_voice_db"] for x in r["sounds"]}
     assert abs(got["oof"] - reel.ROLE_DB["meme"]) < 0.6
     assert abs(got["swoosh_deep"] - reel.ROLE_DB["impact"]) < 0.6
-    assert abs(got["riser"] - reel.ROLE_DB["whoosh"]) < 0.6
+    assert abs(got["riser"] - (reel.ROLE_DB["whoosh"] + reel.RISER_GAIN_DB)) < 0.6   # 05.11: riser громче
     assert not r["errors"]
 
 
@@ -1586,3 +1586,26 @@ def test_mix_loudness_and_riser_plain_over_voice():
     assert abs(reel.lufs(y, sr) - reel.MIX_LUFS) < 1.0
     assert float(np.abs(y).max()) <= reel.MIX_PEAK + 0.01
     assert "riser" in reel.NO_DUCK and not hasattr(reel, "RISER_BOOST_DB")
+
+
+def test_voice_does_not_wait_for_riser_since_standard_30():
+    """Владелец 05.11: «чтобы и райзер был одновременно слышен, и голос, чтобы не было тихих мест, когда голос
+    прерывается». С VOICE_OVER_RISER_STANDARD голос хука без пауз, вторая фраза не ждёт пик riser, пик riser не обязан
+    стоять на склейке; riser — с 0,00 с и громче роли на RISER_GAIN_DB."""
+    import reel
+    beats = [dict(text="Купишь блокнот и жалко писать?", shots=[dict(at=0, src="f1")],
+                  fx=[dict(kind="sfx", name="riser", at=0, align="start", dt=0.0)]),
+             dict(text="Лежит стопка красивых.", shots=[dict(at=0, src="f1")])]
+    spec = {"passport": {"standard": reel_rules.VOICE_OVER_RISER_STANDARD}, "beats": beats}
+    names = ["riser", "swoosh"]
+    errs = reel_rules.check_spec(spec, names)
+    assert not any("after_sfx" in e for e in errs)
+    beats[0]["gaps"] = [[2, 0.4]]; beats[1]["after_sfx"] = "riser"
+    errs = reel_rules.check_spec(spec, names)
+    assert any("голос хука с паузой" in e for e in errs) and any("ждёт пик riser" in e for e in errs)
+    assert reel.RISER_GAIN_DB > 0
+    shots = [dict(t0=0.0, t1=1.0), dict(t0=1.0, t1=3.0)]
+    ev = [dict(kind="sfx", name="riser", t=0.0, align="start")]
+    peaks = {"riser": 1.65}
+    assert any("пик riser" in e for e in reel_rules.check_timeline(shots, ev, peaks, total=3.0))
+    assert not any("пик riser" in e for e in reel_rules.check_timeline(shots, ev, peaks, total=3.0, riser_cut=False))

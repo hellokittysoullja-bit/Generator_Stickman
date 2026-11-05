@@ -598,6 +598,10 @@ DUCK_DB = -10.0
 # понижать, не надо никого повышать». Riser — обычный звук поверх голоса, своей громкостью роли: без приглушения под
 # голосом и без подъёма тела (приглушение и подъём 05.11 сняты).
 NO_DUCK = ("riser",)
+# Владелец 05.11 (после пересборки 23–24): «райзер слишком тихий… повысь». Пик riser по роли был на −12 к голосу, а тело
+# этого riser ещё на 17–33 дБ тише пика — под словами его не было слышно. Теперь вся дорожка riser просто громче
+# (обычное усиление, без сжатия и приглушения): пик на RISER_GAIN_DB выше роли — на −2 дБ к голосу.
+RISER_GAIN_DB = 10.0
 # Громкость микса: Lumean даёт голос около −16 LUFS, микс выходил −17…−17,5 (рилс 24), тише обычных −14 у роликов в
 # ленте и на телефоне (владелец 05.11: «голос почему-то не слышно»). Микс доводится до MIX_LUFS, пики держит лимитер.
 MIX_LUFS = -14.0
@@ -842,6 +846,9 @@ def build(reel_dir, sheet=False, preview=False, force=False):
                 if bi == 0:                                 # правило 27: заголовок с 0 с, а не с первого слова голоса
                     events[-1]["t"] = 0.0                   # (рилс 16: голос с 0,14 с — якорь проявлялся к 0,44 с)
                     events[-1]["speed"] = max(2.0, e.get("speed", 1.0))
+            if (bi == 0 and e.get("kind") == "sfx" and e.get("name") == "riser" and e.get("at", 0) == 0
+                    and e.get("align") == "start" and not e.get("after")):
+                events[-1]["t"] = max(0.0, e.get("dt", 0.0))   # владелец 05.11: riser ровно с 0,00 с, а не с первого слова
             if "strike_at" in e:                      # зачёркивание: только если поле задано в reel.json
                 events[-1]["strike_t"] = wt(bi, e["strike_at"]) + e.get("strike_dt", 0.0)
     for e in events:                                  # удержание накладки — только пока идут планы того же рода
@@ -853,7 +860,8 @@ def build(reel_dir, sheet=False, preview=False, force=False):
     rule_errs += reel_rules.check_montage(spec, shots, events, total)
     rule_errs += reel_rules.check_library_share(spec, shots, json.load(open(log_p, encoding="utf8")) if os.path.exists(log_p) else [],
                                                 os.path.relpath(reel_dir, ROOT))   # ≤ 3 фото из библиотеки (стандарт 22)
-    rule_errs += reel_rules.check_timeline(shots, events, {k: v[1] for k, v in SFX.items()}, caps_txt, total)
+    rule_errs += reel_rules.check_timeline(shots, events, {k: v[1] for k, v in SFX.items()}, caps_txt, total,
+                                           riser_cut=_std < reel_rules.VOICE_OVER_RISER_STANDARD)
     rule_errs += reel_rules.check_overlays([(i, tx, x0, y0 + PIC_TOP, x1, y1 + PIC_TOP)    # картинка — с PIC_TOP экрана
                                             for i, tx, x0, y0, x1, y1 in overlay_boxes(events, shots)], PIC_TOP + PH)
     rule_errs += reel_rules.check_cta(spec, [times[i0]["start"] for i0, _ in spans], total)
@@ -1628,6 +1636,8 @@ def mix_audio(path, total, shots, events, spec, voiced=False, voice=None, words=
     for p in plan:
         if p["role"] == "meme" and on_word(p["peak"], words):
             p["level_role"] = "impact"                 # мем на слове заглушил бы слово — уровень удара
+        if p["name"] == "riser" and not p.get("_riser_gain"):
+            p["gain_db"] += RISER_GAIN_DB; p["_riser_gain"] = True
         lvl = SFX[p["name"]][2]                       # sfx() отдаёт пик на level_db — приводим к цели роли
         x = sfx(p["name"]) * (10 ** ((vp + ROLE_DB[p.get("level_role", p["role"])] + p["gain_db"] - lvl) / 20)); rate = p["rate"]
         if rate != 1.0:
