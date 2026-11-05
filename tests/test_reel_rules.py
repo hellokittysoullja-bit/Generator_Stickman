@@ -1546,3 +1546,27 @@ def test_rule_30_live_world_and_sam_cut(tmp_path):
     (d / "kit_x.py").write_text("anim.save_layer(...)\nanim.inpaint_bg(...)\n", encoding="utf-8")
     spec["passport"]["standard"] = 28                                   # готовые рилсы — как были
     assert reel_rules.check_live_world is not None and reel_rules.check_anim_base({"passport": {"standard": 28}}, str(tmp_path)) == []
+
+
+def test_sfx_ducked_under_voice_words_and_full_in_pauses():
+    """Владелец 05.11 после рилса 23: «почини баги с голосом и звуком». Длинный удар на слове был громок, как голос
+    (рилс 23: «таз» −2,7 дБ, рилс 22: до +13,7 дБ) — слово тонуло. Под словом звук опускается до DUCK_DB к голосу,
+    в паузе — звучит полностью."""
+    import numpy as np
+    import reel
+    sr = 48000
+    t = np.arange(int(2.0 * sr)) / sr
+    vt = np.zeros((len(t), 2), np.float32)
+    word = (t >= 0.5) & (t < 1.0)
+    vt[word] = (0.3 * np.sin(2 * np.pi * 220 * t[word]))[:, None]
+    st = (0.3 * np.sin(2 * np.pi * 90 * t))[:, None].repeat(2, 1).astype(np.float32)   # звук так же громок, как голос
+    out, _ = reel.duck_under_voice(st, vt, sr)
+    rms = lambda a: 20 * np.log10(np.sqrt((a ** 2).mean()) + 1e-9)
+    mid = slice(int(0.6 * sr), int(0.9 * sr))
+    assert rms(out[mid]) - rms(vt[mid]) <= reel.DUCK_DB + 1.0            # на слове — не громче голоса − 10 дБ
+    far = slice(int(1.4 * sr), int(1.9 * sr))
+    assert abs(rms(out[far]) - rms(st[far])) < 0.1                       # в паузе после отпускания — полностью
+    pre = slice(int(0.1 * sr), int(0.4 * sr))
+    assert abs(rms(out[pre]) - rms(st[pre])) < 0.1                       # до слова — полностью
+    d = np.abs(np.diff(out[:, 0]))
+    assert d.max() < 0.05                                                # без щелчков на краях

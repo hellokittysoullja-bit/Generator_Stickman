@@ -587,6 +587,13 @@ VOICE_P95_NOMINAL = -5.0   # немой черновик: p95 пиков гол�
 SFX_LOUDER_MAX = 1.5       # пик звука выше голоса больше чем на 1.5 дБ — громче голоса (ошибка)
 SFX_INAUDIBLE = -22.0      # ниже −22 дБ к голосу — не слышно (ошибка)
 SFX_OFF_TARGET = 4.0       # дальше 4 дБ от цели роли — наложение звуков (предупреждение)
+# Звук под голосом (владелец 05.11 после рилса 23: «почини баги с голосом и звуком»). Громкость звука ставится по пику, а
+# длинные удары (shock, oof, swoosh_deep) громки всем телом: замер по словам — у рилса 23 на «неделю», «запах», «кот»,
+# ответе «таз» звук почти как голос (RMS −3…+4,5 дБ), у 22 — до +13,7 дБ: слово тонет. Теперь звук на словах опускается
+# до DUCK_DB к голосу (по окнам 20 мс, атака 10 мс, отпускание 120 мс), а в паузах и на склейках звучит полностью.
+DUCK_DB = -10.0
+DUCK_WIN, DUCK_ATTACK, DUCK_RELEASE = 0.02, 0.01, 0.12
+DUCK_VOICE_FLOOR = -45.0   # тише — голоса нет, звук не трогаем
 SOFT_DB = {"zoom": -5.0, "new_picture": -3.0, "same_picture": -6.0}   # переходные звуки — фактура, тише своей роли
 _SFX = {}
 
@@ -1527,6 +1534,26 @@ def sound_levels(plan, sfx_mono, vp, words=None):
         out.append(r)
     return out, err, warn
 
+def duck_under_voice(st, vt, sr=None):
+    """Приглушить дорожку звуков st там, где говорит голос vt: RMS звука в окне не выше голоса + DUCK_DB. Огибающая
+    усиления — минимум по окну атаки и сглаживание отпусканием, без щелчков. Возвращает (новая st, глубина по окнам дБ)."""
+    sr = sr or SR
+    h = max(1, int(DUCK_WIN * sr)); n = len(st) // h
+    if n == 0 or not np.abs(vt).any():
+        return st, np.zeros(0, np.float32)
+    rms = lambda a: np.sqrt((a[:n * h].reshape(n, h, -1) ** 2).mean(axis=(1, 2))) + 1e-9
+    v_db, s_db = 20 * np.log10(rms(vt)), 20 * np.log10(rms(st))
+    g_db = np.where(v_db > DUCK_VOICE_FLOOR, np.minimum(0.0, v_db + DUCK_DB - s_db), 0.0)
+    a = max(1, int(round(DUCK_ATTACK / DUCK_WIN))); r = max(1, int(round(DUCK_RELEASE / DUCK_WIN)))
+    from numpy.lib.stride_tricks import sliding_window_view
+    from scipy.ndimage import uniform_filter1d
+    pad = np.concatenate([np.zeros(r, np.float64), g_db, np.zeros(a, np.float64)])
+    g_db = sliding_window_view(pad, r + a + 1).min(axis=1)        # окно [i − отпускание, i + атака]
+    g_db = uniform_filter1d(g_db, size=a + 2)
+    g = np.interp(np.arange(len(st)), (np.arange(n) + 0.5) * h, 10 ** (g_db / 20))   # плавно между окнами: без щелчков
+    return (st * g[:, None]).astype(np.float32), g_db
+
+
 def on_word(t, words):
     return bool(words) and any(w["start"] <= t <= w["end"] for w in words)
 
@@ -1570,6 +1597,8 @@ def mix_audio(path, total, shots, events, spec, voiced=False, voice=None, words=
         m = min(len(x), n - i)
         if m > 0: st[i:i + m] += x[:m]
     levels = sound_levels(plan, np.abs(st).max(1), vp, words)
+    if voice:
+        st, _ = duck_under_voice(st, vt)
     tr = vt + st
     peak = float(np.abs(tr).max())
     if peak > 0.89: tr *= 0.89 / peak                 # наложение двух звуков не клипует: пик не выше -1 dBFS
