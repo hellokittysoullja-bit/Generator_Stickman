@@ -197,7 +197,7 @@ def hooked(tmp_path, scene=HOOK_SCENE_HIT, sfx=None, labels=True, name="L09_test
     names = ["level_up", "typing", "shock", "oof", "riser", "fast_glitch"]   # звуки смысла: свист — только на движении
     if sfx is None:                          # плотно: ~каждые 1,3 с, шесть разных
         sfx = [{"name": names[k % 6], "phrase": 1 + k // 4, "at": 1.3 * (k % 4), "why": "тест"} for k in range(36)]
-        sfx += [{"name": names[k % 6], "phrase": 10, "at": 2.7 * k, "why": "тест"} for k in range(120)]   # 3,7 на 10 с
+        sfx += [{"name": names[k % 6], "phrase": 10, "at": 4.0 * k, "why": "тест"} for k in range(81)]    # 2,5 на 10 с
     (vd / "sfx.json").write_text(json.dumps(_on_word(sfx), ensure_ascii=False), encoding="utf-8")
     if edit:
         ed = {str(i): {"shots": shots or REEL_SHOTS} for i in range(1, 11)}
@@ -303,18 +303,18 @@ def test_orchestrated_pencil_labels_are_never_dropped_by_timer():
     assert af.labels_for(job, 10.0, written, 2, manual=False)[:2] == (None, None)   # без раскадровки — прежний бюджет
 
 
-def test_long_video_sounds_at_least_three_per_every_ten_seconds(tmp_path):
-    """Владелец 04.11: «звуки… не меньше 4 на 10 секунд, именно в длинных видео» — по всему ролику, каждый кусок."""
+def test_long_video_sounds_at_least_two_per_every_ten_seconds(tmp_path):
+    """Владелец 05.11: «звуков 2–3 на каждые 10 с по смыслу» во всех длинных — по всему ролику, каждый кусок."""
     vd = hooked(tmp_path)
     assert not [e for e in long_rules.hook_build(vd) if e.startswith("SFX")]
     sfx = json.load(open(os.path.join(vd, "sfx.json"), encoding="utf-8"))
     json.dump(_on_word([e for e in sfx if e["phrase"] <= 9]), open(os.path.join(vd, "sfx.json"), "w", encoding="utf-8"))
     errs = [e for e in long_rules.hook_build(vd) if e.startswith("SFX")]      # хук плотный, а тело без звуков
-    assert errs and any("меньше 3 на 10 с" in e for e in errs), errs
+    assert errs and any("меньше 2 на 10 с" in e for e in errs), errs
 
 
-def test_long_video_sounds_float_three_to_four_not_more(tmp_path):
-    """Владелец 04.11, вечер: «было 4, теперь 3… слишком много звуков… плавающие 3–4, по смыслу, не хардкод»."""
+def test_long_video_sounds_float_two_to_three_not_more(tmp_path):
+    """Владелец 05.11: «звуков 2–3 на каждые 10 с по смыслу» (04.11 вечером было 3–4: «слишком много звуков»)."""
     vd = hooked(tmp_path)
     sfx = json.load(open(os.path.join(vd, "sfx.json"), encoding="utf-8"))
     dense = [e for e in sfx if e["phrase"] <= 9] + [{"name": "swoosh", "phrase": 10, "at": 1.3 * k, "why": "т"}

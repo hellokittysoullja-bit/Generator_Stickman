@@ -261,16 +261,19 @@ def check(video_dir, final=False, items=None):
 # первые 10 с — ниже эталона рилс 17. Пороги — те же, что у рилсов (reel_rules, правила 28–29), без своих чисел.
 LEGACY = {"L01_potom", "L02_otvlechenie"}
 EST_WPS = 2.4               # темп L02 до озвучки (слов в секунду); после озвучки — время слов из alignment
-LONG_SFX_PER_10S = 3.0      # звуков в длинном ролике — не меньше 3 в каждом куске 10 с (владелец 04.11, вечер: «было 4,
-LONG_SFX_WINDOW = 10.0      # теперь 3… как будто слишком много звуков… плавающие 3–4, по смыслу, не хардкод шаблон»)
-LONG_SFX_MEAN_MAX = 4.0     # и в среднем после хука не больше 4 на 10 с: кусок с важным событием может нести 5–6,
-                            # тогда соседние тише; хук — по правилам рилса (там звуков больше, правило 29)
+LONG_SFX_PER_10S = 2.0      # звуков в длинном ролике — не меньше 2 в каждом куске 10 с (владелец 05.11 по L02: «звуков
+LONG_SFX_WINDOW = 10.0      # 2–3 на каждые 10 с по смыслу», для всех длинных; 04.11 вечером было 3–4, утром — 4)
+LONG_SFX_MEAN_MAX = 3.0     # и в среднем после хука не больше 3 на 10 с: кусок с важным событием может нести 4–5,
+                            # тогда соседние тише; хук — по правилам рилса (≥ 5 разных, тишина ≤ 3,5 с)
+SFX_MEAN_0411 = {"L03_vnimanie": 4.0}   # собран по правилу 04.11 (3–4 на 10 с, вышло 3,9); пересборка — уже по 2–3
 LONG_SFX_GAP_MAX = 6.0      # после хука тишина без звуков не длиннее 6 с (L03 до правки: 4,6 звука на 10 с)
 MANUAL_MONTAGE_SEC = 180    # первые 3 минуты — монтаж руками, без автоматики (владелец 04.11: «ручной у тебя будет на
                             # 3 минуты… собственноручно, по смыслу, без шаблонности и автоматики»); хук 40–60 с — как рилс
 MANUAL_MAX_SHOT = 3.5       # план ручных минут после хука — не дольше нормы ролика (shots.MAX_VIEW_SEC)
 VIDEO_HOOK_MIN_SEC = 40     # «видеохук» — весь HOOK, но не короче 40 с (владелец 04.11: «первые 40–60 секунд… как рилс»)
 PICTURE_EVERY_SEC = 7.0     # новая картинка в видеохуке не реже раза в 7 с (рилс 17: 6 рисунков на 35 с)
+VIDEO_HOOK_ACCENT_PER_10S = 2.5   # акцентов в видеохуке на 10 с (владелец 05.11 по L02: «побольше, но не сильно больше» —
+                            # для всех длинных; рилс — 4, reel_rules.ACCENT_PER_10S; L02 до правки — 1,3)
 VIDEO_HOOK_MEAN_SHOT = 2.2  # средний план видеохука (рилс 17 — 1,67 с; L02 в хуке — автоматика до 3,5 с)
 HOOK_CAM_RE = re.compile(r"hook_cam\(\s*t\s*,\s*hit\s*=")
 
@@ -324,8 +327,8 @@ def _word_t(blocks, starts, ends, idx, at, wt=None):
 def _video_hook_montage(video_dir, blocks, frames, starts, ends, hook_n, fx_path):
     """Видеохук длинного ролика спроектирован как рилс (владелец 04.11: «не просто слайд-шоу»). Зона — весь HOOK, но не
     короче VIDEO_HOOK_MIN_SEC. Пороги — рилсовые (reel_rules): план MIN_SHOT_SEC–MAX_SHOT_SEC, первая склейка ≤
-    FIRST_CUT_SEC, акцентов ≥ ACCENT_PER_10S на 10 с и ≥ ACCENT_KINDS_MIN видов."""
-    from reel_rules import ACCENT_KINDS_MIN, ACCENT_PER_10S, FIRST_CUT_SEC, MAX_SHOT_SEC, MIN_SHOT_SEC
+    FIRST_CUT_SEC, акцентов ≥ VIDEO_HOOK_ACCENT_PER_10S на 10 с (мягче рилса) и ≥ ACCENT_KINDS_MIN видов."""
+    from reel_rules import ACCENT_KINDS_MIN, FIRST_CUT_SEC, MAX_SHOT_SEC, MIN_SHOT_SEC
     err = []
     zone = max(ends[hook_n - 1] if hook_n else 0.0, VIDEO_HOOK_MIN_SEC)
     zn = [i for i in range(len(blocks)) if starts[i] < zone - 0.5]          # фразы видеохука (с 0)
@@ -393,8 +396,8 @@ def _video_hook_montage(video_dir, blocks, frames, starts, ends, hook_n, fx_path
             if mean > VIDEO_HOOK_MEAN_SHOT:
                 err.append(f"VIDEO-HOOK: средний план {mean:.1f} с > {VIDEO_HOOK_MEAN_SHOT} (рилс 17 — 1,67 с) — больше смен плана")
     rate = len(acc) / zone * 10
-    if rate < ACCENT_PER_10S:
-        err.append(f"VIDEO-HOOK: акцентов {len(acc)} за {zone:.0f} с — {rate:.1f} на 10 с < {ACCENT_PER_10S}: удар-наезд, "
+    if rate < VIDEO_HOOK_ACCENT_PER_10S:
+        err.append(f"VIDEO-HOOK: акцентов {len(acc)} за {zone:.0f} с — {rate:.1f} на 10 с < {VIDEO_HOOK_ACCENT_PER_10S}: удар-наезд, "
                    "тряска, прожектор, хлёст, жирный текст, мысль карандашом, котик-ведущий — на смысловых словах")
     kinds = {k for k, _ in acc}
     if len(kinds) < ACCENT_KINDS_MIN:
@@ -761,9 +764,10 @@ def hook_build(video_dir):
     body = sorted(p for p in peaks if hook_end <= p < total)
     if total - hook_end >= LONG_SFX_WINDOW:
         mean = len(body)/(total - hook_end)*LONG_SFX_WINDOW
-        if mean > LONG_SFX_MEAN_MAX + 1e-9:
-            err.append(f"SFX: после хука в среднем {mean:.1f} звука на 10 с > {LONG_SFX_MEAN_MAX:.0f} — слишком часто "
-                       f"(владелец 04.11): оставить удары на событиях, свисты на смене картинки, звуки на смысловых словах")
+        cap = SFX_MEAN_0411.get(os.path.basename(os.path.normpath(video_dir)), LONG_SFX_MEAN_MAX)
+        if mean > cap + 1e-9:
+            err.append(f"SFX: после хука в среднем {mean:.1f} звука на 10 с > {cap:.0f} — слишком часто "
+                       f"(владелец 05.11: 2–3 на 10 с): оставить удары на событиях, свисты на смене картинки, звуки на смысловых словах")
         pts = [hook_end] + body + [total]
         gap, at = max((b - a_, a_) for a_, b in zip(pts, pts[1:]))
         if gap > LONG_SFX_GAP_MAX:
