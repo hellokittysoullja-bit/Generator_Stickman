@@ -1,6 +1,6 @@
 # Библиотека оригиналов: кот и всё, что сгенерировано
 
-Картинок: **199**, 397 МБ. Оригиналы — `originals/` байт в байт, как пришли из модели (PNG без пересжатия); `thumbs/` — превью для этой страницы; `catalog.json` — промпт, модель, цена, где используется.
+Картинок: **204**, 409 МБ. Оригиналы — `originals/` байт в байт, как пришли из модели (PNG без пересжатия); `thumbs/` — превью для этой страницы; `catalog.json` — промпт, модель, цена, где используется.
 
 Пополняется сама: каждая генерация через шлюз (`llm_gateway.Gateway.image`) кладёт картинку сюда, включая забракованные варианты. Собрать уже лежащее в репозитории: `python scripts/cat_library.py --scan`.
 
@@ -221,11 +221,16 @@
 | ![](thumbs/2026-10-07_look_style_1_desk_1c1c5a17.jpg) | [2026-10-07_look_style_1_desk_1c1c5a17.jpg](originals/2026-10-07_look_style_1_desk_1c1c5a17.jpg)<br>1264×848, 2026-10-07 | `look/style/1_desk.png` |  |
 | ![](thumbs/2026-10-07_look_style_2_objects_3fa15648.jpg) | [2026-10-07_look_style_2_objects_3fa15648.jpg](originals/2026-10-07_look_style_2_objects_3fa15648.jpg)<br>1264×848, 2026-10-07 | `look/style/2_objects.png` |  |
 
-## от владельца (1)
+## от владельца (6)
 
 | превью | оригинал | где | промпт |
 |---|---|---|---|
 | ![](thumbs/2026-11-03_owner_wait_phone_wide_2e1f3231.jpg) | [2026-11-03_owner_wait_phone_wide_2e1f3231.png](originals/2026-11-03_owner_wait_phone_wide_2e1f3231.png)<br>1672×941, 2026-11-03 |  |  |
+| ![](thumbs/2026-11-05_owner_fish_hug_13982999.jpg) | [2026-11-05_owner_fish_hug_13982999.png](originals/2026-11-05_owner_fish_hug_13982999.png)<br>1536×1024, 2026-11-05 |  |  |
+| ![](thumbs/2026-11-05_owner_focus_headphones_87b328fb.jpg) | [2026-11-05_owner_focus_headphones_87b328fb.png](originals/2026-11-05_owner_focus_headphones_87b328fb.png)<br>1672×941, 2026-11-05 |  |  |
+| ![](thumbs/2026-11-05_owner_mouse_pounce_322919c4.jpg) | [2026-11-05_owner_mouse_pounce_322919c4.png](originals/2026-11-05_owner_mouse_pounce_322919c4.png)<br>1536×1024, 2026-11-05 |  |  |
+| ![](thumbs/2026-11-05_owner_sleep_blanket_e1e88816.jpg) | [2026-11-05_owner_sleep_blanket_e1e88816.png](originals/2026-11-05_owner_sleep_blanket_e1e88816.png)<br>1672×941, 2026-11-05 |  |  |
+| ![](thumbs/2026-11-05_owner_sleep_laptop_efd6df9e.jpg) | [2026-11-05_owner_sleep_laptop_efd6df9e.png](originals/2026-11-05_owner_sleep_laptop_efd6df9e.png)<br>1671×941, 2026-11-05 |  |  |
 
 ## предмет (1)
 

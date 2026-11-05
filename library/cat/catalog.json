@@ -3696,5 +3696,75 @@
   "model": "cx/gpt-image-2",
   "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions and clothing if any; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: medium shot: the main character lies comfortably on its back on a soft rug, holding one phone above its face with both paws, an amused relaxed face; out of the phone's blank glowing screen spills a very long paper ribbon made of small blank cards, it loops across the rug and piles into a big soft heap right beside the character. LAYOUT: the main character is drawn big, at least a third of the image height. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place. Colours: black ink and soft grey washes on cream paper. The only warm colours in the picture are the main character's orange tail flame and cheek marks; every other object — envelopes, paper, furniture, floors, walls — is ink and grey, never brown, beige or orange. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor and unprinted clothes. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
   "origin": "исправленный владельцем вариант 2026-10-27_gen_cx_gpt-image-2_00c70140: телефон повёрнут экраном к коту, к зрителю — задник с камерами"
+ },
+ {
+  "file": "2026-11-05_owner_fish_hug_13982999.png",
+  "sha256": "1398299901e2ba510401f6eff0b273d4d494d9e60e8bf2bd446f2bb1a65de514",
+  "bytes": 2363869,
+  "size": [
+   1536,
+   1024
+  ],
+  "date": "2026-11-05",
+  "kind": "от владельца",
+  "used_in": [],
+  "origin": "картинка владельца 05.11, оригинал как прислан",
+  "scene": "кот сидит и счастливо обнимает плюшевую рыбу, сердечко, открытый рот; огонька на хвосте нет"
+ },
+ {
+  "file": "2026-11-05_owner_focus_headphones_87b328fb.png",
+  "sha256": "87b328fbfe15193698a0ac9f86c7927a6cf1663153c7bedbefa5444dd6b4267d",
+  "bytes": 2265130,
+  "size": [
+   1672,
+   941
+  ],
+  "date": "2026-11-05",
+  "kind": "от владельца",
+  "used_in": [],
+  "origin": "картинка владельца 05.11, оригинал как прислан",
+  "scene": "кот в наушниках сосредоточенно работает за ноутбуком, в облачке мозг и растущий график, кофе, звёздочки, огонёк горит"
+ },
+ {
+  "file": "2026-11-05_owner_mouse_pounce_322919c4.png",
+  "sha256": "322919c415e575fb464e3d93037417c471c4a08886e5c8392def0bc987fe2988",
+  "bytes": 2304754,
+  "size": [
+   1536,
+   1024
+  ],
+  "date": "2026-11-05",
+  "kind": "от владельца",
+  "used_in": [],
+  "origin": "картинка владельца 05.11, оригинал как прислан",
+  "scene": "кот припал к полу перед прыжком на игрушечную мышь, «!!», огонёк горит"
+ },
+ {
+  "file": "2026-11-05_owner_sleep_blanket_e1e88816.png",
+  "sha256": "e1e8881650091862beedfad9d68d7c7a73212a856161804d7cd8672ed1d6cc01",
+  "bytes": 2341368,
+  "size": [
+   1672,
+   941
+  ],
+  "date": "2026-11-05",
+  "kind": "от владельца",
+  "used_in": [],
+  "origin": "картинка владельца 05.11, оригинал как прислан",
+  "scene": "кот спит на подушке под клетчатым пледом, ZZZ, рядом серая плюшевая игрушка-котик, огонёк на хвосте горит"
+ },
+ {
+  "file": "2026-11-05_owner_sleep_laptop_efd6df9e.png",
+  "sha256": "efd6df9e874ce07b3a82e2b9b280c7d286c66226becfe3a7d7474fa67f392abd",
+  "bytes": 2226916,
+  "size": [
+   1671,
+   941
+  ],
+  "date": "2026-11-05",
+  "kind": "от владельца",
+  "used_in": [],
+  "origin": "картинка владельца 05.11, оригинал как прислан",
+  "scene": "кот спит на подушках у ноутбука, в облачке список дел с галочками, ZZZ, рядом белая плюшевая игрушка-котик и растение; огонька на хвосте нет"
  }
 ]
