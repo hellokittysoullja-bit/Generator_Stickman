@@ -949,7 +949,7 @@ def test_sound_level_follows_role_from_voice(tmp_path):
     got = {x["name"]: x["vs_voice_db"] for x in r["sounds"]}
     assert abs(got["oof"] - reel.ROLE_DB["meme"]) < 0.6
     assert abs(got["swoosh_deep"] - reel.ROLE_DB["impact"]) < 0.6
-    assert abs(got["riser"] - reel.RISER_CEIL_DB) < 1.0          # 05.11: тело riser поднято, пик — у потолка под голосом
+    assert abs(got["riser"] - reel.ROLE_DB["whoosh"]) < 0.6
     assert not r["errors"]
 
 
@@ -1572,25 +1572,17 @@ def test_sfx_ducked_under_voice_words_and_full_in_pauses():
     assert d.max() < 0.05                                                # без щелчков на краях
 
 
-def test_mix_loudness_and_riser_audible_under_voice():
-    """Владелец 05.11: «голос почему-то не слышно… и звук райзер тоже пофикси». Микс выходил −17…−17,5 LUFS — тише
-    обычных −14; riser при общем приглушении −10 уходил под голос на 30–35 дБ и пропадал. Теперь микс доводится до
-    MIX_LUFS с лимитером (пики не выше −1 dBFS), а riser под голосом опускается только до DUCK_DB_BY_NAME."""
+def test_mix_loudness_and_riser_plain_over_voice():
+    """Владелец 05.11: «голос почему-то не слышно… просто сделать голос и сверху него райзер, не надо никого понижать,
+    не надо никого повышать». Микс доводится до MIX_LUFS с лимитером (пики не выше −1 dBFS) — весь целиком; riser
+    поверх голоса как есть: его не приглушает голос."""
     import numpy as np
     import reel
     sr = 48000
-    rng = np.random.default_rng(1)
     t = np.arange(int(3.0 * sr)) / sr
     x = (0.05 * np.sin(2 * np.pi * 300 * t) * (1 + 0.5 * np.sin(2 * np.pi * 3 * t)))[:, None].repeat(2, 1).astype(np.float32)
     x[int(1.0 * sr):int(1.0 * sr) + 200] += 0.8                               # одиночный удар — лимитер, а не срез всего
     y = reel.loud_mix(x, sr)
     assert abs(reel.lufs(y, sr) - reel.MIX_LUFS) < 1.0
     assert float(np.abs(y).max()) <= reel.MIX_PEAK + 0.01
-    assert reel.DUCK_DB_BY_NAME["riser"] > reel.DUCK_DB                       # riser под голосом слышен
-    assert reel.RISER_BOOST_DB >= 10 and reel.RISER_CEIL_DB < 0               # тело riser поднято, пик ниже голоса
-    vt = (0.3 * np.sin(2 * np.pi * 220 * t))[:, None].repeat(2, 1).astype(np.float32)
-    st = (0.3 * rng.standard_normal(len(t)))[:, None].repeat(2, 1).astype(np.float32)
-    rms = lambda a: 20 * np.log10(np.sqrt((a ** 2).mean()) + 1e-9)
-    out, _ = reel.duck_under_voice(st, vt, sr, duck_db=reel.DUCK_DB_BY_NAME["riser"])
-    mid = slice(sr, 2 * sr)
-    assert abs((rms(out[mid]) - rms(vt[mid])) - reel.DUCK_DB_BY_NAME["riser"]) < 1.5
+    assert "riser" in reel.NO_DUCK and not hasattr(reel, "RISER_BOOST_DB")

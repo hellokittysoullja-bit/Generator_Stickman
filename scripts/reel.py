@@ -594,12 +594,10 @@ SFX_OFF_TARGET = 4.0       # дальше 4 дБ от цели роли — на
 DUCK_DB = -10.0
 # riser — нарастание ПОД словами хука (его смысл — «сейчас будет важное», пик ложится в склейку после слов): при −10
 # его в хуке не было слышно вовсе (рилс 24: 30–35 дБ под голосом; владелец 05.11: «звук райзер тоже пофикси»)
-DUCK_DB_BY_NAME = {"riser": -4.0}
-# Тело riser владельца (металлическое нарастание) на 17–33 дБ тише его пика, а громкость звука ставится по пику: под
-# словами хука riser был на 40–50 дБ ниже голоса во всех рилсах (замер 22 и 24) — нарастания не слышно. Теперь тело
-# поднимается на RISER_BOOST_DB, а пик мягко упирается в потолок RISER_CEIL_DB к голосу (не громче кота).
-RISER_BOOST_DB = 14.0
-RISER_CEIL_DB = -4.0
+# Владелец 05.11: «просто сделать голос и сверху него райзер, чтобы они одновременно звучали; не надо никого
+# понижать, не надо никого повышать». Riser — обычный звук поверх голоса, своей громкостью роли: без приглушения под
+# голосом и без подъёма тела (приглушение и подъём 05.11 сняты).
+NO_DUCK = ("riser",)
 # Громкость микса: Lumean даёт голос около −16 LUFS, микс выходил −17…−17,5 (рилс 24), тише обычных −14 у роликов в
 # ленте и на телефоне (владелец 05.11: «голос почему-то не слышно»). Микс доводится до MIX_LUFS, пики держит лимитер.
 MIX_LUFS = -14.0
@@ -1625,17 +1623,13 @@ def mix_audio(path, total, shots, events, spec, voiced=False, voice=None, words=
         if m > 0: vt[i:i + m] += x[:m]
     vp = voice_p95(np.abs(vt).max(1)) if voice else VOICE_P95_NOMINAL   # пик по громкому каналу — как нормирует sfx()
     st = np.zeros((n, 2), np.float32)
-    tracks = {}                                       # звуки со своей глубиной приглушения (riser) — отдельно
+    tracks = {}                                       # звуки без приглушения под голосом (riser) — отдельно
     plan = sound_plan(shots, events)
     for p in plan:
         if p["role"] == "meme" and on_word(p["peak"], words):
             p["level_role"] = "impact"                 # мем на слове заглушил бы слово — уровень удара
         lvl = SFX[p["name"]][2]                       # sfx() отдаёт пик на level_db — приводим к цели роли
         x = sfx(p["name"]) * (10 ** ((vp + ROLE_DB[p.get("level_role", p["role"])] + p["gain_db"] - lvl) / 20)); rate = p["rate"]
-        if p["name"] == "riser" and voice:              # нарастание слышно под словами, пик — не громче потолка
-            c = np.float32(10 ** ((vp + RISER_CEIL_DB) / 20))
-            x = (c * np.tanh(x * np.float32(10 ** (RISER_BOOST_DB / 20)) / c)).astype(np.float32)
-            p["gain_db"] = RISER_CEIL_DB - ROLE_DB[p.get("level_role", p["role"])]   # цель в отчёте — потолок
         if rate != 1.0:
             src_t = np.arange(int(len(x) / rate)) * rate
             x = np.stack([np.interp(src_t, np.arange(len(x)), x[:, ch]) for ch in (0, 1)], axis=1).astype(np.float32)
@@ -1650,14 +1644,13 @@ def mix_audio(path, total, shots, events, spec, voiced=False, voice=None, words=
         m = min(len(x), n - i)
         if m > 0:
             st[i:i + m] += x[:m]
-            if p["name"] in DUCK_DB_BY_NAME:
+            if p["name"] in NO_DUCK:
                 tracks.setdefault(p["name"], np.zeros((n, 2), np.float32))[i:i + m] += x[:m]
     levels = sound_levels(plan, np.abs(st).max(1), vp, words)
     if voice:
-        rest = st - sum(tracks.values()) if tracks else st
-        st, _ = duck_under_voice(rest, vt)
-        for name, x in tracks.items():
-            st = st + duck_under_voice(x, vt, duck_db=DUCK_DB_BY_NAME[name])[0]
+        keep = sum(tracks.values()) if tracks else 0
+        st, _ = duck_under_voice(st - keep, vt)
+        st = st + keep                                # riser — как есть, поверх голоса
     tr = vt + st
     if voice:
         tr = loud_mix(tr)

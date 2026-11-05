@@ -57,7 +57,7 @@ T4 = "Чистая страница |кажется дороже, |и перва
 T5 = "Поэтому испорти её сам: |на первой странице |нарисуй *каракулю*."
 T6 = "Я нарисовал кривого кота, |и дальше писалось |*само*."
 beats = [
- dict(text=HOOK["text"], voice=HOOK["voice"], gaps=[[ix(HOOK["text"], "жалко"), 0.4]],
+ dict(text=HOOK["text"], voice=HOOK["voice"],   # голос подряд: riser просто поверх (владелец 05.11)
       shots=[dict(at=0, src="f1", anim="note_hf", **{"from": W["hook"][0]}, to=W["hook"][1],
                   why="кот тянется пером к блокноту, на пустых страницах сами пишутся строчки с кадра 0"),
              sh(ix(HOOK["text"], "писать"), "f1", "page", anim="note_hf",
@@ -69,7 +69,7 @@ beats = [
           dict(kind="punch", at=ix(HOOK["text"], "жалко"), amt=0.1, hold=0.3, why="удар-наезд на «жалко»"),
           dict(kind="mark", anchor=True, text=HOOK["anchor"], at=0, speed=2.4, x=520, y=215, size=104, marker=MARK,
                why="заголовок виден сразу: проявлен к 0,15 с")]),
- dict(text=T1, after_sfx="riser", voice=V1,
+ dict(text=T1, voice=V1,
       shots=[sh(ix(T1, "стопка"), "f2", "pile", sound="swoosh", why="«стопка красивых»: стопка блокнотов и кот (на «лежит» держатся сияющие страницы хука)"),
              sh(ix(T1, "и"), "f2", "pileb", zoom_in=0.15, sound="swoosh_deep", why="«и ни одной строчки»: раскрытый пустой блокнот из стопки"),
              sh(ix(T1, "Но"), "f2", "pilef", sound="fast_glitch", why="«но дело не в почерке»: поворот — смущённая морда"),

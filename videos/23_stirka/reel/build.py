@@ -55,7 +55,7 @@ T4 = "Нажмёшь кнопку, |и в голове стирка уже *го
 T5 = "Поэтому, как нажмёшь кнопку, |ставь пустой таз |на *порог*."
 T6 = "Утром я споткнулся |о таз |и сразу |*вспомнил*."
 beats = [
- dict(text=HOOK["text"], voice=HOOK["voice"], gaps=[[ix(HOOK["text"], "достаёшь"), 0.3]],
+ dict(text=HOOK["text"], voice=HOOK["voice"],   # голос подряд: riser просто поверх (владелец 05.11)
       shots=[dict(at=0, src="f1", anim="wash_hf", **{"from": W["hook"][0]}, to=W["hook"][1],
                   why="кот листает телефон у машинки, машинка трясётся на отжиме, в стекле крутится бельё с кадра 0"),
              sh(ix(HOOK["text"], "неделю"), "f1", "glass", anim="wash_hf",
@@ -67,7 +67,7 @@ beats = [
           dict(kind="punch", at=ix(HOOK["text"], "неделю"), amt=0.1, hold=0.3, why="удар-наезд на «неделю»"),
           dict(kind="mark", anchor=True, text=HOOK["anchor"], at=0, speed=2.4, x=520, y=215, size=104, marker=MARK,
                why="заголовок виден сразу: проявлен к 0,15 с")]),
- dict(text=T1, after_sfx="riser", voice=V1,
+ dict(text=T1, voice=V1,
       shots=[sh(ix(T1, "и"), "f1", "catp", zoom_in=0.15, sound="swoosh",
                 why="«и забудешь»: кот в телефоне, машинку не видит"),
              sh(ix(T1, "а"), "f2", "smell", sound="swoosh_deep", why="«а там уже запах»: открыл машинку — отшатнулся"),
