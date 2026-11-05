@@ -1015,6 +1015,7 @@ def cut_sam(img, box, pos, neg=(), whiskers=True):
 # достроила подушку и спинку дивана целиком. В кадр идёт только внутри дыры, после совмещения (ECC) и плавной
 # поправки тона по краю. Один платный рисунок на сцену (cx/gpt-image-2.5 medium, 197 550), кэш по содержимому.
 PLATE_MODEL, PLATE_SIZE, PLATE_Q = "cx/gpt-image-2.5", "1024x1536", "medium"
+PLATE_TONE_MAX = 18          # разница рисунка и подложки, выше которой это уже не тон, а тень, линия или предмет
 PLATE_PROMPT = ("Image 1 is a finished drawing. Redraw exactly the same drawing, the same room, furniture, objects, "
                 "framing, scale, line work, colours and paper, but WITHOUT {what}: the place where it was shows what is "
                 "behind it, the sofa, pillow, floor, wall or furniture continue naturally with their own lines and "
@@ -1039,7 +1040,12 @@ def _fuse_plate(rgb, plate_rgb, hole):
         M = np.eye(2, 3, dtype=np.float32)
     P = cv2.warpAffine(P, M, (w, h), flags=cv2.INTER_CUBIC | cv2.WARP_INVERSE_MAP, borderMode=cv2.BORDER_REPLICATE)
     out_ = (~cv2.dilate(hole.astype(np.uint8), np.ones((9, 9), np.uint8)).astype(bool)).astype(np.float32)
-    d = (np.asarray(rgb, np.float32) - P) * out_[..., None]
+    d = np.asarray(rgb, np.float32) - P
+    # тон — это мелкий сдвиг цвета бумаги и заливки; тень на полу, линия или предмет у края дыры — не тон: их разница
+    # большая, и среднее тащило их внутрь дыры серыми силуэтами (рилс 23, 05.11: подложка — чистая бумага, а у края
+    # дыры тень кота и машинки)
+    out_ = out_ * (np.abs(d).max(axis=2) < PLATE_TONE_MAX)
+    d = d * out_[..., None]
     num = cv2.GaussianBlur(d, (0, 0), 45); den = cv2.GaussianBlur(out_, (0, 0), 45)[..., None]
     P = P + num / np.maximum(den, 1e-3)                    # тон подложки к тону рисунка, плавно внутрь дыры
     soft = cv2.GaussianBlur(cv2.dilate(hole.astype(np.uint8), np.ones((9, 9), np.uint8)).astype(np.float32), (0, 0), 4)[..., None]

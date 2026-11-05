@@ -4065,5 +4065,149 @@
   "quality": "medium",
   "price": 197550,
   "source": "scripts/reel_recream.py videos/20_abonement/reel gen/g1_hook.png"
+ },
+ {
+  "file": "2026-11-05_gen_cx_gpt-image-2_5_07922b90.png",
+  "sha256": "07922b906230145b100c4b1992a169bbb0646b5467bd82aba0d5c9d847297e71",
+  "bytes": 2304990,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-05",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: the main character sits on the floor facing the viewer, smiling warmly and confidently, holding out one neatly folded fresh soft towel toward the viewer in both front paws like a friendly offer; its tail flame burns bright. LAYOUT: the cat big and whole in the lower middle, the towel close to the viewer; no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink lines on cream paper in exactly the hand-drawn style of the style references; the main character and the objects are softly painted with gentle muted watercolour, each in its own natural colour, never neon; the background is plain warm cream paper like a blank drawing sheet (владелец 04.11): no painted walls, no wall colour, no floorboards, no sky colour, only one thin ink floor line or a soft light-grey shadow under things that stand. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "videos/23_stirka/reel/draw_color.py"
+ },
+ {
+  "file": "2026-11-05_gen_cx_gpt-image-2_5_10d3d147.png",
+  "sha256": "10d3d147022fcd53a3f19cb3a225c9b6c8fe8226e19f70d9274c601c03dbc44c",
+  "bytes": 1836315,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-05",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Image 1 is a finished drawing. Redraw exactly the same drawing, the same room, furniture, objects, framing, scale, line work, colours and paper, but WITHOUT the black cat and the phone in its paws (keep the washing machine whole): the place where it was shows what is behind it, the sofa, pillow, floor, wall or furniture continue naturally with their own lines and colours, as if it had never been there. Nothing else changes: every other object stays in exactly the same place and size. No letters or numbers anywhere.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "videos/23_stirka/reel/anim/kit_wash.py"
+ },
+ {
+  "file": "2026-11-05_gen_cx_gpt-image-2_5_1501ad95.png",
+  "sha256": "1501ad9577b59ef1bbac18dea104cb7ec6595a6c1d210ff68743737507961137",
+  "bytes": 2215366,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-05",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: the main character walks away from a closed quiet washing machine toward the left, carefree, eyes closed, a satisfied smile, one paw brushing off the other as if the job is finished; above its head floats one round thought bubble with one big simple tick mark inside. The washing machine stands still on the right, door closed, its round glass empty and blank. LAYOUT: the cat whole in the left half mid-step, the machine whole on the right, both big; no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink lines on cream paper in exactly the hand-drawn style of the style references; the main character and the objects are softly painted with gentle muted watercolour, each in its own natural colour, never neon; the background is plain warm cream paper like a blank drawing sheet (владелец 04.11): no painted walls, no wall colour, no floorboards, no sky colour, only one thin ink floor line or a soft light-grey shadow under things that stand. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "videos/23_stirka/reel/draw_color.py"
+ },
+ {
+  "file": "2026-11-05_gen_cx_gpt-image-2_5_1703d057.png",
+  "sha256": "1703d0576b52bd1f6e2513ad2552eaaa3361ce996731fa9a9114d9e865b8ed43",
+  "bytes": 2457970,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-05",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: the main character comically trips over one empty round plastic laundry basin standing on a doorway threshold: mid-stumble, one hind paw caught in the basin, front paws flung up, wide bright eyes and an open-mouthed 'aha!' look of sudden remembering; its tail flame flares up bright. LAYOUT: the cat big and whole in the middle, the basin under its hind paw, the doorway frame at the edge; no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink lines on cream paper in exactly the hand-drawn style of the style references; the main character and the objects are softly painted with gentle muted watercolour, each in its own natural colour, never neon; the background is plain warm cream paper like a blank drawing sheet (владелец 04.11): no painted walls, no wall colour, no floorboards, no sky colour, only one thin ink floor line or a soft light-grey shadow under things that stand. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "videos/23_stirka/reel/draw_color.py"
+ },
+ {
+  "file": "2026-11-05_gen_cx_gpt-image-2_5_1d1ab9d2.png",
+  "sha256": "1d1ab9d27ea92c5a7826a6de15a8c95c9c1601383dbb84d991e05f1ef7ae6143",
+  "bytes": 2178432,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-05",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: a small laundry corner. One front-loading washing machine stands on the floor in the right half, big and whole, with one large round door whose glass is empty and blank: plain pale glass, nothing visible inside, about half the machine width. The main character sits on the floor on the left, leaning its back against the side of the machine, lazily scrolling one phone held up in both front paws, relaxed half-closed eyes, a careless little smile; its tail lies on the floor beside it with its flame. LAYOUT: the machine and the cat together fill the lower two thirds, the machine slightly taller than the sitting cat; the round glass is fully visible and not covered by the cat; the phone screen is blank; no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink lines on cream paper in exactly the hand-drawn style of the style references; the main character and the objects are softly painted with gentle muted watercolour, each in its own natural colour, never neon; the background is plain warm cream paper like a blank drawing sheet (владелец 04.11): no painted walls, no wall colour, no floorboards, no sky colour, only one thin ink floor line or a soft light-grey shadow under things that stand. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "videos/23_stirka/reel/draw_color.py"
+ },
+ {
+  "file": "2026-11-05_gen_cx_gpt-image-2_5_1fb13eaf.png",
+  "sha256": "1fb13eaf8a0e5b26bc29647567cbf43269870fb0361c90601339d1d0587068e0",
+  "bytes": 2305933,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-05",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: the main character carefully puts one empty round plastic laundry basin right on the threshold of an open plain doorway, bending a little, a focused clever face; the doorway frame stands on the left. LAYOUT: the doorway frame tall on the left, the cat whole and big in the middle, the basin clear and whole on the threshold; no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink lines on cream paper in exactly the hand-drawn style of the style references; the main character and the objects are softly painted with gentle muted watercolour, each in its own natural colour, never neon; the background is plain warm cream paper like a blank drawing sheet (владелец 04.11): no painted walls, no wall colour, no floorboards, no sky colour, only one thin ink floor line or a soft light-grey shadow under things that stand. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "videos/23_stirka/reel/draw_color.py"
+ },
+ {
+  "file": "2026-11-05_gen_cx_gpt-image-2_5_227a9c52.png",
+  "sha256": "227a9c527c66401c4537db737a314752896c64e5eaf85e804446dae3906493b1",
+  "bytes": 2326007,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-05",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: the main character has just opened the round door of a front-loading washing machine and recoils with a disgusted shocked face, one front paw pressed over its nose, eyes squeezed, ears back, fur bristling; one damp grey crumpled shirt hangs out of the open drum; three wavy green stink lines rise from the drum. LAYOUT: the machine whole on the left, the cat whole on the right, both big, a small gap between them; no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink lines on cream paper in exactly the hand-drawn style of the style references; the main character and the objects are softly painted with gentle muted watercolour, each in its own natural colour, never neon; the background is plain warm cream paper like a blank drawing sheet (владелец 04.11): no painted walls, no wall colour, no floorboards, no sky colour, only one thin ink floor line or a soft light-grey shadow under things that stand. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "videos/23_stirka/reel/draw_color.py"
+ },
+ {
+  "file": "2026-11-05_gen_cx_gpt-image-2_5_ced0087a.png",
+  "sha256": "ced0087a3bb61a4ac634eb9581b362cf9639eba71045f145e97babd13e790b13",
+  "bytes": 1669978,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-05",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Image 1 is a finished drawing. Redraw exactly the same drawing, the same room, furniture, objects, framing, scale, line work, colours and paper, but WITHOUT the black cat, its phone and the washing machine: the place where it was shows what is behind it, the sofa, pillow, floor, wall or furniture continue naturally with their own lines and colours, as if it had never been there. Nothing else changes: every other object stays in exactly the same place and size. No letters or numbers anywhere.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "videos/23_stirka/reel/anim/kit_wash.py"
  }
 ]

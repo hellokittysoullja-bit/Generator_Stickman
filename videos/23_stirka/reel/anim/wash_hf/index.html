@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=2048, height=3072" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="lib/mesh_part.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 2048px; height: 3072px; overflow: hidden; background: #faf7f0; }
+      #root { position: relative; width: 2048px; height: 3072px; overflow: hidden; }
+      .layer { position: absolute; left: 0; top: 0; width: 2048px; height: 3072px; }
+      .abs { position: absolute; display: block; }
+      svg.layer { overflow: visible; }
+      #rays line, #vib path { stroke: #18181a; stroke-linecap: round; fill: none; }
+    </style>
+  </head>
+  <body>
+    <!-- Хук рилса 23 «Стирка час, а достаёшь неделю?» (правило 30): мир сцены — рисунок p1_hook ×2, 2048×3072. Слои —
+         anim/kit_wash.py, положение слоёв подставляет wash_hf.py из kit.json, стекло дверцы — kit.glass.
+         С кадра 0 всё в движении: в стекле крутится барабан — цветное бельё и пена несутся по кругу, вода плещет;
+         машинка трясётся на отжиме, по бокам штрихи вибрации; кот ёрзает с телефоном, хвост качается. На ударном
+         «нЕделю» (data-vars.hit) барабан встаёт, вода уходит, бельё оседает, за стеклом мелькают дни (свет — темнота),
+         поднимается зелёная вонь; машинка замолкает, кот вздрагивает и подлетает. Камеру, звук и субтитры даёт сборщик. -->
+    <div id="root" data-composition-id="main" data-start="0" data-duration="4.4" data-width="2048" data-height="3072"
+         data-vars='{"hit": 1.8}' data-motion-blur="on" data-layout-allow-overflow data-layout-allow-overlap>
+      <img id="bg" class="abs clip" src="assets/bg.png" style="left:0;top:0" data-start="0" data-duration="4.4" />
+      <div id="mach" class="layer clip" data-start="0" data-duration="4.4">
+        <div id="machShake" class="layer">
+          <svg id="world" class="layer" width="2048" height="3072" viewBox="0 0 2048 3072">
+            <defs><clipPath id="glassClip"><ellipse id="glassE" cx="0" cy="0" rx="10" ry="10" /></clipPath></defs>
+            <g clip-path="url(#glassClip)">
+              <rect id="drumBg" x="0" y="0" width="10" height="10" fill="#cfe6ee" />
+              <g id="drum"></g>
+              <rect id="water" x="0" y="0" width="10" height="10" fill="#7fb8d6" opacity="0.45" />
+              <g id="foam"></g>
+              <rect id="night" x="0" y="0" width="10" height="10" fill="#1d2550" opacity="0" />
+              <g id="stinkIn"></g>
+              <path id="shine" fill="none" stroke="#ffffff" stroke-width="26" stroke-linecap="round" opacity="0.55" />
+            </g>
+          </svg>
+          <img id="machine" class="abs" src="assets/machine.png" style="left:0px;top:0px" />
+        </div>
+        <svg id="vib" class="layer" width="2048" height="3072" viewBox="0 0 2048 3072"></svg>
+        <svg id="stinkOut" class="layer" width="2048" height="3072" viewBox="0 0 2048 3072"></svg>
+      </div>
+      <div id="cat" class="layer clip" data-start="0" data-duration="4.4">
+        <div id="catHop" class="layer">
+          <canvas id="tail" class="abs" width="764" height="915" style="left:0px;top:0px"></canvas>
+          <img id="body" class="abs" src="assets/body.png" style="left:0px;top:0px" />
+        </div>
+        <svg id="rays" class="layer" width="2048" height="3072" viewBox="0 0 2048 3072"></svg>
+      </div>
+    </div>
+    <script>
+      const root = document.getElementById("root");
+      const V = JSON.parse(root.dataset.vars), H = V.hit, K = V.kit, D = 4.4;
+      const NS = "http://www.w3.org/2000/svg";
+      const tl = gsap.timeline({ paused: true });
+      const px = (p) => `${p[0]}px ${p[1]}px`;
+      const R = (i) => { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+      const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag);
+        for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+      const [GX, GY, GRX, GRY] = K.glass;
+      const ge = document.getElementById("glassE");
+      ge.setAttribute("cx", GX); ge.setAttribute("cy", GY); ge.setAttribute("rx", GRX + 6); ge.setAttribute("ry", GRY + 6);
+      for (const id of ["drumBg", "water", "night"]) {
+        const r = document.getElementById(id);
+        r.setAttribute("x", GX - GRX - 20); r.setAttribute("y", GY - GRY - 20);
+        r.setAttribute("width", 2 * GRX + 40); r.setAttribute("height", 2 * GRY + 40);
+      }
+      document.getElementById("shine").setAttribute("d",
+        `M${GX - GRX * 0.62} ${GY - GRY * 0.18} Q${GX - GRX * 0.5} ${GY - GRY * 0.62} ${GX - GRX * 0.08} ${GY - GRY * 0.74}`);
+
+      // барабан: бельё (носок, футболка, полотенце, штанина, ещё носок) и дырочки барабана — несутся по кругу с кадра 0
+      const drum = document.getElementById("drum");
+      gsap.set(drum, { svgOrigin: `${GX} ${GY}` });
+      for (let k = 0; k < 18; k++) {
+        const a = (k / 18) * Math.PI * 2;
+        el("circle", { cx: GX + GRX * 0.86 * Math.cos(a), cy: GY + GRY * 0.86 * Math.sin(a), r: 11, fill: "#9fbfcc" }, drum);
+      }
+      const CLOTHES = [
+        { c: "#e9705a", d: "M-70 -40 L40 -40 L40 30 L90 60 L70 95 L-10 60 L-70 60 Z" },             // носок
+        { c: "#f2c94c", d: "M-110 -80 L-40 -100 Q0 -70 40 -100 L110 -80 L95 -20 L60 -30 L60 90 L-60 90 L-60 -30 L-95 -20 Z" }, // футболка
+        { c: "#6fa86b", d: "M-120 -55 Q0 -95 120 -55 L110 55 Q0 90 -110 55 Z" },                    // полотенце
+        { c: "#5b7fc7", d: "M-40 -110 L50 -110 L70 100 L20 105 L5 -20 L-20 105 L-65 100 Z" },        // штаны
+        { c: "#d77fb0", d: "M-60 -35 L35 -35 L35 25 L75 50 L55 80 L-5 50 L-60 50 Z" },               // носок
+      ];
+      const cl = [];
+      CLOTHES.forEach((o, i) => {
+        const a = (i / CLOTHES.length) * Math.PI * 2 + 0.4, rr = 0.42 + 0.14 * R(i + 5);
+        const g = el("g", { transform: `translate(${GX + GRX * rr * Math.cos(a)} ${GY + GRY * rr * Math.sin(a)}) rotate(${(a * 180) / Math.PI}) scale(1.45)` }, drum);
+        const inner = el("g", {}, g);
+        el("path", { d: o.d, fill: o.c, stroke: "#18181a", "stroke-width": 7, "stroke-linejoin": "round" }, inner);
+        cl.push(inner);
+      });
+      // крутится уже на скорости (без разгона), к удару — встаёт рывком
+      const TURN = 1.6;                                    // оборотов в секунду
+      tl.fromTo(drum, { rotation: 0 }, { rotation: 360 * TURN * (H - 0.02), duration: H - 0.02, ease: "none" }, 0);
+      tl.to(drum, { rotation: `+=${70}`, duration: 0.28, ease: "power3.out" }, H - 0.02);
+      cl.forEach((c, i) => {                               // бельё кувыркается само внутри барабана
+        tl.fromTo(c, { rotation: 0, svgOrigin: "0 0" }, { rotation: (i % 2 ? 1 : -1) * 420, duration: H, ease: "none" }, 0);
+      });
+      // после остановки бельё оседает на дно кучей
+      tl.to(cl, { y: (i) => 60 + 30 * R(i + 70), duration: 0.35, ease: "bounce.out", stagger: 0.02 }, H + 0.22);
+
+      // вода плещет: уровень качается; на ударе уходит вниз
+      const water = document.getElementById("water");
+      tl.set(water, { y: GRY * 0.25 }, 0);
+      for (let t = 0, i = 0; t < H - 0.1; t += 0.14, i++) {
+        tl.to(water, { y: GRY * (0.18 + 0.16 * (i % 2)), x: (i % 2 ? 1 : -1) * 30, duration: 0.14, ease: "sine.inOut" }, t);
+      }
+      tl.to(water, { y: GRY * 1.2, x: 0, duration: 0.5, ease: "power2.in" }, H + 0.05);
+
+      // пена: пузыри кругом по краю барабана, крутятся вместе с ним, на ударе лопаются
+      const foam = document.getElementById("foam");
+      gsap.set(foam, { svgOrigin: `${GX} ${GY}` });
+      for (let k = 0; k < 16; k++) {
+        const a = (k / 16) * Math.PI * 2, rr = 0.66 + 0.2 * R(k + 30), r = 26 + 22 * R(k + 40);
+        el("circle", { cx: GX + GRX * rr * Math.cos(a), cy: GY + GRY * rr * Math.sin(a), r: r, fill: "#ffffff",
+                       stroke: "#18181a", "stroke-width": 5 }, foam);
+      }
+      tl.fromTo(foam, { rotation: 20 }, { rotation: 20 + 360 * TURN * 0.8 * H, duration: H, ease: "none" }, 0);
+      tl.to(foam.children, { scale: 0, opacity: 0, duration: 0.12, ease: "power2.in", stagger: 0.012,
+                             transformOrigin: "50% 50%" }, H + 0.02);
+
+      // дни: за стеклом мелькает свет — темнота, неделя за секунду
+      const night = document.getElementById("night");
+      for (let k = 0; k < 7; k++) {
+        const t0 = H + 0.3 + k * 0.24;
+        tl.to(night, { opacity: 0.78, duration: 0.07, ease: "power2.out" }, t0);
+        tl.to(night, { opacity: 0.05, duration: 0.09, ease: "power2.in" }, t0 + 0.12);
+      }
+
+      // вонь: зелёные волны поднимаются в стекле и над машинкой
+      const mkStink = (parent, x, y, s, i, t0) => {
+        const p = el("path", { d: `M${x} ${y} q${-30 * s} ${-50 * s} 0 ${-100 * s} q${30 * s} ${-50 * s} 0 ${-100 * s} q${-30 * s} ${-50 * s} 0 ${-100 * s}`,
+                               stroke: "#7f9f3a", "stroke-width": 16 * s, fill: "none", "stroke-linecap": "round", opacity: 0 }, parent);
+        tl.set(p, { opacity: 0, y: 30 }, 0);
+        tl.to(p, { opacity: 0.9, y: 0, duration: 0.25, ease: "power2.out" }, t0);
+        tl.to(p, { y: -90, x: (i % 2 ? 14 : -14), duration: D - t0, ease: "sine.inOut" }, t0 + 0.05);
+        tl.to(p, { scaleX: -1, transformOrigin: "50% 100%", duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 6 }, t0 + 0.1);
+      };
+      const sIn = document.getElementById("stinkIn"), sOut = document.getElementById("stinkOut");
+      [-0.35, 0, 0.35].forEach((f, i) => mkStink(sIn, GX + GRX * f, GY + GRY * 0.6, 1.0, i, H + 0.35 + 0.08 * i));
+      [0.25, 0.5, 0.75].forEach((f, i) => mkStink(sOut, 920 + 960 * f, 1010, 1.25, i + 1, H + 0.55 + 0.1 * i));
+
+      // машинка трясётся на отжиме с кадра 0; на ударе — глухой толчок и тишина
+      gsap.set("#machShake", { transformOrigin: px(K.mach_feet) });
+      const MS = 0.04;
+      tl.fromTo("#machShake", { x: 12, y: -5, rotation: 0.7 }, { x: -12, y: 0, rotation: -0.7, duration: MS, ease: "none" }, 0);
+      for (let i = 1, t = MS; t < H - 0.03; i++, t += MS) {
+        const s = i % 2 ? 1 : -1, w = 0.75 + 0.25 * Math.abs(Math.sin(t * 9.3));
+        tl.to("#machShake", { x: s * 13 * w, y: -6 * w * (i % 2), rotation: s * 0.75 * w, duration: MS, ease: "none" }, t);
+      }
+      tl.to("#machShake", { x: 0, y: -14, rotation: 0, duration: 0.06, ease: "power3.out" }, H - 0.03);
+      tl.to("#machShake", { y: 0, duration: 0.3, ease: "bounce.out" }, H + 0.03);
+      // штрихи вибрации по бокам машинки — пока крутит
+      const vib = document.getElementById("vib");
+      [[880, 1500, -1], [880, 1950, -1], [1925, 1500, 1], [1925, 1950, 1]].forEach(([x, y, s], k) => {
+        const g = el("g", {}, vib);
+        for (let j = 0; j < 2; j++) {
+          el("path", { d: `M${x + s * (20 + 34 * j)} ${y - 70} q${s * 26} 35 0 70 q${-s * 26} 35 0 70`, "stroke-width": 9 }, g);
+        }
+        for (let t = 0, i = 0; t < H - 0.05; t += 0.06, i++) {
+          tl.set(g, { opacity: (i + k) % 3 === 0 ? 0.25 : 1, x: s * ((i + k) % 2 ? 10 : 0) }, t);
+        }
+        tl.set(g, { opacity: 0 }, H);
+      });
+
+      // кот: ёрзает и листает телефон с кадра 0, без разгона
+      gsap.set("#catHop", { transformOrigin: px(K.feet) });
+      const SH = 0.05;
+      tl.fromTo("#catHop", { x: 48, y: -26, rotation: 3.0 }, { x: -44, y: 8, rotation: -2.8, duration: SH, ease: "none" }, 0);
+      for (let i = 1, t = SH; t < H - 0.06; i++, t += SH) {
+        const s = i % 2 ? 1 : -1, w = Math.sin(t * 7.1);
+        tl.to("#catHop", { x: s * (32 + 14 * Math.abs(w)), y: -20 * Math.abs(w), rotation: s * (2.4 + 1.0 * Math.abs(w)),
+                           duration: SH, ease: "none" }, t);
+      }
+      // удар «нЕделю»: вздрогнул и подлетел, пружина обратно
+      tl.to("#catHop", { x: 0, y: -120, rotation: -3, scaleY: 1.08, scaleX: 0.95, duration: 0.08, ease: "power3.out" }, H);
+      tl.to("#catHop", { y: 18, scaleY: 0.93, scaleX: 1.05, rotation: 1.5, duration: 0.12, ease: "power2.in" }, H + 0.1);
+      tl.to("#catHop", { y: 0, scaleY: 1, scaleX: 1, rotation: 0, duration: 0.6, ease: "elastic.out(1, 0.35)" }, H + 0.22);
+      for (let i = 0, t = H + 0.85; t < D; i++, t += 0.16) {
+        tl.to("#catHop", { x: (i % 2 ? 1 : -1) * 7, y: (i % 2 ? -4 : 2), duration: 0.16, ease: "sine.inOut" }, t);
+      }
+      // штрихи испуга вокруг головы
+      const hx = K.head[0], hy = K.head[1];
+      for (let k = 0; k < 7; k++) {
+        const a = -Math.PI / 2 + (k - 3) * 0.42;
+        const g = el("g", { transform: `translate(${hx + 360 * Math.cos(a)} ${hy - 200 + 280 * Math.sin(a)}) rotate(${(a * 180) / Math.PI})` },
+                     document.getElementById("rays"));
+        const m = el("g", {}, g), l = el("line", { x1: 0, y1: 0, x2: 80, y2: 0 }, m); l.style.strokeWidth = 13;
+        tl.set(m, { opacity: 0, scaleX: 0, svgOrigin: "0 0" }, 0);
+        tl.set(m, { opacity: 1 }, H + 0.02);
+        tl.to(m, { scaleX: 1, duration: 0.07, ease: "power3.out" }, H + 0.02);
+        tl.to(m, { x: 46, opacity: 0, duration: 0.26, ease: "power2.in" }, H + 0.2);
+      }
+      meshPart({ canvas: document.getElementById("tail"), marg: 180, img: "assets/tail_body.png",
+                 flame: "assets/tail_flame.png", mesh: "assets/tail_mesh.json", angles: "assets/tail_angles.json", fps: 30 });
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
