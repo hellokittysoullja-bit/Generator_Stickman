@@ -55,11 +55,13 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("out")
     ap.add_argument("--days", type=int, default=60)
+    ap.add_argument("--queries", help="свои запросы через «;» вместо запросов ниши (например, формат «я неделю…»)")
     a = ap.parse_args()
     KEY = key()
     after = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=a.days)).strftime("%Y-%m-%dT%H:%M:%SZ")
     found = {}
-    for q in QUERIES:
+    queries = [q.strip() for q in a.queries.split(";") if q.strip()] if a.queries else QUERIES
+    for q in queries:
         for dur in ("medium", "long"):
             try:
                 r = call("search", part="id", q=q, type="video", videoDuration=dur, order="viewCount", maxResults=50,
@@ -95,7 +97,7 @@ def main():
                          lang=sn.get("defaultAudioLanguage", "")))
     rows.sort(key=lambda r: -r["views"])
     json.dump(rows, open(a.out, "w", encoding="utf-8"), ensure_ascii=False, indent=0)
-    print(f"роликов {len(rows)}, каналов {len(chans)}, запросов {len(QUERIES)}")
+    print(f"роликов {len(rows)}, каналов {len(chans)}, запросов {len(queries)}")
 
 
 if __name__ == "__main__":
