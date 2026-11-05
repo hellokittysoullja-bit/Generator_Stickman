@@ -24,7 +24,7 @@
   },
   {
    "index": 4,
-   "status": "failed",
+   "status": "ok",
    "dur": 15.5833
   },
   {
@@ -189,7 +189,7 @@
   },
   {
    "index": 37,
-   "status": "failed",
+   "status": "ok",
    "dur": 25.625
   },
   {
