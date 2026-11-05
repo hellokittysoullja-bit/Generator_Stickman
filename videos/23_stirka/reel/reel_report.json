@@ -1,0 +1,965 @@
+{
+ "total": 28.64,
+ "voiced": true,
+ "picture_h": 1440,
+ "picture_top": 60,
+ "words": [
+  {
+   "word": "Стирка",
+   "start": 0.137,
+   "end": 0.48
+  },
+  {
+   "word": "час,",
+   "start": 0.56,
+   "end": 0.88
+  },
+  {
+   "word": "а",
+   "start": 0.96,
+   "end": 1.04
+  },
+  {
+   "word": "достаёшь",
+   "start": 1.12,
+   "end": 1.56
+  },
+  {
+   "word": "неделю?",
+   "start": 1.9000000000000001,
+   "end": 2.38
+  },
+  {
+   "word": "Включишь",
+   "start": 2.6999999999999997,
+   "end": 3.1799999999999997
+  },
+  {
+   "word": "и",
+   "start": 3.2199999999999998,
+   "end": 3.26
+  },
+  {
+   "word": "забудешь,",
+   "start": 3.34,
+   "end": 3.9
+  },
+  {
+   "word": "а",
+   "start": 4.06,
+   "end": 4.14
+  },
+  {
+   "word": "там",
+   "start": 4.18,
+   "end": 4.38
+  },
+  {
+   "word": "уже",
+   "start": 4.46,
+   "end": 4.62
+  },
+  {
+   "word": "запах.",
+   "start": 4.7,
+   "end": 5.18
+  },
+  {
+   "word": "Но",
+   "start": 5.58,
+   "end": 5.74
+  },
+  {
+   "word": "это",
+   "start": 5.819999999999999,
+   "end": 5.9799999999999995
+  },
+  {
+   "word": "не",
+   "start": 6.06,
+   "end": 6.14
+  },
+  {
+   "word": "память,",
+   "start": 6.22,
+   "end": 6.62
+  },
+  {
+   "word": "и",
+   "start": 6.843999999999999,
+   "end": 6.859999999999999
+  },
+  {
+   "word": "в",
+   "start": 6.9399999999999995,
+   "end": 6.9799999999999995
+  },
+  {
+   "word": "конце",
+   "start": 7.02,
+   "end": 7.42
+  },
+  {
+   "word": "покажу,",
+   "start": 7.5,
+   "end": 7.9799999999999995
+  },
+  {
+   "word": "как",
+   "start": 8.06,
+   "end": 8.22
+  },
+  {
+   "word": "тебе",
+   "start": 8.3,
+   "end": 8.5
+  },
+  {
+   "word": "не",
+   "start": 8.540000000000001,
+   "end": 8.620000000000001
+  },
+  {
+   "word": "забыть.",
+   "start": 8.66,
+   "end": 9.020000000000001
+  },
+  {
+   "word": "Я",
+   "start": 9.58,
+   "end": 9.66
+  },
+  {
+   "word": "постирал",
+   "start": 9.74,
+   "end": 10.06
+  },
+  {
+   "word": "в",
+   "start": 10.14,
+   "end": 10.22
+  },
+  {
+   "word": "понедельник,",
+   "start": 10.3,
+   "end": 10.940000000000001
+  },
+  {
+   "word": "а",
+   "start": 11.020000000000001,
+   "end": 11.100000000000001
+  },
+  {
+   "word": "достал",
+   "start": 11.14,
+   "end": 11.42
+  },
+  {
+   "word": "в",
+   "start": 11.5,
+   "end": 11.58
+  },
+  {
+   "word": "пятницу.",
+   "start": 11.66,
+   "end": 12.46
+  },
+  {
+   "word": "Было",
+   "start": 12.540000000000001,
+   "end": 12.700000000000001
+  },
+  {
+   "word": "такое?",
+   "start": 12.780000000000001,
+   "end": 13.42
+  },
+  {
+   "word": "Напиши",
+   "start": 13.5,
+   "end": 13.82
+  },
+  {
+   "word": "в",
+   "start": 13.860000000000001,
+   "end": 13.9
+  },
+  {
+   "word": "комментах",
+   "start": 13.98,
+   "end": 14.38
+  },
+  {
+   "word": "кот,",
+   "start": 14.42,
+   "end": 14.780000000000001
+  },
+  {
+   "word": "и",
+   "start": 14.833,
+   "end": 14.860000000000001
+  },
+  {
+   "word": "Напарник",
+   "start": 14.940000000000001,
+   "end": 15.42
+  },
+  {
+   "word": "напомнит",
+   "start": 15.5,
+   "end": 15.98
+  },
+  {
+   "word": "тебе",
+   "start": 16.033,
+   "end": 16.18
+  },
+  {
+   "word": "закончить.",
+   "start": 16.22,
+   "end": 17.1
+  },
+  {
+   "word": "Нажмёшь",
+   "start": 17.18,
+   "end": 17.580000000000002
+  },
+  {
+   "word": "кнопку,",
+   "start": 17.62,
+   "end": 18.14
+  },
+  {
+   "word": "и",
+   "start": 18.193,
+   "end": 18.220000000000002
+  },
+  {
+   "word": "в",
+   "start": 18.3,
+   "end": 18.34
+  },
+  {
+   "word": "голове",
+   "start": 18.38,
+   "end": 18.7
+  },
+  {
+   "word": "стирка",
+   "start": 18.78,
+   "end": 19.1
+  },
+  {
+   "word": "уже",
+   "start": 19.18,
+   "end": 19.34
+  },
+  {
+   "word": "готова,",
+   "start": 19.580000000000002,
+   "end": 19.98
+  },
+  {
+   "word": "а",
+   "start": 20.060000000000002,
+   "end": 20.14
+  },
+  {
+   "word": "машинка",
+   "start": 20.220000000000002,
+   "end": 20.62
+  },
+  {
+   "word": "молчит.",
+   "start": 20.7,
+   "end": 21.42
+  },
+  {
+   "word": "Поэтому,",
+   "start": 21.527,
+   "end": 21.900000000000002
+  },
+  {
+   "word": "как",
+   "start": 21.953,
+   "end": 22.060000000000002
+  },
+  {
+   "word": "нажмёшь",
+   "start": 22.14,
+   "end": 22.513
+  },
+  {
+   "word": "кнопку,",
+   "start": 22.54,
+   "end": 23.1
+  },
+  {
+   "word": "ставь",
+   "start": 23.18,
+   "end": 23.46
+  },
+  {
+   "word": "пустой",
+   "start": 23.5,
+   "end": 23.900000000000002
+  },
+  {
+   "word": "таз",
+   "start": 24.32,
+   "end": 24.44
+  },
+  {
+   "word": "на",
+   "start": 24.52,
+   "end": 24.6
+  },
+  {
+   "word": "порог.",
+   "start": 24.68,
+   "end": 25.24
+  },
+  {
+   "word": "Утром",
+   "start": 25.32,
+   "end": 25.64
+  },
+  {
+   "word": "я",
+   "start": 25.72,
+   "end": 25.759999999999998
+  },
+  {
+   "word": "споткнулся",
+   "start": 25.8,
+   "end": 26.36
+  },
+  {
+   "word": "о",
+   "start": 26.44,
+   "end": 26.52
+  },
+  {
+   "word": "таз",
+   "start": 26.56,
+   "end": 26.84
+  },
+  {
+   "word": "и",
+   "start": 26.919999999999998,
+   "end": 27.0
+  },
+  {
+   "word": "сразу",
+   "start": 27.08,
+   "end": 27.44
+  },
+  {
+   "word": "вспомнил.",
+   "start": 27.48,
+   "end": 28.04
+  }
+ ],
+ "voice_p95": -5.3,
+ "sounds": [
+  {
+   "name": "fast_whoosh",
+   "role": "whoosh",
+   "peak": 0.261,
+   "soft": false,
+   "gain_db": 0.0,
+   "vs_voice_db": -12.0,
+   "with_overlap_db": -12.1,
+   "target_db": -12.0
+  },
+  {
+   "name": "riser",
+   "role": "whoosh",
+   "peak": 1.787,
+   "soft": false,
+   "gain_db": 0.0,
+   "vs_voice_db": -12.0,
+   "with_overlap_db": -8.0,
+   "target_db": -12.0
+  },
+  {
+   "name": "shock",
+   "role": "impact",
+   "peak": 1.95,
+   "soft": false,
+   "gain_db": 0.0,
+   "vs_voice_db": -8.0,
+   "with_overlap_db": -7.9,
+   "target_db": -8.0
+  },
+  {
+   "name": "swoosh",
+   "role": "whoosh",
+   "peak": 3.153,
+   "soft": false,
+   "gain_db": 0.0,
+   "vs_voice_db": -12.0,
+   "with_overlap_db": -7.9,
+   "target_db": -12.0
+  },
+  {
+   "name": "swoosh_deep",
+   "role": "impact",
+   "peak": 3.993,
+   "soft": false,
+   "gain_db": 0.0,
+   "vs_voice_db": -8.0,
+   "with_overlap_db": -7.9,
+   "target_db": -8.0
+  },
+  {
+   "name": "oof",
+   "role": "impact",
+   "peak": 4.75,
+   "soft": false,
+   "gain_db": 0.0,
+   "vs_voice_db": -8.0,
+   "with_overlap_db": -7.9,
+   "target_db": -8.0
+  },
+  {
+   "name": "fast_glitch",
+   "role": "whoosh",
+   "peak": 5.513,
+   "soft": false,
+   "gain_db": 0.0,
+   "vs_voice_db": -12.0,
+   "with_overlap_db": -12.0,
+   "target_db": -12.0
+  },
+  {
+   "name": "swoosh",
+   "role": "whoosh",
+   "peak": 6.777,
+   "soft": true,
+   "gain_db": -5.0,
+   "vs_voice_db": -17.1,
+   "with_overlap_db": -17.1,
+   "target_db": -17.0
+  },
+  {
+   "name": "fast_whoosh",
+   "role": "whoosh",
+   "peak": 9.513,
+   "soft": false,
+   "gain_db": 0.0,
+   "vs_voice_db": -12.0,
+   "with_overlap_db": -12.0,
+   "target_db": -12.0
+  },
+  {
+   "name": "fast_glitch",
+   "role": "whoosh",
+   "peak": 11.71,
+   "soft": false,
+   "gain_db": 0.0,
+   "vs_voice_db": -12.0,
+   "with_overlap_db": -12.0,
+   "target_db": -12.0
+  },
+  {
+   "name": "swoosh",
+   "role": "whoosh",
+   "peak": 12.473,
+   "soft": false,
+   "gain_db": 0.0,
+   "vs_voice_db": -12.1,
+   "with_overlap_db": -12.1,
+   "target_db": -12.0
+  },
+  {
+   "name": "typing",
+   "role": "ui",
+   "peak": 13.5,
+   "soft": false,
+   "gain_db": 0.0,
+   "vs_voice_db": -14.0,
+   "with_overlap_db": -14.0,
+   "target_db": -14.0
+  },
+  {
+   "name": "swoosh_deep",
+   "role": "impact",
+   "peak": 14.766,
+   "soft": false,
+   "gain_db": 0.0,
+   "vs_voice_db": -8.0,
+   "with_overlap_db": -8.0,
+   "target_db": -8.0
+  },
+  {
+   "name": "swoosh",
+   "role": "whoosh",
+   "peak": 17.113,
+   "soft": false,
+   "gain_db": 0.0,
+   "vs_voice_db": -12.2,
+   "with_overlap_db": -12.2,
+   "target_db": -12.0
+  },
+  {
+   "name": "fast_whoosh",
+   "role": "whoosh",
+   "peak": 19.58,
+   "soft": true,
+   "gain_db": -5.0,
+   "vs_voice_db": -17.0,
+   "with_overlap_db": -17.0,
+   "target_db": -17.0
+  },
+  {
+   "name": "swoosh",
+   "role": "whoosh",
+   "peak": 21.46,
+   "soft": false,
+   "gain_db": 0.0,
+   "vs_voice_db": -12.1,
+   "with_overlap_db": -12.1,
+   "target_db": -12.0
+  },
+  {
+   "name": "fast_whoosh",
+   "role": "whoosh",
+   "peak": 23.113,
+   "soft": true,
+   "gain_db": -5.0,
+   "vs_voice_db": -17.0,
+   "with_overlap_db": -17.0,
+   "target_db": -17.0
+  },
+  {
+   "name": "swoosh_deep",
+   "role": "impact",
+   "peak": 24.32,
+   "soft": false,
+   "gain_db": 0.0,
+   "vs_voice_db": -8.0,
+   "with_overlap_db": -8.0,
+   "target_db": -8.0
+  },
+  {
+   "name": "swoosh",
+   "role": "whoosh",
+   "peak": 25.253,
+   "soft": true,
+   "gain_db": -3.0,
+   "vs_voice_db": -15.1,
+   "with_overlap_db": -15.1,
+   "target_db": -15.0
+  },
+  {
+   "name": "oof",
+   "role": "impact",
+   "peak": 25.85,
+   "soft": false,
+   "gain_db": 0.0,
+   "vs_voice_db": -8.0,
+   "with_overlap_db": -8.0,
+   "target_db": -8.0
+  },
+  {
+   "name": "fast_whoosh",
+   "role": "whoosh",
+   "peak": 27.413,
+   "soft": false,
+   "gain_db": 0.0,
+   "vs_voice_db": -10.4,
+   "with_overlap_db": -8.0,
+   "target_db": -12.0
+  },
+  {
+   "name": "level_up",
+   "role": "impact",
+   "peak": 27.53,
+   "soft": false,
+   "gain_db": 0.0,
+   "vs_voice_db": -8.0,
+   "with_overlap_db": -8.0,
+   "target_db": -8.0
+  }
+ ],
+ "events": [
+  {
+   "kind": "mark",
+   "t": 0.0,
+   "beat": 0
+  },
+  {
+   "kind": "sfx",
+   "t": 0.137,
+   "beat": 0,
+   "name": "fast_whoosh"
+  },
+  {
+   "kind": "sfx",
+   "t": 0.137,
+   "beat": 0,
+   "name": "riser"
+  },
+  {
+   "kind": "shake",
+   "t": 1.9,
+   "beat": 0
+  },
+  {
+   "kind": "punch",
+   "t": 1.9,
+   "beat": 0
+  },
+  {
+   "kind": "sfx",
+   "t": 1.95,
+   "beat": 0,
+   "name": "shock"
+  },
+  {
+   "kind": "shake",
+   "t": 4.7,
+   "beat": 1
+  },
+  {
+   "kind": "sfx",
+   "t": 4.75,
+   "beat": 1,
+   "name": "oof"
+  },
+  {
+   "kind": "punch",
+   "t": 11.66,
+   "beat": 2
+  },
+  {
+   "kind": "sfx",
+   "t": 11.71,
+   "beat": 2,
+   "name": "fast_glitch"
+  },
+  {
+   "kind": "sfx",
+   "t": 13.5,
+   "beat": 3,
+   "name": "typing"
+  },
+  {
+   "kind": "punch",
+   "t": 19.58,
+   "beat": 4
+  },
+  {
+   "kind": "sfx",
+   "t": 24.32,
+   "beat": 5,
+   "name": "swoosh_deep"
+  },
+  {
+   "kind": "circle",
+   "t": 24.68,
+   "beat": 5
+  },
+  {
+   "kind": "shake",
+   "t": 25.8,
+   "beat": 6
+  },
+  {
+   "kind": "sfx",
+   "t": 25.85,
+   "beat": 6,
+   "name": "oof"
+  },
+  {
+   "kind": "sfx",
+   "t": 27.53,
+   "beat": 6,
+   "name": "level_up"
+  }
+ ],
+ "shots": [
+  {
+   "t0": 0.0,
+   "t1": 1.833,
+   "kind": "crop",
+   "src": "f1"
+  },
+  {
+   "t0": 1.833,
+   "t1": 3.153,
+   "kind": "crop",
+   "src": "f1"
+  },
+  {
+   "t0": 3.153,
+   "t1": 3.993,
+   "kind": "crop",
+   "src": "f1"
+  },
+  {
+   "t0": 3.993,
+   "t1": 5.513,
+   "kind": "crop",
+   "src": "f2"
+  },
+  {
+   "t0": 5.513,
+   "t1": 6.777,
+   "kind": "crop",
+   "src": "f2"
+  },
+  {
+   "t0": 6.777,
+   "t1": 9.513,
+   "kind": "crop",
+   "src": "f4"
+  },
+  {
+   "t0": 9.513,
+   "t1": 10.953,
+   "kind": "crop",
+   "src": "f1"
+  },
+  {
+   "t0": 10.953,
+   "t1": 12.473,
+   "kind": "crop",
+   "src": "f2"
+  },
+  {
+   "t0": 12.473,
+   "t1": 13.433,
+   "kind": "crop",
+   "src": "f3"
+  },
+  {
+   "t0": 13.433,
+   "t1": 14.766,
+   "kind": "crop",
+   "src": "f3"
+  },
+  {
+   "t0": 14.766,
+   "t1": 17.113,
+   "kind": "crop",
+   "src": "f1"
+  },
+  {
+   "t0": 17.113,
+   "t1": 18.126,
+   "kind": "crop",
+   "src": "f4"
+  },
+  {
+   "t0": 18.126,
+   "t1": 19.993,
+   "kind": "crop",
+   "src": "f4"
+  },
+  {
+   "t0": 19.993,
+   "t1": 21.46,
+   "kind": "crop",
+   "src": "f4"
+  },
+  {
+   "t0": 21.46,
+   "t1": 23.113,
+   "kind": "crop",
+   "src": "f5"
+  },
+  {
+   "t0": 23.113,
+   "t1": 25.253,
+   "kind": "crop",
+   "src": "f5"
+  },
+  {
+   "t0": 25.253,
+   "t1": 26.373,
+   "kind": "crop",
+   "src": "f6"
+  },
+  {
+   "t0": 26.373,
+   "t1": 27.413,
+   "kind": "crop",
+   "src": "f6"
+  },
+  {
+   "t0": 27.413,
+   "t1": 28.64,
+   "kind": "crop",
+   "src": "f1"
+  }
+ ],
+ "captions": [
+  {
+   "t0": 0.0,
+   "t1": 0.48,
+   "text": "Стирка час,"
+  },
+  {
+   "t0": 0.48,
+   "t1": 0.95,
+   "text": "а достаёшь"
+  },
+  {
+   "t0": 0.95,
+   "t1": 2.633,
+   "text": "неделю?"
+  },
+  {
+   "t0": 2.633,
+   "t1": 3.153,
+   "text": "Включишь"
+  },
+  {
+   "t0": 3.153,
+   "t1": 3.993,
+   "text": "и забудешь,"
+  },
+  {
+   "t0": 3.993,
+   "t1": 4.393,
+   "text": "а там"
+  },
+  {
+   "t0": 4.393,
+   "t1": 5.513,
+   "text": "уже запах."
+  },
+  {
+   "t0": 5.513,
+   "t1": 5.993,
+   "text": "Но это"
+  },
+  {
+   "t0": 5.993,
+   "t1": 6.777,
+   "text": "не память,"
+  },
+  {
+   "t0": 6.777,
+   "t1": 7.433,
+   "text": "и в конце"
+  },
+  {
+   "t0": 7.433,
+   "t1": 8.473,
+   "text": "покажу, как тебе"
+  },
+  {
+   "t0": 8.473,
+   "t1": 9.513,
+   "text": "не забыть."
+  },
+  {
+   "t0": 9.513,
+   "t1": 10.073,
+   "text": "Я постирал"
+  },
+  {
+   "t0": 10.073,
+   "t1": 10.953,
+   "text": "в понедельник,"
+  },
+  {
+   "t0": 10.953,
+   "t1": 11.433,
+   "text": "а достал"
+  },
+  {
+   "t0": 11.433,
+   "t1": 12.473,
+   "text": "в пятницу."
+  },
+  {
+   "t0": 12.473,
+   "t1": 13.433,
+   "text": "Было такое?"
+  },
+  {
+   "t0": 13.433,
+   "t1": 13.913,
+   "text": "Напиши в"
+  },
+  {
+   "t0": 13.913,
+   "t1": 14.766,
+   "text": "комментах кот,"
+  },
+  {
+   "t0": 14.766,
+   "t1": 15.966,
+   "text": "и Напарник напомнит"
+  },
+  {
+   "t0": 15.966,
+   "t1": 17.113,
+   "text": "тебе закончить."
+  },
+  {
+   "t0": 17.113,
+   "t1": 18.126,
+   "text": "Нажмёшь кнопку,"
+  },
+  {
+   "t0": 18.126,
+   "t1": 18.713,
+   "text": "и в голове"
+  },
+  {
+   "t0": 18.713,
+   "t1": 19.993,
+   "text": "стирка уже готова,"
+  },
+  {
+   "t0": 19.993,
+   "t1": 21.46,
+   "text": "а машинка молчит."
+  },
+  {
+   "t0": 21.46,
+   "t1": 22.073,
+   "text": "Поэтому, как"
+  },
+  {
+   "t0": 22.073,
+   "t1": 23.113,
+   "text": "нажмёшь кнопку,"
+  },
+  {
+   "t0": 23.113,
+   "t1": 24.453,
+   "text": "ставь пустой таз"
+  },
+  {
+   "t0": 24.453,
+   "t1": 25.253,
+   "text": "на порог."
+  },
+  {
+   "t0": 25.253,
+   "t1": 26.373,
+   "text": "Утром я споткнулся"
+  },
+  {
+   "t0": 26.373,
+   "t1": 26.853,
+   "text": "о таз"
+  },
+  {
+   "t0": 26.853,
+   "t1": 27.413,
+   "text": "и сразу"
+  },
+  {
+   "t0": 27.413,
+   "t1": 28.64,
+   "text": "вспомнил."
+  }
+ ]
+}
