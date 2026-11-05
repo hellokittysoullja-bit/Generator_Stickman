@@ -227,7 +227,10 @@ def test_long_hook_with_few_sounds_like_l02_is_caught(tmp_path):
 
 
 def test_built_long_videos_are_legacy_and_not_rechecked(tmp_path):
-    assert long_rules.hook_build(hooked(tmp_path, scene=HOOK_SCENE_OLD, sfx=[], labels=False, name="L02_otvlechenie")) == []
+    (tmp_path / "a").mkdir(); (tmp_path / "b").mkdir()
+    assert long_rules.hook_build(hooked(tmp_path / "a", scene=HOOK_SCENE_OLD, sfx=[], labels=False, name="L01_potom")) == []
+    # L02 переделан по правилам 05.11 — проверяется как новый ролик, старый хук без удара его не проходит
+    assert long_rules.hook_build(hooked(tmp_path / "b", scene=HOOK_SCENE_OLD, sfx=[], labels=False, name="L02_otvlechenie"))
 
 
 def test_long_assembly_applies_fly_in_motion_blur():
