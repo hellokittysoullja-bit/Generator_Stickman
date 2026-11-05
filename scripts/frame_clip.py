@@ -474,9 +474,14 @@ def hand_plan(fr, p, hand, D=None):
     # после удержания — подпись целиком или вне кадра; пока пишется и ещё HAND_HOLD_SEC — целиком в кадре. Удержание
     # последним: оно главнее. Пересекающиеся удержания — одной рамкой (L03, фр.54: «палец дёрнулся» выталкивал из
     # кадра только что написанное «20 минут про котов»)
+    head = hand_target(fr, "hero_head") if holds else None
     for s_ in p["segments"]:
         on = [hb for t0, t1, hb, wb in holds if t0 < s_["t1"] and s_["t0"] < t1]
         if on:
+            # голова героя, целиком стоявшая в плане, остаётся целиком: подпись не сдвигает план так, чтобы резать
+            # морду (L02 05.11: удержание «сделать меньше» сдвинуло наезд на карточку, морда 2,5 с у края)
+            if head is not None and camera.inside(head, s_["win"]) and camera.inside(head, s_["win_to"]):
+                on = on + [head]
             u = (min(b[0] for b in on), min(b[1] for b in on), max(b[2] for b in on), max(b[3] for b in on))
             long_edit.hold_text([s_], s_["t0"], s_["t1"], u, fr["SW"], fr["SH"])
     return p

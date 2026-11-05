@@ -17,16 +17,22 @@ from scipy import ndimage
 
 SAFE = (0.05, 0.06, 0.95, 0.86)
 ARROW_MAX_BUSY = 0.12      # поля кадра: снизу больше — там полоса плеера YouTube
+FREE_THR_MAX = 0.15        # порог «пусто» не выше: на крупном плане, где рисунок занимает больше 60 % окна, 40-й
+                           # перцентиль сам — рисунок (L02 05.11: 0,5–0,93 на коте крупно), и «пустым» считалось всё —
+                           # мысли «ищет выход» и «записка возврата» легли на шерсть кота. Пустая бумага — 0–0,03
 
 def busy_map(rgb, margin=26):
     f = rgb.astype(np.float32)
     lum = f.mean(2); sat = f.max(2) - f.min(2)
-    paper = np.median(lum[lum >= np.percentile(lum, 60)])     # >=: на ровной бумаге > даёт пустой срез и NaN
+    paper = np.median(lum[lum >= np.percentile(lum, 90)])     # >=: на ровной бумаге > даёт пустой срез и NaN;
+    # 90-й, не 60-й: на крупном плане кот — больше 40 % окна, и «бумагой» считалась его шерсть (L02 05.11)
     ink = np.clip((paper - lum)/60, 0, 1) + np.clip((sat - 18)/50, 0, 1)
     edge = np.hypot(ndimage.sobel(lum, 0), ndimage.sobel(lum, 1))/400
     b = np.clip(ink + edge, 0, 1)
     b = ndimage.gaussian_filter(b, 2)
-    floor = np.percentile(b, 25)                               # шум бумаги и сжатия — это не рисунок
+    on_paper = lum >= paper - 12                               # шум бумаги и сжатия — это не рисунок; меряется по
+    floor = np.percentile(b[on_paper], 25) if on_paper.sum() > 64 else 0.0   # бумаге: на крупном плане кота 25-й
+    # перцентиль всего кадра — сам кот, и его заливка вычиталась в «пусто» (L02 05.11)
     b = np.clip((b - floor - 0.04)/(1 - floor), 0, 1)
     b = ndimage.grey_dilation(b, size=(margin, margin))       # поле вокруг всего нарисованного
     return ndimage.gaussian_filter(b, 6)
@@ -51,7 +57,7 @@ def choose(rgb, obj, text_wh, step=12, b=None):
     if b is None:
         b = busy_map(rgb)
     integ = _integral(b)
-    thr = max(0.06, float(np.percentile(b, 40)) + 0.04)      # порог «пусто» — по самому кадру, а не числом
+    thr = min(FREE_THR_MAX, max(0.06, float(np.percentile(b, 40)) + 0.04))   # «пусто» — по кадру, но не рисунок
     tw, th = text_wh; pw, ph = int(tw + 0.5*th), int(th*1.6)          # окно с полями
     free = obj is None                    # надпись без предмета: ни «рядом», ни стрелки
     if free:

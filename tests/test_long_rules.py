@@ -565,3 +565,35 @@ def test_hand_made_shot_may_not_cut_the_heros_head(tmp_path):
     assert not shots([500, 220, 640])                      # голова целиком
     assert not shots([1000, 600, 400])                     # головы в окне нет
     assert not shots([500, 200, 300])                      # морда на пол-окна — осознанный макро
+
+
+def test_text_never_lands_on_a_drawing_that_fills_the_close_up():
+    """L02 05.11: на крупном плане кот занимал больше 60 % окна, порог «пусто» (40-й перцентиль занятости) сам вырос
+    до 0,5–0,93 — и мысли «ищет выход», «записка возврата» легли на шерсть. Порог не выше FREE_THR_MAX."""
+    import numpy as np
+    import placement
+    img = np.full((540, 960, 3), 245, np.uint8)
+    img[:, :700] = 40                                               # кот крупно: 73 % окна
+    img[100:440, 120:180] = 230                                     # светлые пятна на шерсти — не бумага
+    r = placement.choose(img, None, (160, 50))
+    assert r is None or r["center"][0] - 80 > 700                   # только на бумаге справа или нигде
+
+
+def test_hand_label_hold_never_cuts_the_heros_head():
+    """L02 05.11: подпись «сделать меньше» держалась в кадре и сдвинула ручной наезд на карточку — морда кота 2,5 с у
+    края. Голова, целиком стоявшая в плане, после удержания подписи тоже целиком."""
+    import numpy as np
+    import camera
+    import frame_clip
+    SW, SH = 960, 540
+    img = np.full((SH, SW, 3), 245, np.uint8)
+    img[200:500, 620:900] = 30                                      # кот справа
+    head = (640.0, 200.0, 880.0, 380.0)
+    fr = dict(final_rgb=img, SW=SW, SH=SH, off=(0, 0), objects=[{"role": "hero_head", "box": head}])
+    win = camera.window(760, 300, 520, SW, SH)                      # наезд на морду: голова целиком
+    assert camera.inside(head, win)
+    p = dict(segments=[dict(kind="manual", t0=0.0, t1=6.0, win=win, win_to=win)], notes=[])
+    frame_clip.hand_plan(fr, p, [dict(text="сделать меньше", t=0.2, to=[640, 450])], D=6.0)
+    assert p["hand"], p["notes"]
+    s = p["segments"][0]
+    assert camera.inside(head, s["win"]) and camera.inside(head, s["win_to"])
