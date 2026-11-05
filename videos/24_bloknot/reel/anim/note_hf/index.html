@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=2048, height=3072" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="lib/mesh_part.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 2048px; height: 3072px; overflow: hidden; background: #faf7f0; }
+      #root { position: relative; width: 2048px; height: 3072px; overflow: hidden; }
+      .layer { position: absolute; left: 0; top: 0; width: 2048px; height: 3072px; }
+      .abs { position: absolute; display: block; }
+      svg.layer { overflow: visible; }
+      #rays line { stroke: #18181a; stroke-linecap: round; }
+      #ink path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+  </head>
+  <body>
+    <!-- Хук рилса 24 «Купишь блокнот и жалко писать?» (правило 30): мир сцены — рисунок p1_hook ×2, 2048×3072. Слои —
+         anim/kit_note.py, положение слоёв подставляет note_hf.py из kit.json, страницы — kit.pages.
+         С кадра 0 всё в движении: на пустых страницах сами пишутся синие строчки и закорючки, кот тянется пером и
+         ёрзает, хвост качается. На ударном «жАлко» (data-vars.hit) волна стирает всё написанное, страницы вспыхивают
+         чистыми, сыплются блёстки, кот отдёргивается. После — новая строчка начинается и тут же стирается, по кругу.
+         Камеру, звук и субтитры даёт сборщик. -->
+    <div id="root" data-composition-id="main" data-start="0" data-duration="4.2" data-width="2048" data-height="3072"
+         data-vars='{"hit": 1.3}' data-motion-blur="on" data-layout-allow-overflow data-layout-allow-overlap>
+      <img id="bg" class="abs clip" src="assets/bg.png" style="left:0;top:0" data-start="0" data-duration="4.2" />
+      <svg id="world" class="layer" width="2048" height="3072" viewBox="0 0 2048 3072">
+        <defs><clipPath id="pagesClip"><path id="pagesPath" d="" /></clipPath></defs>
+        <path id="pageFill" d="" />
+        <g clip-path="url(#pagesClip)">
+          <g id="ink"></g>
+          <g id="ghost"></g>
+          <rect id="wipe" x="0" y="1600" width="10" height="500" />
+          <rect id="glow" x="0" y="1600" width="2048" height="500" fill="#ffffff" opacity="0" />
+        </g>
+        <g id="sparks"></g>
+      </svg>
+      <div id="cat" class="layer clip" data-start="0" data-duration="4.2">
+        <div id="catHop" class="layer">
+          <canvas id="tail" class="abs" width="752" height="1195" style="left:0px;top:0px"></canvas>
+          <img id="body" class="abs" src="assets/body.png" style="left:0px;top:0px" />
+        </div>
+        <svg id="rays" class="layer" width="2048" height="3072" viewBox="0 0 2048 3072"></svg>
+      </div>
+    </div>
+    <script>
+      const root = document.getElementById("root");
+      const V = JSON.parse(root.dataset.vars), H = V.hit, K = V.kit, D = 4.2;
+      const NS = "http://www.w3.org/2000/svg";
+      const tl = gsap.timeline({ paused: true });
+      const px = (p) => `${p[0]}px ${p[1]}px`;
+      const R = (i) => { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+      const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag);
+        for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+      const P = K.pages, PAPER = `rgb(${K.page_rgb.join(",")})`, INK = "#2b3f86";
+      const quad = (q) => `M${q[0][0]} ${q[0][1]} L${q[1][0]} ${q[1][1]} L${q[2][0]} ${q[2][1]} L${q[3][0]} ${q[3][1]} Z`;
+      const both = P.map(quad).join(" ");
+      document.getElementById("pagesPath").setAttribute("d", both);
+      const pf = document.getElementById("pageFill"); pf.setAttribute("d", both); pf.setAttribute("fill", PAPER);
+      const wipe = document.getElementById("wipe"); wipe.setAttribute("fill", PAPER);
+      // точка страницы: u — поперёк (0 слева, 1 справа), v — сверху вниз
+      const at = (q, u, v) => {
+        const tx = q[0][0] + (q[1][0] - q[0][0]) * u, ty = q[0][1] + (q[1][1] - q[0][1]) * u;
+        const bx = q[3][0] + (q[2][0] - q[3][0]) * u, by = q[3][1] + (q[2][1] - q[3][1]) * u;
+        return [tx + (bx - tx) * v, ty + (by - ty) * v];
+      };
+      // строчка «почерком»: волна с петельками вдоль строки страницы
+      const lineD = (q, v, u0, u1, seed) => {
+        let d = "", n = 46;
+        for (let k = 0; k <= n; k++) {
+          const u = u0 + (u1 - u0) * (k / n), [x, y] = at(q, u, v);
+          const w = Math.sin(k * 1.9 + seed) * 11 + Math.sin(k * 4.3 + seed * 2) * 6 - (k % 6 === 3 ? 14 : 0);
+          d += (k ? " L" : "M") + x.toFixed(1) + " " + (y + w).toFixed(1);
+        }
+        return d;
+      };
+      const ink = document.getElementById("ink");
+      const LINES = [];
+      for (let r = 0; r < 6; r++) for (const pi of [0, 1]) {
+        const v = 0.13 + r * 0.14, u0 = 0.1 + 0.05 * R(r * 7 + pi), u1 = 0.88 - 0.25 * R(r * 3 + pi + 9);
+        LINES.push(el("path", { d: lineD(P[pi], v, u0, u1, r * 2.1 + pi), stroke: INK, "stroke-width": 8 }, ink));
+      }
+      // закорючки на полях: звёздочка и сердечко
+      const [sx, sy] = at(P[1], 0.82, 0.86), [hx0, hy0] = at(P[0], 0.18, 0.88);
+      LINES.push(el("path", { d: `M${sx - 40} ${sy} L${sx + 40} ${sy} M${sx} ${sy - 40} L${sx} ${sy + 40} M${sx - 28} ${sy - 28} L${sx + 28} ${sy + 28} M${sx + 28} ${sy - 28} L${sx - 28} ${sy + 28}`,
+                              stroke: "#d0503a", "stroke-width": 9 }, ink));
+      LINES.push(el("path", { d: `M${hx0} ${hy0 + 30} C${hx0 - 70} ${hy0 - 20} ${hx0 - 30} ${hy0 - 60} ${hx0} ${hy0 - 20} C${hx0 + 30} ${hy0 - 60} ${hx0 + 70} ${hy0 - 20} ${hx0} ${hy0 + 30} Z`,
+                              stroke: "#d0503a", "stroke-width": 9 }, ink));
+      // пишутся сами с кадра 0 — первая строчка уже наполовину написана, без разгона с пустого листа
+      const STEP = Math.max(0.07, (H - 0.05) / (LINES.length + 0.5));
+      LINES.forEach((p, i) => {
+        const L = p.getTotalLength();
+        p.style.strokeDasharray = `${L} ${L}`;
+        const t0 = i * STEP - 0.5 * STEP;
+        if (t0 <= 0) {
+          tl.fromTo(p, { strokeDashoffset: L * 0.5 }, { strokeDashoffset: 0, duration: STEP * 0.5, ease: "none" }, 0);
+        } else {
+          tl.set(p, { strokeDashoffset: L }, 0);
+          tl.to(p, { strokeDashoffset: 0, duration: STEP * 0.95, ease: "none" }, t0);
+        }
+      });
+      // удар «жАлко»: волна цвета страницы стирает всё слева направо, страница вспыхивает чистой
+      const xs = P.flat().map((p) => p[0]), X0 = Math.min(...xs) - 20, X1 = Math.max(...xs) + 20;
+      tl.set(wipe, { attr: { x: X0, width: 1 } }, 0);
+      tl.to(wipe, { attr: { width: X1 - X0 }, duration: 0.16, ease: "power2.in" }, H);
+      tl.set(ink, { opacity: 0 }, H + 0.17);
+      tl.set(wipe, { attr: { width: 1 } }, H + 0.17);
+      const glow = document.getElementById("glow");
+      tl.to(glow, { opacity: 0.85, duration: 0.06, ease: "power3.out" }, H + 0.12);
+      tl.to(glow, { opacity: 0.25, duration: 0.5, ease: "power2.out" }, H + 0.2);
+      for (let t = H + 0.75, i = 0; t < D; t += 0.3, i++) {
+        tl.to(glow, { opacity: i % 2 ? 0.2 : 0.35, duration: 0.3, ease: "sine.inOut" }, t);
+      }
+      // блёстки: «слишком красивое, чтобы писать»
+      const sparks = document.getElementById("sparks");
+      for (let k = 0; k < 11; k++) {
+        const q = P[k % 2], [cx, cy] = at(q, 0.12 + 0.76 * R(k + 40), 0.1 + 0.8 * R(k + 50)), r = 34 + 22 * R(k + 60);
+        const g = el("path", { d: `M${cx} ${cy - r} Q${cx + r * 0.15} ${cy - r * 0.15} ${cx + r} ${cy} Q${cx + r * 0.15} ${cy + r * 0.15} ${cx} ${cy + r} Q${cx - r * 0.15} ${cy + r * 0.15} ${cx - r} ${cy} Q${cx - r * 0.15} ${cy - r * 0.15} ${cx} ${cy - r} Z`,
+                               fill: "#ffd84a", stroke: "#18181a", "stroke-width": 5 }, sparks);
+        tl.set(g, { opacity: 0, scale: 0, svgOrigin: `${cx} ${cy}` }, 0);
+        tl.to(g, { opacity: 1, scale: 1.35, duration: 0.08, ease: "power3.out" }, H + 0.14 + 0.035 * k);
+        tl.to(g, { scale: 0.7, rotation: 25, duration: 0.28, ease: "sine.inOut", yoyo: true, repeat: 9 }, H + 0.24 + 0.035 * k);
+      }
+      // после удара: новая строчка робко начинается — и тут же стирается, по кругу
+      const ghost = document.getElementById("ghost");
+      for (let t = H + 0.55, i = 0; t < D - 0.2; t += 0.55, i++) {
+        const q = P[i % 2], v = 0.2 + 0.18 * (i % 4);
+        const p = el("path", { d: lineD(q, v, 0.12, 0.7, 5 + i), stroke: INK, "stroke-width": 8, opacity: 0 }, ghost);
+        const L = p.getTotalLength(); p.style.strokeDasharray = `${L} ${L}`;
+        tl.set(p, { opacity: 1, strokeDashoffset: L }, t);
+        tl.to(p, { strokeDashoffset: L * 0.35, duration: 0.3, ease: "none" }, t);
+        tl.to(p, { opacity: 0, duration: 0.12, ease: "power2.in" }, t + 0.36);
+      }
+
+      // кот: тянется пером к странице и отшатывается — ёрзает с кадра 0, без разгона
+      gsap.set("#catHop", { transformOrigin: px(K.feet) });
+      const SH = 0.05;
+      tl.fromTo("#catHop", { x: 40, y: 6, rotation: 2.8 }, { x: -38, y: -10, rotation: -2.6, duration: SH, ease: "none" }, 0);
+      for (let i = 1, t = SH; t < H - 0.06; i++, t += SH) {
+        const s = i % 2 ? 1 : -1, w = Math.sin(t * 6.3);
+        tl.to("#catHop", { x: s * (28 + 12 * Math.abs(w)), y: 8 * w, rotation: s * (2.2 + 1.0 * Math.abs(w)),
+                           duration: SH, ease: "none" }, t);
+      }
+      // удар «жАлко»: отдёрнулся назад и вверх, пружина обратно
+      tl.to("#catHop", { x: 0, y: -90, rotation: -3.5, scaleY: 1.06, scaleX: 0.96, duration: 0.08, ease: "power3.out" }, H);
+      tl.to("#catHop", { y: 10, scaleY: 0.96, scaleX: 1.03, rotation: 1.2, duration: 0.12, ease: "power2.in" }, H + 0.1);
+      tl.to("#catHop", { y: 0, scaleY: 1, scaleX: 1, rotation: 0, duration: 0.6, ease: "elastic.out(1, 0.35)" }, H + 0.22);
+      for (let i = 0, t = H + 0.85; t < D; i++, t += 0.16) {
+        tl.to("#catHop", { x: (i % 2 ? 1 : -1) * 6, y: (i % 2 ? -3 : 2), duration: 0.16, ease: "sine.inOut" }, t);
+      }
+      // штрихи испуга вокруг головы
+      const hx = K.head[0], hy = K.head[1];
+      for (let k = 0; k < 7; k++) {
+        const a = -Math.PI / 2 + (k - 3) * 0.42;
+        const g = el("g", { transform: `translate(${hx + 520 * Math.cos(a)} ${hy - 120 + 520 * Math.sin(a)}) rotate(${(a * 180) / Math.PI})` },
+                     document.getElementById("rays"));
+        const m = el("g", {}, g), l = el("line", { x1: 0, y1: 0, x2: 80, y2: 0 }, m); l.style.strokeWidth = 13;
+        tl.set(m, { opacity: 0, scaleX: 0, svgOrigin: "0 0" }, 0);
+        tl.set(m, { opacity: 1 }, H + 0.02);
+        tl.to(m, { scaleX: 1, duration: 0.07, ease: "power3.out" }, H + 0.02);
+        tl.to(m, { x: 46, opacity: 0, duration: 0.26, ease: "power2.in" }, H + 0.2);
+      }
+      meshPart({ canvas: document.getElementById("tail"), marg: 180, img: "assets/tail_body.png",
+                 flame: "assets/tail_flame.png", mesh: "assets/tail_mesh.json", angles: "assets/tail_angles.json", fps: 30 });
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

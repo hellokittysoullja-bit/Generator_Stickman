@@ -4121,6 +4121,24 @@
   "source": "videos/23_stirka/reel/draw_color.py"
  },
  {
+  "file": "2026-11-05_gen_cx_gpt-image-2_5_1694370d.png",
+  "sha256": "1694370dc51a11aa412bb9dfd529b0ce21d639060933384885b061e45b48d10a",
+  "bytes": 2293250,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-05",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: a funny metaphor: one open blank notebook lies on a tall white museum pedestal behind a red velvet rope on two little posts, softly glowing like a precious treasure; the main character stands timidly outside the rope, holding a pen at arm's length, afraid to come closer, wide worried eyes. LAYOUT: the pedestal with the glowing notebook on the right, the cat whole on the left, both big; no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink lines on cream paper in exactly the hand-drawn style of the style references; the main character and the objects are softly painted with gentle muted watercolour, each in its own natural colour, never neon; the background is plain warm cream paper like a blank drawing sheet (владелец 04.11): no painted walls, no wall colour, no floorboards, no sky colour, only one thin ink floor line or a soft light-grey shadow under things that stand. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "videos/24_bloknot/reel/draw_color.py"
+ },
+ {
   "file": "2026-11-05_gen_cx_gpt-image-2_5_1703d057.png",
   "sha256": "1703d0576b52bd1f6e2513ad2552eaaa3361ce996731fa9a9114d9e865b8ed43",
   "bytes": 2457970,
@@ -4193,6 +4211,78 @@
   "source": "videos/23_stirka/reel/draw_color.py"
  },
  {
+  "file": "2026-11-05_gen_cx_gpt-image-2_5_38bdf947.png",
+  "sha256": "38bdf947adf2792adc271a2b952499b57613894927d4b02ea009a2b5b029efe4",
+  "bytes": 2316911,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-05",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: the main character sits on the floor facing the viewer, smiling warmly and kindly, holding out one simple pen toward the viewer in both front paws like a friendly offer; its tail flame burns bright. LAYOUT: the cat big and whole in the lower middle, the pen close to the viewer; no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink lines on cream paper in exactly the hand-drawn style of the style references; the main character and the objects are softly painted with gentle muted watercolour, each in its own natural colour, never neon; the background is plain warm cream paper like a blank drawing sheet (владелец 04.11): no painted walls, no wall colour, no floorboards, no sky colour, only one thin ink floor line or a soft light-grey shadow under things that stand. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "videos/24_bloknot/reel/draw_color.py"
+ },
+ {
+  "file": "2026-11-05_gen_cx_gpt-image-2_5_502f2795.png",
+  "sha256": "502f279591c8f211b589d9938ad855d39c982102e4267e2623a92371bd20e3e7",
+  "bytes": 2209768,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-05",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: a tall stack of five pretty colourful new notebooks stands on the floor; the main character sits beside the stack holding the top notebook open toward the viewer, its pages completely blank; the cat scratches its head with the other paw, a sheepish guilty smile. LAYOUT: the stack and the cat side by side, both big and whole; no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink lines on cream paper in exactly the hand-drawn style of the style references; the main character and the objects are softly painted with gentle muted watercolour, each in its own natural colour, never neon; the background is plain warm cream paper like a blank drawing sheet (владелец 04.11): no painted walls, no wall colour, no floorboards, no sky colour, only one thin ink floor line or a soft light-grey shadow under things that stand. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "videos/24_bloknot/reel/draw_color.py"
+ },
+ {
+  "file": "2026-11-05_gen_cx_gpt-image-2_5_7bafc548.png",
+  "sha256": "7bafc54819110ba19e6a937e5abfd583a75a4cb0bddc45f2ac124030f16731ad",
+  "bytes": 2357153,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-05",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: the main character sits at a small plain desk and happily, boldly scribbles one big messy loopy spiral doodle across the first page of an open notebook with a pen, tongue out in concentration, bright cheerful eyes; the notebook lies flat tilted toward the viewer. LAYOUT: the open notebook big in the lower middle with the big spiral doodle on its left page, the cat behind the desk; the doodle is only loops, no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink lines on cream paper in exactly the hand-drawn style of the style references; the main character and the objects are softly painted with gentle muted watercolour, each in its own natural colour, never neon; the background is plain warm cream paper like a blank drawing sheet (владелец 04.11): no painted walls, no wall colour, no floorboards, no sky colour, only one thin ink floor line or a soft light-grey shadow under things that stand. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "videos/24_bloknot/reel/draw_color.py"
+ },
+ {
+  "file": "2026-11-05_gen_cx_gpt-image-2_5_ce77cfc1.png",
+  "sha256": "ce77cfc16ff5461b7ee93cfd3d11f2e94b86b1eeb45382f3e728bc8e0d7c3251",
+  "bytes": 1943652,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-05",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Image 1 is a finished drawing. Redraw exactly the same drawing, the same room, furniture, objects, framing, scale, line work, colours and paper, but WITHOUT the black cat (keep the chair, the desk and the open notebook exactly as they are): the place where it was shows what is behind it, the sofa, pillow, floor, wall or furniture continue naturally with their own lines and colours, as if it had never been there. Nothing else changes: every other object stays in exactly the same place and size. No letters or numbers anywhere.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "videos/24_bloknot/reel/anim/kit_note.py"
+ },
+ {
   "file": "2026-11-05_gen_cx_gpt-image-2_5_ced0087a.png",
   "sha256": "ced0087a3bb61a4ac634eb9581b362cf9639eba71045f145e97babd13e790b13",
   "bytes": 1669978,
@@ -4209,5 +4299,23 @@
   "quality": "medium",
   "price": 197550,
   "source": "videos/23_stirka/reel/anim/kit_wash.py"
+ },
+ {
+  "file": "2026-11-05_gen_cx_gpt-image-2_5_e2a0a780.png",
+  "sha256": "e2a0a7803cf934ec5aa6509b8d5d5c414ed24eba672dcbf361fb2ad7e41d22d3",
+  "bytes": 2381177,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-05",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: the main character sits at a small plain desk, seen from the front, holding one pen in its front paw raised just above a big open notebook that lies flat on the desk tilted toward the viewer; both pages of the notebook are completely blank, clean and empty, big and clearly visible; the cat leans in but hesitates, worried eyes, ears slightly back, a nervous little smile, the pen not touching the paper; its tail with the flame curls beside the chair. LAYOUT: the open notebook is big in the lower middle, about half the picture width, nothing lies on its pages and nothing covers them; the cat sits behind the desk, head and paws above the notebook; no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink lines on cream paper in exactly the hand-drawn style of the style references; the main character and the objects are softly painted with gentle muted watercolour, each in its own natural colour, never neon; the background is plain warm cream paper like a blank drawing sheet (владелец 04.11): no painted walls, no wall colour, no floorboards, no sky colour, only one thin ink floor line or a soft light-grey shadow under things that stand. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "videos/24_bloknot/reel/draw_color.py"
  }
 ]
