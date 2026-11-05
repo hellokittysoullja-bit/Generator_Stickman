@@ -139,10 +139,10 @@
 
       // кот: нервно клонится к странице всё ближе (с кадра 0, ровно) и ёрзает поверх — без разгона
       gsap.set("#catLean", { transformOrigin: px(K.feet) });
-      tl.fromTo("#catLean", { rotation: 3.5, y: -30 }, { rotation: -4.5, y: 40, duration: H, ease: "none" }, 0);
+      tl.fromTo("#catLean", { rotation: 4.5, y: -40 }, { rotation: -4.5, y: 40, duration: H, ease: "power2.out" }, 0);
       tl.to("#catLean", { rotation: 0, y: 0, duration: 0.1, ease: "power3.out" }, H);
       gsap.set("#catHop", { transformOrigin: px(K.feet) });
-      const SH = 0.05;
+      const SH = 1 / 15;                    // шаг ёрзания — два кадра: к 0,1 с кот уже в другой позе, а не вернулся
       tl.fromTo("#catHop", { x: 40, y: 6, rotation: 2.8 }, { x: -38, y: -10, rotation: -2.6, duration: SH, ease: "none" }, 0);
       for (let i = 1, t = SH; t < H - 0.06; i++, t += SH) {
         const s = i % 2 ? 1 : -1, w = Math.sin(t * 6.3);
