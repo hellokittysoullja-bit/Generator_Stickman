@@ -38,10 +38,10 @@
         <g id="sparks"></g>
       </svg>
       <div id="cat" class="layer clip" data-start="0" data-duration="4.2">
-        <div id="catHop" class="layer">
+        <div id="catLean" class="layer"><div id="catHop" class="layer">
           <canvas id="tail" class="abs" width="752" height="1195" style="left:0px;top:0px"></canvas>
           <img id="body" class="abs" src="assets/body.png" style="left:0px;top:0px" />
-        </div>
+        </div></div>
         <svg id="rays" class="layer" width="2048" height="3072" viewBox="0 0 2048 3072"></svg>
       </div>
     </div>
@@ -80,7 +80,7 @@
       const LINES = [];
       for (let r = 0; r < 6; r++) for (const pi of [0, 1]) {
         const v = 0.13 + r * 0.14, u0 = 0.1 + 0.05 * R(r * 7 + pi), u1 = 0.88 - 0.25 * R(r * 3 + pi + 9);
-        LINES.push(el("path", { d: lineD(P[pi], v, u0, u1, r * 2.1 + pi), stroke: INK, "stroke-width": 8 }, ink));
+        LINES.push(el("path", { d: lineD(P[pi], v, u0, u1, r * 2.1 + pi), stroke: INK, "stroke-width": 12 }, ink));
       }
       // закорючки на полях: звёздочка и сердечко
       const [sx, sy] = at(P[1], 0.82, 0.86), [hx0, hy0] = at(P[0], 0.18, 0.88);
@@ -88,14 +88,17 @@
                               stroke: "#d0503a", "stroke-width": 9 }, ink));
       LINES.push(el("path", { d: `M${hx0} ${hy0 + 30} C${hx0 - 70} ${hy0 - 20} ${hx0 - 30} ${hy0 - 60} ${hx0} ${hy0 - 20} C${hx0 + 30} ${hy0 - 60} ${hx0 + 70} ${hy0 - 20} ${hx0} ${hy0 + 30} Z`,
                               stroke: "#d0503a", "stroke-width": 9 }, ink));
-      // пишутся сами с кадра 0 — первая строчка уже наполовину написана, без разгона с пустого листа
-      const STEP = Math.max(0.07, (H - 0.05) / (LINES.length + 0.5));
+      // пишутся сами с кадра 0 парами, на обеих страницах сразу; первые строчки уже написаны, без разгона с пустого листа
+      const STEP = Math.max(0.07, (H - 0.05) / (LINES.length / 2 - 0.5));
       LINES.forEach((p, i) => {
         const L = p.getTotalLength();
         p.style.strokeDasharray = `${L} ${L}`;
-        const t0 = i * STEP - 0.5 * STEP;
-        if (t0 <= 0) {
-          tl.fromTo(p, { strokeDashoffset: L * 0.5 }, { strokeDashoffset: 0, duration: STEP * 0.5, ease: "none" }, 0);
+        const t0 = Math.floor(i / 2) * STEP - 1.5 * STEP;
+        if (t0 + STEP * 0.95 <= 0) {
+          tl.set(p, { strokeDashoffset: 0 }, 0);
+        } else if (t0 <= 0) {
+          const u = -t0 / (STEP * 0.95);
+          tl.fromTo(p, { strokeDashoffset: L * (1 - u) }, { strokeDashoffset: 0, duration: STEP * 0.95 + t0, ease: "none" }, 0);
         } else {
           tl.set(p, { strokeDashoffset: L }, 0);
           tl.to(p, { strokeDashoffset: 0, duration: STEP * 0.95, ease: "none" }, t0);
@@ -134,7 +137,10 @@
         tl.to(p, { opacity: 0, duration: 0.12, ease: "power2.in" }, t + 0.36);
       }
 
-      // кот: тянется пером к странице и отшатывается — ёрзает с кадра 0, без разгона
+      // кот: нервно клонится к странице всё ближе (с кадра 0, ровно) и ёрзает поверх — без разгона
+      gsap.set("#catLean", { transformOrigin: px(K.feet) });
+      tl.fromTo("#catLean", { rotation: 3.5, y: -30 }, { rotation: -4.5, y: 40, duration: H, ease: "none" }, 0);
+      tl.to("#catLean", { rotation: 0, y: 0, duration: 0.1, ease: "power3.out" }, H);
       gsap.set("#catHop", { transformOrigin: px(K.feet) });
       const SH = 0.05;
       tl.fromTo("#catHop", { x: 40, y: 6, rotation: 2.8 }, { x: -38, y: -10, rotation: -2.6, duration: SH, ease: "none" }, 0);

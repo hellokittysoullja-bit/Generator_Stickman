@@ -1,10 +1,10 @@
 # Библиотека оригиналов: кот и всё, что сгенерировано
 
-Картинок: **234**, 477 МБ. Оригиналы — `originals/` байт в байт, как пришли из модели (PNG без пересжатия); `thumbs/` — превью для этой страницы; `catalog.json` — промпт, модель, цена, где используется.
+Картинок: **235**, 479 МБ. Оригиналы — `originals/` байт в байт, как пришли из модели (PNG без пересжатия); `thumbs/` — превью для этой страницы; `catalog.json` — промпт, модель, цена, где используется.
 
 Пополняется сама: каждая генерация через шлюз (`llm_gateway.Gateway.image`) кладёт картинку сюда, включая забракованные варианты. Собрать уже лежащее в репозитории: `python scripts/cat_library.py --scan`.
 
-## генерация (178)
+## генерация (179)
 
 | превью | оригинал | где | промпт |
 |---|---|---|---|
@@ -180,6 +180,7 @@
 | ![](thumbs/2026-11-05_gen_cx_gpt-image-2_5_1d1ab9d2.jpg) | [2026-11-05_gen_cx_gpt-image-2_5_1d1ab9d2.png](originals/2026-11-05_gen_cx_gpt-image-2_5_1d1ab9d2.png)<br>1024×1536, 2026-11-05 | videos/23_stirka/reel/draw_color.py | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
 | ![](thumbs/2026-11-05_gen_cx_gpt-image-2_5_1fb13eaf.jpg) | [2026-11-05_gen_cx_gpt-image-2_5_1fb13eaf.png](originals/2026-11-05_gen_cx_gpt-image-2_5_1fb13eaf.png)<br>1024×1536, 2026-11-05 | videos/23_stirka/reel/draw_color.py | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
 | ![](thumbs/2026-11-05_gen_cx_gpt-image-2_5_227a9c52.jpg) | [2026-11-05_gen_cx_gpt-image-2_5_227a9c52.png](originals/2026-11-05_gen_cx_gpt-image-2_5_227a9c52.png)<br>1024×1536, 2026-11-05 | videos/23_stirka/reel/draw_color.py | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
+| ![](thumbs/2026-11-05_gen_cx_gpt-image-2_5_231ae36a.jpg) | [2026-11-05_gen_cx_gpt-image-2_5_231ae36a.png](originals/2026-11-05_gen_cx_gpt-image-2_5_231ae36a.png)<br>1024×1536, 2026-11-05 | videos/24_bloknot/reel/draw_color.py | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
 | ![](thumbs/2026-11-05_gen_cx_gpt-image-2_5_38bdf947.jpg) | [2026-11-05_gen_cx_gpt-image-2_5_38bdf947.png](originals/2026-11-05_gen_cx_gpt-image-2_5_38bdf947.png)<br>1024×1536, 2026-11-05 | videos/24_bloknot/reel/draw_color.py | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
 | ![](thumbs/2026-11-05_gen_cx_gpt-image-2_5_502f2795.jpg) | [2026-11-05_gen_cx_gpt-image-2_5_502f2795.png](originals/2026-11-05_gen_cx_gpt-image-2_5_502f2795.png)<br>1024×1536, 2026-11-05 | videos/24_bloknot/reel/draw_color.py | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |
 | ![](thumbs/2026-11-05_gen_cx_gpt-image-2_5_7bafc548.jpg) | [2026-11-05_gen_cx_gpt-image-2_5_7bafc548.png](originals/2026-11-05_gen_cx_gpt-image-2_5_7bafc548.png)<br>1024×1536, 2026-11-05 | videos/24_bloknot/reel/draw_color.py | Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, col… |

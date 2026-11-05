@@ -4211,6 +4211,24 @@
   "source": "videos/23_stirka/reel/draw_color.py"
  },
  {
+  "file": "2026-11-05_gen_cx_gpt-image-2_5_231ae36a.png",
+  "sha256": "231ae36a2b383959d04d4b8ce5db25bccbb64cd2a4fa20c9566e23344fca790f",
+  "bytes": 2448012,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-05",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference images 1-3 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 4 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: the main character sits relaxed at a small plain desk and writes in an open notebook with a pen, a calm happy proud face; the notebook pages are filled with wavy hand-drawn lines and tiny doodles, and on the left page there is one crooked funny little cat doodle; its tail flame burns big and golden with a few sparks. LAYOUT: the open notebook big in the lower middle, the cat behind the desk; the lines on the pages are only wavy strokes, no letters or numbers anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted. Colours: black ink lines on cream paper in exactly the hand-drawn style of the style references; the main character and the objects are softly painted with gentle muted watercolour, each in its own natural colour, never neon; the background is plain warm cream paper like a blank drawing sheet (владелец 04.11): no painted walls, no wall colour, no floorboards, no sky colour, only one thin ink floor line or a soft light-grey shadow under things that stand. The main character stays black with green eyes, orange cheek marks and an orange tail flame. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "videos/24_bloknot/reel/draw_color.py"
+ },
+ {
   "file": "2026-11-05_gen_cx_gpt-image-2_5_38bdf947.png",
   "sha256": "38bdf947adf2792adc271a2b952499b57613894927d4b02ea009a2b5b029efe4",
   "bytes": 2316911,
