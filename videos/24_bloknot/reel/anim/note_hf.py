@@ -71,7 +71,9 @@ def _hook_hit(ctx):
     if w[0][0] < 0.5:
         hit = round(w[-2][0] + HIT_FRAC * (w[-2][1] - w[-2][0]), 3)
         os.makedirs(os.path.dirname(_hit_file()), exist_ok=True)
-        json.dump({"hit": hit}, open(_hit_file(), "w"))
+        tmp = f"{_hit_file()}.{os.getpid()}"            # процессы рендера пишут и читают одновременно: только атомарно
+        json.dump({"hit": hit}, open(tmp, "w"))
+        os.replace(tmp, _hit_file())
         return hit
     if not os.path.exists(_hit_file()):
         raise RuntimeError("note_hf: удар хука ещё не посчитан — сцену сначала зовут со словами фразы хука")
