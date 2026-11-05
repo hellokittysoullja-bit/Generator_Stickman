@@ -949,7 +949,7 @@ def test_sound_level_follows_role_from_voice(tmp_path):
     got = {x["name"]: x["vs_voice_db"] for x in r["sounds"]}
     assert abs(got["oof"] - reel.ROLE_DB["meme"]) < 0.6
     assert abs(got["swoosh_deep"] - reel.ROLE_DB["impact"]) < 0.6
-    assert abs(got["riser"] - reel.ROLE_DB["whoosh"]) < 0.6
+    assert abs(got["riser"] - reel.RISER_CEIL_DB) < 1.0          # 05.11: тело riser поднято, пик — у потолка под голосом
     assert not r["errors"]
 
 
