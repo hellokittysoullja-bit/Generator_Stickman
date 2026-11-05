@@ -36,7 +36,8 @@ CARD_H = 470             # высота карточки в паре
 CARD_RADIUS = 34
 ITEM_H = 0.40            # высота вырезки по умолчанию — доля кадра
 LABEL_SIZE = 96
-VERSION = 4              # смена вида — смена подписи клипа (3: вырезка SAM + край по туши; 4: стикеры, 04.11)
+VERSION = 5              # смена вида — смена подписи клипа (3: вырезка SAM + край по туши; 4: стикеры, 04.11;
+                         # 5: подпись влезает в своё место, 05.11)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _BG = None
@@ -355,6 +356,29 @@ def boil(t, k):
     return rng.uniform(-BOIL_PX, BOIL_PX), rng.uniform(-BOIL_PX, BOIL_PX), rng.uniform(-BOIL_DEG, BOIL_DEG)
 
 
+LABEL_GAP = 0.92         # подпись занимает не больше этой доли расстояния до соседнего элемента
+LABEL_MIN = 58           # мельче — уже не читается на телефоне; дальше только две строки
+
+
+def label_lines(text, size, maxw):
+    """Подпись в своём месте: одна строка, если влезает; иначе две по пробелу ближе к середине; кегль уменьшается,
+    пока самая широкая строка не уйдёт в maxw (L02 05.11: «ДРУГАЯ КОМНАТА» и «МАЛЕНЬКИЙ ШАГ» одной строкой кеглем 96
+    налезали друг на друга — «ДРУГАЯ КОМАЛЕНЬК…»). [(строка, кегль)]."""
+    import long_fx
+    def width(t, sz):
+        return long_fx._glyphs(t, sz)[2]
+    lines = [text]
+    if width(text, size) > maxw and " " in text.strip():
+        words = text.split()
+        cuts = [(abs(width(" ".join(words[:k]), size) - width(" ".join(words[k:]), size)), k) for k in range(1, len(words))]
+        k = min(cuts)[1]
+        lines = [" ".join(words[:k]), " ".join(words[k:])]
+    sz = size
+    while sz > LABEL_MIN and max(width(t, sz) for t in lines) > maxw:
+        sz -= 2
+    return [(t, sz) for t in lines]
+
+
 class Stage:
     """Сцена плана: assets — RGBA элементов, времена — от начала плана (с)."""
 
@@ -368,20 +392,25 @@ class Stage:
             xs = [W/2] if n == 1 else [W*(0.27 + 0.46*k/(n - 1)) for k in range(n)] if n == 2 else \
                 [W*(0.19 + 0.31*k) for k in range(n)]
             self.xs = xs
+            room = W*0.8 if n == 1 else (xs[1] - xs[0])*LABEL_GAP
             for k, it in enumerate(spec["items"]):
                 if it.get("label"):
-                    y = 150 if it.get("label_top", n <= 2) else 880
-                    self.label_x.append(xs[k])
-                    self.labels.append((long_fx.BoldText(it["label"], xs[k], y, size=it.get("label_size", LABEL_SIZE),
-                                                         t0=it["t"] + 0.25), None))
+                    top = it.get("label_top", n <= 2)
+                    lines = label_lines(it["label"], it.get("label_size", LABEL_SIZE), room)
+                    for j, (line, sz) in enumerate(lines):
+                        y = (150 + j*sz*1.05) if top else (880 - (len(lines) - 1 - j)*sz*1.05)
+                        self.label_x.append(xs[k])
+                        self.labels.append((long_fx.BoldText(line, xs[k], y, size=sz, t0=it["t"] + 0.25 + 0.08*j), None))
         else:
             self.xs = [W*0.25, W*0.75]
             for k, c in enumerate(spec["cards"]):
                 if c.get("label"):
                     end = spec.get("focus_t")
-                    self.label_x.append(self.xs[k])
-                    self.labels.append((long_fx.BoldText(c["label"], self.xs[k], 150, size=c.get("label_size", LABEL_SIZE),
-                                                         t0=c["t"] + 0.25), end))
+                    for j, (line, sz) in enumerate(label_lines(c["label"], c.get("label_size", LABEL_SIZE),
+                                                                (self.xs[1] - self.xs[0])*LABEL_GAP)):
+                        self.label_x.append(self.xs[k])
+                        self.labels.append((long_fx.BoldText(line, self.xs[k], 150 + j*sz*1.05, size=sz,
+                                                             t0=c["t"] + 0.25 + 0.08*j), end))
 
     def shift(self, t):
         """Сдвиг группы по x: появившиеся элементы стоят по центру кадра, новый раздвигает их (а не один в углу)."""

@@ -183,6 +183,21 @@ def test_items_are_stickers_with_a_white_border_that_boils_twelve_times_a_second
     assert long_stage.boil(0.01, 0) != long_stage.boil(0.10, 0)
 
 
+def test_sticker_labels_never_run_into_each_other_or_off_the_frame():
+    """L02 05.11: три подписи по 13–16 знаков одной строкой кеглем 96 сливались в «ДРУГАЯ КОМАЛЕНЬКЗАПИСКА ВОЗВР»."""
+    labels = ["ДРУГАЯ КОМНАТА", "МАЛЕНЬКИЙ ШАГ", "ЗАПИСКА ВОЗВРАТА"]
+    spec = {"type": "items", "items": [{"label": lb, "t": 0.2*k} for k, lb in enumerate(labels)]}
+    st = long_stage.Stage(spec, [_blob()]*3, 4.0)
+    dx = st.shift(3.0)                                         # все три стоят по местам
+    boxes = [(x + dx - lb.width/2, x + dx + lb.width/2, lb.cy) for (lb, _), x in zip(st.labels, st.label_x)]
+    assert all(0 <= a and b <= long_stage.W for a, b, _ in boxes)
+    for i, (a1, b1, y1) in enumerate(boxes):
+        for a2, b2, y2 in boxes[i + 1:]:
+            if abs(y1 - y2) < 40:                              # одна строка по высоте — не наезжают
+                assert b1 <= a2 or b2 <= a1
+    assert {lb.size for lb, _ in st.labels} and min(lb.size for lb, _ in st.labels) >= long_stage.LABEL_MIN
+
+
 def test_paper_tear_starts_on_the_old_frame_and_ends_on_the_new():
     import paper_tear
     before = np.full((108, 192, 3), 30.0, np.float32)
@@ -230,6 +245,17 @@ def _board(monkeypatch, n=4):
     spec = long_stage.times(spec, lambda at: long_edit.word_time(at, words), 0.0)
     pics = [np.full((200, 300, 3), 200, np.uint8) for _ in range(n)]
     return long_board, spec, long_board.Board(spec, pics, 2.0*(n + 2))
+
+
+def test_board_camera_keeps_each_cards_sticky_note_in_frame(monkeypatch):
+    """L02 05.11: на первой карточке её стикер уходил за верхний край кадра."""
+    lb, spec, b = _board(monkeypatch, 3)
+    for k in range(3):
+        cx, cy, h, *_ = b.camera(spec["cards"][k].get("t", 0.0) + 0.01)
+        w = h*16/9
+        nx, ny, nw, nh = b.note_at[k]
+        assert cx - w/2 <= nx - nw/2 and nx + nw/2 <= cx + w/2
+        assert cy - h/2 <= ny - nh/2 and ny + nh/2 <= cy + h/2
 
 
 def test_board_camera_arrives_on_each_card_on_its_word_and_whooshes_while_moving(monkeypatch):

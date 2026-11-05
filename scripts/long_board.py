@@ -40,7 +40,7 @@ DOF_SHARP = 0.45          # центр кадра резкий, к краям р
 DOF_SIGMA, DOF_SIGMA_TRAVEL = 3.2, 4.5
 BRANCH_DELAY, BRANCH_SEC = 0.35, 0.5   # ветка к стикеру тянется после прихода на карточку
 YS = (0.39, 0.28, 0.42, 0.71, 0.60)    # змейка по высоте доски; пятая почти вровень с четвёртой — нить к ней не идёт снизу через подпись
-VERSION = 1
+VERSION = 2   # 2: стикер карточки целиком в кадре (05.11)
 
 
 def board_size(n):
@@ -271,7 +271,7 @@ class Board:
                 0.135*self.bw, 0.11*self.bh, -2.0)
         if spec.get("page"):
             put(board, torn_page(spec["page"], rng), 0.41*self.bw, 0.78*self.bh, -4)
-        self.cards, self.notes, self.pins = [], [], []
+        self.cards, self.notes, self.pins, self.note_at = [], [], [], []
         rots = (-3.5, 2.5, -2.0, 3.0, -2.5)
         for k, (c, pic) in enumerate(zip(cards, pictures)):
             img, _ = polaroid(pic, c.get("caption", ""), rng)
@@ -283,10 +283,12 @@ class Board:
             nt = c.get("note")
             if not nt:
                 self.notes.append(None)
+                self.note_at.append(None)
                 continue
             img = note(nt["lines"], NOTE_COLORS.get(nt.get("color", "yellow"), NOTE_COLORS["yellow"]), rng,
                        circle=nt.get("circle"))
             M = put(board, img, note_pos[k][0], note_pos[k][1], (5, -6, 4, -5, 3)[k % 5])
+            self.note_at.append((note_pos[k][0], note_pos[k][1], img.shape[1], img.shape[0]))
             pin = tuple((M @ np.array([img.shape[1]/2, 34, 1.0])).tolist())
             self.notes.append(pin)
             self.pins.append((pin, NOTE_PINS[k % len(NOTE_PINS)]))
@@ -315,8 +317,22 @@ class Board:
         d = min(TRAVEL, 0.6*gap)
         return self.arrive[k] - d, d
 
+    def stop(self, k):
+        """Окно камеры на карточке k: карточка на CARD_FILL высоты кадра, а её стикер — целиком в кадре (L02 05.11:
+        стикер первой карточки уходил за верхний край)."""
+        c = self.cards[k]
+        cx, cy, h = c["at"][0], c["at"][1] + 20, c["h"]/CARD_FILL
+        na = self.note_at[k] if k < len(self.note_at) else None
+        if na:
+            x0 = min(cx - CARD_W/2, na[0] - na[2]/2); x1 = max(cx + CARD_W/2, na[0] + na[2]/2)
+            y0 = min(c["at"][1] - c["h"]/2, na[1] - na[3]/2); y1 = max(c["at"][1] + c["h"]/2, na[1] + na[3]/2)
+            pad = 1.14                                   # запас на наклон и живую дрожь камеры
+            h = max(h, (y1 - y0)*pad, (x1 - x0)*pad*9/16)
+            cx, cy = (x0 + x1)/2, (y0 + y1)/2
+        return cx, cy, min(h, float(self.bh))
+
     def camera(self, t):
-        stops = [(c["at"][0], c["at"][1] + 20, c["h"]/CARD_FILL) for c in self.cards]
+        stops = [self.stop(k) for k in range(len(self.cards))]
         full = (self.bw/2, self.bh/2, float(self.bh))
         n = len(stops)
         for k in range(1, n + 1):

@@ -639,6 +639,36 @@ def stage_checks(video_dir):
     return err
 
 
+def head_cuts(video_dir):
+    """Ручной план (edit.json) не режет голову героя: она в окне целиком или вне его, как у автоматических планов
+    (shots.make_view_ok: краешек до HEAD_SLIVER); макро морды — если голова занимает пол-окна и больше. L02 05.11:
+    десять ручных окон резали коту глаза и уши у края кадра, а код ручные окна на это не смотрел. Рамка головы —
+    роль hero_head судьи в media_plan/frames_report.json, окно [cx, cy, w] 16:9 — в пикселях того же рисунка."""
+    from shots import DETAIL_TIGHT_FILL, HEAD_SLIVER
+    ep, rp = os.path.join(video_dir, "edit.json"), os.path.join(video_dir, "media_plan", "frames_report.json")
+    if not (os.path.exists(ep) and os.path.exists(rp)):
+        return []
+    heads = {r["index"] + 1: [o["box"] for o in (r.get("objects") or []) if o.get("role") == "hero_head" and o.get("box")]
+             for r in json.load(open(rp, encoding="utf-8")).get("frames", [])}
+    err = []
+    for n, v in (json.load(open(ep, encoding="utf-8")).get("frames") or {}).items():
+        for k, p in enumerate(v.get("shots") or []):
+            for key in ("win", "to"):
+                w = p.get(key)
+                if not w or p.get("stage"):
+                    continue
+                cx, cy, ww = w; hh = ww*9/16
+                x0, y0, x1, y1 = cx - ww/2, cy - hh/2, cx + ww/2, cy + hh/2
+                for b in heads.get(int(n), []):
+                    inter = max(0, min(x1, b[2]) - max(x0, b[0]))*max(0, min(y1, b[3]) - max(y0, b[1]))
+                    area = max(1.0, (b[2] - b[0])*(b[3] - b[1]))
+                    share = inter/area
+                    if HEAD_SLIVER < share < 1 - HEAD_SLIVER and inter/(ww*hh) < DETAIL_TIGHT_FILL:
+                        err.append(f"HEAD-CUT: фраза {n}, план {k + 1} ({key}) режет голову героя — в окне {share:.0%} "
+                                   f"головы: целиком, вне окна или морда на пол-окна")
+    return err
+
+
 def generic_whys(video_dir):
     """Планы монтажа без смысла в why («общий план», «смена плана»): склейка ради ритма, а не по смыслу."""
     ep = os.path.join(video_dir, "edit.json")
@@ -787,6 +817,7 @@ def hook_build(video_dir):
     # «рядом», «это» звучат в длинном клипе не раз, и план вставал на первое вхождение (сборка L03 упала 04.11)
     err += _edit_order(video_dir, blocks, frames, starts)
     err += generic_whys(video_dir)
+    err += head_cuts(video_dir)
     err += stage_checks(video_dir)
     # 5. надписи — только где добавляют то, чего нет ни в картинке, ни сразу на слух, и не чаще лимита (владелец 04.11,
     # вечер: «рисунков карандашом слишком много… даже там, где не надо»; L03: 65 надписей на 7 мин — раз в 6,5 с)

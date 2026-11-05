@@ -549,3 +549,19 @@ def test_whoosh_on_handwriting_is_rejected_and_text_sounds_count(tmp_path):
     assert any("рукописной подписи" in e for e in errs)
     blocks, frames, starts, ends = _ctx(vd)
     assert sorted(n for _, _, n in long_rules.text_sounds(vd, blocks, starts, ends)) == ["hand:fast_whoosh", "level_up"]
+
+
+def test_hand_made_shot_may_not_cut_the_heros_head(tmp_path):
+    """L02 05.11: ручные окна резали коту глаза и уши у края кадра (76 окон), а код смотрел так только автоматику."""
+    vd = tmp_path / "L09"; (vd / "media_plan").mkdir(parents=True)
+    head = [400, 100, 600, 300]
+    (vd / "media_plan" / "frames_report.json").write_text(json.dumps(
+        {"frames": [{"index": 0, "objects": [{"role": "hero_head", "box": head}]}]}), encoding="utf-8")
+    def shots(*wins):
+        (vd / "edit.json").write_text(json.dumps({"frames": {"1": {"shots": [{"win": w, "why": "т"} for w in wins]}}}),
+                                      encoding="utf-8")
+        return long_rules.head_cuts(str(vd))
+    assert shots([500, 360, 400])                          # окно срезает верх головы — ошибка
+    assert not shots([500, 220, 640])                      # голова целиком
+    assert not shots([1000, 600, 400])                     # головы в окне нет
+    assert not shots([500, 200, 300])                      # морда на пол-окна — осознанный макро
