@@ -1538,5 +1538,11 @@ def test_rule_30_live_world_and_sam_cut(tmp_path):
     (d / "sc_hf" / "index.html").write_text('<canvas id="tail"></canvas><svg id="sky"></svg>', encoding="utf-8")
     spec["passport"]["hook"]["world"] = {"area": "окно с пустым стеклом", "motion": "таймлапс неба: день → ночь, луна"}
     assert reel_rules.check_anim_base(spec, str(tmp_path)) == []
+    # рилс 23 (05.11): фон только через plate_bg (он сам откатывается на inpaint_bg) — правило 24 не требует второй заливки
+    (d / "kit_x.py").write_text("a = anim.cut_sam(img, box, pos)\nanim.save_layer(...)\nbg = anim.plate_bg(img, hole, cache)\n",
+                                encoding="utf-8")
+    assert reel_rules.check_anim_base(spec, str(tmp_path)) == []
+    assert reel_rules.check_anim_base({"passport": {"standard": 28}}, str(tmp_path))   # до правила 30 — нужна inpaint_bg
+    (d / "kit_x.py").write_text("anim.save_layer(...)\nanim.inpaint_bg(...)\n", encoding="utf-8")
     spec["passport"]["standard"] = 28                                   # готовые рилсы — как были
     assert reel_rules.check_live_world is not None and reel_rules.check_anim_base({"passport": {"standard": 28}}, str(tmp_path)) == []

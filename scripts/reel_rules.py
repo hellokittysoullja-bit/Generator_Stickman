@@ -1874,17 +1874,17 @@ def check_anim_base(spec, abs_dir):
     if not srcs:
         return []                                          # сцены нет — об этом скажут check_hook_motion и check_hf_hook
     errs, allsrc = [], "\n".join(srcs.values())
+    std = (spec.get("passport") or {}).get("standard") or 0
     for f, t in srcs.items():
         if re.search(r"\bfill_hole\(", t):
             errs.append(f"anim/{f}: fill_hole — прежняя заливка; в новых сценах фон под предметом — anim.inpaint_bg")
     if "save_layer(" not in allsrc:
         errs.append("сцены рилса режут слои не общим шагом anim.save_layer (без него — обрывки усов, бумажная кайма, "
                     "оторванные куски; образец — videos/13_dver/reel/anim/kit_doorway.py)")
-    if "inpaint_bg(" not in allsrc:
+    if "inpaint_bg(" not in allsrc and not (std >= LIVE_STANDARD and "plate_bg(" in allsrc):   # plate_bg сам откатывается на inpaint_bg
         errs.append("фон под вырезанными слоями не через anim.inpaint_bg (силуэт предмета рельефом, рваный плинтус)")
     if re.search(r"save_layer\([^)]*[\"']tail[\"']", allsrc) and "tail_rig." not in allsrc:
         errs.append("слой хвоста есть, а сетки с физикой нет — хвост гнётся через scripts/tail_rig.py (образец — door_hf)")
-    std = (spec.get("passport") or {}).get("standard") or 0
     if std >= LIVE_STANDARD:
         if "plate_bg(" not in allsrc:
             errs.append("правило 30: фон под слоями — anim.plate_bg (чистая подложка от модели картинок, только в дыре; "
