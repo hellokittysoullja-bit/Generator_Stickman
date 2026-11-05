@@ -29,6 +29,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "крупный план «the lit empty shelves» не делается: деталь не помещается в план",
@@ -55,11 +56,11 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "крупный план «the phone on the high pan» не делается: почти совпадает с другим планом",
-    "крупный план «the head of a black cartoon cat» не делается: почти совпадает с другим планом",
-    "accent «не слабая воля» не пишется: в ручном плане нет места"
+    "крупный план «the head of a black cartoon cat» не делается: почти совпадает с другим планом"
    ]
   },
   {
@@ -68,15 +69,19 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
     ],
     [
      2.88,
-     "drift"
+     "manual"
     ],
     [
-     4.96,
-     "drift"
+     5.36,
+     "manual"
+    ],
+    [
+     7.32,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -85,6 +90,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "крупный план «the thought clouds from the head» не делается: почти совпадает с другим планом",
@@ -98,19 +104,19 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
     ],
     [
-     1.52,
-     "drift"
+     2.0,
+     "manual"
     ],
     [
-     3.68,
-     "drift"
+     4.4,
+     "manual"
     ],
     [
      6.32,
-     "drift"
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -119,11 +125,9 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
-   "notes": [
-    "крупный план «the flame on the tip of the tail of a black cartoon cat» не делается: деталь мелкая даже на пределе зума",
-    "крупный план «the head of a black cartoon cat» не делается: почти совпадает с другим планом"
-   ]
+   "notes": []
   },
   {
    "index": 4,
@@ -144,6 +148,22 @@
     [
      6.0,
      "manual"
+    ],
+    [
+     8.32,
+     "manual"
+    ],
+    [
+     9.76,
+     "manual"
+    ],
+    [
+     11.92,
+     "manual"
+    ],
+    [
+     14.24,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -152,6 +172,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [
     [
      5.88,
@@ -165,23 +186,23 @@
   },
   {
    "index": 6,
-   "duration": 10.583,
+   "duration": 7.75,
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
     ],
     [
-     3.4,
-     "drift"
+     2.52,
+     "manual"
     ],
     [
-     5.64,
-     "drift"
+     4.28,
+     "manual"
     ],
     [
-     7.76,
-     "drift"
+     5.96,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -190,11 +211,35 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "крупный план «the phone in the other room» не делается: деталь мелкая даже на пределе зума",
     "крупный план «the phone in the paw» не делается: почти совпадает с другим планом"
    ]
+  },
+  {
+   "index": 7,
+   "duration": 2.833,
+   "views": [
+    [
+     0.0,
+     "manual"
+    ],
+    [
+     1.96,
+     "manual"
+    ]
+   ],
+   "labels_at": [],
+   "punch": null,
+   "key": null,
+   "key_at": null,
+   "key_hold_until": null,
+   "accent": null,
+   "hand": [],
+   "narrator": [],
+   "notes": []
   },
   {
    "index": 8,
@@ -215,6 +260,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "крупный план «the hesitating paw» не делается: разрезал бы голову или тело героя",
@@ -229,11 +275,15 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
     ],
     [
-     2.93,
-     "drift"
+     2.21,
+     "manual"
+    ],
+    [
+     4.85,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -242,10 +292,19 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [
+    [
+     "≈ 800 человек",
+     2.27,
+     "стрелка",
+     4.92
+    ]
+   ],
    "narrator": [],
    "notes": [
     "крупный план «the rows of desks» не делается: деталь не помещается в план",
-    "крупный план «the researcher with the clipboard» не делается: почти совпадает с другим планом"
+    "крупный план «the researcher with the clipboard» не делается: почти совпадает с другим планом",
+    "подпись «≈ 800 человек»: слово в конце кадра — пишется с 2.27 с, раньше слова"
    ]
   },
   {
@@ -279,6 +338,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "крупный план «the bag on the chair» не делается: деталь мелкая даже на пределе зума",
@@ -317,6 +377,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "крупный план «the calm student» не делается: деталь не помещается в план",
@@ -330,11 +391,15 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
     ],
     [
      3.04,
-     "drift"
+     "manual"
+    ],
+    [
+     4.88,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -343,6 +408,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": []
   },
@@ -352,27 +418,31 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
     ],
     [
      2.77,
-     "drift"
+     "manual"
     ],
     [
-     4.97,
-     "drift"
+     3.93,
+     "manual"
     ],
     [
-     8.08,
-     "drift"
+     6.41,
+     "manual"
     ],
     [
-     10.09,
-     "drift"
+     8.73,
+     "manual"
+    ],
+    [
+     10.81,
+     "manual"
     ],
     [
      12.17,
-     "drift"
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -381,6 +451,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "крупный план «the flame on the tip of the tail of a black cartoon cat» не делается: деталь мелкая даже на пределе зума",
@@ -393,27 +464,27 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
     ],
     [
-     2.09,
-     "drift"
+     3.29,
+     "manual"
     ],
     [
-     4.53,
-     "drift"
+     5.21,
+     "manual"
     ],
     [
-     7.09,
-     "drift"
+     7.29,
+     "manual"
     ],
     [
      9.11,
-     "drift"
+     "manual"
     ],
     [
-     12.38,
-     "drift"
+     11.74,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -422,12 +493,15 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
-   "narrator": [
+   "hand": [
     [
-     9.11,
-     15.02
+     "ошибок ×3",
+     9.86,
+     "стрелка",
+     11.93
     ]
    ],
+   "narrator": [],
    "notes": [
     "крупный план «the phone with the blank bubble» не делается: деталь мелкая даже на пределе зума"
    ]
@@ -459,6 +533,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "крупный план «the doorway» не делается: деталь не помещается в план",
@@ -474,15 +549,15 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
     ],
     [
-     1.78,
-     "drift"
+     2.14,
+     "manual"
     ],
     [
-     4.01,
-     "drift"
+     4.61,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -491,7 +566,13 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
-   "narrator": [],
+   "hand": [],
+   "narrator": [
+    [
+     0.0,
+     7.12
+    ]
+   ],
    "notes": [
     "крупный план «the phone lying face up» не делается: почти совпадает с другим планом",
     "крупный план «a phone» не делается: почти совпадает с другим планом"
@@ -503,15 +584,19 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
     ],
     [
      2.72,
-     "drift"
+     "manual"
     ],
     [
      5.68,
-     "drift"
+     "manual"
+    ],
+    [
+     6.72,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -520,6 +605,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "крупный план «the open fridge door» не делается: деталь не помещается в план"
@@ -531,11 +617,15 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
     ],
     [
-     2.19,
-     "drift"
+     1.27,
+     "manual"
+    ],
+    [
+     3.07,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -544,6 +634,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "крупный план «the open fridge» не делается: деталь не помещается в план",
@@ -578,6 +669,26 @@
     [
      10.84,
      "manual"
+    ],
+    [
+     12.64,
+     "manual"
+    ],
+    [
+     15.12,
+     "manual"
+    ],
+    [
+     16.72,
+     "manual"
+    ],
+    [
+     17.44,
+     "manual"
+    ],
+    [
+     18.96,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -586,12 +697,8 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
-   "narrator": [
-    [
-     12.28,
-     21.81
-    ]
-   ],
+   "hand": [],
+   "narrator": [],
    "notes": [
     "крупный план «the tap on the shoulder» не делается: деталь мелкая даже на пределе зума"
    ]
@@ -602,23 +709,27 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
     ],
     [
-     3.16,
-     "drift"
+     2.6,
+     "manual"
     ],
     [
-     5.4,
-     "drift"
+     5.0,
+     "manual"
     ],
     [
-     8.12,
-     "drift"
+     6.96,
+     "manual"
+    ],
+    [
+     8.92,
+     "manual"
     ],
     [
      10.32,
-     "drift"
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -627,6 +738,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "крупный план «the thought clouds» не делается: деталь не помещается в план"
@@ -638,27 +750,19 @@
    "views": [
     [
      0.0,
-     "drift"
-    ],
-    [
-     2.18,
-     "drift"
-    ],
-    [
-     5.14,
-     "drift"
+     "manual"
     ],
     [
      7.46,
-     "drift"
+     "manual"
     ],
     [
      9.76,
-     "drift"
+     "manual"
     ],
     [
-     11.96,
-     "drift"
+     12.16,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -667,6 +771,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "крупный план «the people on the bench» не делается: деталь не помещается в план",
@@ -680,19 +785,19 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
     ],
     [
-     2.96,
-     "drift"
+     2.56,
+     "manual"
     ],
     [
      5.68,
-     "drift"
+     "manual"
     ],
     [
-     7.68,
-     "drift"
+     8.0,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -701,6 +806,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "крупный план «the flame on the tip of the tail of a black cartoon cat» не делается: деталь мелкая даже на пределе зума",
@@ -713,11 +819,15 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
     ],
     [
-     2.0,
-     "drift"
+     1.12,
+     "manual"
+    ],
+    [
+     2.96,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -726,6 +836,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "крупный план «the puddle» не делается: деталь не помещается в план",
@@ -759,6 +870,7 @@
    "key_at": 6.75,
    "key_hold_until": 10.09,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "крупный план «the stepping character» не делается: почти совпадает с другим планом",
@@ -772,15 +884,19 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
     ],
     [
-     2.72,
-     "drift"
+     1.8,
+     "manual"
     ],
     [
-     5.36,
-     "drift"
+     4.44,
+     "manual"
+    ],
+    [
+     5.56,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -789,6 +905,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "крупный план «the blank glowing screen» не делается: деталь мелкая даже на пределе зума"
@@ -796,27 +913,19 @@
   },
   {
    "index": 32,
-   "note": "главная мысль «сделать меньше» пропущена: за 30 с на экране уже 2 рукописных слов"
-  },
-  {
-   "index": 32,
    "duration": 10.125,
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
     ],
     [
-     2.72,
-     "drift"
+     2.2,
+     "manual"
     ],
     [
-     5.32,
-     "drift"
-    ],
-    [
-     6.84,
-     "drift"
+     7.32,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -825,11 +934,13 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "крупный план «the small card» не делается: деталь мелкая даже на пределе зума",
     "крупный план «the flame on the tip of the tail of a black cartoon cat» не делается: деталь мелкая даже на пределе зума",
-    "крупный план «the huge sheet» не делается: деталь не помещается в план"
+    "крупный план «the huge sheet» не делается: деталь не помещается в план",
+    "главной мысли «сделать меньше» нет места в плане момента — не пишется"
    ]
   },
   {
@@ -838,19 +949,23 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
     ],
     [
-     2.86,
-     "drift"
+     1.62,
+     "manual"
     ],
     [
-     5.95,
-     "drift"
+     3.59,
+     "manual"
+    ],
+    [
+     4.06,
+     "manual"
     ],
     [
      8.31,
-     "drift"
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -859,6 +974,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "крупный план «the limp paw» не делается: деталь мелкая даже на пределе зума",
@@ -871,11 +987,15 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
     ],
     [
-     1.95,
-     "drift"
+     0.99,
+     "manual"
+    ],
+    [
+     2.75,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -884,6 +1004,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "крупный план «the scissors» не делается: деталь мелкая даже на пределе зума",
@@ -897,15 +1018,19 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
     ],
     [
      1.85,
-     "drift"
+     "manual"
     ],
     [
      4.73,
-     "drift"
+     "manual"
+    ],
+    [
+     6.81,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -914,6 +1039,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "крупный план «the flame on the tip of the tail of a black cartoon cat» не делается: деталь мелкая даже на пределе зума"
@@ -925,43 +1051,47 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
     ],
     [
-     3.01,
-     "drift"
+     1.49,
+     "manual"
+    ],
+    [
+     4.26,
+     "manual"
     ],
     [
      6.18,
-     "drift"
+     "manual"
     ],
     [
-     8.36,
-     "drift"
+     7.88,
+     "manual"
     ],
     [
-     11.32,
-     "drift"
+     10.28,
+     "manual"
     ],
     [
-     13.72,
-     "drift"
+     12.84,
+     "manual"
     ],
     [
      16.16,
-     "drift"
+     "manual"
     ],
     [
      18.76,
-     "drift"
+     "manual"
     ],
     [
-     21.72,
-     "drift"
+     21.48,
+     "manual"
     ],
     [
-     23.64,
-     "drift"
+     22.52,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -970,6 +1100,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [
     [
      16.16,
@@ -987,15 +1118,15 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
     ],
     [
-     3.04,
-     "drift"
+     4.08,
+     "manual"
     ],
     [
-     4.96,
-     "drift"
+     6.56,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -1004,6 +1135,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "крупный план «the kitchen doorway» не делается: деталь не помещается в план",
@@ -1017,23 +1149,27 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
+    ],
+    [
+     2.4,
+     "manual"
     ],
     [
      3.48,
-     "drift"
+     "manual"
     ],
     [
-     6.25,
-     "drift"
+     5.85,
+     "manual"
     ],
     [
      7.93,
-     "drift"
+     "manual"
     ],
     [
      9.77,
-     "drift"
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -1042,12 +1178,8 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
-   "narrator": [
-    [
-     3.48,
-     12.88
-    ]
-   ],
+   "hand": [],
+   "narrator": [],
    "notes": [
     "крупный план «the flame on the tip of the tail of a black cartoon cat» не делается: деталь мелкая даже на пределе зума",
     "крупный план «the boomerang» не делается: вокруг детали пустая бумага"
@@ -1059,11 +1191,11 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
     ],
     [
-     1.76,
-     "drift"
+     1.28,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -1072,6 +1204,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "крупный план «the empty chair» не делается: деталь не помещается в план",
@@ -1084,11 +1217,15 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
     ],
     [
      3.12,
-     "drift"
+     "manual"
+    ],
+    [
+     4.56,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -1097,6 +1234,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "крупный план «the phone at the ear» не делается: деталь мелкая даже на пределе зума",
@@ -1109,15 +1247,23 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
     ],
     [
-     2.92,
-     "drift"
+     2.24,
+     "manual"
     ],
     [
-     6.32,
-     "drift"
+     4.56,
+     "manual"
+    ],
+    [
+     5.92,
+     "manual"
+    ],
+    [
+     6.96,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -1126,6 +1272,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "крупный план «the cup of tea» не делается: деталь мелкая даже на пределе зума",
@@ -1139,15 +1286,15 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
     ],
     [
      2.84,
-     "drift"
+     "manual"
     ],
     [
-     5.32,
-     "drift"
+     4.84,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -1156,6 +1303,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": []
   },
@@ -1165,31 +1313,39 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
+    ],
+    [
+     2.2,
+     "manual"
     ],
     [
      3.32,
-     "drift"
+     "manual"
     ],
     [
      4.92,
-     "drift"
+     "manual"
     ],
     [
-     7.96,
-     "drift"
+     6.68,
+     "manual"
     ],
     [
-     10.28,
-     "drift"
+     8.2,
+     "manual"
     ],
     [
-     13.44,
-     "drift"
+     11.38,
+     "manual"
     ],
     [
-     16.12,
-     "drift"
+     13.64,
+     "manual"
+    ],
+    [
+     16.6,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -1198,12 +1354,8 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
-   "narrator": [
-    [
-     11.38,
-     19.51
-    ]
-   ],
+   "hand": [],
+   "narrator": [],
    "notes": [
     "крупный план «the paws gathering» не делается: деталь мелкая даже на пределе зума",
     "крупный план «the flame on the tip of the tail of a black cartoon cat» не делается: деталь мелкая даже на пределе зума"
@@ -1236,6 +1388,14 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [
+    [
+     "меньше минуты",
+     2.31,
+     "стрелка",
+     5.07
+    ]
+   ],
    "narrator": [],
    "notes": [
     "крупный план «the ringing phone» не делается: деталь мелкая даже на пределе зума",
@@ -1269,6 +1429,7 @@
    "key_at": 0.44,
    "key_hold_until": 4.39,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "крупный план «the paw» не делается: разрезал бы голову или тело героя",
@@ -1283,15 +1444,19 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
     ],
     [
-     2.81,
-     "drift"
+     2.01,
+     "manual"
+    ],
+    [
+     4.01,
+     "manual"
     ],
     [
      6.01,
-     "drift"
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -1300,6 +1465,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "крупный план «the phone at the ear» не делается: деталь мелкая даже на пределе зума",
@@ -1313,23 +1479,23 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
     ],
     [
-     2.82,
-     "drift"
+     2.1,
+     "manual"
     ],
     [
-     5.61,
-     "drift"
+     4.18,
+     "manual"
     ],
     [
      7.35,
-     "drift"
+     "manual"
     ],
     [
-     9.75,
-     "drift"
+     10.39,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -1338,6 +1504,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "крупный план «the slip in the paw» не делается: деталь мелкая даже на пределе зума",
@@ -1357,10 +1524,6 @@
      "manual"
     ],
     [
-     4.01,
-     "manual"
-    ],
-    [
      6.57,
      "manual"
     ]
@@ -1371,6 +1534,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "план 0.0-10.0 с без смены: другого плана без разреза рисунка нет"
@@ -1387,6 +1551,18 @@
     [
      1.69,
      "manual"
+    ],
+    [
+     3.43,
+     "manual"
+    ],
+    [
+     5.61,
+     "manual"
+    ],
+    [
+     8.09,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -1395,6 +1571,7 @@
    "key_at": 1.69,
    "key_hold_until": 5.38,
    "accent": null,
+   "hand": [],
    "narrator": [
     [
      3.43,
@@ -1414,11 +1591,15 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
     ],
     [
-     2.85,
-     "drift"
+     1.17,
+     "manual"
+    ],
+    [
+     3.89,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -1427,6 +1608,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "крупный план «the slip of paper on the desk» не делается: деталь мелкая даже на пределе зума"
@@ -1438,15 +1620,11 @@
    "views": [
     [
      0.0,
-     "drift"
-    ],
-    [
-     3.27,
-     "drift"
+     "manual"
     ],
     [
      5.03,
-     "drift"
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -1455,6 +1633,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "крупный план «the sticky note» не делается: почти совпадает с другим планом",
@@ -1467,23 +1646,27 @@
    "views": [
     [
      0.0,
-     "drift"
+     "manual"
     ],
     [
-     2.48,
-     "drift"
+     1.48,
+     "manual"
+    ],
+    [
+     4.0,
+     "manual"
     ],
     [
      5.68,
-     "drift"
+     "manual"
     ],
     [
-     7.44,
-     "drift"
+     8.24,
+     "manual"
     ],
     [
-     9.36,
-     "drift"
+     10.64,
+     "manual"
     ]
    ],
    "labels_at": [],
@@ -1492,6 +1675,7 @@
    "key_at": null,
    "key_hold_until": null,
    "accent": null,
+   "hand": [],
    "narrator": [],
    "notes": [
     "крупный план «the glowing open fridge» не делается: деталь не помещается в план",

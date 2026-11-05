@@ -24,7 +24,7 @@
   },
   {
    "index": 4,
-   "status": "ok",
+   "status": "failed",
    "dur": 15.5833
   },
   {
@@ -35,12 +35,12 @@
   {
    "index": 6,
    "status": "ok",
-   "dur": 10.5833
+   "dur": 7.75
   },
   {
    "index": 7,
-   "status": "absorbed",
-   "reason": "no_frame"
+   "status": "ok",
+   "dur": 2.8333
   },
   {
    "index": 8,
@@ -189,7 +189,7 @@
   },
   {
    "index": 37,
-   "status": "ok",
+   "status": "failed",
    "dur": 25.625
   },
   {
