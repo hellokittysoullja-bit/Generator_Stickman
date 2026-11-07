@@ -42,3 +42,5 @@ videos/*/media_plan/render_manifest_preview.json
 videos/*/media_plan/shots_report_preview.json
 videos/*/media_plan/sfx_report_preview.json
 videos/*/preview*_silent.mp4
+videos/*/reel/explain_preview.mp4
+videos/*/reel/voice/*.wav
