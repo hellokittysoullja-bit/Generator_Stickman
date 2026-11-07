@@ -265,28 +265,40 @@ def render_frame(d, beats, t, title_img, sub_img, cap_cache):
         k = ease_out(lt/0.5)
         bg = tuple(int(255 + (c - 255)*k) for c in DIM)
     fr = Image.new("RGBA", (W, H), bg + (255,))
+    if s.get("scene"):                              # сцена на весь экран (у образца — кафе, пруд), наш рисунок
+        fr.alpha_composite(scene_img(os.path.join(ROOT, s["scene"]), s.get("scene_cx", 0.5), lt), (0, 0))
+    for o in s.get("others", []):                   # другие коты — копии героя с аксессуаром, как у образца
+        if t >= word_time(b, o.get("at", "")) if o.get("at") else True:
+            draw_cat(fr, d, o["cat"], o.get("h", 520), o["x"], t + o.get("phase", 1.3), acc=o.get("acc"),
+                     acc_dx=o.get("acc_dx", 0.0), acc_dy=o.get("acc_dy", -0.45), acc_size=o.get("acc_size", 170),
+                     bottom=o.get("bottom", CAT_BOTTOM))
+    if s.get("cat") is None:
+        cat = None
     # кот (со сменой по слову и кувырком)
-    cat, ch, tumble_t = s["cat"], s.get("cat_h", 700), None
+    cat, ch, tumble_t = s.get("cat"), s.get("cat_h", 700), None
     for sw in s.get("swap", []):
         ts = word_time(b, sw["at"])
         if t >= ts:
             cat, ch = sw["cat"], sw.get("cat_h", ch)
             if sw.get("tumble"):
                 tumble_t = t - ts
-    im = load(os.path.join(d, "cut", cat + ".png"), h=ch)
-    if s.get("grey"):
-        im = grey(im)
-    z = s.get("zoom", 1.0)
-    if z != 1.0:
-        im = im.resize((int(im.width*z), int(im.height*z)), Image.BICUBIC)
-    rot = WOBBLE_DEG*math.sin(2*math.pi*WOBBLE_HZ*t)
-    hop = 6*abs(math.sin(2*math.pi*WOBBLE_HZ*t))
-    if tumble_t is not None and tumble_t < 0.7:
-        u = tumble_t/0.7
-        rot += 360*ease_out(u); hop += 160*math.sin(math.pi*u)
-    cx = s.get("cat_x", W//2)
-    big = im.rotate(rot, Image.BICUBIC, expand=True, center=(im.width/2, im.height*0.9))
-    fr.alpha_composite(big, (int(cx - big.width/2), int(CAT_BOTTOM + (z - 1)*ch*0.25 - hop - big.height/2 - im.height*0.4)))
+    close = None
+    for cl in s.get("close", []):                   # крупный план: огромная морда въезжает снизу на своём слове
+        ts = word_time(b, cl["at"])
+        if t >= ts and (not cl.get("until") or t < word_time(b, cl["until"])):
+            close = (cl, t - ts)
+    if cat and close:
+        cl, u = close
+        im = load(os.path.join(d, "cut", cl.get("cat", cat) + ".png"), h=cl.get("h", 1900), maxw=2600)
+        if s.get("grey"):
+            im = grey(im)
+        slide = (1 - ease_out(u/0.22))*500
+        rot = 1.2*math.sin(2*math.pi*WOBBLE_HZ*t)
+        big = im.rotate(rot, Image.BICUBIC, expand=True)
+        fr.alpha_composite(big, (int(W*cl.get("x", 0.5) - big.width/2), int(H*cl.get("y", 0.62) - big.height/2 + slide)))
+    elif cat:
+        draw_cat(fr, d, cat, ch, s.get("cat_x", W//2), t, grey_on=s.get("grey"), zoom=s.get("zoom", 1.0),
+                 tumble_t=tumble_t, shake=s.get("shake", 0.0))
     # реквизит
     for p in s.get("props", []):
         ap = word_time(b, p["at"])
@@ -307,10 +319,131 @@ def render_frame(d, beats, t, title_img, sub_img, cap_cache):
             cap_cache[key] = text_img(c["words"], CAP_SIZE, (255, 255, 255) if dark else (12, 12, 14),
                                       stroke=5 if dark else 0, stroke_fill=(0, 0, 0))
         fr.alpha_composite(cap_cache[key], (0, CAP_Y - CAP_SIZE//2))
+    if s.get("flash") and lt < 0.25:                # белая вспышка на переходе
+        a = int(255*(1 - lt/0.25))
+        fr.alpha_composite(Image.new("RGBA", (W, H), (255, 255, 255, a)))
     return fr.convert("RGB")
 
 
-def mix(d, voice_wav, music, dur, out_wav):
+def draw_cat(fr, d, cat, ch, cx, t, grey_on=False, zoom=1.0, tumble_t=None, shake=0.0, acc=None, acc_dx=0.0,
+             acc_dy=-0.45, acc_size=170, bottom=CAT_BOTTOM):
+    """Кот-вырезка: всё время покачивается; кувырок; дрожь (страх); аксессуар-эмодзи на голове (другие коты)."""
+    im = load(os.path.join(d, "cut", cat + ".png"), h=ch)
+    if grey_on:
+        im = grey(im)
+    if zoom != 1.0:
+        im = im.resize((int(im.width*zoom), int(im.height*zoom)), Image.BICUBIC)
+    if acc:
+        im = im.copy()
+        e = load(os.path.join(d, "emoji", acc + ".png"), h=acc_size, maxw=acc_size)
+        ax, ay = int(im.width*(0.5 + acc_dx) - e.width/2), int(im.height*(0.5 + acc_dy) - e.height/2)
+        pad = Image.new("RGBA", (im.width, im.height + max(0, -ay)), (0, 0, 0, 0))
+        pad.alpha_composite(im, (0, max(0, -ay))); pad.alpha_composite(e, (ax, max(0, ay)))
+        im = pad
+    rot = WOBBLE_DEG*math.sin(2*math.pi*WOBBLE_HZ*t)
+    hop = 6*abs(math.sin(2*math.pi*WOBBLE_HZ*t))
+    dx = shake*math.sin(2*math.pi*13*t)
+    if tumble_t is not None and tumble_t < 0.7:
+        u = tumble_t/0.7
+        rot += 360*ease_out(u); hop += 160*math.sin(math.pi*u)
+    big = im.rotate(rot, Image.BICUBIC, expand=True, center=(im.width/2, im.height*0.9))
+    fr.alpha_composite(big, (int(cx + dx - big.width/2), int(bottom + (zoom - 1)*ch*0.25 - hop - big.height/2 - im.height*0.4)))
+
+
+def scene_img(path, cx, lt):
+    """Рисунок на весь экран 9:16, медленный наезд 4 % за сцену."""
+    key = ("scene", path, cx)
+    if key not in _img_cache:
+        im = Image.open(path).convert("RGBA")
+        s = H/im.height*1.06
+        im = im.resize((int(im.width*s), int(im.height*s)), Image.LANCZOS)
+        x0 = int(min(max(im.width*cx - W/2, 0), im.width - W))
+        _img_cache[key] = im.crop((x0, int((im.height - H)/2), x0 + W, int((im.height - H)/2) + H))
+    im = _img_cache[key]
+    z = 1 + 0.04*min(1, lt/3)
+    if z > 1.001:
+        w2, h2 = int(W*z), int(H*z)
+        im = im.resize((w2, h2), Image.BILINEAR).crop(((w2 - W)//2, (h2 - H)//2, (w2 - W)//2 + W, (h2 - H)//2 + H))
+    return im
+
+
+# ---------- звуки: свои, синтез (без чужих сэмплов) ----------
+SR = 48000
+
+
+def _env(n, a=0.004, r=0.08):
+    t = np.arange(n)/SR
+    return np.minimum(1, t/a)*np.exp(-t/r)
+
+
+def sfx(kind, seed=0):
+    rng = np.random.default_rng(seed)
+    if kind == "pop":                               # появление предмета: короткий «поп» с падающим тоном
+        n = int(0.09*SR); t = np.arange(n)/SR
+        f = 900*np.exp(-t*28) + 260
+        return 0.8*np.sin(2*np.pi*np.cumsum(f)/SR)*_env(n, 0.002, 0.03)
+    if kind == "whoosh":                            # склейка: шум с проходом частоты
+        n = int(0.32*SR); x = rng.standard_normal(n)
+        k = np.linspace(0, 1, n); y = np.zeros(n); a = 0.0
+        for i in range(n):
+            c = 0.02 + 0.25*math.sin(math.pi*k[i]); a += c*(x[i] - a); y[i] = a
+        return 0.9*y*np.sin(np.pi*k)**1.5
+    if kind == "boing":                             # кувырок
+        n = int(0.45*SR); t = np.arange(n)/SR
+        f = 180 + 140*np.sin(2*np.pi*9*t)*np.exp(-t*5)
+        return 0.6*np.sin(2*np.pi*np.cumsum(f)/SR)*_env(n, 0.005, 0.18)
+    if kind == "ding":                              # финал: колокольчик
+        n = int(1.2*SR); t = np.arange(n)/SR
+        y = sum(a*np.sin(2*np.pi*f*t) for f, a in ((1320, 1), (2640, 0.4), (3960, 0.2)))
+        return 0.35*y*_env(n, 0.003, 0.35)
+    if kind == "tick":
+        n = int(0.03*SR); return 0.5*rng.standard_normal(n)*_env(n, 0.001, 0.006)
+    if kind == "thud":                              # тяжесть, «бум»
+        n = int(0.3*SR); t = np.arange(n)/SR
+        return 0.9*np.sin(2*np.pi*(70 + 60*np.exp(-t*20))*t)*_env(n, 0.003, 0.09)
+    raise ValueError(kind)
+
+
+def sfx_events(beats):
+    """Звук на каждом событии кадра, как у образца (~5 на 10 с): поп — предмет, свист — склейка/вспышка,
+    бум — тяжесть, кувырок, колокольчик в финале. Свои на фразе — поле sfx [{at, kind}]."""
+    ev = []
+    for i, b in enumerate(beats):
+        s = b["spec"]
+        if i and (s.get("cut") == "hard" or s.get("flash") or s.get("scene")):
+            ev.append((b["t0"], "whoosh"))
+        for p in s.get("props", []):
+            ev.append((word_time(b, p["at"]), p.get("sound", "pop")))
+        for cl in s.get("close", []):
+            ev.append((word_time(b, cl["at"]), "whoosh"))
+        for sw in s.get("swap", []):
+            ev.append((word_time(b, sw["at"]), "boing" if sw.get("tumble") else "pop"))
+        for o in s.get("others", []):
+            if o.get("at"):
+                ev.append((word_time(b, o["at"]), "pop"))
+        for x in s.get("sfx", []):
+            ev.append((word_time(b, x["at"]), x["kind"]))
+    ev.sort()
+    out, last = [], {}
+    for t, k in ev:                                 # одинаковые звуки не ближе 0,12 с
+        if t - last.get(k, -9) >= 0.12:
+            out.append((t, k)); last[k] = t
+    return out
+
+
+def sfx_track(events, dur, path, gain_db=-7.0):
+    y = np.zeros(int(dur*SR) + SR)
+    for i, (t, k) in enumerate(events):
+        s = sfx(k, seed=i); a = int(max(0, t)*SR)
+        y[a:a + len(s)] += s[:len(y) - a]
+    y *= 10**(gain_db/20)
+    y = np.clip(y, -0.98, 0.98)
+    import wave
+    w = wave.open(path, "wb"); w.setnchannels(1); w.setsampwidth(2); w.setframerate(SR)
+    w.writeframes((y*32767).astype(np.int16).tobytes()); w.close()
+
+
+def mix(d, voice_wav, music, dur, out_wav, sfx_wav=None):
     m = os.path.normpath(os.path.join(d, music)) if music else None
     if not m or not os.path.exists(m):
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", voice_wav, "-t", f"{dur:.3f}", out_wav], check=True)
@@ -318,9 +451,12 @@ def mix(d, voice_wav, music, dur, out_wav):
     r = subprocess.run(["ffmpeg", "-hide_banner", "-i", m, "-af", "ebur128", "-f", "null", "-"], capture_output=True, text=True)
     lufs = float(re.findall(r"I:\s+(-?[\d.]+) LUFS", r.stderr)[-1])
     g = MUSIC_LUFS - lufs
-    subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", voice_wav, "-stream_loop", "-1", "-i", m, "-filter_complex",
-                    f"[1:a]volume={g:.1f}dB,afade=t=out:st={dur - 1.2:.2f}:d=1.2[mu];"
-                    f"[0:a][mu]amix=inputs=2:duration=first:normalize=0,apad[a]",
+    ins = ["-i", voice_wav, "-stream_loop", "-1", "-i", m] + (["-i", sfx_wav] if sfx_wav else [])
+    fx = "[2:a]aresample=48000[fx];" if sfx_wav else ""
+    n = 3 if sfx_wav else 2
+    subprocess.run(["ffmpeg", "-v", "error", "-y"] + ins + ["-filter_complex",
+                    f"[1:a]volume={g:.1f}dB,afade=t=out:st={dur - 1.2:.2f}:d=1.2[mu];{fx}"
+                    f"[0:a][mu]{'[fx]' if sfx_wav else ''}amix=inputs={n}:duration=first:normalize=0,apad[a]",
                     "-map", "[a]", "-t", f"{dur:.3f}", "-ar", "48000", out_wav], check=True)
 
 
@@ -349,7 +485,11 @@ def main():
     fps = 15 if a.preview else FPS
     out = os.path.join(d, "explain_preview.mp4" if a.preview else "explain.mp4")
     wav = os.path.join(d, "voice", "mix.wav")
-    mix(d, vwav, spec.get("music"), dur, wav)
+    fxw = os.path.join(d, "voice", "sfx.wav")
+    events = sfx_events(beats)
+    sfx_track(events, dur, fxw)
+    mix(d, vwav, spec.get("music"), dur, wav, fxw)
+    print(f"звуков: {len(events)} ({len(events)/dur*10:.1f} на 10 с)")
     p = subprocess.Popen(["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}",
                           "-r", str(fps), "-i", "-", "-i", wav, "-c:v", "libx264", "-preset", "medium", "-crf", "18",
                           "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", out],
