@@ -2,6 +2,7 @@
  "_": "Рилс 19, формат «объясняет котик» (docs/reels_knowledge/format_explained_by_animal.md). Фраза = голос; подпись сверху кусками по 2–3 слова; *слово* — курсив. cat — вырезка из cut/, props — эмодзи Noto (emoji/, Apache 2.0) на своём слове.",
  "title": "Прокрастинация",
  "subtitle": "(объясняет котик)",
+ "speed": 1.15,
  "music": "../../../assets/music/wisps_of_whorls.mp3",
  "beats": [
   {"text": "Прокрастинация. Объясняет котик.", "title": true, "cat": "sit", "cat_h": 640,
