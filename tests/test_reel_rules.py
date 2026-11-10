@@ -1521,3 +1521,14 @@ def test_rule_29_sounds_not_fewer_than_reference_reel_17():
     hole = [p for p in good if not 10 < p["peak"] < 16]
     assert any("тишина" in e for e in reel_rules.check_sound_density(hole, 35.0, 28))
     assert reel_rules.check_sound_density(few, 35.0, 26) == []      # готовые рилсы ниже 28 не трогаем
+
+
+def test_owner_override_lifts_only_soft_rules():
+    """Владелец 10.11 (рилс 20): свой хук длиннее 30 знаков и рисунки из библиотеки — его словом в паспорте; железные
+    правила этим ключом не снимаются, пустое или короткое слово не считается."""
+    spec = {"passport": {"owner_overrides": {"hook_chars": "владелец 10.11: «У тебя нет сил, а на ленту есть»",
+                                             "iron_25": "владелец разрешил всё", "library_share": "да"}}}
+    assert reel_rules.owner_said(spec, "hook_chars")
+    assert not reel_rules.owner_said(spec, "iron_25")            # не мягкое правило
+    assert not reel_rules.owner_said(spec, "library_share")      # слово короче 10 знаков
+    assert not reel_rules.owner_said({}, "hook_chars")

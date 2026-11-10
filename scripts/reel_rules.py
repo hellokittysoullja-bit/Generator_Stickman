@@ -13,6 +13,15 @@ import re
 MAX_SHOT_SEC = 3.0         # план не дольше 3 с (разбор роликов о Reels: смена картинки каждые 2–3 с)
 FIRST_CUT_SEC = 2.0        # первая склейка в первые 2 с — «решают первые 1–2 секунды» (владелец 22.10)
 HOOK_MAX_CHARS = 30        # первая фраза читается за ~1.3–1.8 с при 17 знаках в секунду
+OWNER_OVERRIDABLE = ("hook_chars", "library_share", "repeat_drawings", "cta_before_answer")   # мягкие правила, которые снимает слово владельца
+
+
+def owner_said(spec, key):
+    """Решение владельца снимает мягкое правило: passport.owner_overrides[key] — его слово с датой (≥ 10 знаков).
+    Только ключи OWNER_OVERRIDABLE; железные правила 25–29 так не снимаются (владелец 10.11, рилс 20: свой хук на
+    32 знака и все рисунки из библиотеки — «не будем заказывать рисунки, отбери из библиотеки по смыслу»)."""
+    o = ((spec.get("passport") or {}).get("owner_overrides") or {}).get(key)
+    return key in OWNER_OVERRIDABLE and isinstance(o, str) and len(o.strip()) >= 10
 RISER_START_MAX = 0.05     # riser звучит с нулевой секунды (владелец 22.10), а не после хука
 RISER_PEAK_ON_CUT = 0.10   # пик riser — на склейке (Clumzzy: riser — ожидание перед раскрытием)
 HOOK_GAP_MAX = 0.75        # голос хука кончился — следующая фраза не позже 0.75 с (пауза перед развязкой 0.3–0.75,
@@ -787,7 +796,7 @@ def check_spec(spec, sfx_names):
             if s.get("sound") and s["sound"] not in sfx_names:
                 err.append(f"фраза {i}: звук плана «{s['sound']}» — не из звуков владельца")
     hook = clean(beats[0]["text"])
-    if len(hook) > HOOK_MAX_CHARS:
+    if len(hook) > HOOK_MAX_CHARS and not owner_said(spec, "hook_chars"):
         err.append(f"хук «{hook}» — {len(hook)} знаков, нужно ≤ {HOOK_MAX_CHARS}: первая фраза бьёт в лоб, коротко")
     riser = [e for e in beats[0].get("fx", []) if e.get("kind") == "sfx" and e.get("name") == "riser"]
     if not riser:
@@ -862,6 +871,8 @@ def check_library_share(spec, shots, log=(), reel_dir=""):
         if reel_dir and not old:
             return [f"новый рилс: нужен \"standard\": {LIBRARY_STANDARD} — не больше {LIBRARY_MAX} фото из библиотеки, "
                     "остальные рисунки — свои (reel/gen/)"]
+        return []
+    if owner_said(spec, "library_share"):
         return []
     srcs = spec.get("sources", {})
     used = {s.get("src") for s in shots if s.get("kind", "crop") in ("crop", "fit") and s.get("src")}
@@ -1393,7 +1404,7 @@ def check_structure(spec):
             err.append(f"нет фразы с ролью {need}: {why}")
     if "answer" in roles and "cta" in roles:
         ia, ic = roles.index("answer"), roles.index("cta")
-        if ia > ic:
+        if ia > ic and not owner_said(spec, "cta_before_answer"):
             err.append("ответ после призыва: сначала польза, потом просьба")
         after = roles[ic + 1:]
         if not any(r in ("bridge", "payoff", "twist", "loop") for r in after):
@@ -1918,8 +1929,9 @@ def check_originality(spec, reel_abs, others):
         for p in _source_files(osp, odir).values():
             seen.setdefault(md5(p), name)
         said += [(name, _grams(b.get("text", ""))) for b in osp.get("beats") or []]
-    err = [f"рисунок {k} уже был в рилсе {seen[h]} — повтор кадра (нарисуйте свой: reel_draw.py)"
-           for k, h in mine.items() if h in seen]
+    err = [] if owner_said(spec, "repeat_drawings") else [
+        f"рисунок {k} уже был в рилсе {seen[h]} — повтор кадра (нарисуйте свой: reel_draw.py)"
+        for k, h in mine.items() if h in seen]
     for i, b in enumerate(spec.get("beats") or []):
         g = _grams(b.get("text", ""))
         if len(g) < 2:
