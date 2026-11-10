@@ -810,7 +810,8 @@ def build(reel_dir, sheet=False, preview=False, force=False):
         e["kind_of_shot"] = next((x.get("kind", "crop") for x in reversed(shots) if x["t0"] <= e["t"] + CUT_LEAD), "crop")
     caps_txt = [dict(t0=c["t0"], t1=c["t1"], text=" ".join(cap_text(words[j]) for j in c["idx"])) for c in chunks(words, times)]
     caps_txt[0]["t0"] = 0.0                            # хук стоит с первого кадра (still)
-    rule_errs += hook_split_errors(words, times, spans)
+    if not reel_rules.owner_said(spec, "hook_chars"):    # хук владельца длиннее строки — идёт двумя группами
+        rule_errs += hook_split_errors(words, times, spans)
     rule_errs += reel_rules.check_hook_gap(times, spans, beats)
     rule_errs += reel_rules.check_montage(spec, shots, events, total)
     rule_errs += reel_rules.check_library_share(spec, shots, json.load(open(log_p, encoding="utf8")) if os.path.exists(log_p) else [],

@@ -1532,3 +1532,12 @@ def test_owner_override_lifts_only_soft_rules():
     assert not reel_rules.owner_said(spec, "iron_25")            # не мягкое правило
     assert not reel_rules.owner_said(spec, "library_share")      # слово короче 10 знаков
     assert not reel_rules.owner_said({}, "hook_chars")
+
+
+def test_owner_cta_position_lifts_only_the_cta_share():
+    """Владелец 10.11 (рилс 20): «призыв на одну строчку раньше» — место призыва вне 55–70 % снимается его словом,
+    без слова правило стоит."""
+    spec = {"passport": {"standard": 26, "cta_beat": 1}}
+    assert reel_rules.check_cta_middle(spec, [0.0, 10.0, 20.0], 40.0)
+    spec["passport"]["owner_overrides"] = {"cta_position": "владелец 10.11: призыв на одну строчку раньше"}
+    assert not reel_rules.check_cta_middle(spec, [0.0, 10.0, 20.0], 40.0)

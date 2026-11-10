@@ -13,13 +13,17 @@ import re
 MAX_SHOT_SEC = 3.0         # план не дольше 3 с (разбор роликов о Reels: смена картинки каждые 2–3 с)
 FIRST_CUT_SEC = 2.0        # первая склейка в первые 2 с — «решают первые 1–2 секунды» (владелец 22.10)
 HOOK_MAX_CHARS = 30        # первая фраза читается за ~1.3–1.8 с при 17 знаках в секунду
-OWNER_OVERRIDABLE = ("hook_chars", "library_share", "repeat_drawings", "cta_before_answer")   # мягкие правила, которые снимает слово владельца
+OWNER_OVERRIDABLE = ("hook_chars", "library_share", "repeat_drawings", "cta_before_answer", "cta_position")   # мягкие правила, которые снимает слово владельца
 
 
 def owner_said(spec, key):
     """Решение владельца снимает мягкое правило: passport.owner_overrides[key] — его слово с датой (≥ 10 знаков).
     Только ключи OWNER_OVERRIDABLE; железные правила 25–29 так не снимаются (владелец 10.11, рилс 20: свой хук на
-    32 знака и все рисунки из библиотеки — «не будем заказывать рисунки, отбери из библиотеки по смыслу»)."""
+    32 знака и все рисунки из библиотеки — «не будем заказывать рисунки, отбери из библиотеки по смыслу»).
+    Что снимает каждый ключ: hook_chars — длину хука и его строку субтитров (хук владельца идёт двумя группами);
+    library_share — долю библиотеки и требование своего рисунка в reel/gen/ (владелец запретил новые рисунки);
+    repeat_drawings — повтор рисунков прошлых рилсов; cta_before_answer — призыв до ответа и петли, закрытые после
+    призыва; cta_position — место призыва вне 55–70 % («призыв на одну строчку раньше», рилс 20)."""
     o = ((spec.get("passport") or {}).get("owner_overrides") or {}).get(key)
     return key in OWNER_OVERRIDABLE and isinstance(o, str) and len(o.strip()) >= 10
 RISER_START_MAX = 0.05     # riser звучит с нулевой секунды (владелец 22.10), а не после хука
@@ -899,7 +903,7 @@ def check_montage(spec, shots, events, total):
     used = {s.get("src") for s in shots if s.get("kind", "crop") in ("crop", "fit") and s.get("src")}
     if len(used) < MIN_DRAWINGS:
         err.append(f"рисунков {len(used)} < {MIN_DRAWINGS}: на один больше образца — новый рисунок для разнообразия (reel_draw.py)")
-    if not any(str((srcs.get(k) or {}).get("frame", "")).startswith("gen/") for k in used):
+    if not any(str((srcs.get(k) or {}).get("frame", "")).startswith("gen/") for k in used) and not owner_said(spec, "library_share"):
         err.append("ни одного рисунка, нарисованного для этого рилса (reel/gen/): хотя бы один свой кадр")
     acc = [(e["kind"], e["t"]) for e in events if e.get("kind") in ACCENT_EVENT_KINDS and not e.get("anchor")]
     acc += [("whip" if s.get("whip") else "zoom_in", s["t0"]) for s in shots[1:] if s.get("whip") or s.get("zoom_in")]
@@ -1175,7 +1179,7 @@ def check_open_loop(spec, words, times, spans, total, events=(), sound_peaks=())
         a, z = (list(lo) + [None, None])[:2]
         if not (isinstance(a, int) and isinstance(z, int) and a < z):
             err.append(f"петля {lo!r}: нужна пара [фраза, где открыта, фраза, где закрыта], закрытие позже")
-        elif isinstance(cta, int) and z >= cta:
+        elif isinstance(cta, int) and z >= cta and not owner_said(spec, "cta_before_answer"):
             err.append(f"петля {lo!r} закрывается в призыве или после — зритель ушёл с открытым вопросом")
     # 25 §17: «звуковой вакуум» перед словом ответа — голос молчит, и звуков нет
     if j is not None and j > 0:
@@ -1438,7 +1442,7 @@ def check_cta_middle(spec, beat_t0, total):
     if (pp.get("standard") or 0) < STRUCTURE_STANDARD or not isinstance(k, int) or k >= len(beat_t0) or total <= 0:
         return []
     sh = beat_t0[k] / total
-    if not CTA_SHARE[0] <= sh <= CTA_SHARE[1]:
+    if not CTA_SHARE[0] <= sh <= CTA_SHARE[1] and not owner_said(spec, "cta_position"):
         return [f"призыв (фраза {k}) на {beat_t0[k]:.1f} с = {sh:.0%} ролика: нужен {CTA_SHARE[0]:.0%}–{CTA_SHARE[1]:.0%}"]
     return []
 
