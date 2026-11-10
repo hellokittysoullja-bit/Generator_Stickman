@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=2112, height=2048" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="lib/mesh_part.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 2112px; height: 2048px; overflow: hidden; background: #f7f3ea; }
+      #root { position: relative; width: 2112px; height: 2048px; overflow: hidden; }
+      .layer { position: absolute; left: 0; top: 0; width: 2112px; height: 2048px; }
+      .abs { position: absolute; display: block; }
+      svg.layer { overflow: visible; }
+      #rays line { stroke: #18181a; stroke-linecap: round; }
+      .eye { position: absolute; overflow: hidden; -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
+             -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
+      .lid { position: absolute; left: -12%; width: 124%; height: 100%; top: 0; border-bottom: 11px solid #1c1a19;
+             border-radius: 0 0 50% 50% / 0 0 38% 38%; }
+    </style>
+  </head>
+  <body>
+    <!-- Хук рилса 20 «У тебя нет сил, а на ленту есть?»: мир сцены — рисунок l1_tired_scroll ×2 от (960, 0), 2112×2048.
+         Слои — anim/kit_scroll.py (база рилса 13, образец рилс 17), положение слоёв подставляет scroll_hf.py из kit.json.
+         Тело без сил, палец полон сил: с кадра 0 кот клюёт носом (обмякает к телефону и рывком ловит себя), тяжело
+         моргает, хвост лениво машет, а палец листает рывками дважды за кивок, телефон вздрагивает, у пальца мигают дуги
+         свайпа, из-за телефона без остановки вылетают карточки ленты (восемь в потоке, за котом — морду не закрывают); на ударном «Есть» (data-vars.hit)
+         кот вздрагивает и подскакивает, глаза распахиваются, карточки разлетаются веером, вокруг головы штрихи удара,
+         потом поток возобновляется. Камеру, тряску, субтитры и звук даёт сборщик. -->
+    <div id="root" data-composition-id="main" data-start="0" data-duration="3.0" data-width="2112" data-height="2048"
+         data-vars='{"hit": 1.92}' data-motion-blur="on" data-layout-allow-overflow data-layout-allow-overlap>
+      <img id="bg" class="abs clip" src="assets/bg.png" style="left:0;top:0" data-start="0" data-duration="3.0" />
+      <div id="c0" class="layer clip" data-start="0" data-duration="3.0"><img id="cimg0" class="abs" src="assets/card0.png" style="left:0px;top:0px" /></div>
+      <div id="c1" class="layer clip" data-start="0" data-duration="3.0"><img id="cimg1" class="abs" src="assets/card1.png" style="left:0px;top:0px" /></div>
+      <div id="c2" class="layer clip" data-start="0" data-duration="3.0"><img id="cimg2" class="abs" src="assets/card2.png" style="left:0px;top:0px" /></div>
+      <div id="c3" class="layer clip" data-start="0" data-duration="3.0"><img id="cimg3" class="abs" src="assets/card0.png" style="left:0px;top:0px" /></div>
+      <div id="c4" class="layer clip" data-start="0" data-duration="3.0"><img id="cimg4" class="abs" src="assets/card1.png" style="left:0px;top:0px" /></div>
+      <div id="c5" class="layer clip" data-start="0" data-duration="3.0"><img id="cimg5" class="abs" src="assets/card2.png" style="left:0px;top:0px" /></div>
+      <div id="c6" class="layer clip" data-start="0" data-duration="3.0"><img id="cimg6" class="abs" src="assets/card0.png" style="left:0px;top:0px" /></div>
+      <div id="c7" class="layer clip" data-start="0" data-duration="3.0"><img id="cimg7" class="abs" src="assets/card1.png" style="left:0px;top:0px" /></div>
+      <div id="cat" class="layer clip" data-start="0" data-duration="3.0">
+        <canvas id="tail" class="abs" width="1125" height="1228" style="left:0px;top:0px"></canvas>
+        <img id="body" class="abs" src="assets/body.png" style="left:0px;top:0px" />
+        <div id="eyeL" class="eye" style="left:0px;top:0px;width:10px;height:10px"><div id="lidL" class="lid"></div></div>
+        <div id="eyeR" class="eye" style="left:0px;top:0px;width:10px;height:10px"><div id="lidR" class="lid"></div></div>
+        <div id="phoneW" class="layer"><img id="phone" class="abs" src="assets/phone.png" style="left:0px;top:0px" /></div>
+        <div id="armW" class="layer"><img id="arm" class="abs" src="assets/arm.png" style="left:0px;top:0px" /></div>
+        <div id="marksW" class="layer"><img id="marks" class="abs" src="assets/marks.png" style="left:0px;top:0px" /></div>
+        <svg id="rays" class="layer" width="2112" height="2048" viewBox="0 0 2112 2048"></svg>
+      </div>
+    </div>
+    <script>
+      const root = document.getElementById("root");
+      const V = JSON.parse(root.dataset.vars), H = V.hit, K = V.kit, DUR = 3.0, KEY = 60;
+      const NS = "http://www.w3.org/2000/svg";
+      const tl = gsap.timeline({ paused: true });
+      const px = (p) => `${p[0]}px ${p[1]}px`;
+      const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+      const mix = (a, b, u) => a + (b - a) * u;
+      const outQ = (u) => 1 - (1 - u) * (1 - u);
+      const outC = (u) => 1 - Math.pow(1 - u, 3);
+      const inOut = (u) => 0.5 - 0.5 * Math.cos(Math.PI * clamp(u, 0, 1));
+      // движение — функцией времени, ключами 60 раз в секунду без сглаживания (между ключами прямая): так поведение
+      // в любой момент читается из формулы, а размытие движения HyperFrames берёт подкадры по этим же ключам
+      const track = (sel, fn) => {
+        tl.set(sel, fn(0), 0);
+        for (let i = 0; i < Math.round(DUR * KEY); i++) tl.to(sel, Object.assign(fn((i + 1) / KEY), { duration: 1 / KEY, ease: "none" }), i / KEY);
+      };
+      gsap.set("#cat", { transformOrigin: px(K.seat) });
+      gsap.set("#armW", { transformOrigin: px(K.arm_pivot) });
+      gsap.set("#phoneW", { transformOrigin: px(K.phone_pivot) });
+
+      // КИВОК: кот обмякает к телефону (ровно, без остановки) и рывком ловит себя; рывок — вместе с первым свайпом
+      const NOD = 0.66, JERK = 0.12, UP = -2.2, DOWN = 5.2;
+      const nod = (t) => {
+        const p = ((t % NOD) + NOD) % NOD;
+        if (p < JERK) { const u = outQ(p / JERK); return { r: mix(DOWN, UP, u), y: mix(20, -8, u), sy: mix(0.972, 1.012, u) }; }
+        const u = (p - JERK) / (NOD - JERK);
+        return { r: mix(UP, DOWN, u), y: mix(-8, 20, u), sy: mix(1.012, 0.972, u) };
+      };
+      track("#cat", (t) => {
+        let s = nod(t);
+        if (t >= H - 0.07) {                                       // «Есть»: присел — подскок — вздрогнул и осел
+          const a = nod(H - 0.07), d = t - (H - 0.07);
+          if (d < 0.07) { const u = d / 0.07; s = { r: mix(a.r, a.r + 1.5, u), y: mix(a.y, a.y + 22, u), sy: mix(a.sy, 0.94, u) }; }
+          else {
+            const e = t - H, up = outC(clamp(e / 0.11, 0, 1)), back = clamp((e - 0.11) / 0.7, 0, 1);
+            const ring = Math.exp(-4.5 * back) * Math.cos(back * 13);
+            const top = { r: -5.5, y: -78, sy: 1.05 }, rest = nod(t);
+            if (e < 0.11) s = { r: mix(a.r + 1.5, top.r, up), y: mix(a.y + 22, top.y, up), sy: mix(0.94, top.sy, up) };
+            else if (e < 0.81) s = { r: mix(rest.r, top.r, ring), y: mix(rest.y, top.y, ring), sy: mix(rest.sy, top.sy, ring) };
+            else s = rest;
+          }
+        }
+        // качание вбок: быстрее всего ровно там, где кивок разворачивается (иначе в этот кадр тело стоит)
+        const sx = 16 * Math.sin((2 * Math.PI * (t - JERK)) / NOD);
+        return { rotation: s.r, x: sx, y: s.y, scaleY: s.sy, scaleX: 2 - s.sy };
+      });
+
+      // СВАЙП: палец рывком вверх дважды за кивок (вместе с рывком кота и посреди обмякания), телефон вздрагивает
+      const FLICK = NOD / 2;
+      const flick = (t) => {
+        const p = ((t % FLICK) + FLICK) % FLICK;
+        if (p < 0.06) return outQ(p / 0.06);
+        return Math.max(0, 1 - outQ((p - 0.06) / 0.16));
+      };
+      const quiet = (t) => (t >= H - 0.07 && t < H + 0.45 ? clamp(Math.abs(t - H - 0.19) / 0.26, 0, 1) : 1);   // на ударе палец замер
+      track("#armW", (t) => ({ rotation: -6.5 * flick(t) * quiet(t) + 1.2 * Math.sin(t * 9.1) }));
+      track("#phoneW", (t) => { const f = flick(t - 0.03) * quiet(t); return { rotation: -2.2 * f, y: -9 * f }; });
+      track("#marksW", (t) => { const f = flick(t) * quiet(t); return { opacity: 0.25 + 0.75 * f, x: 10 * f, y: -12 * f }; });
+
+      // ТЯЖЁЛОЕ МОРГАНИЕ: веко опускается медленно, полсекунды глаз закрыт почти совсем; на «Есть» — распахнулся
+      const lid = (t) => {
+        const blink = (t0) => { const d = t - t0; if (d < 0 || d > 0.78) return 0; if (d < 0.3) return inOut(d / 0.3); if (d < 0.42) return 1; return 1 - inOut((d - 0.42) / 0.36); };
+        let k = Math.max(blink(0.22), blink(1.28));
+        if (t >= H - 0.07) k = t < H ? k : Math.max(0, k * (1 - (t - H) / 0.05));
+        return k;
+      };
+      ["#lidL", "#lidR"].forEach((id) => track(id, (t) => ({ yPercent: mix(-112, -6, lid(t)) })));
+
+      // ЛЕНТА: шесть карточек без остановки вылетают из телефона и уходят вверх за кадр; на «Есть» — веером
+      const P = 0.84, N = 8, SP = K.spawn, BURST = 0.62;
+      const C = K.cards_c;
+      const path = (j, u) => {
+        const x = SP[0] + 175 * Math.sqrt(u) + 30 * Math.sin(Math.PI * 2 * u + j);   // вправо-вверх, мимо морды
+        const y = SP[1] - 1780 * u;
+        const sc = mix(0.28, 0.85, outC(clamp(u / 0.32, 0, 1)));
+        const rot = (j % 2 ? 1 : -1) * (14 - 26 * u) + 4 * Math.sin(u * 17 + j);
+        return { x, y, sc, rot, op: clamp(u / 0.05, 0, 1) };
+      };
+      const card = (j, t) => {
+        const ph = j / N;
+        const loop = (tt, t0) => { const d0 = tt - t0 - j * P / N; return d0 < 0 ? null : path(j, (d0 / P) % 1); };   // поток заново
+        if (t < H) return path(j, (((t / P + ph) % 1) + 1) % 1);
+        const d = t - H;
+        if (d < BURST) {
+          const s = path(j, (((H / P + ph) % 1) + 1) % 1), a = (-90 + (j - 2.5) * 26) * Math.PI / 180, e = outC(clamp(d / BURST, 0, 1));
+          return { x: s.x + Math.cos(a) * 900 * e, y: s.y + Math.sin(a) * 900 * e - 260 * d, sc: s.sc * (1 + 0.5 * e),
+                   rot: s.rot + (j % 2 ? 1 : -1) * 260 * e, op: 1 - clamp((d - 0.3) / 0.3, 0, 1) };
+        }
+        const s = loop(t, H + BURST);
+        return s ? s : { x: SP[0], y: SP[1], sc: 0.28, rot: 0, op: 0 };
+      };
+      for (let j = 0; j < N; j++) {
+        const c = C[j % 3];
+        gsap.set(`#c${j}`, { transformOrigin: px(c) });
+        track(`#c${j}`, (t) => { const s = card(j, t); return { x: s.x - c[0], y: s.y - c[1], scale: s.sc, rotation: s.rot, opacity: s.op }; });
+      }
+
+      // штрихи удара вокруг головы на «Есть»
+      const hx = K.head[0], hy = K.head[1];
+      for (let k = 0; k < 7; k++) {
+        const a = -Math.PI / 2 + (k - 3) * 0.4;
+        const g = document.createElementNS(NS, "g"), m = document.createElementNS(NS, "g"), l = document.createElementNS(NS, "line");
+        g.setAttribute("transform", `translate(${hx + 610 * Math.cos(a)} ${hy + 520 * Math.sin(a)}) rotate(${(a * 180) / Math.PI})`);
+        l.setAttribute("x1", 0); l.setAttribute("y1", 0); l.setAttribute("x2", 84); l.setAttribute("y2", 0); l.style.strokeWidth = 13;
+        m.appendChild(l); g.appendChild(m); document.getElementById("rays").appendChild(g);
+        tl.set(m, { opacity: 0, scaleX: 0, svgOrigin: "0 0" }, 0);
+        tl.set(m, { opacity: 1 }, H + 0.02);
+        tl.to(m, { scaleX: 1, duration: 0.07, ease: "power3.out" }, H + 0.02);
+        tl.to(m, { x: 50, opacity: 0, duration: 0.26, ease: "power2.in" }, H + 0.2);
+      }
+      meshPart({ canvas: document.getElementById("tail"), marg: 280, img: "assets/tail_body.png",
+                 flame: "assets/tail_flame.png", mesh: "assets/tail_mesh.json", angles: "assets/tail_angles.json", fps: 30 });
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
