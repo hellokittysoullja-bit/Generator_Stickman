@@ -32,7 +32,7 @@ EAR_POLY = [(928, 1040), (932, 1000), (952, 925), (1006, 838), (1066, 766), (113
 EAR_PIVOT = (1150, 1085)          # основание правого уха
 BLANKET_SEED = (800, 1850)
 TAIL_POLY = [(285, 2010), (520, 1990), (660, 2040), (675, 2170), (680, 2620), (285, 2620)]
-TAIL_PIVOT = (470, 2075)          # хвост уходит под одеяло
+TAIL_PIVOT = (560, 2068)          # корень хвоста — середина его верха под складкой одеяла (у 470 правый край корня махал)
 FLAME_BOX = (555, 2350, 625, 2440)
 FLAME_SAT, FLAME_BRIGHT = 90, 140
 SMOKE_BOX = (580, 2150, 680, 2395)
@@ -49,7 +49,7 @@ HEADBOARD_Y = 894                 # верхний край изголовья �
 PILLOW_Y = (1032, 1016)           # верхний край подушки у x 350 и 1300
 INK = (88, 74, 66)                # тушь линий изголовья и подушки (замер по рисунку)
 HEAD_TUCK = 70                    # px: голова заходит под одеяло (кот вздрагивает вверх — щели нет)
-TAIL_TUCK = 50
+TAIL_TUCK = 15                    # мало: на хлёсте заход вылезал из-под складки плашкой; под складкой в фоне — тень
 SEAT = (820, 1600)                # ось наклона головы — подбородок у одеяла
 BLANKET_BASE_Y = 2200             # одеяло тянется вверх от своего нижнего края
 
@@ -101,16 +101,18 @@ def head_mask(A, blanket):
 
 
 def tail_mask(A, blanket):
+    """Хвост — вся тёмная шерсть в многоугольнике (с тонким клином у складки одеяла справа: раскрытие его срезало, и
+    клин оставался в фоне тёмным обрывком), огонёк — по цвету; одеяло поверх корня хвоста закрывает его край."""
     reg = region(A.shape, TAIL_POLY)
     g = A.mean(2); sat = A.max(2) - A.min(2)
     flame = (sat > FLAME_SAT) & (A.max(2) > FLAME_BRIGHT) & (box(A.shape, FLAME_BOX) > 0)
     m = ((g < 125) | flame).astype(np.uint8)
     m = anim.drop_scene_lines(A, cv2.morphologyEx(m, cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8)) & reg)
-    core = cv2.morphologyEx(m, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15)))
-    n, lab, st, _ = cv2.connectedComponentsWithStats(core)
-    core = (lab == 1 + int(np.argmax(st[1:, cv2.CC_STAT_AREA]))).astype(np.uint8)
-    m = (m & cv2.dilate(core, np.ones((15, 15), np.uint8))) | fill_holes(core) | flame.astype(np.uint8)
-    return anim.keep_attached(m & (1 - (blanket & (1 - fill_holes(core)))))
+    m = fill_holes(m) & reg
+    # линии рамы кровати и края одеяла у хвоста — не хвост: всё дальше 11 px от тела хвоста (кончики шерсти ближе)
+    core = cv2.morphologyEx(m, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (13, 13)))
+    m = (m & cv2.dilate(core, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (23, 23)))) | flame.astype(np.uint8)
+    return anim.keep_attached(m)
 
 
 def clock_mask(A):
@@ -157,7 +159,7 @@ def eye_mask(A, b):
     return m[by0:by1, bx0:bx1], (int(x0 + bx0), int(y0 + by0))
 
 
-def tuck(A, part, under, reach, keep_from=None):
+def tuck(A, part, under, reach, keep_from=None, src_dy=0):
     """Часть заходит под соседний слой на reach px: шерсть её тоном (медиана шерсти у края) с зерном рисунка. Только
     под телом части (столбцы, где над ней тело), а не вдоль усов: усы касаются края одеяла далеко от морды, и заход
     тянулся полосой через всю подушку (лист 11.11)."""
@@ -173,6 +175,10 @@ def tuck(A, part, under, reach, keep_from=None):
     nz = cv2.GaussianBlur(np.random.default_rng(5).normal(0, 1, A.shape[:2]).astype(np.float32), (0, 0), 1.2)
     img = A.copy()
     img[add] = np.median(A[edge], axis=0) + (6 * nz / (nz.std() + 1e-6))[add][:, None]
+    if src_dy:          # шерсть самой части в src_dy px (сверху/снизу): заход виден на рывке — ровная заливка читалась плашкой
+        src, ok = np.roll(A, src_dy, axis=0), np.roll(core, src_dy, axis=0) > 0
+        take = add & ok
+        img[take] = src[take]
     return img, (part | add).astype(np.uint8)
 
 
@@ -190,10 +196,12 @@ def background(A, head, ear, blanket, tail, clock, buzz, smoke):
     hole_head = (cv2.dilate(core, np.ones((17, 17), np.uint8)) > 0) | (cv2.dilate(cat, np.ones((7, 7), np.uint8)) > 0)
     hole_head &= ~(cv2.erode(blanket, np.ones((9, 9), np.uint8)) > 0)
     hole_clock = cv2.dilate((clock | buzz), np.ones((13, 13), np.uint8)) > 0
-    hole_tail = cv2.dilate((tail | smoke), np.ones((13, 13), np.uint8)) > 0
+    hole_tail = (cv2.dilate(tail, np.ones((13, 13), np.uint8)) > 0) | (cv2.dilate(smoke, np.ones((25, 25), np.uint8)) > 0)
     hole_tail &= ~(cv2.erode(blanket, np.ones((9, 9), np.uint8)) > 0)
     wall_hi, wall_lo = above(300), above(1000)       # чистая стена: строки 400–600 и 20–640 (ухо — от 690)
-    grain = wall_lo - cv2.GaussianBlur(wall_lo, (0, 0), 4)
+    tile = A[100:612]                                 # зерно — с чистой стены, плиткой на весь лист (под хвостом
+    paper = np.concatenate([tile] * (-(-H // len(tile))), 0)[:H]   # сдвиг на 1000 px приносил усы головы)
+    grain = paper - cv2.GaussianBlur(paper, (0, 0), 4)
     pil_y = PILLOW_Y[0] + (xx - 350) * (PILLOW_Y[1] - PILLOW_Y[0]) / (1300 - 350)
     g = A.mean(2)
 
@@ -227,6 +235,11 @@ def background(A, head, ear, blanket, tail, clock, buzz, smoke):
     bgA[hole_clock] = clk[hole_clock]
     # хвост: те же строки на 500 px правее — борт кровати, рама и тень под кроватью
     side = np.roll(A, -500, axis=1)
+    # у корня хвоста, под складкой одеяла — тень под одеялом (тон борта кровати сразу под краем одеяла), а не сдвинутое
+    # одеяло соседних столбцов: там оно приносило светлые прямоугольники и обрывок края (лист 11.11)
+    dark = np.clip((yy - 2030) / 95.0, 0, 1)[..., None]                  # под складкой темнее
+    shade = np.median(A[2120:2140, 700:900].reshape(-1, 3), axis=0) * (0.5 + 0.42 * dark)
+    side = np.where((yy < 2125)[..., None], shade + grain, side)
     bgA[hole_tail] = side[hole_tail]
 
     def seam(h, w=9):
@@ -250,7 +263,10 @@ def main():
 
     blanket = blanket_mask(A)
     tail = tail_mask(A, blanket)
-    blanket &= (1 - tail)
+    low = np.zeros_like(blanket); low[2110:] = 1
+    blanket &= (1 - tail) | (1 - low)                    # контур складки над корнем хвоста — одеялу (оно сверху)
+    # ниже складки одеяла у хвоста — уже не одеяло: светлая кромка одеяла рядом с хвостом ложилась на него, когда он машет
+    blanket &= (1 - (cv2.dilate(tail, np.ones((21, 21), np.uint8)) & low))
     head = head_mask(A, blanket)
     ear = (region(A.shape, EAR_POLY) & head).astype(np.uint8)
     ear, head = anim.split_part(ear, head & (1 - ear), core_open=5)
@@ -259,7 +275,7 @@ def main():
     # контур оставался стоять, когда ухо дёргалось (лист 11.11)
     ear_fill = np.zeros_like(ear)
     ear = anim.underlap(ear, head, full, width=30, around=(*EAR_PIVOT, 170))
-    smoke = light_strokes(A, SMOKE_BOX, local=16) & ~cv2.dilate(tail, np.ones((5, 5), np.uint8)).astype(bool)
+    smoke = light_strokes(A, SMOKE_BOX, local=10) & ~cv2.dilate(tail, np.ones((5, 5), np.uint8)).astype(bool)
     smoke = anim.keep_attached(smoke.astype(np.uint8), reach=40)
     clock = clock_mask(A)
     buzz = np.zeros_like(clock)
@@ -270,11 +286,11 @@ def main():
     bg = background(A, head, ear, blanket, tail, clock, buzz, smoke)
     # голова заходит под одеяло (вздрагивает вверх — под подбородком нет щели), хвост — под одеяло у основания
     head_img, head_m = tuck(A, head, blanket, HEAD_TUCK, keep_from=(np.mgrid[:A.shape[0], :A.shape[1]][1] > 380)
-                            & (np.mgrid[:A.shape[0], :A.shape[1]][1] < 1290))
-    tail_img, tail_m = tuck(A, tail, blanket, TAIL_TUCK)
+                            & (np.mgrid[:A.shape[0], :A.shape[1]][1] < 1290), src_dy=80)
+    tail_img, tail_m = tuck(A, tail, blanket, TAIL_TUCK, src_dy=-(TAIL_TUCK + 20))
     # под основанием уха у головы — шерсть (ухо лежит поверх головы; дёрнулось — под ним мех, а не дыра в фон)
     base = ear.astype(bool) & (cv2.dilate(head, np.ones((181, 181), np.uint8)) > 0)
-    head_img, head_m = tuck(head_img, head_m, base.astype(np.uint8), 90)
+    head_img, head_m = tuck(head_img, head_m, base.astype(np.uint8), 90, src_dy=-110)
 
     Ap, bg = anim.paper_like(A), anim.paper_like(bg)
     head_img, tail_img = anim.paper_like(head_img), anim.paper_like(tail_img)
@@ -287,7 +303,10 @@ def main():
     parts = [("tail", tail_img, tail_m, True), ("blanket", Ap, blanket, True), ("head", head_img, head_m, True),
              ("ear", Ap_ear, ear, True), ("clock", Ap, clock, True), ("buzz", Ap, buzz, False), ("smoke", Ap, smoke, False)]
     for name, img, m, keep in parts:
-        anim.save_layer(OUT, name, img, m.astype(np.uint8), layers, keep_attached_=keep)
+        if name == "blanket":
+            save_cloth(OUT, name, img, m.astype(np.uint8), layers)
+        else:
+            anim.save_layer(OUT, name, img, m.astype(np.uint8), layers, keep_attached_=keep)
     ox, oy = ORIGIN; w, h = SIZE
     Image.fromarray(np.clip(bg[oy:oy + h, ox:ox + w], 0, 255).astype(np.uint8)).save(os.path.join(OUT, "bg.png"))
     for v in layers.values():
@@ -304,6 +323,11 @@ def main():
         ring = np.zeros(A.shape[:2], bool); ring[ey - 40:ey + m.shape[0] + 40, ex - 40:ex + m.shape[1] + 40] = True
         ring &= (g < 120) & (g > 45) & head.astype(bool)
         fur = np.median(Ap[ring], axis=0)
+        # веко — шерсть над этим глазом (ровная заливка на крупном плане читалась серой плашкой): кусок рисунка над
+        # линией века той же ширины, что веко (124 % глаза), опускается вместе с ним
+        h, w = m.shape; lw = int(round(w * 1.24)); lx = ex - (lw - w) // 2
+        lid = Ap[ey - 14 - h:ey - 14, lx:lx + lw]
+        Image.fromarray(np.clip(lid, 0, 255).astype(np.uint8)).save(os.path.join(OUT, f"lid_{k}.png"))
         eyes[k] = dict(xy=(ex - ox, ey - oy), wh=(int(m.shape[1]), int(m.shape[0])),
                        fur="#%02x%02x%02x" % tuple(int(round(c)) for c in fur))
     rel = lambda p: (p[0] - ox, p[1] - oy)      # noqa: E731
@@ -313,9 +337,47 @@ def main():
     print(json.dumps(meta))
 
 
+def save_cloth(out_dir, name, img, mask, layers, soft=0.8):
+    """anim.save_layer для светлой ткани: тот же край (мягкий, без бумажной каймы, проверка оторванных кусков), но без
+    trim_paper_edge — он снимает светлые бесцветные пиксели у края маски, а одеяло само светлое и бесцветное: край
+    одеяла выходил рваным, и в щели было видно, как под ним дёргаются голова и хвост (лист 11.11)."""
+    m = anim.keep_attached(mask)
+    a = cv2.GaussianBlur(m.astype(np.float32), (0, 0), soft)
+    ys, xs = np.where(a > 0.02)
+    x0, y0, x1, y1 = xs.min() - 6, ys.min() - 6, xs.max() + 7, ys.max() + 7
+    im = np.dstack([np.asarray(img)[y0:y1, x0:x1], 255 * a[y0:y1, x0:x1]]).clip(0, 255).astype(np.uint8)
+    al = im[..., 3].astype(np.float32) / 255
+    paper = np.median(im[..., :3][al < 0.02], axis=0) if (al < 0.02).any() else (250, 247, 240)
+    im[..., :3] = anim.defringe(im[..., :3], al, paper).round().astype(np.uint8)
+    if anim.detached_share(al) >= 0.002:
+        raise ValueError(f"слой {name}: оторванные куски ({anim.detached_share(al):.4f})")
+    Image.fromarray(im).save(os.path.join(out_dir, name + ".png"))
+    layers[name] = dict(xy=(int(x0), int(y0)), wh=im.shape[1::-1])
+
+
+def split_flame(rgba):
+    """tail_rig.split_flame, но огонёк — только его строки: общий шаг отдаёт огоньку всё над ним в его столбцах (у хвоста
+    рилса 13 там пусто), а здесь прямо над огоньком висит корень хвоста — он уезжал с огоньком на кончик (лист 11.11)."""
+    im = np.asarray(rgba, np.float32)
+    rgb, a = im[..., :3], im[..., 3]
+    fl = (((rgb.max(2) - rgb.min(2)) > FLAME_SAT) & (rgb.mean(2) > FLAME_BRIGHT) & (a > 30)).astype(np.uint8)
+    n, lab, st, _ = cv2.connectedComponentsWithStats(fl)
+    if n <= 1:
+        return np.asarray(rgba), None, None
+    fl = (lab == 1 + int(np.argmax(st[1:, cv2.CC_STAT_AREA]))).astype(np.uint8)
+    ys, xs = np.where(fl)
+    y_base = int(ys.max()); x0, x1 = int(xs.min()) - 12, int(xs.max()) + 12
+    top = max(0, int(ys.min()) - 10)
+    reg = np.zeros_like(fl); reg[top:max(top, y_base - 4), max(0, x0):x1] = 1
+    m = cv2.GaussianBlur(((a > 8) & (reg > 0)).astype(np.float32), (0, 0), 1.0)
+    tail = np.dstack([rgb, a * (1 - m)]).clip(0, 255).astype(np.uint8)
+    flame = np.dstack([rgb, a * m]).clip(0, 255).astype(np.uint8)[top:y_base + 4, max(0, x0):x1]
+    return tail, flame, dict(xy=[max(0, x0), top], base=[int((xs.min() + xs.max()) / 2), y_base])
+
+
 def tail_part(layer_png, attach, name="tail"):
     rgba = np.asarray(Image.open(layer_png).convert("RGBA"))
-    body, flame, fl = tail_rig.split_flame(rgba, sat_min=FLAME_SAT, bright_min=FLAME_BRIGHT)
+    body, flame, fl = split_flame(rgba)
     Image.fromarray(body).save(os.path.join(OUT, f"{name}_body.png"))
     if flame is not None:
         Image.fromarray(flame).save(os.path.join(OUT, f"{name}_flame.png"))

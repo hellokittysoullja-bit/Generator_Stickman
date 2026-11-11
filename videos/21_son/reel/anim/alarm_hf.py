@@ -21,7 +21,7 @@ import tail_rig
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 KIT = ["bg.png", "head.png", "ear.png", "blanket.png", "clock.png", "buzz.png", "tail.png", "tail_body.png",
-       "tail_flame.png", "tail_mesh.json", "eye_l.png", "eye_r.png", "kit.json"]
+       "tail_flame.png", "tail_mesh.json", "eye_l.png", "eye_r.png", "lid_l.png", "lid_r.png", "kit.json"]
 SOURCES = ["gen/s1_alarm.png", "anim/kit_alarm.py", "anim/alarm_hf/index.html"] + [f"anim/kit/{k}" for k in KIT]
 X2 = "s1_alarm_x2.png"
 VERSION = 1
@@ -32,7 +32,7 @@ TAIL_MARG = 280
 CLOCK_CENTER = (1796, 1543)         # центр циферблата в ×2 (веер удара, дуги звона)
 HEAD = (820, 1250)                  # центр головы в ×2 (веер удара вокруг головы)
 # хвост висит с края кровати и болтается лениво, на ударе — хлёст (физика tail_rig, свои числа сцены)
-TAIL_PHYS = dict(tail_rig.PHYS, wag_deg=6.0, wag_period=1.1, whip_deg=15.0)
+TAIL_PHYS = dict(tail_rig.PHYS, wag_deg=6.0, wag_period=1.1, whip_deg=11.0)
 REEL_DIR = None
 _C = {}
 
@@ -61,7 +61,7 @@ def place_layers(proj):
         st = (f"left:{x}px;top:{y}px;width:{w}px;height:{h}px;-webkit-mask-image:url(assets/eye_{e}.png);"
               f"mask-image:url(assets/eye_{e}.png)")
         s, n = re.subn(rf'id="{i}" class="eye" style="[^"]*"', f'id="{i}" class="eye" style="{st}"', s)
-        s, m = re.subn(rf'id="lid{e.upper()}" class="lid"( style="[^"]*")?', f'id="lid{e.upper()}" class="lid" style="background:{fur}"', s)
+        s, m = re.subn(rf'id="lid{e.upper()}" class="lid"( style="[^"]*")?', f'id="lid{e.upper()}" class="lid" style="background:{fur} url(assets/lid_{e}.png) 0 0 / 100% 100% no-repeat"', s)
         if n != 1 or m != 1:
             raise RuntimeError(f"alarm_hf/index.html: нет глаза {i}")
     open(html, "w", encoding="utf-8").write(s)
