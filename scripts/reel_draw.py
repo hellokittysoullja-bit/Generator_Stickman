@@ -41,7 +41,17 @@ def fg_backdrop():
     return frame_generator.NO_PLACE_BACKDROP.format(paper="near-white")
 
 
+# владелец 11.11: «чтоб никаких артефактов с телефонами… сзади айфон 14 про чёрный, как надо» — один телефон
+# во всех рисунках, как в рилсе 20 (l2_feed_pile): кодом добавляется к любой сцене со словом phone
+PHONE = ("Every phone in the picture is the same modern smartphone drawn correctly: a black iPhone 14 Pro with a thin "
+         "black frame and rounded corners; from the back a plain matte black back with one square camera block in the "
+         "upper corner holding three round lenses, no logo; from the front one blank glowing screen with a small pill "
+         "cutout at the top; normal proportions, held naturally, never bent, doubled, cut or melted into a paw.")
+
+
 def prompt(scene, n_style):
+    if "phone" in scene.lower():
+        scene = scene.rstrip() + " " + PHONE
     marks = open(os.path.join(ROOT, "look", "hero_marks.txt"), encoding="utf8").read().strip()
     palette = open(os.path.join(ROOT, "look", "palette.txt"), encoding="utf8").read().strip()
     return (f"Reference images 1-{n_style} show only the drawing style: take from them the line work, shading and simplicity, "

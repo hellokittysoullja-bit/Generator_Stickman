@@ -1541,3 +1541,11 @@ def test_owner_cta_position_lifts_only_the_cta_share():
     assert reel_rules.check_cta_middle(spec, [0.0, 10.0, 20.0], 40.0)
     spec["passport"]["owner_overrides"] = {"cta_position": "владелец 10.11: призыв на одну строчку раньше"}
     assert not reel_rules.check_cta_middle(spec, [0.0, 10.0, 20.0], 40.0)
+
+
+def test_every_reel_phone_is_drawn_as_the_same_black_iphone():
+    """Владелец 11.11: телефоны без артефактов, как в рилсе 20 — чёрный iPhone 14 Pro с блоком из трёх камер."""
+    import reel_draw
+    p = reel_draw.prompt("the main character holds one phone", 2)
+    assert "iPhone 14 Pro" in p and "three round lenses" in p
+    assert "iPhone" not in reel_draw.prompt("the main character sits on a chair", 2)
