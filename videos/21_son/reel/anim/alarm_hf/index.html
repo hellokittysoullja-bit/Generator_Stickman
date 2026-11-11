@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=2048, height=2080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="lib/mesh_part.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 2048px; height: 2080px; overflow: hidden; background: #f7f3ea; }
+      #root { position: relative; width: 2048px; height: 2080px; overflow: hidden; }
+      .layer { position: absolute; left: 0; top: 0; width: 2048px; height: 2080px; }
+      .abs { position: absolute; display: block; }
+      svg.layer { overflow: visible; }
+      svg line, svg path { stroke: #1d1b1c; stroke-linecap: round; fill: none; }
+      .eye { position: absolute; overflow: hidden; -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
+             -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
+      .lid { position: absolute; left: -12%; width: 124%; height: 100%; top: 0; border-bottom: 11px solid #1c1a19;
+             border-radius: 0 0 50% 50% / 0 0 38% 38%; }
+    </style>
+  </head>
+  <body>
+    <!-- Хук рилса 21 «Ты спал 8 часов, а утром разбит?»: мир сцены — рисунок s1_alarm ×2 от (0, 600), 2048×2080.
+         Слои — anim/kit_alarm.py (база рилса 13, образец рилс 20), положение слоёв подставляет alarm_hf.py из kit.json.
+         С кадра 0 будильник уже трезвонит: дребезжит, подпрыгивает на тумбочке, у него мигают дуги звона и дрожат
+         штрихи вибрации; кот под одеялом дёргается и вертит головой, жмурится, тянет одеяло на себя, ухо дёргается,
+         хвост лениво болтается с края кровати, огонёк тлеет. На ударном «разБИТ» (data-vars.hit) будильник
+         подскакивает выше всего с наклоном, кот вздрагивает (присел — подскок — осел), одеяло дёргается вверх,
+         вокруг будильника и головы — штрихи удара. Камеру, тряску, субтитры и звук даёт сборщик. -->
+    <div id="root" data-composition-id="main" data-start="0" data-duration="3.0" data-width="2048" data-height="2080"
+         data-vars='{"hit": 2.24}' data-motion-blur="on" data-layout-allow-overflow data-layout-allow-overlap>
+      <img id="bg" class="abs clip" src="assets/bg.png" style="left:0;top:0" data-start="0" data-duration="3.0" />
+      <div id="tailW" class="layer clip" data-start="0" data-duration="3.0">
+        <canvas id="tail" class="abs" width="1011" height="1166" style="left:0px;top:0px"></canvas>
+      </div>
+      <div id="headW" class="layer clip" data-start="0" data-duration="3.0">
+        <img id="head" class="abs" src="assets/head.png" style="left:0px;top:0px" />
+        <div id="earW" class="layer"><img id="ear" class="abs" src="assets/ear.png" style="left:0px;top:0px" /></div>
+        <div id="eyeL" class="eye" style="left:0px;top:0px;width:10px;height:10px"><div id="lidL" class="lid"></div></div>
+        <div id="eyeR" class="eye" style="left:0px;top:0px;width:10px;height:10px"><div id="lidR" class="lid"></div></div>
+      </div>
+      <div id="blanketW" class="layer clip" data-start="0" data-duration="3.0"><img id="blanket" class="abs" src="assets/blanket.png" style="left:0px;top:0px" /></div>
+      <div id="clockW" class="layer clip" data-start="0" data-duration="3.0"><img id="clock" class="abs" src="assets/clock.png" style="left:0px;top:0px" /></div>
+      <div id="buzzW" class="layer clip" data-start="0" data-duration="3.0"><img id="buzz" class="abs" src="assets/buzz.png" style="left:0px;top:0px" /></div>
+      <svg id="rays" class="layer clip" width="2048" height="2080" viewBox="0 0 2048 2080" data-start="0" data-duration="3.0"></svg>
+    </div>
+    <script>
+      const root = document.getElementById("root");
+      const V = JSON.parse(root.dataset.vars), H = V.hit, K = V.kit, DUR = 3.0, KEY = 60;
+      const NS = "http://www.w3.org/2000/svg";
+      const tl = gsap.timeline({ paused: true });
+      const px = (p) => `${p[0]}px ${p[1]}px`;
+      const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+      const mix = (a, b, u) => a + (b - a) * u;
+      const outQ = (u) => 1 - (1 - u) * (1 - u);
+      const outC = (u) => 1 - Math.pow(1 - u, 3);
+      const inOut = (u) => 0.5 - 0.5 * Math.cos(Math.PI * clamp(u, 0, 1));
+      const TAU = 2 * Math.PI;
+      // затухающая пружина после удара: 1 в момент d = 0, к нулю за ~0,6 с
+      const ring = (d, f = 2.2, k = 5.5) => (d < 0 ? 0 : Math.exp(-k * d) * Math.cos(TAU * f * d));
+      // движение — функцией времени, ключами 60 раз в секунду без сглаживания (как в рилсе 20): поведение в любой
+      // момент читается из формулы, размытие движения HyperFrames берёт подкадры по этим же ключам
+      const track = (sel, fn) => {
+        tl.set(sel, fn(0), 0);
+        for (let i = 0; i < Math.round(DUR * KEY); i++) tl.to(sel, Object.assign(fn((i + 1) / KEY), { duration: 1 / KEY, ease: "none" }), i / KEY);
+      };
+      gsap.set("#clockW", { transformOrigin: px(K.clock_pivot) });
+      gsap.set("#headW", { transformOrigin: px(K.seat) });
+      gsap.set("#earW", { transformOrigin: px(K.ear_pivot) });
+      gsap.set("#blanketW", { transformOrigin: `1000px ${K.blanket_base}px` });
+      gsap.set("#tailW", { transformOrigin: px(K.tail_pivot) });
+
+      // БУДИЛЬНИК: с кадра 0 уже в воздухе на середине подскока и дребезжит (качание и сдвиг 15 Гц: за 0,1 с полтора периода — кадр 0 и 0,1 с в разных крайних); подскоки
+      // всё выше к удару; перед «разБИТ» присел, на ударе — самый высокий прыжок с наклоном, приземлился с отскоком
+      const HOP = 0.34;
+      const hop = (t) => Math.abs(Math.sin(Math.PI * (t + 0.11) / HOP));
+      const clock = (t) => {
+        const amp = 26 + 22 * clamp(t / H, 0, 1);
+        let y = -amp * hop(t), r = 6.5 * Math.cos(TAU * 15 * t) + 2.2 * Math.cos(TAU * 25 * t + 0.4), x = 8 * Math.cos(TAU * 15 * t + 0.3);
+        let sy = 1 - 0.05 * (1 - hop(t)) ** 6;
+        const d = t - H;
+        if (d >= -0.1 && d < 0) { const u = (d + 0.1) / 0.1; y = mix(y, 0, outQ(u)); sy = mix(sy, 0.84, u); r *= 1 - u; }
+        else if (d >= 0) {
+          const T = 0.5, up = d < T ? 4 * d / T * (1 - d / T) : 0;          // баллистика: вверх и вниз за T
+          y = -230 * up + mix(0, y, clamp((d - T) / 0.15, 0, 1)) - 26 * ring(d - T, 3, 7) * (d > T);
+          sy = d < 0.06 ? mix(0.84, 1.1, d / 0.06) : 1 + 0.1 * ring(d - 0.06, 3, 8);
+          r = r * clamp((d - 0.08) / 0.3, 0.25, 1) + (d < T ? -16 * Math.sin(Math.PI * d / T) : 0);
+        }
+        return { x, y, rotation: r, scaleY: sy, scaleX: 2 - sy };
+      };
+      track("#clockW", clock);
+      // дуги звона: мигают через кадр и разлетаются от будильника, едут вместе с ним
+      track("#buzzW", (t) => {
+        const c = clock(t), f = Math.floor(t * 30) % 2;
+        return { x: c.x, y: c.y, opacity: f ? 1 : 0.35, scaleX: 1 + 0.08 * f, transformOrigin: px(K.clock_center) };
+      });
+
+      // ГОЛОВА: кот мотает головой под звон (поворот 0,8 с), вздрагивает мелкой дрожью на каждом звонке; на ударе —
+      // присел, подскок вверх с растяжением, осел с затухающей пружиной (одно поле: масштаб от подбородка)
+      const head = (t) => {
+        let r = 3.4 * Math.sin(TAU * t / 0.9) + 0.8 * Math.cos(TAU * 15 * t);
+        let y = 5 * Math.cos(TAU * 15 * t + 0.2) - 7 * Math.abs(Math.sin(Math.PI * (t + 0.11) / HOP));
+        let x = 10 * Math.sin(TAU * t / 0.9);
+        // кадр 0 — середина рывка: звонок только что ударил, голова дёрнулась и ещё летит на место (за 0,14 с)
+        const j = 1 - outC(clamp(t / 0.14, 0, 1));
+        r += -8 * j; y += 28 * j; x += -26 * j;
+        let sy = 1, sx = 1;
+        const d = t - H;
+        if (d >= -0.08 && d < 0) { const u = (d + 0.08) / 0.08; sy = mix(1, 0.94, u); sx = mix(1, 1.03, u); y += 10 * u; }
+        else if (d >= 0) {
+          const e = ring(d, 2.4, 5.2);
+          const up = d < 0.07 ? outC(d / 0.07) : e;
+          y += -32 * up; sy = 1 + 0.06 * up; sx = 1 - 0.035 * up; r += -3.5 * up;
+        }
+        return { rotation: r, x, y, scaleY: sy, scaleX: sx };
+      };
+      track("#headW", head);
+      // УХО: дёргается флик-флик (резко назад и пружиной обратно) и всё время мелко дрожит; на ударе прижимается
+      const flick = (t, P, t0) => { const p = (((t - t0) % P) + P) % P; return p < 0.05 ? outQ(p / 0.05) : Math.exp(-(p - 0.05) / 0.09) * Math.cos(TAU * 5 * (p - 0.05)); };
+      track("#earW", (t) => {
+        let r = -9 * flick(t, 0.46, -0.03) + 2.5 * Math.sin(TAU * 7 * t);
+        const d = t - H;
+        if (d >= 0) r += -11 * (d < 0.06 ? d / 0.06 : ring(d - 0.06, 1.6, 4));
+        return { rotation: r };
+      });
+      // ВЕКИ: кот жмурится под звон — уже на кадре 0 веки идут вниз, зажмурился, приоткрыл, снова; на ударе зажмурился
+      // изо всех сил и распахнул
+      // ключи: [время, насколько закрыто]; между ключами — плавно (на кадре 0 веки уже идут вниз)
+      const LID = [[0, 0.3], [0.13, 1], [0.3, 1], [0.62, 0.12], [0.86, 0.2], [0.98, 0.95], [1.16, 0.95], [1.42, 0.1],
+                   [1.58, 0.15], [1.7, 0.9], [1.86, 0.9], [2.06, 0.2]];
+      const lid = (t) => {
+        const d = t - H;
+        if (d >= -0.04) return d < 0.3 ? 1 : Math.max(0, 1 - (d - 0.3) / 0.12);
+        let k = LID[LID.length - 1][1];
+        for (let i = 0; i + 1 < LID.length; i++) if (t >= LID[i][0] && t < LID[i + 1][0]) {
+          k = mix(LID[i][1], LID[i + 1][1], inOut((t - LID[i][0]) / (LID[i + 1][0] - LID[i][0]))); break; }
+        return t < 0.13 ? mix(0.3, 1, outQ(t / 0.13)) : k;
+      };
+      ["#lidL", "#lidR"].forEach((id) => track(id, (t) => ({ yPercent: mix(-112, -6, lid(t)) })));
+
+      // ОДЕЯЛО: кот тянет его на себя (вверх от нижнего края; ниже покоя — никогда), дрожит под ним; на ударе — рывок
+      track("#blanketW", (t) => {
+        let s = 1.02 + 0.014 * Math.cos(TAU * 5 * t) + 0.02 * inOut(clamp((t % 0.82) / 0.2, 0, 1)) * (1 - inOut(clamp(((t % 0.82) - 0.35) / 0.45, 0, 1)));
+        s += 0.05 * outC(clamp(t / 0.1, 0, 1)) * (1 - inOut((t - 0.3) / 0.5));      // кадр 0: рывком тянет одеяло на себя
+        const d = t - H;
+        if (d >= 0) s += 0.035 * (d < 0.07 ? outC(d / 0.07) : Math.max(0, ring(d - 0.07, 1.8, 4.5)));
+        return { scaleY: Math.max(1, s) };
+      });
+      // хвост висит с края кровати: на ударе кровать вздрагивает с котом — хвост дёргается (физика tail_rig по этому)
+      track("#tailW", (t) => {
+        const d = t - H, j = 1 - outC(clamp(t / 0.14, 0, 1));        // кадр 0: кот дёрнулся — хвост ещё летит на место
+        return { y: -18 * j + (d >= 0 ? -16 * (d < 0.07 ? outC(d / 0.07) : ring(d - 0.07, 2.2, 6)) : 0), rotation: 4 * j };
+      });
+
+      // штрихи вибрации у будильника: короткие пары по бокам, мигают через кадр в разных местах (на кадре 0 уже есть)
+      const svg = document.getElementById("rays");
+      const mk = (tag, attrs) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; };
+      const CC = K.clock_center;
+      for (let s = 0; s < 2; s++) for (let k = 0; k < 6; k++) {
+        const side = k % 2 ? 1 : -1, a = (-50 + 22 * Math.floor(k / 2) + 11 * s) * Math.PI / 180;
+        const r0 = 205 + 30 * s, len = 46 + 10 * s;
+        const g = mk("g", {}), l = mk("line", { x1: CC[0] + side * r0 * Math.cos(a), y1: CC[1] + r0 * Math.sin(a),
+          x2: CC[0] + side * (r0 + len) * Math.cos(a), y2: CC[1] + (r0 + len) * Math.sin(a) });
+        l.style.strokeWidth = 9; g.appendChild(l); svg.appendChild(g);
+        track(g, (t) => { const c = clock(t), on = (Math.floor(t * 30) + s + k) % 2 === 0;
+          return { x: c.x * 0.6, y: c.y * 0.6, opacity: on ? 0.9 : 0 }; });
+      }
+      // удар: веер штрихов вокруг будильника и вокруг головы кота на «разБИТ»
+      const burst = (cx, cy, rx, ry, a0, a1, n, w, len) => {
+        for (let k = 0; k < n; k++) {
+          const a = (a0 + (a1 - a0) * k / (n - 1)) * Math.PI / 180;
+          const g = mk("g", { transform: `translate(${cx + rx * Math.cos(a)} ${cy + ry * Math.sin(a)}) rotate(${(a * 180) / Math.PI})` });
+          const m = mk("g", {}), l = mk("line", { x1: 0, y1: 0, x2: len, y2: 0 });
+          l.style.strokeWidth = w; m.appendChild(l); g.appendChild(m); svg.appendChild(g);
+          tl.set(m, { opacity: 0, scaleX: 0, svgOrigin: "0 0" }, 0);
+          tl.set(m, { opacity: 1 }, H + 0.02);
+          tl.to(m, { scaleX: 1, duration: 0.07, ease: "power3.out" }, H + 0.02);
+          tl.to(m, { x: 46, opacity: 0, duration: 0.28, ease: "power2.in" }, H + 0.22);
+        }
+      };
+      burst(CC[0], CC[1] - 120, 250, 250, -160, -20, 7, 12, 80);
+      burst(K.head[0], K.head[1], 640, 470, -150, -30, 7, 13, 90);
+      meshPart({ canvas: document.getElementById("tail"), marg: 280, img: "assets/tail_body.png",
+                 flame: "assets/tail_flame.png", mesh: "assets/tail_mesh.json", angles: "assets/tail_angles.json", fps: 30 });
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

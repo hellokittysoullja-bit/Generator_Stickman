@@ -28,7 +28,7 @@ ORIGIN = (0, 600)                 # левый верх сцены (композ
 SIZE = (2048, 2080)
 HEAD_POLY = [(255, 1265), (372, 1180), (372, 905), (560, 850), (800, 815), (960, 740), (1170, 680), (1262, 690),
              (1272, 1040), (1325, 1170), (1462, 1330), (1482, 1462), (1418, 1475), (1405, 1640), (255, 1640)]
-EAR_POLY = [(948, 1035), (985, 880), (1110, 735), (1180, 690), (1262, 700), (1268, 1085), (1205, 1112), (1090, 1080)]
+EAR_POLY = [(928, 1040), (932, 1000), (952, 925), (1006, 838), (1066, 766), (1135, 690), (1180, 672), (1262, 700), (1268, 1085), (1205, 1112), (1090, 1080)]
 EAR_PIVOT = (1150, 1085)          # основание правого уха
 BLANKET_SEED = (800, 1850)
 TAIL_POLY = [(285, 2010), (520, 1990), (660, 2040), (675, 2170), (680, 2620), (285, 2620)]
@@ -45,9 +45,9 @@ TABLE_EDGE_Y = 1645               # задний край столешницы
 BUZZ_BOXES = [(1605, 1310, 1688, 1400), (1918, 1325, 2000, 1415)]
 FEET = [(1680, 1652, 1740, 1690), (1850, 1652, 1905, 1690)]   # ножки будильника на столешнице
 EYES = {"l": (570, 1260, 840, 1440), "r": (935, 1255, 1210, 1440)}
-HEADBOARD_Y = 892                 # верхний край изголовья за головой
-PILLOW_Y = (1032, 1013)           # верхний край подушки у x 350 и 1300
-INK = (40, 38, 40)
+HEADBOARD_Y = 894                 # верхний край изголовья за головой
+PILLOW_Y = (1032, 1016)           # верхний край подушки у x 350 и 1300
+INK = (88, 74, 66)                # тушь линий изголовья и подушки (замер по рисунку)
 HEAD_TUCK = 70                    # px: голова заходит под одеяло (кот вздрагивает вверх — щели нет)
 TAIL_TUCK = 50
 SEAT = (820, 1600)                # ось наклона головы — подбородок у одеяла
@@ -87,7 +87,12 @@ def head_mask(A, blanket):
     reg = region(A.shape, HEAD_POLY)
     g = A.mean(2); sat = A.max(2) - A.min(2)
     m = (((g < 150) | (sat > 45)) & (reg > 0) & (blanket == 0)).astype(np.uint8)
-    m = anim.drop_scene_lines(A, m)
+    # линия изголовья проходит сквозь кончики шерсти на макушке: из маски уходит только сама линия (столбцы, где над
+    # и под полосой линии шерсти нет), кончики шерсти остаются голове (drop_scene_lines срезал их вместе с линией)
+    y0, y1 = HEADBOARD_Y - 7, HEADBOARD_Y + 8
+    near = m[y0 - 14:y0].any(0) | m[y1:y1 + 14].any(0)
+    near = cv2.dilate(near.astype(np.uint8)[None], np.ones((1, 7), np.uint8))[0] > 0
+    m[y0:y1, ~near] = 0
     core = cv2.morphologyEx(m, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9)))
     n, lab, st, _ = cv2.connectedComponentsWithStats(core)
     core = (lab == 1 + int(np.argmax(st[1:, cv2.CC_STAT_AREA]))).astype(np.uint8)
@@ -153,52 +158,83 @@ def eye_mask(A, b):
 
 
 def tuck(A, part, under, reach, keep_from=None):
-    """Часть заходит под соседний слой на reach px: шерсть её тоном (медиана тёмного у края) с зерном рисунка."""
+    """Часть заходит под соседний слой на reach px: шерсть её тоном (медиана шерсти у края) с зерном рисунка. Только
+    под телом части (столбцы, где над ней тело), а не вдоль усов: усы касаются края одеяла далеко от морды, и заход
+    тянулся полосой через всю подушку (лист 11.11)."""
+    core = cv2.morphologyEx(part, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (25, 25)))
+    contact = (cv2.dilate(core, np.ones((9, 9), np.uint8)) > 0) & (under > 0)
     k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * reach + 1,) * 2)
-    add = (cv2.dilate(part, k) > 0) & (under > 0) & ~(part > 0)
+    add = (cv2.dilate(contact.astype(np.uint8), k) > 0) & (under > 0) & ~(part > 0)
+    add &= cv2.dilate(core, np.ones((2 * reach + 41, 1), np.uint8)) > 0
     if keep_from is not None:
         add &= keep_from
-    edge = (cv2.dilate(add.astype(np.uint8), np.ones((31, 31), np.uint8)) > 0) & (part > 0) & (A.mean(2) < 120)
-    grain = A.mean(2, keepdims=True) - cv2.GaussianBlur(A.mean(2), (0, 0), 6)[..., None]
+    edge = (cv2.dilate(add.astype(np.uint8), np.ones((61, 61), np.uint8)) > 0) & (core > 0) & (A.mean(2) < 160) & (A.mean(2) > 60)
+    # зерно шерсти — шумом (сдвинутый кусок рисунка приносил под ухо контур глаза, лист 11.11)
+    nz = cv2.GaussianBlur(np.random.default_rng(5).normal(0, 1, A.shape[:2]).astype(np.float32), (0, 0), 1.2)
     img = A.copy()
-    img[add] = np.median(A[edge], axis=0) + np.clip(np.roll(grain, -3 * reach, axis=0)[add], -12, 12)
+    img[add] = np.median(A[edge], axis=0) + (6 * nz / (nz.std() + 1e-6))[add][:, None]
     return img, (part | add).astype(np.uint8)
 
 
 def background(A, head, ear, blanket, tail, clock, buzz, smoke):
-    """Фон без движущихся частей. Под головой и будильником — бумага стены этого же рисунка (сдвиг вверх), полоса
-    изголовья её тоном и линией, край подушки линией; шов дорисованного с настоящим — anim.inpaint_bg узкой полосой.
-    Под хвостом и у ножек будильника — anim.inpaint_bg (продолжить линию рамы кровати и край столешницы)."""
+    """Фон без движущихся частей. Дыры большие — LaMa на них рисует призрак (урок рилса 20, и тут первая проба: серый
+    хвост на борту кровати), поэтому дыра заливается этим же рисунком: под головой — стена (сверху, где пусто) и
+    тон изголовья с его линией, край подушки линией; под будильником — стена выше и тон столешницы с её краем и тенью;
+    под хвостом — борт кровати и тень под ней в тех же строках правее (рама — одна горизонталь). anim.inpaint_bg —
+    только узкий шов по краю дыр (дорисованное встык с настоящим)."""
     H, W = A.shape[:2]
     yy, xx = np.mgrid[:H, :W]
-    hole_head = cv2.dilate((head | ear), np.ones((17, 17), np.uint8)) > 0
+    above = lambda k: np.roll(A, k, axis=0)          # noqa: E731  строки на k px выше
+    cat = (head | ear).astype(np.uint8)
+    core = cv2.morphologyEx(cat, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9)))
+    hole_head = (cv2.dilate(core, np.ones((17, 17), np.uint8)) > 0) | (cv2.dilate(cat, np.ones((7, 7), np.uint8)) > 0)
     hole_head &= ~(cv2.erode(blanket, np.ones((9, 9), np.uint8)) > 0)
     hole_clock = cv2.dilate((clock | buzz), np.ones((13, 13), np.uint8)) > 0
     hole_tail = cv2.dilate((tail | smoke), np.ones((13, 13), np.uint8)) > 0
     hole_tail &= ~(cv2.erode(blanket, np.ones((9, 9), np.uint8)) > 0)
-    paper = np.roll(A, -520, axis=0)                     # стена в 520 px выше — чистая (под ухом и будильником)
-    paper_hi = np.roll(A, -260, axis=0)
-    grain = paper - cv2.GaussianBlur(paper, (0, 0), 4)
+    wall_hi, wall_lo = above(300), above(1000)       # чистая стена: строки 400–600 и 20–640 (ухо — от 690)
+    grain = wall_lo - cv2.GaussianBlur(wall_lo, (0, 0), 4)
     pil_y = PILLOW_Y[0] + (xx - 350) * (PILLOW_Y[1] - PILLOW_Y[0]) / (1300 - 350)
-    hb = (A[880:1000, 250:340].reshape(-1, 3), A[880:1000, 1340:1420].reshape(-1, 3))
-    hb = np.concatenate(hb); hb = hb[hb.mean(1) > 150]
-    hb_tone = np.median(hb, axis=0)
-    fill = np.where((yy < HEADBOARD_Y)[..., None], np.where((yy < 760)[..., None], paper_hi, paper),
-                    np.where((yy < pil_y)[..., None], hb_tone + grain, paper))
+    g = A.mean(2)
+
+    def smooth(zone):
+        # гладкое продолжение тона своей зоны (изголовье, подушка с серой тенью у головы) внутрь дыры, крупнее — шире
+        valid = zone & ~hole_head & (g > 150)
+        out = np.broadcast_to(np.median(A[valid], axis=0), A.shape).astype(np.float32)
+        for sg in (150, 60, 25, 10):
+            f, d = anim._nfill(A, valid, sg); out = np.where((d > 0.15)[..., None], f, out)
+        return out + grain
+    band = (yy > HEADBOARD_Y + 6) & (yy < pil_y - 6) & (xx > 175) & (xx < 1445)
+    pillow = (yy > pil_y + 7) & (xx > 250) & (xx < 1395) & ~(blanket > 0)
+    fill = np.where((yy < HEADBOARD_Y)[..., None], wall_hi, np.where((yy < pil_y)[..., None], smooth(band), smooth(pillow)))
     ink = np.zeros((H, W), np.uint8)
     cv2.line(ink, (160, HEADBOARD_Y), (1460, HEADBOARD_Y), 1, 5, cv2.LINE_AA)
     cv2.line(ink, (350, PILLOW_Y[0]), (1300, PILLOW_Y[1]), 1, 5, cv2.LINE_AA)
     fill = np.where((ink > 0)[..., None], np.array(INK, np.float32), fill)
     bgA = A.copy()
     bgA[hole_head] = fill[hole_head]
-    clk = hole_clock & (yy < TABLE_EDGE_Y - 8)
-    bgA[clk] = paper[clk]
+    lines = hole_head & (g < 120) & ~(cv2.dilate(cat, np.ones((5, 5), np.uint8)) > 0)   # линии сцены у кончиков усов
+    bgA[lines] = A[lines]
+    # будильник: стена на 700 px выше; столешница — её тон с зерном, задний край линией, мягкая тень под будильником
+    top = A[TABLE_EDGE_Y + 8:TABLE_EDGE_Y + 48, 1602:1652].reshape(-1, 3)
+    table = np.median(top, axis=0) + grain
+    sh = np.zeros((H, W), np.float32); cv2.ellipse(sh, (1797, 1672), (125, 13), 0, 0, 360, 1.0, -1)
+    sh = cv2.GaussianBlur(sh, (0, 0), 6)[..., None]
+    table = table * (1 - 0.13 * sh)
+    tl = np.zeros((H, W), np.uint8); cv2.line(tl, (1597, TABLE_EDGE_Y), (1953, TABLE_EDGE_Y + 1), 1, 5, cv2.LINE_AA)
+    table = np.where((tl > 0)[..., None], np.array(INK, np.float32), table)
+    clk = np.where((yy < TABLE_EDGE_Y - 3)[..., None], above(700), table)
+    bgA[hole_clock] = clk[hole_clock]
+    # хвост: те же строки на 500 px правее — борт кровати, рама и тень под кроватью
+    side = np.roll(A, -500, axis=1)
+    bgA[hole_tail] = side[hole_tail]
+
     def seam(h, w=9):
         hu = h.astype(np.uint8)
         return (cv2.dilate(hu, np.ones((w, w), np.uint8)) > 0) & ~(cv2.erode(hu, np.ones((w, w), np.uint8)) > 0)
-    ring = seam(hole_head) & ~(cv2.erode(blanket, np.ones((5, 5), np.uint8)) > 0)
-    ring |= seam(clk)
-    ring |= hole_tail | (hole_clock & (yy >= TABLE_EDGE_Y - 8))
+    ring = (seam(hole_head) | seam(hole_tail)) & ~(cv2.erode(blanket, np.ones((5, 5), np.uint8)) > 0)
+    ring |= seam(hole_clock)
+    ring &= ~(cv2.dilate(ink | tl | lines.astype(np.uint8), np.ones((3, 3), np.uint8)) > 0) | (yy > 2000)
     return anim.inpaint_bg(bgA, ring, cache_dir=CACHE, grow=False)
 
 
@@ -217,10 +253,12 @@ def main():
     blanket &= (1 - tail)
     head = head_mask(A, blanket)
     ear = (region(A.shape, EAR_POLY) & head).astype(np.uint8)
-    ear, head = anim.split_part(ear, head & (1 - ear))
+    ear, head = anim.split_part(ear, head & (1 - ear), core_open=5)
     full = (head | ear).astype(np.uint8)
-    ear, head, ear_fill = anim.claim_strokes(A, ear, head)
-    ear = anim.underlap(ear, head, full, around=(*EAR_PIVOT, 160))
+    # claim_strokes здесь не нужен (усов у уха нет), а длинный тонкий контур уха он считал чужим усом и отдавал голове:
+    # контур оставался стоять, когда ухо дёргалось (лист 11.11)
+    ear_fill = np.zeros_like(ear)
+    ear = anim.underlap(ear, head, full, width=30, around=(*EAR_PIVOT, 170))
     smoke = light_strokes(A, SMOKE_BOX, local=16) & ~cv2.dilate(tail, np.ones((5, 5), np.uint8)).astype(bool)
     smoke = anim.keep_attached(smoke.astype(np.uint8), reach=40)
     clock = clock_mask(A)
@@ -234,6 +272,9 @@ def main():
     head_img, head_m = tuck(A, head, blanket, HEAD_TUCK, keep_from=(np.mgrid[:A.shape[0], :A.shape[1]][1] > 380)
                             & (np.mgrid[:A.shape[0], :A.shape[1]][1] < 1290))
     tail_img, tail_m = tuck(A, tail, blanket, TAIL_TUCK)
+    # под основанием уха у головы — шерсть (ухо лежит поверх головы; дёрнулось — под ним мех, а не дыра в фон)
+    base = ear.astype(bool) & (cv2.dilate(head, np.ones((181, 181), np.uint8)) > 0)
+    head_img, head_m = tuck(head_img, head_m, base.astype(np.uint8), 90)
 
     Ap, bg = anim.paper_like(A), anim.paper_like(bg)
     head_img, tail_img = anim.paper_like(head_img), anim.paper_like(tail_img)
