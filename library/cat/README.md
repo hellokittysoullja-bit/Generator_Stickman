@@ -1,10 +1,10 @@
 # Библиотека оригиналов: кот и всё, что сгенерировано
 
-Картинок: **204**, 409 МБ. Оригиналы — `originals/` байт в байт, как пришли из модели (PNG без пересжатия); `thumbs/` — превью для этой страницы; `catalog.json` — промпт, модель, цена, где используется.
+Картинок: **208**, 419 МБ. Оригиналы — `originals/` байт в байт, как пришли из модели (PNG без пересжатия); `thumbs/` — превью для этой страницы; `catalog.json` — промпт, модель, цена, где используется.
 
 Пополняется сама: каждая генерация через шлюз (`llm_gateway.Gateway.image`) кладёт картинку сюда, включая забракованные варианты. Собрать уже лежащее в репозитории: `python scripts/cat_library.py --scan`.
 
-## генерация (140)
+## генерация (144)
 
 | превью | оригинал | где | промпт |
 |---|---|---|---|
@@ -148,6 +148,10 @@
 | ![](thumbs/2026-11-04_gen_cx_gpt-image-2_cd1fc3c8.jpg) | [2026-11-04_gen_cx_gpt-image-2_cd1fc3c8.png](originals/2026-11-04_gen_cx_gpt-image-2_cd1fc3c8.png)<br>1536×1024, 2026-11-04 | scripts/frame_generator.py videos/L03_vnimanie --confirm-spend | Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, col… |
 | ![](thumbs/2026-11-04_gen_cx_gpt-image-2_e152ec19.jpg) | [2026-11-04_gen_cx_gpt-image-2_e152ec19.png](originals/2026-11-04_gen_cx_gpt-image-2_e152ec19.png)<br>1531×1027, 2026-11-04 | scripts/frame_generator.py videos/L03_vnimanie --confirm-spend | Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. SCENE: a big phone in the center showing a video player with two small tr… |
 | ![](thumbs/2026-11-04_gen_cx_gpt-image-2_e9982307.jpg) | [2026-11-04_gen_cx_gpt-image-2_e9982307.png](originals/2026-11-04_gen_cx_gpt-image-2_e9982307.png)<br>1531×1027, 2026-11-04 | scripts/frame_generator.py videos/L03_vnimanie --confirm-spend | Reference images 1-2 show only the drawing style: take from them the line work, colors, shading and simplicity, never their content or characters. Reference image 3 is the main character: keep exactly its head, face, col… |
+| ![](thumbs/2026-11-11_gen_cx_gpt-image-2_5_1bdb80dc.jpg) | [2026-11-11_gen_cx_gpt-image-2_5_1bdb80dc.png](originals/2026-11-11_gen_cx_gpt-image-2_5_1bdb80dc.png)<br>1024×1536, 2026-11-11 | scripts/reel_draw.py videos/21_son/reel | Reference images 1-2 show only the drawing style: take from them the line work, shading and simplicity, never their content, characters or colour scheme (the colours come from the palette below). Reference image 3 is the… |
+| ![](thumbs/2026-11-11_gen_cx_gpt-image-2_5_1d86a697.jpg) | [2026-11-11_gen_cx_gpt-image-2_5_1d86a697.png](originals/2026-11-11_gen_cx_gpt-image-2_5_1d86a697.png)<br>1024×1536, 2026-11-11 | scripts/reel_draw.py videos/21_son/reel | Reference images 1-2 show only the drawing style: take from them the line work, shading and simplicity, never their content, characters or colour scheme (the colours come from the palette below). Reference image 3 is the… |
+| ![](thumbs/2026-11-11_gen_cx_gpt-image-2_5_ad2ec490.jpg) | [2026-11-11_gen_cx_gpt-image-2_5_ad2ec490.png](originals/2026-11-11_gen_cx_gpt-image-2_5_ad2ec490.png)<br>1024×1536, 2026-11-11 | scripts/reel_draw.py videos/21_son/reel | Reference images 1-2 show only the drawing style: take from them the line work, shading and simplicity, never their content, characters or colour scheme (the colours come from the palette below). Reference image 3 is the… |
+| ![](thumbs/2026-11-11_gen_cx_gpt-image-2_5_c10b7880.jpg) | [2026-11-11_gen_cx_gpt-image-2_5_c10b7880.png](originals/2026-11-11_gen_cx_gpt-image-2_5_c10b7880.png)<br>1024×1536, 2026-11-11 | scripts/reel_draw.py videos/21_son/reel | Reference images 1-2 show only the drawing style: take from them the line work, shading and simplicity, never their content, characters or colour scheme (the colours come from the palette below). Reference image 3 is the… |
 
 ## генерация (исправлена владельцем) (1)
 

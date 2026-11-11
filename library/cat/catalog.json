@@ -3766,5 +3766,77 @@
   "used_in": [],
   "origin": "картинка владельца 05.11, оригинал как прислан",
   "scene": "кот спит на подушках у ноутбука, в облачке список дел с галочками, ZZZ, рядом белая плюшевая игрушка-котик и растение; огонька на хвосте нет"
+ },
+ {
+  "file": "2026-11-11_gen_cx_gpt-image-2_5_1bdb80dc.png",
+  "sha256": "1bdb80dc2066d3c67b66059a8a038b540048d0c73aad2b909a400071aa1d9361",
+  "bytes": 2392380,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-11",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, shading and simplicity, never their content, characters or colour scheme (the colours come from the palette below). Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: a plain wall in a plain room. Two big round wall clocks with blank faces hang side by side high on the wall with a wide gap between them: above the left clock floats a small moon with three little stars, above the right clock a small bright sun. The hands of the two clocks point in clearly different directions. Below them the main character stands in the middle, confused and torn, one front paw on its head, looking up at the left clock with one eye and at the right clock with the other, ears pulled in two directions. The flame on its tail flickers unsure. LAYOUT: both clocks whole and large in the upper half with a clear gap between them; the character whole in the lower half; plain wall and floor; the clock faces are blank, no numbers or letters anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place, with the paper showing around it. Colours: black ink lines and soft grey washes on plain cream paper, like the style reference. Soft watercolour colour goes only on one or two things that matter in the picture, the main object and maybe one detail, each in its own natural muted colour (blue water, a green plant, a pink cushion, a red heart, a yellow lamp light), and not everything in the same orange; furniture, clothes, walls, floors and everything else stay ink and light grey. Some of the things are coloured, never all of them. The background always stays the plain cream paper, never a coloured wall or a tinted background. Never neon, never harsh. The main character stays black with green eyes, orange cheek marks and an orange tail flame.. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "scripts/reel_draw.py videos/21_son/reel"
+ },
+ {
+  "file": "2026-11-11_gen_cx_gpt-image-2_5_1d86a697.png",
+  "sha256": "1d86a69789a66a4be3325db15c75c4ba47f47a0bfcf5ffc1fbd7371cc81ec9ac",
+  "bytes": 2486853,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-11",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, shading and simplicity, never their content, characters or colour scheme (the colours come from the palette below). Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: a bright fresh morning in a plain bedroom, soft sunlight from a small window. The main character sits up in a neatly made bed, wide awake and cheerful, eyes bright and open, a big happy smile, stretching one front paw up high; with the other front paw it gently rests on top of one old-style round twin-bell alarm clock on the bedside table, which is silent and has not rung yet. A few small sparkles float around its head. The flame on its tail burns big and golden. LAYOUT: the character is big and whole in the middle; the alarm clock whole on the bedside table on the right under its paw; plain wall; the clock face is blank, no numbers or letters anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place, with the paper showing around it. Colours: black ink lines and soft grey washes on plain cream paper, like the style reference. Soft watercolour colour goes only on one or two things that matter in the picture, the main object and maybe one detail, each in its own natural muted colour (blue water, a green plant, a pink cushion, a red heart, a yellow lamp light), and not everything in the same orange; furniture, clothes, walls, floors and everything else stay ink and light grey. Some of the things are coloured, never all of them. The background always stays the plain cream paper, never a coloured wall or a tinted background. Never neon, never harsh. The main character stays black with green eyes, orange cheek marks and an orange tail flame.. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "scripts/reel_draw.py videos/21_son/reel"
+ },
+ {
+  "file": "2026-11-11_gen_cx_gpt-image-2_5_ad2ec490.png",
+  "sha256": "ad2ec490e1ce88ecc2dad4f4371fe44d67a7d3a043e76fbe8e7eb1834dbe9eed",
+  "bytes": 2726240,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-11",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, shading and simplicity, never their content, characters or colour scheme (the colours come from the palette below). Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture made of two equal panels one above the other with a plain gap between them, the same plain bedroom in both. TOP PANEL: late night in deep blue-grey shadow, a thin crescent moon in a small window: the main character sits up in bed wide awake, eyes wide and glassy, holding one phone up in both front paws so that we see the black back of the phone with its camera block, its face lit by the glow of the screen. BOTTOM PANEL: bright midday, warm sunlight pours through the same window across the bed: the same character is fast asleep sprawled across the bed, paws spread, mouth open, the blanket kicked off. The flame on its tail is dim in both panels. LAYOUT: both panels the same size; the character whole in each panel; the window in the same place in both; the phone screen is blank; no letters or numbers anywhere. Every phone in the picture is the same modern smartphone drawn correctly: a black iPhone 14 Pro with a thin black frame and rounded corners; from the back a plain matte black back with one square camera block in the upper corner holding three round lenses, no logo; from the front one blank glowing screen with a small pill cutout at the top; normal proportions, held naturally, never bent, doubled, cut or melted into a paw. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place, with the paper showing around it. Colours: black ink lines and soft grey washes on plain cream paper, like the style reference. Soft watercolour colour goes only on one or two things that matter in the picture, the main object and maybe one detail, each in its own natural muted colour (blue water, a green plant, a pink cushion, a red heart, a yellow lamp light), and not everything in the same orange; furniture, clothes, walls, floors and everything else stay ink and light grey. Some of the things are coloured, never all of them. The background always stays the plain cream paper, never a coloured wall or a tinted background. Never neon, never harsh. The main character stays black with green eyes, orange cheek marks and an orange tail flame.. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "scripts/reel_draw.py videos/21_son/reel"
+ },
+ {
+  "file": "2026-11-11_gen_cx_gpt-image-2_5_c10b7880.png",
+  "sha256": "c10b78806462b92b788b646283ed61e3aeb4ebfe4b66e65c4b3dcdd1dba20fc2",
+  "bytes": 2490376,
+  "size": [
+   1024,
+   1536
+  ],
+  "date": "2026-11-11",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, shading and simplicity, never their content, characters or colour scheme (the colours come from the palette below). Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: early morning in a plain bedroom in pale grey dawn light. The main character lies in a plain bed under a plain blanket, head on a plain pillow, completely wrecked after a full night of sleep: eyes only half open under heavy lids, soft dark bags under the eyes, fur messy and flattened on one side, ears drooping, mouth a tired wavy line. On a small plain bedside table on the right stands one old-style round twin-bell alarm clock with a blank face, ringing, small vibration lines around it. The tail hangs out from under the blanket over the edge of the bed, its flame a small dim ember with a thin wisp of smoke. LAYOUT: the character's head on the pillow is big and whole in the middle of the picture; the alarm clock stands apart on the bedside table with a clear gap between it and the bed; plain wall; the clock face is blank, no numbers or letters anywhere. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place, with the paper showing around it. Colours: black ink lines and soft grey washes on plain cream paper, like the style reference. Soft watercolour colour goes only on one or two things that matter in the picture, the main object and maybe one detail, each in its own natural muted colour (blue water, a green plant, a pink cushion, a red heart, a yellow lamp light), and not everything in the same orange; furniture, clothes, walls, floors and everything else stay ink and light grey. Some of the things are coloured, never all of them. The background always stays the plain cream paper, never a coloured wall or a tinted background. Never neon, never harsh. The main character stays black with green eyes, orange cheek marks and an orange tail flame.. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "scripts/reel_draw.py videos/21_son/reel"
  }
 ]
