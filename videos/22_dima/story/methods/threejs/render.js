@@ -20,6 +20,7 @@ const server = http.createServer((req, res) => {
   const tl = Date.now();
   await page.goto(`http://localhost:${port}/index.html`); await page.waitForFunction(() => window.sceneReady, null, { timeout: 120000 });
   console.log('scene build', Date.now() - tl, 'ms');
+  if (process.env.DBG) await page.evaluate(d => { window.dbg = JSON.parse(d); }, process.env.DBG);
   const shot = async (t, file) => {
     const ms = await page.evaluate(t => window.renderAt(t), t);
     const t1 = Date.now(); await page.locator('canvas').screenshot({ path: file }); return [ms, Date.now() - t1];

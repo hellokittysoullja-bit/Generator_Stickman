@@ -21,9 +21,11 @@ function render(){
     $('cat_lid_'+nm).setAttribute('transform', `translate(0 ${-84 + 84*st.catLid})`);
     $('cat_lidlo_'+nm).setAttribute('transform', `translate(0 ${48 - 48*st.catLid})`);
   }
+  $('cat_eye_glow').setAttribute('opacity', 1 - st.catLid);
   $('cat_tail').setAttribute('transform', `rotate(${st.tail} 912 1272)`);
-  $('cat_flame').setAttribute('transform', `translate(990 1142) skewX(${st.flK}) scale(${1/Math.sqrt(st.flS)} ${st.flS}) translate(-990 -1142)`);
+  $('cat_flame').setAttribute('transform', `translate(990 1094) skewX(${st.flK}) scale(${1/Math.sqrt(st.flS)} ${st.flS}) translate(-990 -1094)`);
   $('flame_glow').setAttribute('transform', `rotate(${st.tail} 912 1272)`);
+  $('tail_rim').setAttribute('transform', `rotate(${st.tail} 912 1272)`);
   $('flame_glow').setAttribute('opacity', st.flG);
 }
 const tl = gsap.timeline({paused:true, onUpdate:render});

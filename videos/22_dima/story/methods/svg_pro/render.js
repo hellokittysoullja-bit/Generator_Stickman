@@ -13,7 +13,7 @@ const path = require('path');
     const t = parseFloat(process.argv[3] || '0.6');
     const t0 = Date.now();
     await p.evaluate(t => seek(t), t);
-    await p.screenshot({ path: path.join(here, process.argv[4] || 'still.png') });
+    await p.screenshot({ path: path.resolve(here, process.argv[4] || 'still.png') });
     console.log('still', Date.now() - t0, 'ms');
   } else {
     const ff = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', '30', '-c:v', 'png', '-i', '-',

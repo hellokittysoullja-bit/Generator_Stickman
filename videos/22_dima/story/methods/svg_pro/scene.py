@@ -15,6 +15,7 @@ from ink import band, ellipse_pts, fill_d, fur, ink_closed, ink_open, sample  # 
 W, H = 1080, 1920
 INK = "#1c1622"
 DEFS = []
+REG = {}
 _uid = [0]
 
 
@@ -26,6 +27,8 @@ def uid(p="c"):
 def shape(pts, fill, inner="", w=5.0, seed=0, ink=True, id=None, attrs="", var=0.28, weight=0.45, ink_color=INK):
     """Заливка + внутреннее (тени, узор) по маске силуэта + тушь переменной толщины."""
     d = fill_d(pts)
+    if id:
+        REG[id] = pts
     gid = f' id="{id}"' if id else ""
     out = [f"<g{gid} {attrs}>", f'<path d="{d}" fill="{fill}"/>']
     if inner:
@@ -36,6 +39,19 @@ def shape(pts, fill, inner="", w=5.0, seed=0, ink=True, id=None, attrs="", var=0
         out.append(f'<path d="{ink_closed(pts, w, var=var, weight=weight, seed=seed)}" fill="{ink_color}"/>')
     out.append("</g>")
     return "".join(out)
+
+
+def rim(pts, color, dx, dy, op=1.0, tf=None, id=None, cut=()):
+    """Рим-свет: полумесяц по краю силуэта = фигура минус та же фигура со сдвигом (резкая cel-граница).
+    Кладётся в группу со screen: чёрный «резец» ничего не осветляет."""
+    d = fill_d(pts)
+    c = clip_of(pts)
+    gid = f' id="{id}"' if id else ""
+    fill = f"url(#{color})" if color.startswith("g") else color
+    g = (f'<g{gid} clip-path="url(#{c})" opacity="{op}"><path d="{d}" fill="{fill}"/>'
+         f'<path d="{d}" transform="translate({dx} {dy})" fill="#000"/>'
+         + "".join(f'<path d="{fill_d(c_)}" fill="#000"/>' for c_ in cut) + '</g>')
+    return f'<g transform="{tf}">{g}</g>' if tf else g
 
 
 def clip_of(pts):
@@ -147,10 +163,18 @@ def wall():
     # мягкая грязь и затенение по углам (ambient occlusion)
     s.append(f'<rect width="{W}" height="1450" fill="url(#gWallAO)"/>')
     # отклеившийся стык обоев и пятно
-    s.append(line([(470, 0), (468, 300), (472, 640)], 2.2, "#9d8462", seed=11, op=.8))
-    s.append(blob([(466, 0), (500, 0), (497, 46), (482, 70, 1), (470, 40)], "#d6c19d"))
-    s.append(line([(470, 2), (482, 70), (498, 40)], 2.4, seed=12))
+    s.append(line([(470, 40), (468, 300), (472, 640)], 2.2, "#9d8462", seed=11, op=.8))
+    # потолок и карниз-плинтус
+    s.append(f'<rect width="{W}" height="34" fill="#d9d2c4"/><rect y="24" width="{W}" height="10" fill="#bdb4a3"/>')
+    s.append(line([(-10, 34), (540, 35), (1090, 33)], 4.4, seed=12, taper=.2, wmin=.6))
+    s.append(f'<rect y="36" width="{W}" height="40" fill="#3b2f22" opacity=".18" {blur(8)}/>')
     s.append(blob(ellipse_pts(860, 1330, 90, 26, 10, jitter=.15, seed=3), "#a68d68", .35))
+    # стикеры у полки — каракули без букв
+    for i, (x, y, r, c) in enumerate([(90, 760, -6, "#f2d65a"), (134, 778, 5, "#f5a6b8"), (100, 812, 3, "#9fd6a8")]):
+        sp = T(rect_pts(-20, -20, 20, 20), x, y, rot=r)
+        s.append(shape(sp, c, blob(T([(-20, 12), (20, 12), (20, 20), (-20, 20)], x, y, rot=r), "#000", .12), w=2.6, seed=60 + i))
+        s.append(line(T([(-12, -6), (-2, -9), (8, -5), (12, -8)], x, y, rot=r), 1.8, "#3a3550", seed=63 + i, op=.8))
+        s.append(line(T([(-12, 3), (6, 1)], x, y, rot=r), 1.6, "#3a3550", seed=66 + i, op=.8))
     # трещина
     s.append(line([(80, 820), (96, 846), (90, 872), (104, 900)], 2.0, "#8f7656", seed=13))
     return "".join(s)
@@ -255,7 +279,6 @@ def curtains():
         inner += line([(x, 110), (x + 4 - i * 3, 300), (x - 6, 500), (x + 4, 730)], 2.6, "#8c806c", seed=70 + i, op=.85)
     s.append(shape(L, "url(#pCurtain)", inner, w=4, seed=71, attrs='opacity=".96"'))
     # завязка
-    s.append(shape([(586, 470), (700, 486), (702, 506), (588, 494)], "#b8875c", w=3.4, seed=72))
     R = [(990, 104), (1090, 104), (1090, 740), (1000, 744), (982, 520), (996, 300)]
     inner = blob([(1050, 104), (1070, 104), (1074, 740), (1052, 740)], "#c9bea9", .9)
     for i, x in enumerate([1012, 1036, 1062]):
@@ -320,66 +343,68 @@ def poster_shelf():
 
 def table_clock():
     s = []
-    s.append(blob([(-20, 1452), (200, 1452), (196, 1478), (-20, 1478)], "#2b1d14", .45, blur(6)))
+    s.append(blob([(-20, 1452), (170, 1452), (166, 1478), (-20, 1478)], "#2b1d14", .45, blur(6)))
     wood, dk = "#8a6346", "#64462f"
-    for x in [12, 150]:
+    for x in [4, 120]:
         s.append(shape([(x, 1205, 1), (x + 20, 1205, 1), (x + 18, 1462, 1), (x + 3, 1462, 1)], wood, w=4, seed=x,
                        inner=f'<rect x="{x + 12}" y="1200" width="10" height="270" fill="{dk}"/>'))
-    s.append(shape(rect_pts(-12, 1345, 178, 1366), wood, f'<rect x="-12" y="1358" width="200" height="10" fill="{dk}"/>', w=4, seed=110))
+    s.append(shape(rect_pts(-12, 1345, 150, 1366), wood, f'<rect x="-12" y="1358" width="200" height="10" fill="{dk}"/>', w=4, seed=110))
     # книги и кружка на нижней полке
-    s.append(shape(rect_pts(4, 1322, 120, 1345, 3), "#4a6d8e", '<rect x="4" y="1337" width="120" height="8" fill="#365470"/>', w=3.4, seed=111))
-    s.append(shape(rect_pts(14, 1302, 108, 1322, 3), "#b5563f", '<rect x="14" y="1315" width="100" height="8" fill="#8e3f2c"/>', w=3.4, seed=112))
-    s.append(shape([(124, 1300), (164, 1300), (162, 1345), (126, 1345)], "#e3dccb", w=3.4, seed=113,
-                   inner='<rect x="146" y="1296" width="22" height="52" fill="#c4bba7"/>'))
-    s.append(f'<path d="M126 1310 C108 1310 108 1336 126 1334" stroke="{INK}" stroke-width="4" fill="none"/>')
+    s.append(shape(rect_pts(-4, 1322, 96, 1345, 3), "#4a6d8e", '<rect x="-4" y="1337" width="120" height="8" fill="#365470"/>', w=3.4, seed=111))
+    s.append(shape(rect_pts(4, 1302, 86, 1322, 3), "#b5563f", '<rect x="4" y="1315" width="100" height="8" fill="#8e3f2c"/>', w=3.4, seed=112))
+    s.append(shape([(100, 1300), (138, 1300), (136, 1345), (102, 1345)], "#e3dccb", w=3.4, seed=113,
+                   inner='<rect x="122" y="1296" width="22" height="52" fill="#c4bba7"/>'))
+    s.append(f'<path d="M102 1310 C86 1310 86 1336 102 1334" stroke="{INK}" stroke-width="4" fill="none"/>')
     # столешница
-    top = [(-14, 1186, 1), (182, 1186, 1), (186, 1212, 1), (-14, 1212, 1)]
-    s.append(shape(top, wood, f'<rect x="-14" y="1202" width="210" height="12" fill="{dk}"/>'
-                   + line([(10, 1194), (90, 1196), (160, 1193)], 1.6, "#6e4f37", seed=114), w=4.4, seed=115))
+    top = [(-14, 1186, 1), (154, 1186, 1), (158, 1212, 1), (-14, 1212, 1)]
+    s.append(shape(top, wood, f'<rect x="-14" y="1202" width="180" height="12" fill="{dk}"/>'
+                   + line([(10, 1194), (80, 1196), (140, 1193)], 1.6, "#6e4f37", seed=114), w=4.4, seed=115))
     # часы
-    s.append(blob([(20, 1186), (176, 1186), (170, 1196), (24, 1196)], "#1b120c", .45, blur(3)))
-    body = rect_pts(22, 1112, 172, 1188, 12)
-    s.append(shape(body, "#26222c", blob(rect_pts(22, 1170, 172, 1188, 6), "#17141c") +
-                   blob([(30, 1118), (164, 1118), (160, 1124), (34, 1124)], "#4a4554", .8), w=4.4, seed=116, id="clock"))
-    s.append(shape(rect_pts(34, 1124, 160, 1172, 6), "#1a0a0e", w=3, seed=117))
+    s.append(blob([(4, 1186), (150, 1186), (146, 1196), (8, 1196)], "#1b120c", .45, blur(3)))
+    body = rect_pts(2, 1106, 150, 1188, 12)
+    s.append(shape(body, "#26222c", blob(rect_pts(2, 1172, 150, 1188, 6), "#17141c") +
+                   blob([(10, 1112), (142, 1112), (138, 1118), (14, 1118)], "#4a4554", .8), w=4.4, seed=116, id="clock"))
+    s.append(shape(rect_pts(12, 1118, 140, 1172, 6), "#1a0a0e", w=3, seed=117))
     return "".join(s)
 
 
 SEG = {"0": "abcdef", "1": "bc", "4": "fgbc", "7": "abc"}
 
 
-def seven_seg(ch, x, y, w=22, h=36, t=5.4):
-    """Цифра из семи сегментов (рисует код). Наклон 6°."""
+def seven_seg(ch, x, y, w=22, h=40, t=5.6, glow=False):
+    """Цифра из семи сегментов (рисует код). Наклон ~6°."""
     hs = h / 2
+    g = t * .35
     segs = {
-        "a": [(x + t * .6, y), (x + w - t * .6, y), (x + w - t * 1.4, y + t), (x + t * 1.4, y + t)],
-        "g": [(x + t, y + hs - t / 2), (x + w - t, y + hs - t / 2), (x + w - t * .5, y + hs), (x + w - t, y + hs + t / 2),
-              (x + t, y + hs + t / 2), (x + t * .5, y + hs)],
-        "d": [(x + t * 1.4, y + h - t), (x + w - t * 1.4, y + h - t), (x + w - t * .6, y + h), (x + t * .6, y + h)],
-        "f": [(x, y + t * .6), (x + t, y + t * 1.4), (x + t, y + hs - t * .6), (x, y + hs - t * .2)],
-        "b": [(x + w, y + t * .6), (x + w, y + hs - t * .2), (x + w - t, y + hs - t * .6), (x + w - t, y + t * 1.4)],
-        "e": [(x, y + hs + t * .2), (x + t, y + hs + t * .6), (x + t, y + h - t * 1.4), (x, y + h - t * .6)],
-        "c": [(x + w, y + hs + t * .2), (x + w, y + h - t * .6), (x + w - t, y + h - t * 1.4), (x + w - t, y + hs + t * .6)],
+        "a": [(x + g, y), (x + w - g, y), (x + w - t - g, y + t), (x + t + g, y + t)],
+        "d": [(x + t + g, y + h - t), (x + w - t - g, y + h - t), (x + w - g, y + h), (x + g, y + h)],
+        "g": [(x + t * .5 + g, y + hs), (x + t + g, y + hs - t / 2), (x + w - t - g, y + hs - t / 2), (x + w - t * .5 - g, y + hs),
+              (x + w - t - g, y + hs + t / 2), (x + t + g, y + hs + t / 2)],
+        "f": [(x, y + g), (x + t, y + t + g), (x + t, y + hs - t / 2 - g), (x, y + hs - g)],
+        "e": [(x, y + hs + g), (x + t, y + hs + t / 2 + g), (x + t, y + h - t - g), (x, y + h - g)],
+        "b": [(x + w, y + g), (x + w, y + hs - g), (x + w - t, y + hs - t / 2 - g), (x + w - t, y + t + g)],
+        "c": [(x + w, y + hs + g), (x + w, y + h - g), (x + w - t, y + h - t - g), (x + w - t, y + hs + t / 2 + g)],
     }
     out = []
     for k in "abcdefg":
         on = k in SEG[ch]
-        pts = segs[k]
-        d = "M" + "L".join(f"{px - (py - y) * .1:.1f} {py:.1f}" for px, py in pts) + "Z"
-        out.append(f'<path d="{d}" fill="{"#ff5a3c" if on else "#3a1214"}" opacity="{1 if on else .55}"/>')
+        if glow and not on:
+            continue
+        d = "M" + "L".join(f"{px - (py - y - h) * .1:.1f} {py:.1f}" for px, py in segs[k]) + "Z"
+        out.append(f'<path d="{d}" fill="{"#ff5a3c" if on else "#3a1416"}" opacity="{1 if on else .22}"/>')
     return "".join(out)
 
 
-def clock_digits():
-    s = ['<g id="clock_digits">']
-    x = 46
+def clock_digits(glow=False, id="clock_digits"):
+    s = [f'<g id="{id}">']
+    x = 18
     for ch in "01:47":
         if ch == ":":
-            s.append('<rect x="98" y="1137" width="5" height="5" fill="#ff5a3c" transform="skewX(-6)"/>'
-                     '<rect x="96" y="1154" width="5" height="5" fill="#ff5a3c" transform="skewX(-6)"/>')
-            x += 14
+            s.append(f'<rect x="{x + 3}" y="1131" width="5.5" height="5.5" fill="#ff5a3c"/>'
+                     f'<rect x="{x + 1}" y="1150" width="5.5" height="5.5" fill="#ff5a3c"/>')
+            x += 13
             continue
-        s.append(seven_seg(ch, x + 8, 1130))
+        s.append(seven_seg(ch, x, 1124, glow=glow))
         x += 28
     s.append("</g>")
     return "".join(s)
@@ -438,7 +463,7 @@ def pillow():
 
 
 # ───────────────────────────── Дима ─────────────────────────────
-HX, HY, HR = 446, 862, -7  # центр головы и наклон
+HX, HY, HR = 446, 878, -7  # центр головы и наклон
 
 
 def head_tf():
@@ -479,8 +504,8 @@ def hood_body():
     s.append(shape(body, HOOD, inner, w=5.2, seed=145, id="dima_body"))
     # шея и вырез
     nk = [(420, 960), (474, 958), (486, 1030), (452, 1046), (418, 1030)]
-    s.append(shape(nk, SKIN, blob([(420, 960), (474, 958), (480, 990), (420, 1000)], SKIN_SH, .95) +
-                   blob([(420, 960), (440, 960), (440, 1040), (418, 1040)], SKIN_SH2, .6), w=4.6, seed=146))
+    s.append(shape(nk, SKIN, blob([(420, 960), (474, 958), (480, 1000), (420, 1006)], SKIN_SH, .95) +
+                   blob([(420, 960), (440, 960), (440, 1040), (418, 1040)], SKIN_SH2, .6), w=4.6, seed=146, id="dima_neck"))
     collar = [(404, 1026), (432, 1044), (470, 1048), (500, 1030), (510, 1046), (474, 1066), (432, 1064), (396, 1044)]
     s.append(shape(collar, HOOD_SH, "", w=4.4, seed=147))
     # шнурки капюшона
@@ -573,7 +598,7 @@ def head():
 
 
 # телефон и рука: локальные координаты телефона
-PX, PY, PR = 672, 806, -11
+PX, PY, PR = 668, 818, -11
 
 
 def phone_arm():
@@ -590,34 +615,38 @@ def phone_arm():
                   for x in range(630, 686, 9))
     s.append(shape(cuff, HOOD_SH, rib, w=4.6, seed=184))
     s.append(f'<g id="dima_hand_phone" transform="translate({PX} {PY}) rotate({PR})">')
-    # большой палец — за телефоном? нет: он выходит к экрану по левому краю, его видно (группа для анимации)
-    # ладонь снизу
-    palm = [(-46, 70), (-30, 54), (10, 48), (44, 60), (52, 100), (40, 140), (-10, 150), (-44, 130)]
-    s.append(shape(palm, SKIN, blob([(-46, 90), (52, 110), (40, 150), (-44, 150)], SKIN_SH, .9), w=4.8, seed=185))
-    # сам телефон
-    back = rect_pts(-40, -92, 40, 92, 16)
-    side = [(-40, -88), (-52, -84), (-54, 84), (-40, 90)]
-    s.append(shape(side, "#3a3a46", line([(-48, -80), (-50, 80)], 3, "#8fb8ff", seed=186), w=3.6, seed=187, id="phone_side"))
-    inner = blob([(10, -92), (40, -92), (40, 92), (24, 92)], "#26262e", .9)
-    inner += blob([(-40, -92), (-28, -92), (-30, 92), (-40, 92)], "#4a4a58", .7)
-    cam = rect_pts(-32, -84, 6, -44, 10)
-    s.append(shape(back, "#18181e", inner, w=4.6, seed=188, id="phone"))
-    s.append(shape(cam, "#2c2c36", blob(rect_pts(-32, -60, 6, -44, 6), "#202028"), w=3.4, seed=189))
-    for (lx, ly) in [(-20, -74), (-20, -54), (-4, -64)]:
-        s.append(shape(ellipse_pts(lx, ly, 8.5, 8.5, 10), "#0e0e14", w=2.6, seed=int(lx * ly) % 97,
-                       inner=f'<circle cx="{lx}" cy="{ly}" r="4.6" fill="#232c4a"/><circle cx="{lx - 2}" cy="{ly - 2}" r="1.7" fill="#9fb4e8"/>'))
-    s.append('<circle cx="-4" cy="-78" r="3" fill="#e8e0c8"/><circle cx="-4" cy="-50" r="2.6" fill="#3a3a44"/>')
-    # пальцы через заднюю крышку к правому краю
-    for i, (y, ln) in enumerate([(4, 92), (30, 96), (56, 90)]):
-        fp = band([(-38, y + 8), (0, y + 2), (40, y), (52, y + 10)], 27, 23, cap=True)
-        s.append(shape(fp, SKIN, blob([(-40, y + 14), (60, y + 10), (60, y + 30), (-40, y + 30)], SKIN_SH, .85),
-                       w=4.4, seed=190 + i))
-        s.append(line([(30, y - 6), (34, y + 8)], 2.2, seed=195 + i, op=.7))
-    # большой палец: от ладони вверх по левому краю, кончик — на экране
+    # сам телефон (спинкой к зрителю, в 3/4): торец слева — сторона экрана
+    back = rect_pts(-46, -98, 46, 98, 18)
+    side = [(-46, -94), (-60, -88), (-62, 88), (-46, 96)]
+    s.append(shape(side, "#2e2e3a", "", w=3.6, seed=187, id="phone_side"))
+    inner = blob([(14, -98), (46, -98), (46, 98), (26, 98)], "#24242c", .95)
+    inner += blob([(-46, -98), (-30, -98), (-32, 98), (-46, 98)], "#4c4c5c", .75)
+    inner += blob([(-24, -98), (-14, -98), (-18, 98), (-28, 98)], "#3a3a48", .5)
+    s.append(shape(back, "#1a1a21", inner, w=4.8, seed=188, id="phone"))
+    cam = rect_pts(-38, -90, 4, -46, 11)
+    s.append(shape(cam, "#34343f", blob(rect_pts(-38, -64, 4, -46, 6), "#26262f") + blob([(-36, -88), (2, -88), (0, -84), (-34, -84)], "#55556a"),
+                   w=3.6, seed=189, id="phone_cam"))
+    for (lx, ly) in [(-25, -78), (-25, -57), (-8, -67)]:
+        s.append(shape(ellipse_pts(lx, ly, 9.5, 9.5, 10), "#55556a", w=2.8, seed=int(abs(lx * ly)) % 97,
+                       inner=f'<circle cx="{lx}" cy="{ly}" r="6.6" fill="#0c0c12"/><circle cx="{lx}" cy="{ly}" r="3.6" fill="#1d2848"/>'
+                             f'<circle cx="{lx - 2.4}" cy="{ly - 2.4}" r="1.8" fill="#a9bdf0"/>'))
+    s.append('<circle cx="-8" cy="-82" r="3.2" fill="#e8e0c8"/><circle cx="-8" cy="-52" r="2.8" fill="#121218"/>')
+    # кисть: ладонь под телефоном, тыльная сторона справа; пальцы обхватывают правый край, кончики — на спинке
+    palm = [(-70, 126), (-56, 92), (-20, 82), (30, 86), (62, 70), (78, 30), (84, -14), (66, -30), (56, 10), (52, 60), (40, 112), (0, 140),
+            (-40, 146)]
+    s.append(shape(palm, SKIN, blob([(-70, 120), (60, 100), (40, 150), (-60, 150)], SKIN_SH, .9) +
+                   blob([(70, -30), (90, -20), (86, 80), (66, 70)], SKIN_SH, .8) +
+                   line([(-30, 120), (0, 126), (24, 116)], 2.2, seed=184, op=.6), w=4.8, seed=185, id="dima_palm"))
+    for i, y in enumerate([-24, 4, 32, 60]):
+        fp = band([(70, y + 22), (52, y + 8), (34, y + 2), (16, y + 4)], 25, 21, cap=True)
+        s.append(shape(fp, SKIN, blob([(10, y + 12), (80, y + 18), (80, y + 40), (10, y + 30)], SKIN_SH, .8), w=4.2, seed=190 + i,
+                       id=f"dima_finger{i}"))
+        s.append(line([(48, y + 1), (46, y + 14)], 2, seed=195 + i, op=.6))
+    # большой палец: от ладони вверх по левому краю, кончик заходит на экран (группа для пролистывания)
     s.append('<g id="dima_thumb">')
-    th = band([(-40, 74), (-56, 40), (-62, 10), (-56, -14)], 30, 24, cap=True)
-    s.append(shape(th, SKIN, blob([(-80, 0), (-58, 0), (-56, 80), (-80, 80)], SKIN_SH, .8), w=4.6, seed=199, id="dima_thumb_shape"))
-    s.append(line([(-50, -12), (-42, -8)], 2.2, seed=200, op=.7))
+    th = band([(-44, 76), (-60, 44), (-68, 12), (-62, -14)], 26, 21, cap=True)
+    s.append(shape(th, SKIN, blob([(-90, 0), (-66, 0), (-58, 90), (-90, 90)], SKIN_SH, .75), w=4.4, seed=199, id="dima_thumb_shape"))
+    s.append(line([(-58, -14), (-50, -9)], 2, seed=200, op=.7))
     s.append("</g>")
     s.append("</g>")
     return "".join(s)
@@ -626,11 +655,13 @@ def phone_arm():
 # ───────────────────────────── плед ─────────────────────────────
 def plaid():
     s = []
-    top = [(396, 1260), (404, 1160), (450, 1118), (540, 1108), (610, 1120), (690, 1146), (770, 1164), (840, 1150),
-           (912, 1166), (980, 1136), (1040, 1124), (1100, 1140, 1), (1100, 1300, 1), (700, 1306), (420, 1300)]
+    top = [(302, 1296, 1), (308, 1206), (350, 1168), (420, 1132), (480, 1112), (540, 1108), (610, 1120), (690, 1146), (770, 1164),
+           (840, 1150), (912, 1166), (980, 1136), (1040, 1124), (1100, 1140, 1), (1100, 1300, 1), (700, 1306), (420, 1300)]
     inner = []
     # тени под складками и от тела
-    inner.append(blob([(396, 1230), (540, 1180), (700, 1200), (900, 1210), (1100, 1200), (1100, 1310), (396, 1310)], "#203a24", .35))
+    inner.append(blob([(300, 1230), (540, 1180), (700, 1200), (900, 1210), (1100, 1200), (1100, 1310), (300, 1310)], "#203a24", .35))
+    inner.append(blob([(300, 1200), (360, 1170), (400, 1300), (300, 1300)], "#203a24", .3))
+    inner.append(line([(340, 1190), (370, 1230), (372, 1280)], 3.2, seed=209, op=.85))
     inner.append(blob([(690, 1146), (770, 1164), (760, 1230), (700, 1200)], "#203a24", .3))
     inner.append(blob([(960, 1140), (1040, 1124), (1100, 1140), (1100, 1220), (1010, 1190)], "#203a24", .3))
     inner.append(blob([(470, 1130), (560, 1112), (610, 1124), (560, 1140), (500, 1150)], "#f4f8d0", .18))
@@ -640,16 +671,17 @@ def plaid():
         inner.append(line(st, 3.4, seed=210 + i, op=.85))
     s.append(shape(top, "url(#pPlaidTop)", "".join(inner), w=5.4, seed=215, id="plaid_top"))
     # свисающий край с бахромой
-    front = [(408, 1290, 1), (700, 1300), (1100, 1290, 1), (1100, 1428, 1), (1040, 1418), (960, 1434), (880, 1416), (790, 1436),
-             (700, 1414), (610, 1430), (520, 1408), (440, 1396), (400, 1380)]
+    front = [(304, 1290, 1), (700, 1300), (1100, 1290, 1), (1100, 1428, 1), (1040, 1418), (960, 1434), (880, 1416), (790, 1436),
+             (700, 1414), (610, 1430), (520, 1408), (440, 1396), (360, 1404), (308, 1390)]
     inner = []
     for i, (x0, x1) in enumerate([(470, 520), (650, 700), (840, 880), (990, 1040)]):
         inner.append(blob([(x0, 1300), (x0 + 30, 1300), (x1 + 10, 1440), (x1 - 30, 1440)], "#1b301e", .45))
         inner.append(line([(x0 + 10, 1302), (x0 + 22, 1360), (x1 - 8, 1430)], 3.2, seed=220 + i, op=.85))
-    inner.append(blob([(400, 1290), (1100, 1290), (1100, 1312), (400, 1312)], "#1b301e", .4))
+    inner.append(blob([(300, 1290), (1100, 1290), (1100, 1312), (300, 1312)], "#1b301e", .4))
+    inner.append(blob([(304, 1290), (340, 1290), (350, 1410), (304, 1400)], "#1b301e", .4))
     s.append(shape(front, "url(#pPlaidFront)", "".join(inner), w=5.4, seed=225, id="plaid_front"))
     # бахрома
-    S_ = sample([(404, 1384), (440, 1398), (520, 1410), (610, 1432), (700, 1416), (790, 1438), (880, 1418), (960, 1436),
+    S_ = sample([(310, 1392), (360, 1406), (440, 1398), (520, 1410), (610, 1432), (700, 1416), (790, 1438), (880, 1418), (960, 1436),
                  (1040, 1420), (1100, 1430)], False, step=11)
     rs = np.random.RandomState(9)
     for i, (x, y) in enumerate(S_):
@@ -664,92 +696,102 @@ CAT, CAT_SH, CAT_FUR = "#2f2b37", "#1b1821", "#4b4559"
 CX, CY = 836, 1080
 
 
+TAIL_C = [(900, 1272), (970, 1266), (1018, 1236), (1042, 1190), (1040, 1140), (1018, 1104), (984, 1090), (956, 1102), (950, 1128),
+          (964, 1142), (982, 1134), (982, 1116)]
+FLAME_BASE = (990, 1088)
+
+
+def flame_pts(k=1.0):
+    bx, by = FLAME_BASE
+    P = [(-22, 4), (-26, -18), (-16, -40), (-14, -62), (-4, -50), (2, -86, 1), (12, -58), (22, -70, 1), (26, -40), (24, -12), (16, 4), (0, 10)]
+    return [(bx + x * k, by + y * k) + ((1,) if len(q) > 2 else ()) for q in P for x, y in [q[:2]]]
+
+
 def cat():
     s = ['<g id="cat">']
-    # хвост: за телом справа, кольцо-завиток и огонёк на кончике (группа для покачивания)
+    # хвост: за телом справа, закручен завитком, огонёк на верхней дуге (группа — для покачивания)
     s.append('<g id="cat_tail">')
-    tail_c = [(905, 1268), (968, 1262), (1012, 1226), (1024, 1170), (1008, 1126), (978, 1112), (958, 1128), (962, 1150), (982, 1152),
-              (990, 1136)]
-    tp = band(tail_c, 46, 22)
-    tp = fur(tp, 7, 4, seed=21)
-    s.append(shape(tp, CAT, blob([(1000, 1120), (1040, 1150), (1030, 1260), (980, 1270)], CAT_SH, .8), w=4.8, seed=230))
-    s.append(line([(986, 1240), (1002, 1210), (1006, 1178)], 2.4, CAT_FUR, seed=231, op=.9))
-    # огонёк
+    tp = band(TAIL_C, 46, 13, step=7)
+    tp = fur(tp, 5, 7, seed=21)
+    s.append(shape(tp, CAT, blob([(1006, 1110), (1046, 1150), (1036, 1270), (980, 1276)], CAT_SH, .85) +
+                   line([(986, 1240), (1004, 1206), (1010, 1170)], 2.4, CAT_FUR, seed=231, op=.9) +
+                   line([(966, 1126), (970, 1114), (982, 1110)], 2.4, INK, seed=232, op=.9), w=4.8, seed=230, id="cat_tail_shape"))
     s.append('<g id="cat_flame">')
-    fl = [(990, 1132), (1006, 1110), (1006, 1088), (1000, 1068), (1010, 1046, 1), (1018, 1072), (1026, 1062, 1), (1028, 1092),
-          (1016, 1130), (1000, 1140)]
-    fl = T(fl, -6, 4)
-    s.append(shape(fl, "#ff8a2a", blob(T([(996, 1134), (1006, 1104), (1004, 1080), (1012, 1094), (1018, 1080), (1022, 1104),
-                                        (1012, 1134)], -6, 4), "#ffbe55"), w=3.2, seed=232, ink_color="#8a2f10"))
-    s.append(blob(T([(1002, 1132), (1008, 1112), (1012, 1100), (1016, 1114), (1012, 1132)], -6, 4), "#fff0b8"))
-    s.append("</g>")
-    s.append("</g>")
-    # тело — грушей, пушистый край
-    body = [(760, 1296), (744, 1240), (756, 1180), (790, 1140), (880, 1140), (916, 1180), (928, 1240), (912, 1296)]
-    bp = fur(body, 9, 5, seed=22)
-    inner = blob([(860, 1140), (930, 1180), (930, 1300), (870, 1300), (880, 1220)], CAT_SH, .9)
-    inner += blob([(800, 1170), (836, 1160), (872, 1170), (860, 1240), (836, 1260), (812, 1240)], CAT_FUR, .55)
-    for i, st in enumerate([[(816, 1190), (826, 1208)], [(850, 1192), (844, 1212)], [(834, 1214), (836, 1236)]]):
+    s.append(shape(flame_pts(1.0), "#ff8a2a", blob(flame_pts(.68), "#ffbe55"), w=3.4, seed=233, ink_color="#7a2a10", var=.2))
+    s.append(blob([(FLAME_BASE[0] - 8, FLAME_BASE[1] + 2), (FLAME_BASE[0] - 6, FLAME_BASE[1] - 22), (FLAME_BASE[0] + 2, FLAME_BASE[1] - 40),
+                   (FLAME_BASE[0] + 8, FLAME_BASE[1] - 20), (FLAME_BASE[0] + 6, FLAME_BASE[1] + 2)], "#fff2c0"))
+    s.append("</g></g>")
+    # тело — грушей, мягкий пушистый край
+    body = [(760, 1296), (744, 1240), (756, 1180), (790, 1142), (880, 1142), (916, 1180), (928, 1240), (912, 1296)]
+    bp = fur(body, 7, 7, seed=22)
+    inner = blob([(860, 1140), (930, 1180), (930, 1300), (874, 1300), (888, 1220)], CAT_SH, .9)
+    inner += blob([(800, 1172), (836, 1162), (872, 1172), (862, 1240), (836, 1262), (810, 1240)], CAT_FUR, .5)
+    for i, st in enumerate([[(816, 1190), (826, 1208)], [(852, 1192), (846, 1212)], [(834, 1214), (836, 1236)], [(806, 1222), (814, 1238)]]):
         inner += line(st, 2.2, "#6a6380", seed=240 + i, op=.8)
-    s.append(shape(bp, CAT, inner, w=5, seed=241))
-    # задние лапы с оранжевыми подушечками (сидит, лапы вперёд — как у эталона)
+    s.append(shape(bp, CAT, inner, w=5, seed=241, id="cat_body"))
+    # задние лапы с оранжевыми подушечками (как у эталона)
     for sx, sd in [(-1, 242), (1, 243)]:
         px = CX + sx * 70
         foot = ellipse_pts(px, 1286, 34, 26, 12, rot=sx * 12)
         s.append(shape(foot, CAT, blob(T(ellipse_pts(px, 1292, 26, 20, 10), sx * 4, 0), CAT_SH, .5), w=4.6, seed=sd))
-        s.append(blob(ellipse_pts(px + sx * 3, 1294, 13, 10, 10, rot=sx * 10), "#e8823a"))
+        s.append(blob(ellipse_pts(px + sx * 3, 1296, 13, 10, 10, rot=sx * 10), "#e8823a"))
         for k in range(3):
             ang = math.radians(-90 + (k - 1) * 42 + sx * 10)
-            s.append(blob(ellipse_pts(px + sx * 3 + math.cos(ang) * 19, 1294 + math.sin(ang) * 15, 5, 4.4, 8), "#e8823a"))
+            s.append(blob(ellipse_pts(px + sx * 3 + math.cos(ang) * 19, 1296 + math.sin(ang) * 15, 5, 4.4, 8), "#e8823a"))
     # передние лапки
     for sx, sd in [(-1, 244), (1, 245)]:
-        fx = CX + sx * 26
-        paw = [(fx - 20, 1306), (fx - 18, 1250), (fx + 18, 1250), (fx + 20, 1306)]
+        fx = CX + sx * 25
+        paw = [(fx - 20, 1306, 1), (fx - 19, 1252), (fx + 19, 1252), (fx + 20, 1306, 1)]
         s.append(shape(paw, CAT, blob([(fx + sx * 6, 1250), (fx + 20 * sx, 1250), (fx + 20 * sx, 1306), (fx + sx * 8, 1306)], CAT_SH, .7),
                        w=4.6, seed=sd))
         for k in (-7, 7):
             s.append(line([(fx + k, 1294), (fx + k, 1306)], 2.2, seed=sd + k))
+    # уши за головой: правое (от зрителя) стоит, левое загнуто вниз
+    re_ = [(864, 1010), (902, 924, 1), (930, 1034)]
+    s.append(shape(re_, CAT, blob([(878, 1010), (902, 948), (918, 1024)], "#9b6150") +
+                   line([(888, 1000), (900, 968)], 2, "#d79a84", seed=252, op=.8), w=4.8, seed=251, id="cat_ear_R"))
+    # левое ухо: обычное ухо с розовым внутри, верхушка загнута наружу-вниз пушистой «шапочкой» (как у эталона)
+    ear = [(748, 1032, 1), (742, 990), (746, 958), (770, 942), (798, 952), (812, 1004, 1)]
+    s.append(shape(ear, CAT, blob([(758, 1022), (768, 972), (804, 1004)], "#9b6150") +
+                   line([(764, 1010), (772, 984)], 2, "#d79a84", seed=256, op=.8), w=4.6, seed=253))
+    flap = [(732, 1000, 1), (736, 966), (754, 944), (782, 938), (802, 954), (788, 970), (766, 968), (748, 980)]
+    s.append(shape(fur(flap, 4, 5, seed=26), CAT, blob([(736, 966), (754, 944), (782, 938), (790, 950), (760, 956)], CAT_FUR, .55),
+                   w=4.6, seed=254, id="cat_ear_L"))
     # голова: широкая, пушистые щёки
-    hd = [(744, 1060), (760, 1012), (800, 990), (870, 990), (914, 1014), (930, 1062), (920, 1112), (880, 1146), (790, 1146), (752, 1112)]
-    hp = fur(hd, 10, 5, seed=23)
-    inner = blob([(880, 990), (940, 1050), (930, 1150), (860, 1150), (900, 1080)], CAT_SH, .85)
-    inner += blob([(780, 1004), (836, 994), (880, 1004), (860, 1020), (800, 1022)], CAT_FUR, .55)
+    hd = [(744, 1062), (760, 1012), (800, 990), (870, 990), (914, 1014), (930, 1062), (922, 1112), (884, 1146), (788, 1146), (750, 1112)]
+    hp = fur(hd, 8, 6, seed=23)
+    inner = blob([(884, 990), (940, 1050), (930, 1150), (866, 1150), (902, 1080)], CAT_SH, .85)
+    inner += blob([(784, 1004), (836, 994), (880, 1004), (862, 1018), (804, 1020)], CAT_FUR, .5)
+    inner += blob([(806, 1108), (836, 1100), (866, 1108), (860, 1140), (812, 1140)], CAT_FUR, .35)
     s.append(shape(hp, CAT, inner, w=5.2, seed=250, id="cat_head"))
-    # уши: правое (от зрителя) стоит, левое загнуто вниз
-    re_ = [(872, 1004), (904, 930, 1), (928, 1030)]
-    s.append(shape(fur(re_, 5, 4, seed=24), CAT, blob([(882, 1006), (904, 952), (916, 1020)], "#9b6150"), w=4.6, seed=251, id="cat_ear_R"))
-    s.append(line([(890, 994), (902, 970)], 2, "#d79a84", seed=252, op=.8))
-    le = [(760, 1018), (764, 976), (790, 956, 1), (802, 994), (784, 980), (748, 1004, 1)]
-    s.append(shape(le, CAT, blob([(764, 980), (790, 958), (800, 990), (780, 978)], CAT_FUR, .6), w=4.6, seed=253, id="cat_ear_L"))
-    s.append(line([(752, 1002), (772, 986), (794, 976)], 2.6, seed=254))
     # глаза: большие зелёные, вертикальный зрачок, блик; веко-шерсть для моргания
     for nm, ex, sd in [("L", CX - 44, 255), ("R", CX + 44, 256)]:
-        ep = ellipse_pts(ex, 1072, 33, 37, 14)
+        ep = ellipse_pts(ex, 1072, 34, 38, 14)
         cid = clip_of(ep)
         s.append(f'<g id="cat_eye_{nm}"><path d="{fill_d(ep)}" fill="#b8e04a"/>')
         s.append(f'<g clip-path="url(#{cid})">')
-        s.append(blob(ellipse_pts(ex, 1050, 34, 20, 10), "#8fb83a", .9))
-        s.append(blob(ellipse_pts(ex, 1098, 26, 10, 10), "#d8f27a", .6))
-        s.append(f'<g id="cat_pupil_{nm}"><ellipse cx="{ex}" cy="1074" rx="11" ry="23" fill="#0f0d14"/>'
-                 f'<circle cx="{ex + 6}" cy="1060" r="5.2" fill="#fff"/><circle cx="{ex - 6}" cy="1088" r="2" fill="#fff" opacity=".8"/></g>')
-        s.append(f'<g id="cat_lid_{nm}" class="cat_lid_up" transform="translate(0 -84)"><rect x="{ex - 40}" y="990" width="80" height="84" fill="{CAT}"/>'
+        s.append(blob(ellipse_pts(ex, 1048, 36, 20, 10), "#86b236", .95))
+        s.append(blob(ellipse_pts(ex, 1100, 26, 10, 10), "#dcf47e", .7))
+        s.append(f'<g id="cat_pupil_{nm}"><ellipse cx="{ex}" cy="1074" rx="11.5" ry="24" fill="#0f0d14"/>'
+                 f'<circle cx="{ex + 7}" cy="1059" r="5.6" fill="#fff"/><circle cx="{ex - 6}" cy="1090" r="2.2" fill="#fff" opacity=".8"/></g>')
+        s.append(f'<g id="cat_lid_{nm}" transform="translate(0 -84)"><rect x="{ex - 40}" y="990" width="80" height="84" fill="{CAT}"/>'
                  + line([(ex - 36, 1070), (ex, 1076), (ex + 36, 1070)], 4.6, seed=sd) + "</g>")
-        s.append(f'<g id="cat_lidlo_{nm}" class="cat_lid_lo" transform="translate(0 48)"><rect x="{ex - 40}" y="1072" width="80" height="50" fill="{CAT}"/></g>')
+        s.append(f'<g id="cat_lidlo_{nm}" transform="translate(0 48)"><rect x="{ex - 40}" y="1072" width="80" height="50" fill="{CAT}"/></g>')
         s.append(f'</g><path d="{ink_closed(ep, 4.4, seed=sd + 3)}" fill="{INK}"/></g>')
     # полоски на щеках — по две
     for sx in (-1, 1):
         for k, dy in enumerate((0, 14)):
-            x0 = CX + sx * 74
-            s.append(line([(x0, 1100 + dy), (x0 + sx * 30, 1094 + dy + k * 3)], 5.2, "#e8823a", seed=260 + k + sx, taper=.3, wmin=.5))
+            x0 = CX + sx * 76
+            s.append(line([(x0, 1100 + dy), (x0 + sx * 30, 1094 + dy + k * 3)], 5.4, "#ee8a3c", seed=260 + k + sx, taper=.3, wmin=.5))
     # нос, рот, усы
-    s.append(shape([(826, 1106), (846, 1106), (836, 1118)], "#c47a72", w=2.6, seed=262))
-    s.append(line([(836, 1118), (836, 1124)], 2.4, seed=263))
-    s.append(line([(820, 1124), (828, 1132), (836, 1124), (844, 1132), (852, 1124)], 3, seed=264))
+    s.append(shape([(826, 1108), (846, 1108), (836, 1119)], "#c47a72", w=2.6, seed=262))
+    s.append(line([(836, 1119), (836, 1124)], 2.4, seed=263))
+    s.append(line([(822, 1124), (829, 1131), (836, 1124), (843, 1131), (850, 1124)], 3, seed=264))
     for sx in (-1, 1):
         for k, (dy, dl) in enumerate([(-4, -8), (4, 2), (12, 12)]):
-            x0 = CX + sx * 60
-            s.append(line([(x0, 1114 + dy), (x0 + sx * 50, 1110 + dy + dl * .4), (x0 + sx * 96, 1106 + dy + dl)], 1.8, "#cfc8dc",
-                          seed=270 + k + sx, op=.75))
+            x0 = CX + sx * 62
+            s.append(line([(x0, 1114 + dy), (x0 + sx * 50, 1110 + dy + dl * .4), (x0 + sx * 92, 1106 + dy + dl)], 1.8, "#cfc8dc",
+                          seed=270 + k + sx, op=.7))
     s.append("</g>")
     return "".join(s)
 
@@ -768,21 +810,28 @@ def rug_slippers():
     # бахрома дальнего края
     for x in np.arange(170, 950, 14):
         s.append(line([(x, 1560), (x - 1, 1544)], 2.6, "#d8c49a", seed=int(x), taper=.4))
-    # тапок 1 — стоит
-    s.append(blob(ellipse_pts(372, 1716, 92, 22, 12), "#000", .35, blur(5)))
-    sl1 = [(282, 1700), (300, 1666), (380, 1650), (450, 1664), (470, 1696), (440, 1720), (320, 1724)]
-    s.append(shape(sl1, "#e4d9c3", blob([(282, 1700), (470, 1696), (440, 1724), (320, 1728)], "#bfb39b"), w=4.6, seed=282))
-    up = [(300, 1690), (316, 1662), (380, 1648), (414, 1660), (396, 1690), (340, 1700)]
-    s.append(shape(up, "#5f6f96", blob([(300, 1690), (396, 1690), (380, 1700), (310, 1700)], "#46557a") +
-                   line([(330, 1670), (360, 1662)], 2, "#8c9cc4", seed=283), w=4.6, seed=284))
-    s.append(shape([(410, 1666), (450, 1668), (462, 1690), (420, 1694)], "#3a3036", w=3.4, seed=285))
-    # тапок 2 — перевёрнут на бок
-    s.append(blob(ellipse_pts(570, 1780, 90, 20, 12), "#000", .35, blur(5)))
-    sl2 = [(486, 1770), (500, 1736), (560, 1720), (650, 1740), (664, 1772), (600, 1790), (520, 1790)]
-    s.append(shape(sl2, "#5f6f96", blob([(486, 1770), (664, 1772), (600, 1792), (520, 1792)], "#46557a"), w=4.6, seed=286))
-    sole = [(490, 1772), (520, 1786), (600, 1788), (662, 1774), (664, 1792), (600, 1804), (520, 1802), (486, 1786)]
-    s.append(shape(sole, "#cbbfa6", "", w=4, seed=287))
-    s.append(line([(520, 1746), (560, 1736), (610, 1742)], 2.2, "#8c9cc4", seed=288))
+    for (cx, cy, rot, sc, sd) in [(372, 1708, -14, 1.0, 282), (548, 1770, 10, .96, 286)]:
+        def P(pts, cx=cx, cy=cy, rot=rot, sc=sc):
+            return T([(x * sc, y * sc * .62) + tuple(q[2:]) for q in pts for x, y in [q[:2]]], cx, cy, rot=rot)
+        s.append(blob(P(ellipse_pts(4, 30, 96, 30, 12)), "#000", .4, blur(5)))
+        sole = [(-84, 0), (-78, -26), (-44, -38), (30, -40), (74, -30), (94, -4), (90, 18), (68, 34), (20, 40), (-44, 38), (-76, 24)]
+        s.append(shape(P(T(sole, 0, 10)), "#8f8676", w=4.2, seed=sd))
+        s.append(shape(P(sole), "#d8cfbf", blob(P([(-84, 10), (94, 6), (68, 40), (-76, 40)]), "#b7ad9b", .8), w=4.4, seed=sd + 1))
+        hole = [(-74, -6), (-62, -24), (-34, -28), (-18, -16), (-20, 10), (-36, 22), (-64, 18)]
+        s.append(shape(P(hole), "#3a3236", blob(P([(-74, -6), (-62, -24), (-34, -28), (-40, -10), (-70, 6)]), "#241e22"), w=3.4, seed=sd + 2))
+        up = [(-22, -36), (30, -46), (76, -34), (100, -6), (94, 22), (70, 40), (20, 46), (-22, 34), (-16, 18), (-12, 0), (-16, -18)]
+        inner = blob(P([(-30, 10), (100, 6), (80, 50), (-30, 50)]), "#4c5878", .9)
+        inner += blob(P([(-30, -46), (-4, -46), (-6, 46), (-30, 46)]), "#8e99b8", .9)
+        inner += line(P([(20, -28), (50, -24), (76, -12)]), 2.2, "#9aa6c6", seed=sd + 3)
+        s.append(shape(P(up), "#6b7899", inner, w=4.6, seed=sd + 4))
+    # коробка из-под пиццы, крышка приоткрыта
+    s.append(blob([(820, 1582), (1080, 1570), (1080, 1610), (830, 1616)], "#000", .35, blur(6)))
+    box = [(828, 1546, 1), (1060, 1536, 1), (1072, 1580, 1), (836, 1594, 1)]
+    s.append(shape(box, "#c9a77a", blob([(828, 1580), (1072, 1568), (1072, 1580), (836, 1594)], "#a8865c") +
+                   line([(846, 1558), (1050, 1550)], 2, "#8a6a44", seed=291, op=.7), w=4.6, seed=292))
+    lid = [(834, 1548, 1), (1056, 1538, 1), (1040, 1490, 1), (858, 1502, 1)]
+    s.append(shape(lid, "#d9bb8e", blob(ellipse_pts(946, 1518, 34, 10, 10), "#b4413a", .55) +
+                   blob([(834, 1548), (1056, 1538), (1052, 1528), (838, 1538)], "#b49468"), w=4.4, seed=293))
     # носок, скомканный
     sock = [(800, 1700), (830, 1680), (880, 1690), (900, 1712), (870, 1730), (820, 1730)]
     s.append(blob(ellipse_pts(850, 1728, 56, 12, 10), "#000", .3, blur(4)))
@@ -797,13 +846,13 @@ def gradients():
     DEFS.append("""
 <linearGradient id="gSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2c3c86"/><stop offset=".7" stop-color="#4f5fa6"/><stop offset="1" stop-color="#6f74a8"/></linearGradient>
 <linearGradient id="gWallAO" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b2f22" stop-opacity=".35"/><stop offset=".25" stop-color="#3b2f22" stop-opacity="0"/><stop offset=".85" stop-color="#3b2f22" stop-opacity="0"/><stop offset="1" stop-color="#3b2f22" stop-opacity=".3"/></linearGradient>
-<linearGradient id="gNight" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5a64a8"/><stop offset=".55" stop-color="#6670b2"/><stop offset="1" stop-color="#4a5294"/></linearGradient>
-<radialGradient id="gPhone" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(600 830) scale(470 420)"><stop offset="0" stop-color="#9cc6ff" stop-opacity=".75"/><stop offset=".25" stop-color="#6ea2f0" stop-opacity=".42"/><stop offset=".6" stop-color="#4a74c8" stop-opacity=".14"/><stop offset="1" stop-color="#4a74c8" stop-opacity="0"/></radialGradient>
-<radialGradient id="gPhoneCore" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(612 800) scale(120 150)"><stop offset="0" stop-color="#e6f2ff" stop-opacity=".8"/><stop offset="1" stop-color="#9cc6ff" stop-opacity="0"/></radialGradient>
-<radialGradient id="gFlame" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1006 1092) scale(280 260)"><stop offset="0" stop-color="#ffb05a" stop-opacity=".85"/><stop offset=".2" stop-color="#ff8a3a" stop-opacity=".45"/><stop offset=".55" stop-color="#d0602a" stop-opacity=".14"/><stop offset="1" stop-color="#d0602a" stop-opacity="0"/></radialGradient>
-<radialGradient id="gClock" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(98 1150) scale(190 120)"><stop offset="0" stop-color="#ff5a3c" stop-opacity=".5"/><stop offset="1" stop-color="#ff5a3c" stop-opacity="0"/></radialGradient>
-<radialGradient id="gMoon" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(712 196) scale(120 120)"><stop offset="0" stop-color="#fff6d8" stop-opacity=".7"/><stop offset=".4" stop-color="#c8d4ff" stop-opacity=".25"/><stop offset="1" stop-color="#c8d4ff" stop-opacity="0"/></radialGradient>
-<radialGradient id="gVig" cx="540" cy="900" r="1250" gradientUnits="userSpaceOnUse"><stop offset=".45" stop-color="#fff"/><stop offset="1" stop-color="#2a2440"/></radialGradient>
+<linearGradient id="gNight" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a54a2"/><stop offset=".5" stop-color="#5660ae"/><stop offset="1" stop-color="#363e86"/></linearGradient>
+<radialGradient id="gPhone" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(590 820) scale(460 420)"><stop offset="0" stop-color="#9cc6ff" stop-opacity=".6"/><stop offset=".25" stop-color="#6ea2f0" stop-opacity=".42"/><stop offset=".6" stop-color="#4a74c8" stop-opacity=".14"/><stop offset="1" stop-color="#4a74c8" stop-opacity="0"/></radialGradient>
+<radialGradient id="gPhoneCore" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(596 812) scale(90 120)"><stop offset="0" stop-color="#d8eaff" stop-opacity=".45"/><stop offset="1" stop-color="#9cc6ff" stop-opacity="0"/></radialGradient>
+<radialGradient id="gFlame" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1000 1070) scale(300 280)"><stop offset="0" stop-color="#ffb05a" stop-opacity=".85"/><stop offset=".2" stop-color="#ff8a3a" stop-opacity=".45"/><stop offset=".55" stop-color="#d0602a" stop-opacity=".14"/><stop offset="1" stop-color="#d0602a" stop-opacity="0"/></radialGradient>
+<radialGradient id="gClock" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(76 1146) scale(200 130)"><stop offset="0" stop-color="#ff5a3c" stop-opacity=".5"/><stop offset="1" stop-color="#ff5a3c" stop-opacity="0"/></radialGradient>
+<radialGradient id="gMoon" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(770 200) scale(130 130)"><stop offset="0" stop-color="#fff6d8" stop-opacity=".7"/><stop offset=".4" stop-color="#c8d4ff" stop-opacity=".25"/><stop offset="1" stop-color="#c8d4ff" stop-opacity="0"/></radialGradient>
+<radialGradient id="gVig" cx="540" cy="900" r="1250" gradientUnits="userSpaceOnUse"><stop offset=".4" stop-color="#fff"/><stop offset="1" stop-color="#1e1a34"/></radialGradient>
 <filter id="fGrain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="4" result="n"/><feColorMatrix type="matrix" values="0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  .9 .9 .9 0 -1.1"/></filter>
 <filter id="fSoft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="14"/></filter>
 """)
@@ -813,12 +862,24 @@ def lights():
     """Над ночью: свет осветлением (screen), рим-свет резкой формой по силуэту, светящееся поверх."""
     s = []
     # лунный свет из окна: пятна на стене и пледе
-    s.append(f'<g style="mix-blend-mode:screen" opacity=".22" {blur(16)}>'
-             + blob([(560, 760), (840, 770), (760, 1190), (430, 1170)], "#6f86c8")
-             + blob([(860, 770), (1060, 780), (1080, 1180), (800, 1180)], "#6f86c8") + "</g>")
+    # лунный свет из окна: проекция рамы на пол и коврик (4 стекла, тени импостов), мягко
+    panes = []
+    for (u0, u1) in [(0, .47), (.53, 1)]:
+        for (v0, v1) in [(0, .3), (.34, 1)]:
+            q = []
+            for (u, v) in [(u0, v0), (u1, v0), (u1, v1), (u0, v1)]:
+                x = 600 + u * 420 - v * 150 - u * v * 40
+                y = 1500 + v * 380 + u * 20
+                q.append((x, y, 1))
+            panes.append(blob(q, "#7d95d8"))
+    s.append(f'<g style="mix-blend-mode:screen" opacity=".2" {blur(7)}>{"".join(panes)}</g>')
+    s.append(f'<g style="mix-blend-mode:screen" opacity=".16" {blur(18)}>'
+             + blob([(640, 960), (1080, 960), (1080, 1300), (600, 1300)], "#6f86c8") + "</g>")
     # экран телефона: большое пятно и ядро
-    s.append(f'<g id="phone_glow" style="mix-blend-mode:screen"><rect width="{W}" height="{H}" fill="url(#gPhone)"/>'
-             f'<rect width="{W}" height="{H}" fill="url(#gPhoneCore)"/></g>')
+    DEFS.append(f'<mask id="mPhone"><rect width="{W}" height="{H}" fill="#fff"/>'
+                f'<path d="{fill_d(rect_pts(-46, -98, 46, 98, 18))}" transform="translate({PX} {PY}) rotate({PR})" fill="#000"/></mask>')
+    s.append(f'<g style="mix-blend-mode:screen" mask="url(#mPhone)"><g id="phone_glow"><rect width="{W}" height="{H}" fill="url(#gPhone)"/>'
+             f'<rect width="{W}" height="{H}" fill="url(#gPhoneCore)"/></g></g>')
     # огонёк кота
     s.append(f'<g id="flame_glow" style="mix-blend-mode:screen"><rect width="{W}" height="{H}" fill="url(#gFlame)"/></g>')
     s.append(f'<rect width="{W}" height="{H}" fill="url(#gClock)" style="mix-blend-mode:screen"/>')
@@ -827,32 +888,40 @@ def lights():
 
 
 def rim_lights():
-    """Резкий рим-свет экрана на лице, волосах, руке; оранжевый — на коте от огонька."""
+    """Рим-свет: полумесяц на стороне к источнику, ширина 12–24 px, яркость гаснет с расстоянием от источника
+    (заливка — радиальный градиент источника), поэтому читается как свет, а не как обводка."""
+    tf, hf = head_tf(), f"translate({PX} {PY}) rotate({PR})"
+    DEFS.append('<radialGradient id="gRimP" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(600 820) scale(260 300)">'
+                '<stop offset="0" stop-color="#b9d6ff"/><stop offset=".5" stop-color="#6f9ff0"/><stop offset="1" stop-color="#3a5cb0" stop-opacity="0"/></radialGradient>'
+                '<radialGradient id="gRimF" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(996 1060) scale(150 170)">'
+                '<stop offset="0" stop-color="#ffc070"/><stop offset=".45" stop-color="#ff8a3a"/><stop offset="1" stop-color="#c05020" stop-opacity="0"/></radialGradient>'
+                '<radialGradient id="gRimW" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(700 1000) scale(200 300)">'
+                '<stop offset="0" stop-color="#7d98e0"/><stop offset="1" stop-color="#7d98e0" stop-opacity="0"/></radialGradient>')
+    # градиенты в глобальных координатах, а рим головы рисуется в локальных — поэтому голова получает свой градиент
+    DEFS.append(f'<radialGradient id="gRimPH" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" '
+                f'gradientTransform="rotate({-HR}) translate({600 - HX} {820 - HY}) scale(260 300)">'
+                '<stop offset="0" stop-color="#b9d6ff"/><stop offset=".5" stop-color="#6f9ff0"/><stop offset="1" stop-color="#3a5cb0" stop-opacity="0"/></radialGradient>')
+    DEFS.append(f'<radialGradient id="gFaceL" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" '
+                f'gradientTransform="translate(150 -10) scale(230 210)">'
+                '<stop offset="0" stop-color="#7fa8f0" stop-opacity=".75"/><stop offset=".55" stop-color="#5a80d0" stop-opacity=".35"/>'
+                '<stop offset="1" stop-color="#3a5cb0" stop-opacity="0"/></radialGradient>')
     s = ['<g id="rim_phone" style="mix-blend-mode:screen">']
-    # лицо: правая сторона (к экрану) — заплатка формой «cel», по маске лица
-    fc = uid()
-    DEFS.append(f'<clipPath id="{fc}"><path d="{fill_d(FACE)}" transform="{head_tf()}"/></clipPath>')
-    s.append(f'<g clip-path="url(#{fc})"><g transform="{head_tf()}">'
-             + blob([(40, -130), (130, -130), (130, 130), (60, 126), (90, 70), (98, 10), (70, -60)], "#7aa6f0", .55)
-             + blob([(96, -60), (130, -60), (130, 90), (104, 60), (110, 10)], "#cfe2ff", .55) + "</g></g>")
-    # волосы спереди
-    s.append(f'<g transform="{head_tf()}">' + blob([(80, -86), (98, -62), (108, -40), (96, -50), (78, -78)], "#9fc0ff", .6) + "</g>")
-    # шея/ворот
-    s.append(blob([(470, 960), (486, 1030), (476, 1034), (462, 970)], "#7aa6f0", .45))
-    # рука и рукав: левая кромка, обращённая к экрану
-    s.append(blob([(626, 952), (612, 1030), (604, 1100), (618, 1100), (628, 1030), (640, 956)], "#7aa6f0", .5))
-    s.append(f'<g transform="translate({PX} {PY}) rotate({PR})">'
-             + blob([(-74, -16), (-56, -20), (-50, 20), (-58, 70), (-66, 60), (-70, 20)], "#bcd6ff", .55, 'id="thumb_rim"')
-             + blob([(-48, 56), (-36, 52), (-38, 110), (-48, 120)], "#7aa6f0", .45) + "</g>")
+    # лицо: мягкий заливающий свет экрана по маске лица (как в образце — лицо целиком светлее), плюс узкий блик по скуле
+    fc = clip_of(FACE)
+    hair = REG["dima_hair"]
+    s.append(f'<g transform="{tf}"><g clip-path="url(#{fc})"><rect x="-140" y="-140" width="280" height="280" fill="url(#gFaceL)"/>'
+             f'<path d="{fill_d(hair)}" fill="#000"/></g></g>')
+    s.append(rim(REG["dima_hair"], "gRimPH", -6, 5, .45, tf))
+    s.append(f'<g transform="{hf}">')
+    s.append(f'<g id="thumb_rim">{rim(REG["dima_thumb_shape"], "#a9ccff", 8, 2, .6)}</g>')
     s.append("</g>")
-    # кот: тёплый рим справа от огонька, холодный слева от экрана
-    s.append('<g style="mix-blend-mode:screen">')
-    s.append(blob(fur([(920, 1020), (932, 1060), (924, 1112), (900, 1140), (912, 1100), (918, 1060)], 5, 4, seed=31), "#ff9a4a", .55))
-    s.append(blob(fur([(914, 1180), (928, 1240), (920, 1290), (906, 1290), (914, 1240), (904, 1190)], 5, 4, seed=32), "#ff9a4a", .5))
-    s.append(blob([(904, 940), (924, 1030), (914, 1028), (902, 962)], "#ff9a4a", .5))
-    s.append(blob([(990, 1150), (1024, 1170), (1014, 1230), (1004, 1180)], "#ffb060", .6))
-    s.append(blob(fur([(752, 1020), (742, 1062), (752, 1110), (762, 1100), (754, 1062), (762, 1024)], 4, 4, seed=33), "#8fb0f0", .45))
-    s.append(blob([(758, 1170), (746, 1236), (758, 1236), (766, 1176)], "#8fb0f0", .35))
+    nc = clip_of(REG["dima_neck"])
+    s.append(f'<g clip-path="url(#{nc})"><rect x="400" y="940" width="100" height="120" fill="url(#gRimP)" opacity=".35"/></g>')
+    s.append("</g>")
+    s.append('<g id="rim_flame" style="mix-blend-mode:screen">')
+    s.append(rim(REG["cat_head"], "gRimF", -8, 5, .8))
+    s.append(rim(REG["cat_ear_R"], "gRimF", -6, 4, .8))
+    s.append(f'<g id="tail_rim">{rim(REG["cat_tail_shape"], "gRimF", -2, 6, .65)}</g>')
     s.append("</g>")
     return "".join(s)
 
@@ -860,19 +929,19 @@ def rim_lights():
 def glowing():
     s = []
     # луна с кратерами и звёзды — поверх ночи (окно)
-    s.append(shape(ellipse_pts(712, 196, 34, 34, 14), "#fbf3d6", blob(ellipse_pts(722, 206, 30, 30, 12), "#e4d9b0", .9) +
-                   blob(ellipse_pts(700, 186, 7, 6, 8), "#d8cba0") + blob(ellipse_pts(724, 214, 5, 4, 8), "#d8cba0") +
-                   blob(ellipse_pts(716, 180, 3.5, 3, 8), "#d8cba0"), w=3, seed=310, ink_color="#3a3d66"))
+    s.append(shape(ellipse_pts(770, 200, 34, 34, 14), "#fbf3d6", blob(ellipse_pts(780, 210, 30, 30, 12), "#e4d9b0", .9) +
+                   blob(ellipse_pts(758, 190, 7, 6, 8), "#d8cba0") + blob(ellipse_pts(782, 218, 5, 4, 8), "#d8cba0") +
+                   blob(ellipse_pts(774, 184, 3.5, 3, 8), "#d8cba0"), w=3, seed=310, ink_color="#3a3d66"))
     rs = np.random.RandomState(11)
     for _ in range(26):
-        x, y = rs.uniform(640, 1030), rs.uniform(130, 380)
-        if 670 < x < 760 and 150 < y < 240 or 826 < x < 846 or 298 < y < 320:
+        x, y = rs.uniform(708, 982), rs.uniform(130, 380)
+        if 726 < x < 816 and 154 < y < 246 or 822 < x < 850 or 296 < y < 322:
             continue
         r = rs.uniform(1, 2.6)
         s.append(f'<circle cx="{x:.0f}" cy="{y:.0f}" r="{r:.1f}" fill="#eef0ff" opacity="{rs.uniform(.5, 1):.2f}"/>')
     s.append(f'<path d="M960 170 l3 9 l9 3 l-9 3 l-3 9 l-3 -9 l-9 -3 l9 -3z" fill="#fffbe6"/>')
     # светящиеся окна дома напротив (часть тёмные), тёплые, с силуэтами штор
-    lit = [(648, 462), (694, 462), (786, 404), (878, 404), (924, 520), (970, 578), (648, 636), (740, 520), (1016, 462)]
+    lit = [(740, 462), (786, 578), (878, 462), (924, 578), (740, 636), (924, 462), (878, 636)]
     for i, (x, y) in enumerate(lit):
         if 826 < x < 846:
             continue
@@ -883,14 +952,16 @@ def glowing():
         s.append(f'<rect x="{x - 8}" y="{y - 8}" width="42" height="50" fill="{col}" opacity=".18" {blur(6)}/>')
     # цифры часов
     s.append(clock_digits())
-    s.append(f'<g {blur(4)} opacity=".7" style="mix-blend-mode:screen">{clock_digits().replace("clock_digits", "clock_digits_glow")}</g>')
+    s.append(f'<g {blur(5)} opacity=".9" style="mix-blend-mode:screen">{clock_digits(True, "clock_digits_glow")}</g>')
     # кромка экрана телефона
     s.append(f'<g transform="translate({PX} {PY}) rotate({PR})" id="screen_edge">'
-             + line([(-53, -78), (-55, 0), (-54, 80)], 4.4, "#cfe6ff", taper=.3, wmin=.4, seed=320)
-             + f'<path d="M-56 -80 L-58 82" stroke="#bfe0ff" stroke-width="10" opacity=".5" {blur(5)}/></g>')
+             + line([(-59, -82), (-61, 0), (-60, 84)], 4.6, "#d7ebff", taper=.3, wmin=.4, seed=320)
+             + f'<path d="M-62 -84 L-64 86" stroke="#bfe0ff" stroke-width="12" opacity=".55" {blur(6)}/></g>')
     # глаза кота отсвечивают
+    s.append('<g id="cat_eye_glow">')
     for ex in (CX - 44, CX + 44):
         s.append(f'<ellipse cx="{ex}" cy="1072" rx="30" ry="34" fill="#c6f05a" opacity=".22" {blur(8)} style="mix-blend-mode:screen"/>')
+    s.append("</g>")
     return "".join(s)
 
 

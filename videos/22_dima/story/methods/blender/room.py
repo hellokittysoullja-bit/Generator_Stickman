@@ -164,27 +164,44 @@ def soft(ob, levels=2):
 W, H = 1080, 1920
 
 
-def camera():
-    sc = bpy.context.scene
-    cd = bpy.data.cameras.new('cam')
+ZOOM = 1.15                 # кадр съёмочной камеры крупнее «чертёжной» (рисунок в пикселях чертёжной)
+CROP_CENTER = (560, 1040)
+SHELF_DX = 0.36             # полка с часами ближе к центру, чтобы 01:47 не срезалось кадром   # центр кадра в пикселях чертёжной камеры
+
+
+def _cam(name, lens, sx, sy):
+    cd = bpy.data.cameras.new(name)
     cd.sensor_fit = 'VERTICAL'
     cd.sensor_height = 24.0
-    cd.lens = 24.0
-    cd.shift_y = -0.10
+    cd.lens = lens
+    cd.shift_x = sx
+    cd.shift_y = sy
     cd.clip_start = 0.05
     cd.clip_end = 80
-    co = link(bpy.data.objects.new('cam', cd))
+    co = link(bpy.data.objects.new(name, cd))
     co.location = (0.0, -4.25, 1.45)
     co.rotation_euler = (math.radians(90), 0, 0)
-    sc.camera = co
+    return co
+
+
+def camera():
+    """Две камеры с одной точкой: «чертёжная» (по ней пиксели рисунка) и съёмочная (крупнее, со сдвигом)."""
+    sc = bpy.context.scene
     sc.render.resolution_x = W
     sc.render.resolution_y = H
+    L1, sx1, sy1 = 24.0, 0.0, -0.10
+    _cam('design', L1, sx1, sy1)
+    cx, cy = CROP_CENTER
+    k = ZOOM
+    co = _cam('cam', L1 * k, k * ((cx - W / 2) / H + sx1), k * ((H / 2 - cy) / H + sy1))
+    sc.camera = co
     return co
 
 
 def pixel_ray(px, py):
+    """Луч чертёжной камеры через пиксель (px, py) кадра 1080×1920."""
     sc = bpy.context.scene
-    co = sc.camera
+    co = bpy.data.objects['design']
     tr, br, bl, tl = co.data.view_frame(scene=sc)
     u, v = px / W, py / H
     local = tl + (tr - tl) * u + (bl - tl) * v
@@ -273,12 +290,24 @@ def rug_mat():
     edge = g.math('MAXIMUM', ux, uy)
     border = g.math('MULTIPLY', g.math('GREATER_THAN', edge, 0.40), g.math('LESS_THAN', edge, 0.46))
     rhomb = g.math('ADD', g.math('MULTIPLY', ux, 1.0), g.math('MULTIPLY', uy, 1.7))
-    rings = g.math('LESS_THAN', g.math('FRACT', g.math('MULTIPLY', rhomb, 9.0)), 0.28)
-    rings = g.math('MULTIPLY', rings, g.math('LESS_THAN', edge, 0.36))
+    medal = g.math('LESS_THAN', rhomb, 0.30)
+    rings = g.math('MULTIPLY', g.math('LESS_THAN', g.math('FRACT', g.math('MULTIPLY', rhomb, 14.0)), 0.22), medal)
+    # поле: мелкие ромбики по диагональной сетке
+    dx = g.math('FRACT', g.math('MULTIPLY', g.math('ADD', x, y), 14.0))
+    dy = g.math('FRACT', g.math('MULTIPLY', g.math('SUBTRACT', x, y), 14.0))
+    dots = g.math('LESS_THAN', g.math('ADD', g.math('ABSOLUTE', g.math('SUBTRACT', dx, 0.5)),
+                                      g.math('ABSOLUTE', g.math('SUBTRACT', dy, 0.5))), 0.16)
+    field = g.math('MULTIPLY', dots, g.math('LESS_THAN', edge, 0.38))
+    inner_b = g.math('MULTIPLY', g.math('GREATER_THAN', edge, 0.38), g.math('LESS_THAN', edge, 0.40))
+    bdots = g.math('MULTIPLY', g.math('LESS_THAN', g.math('FRACT', g.math('MULTIPLY', g.math('ADD', x, y), 30.0)), 0.35), border)
     fringe = g.math('GREATER_THAN', edge, 0.485)
-    c = g.mix(rings, (0.30, 0.05, 0.06, 1), (0.55, 0.36, 0.20, 1))
-    c = g.mix(border, c, (0.10, 0.10, 0.20, 1))
-    c = g.mix(fringe, c, (0.55, 0.50, 0.42, 1))
+    c = g.mix(field, (0.20, 0.035, 0.045, 1), (0.30, 0.10, 0.07, 1))
+    c = g.mix(medal, c, (0.14, 0.03, 0.05, 1))
+    c = g.mix(rings, c, (0.42, 0.26, 0.13, 1))
+    c = g.mix(border, c, (0.05, 0.06, 0.14, 1))
+    c = g.mix(bdots, c, (0.36, 0.24, 0.14, 1))
+    c = g.mix(inner_b, c, (0.40, 0.28, 0.16, 1))
+    c = g.mix(fringe, c, (0.45, 0.42, 0.36, 1))
     fuzz = g.math('MULTIPLY', g.noise(p, 60.0, 2.0), 0.25)
     hs = g.node('ShaderNodeHueSaturation')
     g.inp(hs, 'Color', c)
@@ -504,7 +533,8 @@ def build(screen_px=(540, 820), flame_px=(960, 1060), moon_px=(930, 330)):
     box('roof1', -6, 7.2, 14, 22, 3.6, 3.85, plain('roof', (0.01, 0.012, 0.02)), outside)
     box('ant', 2.0, 2.06, 17, 17.06, 3.85, 5.2, plain('ant', (0.01, 0.01, 0.02)), outside)
 
-    # --- полка с книгами, растением и часами
+    # --- полка с книгами, растением и часами (своя коллекция, сдвигается целиком)
+    shelfc = collection('shelf')
     SY0 = -0.24
     box('shelf', -1.20, -0.30, SY0, 0, 2.02, 2.05, wood, room, bevel=0.004)
     box('shelf2', -1.20, -0.55, SY0, 0, 1.62, 1.65, wood, room, bevel=0.004)
@@ -530,11 +560,11 @@ def build(screen_px=(540, 820), flame_px=(960, 1060), moon_px=(930, 330)):
     mug.data.materials.append(plain('mug', (0.45, 0.47, 0.50), 0.4))
     for c in mug.users_collection:
         c.objects.unlink(mug)
-    room.objects.link(mug)
+    shelfc.objects.link(mug)
     # нижняя полка: часы и растение
     ck = box('clock', -1.08, -0.80, -0.16, -0.06, 1.65, 1.77, plain('clockbody', (0.015, 0.015, 0.02), 0.3), room, bevel=0.012)
     red = emission_mat('digits', (1.0, 0.12, 0.06), 9.0)
-    seven_seg('01:47', -1.055, 1.675, -0.161, 0.07, red, room)
+    seven_seg('01:47', -1.055, 1.675, -0.161, 0.07, red, shelfc)
     pot2 = box('pot2', -0.72, -0.60, -0.18, -0.06, 1.65, 1.76, plain('pot2', (0.55, 0.45, 0.38)), room, bevel=0.01)
     leafm = plain('leaf', (0.06, 0.20, 0.10), 0.6)
     for k in range(9):
@@ -546,7 +576,7 @@ def build(screen_px=(540, 820), flame_px=(960, 1060), moon_px=(930, 330)):
         lf.data.materials.append(leafm)
         for c in lf.users_collection:
             c.objects.unlink(lf)
-        room.objects.link(lf)
+        shelfc.objects.link(lf)
     # свисающая плеть
     for k in range(7):
         bpy.ops.mesh.primitive_uv_sphere_add(radius=0.028, location=(-0.58 + 0.02 * math.sin(k), -0.08, 1.64 - k * 0.075))
@@ -556,33 +586,29 @@ def build(screen_px=(540, 820), flame_px=(960, 1060), moon_px=(930, 330)):
         lf.data.materials.append(leafm)
         for c in lf.users_collection:
             c.objects.unlink(lf)
-        room.objects.link(lf)
+        shelfc.objects.link(lf)
 
-    # --- картинка в рамке над диваном (постер с горами)
-    box('frame', -0.30, 0.20, -0.025, 0, 1.30, 1.66, wood, room, bevel=0.005)
-    pm, nt, out = nodes_mat('poster')
-    g = N(nt)
-    pp = g.coord('Object')
-    px, py_, pz = g.sep(pp)
-    mount = g.math('LESS_THAN', pz, g.math('ADD', 1.40, g.math('MULTIPLY', g.math('ABSOLUTE', g.math('SUBTRACT', px, -0.03)), -0.8)))
-    c = g.mix(mount, (0.25, 0.32, 0.38, 1), (0.10, 0.14, 0.18, 1))
-    nt.links.new(g.bsdf(c, 0.4), out.inputs[0])
-    box('poster', -0.27, 0.17, -0.027, -0.025, 1.33, 1.63, pm, room)
-
+    for o in shelfc.objects:
+        o.location.x += SHELF_DX
     # --- диван у стены
-    sofa_m = fabric_mat('sofa', (0.24, 0.10, 0.10), (0.18, 0.07, 0.08), 60.0)
+    sofa_m = fabric_mat('sofa', (0.22, 0.095, 0.085), (0.13, 0.055, 0.06), 90.0)
     SX0, SX1 = -1.30, 1.30
     box('sofa_base', SX0, SX1, -0.92, -0.02, 0.10, 0.30, sofa_m, room, bevel=0.03)
     box('sofa_seat1', SX0 + 0.20, 0.0, -0.92, -0.20, 0.30, 0.46, sofa_m, room, bevel=0.05, seg=4)
     box('sofa_seat2', 0.0, SX1 - 0.20, -0.92, -0.20, 0.30, 0.46, sofa_m, room, bevel=0.05, seg=4)
-    box('sofa_back', SX0 + 0.10, SX1 - 0.10, -0.28, -0.02, 0.30, 0.98, sofa_m, room, bevel=0.07, seg=4)
+    box('sofa_back', SX0 + 0.10, SX1 - 0.10, -0.16, -0.02, 0.30, 0.98, sofa_m, room, bevel=0.06, seg=4)
+    # спинка — две продавленные подушки
+    for (a, b, tilt) in ((SX0 + 0.22, -0.01, 4), (0.01, SX1 - 0.22, -3)):
+        bc = box('back_cushion', a, b, -0.34, -0.12, 0.42, 0.92, sofa_m, room, bevel=0.08, seg=5)
+        bc.rotation_euler = (math.radians(-8), 0, math.radians(tilt * 0.3))
     box('arm_l', SX0, SX0 + 0.22, -0.95, -0.02, 0.10, 0.70, sofa_m, room, bevel=0.07, seg=4)
     box('arm_r', SX1 - 0.22, SX1, -0.95, -0.02, 0.10, 0.70, sofa_m, room, bevel=0.07, seg=4)
     for xx in (SX0 + 0.06, SX1 - 0.10):
         box('leg', xx, xx + 0.05, -0.88, -0.83, 0.0, 0.10, wood, room)
     # подушка у левого подлокотника
-    pil = box('pillow', -1.10, -0.60, -0.40, -0.12, 0.42, 0.88, pillow_mat(), room)
-    soft(pil, 3)
+    pil = box('pillow', -1.10, -0.62, -0.36, -0.16, 0.42, 0.86, pillow_mat(), room, bevel=0.08, seg=6)
+    sm = pil.modifiers.new('round', 'SUBSURF')
+    sm.levels = sm.render_levels = 1
     pil.rotation_euler = (math.radians(-12), math.radians(-14), 0)
 
     # --- коврик на полу
@@ -623,6 +649,7 @@ def build(screen_px=(540, 820), flame_px=(960, 1060), moon_px=(930, 330)):
     wo = link(bpy.data.objects.new('window_glow', win_glow), room)
     wo.location = ((WX0 + WX1) / 2, 0.12, (WZ0 + WZ1) / 2)
     wo.rotation_euler = (math.radians(-90), 0, 0)
+    win_glow.use_shadow = False
 
     # экран телефона и огонёк кота — свет в 3D в точке, куда их нарисует 2D-слой
     sp = px_on_plane_y(screen_px[0], screen_px[1], -0.55)
