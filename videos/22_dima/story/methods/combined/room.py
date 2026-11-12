@@ -225,35 +225,58 @@ def px_on_plane_z(px, py, z):
 # ---------------------------------------------------------------- материалы комнаты
 
 def wallpaper_mat():
+    """Старые обои: полосы и веточки, но не по линейке — полотна со швами и сдвигом рисунка,
+    дрожь полос, выцветание пятнами, подтёк у потолка, грязь внизу, фактура бумаги (рельеф)."""
     m, nt, out = nodes_mat('wallpaper')
     g = N(nt)
     p = g.coord('World')
     x, y, z = g.sep(p)
-    # вертикальные полосы: ширина 0.16 м, узкая тёмная полоса
-    fx = g.math('FRACT', g.math('DIVIDE', x, 0.16))
-    stripe = g.math('LESS_THAN', fx, 0.32)
-    # мотив: веточка-ромбик в шахматном порядке
-    cx = g.math('DIVIDE', x, 0.16)
-    cz = g.math('DIVIDE', z, 0.24)
+    wob = g.math('MULTIPLY', g.math('SUBTRACT', g.noise(p, 1.7, 3.0), 0.5), 0.022)
+    xw = g.math('ADD', x, wob)
+    # полотна по 0.53 м: шов и сдвиг рисунка по высоте у каждого полотна
+    sheet = g.math('FLOOR', g.math('DIVIDE', x, 0.53))
+    fs = g.math('FRACT', g.math('DIVIDE', x, 0.53))
+    seam = g.math('LESS_THAN', g.math('MINIMUM', fs, g.math('SUBTRACT', 1.0, fs)), 0.006)
+    zs = g.math('ADD', z, g.math('MULTIPLY', g.math('FRACT', g.math('MULTIPLY', sheet, 0.37)), 0.11))
+    fx = g.math('FRACT', g.math('DIVIDE', xw, 0.16))
+    stripe = g.math('MULTIPLY', g.math('GREATER_THAN', fx, 0.02), g.math('LESS_THAN', fx, 0.30))
+    cx = g.math('DIVIDE', xw, 0.16)
+    cz = g.math('DIVIDE', zs, 0.24)
     shift = g.math('MULTIPLY', g.math('FLOOR', cz), 0.5)
     ux = g.math('SUBTRACT', g.math('FRACT', g.math('ADD', cx, shift)), 0.66)
     uz = g.math('SUBTRACT', g.math('FRACT', cz), 0.5)
-    d1 = g.math('ADD', g.math('ABSOLUTE', g.math('MULTIPLY', ux, 1.0)), g.math('ABSOLUTE', g.math('MULTIPLY', uz, 0.6)))
+    d1 = g.math('ADD', g.math('ABSOLUTE', ux), g.math('ABSOLUTE', g.math('MULTIPLY', uz, 0.6)))
     motif = g.math('LESS_THAN', d1, 0.085)
     stem = g.math('MULTIPLY', g.math('LESS_THAN', g.math('ABSOLUTE', ux), 0.012),
                   g.math('LESS_THAN', g.math('ABSOLUTE', g.math('ADD', uz, 0.17)), 0.12))
     motif = g.math('MAXIMUM', motif, stem)
-    base = (0.36, 0.31, 0.36, 1)       # пыльно-сиреневые старые обои (до ночного света)
-    band = (0.30, 0.255, 0.30, 1)
-    mot = (0.25, 0.20, 0.26, 1)
-    c = g.mix(stripe, base, band)
-    c = g.mix(motif, c, mot)
-    # старость: пятна и выцветание
-    stain = g.math('MULTIPLY', g.math('SUBTRACT', g.noise(p, 3.0, 4.0), 0.5), 0.35)
-    c2 = g.node('ShaderNodeHueSaturation')
-    g.inp(c2, 'Color', c)
-    g.inp(c2, 'Value', g.math('ADD', stain, 1.0))
-    nt.links.new(g.bsdf(c2.outputs[0], 0.95), out.inputs[0])
+    # рисунок местами стёрт
+    worn = g.math('GREATER_THAN', g.noise(g.vmath('MULTIPLY', p, (3.0, 3.0, 3.0)), 4.0, 5.0), 0.62)
+    motif = g.math('MULTIPLY', motif, g.math('SUBTRACT', 1.0, g.math('MULTIPLY', worn, 0.7)))
+    c = g.mix(g.math('MULTIPLY', stripe, 0.8), (0.36, 0.31, 0.36, 1), (0.30, 0.255, 0.30, 1))
+    c = g.mix(g.math('MULTIPLY', motif, 0.85), c, (0.24, 0.19, 0.25, 1))
+    c = g.mix(g.math('MULTIPLY', seam, 0.6), c, (0.17, 0.14, 0.17, 1))
+    # подтёк под потолком и грязь у пола
+    stain = g.math('MULTIPLY', g.math('GREATER_THAN', g.noise(g.vmath('MULTIPLY', p, (1.3, 1.3, 0.7)), 2.0, 6.0), 0.60),
+                   g.math('GREATER_THAN', z, 2.35))
+    c = g.mix(g.math('MULTIPLY', stain, 0.45), c, (0.33, 0.27, 0.17, 1))
+    low = g.math('MULTIPLY', g.math('SUBTRACT', 1.0, g.math('MULTIPLY', z, 1.1), clamp=True), 0.35)
+    c = g.mix(low, c, (0.12, 0.10, 0.11, 1))
+    # пятнистое выцветание + зерно бумаги
+    mott = g.math('ADD', 0.86, g.math('MULTIPLY', g.noise(p, 1.1, 6.0), 0.28))
+    grain = g.math('ADD', 0.97, g.math('MULTIPLY', g.noise(p, 260.0, 2.0), 0.06))
+    hs = g.node('ShaderNodeHueSaturation')
+    g.inp(hs, 'Color', c)
+    g.inp(hs, 'Value', g.math('MULTIPLY', mott, grain))
+    bump = g.node('ShaderNodeBump')
+    bump.inputs['Strength'].default_value = 0.12
+    g.inp(bump, 'Height', g.math('ADD', g.noise(p, 90.0, 3.0), g.math('MULTIPLY', seam, 0.6)))
+    bs = g.node('ShaderNodeBsdfPrincipled')
+    g.inp(bs, 'Base Color', hs.outputs[0])
+    bs.inputs['Roughness'].default_value = 0.95
+    bs.inputs['Specular IOR Level'].default_value = 0.15
+    nt.links.new(bump.outputs[0], bs.inputs['Normal'])
+    nt.links.new(bs.outputs[0], out.inputs[0])
     return m
 
 
@@ -330,6 +353,24 @@ def fabric_mat(name, c1, c2, scale=40.0):
     return m
 
 
+def curtain_mat():
+    """Плотная штора: продольное плетение, выгоревшие полосы, неровный тон."""
+    m, nt, out = nodes_mat('curtain')
+    g = N(nt)
+    p = g.coord('World')
+    weave = g.noise(g.vmath('MULTIPLY', p, (60.0, 60.0, 4.0)), 3.0, 2.0)
+    fade = g.noise(g.vmath('MULTIPLY', p, (3.0, 3.0, 0.4)), 2.0, 3.0)
+    c = g.mix(fade, (0.44, 0.39, 0.33, 1), (0.30, 0.27, 0.25, 1))
+    c = g.mix(g.math('MULTIPLY', weave, 0.4), c, (0.24, 0.21, 0.19, 1))
+    bs = g.node('ShaderNodeBsdfPrincipled')
+    g.inp(bs, 'Base Color', c)
+    bs.inputs['Roughness'].default_value = 1.0
+    bs.inputs['Specular IOR Level'].default_value = 0.05
+    bs.inputs['Subsurface Weight'].default_value = 0.0
+    nt.links.new(bs.outputs[0], out.inputs[0])
+    return m
+
+
 def pillow_mat():
     """Наволочка в мелкий розовый цветочек, как у образца."""
     m, nt, out = nodes_mat('pillow')
@@ -345,25 +386,52 @@ def pillow_mat():
 
 
 def sky_mat(moon_dir):
-    """Небо: градиент, звёзды; луна — отдельный диск."""
+    """Небо как написанное: глубокий градиент, рваные облака мазками, засветка города у горизонта,
+    звёзды разной величины."""
     m, nt, out = nodes_mat('sky')
     g = N(nt)
     p = g.coord('Object')
     x, y, z = g.sep(p)
-    t = g.math('MULTIPLY', g.math('ADD', z, 2.0), 0.06, clamp=True)
-    c = g.mix(t, (0.06, 0.09, 0.22, 1), (0.012, 0.02, 0.07, 1))
+    t = g.math('MULTIPLY', g.math('ADD', z, 2.0), 0.055, clamp=True)
+    c = g.mix(t, (0.07, 0.10, 0.24, 1), (0.010, 0.016, 0.06, 1))
+    glow = g.math('MULTIPLY', g.math('SUBTRACT', 1.0, g.math('MULTIPLY', g.math('ADD', z, 6.0), 0.11), clamp=True), 0.8)
+    c = g.mix(glow, c, (0.16, 0.10, 0.12, 1))
+    pc = g.vmath('MULTIPLY', p, (0.045, 0.045, 0.16))
+    cl = g.noise(pc, 2.2, 8.0)
+    cloud = g.node('ShaderNodeMapRange')
+    g.inp(cloud, 'Value', cl)
+    cloud.inputs['From Min'].default_value = 0.50
+    cloud.inputs['From Max'].default_value = 0.66
+    c = g.mix(g.math('MULTIPLY', cloud.outputs[0], 0.75), c, (0.035, 0.045, 0.10, 1))
+    edge = g.math('MULTIPLY', g.math('MULTIPLY', cloud.outputs[0], g.math('SUBTRACT', 1.0, cloud.outputs[0])), 1.6)
+    c = g.mix(edge, c, (0.16, 0.19, 0.32, 1))
     v = g.node('ShaderNodeTexVoronoi')
     g.inp(v, 'Vector', p)
     v.inputs['Scale'].default_value = 1.6
-    star = g.math('LESS_THAN', v.outputs['Distance'], 0.035)
-    star = g.math('MULTIPLY', star, g.math('GREATER_THAN', g.white(v.outputs['Position']), 0.55))
-    c = g.mix(g.math('MULTIPLY', star, 0.9), c, (0.9, 0.9, 1.0, 1))
+    rnd = g.white(v.outputs['Position'])
+    rad = g.math('ADD', 0.012, g.math('MULTIPLY', g.math('POWER', rnd, 6.0), 0.05))
+    star = g.math('LESS_THAN', v.outputs['Distance'], rad)
+    star = g.math('MULTIPLY', star, g.math('GREATER_THAN', rnd, 0.45))
+    star = g.math('MULTIPLY', star, g.math('SUBTRACT', 1.0, cloud.outputs[0]))
+    c = g.mix(g.math('MULTIPLY', star, 0.9), c, (0.95, 0.93, 1.0, 1))
     nt.links.new(g.emit(c, 1.0), out.inputs[0])
     return m
 
 
+def moon_mat():
+    """Луна с морями (пятна шума), чуть тёплая."""
+    m, nt, out = nodes_mat('moon')
+    g = N(nt)
+    p = g.coord('Object')
+    mar = g.math('GREATER_THAN', g.noise(p, 2.2, 4.0), 0.56)
+    c = g.mix(g.math('MULTIPLY', mar, 0.55), (1.0, 0.96, 0.84, 1), (0.62, 0.62, 0.66, 1))
+    nt.links.new(g.emit(c, 6.0), out.inputs[0])
+    return m
+
+
 def facade_mat(name, base, seed, lit_share=0.35, cols=1.15, rows=1.0):
-    """Дом напротив: стена + сетка окон, часть горит тёплым, часть холодным (телевизор), остальные тёмные."""
+    """Дом напротив: панели с неровной фактурой; окна разного тепла и яркости, со шторами и переплётом,
+    часть — голубым светом телевизора, остальные тёмные с бликом неба."""
     m, nt, out = nodes_mat(name)
     g = N(nt)
     p = g.coord('Object')
@@ -372,29 +440,76 @@ def facade_mat(name, base, seed, lit_share=0.35, cols=1.15, rows=1.0):
     gz = g.math('DIVIDE', z, rows)
     fx = g.math('FRACT', gx)
     fz = g.math('FRACT', gz)
-    win = g.math('MULTIPLY',
-                 g.math('MULTIPLY', g.math('GREATER_THAN', fx, 0.28), g.math('LESS_THAN', fx, 0.72)),
-                 g.math('MULTIPLY', g.math('GREATER_THAN', fz, 0.25), g.math('LESS_THAN', fz, 0.78)))
     cell = g.node('ShaderNodeCombineXYZ')
     g.inp(cell, 0, g.math('FLOOR', gx))
     g.inp(cell, 1, g.math('FLOOR', gz))
     g.inp(cell, 2, float(seed))
     r = g.white(cell.outputs[0])
+    cell2 = g.node('ShaderNodeCombineXYZ')
+    g.inp(cell2, 0, g.math('FLOOR', gx))
+    g.inp(cell2, 1, g.math('FLOOR', gz))
+    g.inp(cell2, 2, float(seed) + 17.0)
+    r2 = g.white(cell2.outputs[0])
+    win = g.math('MULTIPLY',
+                 g.math('MULTIPLY', g.math('GREATER_THAN', fx, 0.27), g.math('LESS_THAN', fx, 0.73)),
+                 g.math('MULTIPLY', g.math('GREATER_THAN', fz, 0.24), g.math('LESS_THAN', fz, 0.78)))
+    # переплёт: крест тёмной рамы
+    mull = g.math('MAXIMUM', g.math('LESS_THAN', g.math('ABSOLUTE', g.math('SUBTRACT', fx, 0.5)), 0.018),
+                  g.math('LESS_THAN', g.math('ABSOLUTE', g.math('SUBTRACT', fz, 0.60)), 0.018))
     lit = g.math('LESS_THAN', r, lit_share)
-    tv = g.math('LESS_THAN', r, lit_share * 0.25)
-    # внутри окна — штора: вертикальный градиент яркости
-    shade = g.math('ADD', 0.55, g.math('MULTIPLY', fz, 0.6))
-    warm = g.mix(tv, (1.0, 0.62, 0.25, 1), (0.45, 0.65, 1.0, 1))
-    em = g.math('MULTIPLY', g.math('MULTIPLY', win, lit), shade)
-    wall = g.mix(g.math('MULTIPLY', g.noise(p, 2.0, 2.0), 0.6), base + (1,), tuple(c * 0.6 for c in base) + (1,))
-    glass = (0.02, 0.025, 0.045, 1)
+    tv = g.math('LESS_THAN', r, lit_share * 0.22)
+    # штора: тёмные края и складки поперёк окна, у каждого окна своя
+    curt = g.math('ADD', 0.45, g.math('MULTIPLY', g.noise(g.vmath('MULTIPLY', p, (2.0, 2.0, 0.3)), 3.0, 2.0), 0.9))
+    warmc = g.mix(r2, (1.0, 0.55, 0.20, 1), (1.0, 0.78, 0.45, 1))
+    col_lit = g.mix(tv, warmc, (0.40, 0.62, 1.0, 1))
+    em = g.math('MULTIPLY', g.math('MULTIPLY', win, lit), g.math('MULTIPLY', curt, g.math('SUBTRACT', 1.0, mull)))
+    em = g.math('MULTIPLY', em, g.math('ADD', 1.2, g.math('MULTIPLY', r2, 1.6)))
+    panel = g.math('ADD', g.math('MULTIPLY', g.noise(p, 1.4, 5.0), 0.7), g.math('MULTIPLY', g.noise(p, 14.0, 2.0), 0.3))
+    wall = g.mix(panel, base + (1,), tuple(c * 0.45 for c in base) + (1,))
+    glass = g.mix(g.math('MULTIPLY', fz, 0.8), (0.05, 0.07, 0.13, 1), (0.015, 0.02, 0.04, 1))
     col = g.mix(win, wall, glass)
     bs = g.node('ShaderNodeBsdfPrincipled')
     g.inp(bs, 'Base Color', col)
     bs.inputs['Roughness'].default_value = 0.9
-    g.inp(bs, 'Emission Color', warm)
-    g.inp(bs, 'Emission Strength', g.math('MULTIPLY', em, 2.2))
+    g.inp(bs, 'Emission Color', col_lit)
+    g.inp(bs, 'Emission Strength', em)
     nt.links.new(bs.outputs[0], out.inputs[0])
+    return m
+
+
+def old_paint_mat(name, base):
+    """Старая краска на дереве: не пластик — грязно-серая, местами потёрта, тёмная грязь в швах."""
+    m, nt, out = nodes_mat(name)
+    g = N(nt)
+    p = g.coord('World')
+    wear = g.math('GREATER_THAN', g.noise(p, 9.0, 6.0), 0.63)
+    grime = g.noise(p, 3.0, 4.0)
+    c = g.mix(g.math('MULTIPLY', grime, 0.5), base + (1,), tuple(v * 0.7 for v in base) + (1,))
+    c = g.mix(g.math('MULTIPLY', wear, 0.7), c, (0.22, 0.16, 0.11, 1))
+    bump = g.node('ShaderNodeBump')
+    bump.inputs['Strength'].default_value = 0.25
+    g.inp(bump, 'Height', g.noise(p, 40.0, 4.0))
+    bs = g.node('ShaderNodeBsdfPrincipled')
+    g.inp(bs, 'Base Color', c)
+    bs.inputs['Roughness'].default_value = 0.75
+    bs.inputs['Specular IOR Level'].default_value = 0.2
+    nt.links.new(bump.outputs[0], bs.inputs['Normal'])
+    nt.links.new(bs.outputs[0], out.inputs[0])
+    return m
+
+
+def glass_mat():
+    """Мутное стекло: едва заметная голубая плёнка с разводами (не прячет улицу)."""
+    m, nt, out = nodes_mat('glass')
+    g = N(nt)
+    p = g.coord('World')
+    smudge = g.math('ADD', 0.04, g.math('MULTIPLY', g.math('GREATER_THAN', g.noise(p, 5.0, 6.0), 0.55), 0.06))
+    bs = g.node('ShaderNodeBsdfPrincipled')
+    bs.inputs['Base Color'].default_value = (0.55, 0.62, 0.75, 1)
+    bs.inputs['Roughness'].default_value = 0.25
+    g.inp(bs, 'Alpha', smudge)
+    nt.links.new(bs.outputs[0], out.inputs[0])
+    m.surface_render_method = 'BLENDED'
     return m
 
 
@@ -434,14 +549,17 @@ def seven_seg(text, x0, z0, y, h, mat, coll):
 
 # ---------------------------------------------------------------- сборка комнаты
 
-def build(screen_px=(540, 820), flame_px=(960, 1060), moon_px=(930, 330)):
+def build(screen_world=(0.1, -0.6, 1.1), flame_world=(0.9, -0.7, 0.6), moon_px=(930, 330)):
     random.seed(7)
     sc = bpy.context.scene
-    room = collection('room')
-    outside = collection('outside')
+    far = collection('far')          # дальний план: стены, окно, шторы, полка
+    outside = collection('outside')  # за окном (без линий Freestyle)
+    floorc = collection('floor')     # пол, коврик, банки, тапки
+    sofac = collection('sofa')       # диван и подушка
+    room = far
 
     wallm = wallpaper_mat()
-    white = plain('frame_paint', (0.55, 0.56, 0.60), 0.6)
+    white = old_paint_mat('frame_paint', (0.40, 0.39, 0.37))
     wood = plain('wood', (0.16, 0.09, 0.05), 0.6)
     dark = plain('dark', (0.02, 0.02, 0.025), 0.4)
 
@@ -455,7 +573,7 @@ def build(screen_px=(540, 820), flame_px=(960, 1060), moon_px=(930, 330)):
     box('side_l', -3.1, -3.0, -6, T, 0, 3.0, wallm, room)
     box('side_r', 3.0, 3.1, -6, T, 0, 3.0, wallm, room)
     box('ceil', -3.1, 3.1, -6, T, 3.0, 3.1, plain('ceil', (0.3, 0.3, 0.33)), room)
-    box('floor', -3.0, 3.0, -6, 0, -0.05, 0, floor_mat(), room)
+    box('floor', -3.0, 3.0, -6, 0, -0.05, 0, floor_mat(), floorc)
     box('plinth', -3.0, 3.0, -0.02, 0, 0, 0.07, plain('plinth', (0.25, 0.2, 0.17), 0.6), room)
 
     # --- окно: рама, импост, подоконник
@@ -467,6 +585,7 @@ def build(screen_px=(540, 820), flame_px=(960, 1060), moon_px=(930, 330)):
     mid = (WX0 + WX1) / 2
     box('fr_m', mid - fw / 2, mid + fw / 2, 0.05, 0.11, WZ0, WZ1, white, room)
     box('fr_h', WX0, WX1, 0.05, 0.11, 2.12, 2.12 + fw, white, room)
+    box('glass', WX0, WX1, 0.075, 0.08, WZ0, WZ1, glass_mat(), room)
     box('sill', WX0 - 0.08, WX1 + 0.08, -0.20, 0.12, WZ0 - 0.04, WZ0, white, room, bevel=0.01)
     # горшок с кактусом на подоконнике
     pot = box('pot', 0.50, 0.62, -0.13, -0.03, WZ0, WZ0 + 0.10, plain('pot', (0.35, 0.13, 0.08)), room, bevel=0.01)
@@ -487,19 +606,24 @@ def build(screen_px=(540, 820), flame_px=(960, 1060), moon_px=(930, 330)):
     for c in rod.users_collection:
         c.objects.unlink(rod)
     room.objects.link(rod)
-    curtain_m = fabric_mat('curtain', (0.42, 0.38, 0.33), (0.36, 0.32, 0.28), 8.0)
+    curtain_m = curtain_mat()
     for (xa, xb, folds, ph) in ((0.10, 0.44, 6, 0.0), (1.20, 1.60, 6, 1.3)):
         me = bpy.data.meshes.new('curtain')
         nx, nz = 60, 30
         verts, faces = [], []
         for j in range(nz + 1):
             z = 2.66 - (2.66 - 0.95) * j / nz
-            spread = 1.0 + 0.25 * (j / nz)
+            v = j / nz
+            spread = 1.0 + 0.35 * v
             for i in range(nx + 1):
                 u = i / nx
-                x = xa + (xb - xa) * u
-                yy = -0.10 - (0.022 * math.sin(u * folds * 2 * math.pi + ph) + 0.012 * math.sin(u * folds * 4.7 + ph * 2.1)) * spread
-                verts.append((x, yy, z))
+                # складки не по линейке: частота плывёт, у карниза собрано, внизу расходится
+                ph2 = ph + 0.9 * math.sin(u * 3.1 + v * 2.0) + 0.4 * math.sin(v * 5.0 + u * 7.0)
+                x = xa + (xb - xa) * u + 0.03 * v * (u - 0.5)
+                amp = 0.020 + 0.010 * math.sin(u * 2.3 + ph)
+                yy = -0.10 - (amp * math.sin(u * folds * 2 * math.pi + ph2) + 0.010 * math.sin(u * folds * 4.7 + ph * 2.1)) * spread
+                zz = z + (0.03 * math.sin(u * 9.0 + ph) if j == nz else 0.0)
+                verts.append((x, yy, zz))
         for j in range(nz):
             for i in range(nx):
                 a = j * (nx + 1) + i
@@ -520,7 +644,7 @@ def build(screen_px=(540, 820), flame_px=(960, 1060), moon_px=(930, 330)):
     ml = mo + md * (38.0 / md.y)
     bpy.ops.mesh.primitive_uv_sphere_add(radius=1.2, location=ml)
     moon = bpy.context.object
-    moon.data.materials.append(emission_mat('moon', (1.0, 0.96, 0.82), 6.0))
+    moon.data.materials.append(moon_mat())
     for c in moon.users_collection:
         c.objects.unlink(moon)
     outside.objects.link(moon)
@@ -593,20 +717,20 @@ def build(screen_px=(540, 820), flame_px=(960, 1060), moon_px=(930, 330)):
     # --- диван у стены
     sofa_m = fabric_mat('sofa', (0.22, 0.095, 0.085), (0.13, 0.055, 0.06), 90.0)
     SX0, SX1 = -1.30, 1.30
-    box('sofa_base', SX0, SX1, -0.92, -0.02, 0.10, 0.30, sofa_m, room, bevel=0.03)
-    box('sofa_seat1', SX0 + 0.20, 0.0, -0.92, -0.20, 0.30, 0.46, sofa_m, room, bevel=0.05, seg=4)
-    box('sofa_seat2', 0.0, SX1 - 0.20, -0.92, -0.20, 0.30, 0.46, sofa_m, room, bevel=0.05, seg=4)
-    box('sofa_back', SX0 + 0.10, SX1 - 0.10, -0.16, -0.02, 0.30, 0.98, sofa_m, room, bevel=0.06, seg=4)
+    box('sofa_base', SX0, SX1, -0.92, -0.02, 0.10, 0.30, sofa_m, sofac, bevel=0.03)
+    box('sofa_seat1', SX0 + 0.20, 0.0, -0.92, -0.20, 0.30, 0.46, sofa_m, sofac, bevel=0.05, seg=4)
+    box('sofa_seat2', 0.0, SX1 - 0.20, -0.92, -0.20, 0.30, 0.46, sofa_m, sofac, bevel=0.05, seg=4)
+    box('sofa_back', SX0 + 0.10, SX1 - 0.10, -0.16, -0.02, 0.30, 0.98, sofa_m, sofac, bevel=0.06, seg=4)
     # спинка — две продавленные подушки
     for (a, b, tilt) in ((SX0 + 0.22, -0.01, 4), (0.01, SX1 - 0.22, -3)):
-        bc = box('back_cushion', a, b, -0.34, -0.12, 0.42, 0.92, sofa_m, room, bevel=0.08, seg=5)
+        bc = box('back_cushion', a, b, -0.34, -0.12, 0.42, 0.92, sofa_m, sofac, bevel=0.08, seg=5)
         bc.rotation_euler = (math.radians(-8), 0, math.radians(tilt * 0.3))
-    box('arm_l', SX0, SX0 + 0.22, -0.95, -0.02, 0.10, 0.70, sofa_m, room, bevel=0.07, seg=4)
-    box('arm_r', SX1 - 0.22, SX1, -0.95, -0.02, 0.10, 0.70, sofa_m, room, bevel=0.07, seg=4)
+    box('arm_l', SX0, SX0 + 0.22, -0.95, -0.02, 0.10, 0.70, sofa_m, sofac, bevel=0.07, seg=4)
+    box('arm_r', SX1 - 0.22, SX1, -0.95, -0.02, 0.10, 0.70, sofa_m, sofac, bevel=0.07, seg=4)
     for xx in (SX0 + 0.06, SX1 - 0.10):
-        box('leg', xx, xx + 0.05, -0.88, -0.83, 0.0, 0.10, wood, room)
+        box('leg', xx, xx + 0.05, -0.88, -0.83, 0.0, 0.10, wood, sofac)
     # подушка у левого подлокотника
-    pil = box('pillow', -1.10, -0.62, -0.36, -0.16, 0.42, 0.86, pillow_mat(), room, bevel=0.08, seg=6)
+    pil = box('pillow', -1.10, -0.62, -0.36, -0.16, 0.42, 0.86, pillow_mat(), sofac, bevel=0.08, seg=6)
     sm = pil.modifiers.new('round', 'SUBSURF')
     sm.levels = sm.render_levels = 1
     pil.rotation_euler = (math.radians(-12), math.radians(-14), 0)
@@ -620,10 +744,22 @@ def build(screen_px=(540, 820), flame_px=(960, 1060), moon_px=(930, 330)):
         can.data.materials.append(canm[k])
         for c in can.users_collection:
             c.objects.unlink(can)
-        room.objects.link(can)
+        floorc.objects.link(can)
 
     # --- коврик на полу
-    rug = box('rug', -0.75, 0.95, -2.25, -1.05, 0.0, 0.006, rug_mat(), room)
+    rug = box('rug', -0.75, 0.95, -2.25, -1.05, 0.0, 0.006, rug_mat(), floorc)
+
+    # --- тапки на коврике: подошва + мягкий верх
+    solem = plain('sole', (0.04, 0.04, 0.06), 0.8)
+    fleece = fabric_mat('fleece', (0.30, 0.33, 0.42), (0.22, 0.24, 0.32), 140.0)
+    for (x, y, rz) in ((-0.42, -1.62, 18), (-0.16, -1.72, -8)):
+        so_ = box('slipper_sole', x - 0.055, x + 0.055, y - 0.13, y + 0.13, 0.0, 0.025, solem, floorc, bevel=0.03, seg=4)
+        so_.rotation_euler = (0, 0, math.radians(rz))
+        up = box('slipper_top', x - 0.06, x + 0.06, y - 0.14, y + 0.02, 0.02, 0.075, fleece, floorc, bevel=0.035, seg=5)
+        up.rotation_euler = (0, 0, math.radians(rz))
+        up.location.x += -math.sin(math.radians(rz)) * 0.0
+        sm2 = up.modifiers.new('round', 'SUBSURF')
+        sm2.levels = sm2.render_levels = 1
 
     # --- свет
     world = bpy.data.worlds.new('night')
@@ -635,13 +771,13 @@ def build(screen_px=(540, 820), flame_px=(960, 1060), moon_px=(930, 330)):
 
     sun = bpy.data.lights.new('moonlight', 'SUN')
     sun.color = (0.55, 0.68, 1.0)
-    sun.energy = 2.2
+    sun.energy = 3.2
     sun.angle = math.radians(1.5)
     so = link(bpy.data.objects.new('moonlight', sun), room)
     so.rotation_euler = (math.radians(-38), math.radians(-28), math.radians(0))
     # направление: луч идёт из окна (+y, сверху, справа) в комнату
     so.rotation_euler = Vector((0.0, 0.0, 0.0)).to_track_quat('Z', 'Y').to_euler()
-    dirv = Vector((-0.40, -0.72, -0.58)).normalized()
+    dirv = Vector((-0.35, -1.0, -0.75)).normalized()   # пятно окна ложится на пол перед диваном
     so.rotation_euler = (-dirv).to_track_quat('Z', 'Y').to_euler()
 
     fill = bpy.data.lights.new('fill', 'AREA')
@@ -662,20 +798,23 @@ def build(screen_px=(540, 820), flame_px=(960, 1060), moon_px=(930, 330)):
     wo.rotation_euler = (math.radians(-90), 0, 0)
     win_glow.use_shadow = False
 
-    # экран телефона и огонёк кота — свет в 3D в точке, куда их нарисует 2D-слой
-    sp = px_on_plane_y(screen_px[0], screen_px[1], -0.55)
+    # экран телефона и огонёк кота: точки в мире задаёт сборщик (по раскладке слоёв героев)
     phone = bpy.data.lights.new('screen', 'POINT')
     phone.color = (0.55, 0.78, 1.0)
     phone.energy = 18
     phone.shadow_soft_size = 0.08
-    po = link(bpy.data.objects.new('screen', phone), room)
-    po.location = (sp.x, -0.45, sp.z)
+    po = link(bpy.data.objects.new('screen', phone), far)
+    po.location = screen_world
 
-    fp = px_on_plane_y(flame_px[0], flame_px[1], -0.55)
     fl = bpy.data.lights.new('flame', 'POINT')
     fl.color = (1.0, 0.45, 0.12)
     fl.energy = 9
     fl.shadow_soft_size = 0.05
-    flo = link(bpy.data.objects.new('flame', fl), room)
-    flo.location = (fp.x, -0.55, fp.z)
-    return {'room': room, 'outside': outside, 'screen_light': po, 'flame_light': flo}
+    flo = link(bpy.data.objects.new('flame', fl), far)
+    flo.location = flame_world
+    for o in (so, fo, wo):
+        for c in o.users_collection:
+            c.objects.unlink(o)
+        far.objects.link(o)
+    return {'far': far, 'outside': outside, 'floor': floorc, 'sofa': sofac, 'shelf': shelfc,
+            'screen_light': po, 'flame_light': flo, 'lights': {'moon': so, 'fill': fo, 'window': wo}}
