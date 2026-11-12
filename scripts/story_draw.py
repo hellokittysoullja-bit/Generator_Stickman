@@ -6,7 +6,7 @@
 <dir>/draw.json:
     {"jobs": {"sheet": {"scene": "...", "refs": ["cat"]},
               "s1_night": {"scene": "...", "refs": ["sheet", "cat"]}}}
-refs: "cat" — эталон кота (look/hero.png), "sheet" или любое имя готового рисунка из gen/ — лист персонажей и сцены,
+refs: "style:<путь>" — образец стиля (только манера рисунка), "cat" — эталон кота (look/hero.png), "sheet" или любое имя готового рисунка из gen/ — лист персонажей и сцены,
 путь — любой файл. Рисунок с готовым файлом не перерисовывается (деньги); каждый — в library/cat через шлюз.
 """
 import argparse
@@ -37,6 +37,8 @@ def cat_marks():
 def ref_path(d, r):
     if r == "cat":
         return os.path.join(ROOT, "look", "hero.png")
+    if r.startswith("style:"):
+        return r[6:]
     p = os.path.join(d, "gen", r + ".png")
     return p if os.path.exists(p) else os.path.normpath(os.path.join(d, r))
 
@@ -47,7 +49,11 @@ def prompt(job, refs):
         scene = scene.rstrip() + " " + reel_draw.PHONE
     roles = []
     for i, r in enumerate(refs, 1):
-        if r == "cat":
+        if r.startswith("style:"):
+            roles.append(f"Reference image {i} shows only the drawing style: copy its line work, flat colours, cel "
+                         "shading, way of drawing faces and eyes, textured detailed backgrounds and lighting; never its "
+                         "characters, people, objects, writing or layout.")
+        elif r == "cat":
             roles.append(f"Reference image {i} is the black cat character: keep its identity, change only style, pose "
                          "and expression.")
         elif r == "sheet":

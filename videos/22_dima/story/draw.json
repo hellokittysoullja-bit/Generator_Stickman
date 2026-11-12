@@ -1,4 +1,21 @@
-{"_": "Рилс 22, формат «история человека» (владелец 12.11). Сначала лист персонажей — показать владельцу.",
+{
+ "_": "Рилс 22, формат «история человека» (владелец 12.11). Сначала лист персонажей — показать владельцу.",
  "jobs": {
-  "sheet": {"refs": ["cat"], "scene": "Character design sheet on a plain light warm-grey studio background, two characters standing side by side, full body, front view, neutral relaxed pose, evenly lit. Left: Dima, a 24-year-old ordinary young man, slim, slightly slouched, messy dark-brown hair sticking up at the back, light stubble, tired kind eyes with faint grey bags under them, wearing a faded mustard-yellow hoodie, grey sweatpants and worn white socks. Right, sitting at his feet and reaching up to his knee: his black cat, round fluffy body, looking up at Dima with curiosity. Below them, smaller, three close-up head studies of Dima: bored with a glazed look, panicked with wide eyes, and a small proud smile. Generous empty space around each figure."}
- }}
+  "sheet": {
+   "refs": [
+    "cat"
+   ],
+   "scene": "Character design sheet on a plain light warm-grey studio background, two characters standing side by side, full body, front view, neutral relaxed pose, evenly lit. Left: Dima, a 24-year-old ordinary young man, slim, slightly slouched, messy dark-brown hair sticking up at the back, light stubble, tired kind eyes with faint grey bags under them, wearing a faded mustard-yellow hoodie, grey sweatpants and worn white socks. Right, sitting at his feet and reaching up to his knee: his black cat, round fluffy body, looking up at Dima with curiosity. Below them, smaller, three close-up head studies of Dima: bored with a glazed look, panicked with wide eyes, and a small proud smile. Generous empty space around each figure."
+  },
+  "look": {
+   "refs": [
+    "style:/tmp/claude-0/-home-user/7605bd81-268a-5536-b1b7-f9696ca784cb/scratchpad/style_ref/ref1.png",
+    "style:/tmp/claude-0/-home-user/7605bd81-268a-5536-b1b7-f9696ca784cb/scratchpad/style_ref/ref2.png",
+    "style:/tmp/claude-0/-home-user/7605bd81-268a-5536-b1b7-f9696ca784cb/scratchpad/style_ref/ref3.png",
+    "style:/tmp/claude-0/-home-user/7605bd81-268a-5536-b1b7-f9696ca784cb/scratchpad/style_ref/ref4.png",
+    "cat"
+   ],
+   "scene": "Night in a small ordinary rented apartment. Dima, a 24-year-old ordinary slim young man with messy dark-brown hair sticking up at the back, light stubble and tired eyes with dark bags under them, wearing a faded mustard-yellow hoodie, lies on an old sofa under a light-green checkered blanket, propped on one elbow, staring at a phone in his hand; the phone's cold glow lights his face. At his feet on the blanket his black cat sits and looks at the viewer. Behind them: a wall with faded striped wallpaper, a window with a dark night sky, a moon and lit windows of the building across the street, a cluttered desk with an open laptop with a blank glowing screen, a mug and a stack of papers, a blank digital clock. Whole room dim blue-violet night light, only the phone and the laptop glow."
+  }
+ }
+}

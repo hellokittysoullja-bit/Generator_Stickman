@@ -3856,5 +3856,23 @@
   "quality": "medium",
   "price": 197550,
   "source": "scripts/story_draw.py videos/22_dima/story --only"
+ },
+ {
+  "file": "2026-11-12_gen_cx_gpt-image-2_5_64b48afa.png",
+  "sha256": "64b48afad0515099ebfea1f3c41de9fddeadfc5390c6525b29cf1b87c1dbd177",
+  "bytes": 2347095,
+  "size": [
+   1039,
+   1514
+  ],
+  "date": "2026-11-12",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "cx/gpt-image-2.5",
+  "prompt": "Reference image 1 shows only the drawing style: copy its line work, flat colours, cel shading, way of drawing faces and eyes, textured detailed backgrounds and lighting; never its characters, people, objects, writing or layout. Reference image 2 shows only the drawing style: copy its line work, flat colours, cel shading, way of drawing faces and eyes, textured detailed backgrounds and lighting; never its characters, people, objects, writing or layout. Reference image 3 shows only the drawing style: copy its line work, flat colours, cel shading, way of drawing faces and eyes, textured detailed backgrounds and lighting; never its characters, people, objects, writing or layout. Reference image 4 shows only the drawing style: copy its line work, flat colours, cel shading, way of drawing faces and eyes, textured detailed backgrounds and lighting; never its characters, people, objects, writing or layout. Reference image 5 is the black cat character: keep its identity, change only style, pose and expression. SCENE: Night in a small ordinary rented apartment. Dima, a 24-year-old ordinary slim young man with messy dark-brown hair sticking up at the back, light stubble and tired eyes with dark bags under them, wearing a faded mustard-yellow hoodie, lies on an old sofa under a light-green checkered blanket, propped on one elbow, staring at a phone in his hand; the phone's cold glow lights his face. At his feet on the blanket his black cat sits and looks at the viewer. Behind them: a wall with faded striped wallpaper, a window with a dark night sky, a moon and lit windows of the building across the street, a cluttered desk with an open laptop with a blank glowing screen, a mug and a stack of papers, a blank digital clock. Whole room dim blue-violet night light, only the phone and the laptop glow. Every phone in the picture is the same modern smartphone drawn correctly: a black iPhone 14 Pro with a thin black frame and rounded corners; from the back a plain matte black back with one square camera block in the upper corner holding three round lenses, no logo; from the front one blank glowing screen with a small pill cutout at the top; normal proportions, held naturally, never bent, doubled, cut or melted into a paw. The black cat is the cat from its reference image, redrawn in this cartoon style: same black fur, big green eyes, orange stripes on the cheeks, a small orange flame burning on the tip of its curled tail. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right Style: modern adult animated TV series look, flat 2D cel animation, clean confident black outlines of even weight, simple flat colours with one soft cel shadow tone, expressive cartoon faces with big white eyes and small pupils, slightly tired relatable characters; backgrounds are richly detailed and lived-in, painted with soft texture and warm natural light, believable everyday objects. Full-bleed vertical frame filled edge to edge, no border, no paper margin. Every surface is clean and unmarked: no letters, numbers, logos or writing anywhere — blank screens, blank clock faces, blank book covers, plain walls. Keep the main subject well inside the frame.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 197550,
+  "source": "scripts/story_draw.py videos/22_dima/story --only"
  }
 ]
