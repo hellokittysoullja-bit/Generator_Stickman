@@ -173,7 +173,9 @@ def frame(f, t=None, heroes=True, post=True, push_on=True):
         screen_mul = 1 - 0.85 * shadow_from(hs['L_dima'][..., 3], sp, 1.35, 16)[..., None]
     if 'L_cat' in hs:
         fp = warp_point(meta['flame_px'], scale_for(meta['depths']['L_cat'], tt))
-        flame_mul = 1 - 0.85 * shadow_from(hs['L_cat'][..., 3], fp, 1.45, 12)[..., None]
+        ca = hs['L_cat'][..., 3].copy()
+        cv2.circle(ca, (int(fp[0]), int(fp[1])), 46, 0.0, -1)      # сам огонёк свет не заслоняет
+        flame_mul = 1 - 0.85 * shadow_from(ca, fp, 1.45, 12)[..., None]
     if hs:
         al = np.maximum.reduce([h[..., 3] for h in hs.values()])
         M = np.float32([[1, 0, -4], [0, 1, 16]])
@@ -185,6 +187,16 @@ def frame(f, t=None, heroes=True, post=True, push_on=True):
         if n in hs:
             h = hs[n]
             img = h[..., :3] + (1 - h[..., 3:4]) * img
+    if heroes:
+        # ореол огонька (в слоях героев его нет): тёплое свечение воздуха, дышит вместе с flame(t)
+        fp = warp_point(meta['flame_px'], scale_for(meta['depths']['L_cat'], tt))
+        x0, y0 = int(fp[0]) - 260, int(fp[1]) - 260
+        xs = np.arange(max(0, x0), min(W, x0 + 520), dtype=np.float32)
+        ys = np.arange(max(0, y0), min(H, y0 + 520), dtype=np.float32)
+        r2 = (xs[None, :] - fp[0]) ** 2 + (ys[:, None] - fp[1]) ** 2
+        halo = fl * (0.10 * np.exp(-r2 / (2 * 70.0 ** 2)) + 0.22 * np.exp(-r2 / (2 * 22.0 ** 2)))
+        col = np.array([1.0, 0.42, 0.10], np.float32)
+        img[int(ys[0]):int(ys[-1]) + 1, int(xs[0]):int(xs[-1]) + 1] += halo[..., None] * col
     if post:
         bright = np.clip(img - 0.9, 0, None)
         small = cv2.resize(bright, (W // 4, H // 4), interpolation=cv2.INTER_AREA)
@@ -232,6 +244,10 @@ def main():
         d = np.abs(ours - ref)
         print('CHECK mean |diff| = %.3f /255, p99 = %.1f, max = %.0f, share >8: %.4f'
               % (d.mean(), np.percentile(d, 99), d.max(), (d.max(axis=2) > 8).mean()))
+        b = np.abs(cv2.GaussianBlur(ours, (0, 0), 3) - cv2.GaussianBlur(ref, (0, 0), 3))
+        print('CHECK after 3px blur (noise removed, bias stays): mean %.3f /255, p99 %.1f' % (b.mean(), np.percentile(b, 99)))
+        sd = (ours - ref).mean()
+        print('CHECK signed mean (systematic shift): %+.3f /255' % sd)
         dm = np.clip(d.max(axis=2) * 8, 0, 255).astype(np.uint8)
         cv2.imwrite(opt('--diff', 'check_diff.png'), dm)
     elif mode == 'anim':
