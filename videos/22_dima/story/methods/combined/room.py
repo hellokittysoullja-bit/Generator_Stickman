@@ -169,6 +169,17 @@ CROP_CENTER = (572, 1040)
 SHELF_DX = 0.36             # полка с часами ближе к центру, чтобы 01:47 не срезалось кадром
 
 
+# расстояние от камеры кадра 0 (y = -4.25) до слоя, м — по нему масштаб слоя при наезде (мультиплан)
+LAYER_DEPTH = {'far': 4.25, 'sofa': 3.85, 'floor': 2.75, 'L_dima': 3.75, 'L_plaid': 3.33, 'L_cat': 3.42}
+CAM_Y = -4.25
+
+
+def principal_px():
+    """Пиксель (1080×1920) оптической оси съёмочной камеры: центр масштаба при наезде вперёд."""
+    cd = bpy.data.objects['cam'].data
+    return (W / 2 - cd.shift_x * H, H / 2 + cd.shift_y * H)
+
+
 def _cam(name, lens, sx, sy):
     cd = bpy.data.cameras.new(name)
     cd.sensor_fit = 'VERTICAL'
@@ -195,6 +206,7 @@ def camera():
     k = ZOOM
     co = _cam('cam', L1 * k, k * ((cx - W / 2) / H + sx1), k * ((H / 2 - cy) / H + sy1))
     sc.camera = co
+    bpy.context.view_layer.update()   # иначе matrix_world камер ещё единичная и лучи из пикселей идут мимо
     return co
 
 
@@ -503,7 +515,7 @@ def glass_mat():
     m, nt, out = nodes_mat('glass')
     g = N(nt)
     p = g.coord('World')
-    smudge = g.math('ADD', 0.04, g.math('MULTIPLY', g.math('GREATER_THAN', g.noise(p, 5.0, 6.0), 0.55), 0.06))
+    smudge = g.math('ADD', 0.02, g.math('MULTIPLY', g.math('GREATER_THAN', g.noise(p, 5.0, 6.0), 0.58), 0.04))
     bs = g.node('ShaderNodeBsdfPrincipled')
     bs.inputs['Base Color'].default_value = (0.55, 0.62, 0.75, 1)
     bs.inputs['Roughness'].default_value = 0.25
@@ -585,7 +597,8 @@ def build(screen_world=(0.1, -0.6, 1.1), flame_world=(0.9, -0.7, 0.6), moon_px=(
     mid = (WX0 + WX1) / 2
     box('fr_m', mid - fw / 2, mid + fw / 2, 0.05, 0.11, WZ0, WZ1, white, room)
     box('fr_h', WX0, WX1, 0.05, 0.11, 2.12, 2.12 + fw, white, room)
-    box('glass', WX0, WX1, 0.075, 0.08, WZ0, WZ1, glass_mat(), room)
+    gl_ = box('glass', WX0, WX1, 0.075, 0.08, WZ0, WZ1, glass_mat(), room)
+    gl_.visible_shadow = False   # стекло не заслоняет лунный луч
     box('sill', WX0 - 0.08, WX1 + 0.08, -0.20, 0.12, WZ0 - 0.04, WZ0, white, room, bevel=0.01)
     # горшок с кактусом на подоконнике
     pot = box('pot', 0.50, 0.62, -0.13, -0.03, WZ0, WZ0 + 0.10, plain('pot', (0.35, 0.13, 0.08)), room, bevel=0.01)
@@ -752,12 +765,15 @@ def build(screen_world=(0.1, -0.6, 1.1), flame_world=(0.9, -0.7, 0.6), moon_px=(
     # --- тапки на коврике: подошва + мягкий верх
     solem = plain('sole', (0.04, 0.04, 0.06), 0.8)
     fleece = fabric_mat('fleece', (0.30, 0.33, 0.42), (0.22, 0.24, 0.32), 140.0)
-    for (x, y, rz) in ((-0.42, -1.62, 18), (-0.16, -1.72, -8)):
+    for (x, y, rz) in ((-0.30, -1.40, 18), (-0.06, -1.48, -8)):
         so_ = box('slipper_sole', x - 0.055, x + 0.055, y - 0.13, y + 0.13, 0.0, 0.025, solem, floorc, bevel=0.03, seg=4)
         so_.rotation_euler = (0, 0, math.radians(rz))
         up = box('slipper_top', x - 0.06, x + 0.06, y - 0.14, y + 0.02, 0.02, 0.075, fleece, floorc, bevel=0.035, seg=5)
         up.rotation_euler = (0, 0, math.radians(rz))
-        up.location.x += -math.sin(math.radians(rz)) * 0.0
+        a_ = math.radians(rz)
+        up.location = (x + 0.06 * math.sin(a_), y - 0.06 * math.cos(a_), up.location.z)
+        sm1 = so_.modifiers.new('round', 'SUBSURF')
+        sm1.levels = sm1.render_levels = 1
         sm2 = up.modifiers.new('round', 'SUBSURF')
         sm2.levels = sm2.render_levels = 1
 
