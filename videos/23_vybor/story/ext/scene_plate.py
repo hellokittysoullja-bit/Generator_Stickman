@@ -140,18 +140,22 @@ def gloss():
 
 
 def cheese():
+    """Тёртый сыр стружкой: короткие изогнутые полоски, светлые с тёплой тенью, кучкой в центре и редко по краям."""
     rs = np.random.RandomState(5)
     s = []
-    for k in range(46):
+    for k in range(60):
         a = rs.uniform(0, 2 * math.pi)
-        r = math.sqrt(rs.uniform(0, 1))
-        x = 545 + 190 * r * math.cos(a)
-        y = 905 + 105 * r * math.sin(a) - 10
-        w_, h_ = rs.uniform(9, 15), rs.uniform(2.6, 4)
-        rot = rs.uniform(0, 180)
-        s.append(blob(ellipse_pts(x, y, w_, h_, 6, rot=rot, jitter=.25, seed=k), "#fff6cf"))
-        if k % 3 == 0:
-            s.append(blob(ellipse_pts(x + 1, y + 1.5, w_, h_ * .5, 6, rot=rot), "#d8c48a", .7))
+        r = math.sqrt(rs.uniform(0, 1)) ** (1.4 if k < 36 else 0.7)
+        x = 545 + 185 * r * math.cos(a)
+        y = 900 + 100 * r * math.sin(a) - 8
+        L = rs.uniform(14, 24)
+        ang = rs.uniform(0, math.pi)
+        bend = rs.uniform(-6, 6)
+        dx, dy = math.cos(ang) * L / 2, math.sin(ang) * L / 2 * .7
+        mx, my = x - math.sin(ang) * bend, y + math.cos(ang) * bend * .7
+        pts = [(x - dx, y - dy), (mx, my), (x + dx, y + dy)]
+        s.append(line([(px + 1.2, py + 1.6) for px, py in pts], 5.2, "#b8963e", taper=.5, wmin=.45, seed=4000 + k, op=.75))
+        s.append(line(pts, 4.6, "#fff0b0", taper=.5, wmin=.45, seed=4100 + k))
     return "".join(s)
 
 
@@ -181,6 +185,9 @@ def fork():
 
 def light_defs():
     DEFS.append(f"""
+<filter id="fDim" x="-400" y="-400" width="1880" height="2720" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+ <feColorMatrix type="matrix" values=".80 0 0 0 0  0 .78 0 0 0  0 0 .82 0 0  0 0 0 1 0"/>
+</filter>
 <filter id="fNight" x="-400" y="-400" width="1880" height="2720" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
  <feColorMatrix type="matrix" values="{NIGHT[0] * .9} {NIGHT[0] * .1} 0 0 0  {NIGHT[1] * .05} {NIGHT[1] * .9} {NIGHT[1] * .05} 0 0  0 {NIGHT[2] * .1} {NIGHT[2] * .9} 0 0  0 0 0 1 0"/>
 </filter>""")
@@ -279,7 +286,7 @@ def frame(sid, t):
             f'<path d="{fill_d(SAUCE)}" fill="#7a4a3c" opacity="{0.42 * cold:.3f}"/></g>') if cold > 0 else ""
     gl_op = 1 - cold
     SG = f'<g transform="translate({SC_C[0]} {SC_C[1]}) scale({SC_K}) translate({-SC_C[0]} {-SC_C[1]})">'
-    art = (st["plaid"] + st["plate"] + st["fork"] + st["pasta_under"] + st["sauce"] + dull + SG + st["over"] + "</g>" + st["cheese"] + st["basil"]
+    art = (st["plate"] + st["fork"] + st["pasta_under"] + st["sauce"] + dull + SG + st["over"] + "</g>" + st["cheese"] + st["basil"]
            + (f'<g opacity="{gl_op:.3f}" transform="translate({SC_C[0]} {SC_C[1]}) scale({SC_K}) translate({-SC_C[0]} {-SC_C[1]})">{st["gloss"]}</g>' if gl_op > 0.01 else ""))
     light = (f'<rect x="-300" y="-300" width="{W + 600}" height="{H + 600}" fill="url(#gScr)" opacity="{clamp(.42 * tvl, 0, 1):.3f}"/>'
              f'<rect x="-300" y="-300" width="{W + 600}" height="{H + 600}" fill="url(#gFl)" opacity="{clamp(.7 * fl, 0, 1):.3f}"/>')
@@ -289,6 +296,14 @@ def frame(sid, t):
     else:
         u = (t - 3.72) / 1.25
         cm = cam(566 + 8 * u, 918 - 4 * u, 1.34 + 0.008 * u)
-    body = (f'<g transform="{cm}"><g style="isolation:isolate"><g filter="url(#fNight)">{art}</g>'
-            f'<g style="mix-blend-mode:screen">{light}</g></g>{steam(t)}</g>')
+    outer = fill_d(ellipse_pts(PCX, PCY, PRX, PRY, 20))
+    cl = lib.clip_of(ellipse_pts(PCX, PCY, PRX, PRY, 20))
+    # холодный отсвет ТВ только по краю тарелки (слева-сверху), тёплый — по правому краю
+    rims = (f'<g clip-path="url(#{cl})"><path d="{outer}" fill="#8fb0ff" opacity="{clamp(.55 * tvl, 0, .9):.3f}"/>'
+            f'<path d="{outer}" transform="translate(34 26)" fill="#000" {blur(14)}/></g>'
+            f'<g clip-path="url(#{cl})"><path d="{outer}" fill="#ffa860" opacity="{clamp(.28 * fl, 0, .6):.3f}"/>'
+            f'<path d="{outer}" transform="translate(-30 -22)" fill="#000" {blur(14)}/></g>')
+    body = (f'<g transform="{cm}"><g style="isolation:isolate"><g filter="url(#fNight)">{st["plaid"]}</g>'
+            f'<g style="mix-blend-mode:screen">{light}</g>'
+            f'<g filter="url(#fDim)">{art}</g><g style="mix-blend-mode:screen">{rims}</g></g>{steam(t)}</g>')
     return lib.svg(body)

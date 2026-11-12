@@ -268,13 +268,13 @@ def frame(sid, t):
 
 
 def crowd_back(t):
+    """За столом по краям — целиком сбоку от стола, а не головами из банок."""
     s = []
-    # за столом: двое рассматривают банки, наклоняются, переводят взгляд
     look = math.sin(t * 1.7)
-    s.append(draw(C("lena", face=.3 + .2 * look), dict(look=(.5 * look, .8), head_tilt=6 * math.sin(t * .9), blink=blink(t, 4),
-                                                         mouth="flat", brow=.4), 330, TABLE_Y + 70, .8, 41))
-    s.append(draw(C("ivan", face=-.3), dict(look=(-.3 + .4 * math.sin(t * 2.3 + 1), .9), head_tilt=-5, blink=blink(t, 5), mouth="wavy", brow=.8,
-                                            arms={"R": (-150 + 10 * math.sin(t * 9), 40)}), 760, TABLE_Y + 76, .78, 43))
+    s.append(draw(C("lena", face=.55), dict(look=(.7, .5 + .2 * look), head_tilt=5 + 3 * math.sin(t * .9), blink=blink(t, 4),
+                                            mouth="flat", brow=.5, arms={"L": (40, 70)}), 70, TABLE_Y + 40, .8, 41))
+    s.append(draw(C("ivan", face=-.55), dict(look=(-.6, .5), head_tilt=-5, blink=blink(t, 5), mouth="wavy", brow=.8,
+                                             arms={"R": (172, 132 + 9 * math.sin(t * 13))}), 1010, TABLE_Y + 46, .8, 43))
     return "".join(s)
 
 
@@ -309,7 +309,9 @@ def label(txt, x, y, t, delay=0.0):
 def split(st, t):
     u = t - 16.2
     # слева: уходит с пустой корзиной от большого стола
-    lp = walker(C("boris", face=-.7), u, 700, -170, 1900, 1.25, 61, basket="R", look=(-.6, .4), brow=.6, mouth="frown", blink=blink(t, 10))
+    # уходит боком влево, от стола и из кадра; голова опущена, корзина пустая
+    lp = walker(C("boris", face=-1.0), u, 760, -230, 1880, 1.22, 61, basket="R", look=(-.9, .7), brow=.6, mouth="frown",
+                head_tilt=-7, blink=blink(t, 10))
     left = world(st, 24, t, "", lp)
     # справа: кладёт банку в корзину у малого стола
     a = clamp((t - 16.5) / 1.0)

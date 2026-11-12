@@ -62,6 +62,8 @@ def face(spec, pose, sd):
     hx = 64 * spec.get("hw", 1.0)
     hy = 74
     s = []
+    if spec.get("back"):
+        return back_head(spec, hx, hy, sd)
     # волосы сзади
     hair = spec["hair"]
     hc = spec["hair_c"]
@@ -155,6 +157,23 @@ def face(spec, pose, sd):
         cc = spec["cap"]
         s.append(shape([(-hx - 6, -36), (-hx + 4, -78), (-10, -hy - 28), (hx - 6, -78), (hx + 6, -36)], cc, blob([(10, -hy - 20), (hx, -70), (hx + 6, -36), (20, -36)], shade(cc), .9), w=4.2, seed=sd + 23))
         s.append(shape([(fc * 30 - 40, -40), (fc * 30 + 50 + 40 * fc, -44), (fc * 30 + 60 + 50 * fc, -30), (fc * 30 - 40, -30)], shade(cc), w=3.6, seed=sd + 24))
+    return "".join(s)
+
+
+def back_head(spec, hx, hy, sd):
+    """Голова со спины: уши по бокам, затылок волосами, шея ниже."""
+    skin, hc = spec["skin"], spec["hair_c"]
+    s = []
+    for side in (-1, 1):
+        s.append(shape(ellipse_pts(side * (hx - 4), 8, 14, 20, 10), skin, blob(ellipse_pts(side * (hx - 2), 10, 7, 12, 8), shade(skin), .9), w=3.4, seed=sd + 4 + side))
+    head = ellipse_pts(0, 0, hx, hy, 16)
+    s.append(shape(head, skin, blob(ellipse_pts(30, 20, hx, hy, 12), shade(skin), .85), w=4.6, seed=sd + 6))
+    hair = [(-hx - 4, 30), (-hx - 6, -40), (-40, -hy - 20), (10, -hy - 26), (hx - 6, -hy - 6), (hx + 6, -36), (hx + 4, 30),
+            (hx - 14, 50), (40, 44, 1), (24, 60), (0, 46, 1), (-24, 60), (-40, 44, 1), (-hx + 14, 50)]
+    inner = blob([(10, -hy - 20), (hx + 6, -36), (hx + 4, 30), (hx - 14, 50), (20, 50)], shade(hc), .9)
+    for i, st in enumerate([[(-30, -60), (-26, 0), (-36, 40)], [(10, -70), (16, -10), (8, 40)], [(44, -50), (46, 10)]]):
+        inner += line(st, 3, shade(hc, (.6, .6, .7)), seed=sd + 30 + i, op=.8)
+    s.append(shape(hair, hc, inner, w=4.4, seed=sd + 20))
     return "".join(s)
 
 

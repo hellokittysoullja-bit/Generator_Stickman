@@ -396,7 +396,13 @@ def frame(sid, t):
             f'<rect x="0" y="0" width="{SW}" height="{SHh}" fill="#dfe8ff" opacity="{0.07 * flash:.3f}"/>',
             glass(), "</g></g>",
             "</g>"]
-    if sid != "s15":
+    if sid == "s15":
+        # затылок не пропадает: наезд уносит его вниз за край кадра (параллакс), после наезда он уже за кадром
+        a = ease_in(clamp((t - 24.84) / (PLAY - 24.84)), 1.6)
+        fg_cam = f"translate(0 {900 * a:.2f}) " + cam(SCX - 40 * a, SCY + 10, (1.0 + 0.22 * a) ** 2.4)
+        if a < 0.999:
+            body.append(f'<g transform="{fg_cam}">{st["fg"]}</g>')
+    else:
         body.append(f'<g transform="{fg_cam}">{st["fg"]}</g>')
     return svg("".join(body))
 
