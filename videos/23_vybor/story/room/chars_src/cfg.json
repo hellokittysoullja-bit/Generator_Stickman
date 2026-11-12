@@ -1,0 +1,122 @@
+[
+ {
+  "id": "s01",
+  "start": 0.0,
+  "n": 49,
+  "region": [
+   0,
+   0,
+   1080,
+   1920
+  ],
+  "S": 1.15,
+  "ow": 1242,
+  "oh": 2208,
+  "out": "/home/user/Generator_Stickman/videos/23_vybor/story/room/chars/s01"
+ },
+ {
+  "id": "s05",
+  "start": 4.569999999999999,
+  "n": 63,
+  "region": [
+   51,
+   483,
+   498,
+   885
+  ],
+  "S": 2.2,
+  "ow": 1096,
+  "oh": 1947,
+  "out": "/home/user/Generator_Stickman/videos/23_vybor/story/room/chars/s05"
+ },
+ {
+  "id": "s06",
+  "start": 6.28,
+  "n": 80,
+  "region": [
+   558,
+   544,
+   524,
+   931
+  ],
+  "S": 2.2,
+  "ow": 1153,
+  "oh": 2048,
+  "out": "/home/user/Generator_Stickman/videos/23_vybor/story/room/chars/s06"
+ },
+ {
+  "id": "s12",
+  "start": 18.330000000000002,
+  "n": 63,
+  "region": [
+   0,
+   0,
+   1080,
+   1920
+  ],
+  "S": 1.15,
+  "ow": 1242,
+  "oh": 2208,
+  "out": "/home/user/Generator_Stickman/videos/23_vybor/story/room/chars/s12"
+ },
+ {
+  "id": "s13",
+  "start": 20.04,
+  "n": 84,
+  "region": [
+   64,
+   486,
+   472,
+   839
+  ],
+  "S": 2.2,
+  "ow": 1038,
+  "oh": 1846,
+  "out": "/home/user/Generator_Stickman/videos/23_vybor/story/room/chars/s13"
+ },
+ {
+  "id": "s16",
+  "start": 27.080000000000002,
+  "n": 50,
+  "region": [
+   0,
+   0,
+   1080,
+   1920
+  ],
+  "S": 1.15,
+  "ow": 1242,
+  "oh": 2208,
+  "out": "/home/user/Generator_Stickman/videos/23_vybor/story/room/chars/s16"
+ },
+ {
+  "id": "s17",
+  "start": 28.36,
+  "n": 91,
+  "region": [
+   0,
+   0,
+   1080,
+   1920
+  ],
+  "S": 1.15,
+  "ow": 1242,
+  "oh": 2208,
+  "out": "/home/user/Generator_Stickman/videos/23_vybor/story/room/chars/s17"
+ },
+ {
+  "id": "s18",
+  "start": 31.0,
+  "n": 93,
+  "region": [
+   576,
+   574,
+   485,
+   862
+  ],
+  "S": 2.2,
+  "ow": 1067,
+  "oh": 1896,
+  "out": "/home/user/Generator_Stickman/videos/23_vybor/story/room/chars/s18"
+ }
+]
