@@ -19,7 +19,7 @@ import os
 import subprocess
 import sys
 import time
-from multiprocessing import Pool
+from multiprocessing import get_context
 
 import cv2
 import numpy as np
@@ -202,6 +202,8 @@ def frame(k, heroes=True, post=True, t=None):
         al = b[..., 3:4]
         for p in LIGHTS:
             c = b[..., :3] if p == 'base' else apply(G['room'][L, p], M)[..., :3]
+            if L == 'floor' and p == 'tv':
+                c = c * 0.55     # экран ТВ светит вперёд-вверх на диван; пол у его ножек (тапки) — слабее
             acc[p] = c + (1 - al) * acc[p]
     tv, fl = timing.tv(t), timing.flame(t)
     lay = G['lay']
@@ -280,7 +282,8 @@ def main():
     chars = opt('--chars', os.path.join(HERE, 'chars'))
     clip = opt('--id', 's01')
     if mode == 'clip':
-        load(passes, chars, clip)
+        sj = json.load(open(os.path.join(STORY, 'shots.json')))
+        G.update(shot={x['id']: x for x in sj['shots']}[clip], pad=sj['pad'], end=sj['end'])
         a, n = clip_range()
         jobs = int(opt('--jobs', '4'))
         out = opt('--out', os.path.join(STORY, 'clips', clip + '.mp4'))
@@ -291,7 +294,8 @@ def main():
                                '-pix_fmt', 'yuv420p', '-crf', '16', '-preset', 'slow', '-movflags', '+faststart', out],
                               stdin=subprocess.PIPE)
         t0 = time.time()
-        with Pool(jobs, initializer=init, initargs=(passes, chars, clip)) as pool:
+        # spawn, а не fork: OpenCV с потоками после fork зависает (так застрял первый прогон s01)
+        with get_context('spawn').Pool(jobs, initializer=init, initargs=(passes, chars, clip)) as pool:
             for k, buf in pool.imap(job, range(n), chunksize=1):
                 ff.stdin.write(buf)
         ff.stdin.close()
