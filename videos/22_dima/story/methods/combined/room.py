@@ -764,11 +764,15 @@ def build(screen_world=(0.1, -0.6, 1.1), flame_world=(0.9, -0.7, 0.6), moon_px=(
 
     # --- тапки на коврике: подошва-капля и пухлый верх над носком (носки к дивану)
     solem = plain('sole', (0.035, 0.035, 0.05), 0.8)
-    fleece = fabric_mat('fleece', (0.34, 0.37, 0.48), (0.24, 0.27, 0.36), 140.0)
-    for (x, y, rz) in ((-0.32, -1.42, 22), (-0.08, -1.50, -10)):
+    fleece = fabric_mat('fleece', (0.40, 0.34, 0.44), (0.30, 0.25, 0.34), 140.0)
+    insole = plain('insole', (0.42, 0.36, 0.40), 0.9)
+    for (x, y, rz) in ((-0.36, -1.40, 24), (-0.12, -1.47, -12)):
         a_ = math.radians(rz)
-        for (dy, sc_, z0, m_) in ((0.0, (0.062, 0.135, 0.016), 0.016, solem), (0.045, (0.064, 0.085, 0.042), 0.026, fleece)):
-            bpy.ops.mesh.primitive_uv_sphere_add(segments=24, ring_count=12, radius=1.0,
+        parts = ((0.0, (0.064, 0.140, 0.014), 0.014, solem),        # подошва
+                 (-0.035, (0.050, 0.080, 0.006), 0.027, insole),   # стелька у пятки (видна — значит тапок)
+                 (0.050, (0.068, 0.080, 0.040), 0.024, fleece))    # пухлый верх над носком
+        for (dy, sc_, z0, m_) in parts:
+            bpy.ops.mesh.primitive_uv_sphere_add(segments=32, ring_count=16, radius=1.0,
                                                  location=(x - dy * math.sin(a_), y + dy * math.cos(a_), z0))
             o = bpy.context.object
             o.scale = sc_
@@ -790,13 +794,13 @@ def build(screen_world=(0.1, -0.6, 1.1), flame_world=(0.9, -0.7, 0.6), moon_px=(
 
     sun = bpy.data.lights.new('moonlight', 'SUN')
     sun.color = (0.55, 0.68, 1.0)
-    sun.energy = 4.0
+    sun.energy = 6.0
     sun.angle = math.radians(1.5)
     so = link(bpy.data.objects.new('moonlight', sun), room)
     so.rotation_euler = (math.radians(-38), math.radians(-28), math.radians(0))
     # направление: луч идёт из окна (+y, сверху, справа) в комнату
     so.rotation_euler = Vector((0.0, 0.0, 0.0)).to_track_quat('Z', 'Y').to_euler()
-    dirv = Vector((-0.64, -1.0, -1.30)).normalized()   # пятно окна ложится на пол перед диваном, слева
+    dirv = Vector((-0.40, -1.0, -1.25)).normalized()   # пятно окна (с крестом рамы) ложится на пол перед диваном
     so.rotation_euler = (-dirv).to_track_quat('Z', 'Y').to_euler()
 
     fill = bpy.data.lights.new('fill', 'AREA')

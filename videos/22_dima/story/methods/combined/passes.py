@@ -39,7 +39,7 @@ SAMPLES = int(opt('--samples', '48'))
 SCREEN_E = 18.0
 FLAME_E = 9.0
 # точки света в пикселях кадра 0 (1080×1920) и глубина (y мира); уточняются по chars/layout.json
-LAYOUT = {'screen_px': [565, 755], 'flame_px': [1034, 916], 'screen_y': -0.62, 'flame_y': -0.80}
+LAYOUT = {'screen_px': [565, 755], 'flame_px': [1034, 916], 'screen_y': -0.62, 'flame_y': -0.88}
 LAYERS = ('far', 'floor', 'sofa')
 PASSES = ('base', 'screen', 'flame')
 
