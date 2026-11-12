@@ -51,7 +51,7 @@ CAM_DEFAULT = {
     's17': [[560, 980, 1920], [600, 990, 1700]],
     's18': [[880, 1010, 860], [880, 1010, 800]],
 }
-SHAKE = {'s13': [(20.56, 14.0)]}      # тряска: (время, амплитуда в пикселях выхода), затухает за 0.45 с
+SHAKE = {'s13': [(20.56, 12.0, 0.4, 18.0)]}   # тряска: (время, амплитуда px кадра 0, затухание с, Гц)
 
 
 def read_exr(path):
@@ -95,14 +95,20 @@ def load(passes_dir, chars_dir, clip):
         if os.path.exists(f):
             lay.update(json.load(open(f)))
     cams = dict(CAM_DEFAULT)
-    for f in (os.path.join(chars_dir, 'cameras.json'), os.path.join(cdir, 'cameras.json')):
+    shake = dict(SHAKE)
+    for f in (os.path.join(HERE, 'cameras.json'), os.path.join(chars_dir, 'cameras.json'), os.path.join(cdir, 'cameras.json')):
         if os.path.exists(f):
             cj = json.load(open(f))
-            cams.update(cj.get('cameras', cj) if isinstance(cj, dict) else {})
+            for k_, v in cj.get('cameras', cj).items():
+                if isinstance(v, dict) and 't0' in v:
+                    cams[k_] = [v['t0'], v['t1']]
+                    if 'shake' in v:
+                        sh = v['shake']
+                        shake[k_] = [(sh['at'], sh['amp_px'], sh.get('decay_s', 0.45), sh.get('hz', 17.0))]
     depths = dict(DEPTH_DEFAULT)
     depths.update(meta.get('depths', {}))
     depths.update(lay.get('depths', {}))
-    G.update(meta=meta, room=room, over=over, chars=cdir, lay=lay, cams=cams, depths=depths,
+    G.update(shake=shake, meta=meta, room=room, over=over, chars=cdir, lay=lay, cams=cams, depths=depths,
              shot=shots[clip], pad=sj['pad'], end=sj['end'], clip=clip)
     # предфильтр проходов под самое сильное уменьшение в этом клипе (дешевле, чем размывать каждый кадр)
     smin = min(layer_scale(depths[L], c[2], cams[clip][0][2], depths['L_dima']) for L in ROOM for c in cams[clip]) / over
@@ -133,12 +139,12 @@ def window(t):
     (c0x, c0y, h0), (c1x, c1y, h1) = G['cams'][s['id']]
     u = (t - s['t0']) / max(1e-6, s['t1'] - s['t0'])
     cx, cy, h = c0x + (c1x - c0x) * u, c0y + (c1y - c0y) * u, h0 * (h1 / h0) ** u
-    for (ts, amp) in SHAKE.get(s['id'], []):
+    for (ts, amp, dec, hz) in G['shake'].get(s['id'], []):
         dt = t - ts
-        if 0 <= dt < 0.45:
-            k = amp * (1 - dt / 0.45) ** 2 * h / H
-            cx += k * np.sin(dt * 2 * np.pi * 17.0)
-            cy += k * np.cos(dt * 2 * np.pi * 13.0)
+        if 0 <= dt < dec:
+            k = amp * (1 - dt / dec) ** 2
+            cx += k * np.sin(dt * 2 * np.pi * hz)
+            cy += k * np.cos(dt * 2 * np.pi * hz * 0.73)
     return cx, cy, h, h0
 
 
