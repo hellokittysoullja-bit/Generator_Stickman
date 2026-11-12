@@ -625,7 +625,7 @@ def build(screen_world=(0.1, -0.6, 1.1), flame_world=(0.9, -0.7, 0.6), moon_px=(
         nx, nz = 60, 30
         verts, faces = [], []
         for j in range(nz + 1):
-            z = 2.66 - (2.66 - 0.95) * j / nz
+            z = 2.66 - (2.66 - 1.06) * j / nz
             v = j / nz
             spread = 1.0 + 0.35 * v
             for i in range(nx + 1):
@@ -762,20 +762,23 @@ def build(screen_world=(0.1, -0.6, 1.1), flame_world=(0.9, -0.7, 0.6), moon_px=(
     # --- коврик на полу
     rug = box('rug', -0.75, 0.95, -2.25, -1.05, 0.0, 0.006, rug_mat(), floorc)
 
-    # --- тапки на коврике: подошва + мягкий верх
-    solem = plain('sole', (0.04, 0.04, 0.06), 0.8)
-    fleece = fabric_mat('fleece', (0.30, 0.33, 0.42), (0.22, 0.24, 0.32), 140.0)
-    for (x, y, rz) in ((-0.30, -1.40, 18), (-0.06, -1.48, -8)):
-        so_ = box('slipper_sole', x - 0.055, x + 0.055, y - 0.13, y + 0.13, 0.0, 0.025, solem, floorc, bevel=0.03, seg=4)
-        so_.rotation_euler = (0, 0, math.radians(rz))
-        up = box('slipper_top', x - 0.06, x + 0.06, y - 0.14, y + 0.02, 0.02, 0.075, fleece, floorc, bevel=0.035, seg=5)
-        up.rotation_euler = (0, 0, math.radians(rz))
+    # --- тапки на коврике: подошва-капля и пухлый верх над носком (носки к дивану)
+    solem = plain('sole', (0.035, 0.035, 0.05), 0.8)
+    fleece = fabric_mat('fleece', (0.34, 0.37, 0.48), (0.24, 0.27, 0.36), 140.0)
+    for (x, y, rz) in ((-0.32, -1.42, 22), (-0.08, -1.50, -10)):
         a_ = math.radians(rz)
-        up.location = (x + 0.06 * math.sin(a_), y - 0.06 * math.cos(a_), up.location.z)
-        sm1 = so_.modifiers.new('round', 'SUBSURF')
-        sm1.levels = sm1.render_levels = 1
-        sm2 = up.modifiers.new('round', 'SUBSURF')
-        sm2.levels = sm2.render_levels = 1
+        for (dy, sc_, z0, m_) in ((0.0, (0.062, 0.135, 0.016), 0.016, solem), (0.045, (0.064, 0.085, 0.042), 0.026, fleece)):
+            bpy.ops.mesh.primitive_uv_sphere_add(segments=24, ring_count=12, radius=1.0,
+                                                 location=(x - dy * math.sin(a_), y + dy * math.cos(a_), z0))
+            o = bpy.context.object
+            o.scale = sc_
+            o.rotation_euler = (0, 0, a_)
+            o.data.materials.append(m_)
+            for pg in o.data.polygons:
+                pg.use_smooth = True
+            for c in o.users_collection:
+                c.objects.unlink(o)
+            floorc.objects.link(o)
 
     # --- свет
     world = bpy.data.worlds.new('night')
@@ -787,13 +790,13 @@ def build(screen_world=(0.1, -0.6, 1.1), flame_world=(0.9, -0.7, 0.6), moon_px=(
 
     sun = bpy.data.lights.new('moonlight', 'SUN')
     sun.color = (0.55, 0.68, 1.0)
-    sun.energy = 3.2
+    sun.energy = 4.0
     sun.angle = math.radians(1.5)
     so = link(bpy.data.objects.new('moonlight', sun), room)
     so.rotation_euler = (math.radians(-38), math.radians(-28), math.radians(0))
     # направление: луч идёт из окна (+y, сверху, справа) в комнату
     so.rotation_euler = Vector((0.0, 0.0, 0.0)).to_track_quat('Z', 'Y').to_euler()
-    dirv = Vector((-0.35, -1.0, -0.75)).normalized()   # пятно окна ложится на пол перед диваном
+    dirv = Vector((-0.64, -1.0, -1.30)).normalized()   # пятно окна ложится на пол перед диваном, слева
     so.rotation_euler = (-dirv).to_track_quat('Z', 'Y').to_euler()
 
     fill = bpy.data.lights.new('fill', 'AREA')
