@@ -3840,6 +3840,24 @@
   "source": "scripts/reel_draw.py videos/21_son/reel"
  },
  {
+  "file": "2026-11-12_gen_anymedia_gpt-image-2_5_4270276d.jpg",
+  "sha256": "4270276dab267d061b0e215fc35a061a45c4619b9d26ff1ee3e3008e454ea799",
+  "bytes": 650493,
+  "size": [
+   2496,
+   1664
+  ],
+  "date": "2026-11-12",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "anymedia/gpt-image-2.5",
+  "prompt": "Images 1-1: drawing style only (thin ink line, light watercolour, soft grey shading). Image 2: the main character, a black cat with green eyes, orange cheek stripes, a small flame on its curled tail, left ear (viewer's left) folded down. Wide YouTube thumbnail on a plain white background, split in two halves by a thin vertical line. LEFT: the cat at a desk with an open laptop, head turned away, worried eyes glancing at a black smartphone lying screen-down right next to the laptop, small motion lines; a big red X mark above. RIGHT: the same cat at the same desk calmly typing with a focused smile, tail flame bright, no phone on the desk; far behind, through an open doorway, the phone lies on a table in another room; a big green check mark above. Large clear figures, no text, no letters.",
+  "gen_size": "1536x1024",
+  "quality": "medium",
+  "price": 131700,
+  "source": "videos/L02_otvlechenie/thumb/draw_thumb.py"
+ },
+ {
   "file": "2026-11-12_gen_cx_gpt-image-2_5_1e5f8ff9.png",
   "sha256": "1e5f8ff93c1b3d5193c60f61b70ffe84252fc692a9dcac31cc2d36b4ac9eb18e",
   "bytes": 1602032,

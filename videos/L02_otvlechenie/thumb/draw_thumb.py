@@ -19,6 +19,11 @@ SCENE = ("A YouTube thumbnail split into two equal halves by one thin vertical i
          "the background an open doorway, and far away in the next room the smartphone lies on a small table; above "
          "the right half a big bold hand-painted green check mark. The only difference between the halves is where the "
          "phone is. Characters large, filling each half, bold clean outlines, readable at a very small size.")
+SHORT = ("Wide YouTube thumbnail on a plain white background, split in two halves by a thin vertical line. LEFT: the cat "
+         "at a desk with an open laptop, head turned away, worried eyes glancing at a black smartphone lying screen-down "
+         "right next to the laptop, small motion lines; a big red X mark above. RIGHT: the same cat at the same desk calmly "
+         "typing with a focused smile, tail flame bright, no phone on the desk; far behind, through an open doorway, the "
+         "phone lies on a table in another room; a big green check mark above. Large clear figures, no text, no letters.")
 
 
 def main():
@@ -27,6 +32,11 @@ def main():
     hero = os.path.join(ROOT, "look", "hero.png")
     out = os.path.dirname(os.path.abspath(__file__))
     pr = reel_draw.prompt(SCENE, len(style))
+    if os.environ.get("THUMB_SHORT"):          # у anymedia предел длины промпта: короткая версия того же задания
+        pr = (f"Images 1-{len(style)}: drawing style only (thin ink line, light watercolour, soft grey shading). "
+              f"Image {len(style) + 1}: the main character, a black cat with green eyes, orange cheek stripes, a small flame "
+              "on its curled tail, left ear (viewer's left) folded down. " + SHORT)
+    print(len(pr), "знаков промпта")
     M, Q = reel_draw.MODEL, reel_draw.QUALITY
     price1 = llm_gateway.Gateway().image_cost(M, SIZE, Q)
     print(f"{M} {Q} {SIZE}: {price1}")
