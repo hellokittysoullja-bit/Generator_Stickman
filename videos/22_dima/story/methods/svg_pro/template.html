@@ -1,0 +1,59 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Дима 01:47 — SVG pro</title>
+<style>html,body{margin:0;background:#000}svg{display:block}</style></head>
+<body>
+<!--SVG-->
+<script src="gsap.min.js"></script>
+<script>
+// Анимация: GSAP тянет числа состояния по таймлайну (paused), render() пишет их в transform/opacity частей.
+// Опоры поворотов заданы явно (rotate(a cx cy)) — не зависят от bbox.
+const st = {lid:0, pupX:0, pupY:0, thumb:0, glow:1, catLid:0, flS:1, flK:0, tail:0, flG:1};
+const $ = id => document.getElementById(id);
+function render(){
+  for (const nm of ['N','F']) {
+    $('dima_lid_'+nm).setAttribute('transform', `translate(0 ${st.lid*58})`);
+    $('dima_pupil_'+nm).setAttribute('transform', `translate(${st.pupX} ${st.pupY})`);
+  }
+  const th = `rotate(${st.thumb} -42 72)`;
+  $('dima_thumb').setAttribute('transform', th); $('thumb_rim').setAttribute('transform', th);
+  $('phone_glow').setAttribute('opacity', st.glow);
+  for (const nm of ['L','R']) {
+    $('cat_lid_'+nm).setAttribute('transform', `translate(0 ${-84 + 84*st.catLid})`);
+    $('cat_lidlo_'+nm).setAttribute('transform', `translate(0 ${48 - 48*st.catLid})`);
+  }
+  $('cat_tail').setAttribute('transform', `rotate(${st.tail} 912 1272)`);
+  $('cat_flame').setAttribute('transform', `translate(990 1142) skewX(${st.flK}) scale(${1/Math.sqrt(st.flS)} ${st.flS}) translate(-990 -1142)`);
+  $('flame_glow').setAttribute('transform', `rotate(${st.tail} 912 1272)`);
+  $('flame_glow').setAttribute('opacity', st.flG);
+}
+const tl = gsap.timeline({paused:true, onUpdate:render});
+// Дима: чтение строк (зрачки), три пролистывания большим пальцем, моргание
+tl.to(st,{pupX:-4,duration:.35,ease:'none'},0).to(st,{pupX:3,duration:.6,ease:'none'},.35);
+for (const t0 of [0.25, 1.35, 2.35]) {
+  tl.to(st,{thumb:-11,duration:.16,ease:'power2.in'},t0)
+    .to(st,{thumb:0,duration:.32,ease:'power2.out'},t0+.16)
+    .to(st,{glow:1.25,duration:.05,ease:'none'},t0+.12)
+    .to(st,{glow:.92,duration:.18,ease:'power1.out'},t0+.17)
+    .to(st,{glow:1,duration:.3,ease:'sine.inOut'},t0+.35)
+    .to(st,{pupY:-5,pupX:-3,duration:.12,ease:'power2.out'},t0+.18)
+    .to(st,{pupY:0,pupX:3,duration:.7,ease:'none'},t0+.3);
+}
+tl.to(st,{lid:1,duration:.07,ease:'power2.in'},1.0).to(st,{lid:1,duration:.06},1.07).to(st,{lid:0,duration:.13,ease:'power2.out'},1.13);
+tl.to(st,{lid:1,duration:.07,ease:'power2.in'},2.75).to(st,{lid:0,duration:.13,ease:'power2.out'},2.84);
+// мелкое мерцание экрана
+for (let i=0;i<30;i++) tl.to(st,{glow:'+=0',duration:.1},i*.1);
+// кот: медленное «кошачье» моргание и хвост
+tl.to(st,{catLid:1,duration:.22,ease:'sine.in'},1.7).to(st,{catLid:1,duration:.28},1.92).to(st,{catLid:0,duration:.3,ease:'sine.out'},2.2);
+tl.to(st,{tail:1.6,duration:1.5,ease:'sine.inOut',yoyo:true,repeat:1},0);
+// огонёк: колышется непериодично (две синусоиды), свечение в такт
+const fl = {p:0}; tl.to(fl,{p:1,duration:3,ease:'none',onUpdate(){
+  const t=fl.p*3;
+  st.flS = 1 + .07*Math.sin(t*11.3) + .04*Math.sin(t*23.1+1.3);
+  st.flK = 5*Math.sin(t*7.7+.4) + 2.5*Math.sin(t*17.9);
+  st.flG = .9 + .1*Math.sin(t*11.3+.5) + .05*Math.sin(t*29+2);
+}},0);
+window.seek = t => { tl.time(t, false); render(); };
+window.DUR = 3;
+seek(0);
+</script>
+</body></html>

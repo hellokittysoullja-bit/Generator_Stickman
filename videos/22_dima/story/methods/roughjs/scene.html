@@ -1,0 +1,308 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+  html, body { margin: 0; background: #000; }
+  svg { display: block; }
+  .ol { stroke: #1d1a24; stroke-width: 5; stroke-linejoin: round; stroke-linecap: round; }
+  .thin { stroke: #1d1a24; stroke-width: 3.5; stroke-linejoin: round; stroke-linecap: round; fill: none; }
+  .night { mix-blend-mode: multiply; }
+  .glow { mix-blend-mode: screen; }
+</style></head>
+<body>
+<svg id="scene" width="1080" height="1920" viewBox="30 100 1020 1813" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <!-- обои: полосы + мелкий цветок -->
+  <pattern id="wall" width="80" height="120" patternUnits="userSpaceOnUse">
+    <rect width="80" height="120" fill="#c9b18a"/>
+    <rect x="0" width="26" height="120" fill="#bea47c"/>
+    <g fill="#a98d66" opacity=".8">
+      <circle cx="53" cy="30" r="5"/><circle cx="47" cy="25" r="3"/><circle cx="59" cy="25" r="3"/>
+      <circle cx="47" cy="35" r="3"/><circle cx="59" cy="35" r="3"/>
+      <path d="M53 38 q-4 14 2 26" stroke="#a98d66" stroke-width="2" fill="none"/>
+      <circle cx="53" cy="90" r="4"/><circle cx="48" cy="86" r="2.5"/><circle cx="58" cy="86" r="2.5"/>
+    </g>
+  </pattern>
+  <pattern id="floor" width="1080" height="70" patternUnits="userSpaceOnUse">
+    <rect width="1080" height="70" fill="#8a6447"/>
+    <line x1="0" y1="69" x2="1080" y2="69" stroke="#6b4a33" stroke-width="3"/>
+    <line x1="210" y1="0" x2="210" y2="70" stroke="#6b4a33" stroke-width="3"/>
+    <line x1="640" y1="0" x2="640" y2="70" stroke="#6b4a33" stroke-width="3"/>
+  </pattern>
+  <pattern id="floor2" width="1080" height="140" patternUnits="userSpaceOnUse">
+    <rect width="1080" height="140" fill="url(#floor)"/>
+    <line x1="420" y1="70" x2="420" y2="140" stroke="#6b4a33" stroke-width="3"/>
+    <line x1="900" y1="70" x2="900" y2="140" stroke="#6b4a33" stroke-width="3"/>
+  </pattern>
+  <!-- плед в клетку -->
+  <pattern id="check" width="64" height="64" patternUnits="userSpaceOnUse" patternTransform="rotate(-6)">
+    <rect width="64" height="64" fill="#9fb98a"/>
+    <rect width="32" height="64" fill="#86a273" opacity=".85"/>
+    <rect width="64" height="32" fill="#86a273" opacity=".85"/>
+    <rect width="32" height="32" fill="#6c8a5c"/>
+  </pattern>
+  <!-- обивка дивана -->
+  <pattern id="sofa" width="46" height="46" patternUnits="userSpaceOnUse">
+    <rect width="46" height="46" fill="#8b5d4c"/>
+    <circle cx="11" cy="11" r="3" fill="#7a4f40"/><circle cx="34" cy="34" r="3" fill="#7a4f40"/>
+  </pattern>
+  <pattern id="curtain" width="60" height="90" patternUnits="userSpaceOnUse">
+    <rect width="60" height="90" fill="#d8b98e"/>
+    <circle cx="20" cy="22" r="6" fill="#c28f7c"/><circle cx="46" cy="66" r="6" fill="#c28f7c"/>
+    <circle cx="20" cy="22" r="2.5" fill="#d8b98e"/><circle cx="46" cy="66" r="2.5" fill="#d8b98e"/>
+  </pattern>
+  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#121735"/><stop offset="1" stop-color="#2c3566"/>
+  </linearGradient>
+  <radialGradient id="phoneGlow" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#9ec2ff" stop-opacity=".55"/>
+    <stop offset=".5" stop-color="#6f93d8" stop-opacity=".22"/>
+    <stop offset="1" stop-color="#3b4f9a" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="flameGlow" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#ffb35c" stop-opacity=".9"/>
+    <stop offset="1" stop-color="#ff7a1a" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="moonGlow" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#fff3c8" stop-opacity=".55"/>
+    <stop offset="1" stop-color="#fff3c8" stop-opacity="0"/>
+  </radialGradient>
+  <filter id="grain" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4"/>
+    <feColorMatrix type="saturate" values="0"/>
+    <feComponentTransfer><feFuncA type="linear" slope=".22"/></feComponentTransfer>
+  </filter>
+  <filter id="soft"><feGaussianBlur stdDeviation="14"/></filter>
+  <clipPath id="eyeL"><ellipse cx="418" cy="842" rx="44" ry="40"/></clipPath>
+  <clipPath id="eyeR"><ellipse cx="502" cy="840" rx="42" ry="39"/></clipPath>
+  <clipPath id="catEyeL"><circle cx="795" cy="1128" r="27"/></clipPath>
+  <clipPath id="catEyeR"><circle cx="868" cy="1128" r="27"/></clipPath>
+</defs>
+
+<!-- ===================== КОМНАТА (дневные цвета, ночь кладётся сверху) ===================== -->
+<g id="room">
+  <rect width="1080" height="1520" fill="url(#wall)"/>
+  <!-- полоса потолка -->
+  <rect width="1080" height="60" fill="#a38f6e"/>
+  <line x1="0" y1="60" x2="1080" y2="60" class="thin"/>
+  <!-- полка с книгами -->
+  <g id="shelf">
+    <rect x="40" y="330" width="300" height="22" fill="#8a6447" class="ol"/>
+    <rect x="40" y="560" width="300" height="22" fill="#8a6447" class="ol"/>
+    <g class="ol">
+      <rect x="62" y="230" width="34" height="100" fill="#4f6d8f"/>
+      <rect x="96" y="245" width="28" height="85" fill="#b2553f"/>
+      <rect x="124" y="222" width="38" height="108" fill="#d9b55b"/>
+      <rect x="168" y="262" width="96" height="30" fill="#6f8e5a" transform="rotate(-8 216 277)"/>
+      <rect x="270" y="250" width="44" height="80" fill="#e8e1d2"/>
+      <rect x="62" y="470" width="40" height="90" fill="#8c5f8a"/>
+      <rect x="102" y="455" width="30" height="105" fill="#4f6d8f"/>
+      
+      <path d="M262 560 q-6 -60 14 -80 q20 20 14 80 z" fill="#7aa25f"/>
+    </g>
+    <rect x="180" y="490" width="140" height="68" rx="10" fill="#2a2a30" class="ol"/>
+    <rect x="192" y="500" width="116" height="48" rx="6" fill="#120f12"/>
+    <!-- свисающее растение -->
+    <g class="ol" fill="#6f9a55">
+      <path d="M290 330 q-10 40 -2 80 q8 40 -4 90" fill="none" stroke-width="4"/>
+      <ellipse cx="282" cy="372" rx="16" ry="10" transform="rotate(-30 282 372)"/>
+      <ellipse cx="300" cy="420" rx="16" ry="10" transform="rotate(30 300 420)"/>
+      <ellipse cx="280" cy="468" rx="16" ry="10" transform="rotate(-25 280 468)"/>
+      <path d="M268 300 q22 -40 44 0 l-6 32 h-32 z" fill="#b8694a"/>
+    </g>
+  </g>
+  <!-- окно -->
+  <g id="window">
+    <rect x="610" y="150" width="420" height="590" fill="url(#sky)"/>
+    <circle cx="930" cy="250" r="90" fill="url(#moonGlow)"/>
+    <circle cx="930" cy="250" r="36" fill="#f6edc6" class="ol"/>
+    <circle cx="918" cy="242" r="7" fill="#e4d8a8"/><circle cx="942" cy="262" r="5" fill="#e4d8a8"/>
+    <g fill="#141a30">
+      <rect x="630" y="470" width="190" height="270"/>
+      <rect x="840" y="520" width="180" height="220"/>
+    </g>
+    <g id="litWindows" fill="#f2c86b">
+      <rect x="650" y="500" width="22" height="30"/><rect x="730" y="500" width="22" height="30"/>
+      <rect x="690" y="560" width="22" height="30"/><rect x="770" y="620" width="22" height="30"/>
+      <rect x="650" y="680" width="22" height="30"/><rect x="870" y="560" width="22" height="30"/>
+      <rect x="950" y="620" width="22" height="30"/><rect x="910" y="680" width="22" height="30"/>
+    </g>
+    <!-- рама -->
+    <g fill="#ece5d6" class="ol">
+      <path d="M600 140 h440 v610 h-440 z M628 168 v554 h384 v-554 z" fill-rule="evenodd"/>
+      <rect x="806" y="168" width="24" height="554"/>
+      <rect x="590" y="740" width="460" height="34"/>
+    </g>
+    <!-- шторы -->
+    <path d="M560 90 q30 300 0 690 h70 q26 -300 6 -690 z" fill="url(#curtain)" class="ol"/>
+    <path d="M1080 90 v690 h-56 q-24 -330 -4 -690 z" fill="url(#curtain)" class="ol"/>
+    <line x1="540" y1="90" x2="1080" y2="90" stroke="#1d1a24" stroke-width="8"/>
+  </g>
+  <!-- плинтус и пол -->
+  <rect y="1500" width="1080" height="420" fill="url(#floor2)"/>
+  <rect y="1490" width="1080" height="26" fill="#6b4a33" class="ol"/>
+  <!-- коврик -->
+  <path d="M520 1760 l520 -20 l40 170 h-600 z" fill="#8c3f3a" class="ol"/>
+  <path d="M552 1782 l470 -18 l30 120 h-520 z" fill="none" stroke="#d6a05a" stroke-width="5"/>
+    <!-- диван -->
+  <g id="sofa">
+    <path d="M150 1010 q0 -40 40 -40 h790 q40 0 40 40 v300 h-870 z" fill="url(#sofa)" class="ol"/>
+    <path d="M110 1240 h900 v190 h-900 z" fill="url(#sofa)" class="ol"/>
+    <path d="M70 1110 q0 -50 60 -50 h80 q50 0 50 50 v340 h-190 z" fill="url(#sofa)" class="ol"/>
+    <path d="M960 1110 q0 -40 50 -40 h40 q30 0 30 40 v340 h-120 z" fill="url(#sofa)" class="ol"/>
+    <rect x="96" y="1450" width="30" height="40" fill="#3b2a20" class="ol"/>
+    <rect x="1000" y="1450" width="30" height="40" fill="#3b2a20" class="ol"/>
+    <!-- подушка -->
+    <path d="M215 1030 q90 -40 170 10 q20 90 -10 160 q-90 30 -170 -20 q-20 -80 10 -150 z" fill="#e7ddc8" class="ol"/>
+    <path d="M250 1080 q50 -10 90 10" class="thin"/>
+  </g>
+
+  <!-- ============== ДИМА ============== -->
+  <g id="dima">
+    <!-- капюшон за шеей -->
+    <path d="M330 990 q110 -60 230 0 q-30 40 -115 40 q-85 0 -115 -40 z" fill="#c8962f" class="ol"/>
+    <!-- туловище (худи) -->
+    <path d="M285 1030 q30 -50 160 -50 q130 0 165 50 l40 260 h-410 z" fill="#d9a83c" class="ol"/>
+    <path d="M590 1030 q20 30 30 80 l20 180 h-60 z" fill="#b88a2c"/>
+    <!-- шнурки -->
+    <path d="M418 1000 v70" class="thin"/><path d="M474 1000 v76" class="thin"/>
+    <rect x="412" y="1068" width="12" height="16" rx="3" fill="#ece5d6" class="thin"/>
+    <rect x="468" y="1074" width="12" height="16" rx="3" fill="#ece5d6" class="thin"/>
+    <!-- шея -->
+    <path d="M410 950 h70 v45 q-35 20 -70 0 z" fill="#e6b593" class="ol"/>
+    <!-- голова -->
+    <g id="head">
+      <ellipse cx="342" cy="860" rx="20" ry="30" fill="#f0c4a2" class="ol"/>
+      <path d="M352 790 C 350 720, 520 705, 548 785 C 568 850, 552 925, 505 962 C 472 988, 405 988, 378 952 C 350 915, 352 850, 352 790 Z"
+            fill="#f0c4a2" class="ol"/>
+      <!-- тень щеки -->
+      <path d="M540 800 C 556 860, 546 920, 505 958 C 528 930, 540 880, 530 812 Z" fill="#d9a685"/>
+      <!-- щетина -->
+      <g fill="#9a7a66">
+        <circle cx="400" cy="955" r="2.4"/><circle cx="415" cy="966" r="2.4"/><circle cx="432" cy="972" r="2.4"/>
+        <circle cx="452" cy="974" r="2.4"/><circle cx="472" cy="970" r="2.4"/><circle cx="490" cy="962" r="2.4"/>
+        <circle cx="425" cy="955" r="2.2"/><circle cx="445" cy="960" r="2.2"/><circle cx="465" cy="958" r="2.2"/>
+        <circle cx="505" cy="945" r="2.2"/><circle cx="388" cy="940" r="2.2"/>
+      </g>
+      <!-- мешки под глазами -->
+      <path d="M380 878 q38 22 76 0" fill="none" stroke="#a87a6e" stroke-width="7" stroke-linecap="round" opacity=".55"/>
+      <path d="M466 876 q36 20 72 0" fill="none" stroke="#a87a6e" stroke-width="7" stroke-linecap="round" opacity=".55"/>
+      <!-- глаза -->
+      <g id="eyes">
+        <ellipse cx="418" cy="842" rx="44" ry="40" fill="#fbfaf6"/>
+        <ellipse cx="502" cy="840" rx="42" ry="39" fill="#fbfaf6"/>
+        <circle cx="432" cy="860" r="7.5" fill="#15131a"/>
+        <circle cx="512" cy="858" r="7.5" fill="#15131a"/>
+        <!-- тяжёлые веки -->
+        <g clip-path="url(#eyeL)"><rect id="lidL" x="370" y="790" width="100" height="48" fill="#e6b593"/></g>
+        <g clip-path="url(#eyeR)"><rect id="lidR" x="456" y="788" width="100" height="47" fill="#e6b593"/></g>
+        <path d="M376 838 q42 -6 86 0" class="ol" fill="none"/>
+        <path d="M462 835 q40 -6 82 0" class="ol" fill="none"/>
+        <ellipse cx="418" cy="842" rx="44" ry="40" fill="none" class="ol"/>
+        <ellipse cx="502" cy="840" rx="42" ry="39" fill="none" class="ol"/>
+      </g>
+      <!-- брови: усталые, домиком -->
+      <path d="M382 784 q30 -10 62 4" class="ol" fill="none" stroke-width="7"/>
+      <path d="M476 786 q30 -12 60 0" class="ol" fill="none" stroke-width="7"/>
+      <!-- нос и рот -->
+      <path d="M462 868 q-6 30 6 38 q10 4 16 -4" class="thin"/>
+      <path d="M440 934 q22 -6 46 2" class="thin" stroke-width="4.5"/>
+      <!-- волосы -->
+      <path d="M338 850 C 318 780, 330 712, 392 690 C 396 660, 440 646, 468 668 C 492 640, 548 650, 552 690
+               C 590 688, 600 740, 574 786 L 556 760 C 548 738, 520 724, 492 736 C 470 716, 430 720, 412 742
+               C 390 736, 368 760, 366 792 C 360 812, 352 832, 338 850 Z" fill="#4a3324" class="ol"/>
+      <path d="M392 690 l-20 -30 l38 18 M468 668 l4 -36 l18 30 M552 690 l30 -24 l-6 36 M338 850 l-24 -18 l20 -8"
+            fill="#4a3324" class="ol"/>
+      <path d="M420 700 q20 -10 40 2 M500 690 q24 -6 38 10" class="thin" stroke="#2c1d14"/>
+    </g>
+    <!-- руки с телефоном -->
+    <path d="M300 1040 q-40 80 -20 170 q10 30 50 24 q40 -10 90 -90 l-34 -26 q-40 50 -58 46 q-6 -50 10 -110 z" fill="#d9a83c" class="ol"/>
+    <path d="M598 1040 q40 80 20 170 q-10 30 -50 24 q-40 -10 -90 -90 l34 -26 q40 50 58 46 q6 -50 -10 -110 z" fill="#d9a83c" class="ol"/>
+    <path d="M330 1180 q24 10 48 -10" class="thin"/><path d="M568 1180 q-24 10 -48 -10" class="thin"/>
+    <g id="phone">
+      <rect x="402" y="1020" width="92" height="150" rx="16" fill="#141317" class="ol"/>
+      <rect x="414" y="1032" width="38" height="38" rx="9" fill="#26252b"/>
+      <circle cx="424" cy="1042" r="6.5" fill="#0b0b0d" stroke="#4a4a52" stroke-width="2"/>
+      <circle cx="442" cy="1042" r="6.5" fill="#0b0b0d" stroke="#4a4a52" stroke-width="2"/>
+      <circle cx="424" cy="1060" r="6.5" fill="#0b0b0d" stroke="#4a4a52" stroke-width="2"/>
+    </g>
+    <!-- кисти -->
+    <path d="M392 1120 q-6 -40 20 -44 q14 0 14 20 v40 q-14 20 -34 -16 z" fill="#f0c4a2" class="ol"/>
+    <path d="M504 1120 q6 -40 -20 -44 q-14 0 -14 20 v40 q14 20 34 -16 z" fill="#f0c4a2" class="ol"/>
+    <path id="thumb" d="M478 1052 q8 -14 20 -6 q8 8 -4 22" fill="#f0c4a2" class="ol"/>
+  </g>
+
+  <!-- плед -->
+  <path d="M250 1235 q120 -40 260 -20 q260 20 470 0 q40 0 50 40 l10 180 q-420 40 -800 10 q-40 -100 10 -210 z"
+        fill="url(#check)" class="ol"/>
+  <path d="M260 1300 q300 30 760 -10" fill="none" stroke="#5d7a4f" stroke-width="4" opacity=".7"/>
+  <path d="M320 1380 q260 20 660 -6" fill="none" stroke="#5d7a4f" stroke-width="4" opacity=".7"/>
+
+  <!-- ============== КОТ ============== -->
+  <g id="cat">
+    <!-- хвост с огоньком -->
+    <path id="tail" d="M915 1300 q80 10 92 -60 q8 -50 -30 -60 q-30 -4 -32 22 q0 20 22 20" fill="none"
+          stroke="#1d1a24" stroke-width="34" stroke-linecap="round"/>
+    <path d="M915 1300 q80 10 92 -60 q8 -50 -30 -60 q-30 -4 -32 22 q0 20 22 20" fill="none"
+          stroke="#2a2833" stroke-width="24" stroke-linecap="round"/>
+    <!-- тело -->
+    <ellipse cx="832" cy="1252" rx="98" ry="86" fill="#25232d" class="ol"/>
+    <path d="M790 1220 q40 -16 84 0 q-6 50 -42 70 q-36 -20 -42 -70 z" fill="#33313d"/>
+    <!-- лапки -->
+    <ellipse cx="790" cy="1328" rx="30" ry="18" fill="#25232d" class="ol"/>
+    <ellipse cx="874" cy="1328" rx="30" ry="18" fill="#25232d" class="ol"/>
+    <ellipse cx="790" cy="1332" rx="11" ry="7" fill="#f08a5a"/><ellipse cx="874" cy="1332" rx="11" ry="7" fill="#f08a5a"/>
+    <!-- уши: левое (от зрителя) загнуто -->
+    <path d="M760 1080 q-20 -30 2 -50 q30 -8 44 22 z" fill="#25232d" class="ol"/>
+    <path d="M766 1070 q0 -22 22 -24 q8 10 6 26 z" fill="#c98274"/>
+    <path d="M884 1080 l18 -86 l46 82 z" fill="#25232d" class="ol"/>
+    <path d="M898 1068 l8 -50 l26 48 z" fill="#c98274"/>
+    <!-- голова -->
+    <ellipse cx="832" cy="1135" rx="104" ry="86" fill="#25232d" class="ol"/>
+    <!-- пушистые щёки -->
+    <path d="M730 1150 l-18 10 l20 4 l-12 14 l22 -2" fill="#25232d" class="ol"/>
+    <path d="M934 1150 l18 10 l-20 4 l12 14 l-22 -2" fill="#25232d" class="ol"/>
+    <!-- глаза -->
+    <circle cx="795" cy="1128" r="27" fill="#a5d64c" class="ol"/>
+    <circle cx="868" cy="1128" r="27" fill="#a5d64c" class="ol"/>
+    <circle cx="797" cy="1132" r="13" fill="#0f0e12"/><circle cx="870" cy="1132" r="13" fill="#0f0e12"/>
+    <circle cx="790" cy="1121" r="5.5" fill="#fff"/><circle cx="863" cy="1121" r="5.5" fill="#fff"/>
+    <g clip-path="url(#catEyeL)"><rect id="catLidL" x="760" y="1098" width="72" height="0" fill="#25232d"/></g><g clip-path="url(#catEyeR)"><rect id="catLidR" x="833" y="1098" width="72" height="0" fill="#25232d"/></g>
+    <!-- нос, рот -->
+    <path d="M826 1160 h12 l-6 8 z" fill="#e69a8a"/>
+    <path d="M832 1168 q-8 10 -16 4 M832 1168 q8 10 16 4" class="thin" stroke="#0d0c10" stroke-width="3"/>
+    <!-- полоски на щеках -->
+    <g stroke="#f28a2e" stroke-width="5" stroke-linecap="round">
+      <path d="M752 1158 l26 -4"/><path d="M754 1172 l24 0"/>
+      <path d="M912 1158 l-26 -4"/><path d="M910 1172 l-24 0"/>
+    </g>
+    <!-- усы -->
+    <g stroke="#cfc8d8" stroke-width="2" opacity=".7">
+      <path d="M770 1164 l-60 -6"/><path d="M770 1170 l-58 10"/><path d="M894 1164 l60 -6"/><path d="M894 1170 l58 10"/>
+    </g>
+  </g>
+</g>
+
+<!-- ===================== НОЧЬ ===================== -->
+<rect class="night" width="1080" height="1920" fill="#7d86c4"/>
+<rect class="night" width="1080" height="1920" fill="url(#grain)"/>
+
+<!-- светящееся поверх ночи: луна, окна дома, часы, свет телефона, огонёк -->
+<g id="emissive">
+  <circle cx="930" cy="250" r="34" fill="#f6edc6"/>
+  <circle cx="918" cy="242" r="7" fill="#e4d8a8"/><circle cx="942" cy="262" r="5" fill="#e4d8a8"/>
+  <use href="#litWindows" opacity=".85"/>
+  <text id="clock" x="250" y="538" text-anchor="middle" font-family="DejaVu Sans Mono, monospace" font-weight="bold"
+        font-size="38" fill="#ff4e3a">01:47</text>
+  <ellipse id="phoneGlowEl" class="glow" cx="455" cy="900" rx="170" ry="150" fill="url(#phoneGlow)"/>
+  <!-- огонёк хвоста -->
+  <circle class="glow" cx="968" cy="1180" r="70" fill="url(#flameGlow)"/>
+  <g id="flame" transform="translate(30 30)">
+    <path d="M938 1182 q-30 -18 -18 -52 q8 -20 2 -40 q22 12 26 34 q8 -16 4 -32 q26 22 18 56 q-6 26 -32 34 z"
+          fill="#ff9b2f" stroke="#1d1a24" stroke-width="4"/>
+    <path d="M938 1174 q-16 -12 -8 -32 q10 10 12 22 q8 -8 6 -20 q12 18 4 30 q-6 6 -14 0 z" fill="#ffd45e"/>
+  </g>
+</g>
+</svg>
+<script src="rough.js"></script>
+<script src="roughify.js"></script>
+</body></html>
