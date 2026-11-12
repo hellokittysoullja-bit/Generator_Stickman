@@ -11,7 +11,7 @@ for txt, cx in (("ТЫ ДО", W * 0.25), ("ПОСЛЕ", W * 0.75)):
     d = ImageDraw.Draw(layer); ds = ImageDraw.Draw(sh)
     w = d.textlength(txt, font=F); x, y = cx - w / 2, 0
     ds.text((x + 4, y + 8), txt, font=F, fill=(0, 0, 0, shadow_a))
-    d.text((x, y), txt, font=F, fill=(255, 255, 255, 255), stroke_width=2, stroke_fill=(0, 0, 0, 50))
+    d.text((x, y), txt, font=F, fill=(255, 255, 255, 255), stroke_width=2, stroke_fill=(0, 0, 0, 30))
     d.text((x, y), txt, font=F, fill=(255, 255, 255, 255))
 sh = sh.filter(ImageFilter.GaussianBlur(10))
 Image.alpha_composite(Image.alpha_composite(base, sh), layer).convert("RGB").save(out, quality=95)
