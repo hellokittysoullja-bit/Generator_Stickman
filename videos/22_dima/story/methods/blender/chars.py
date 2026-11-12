@@ -19,9 +19,10 @@ FLAME_PX = (FLAME_BASE[0] + CAT_DX, FLAME_BASE[1])  # огонёк кота
 
 # слои снизу вверх; ADD — слой сложения света
 LAYERS = ['shadow', 'slippers', 'dima', 'dima_eyes', 'dima_top', 'plaid', 'arm', 'thumb', 'phone', 'hand',
-          'light', 'cat', 'cat_eyes', 'flame', 'glow']
-ADD_LAYERS = {'light', 'glow'}
-MUL_LAYERS = {'shadow'}
+          'light', 'cat', 'cat_eyes', 'glow', 'flame']
+ADD_LAYERS = {'light'}          # сложение — только поверх самих героев (свет экрана на лице, руке)
+MUL_LAYERS = set()              # тени и ореолы — обычной прозрачностью: слой героев кладётся на комнату
+                                # в компоновке, а умножение и сложение по пустому месту там теряются
 ANIM_LAYERS = {'dima_eyes', 'thumb', 'hand', 'light', 'cat_eyes', 'flame', 'glow'}
 
 INK = '#120f1a'
@@ -205,6 +206,7 @@ class Canvas:
     def glow(self, layer, cx, cy, r, color, alpha=0.08, rings=14, clip=None, squash=1.0):
         """Мягкий свет: кольца от большого к малому, каждое добавляет немного (слой сложения)."""
         c = rgb(color)
+        add = layer in ADD_LAYERS
         for k in range(rings):
             rr = r * (1 - k / rings)
             e = ellipse(cx, cy, rr, rr * squash, n=48)
@@ -212,17 +214,19 @@ class Canvas:
                 e = e.intersection(clip)
             if e.is_empty:
                 continue
-            self.fill(layer, e, (c[0] * alpha, c[1] * alpha, c[2] * alpha, 1.0))
+            if add:
+                self.fill(layer, e, (c[0] * alpha, c[1] * alpha, c[2] * alpha, 1.0))
+            else:
+                self.fill(layer, e, (c[0], c[1], c[2], alpha))
 
 
-def soft_shadow(c, layer, geom, spread=40, rings=12, k=0.93, tint=(0.80, 0.82, 1.0)):
-    """Мягкая тень слоем умножения: форма, раздутая на spread и сужающаяся кольцами."""
+def soft_shadow(c, layer, geom, spread=40, rings=12, alpha=0.07, color=(0.02, 0.02, 0.07)):
+    """Мягкая тень: форма, раздутая на spread и сужающаяся кольцами малой прозрачности."""
     for i in range(rings):
         g = geom.buffer(spread * (1 - 2 * i / rings))
         if g.is_empty:
             break
-        f = (1 - (1 - k) * tint[0], 1 - (1 - k) * tint[1], 1 - (1 - k) * tint[2], 1.0)
-        c.fill(layer, g.simplify(1.0), f)
+        c.fill(layer, g.simplify(1.0), (color[0], color[1], color[2], alpha))
 
 
 def _polys(g):
@@ -567,7 +571,9 @@ def draw_light(c, t):
     face = poly(HEAD).union(poly(EAR)).union(hair_geom())
     c.glow('light', sx - 40, sy + 10, 250, '#9fd0ff', 0.026 * flick, 24, clip=face)
     c.glow('light', sx, sy + 160, 200, '#9fd0ff', 0.024 * flick, 20, clip=poly(SLEEVE).union(poly(TORSO)))
-    c.glow('light', sx - 6, sy, 130, '#8fc8ff', 0.017 * flick, 20, squash=1.5)
+    ph = phone_geom()
+    c.glow('glow', sx - 6, sy, 150, '#8fc8ff', 0.016 * flick, 20, squash=1.5,
+           clip=ellipse(sx - 6, sy, 150, 225).difference(ph['body'].union(ph['side']).buffer(2)).difference(poly(FIST)))
     return flick
 
 
@@ -602,7 +608,7 @@ def draw_cat(c, t):
     body = tufty(poly(CAT_BODY), 20, 8, seed=1)
     c.shape('cat', body, FUR, 5)
     c.fill('cat', shade(body, 12, 0).intersection(body), FUR_HI, 0.9)
-    c.fill('cat', shade(body, -10, 0).intersection(body), FUR_WARM, 0.7)
+    c.fill('cat', shade(body, -7, 0).intersection(body), FUR_WARM, 0.55)
     # лапы с оранжевыми подушечками
     for x0 in (782, 858):
         paw = ellipse(x0, 1232, 26, 16)
@@ -622,7 +628,7 @@ def draw_cat(c, t):
     head = tufty(poly(CAT_HEAD), 22, 9, seed=2)
     c.shape('cat', head, FUR, 5)
     c.fill('cat', shade(head, 14, 2).intersection(head), FUR_HI, 0.9)
-    c.fill('cat', shade(head, -12, 2).intersection(head), FUR_WARM, 0.6)
+    c.fill('cat', shade(head, -7, 2).intersection(head), FUR_WARM, 0.45)
     # левое ухо загнуто вниз: клапан поверх головы, сгиб — светлой линией
     flap = poly('M 738 878 C 752 868 778 872 796 888 C 800 904 792 918 776 926 C 762 922 748 914 738 900 '
                 'C 734 892 734 884 738 878 Z')
@@ -696,31 +702,47 @@ def draw_flame(c, t):
     c.fill('flame', affinity.translate(core, 0, 12), '#fff2b0')
     fx, fy = FLAME_BASE
     k = flame_flicker(t)
-    c.glow('glow', fx, fy + 10, 150 * k, '#ff7a22', 0.022, 24)
-    c.glow('glow', fx, fy + 10, 60 * k, '#ffcf6a', 0.035, 14)
+    c.dx = 0
+    keep = tufty(poly(CAT_HEAD), 22, 9, seed=2).buffer(4)   # мордочку не заливать ореолом
+    c.dx = CAT_DX
+    c.glow('glow', fx, fy + 10, 125 * k, '#ff7a22', 0.011, 24, clip=Point(fx, fy).buffer(400).difference(keep))
+    c.glow('glow', fx, fy + 10, 60 * k, '#ffcf6a', 0.03, 14)
     c.dx = 0
 
 
 # ---------------------------------------------------------------- тапки
 
 def draw_slippers(c, t):
-    for (x0, y0, ang) in ((300, 1760, -14), (450, 1790, 8)):
-        s = affinity.rotate(ellipse(x0, y0, 92, 40), ang, origin=(x0, y0))
-        c.shape('slippers', s, '#4a3f6a', 5)
-        c.fill('slippers', shade(s, 0, -10).intersection(s), '#2c2546')
-        top = affinity.rotate(ellipse(x0 + 34, y0 - 6, 52, 30), ang, origin=(x0, y0))
-        c.shape('slippers', top.intersection(s.buffer(4)), '#6a5f94', 4)
-        c.fill('slippers', affinity.rotate(ellipse(x0 + 34, y0 - 14, 30, 10), ang, origin=(x0, y0)), '#8a80b4', 0.7)
+    """Тапки на коврике: подошва с толщиной, мягкий верх-полоса, носок внутрь."""
+    for (x0, y0, ang) in ((292, 1752, -16), (452, 1784, 9)):
+        def R(g):
+            return affinity.rotate(g, ang, origin=(x0, y0))
+        sole_side = R(ellipse(x0, y0 + 9, 96, 40))
+        sole = R(ellipse(x0, y0, 96, 40))
+        c.shape('slippers', sole_side, '#232436', 4.2)
+        c.shape('slippers', sole, '#4d5a78', 4.2)
+        c.fill('slippers', R(ellipse(x0 - 18, y0 + 2, 64, 24)), '#3a4560')
+        upper = R(poly('M %f %f C %f %f %f %f %f %f C %f %f %f %f %f %f C %f %f %f %f %f %f Z' % (
+            x0 + 4, y0 - 34, x0 + 40, y0 - 52, x0 + 96, y0 - 40, x0 + 102, y0 - 4,
+            x0 + 104, y0 + 26, x0 + 60, y0 + 46, x0 + 14, y0 + 38,
+            x0 - 4, y0 + 20, x0 - 10, y0 - 18, x0 + 4, y0 - 34)))
+        up = upper.intersection(sole.buffer(10))
+        c.shape('slippers', up, '#6b7aa0', 4.2)
+        c.fill('slippers', shade(up, 0, -12).intersection(up), '#566488')
+        c.line('slippers', R(LineString([(x0 + 16, y0 - 22), (x0 + 22, y0 + 26)])).coords, 2.4, '#2a2f45')
 
 
 def draw_shadows(c, t):
     """Тени героев на спинке дивана и стене: свет экрана справа от лица — тень уходит влево."""
     head = affinity.translate(poly(HEAD).union(hair_geom()), -46, 26)
     body = affinity.translate(poly(TORSO), -30, 10)
-    soft_shadow(c, 'shadow', head.union(body).buffer(-20), 34, 12, 0.94)
+    soft_shadow(c, 'shadow', head.union(body).buffer(-20), 34, 12, 0.06)
     c.dx = CAT_DX
     cat = affinity.translate(poly(CAT_HEAD).union(poly(CAT_BODY)), -54, 18)
-    soft_shadow(c, 'shadow', cat.buffer(-16), 28, 10, 0.94, (0.85, 0.9, 1.0))
+    soft_shadow(c, 'shadow', cat.buffer(-16), 28, 10, 0.06)
+    c.dx = 0
+    for (x0, y0, ang) in ((292, 1762, -16), (452, 1794, 9)):
+        soft_shadow(c, 'shadow', affinity.rotate(ellipse(x0 + 6, y0 + 10, 96, 40), ang, origin=(x0, y0)), 14, 8, 0.07)
     c.dx = 0
 
 

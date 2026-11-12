@@ -165,8 +165,8 @@ W, H = 1080, 1920
 
 
 ZOOM = 1.15                 # кадр съёмочной камеры крупнее «чертёжной» (рисунок в пикселях чертёжной)
-CROP_CENTER = (560, 1040)
-SHELF_DX = 0.36             # полка с часами ближе к центру, чтобы 01:47 не срезалось кадром   # центр кадра в пикселях чертёжной камеры
+CROP_CENTER = (572, 1040)
+SHELF_DX = 0.36             # полка с часами ближе к центру, чтобы 01:47 не срезалось кадром
 
 
 def _cam(name, lens, sx, sy):
@@ -536,8 +536,8 @@ def build(screen_px=(540, 820), flame_px=(960, 1060), moon_px=(930, 330)):
     # --- полка с книгами, растением и часами (своя коллекция, сдвигается целиком)
     shelfc = collection('shelf')
     SY0 = -0.24
-    box('shelf', -1.20, -0.30, SY0, 0, 2.02, 2.05, wood, room, bevel=0.004)
-    box('shelf2', -1.20, -0.55, SY0, 0, 1.62, 1.65, wood, room, bevel=0.004)
+    box('shelf', -1.20, -0.30, SY0, 0, 2.02, 2.05, wood, shelfc, bevel=0.004)
+    box('shelf2', -1.20, -0.55, SY0, 0, 1.62, 1.65, wood, shelfc, bevel=0.004)
     cols = [(0.10, 0.16, 0.30), (0.35, 0.08, 0.07), (0.45, 0.38, 0.18), (0.12, 0.25, 0.18), (0.25, 0.12, 0.30),
             (0.40, 0.40, 0.42), (0.08, 0.10, 0.16)]
     x = -1.18
@@ -545,7 +545,7 @@ def build(screen_px=(540, 820), flame_px=(960, 1060), moon_px=(930, 330)):
         w = random.uniform(0.028, 0.05)
         h = random.uniform(0.17, 0.25)
         c = cols[i % len(cols)]
-        b = box('book', x, x + w, SY0 + 0.03, -0.02, 2.05, 2.05 + h, plain('book%d' % i, c, 0.7), room, bevel=0.003)
+        b = box('book', x, x + w, SY0 + 0.03, -0.02, 2.05, 2.05 + h, plain('book%d' % i, c, 0.7), shelfc, bevel=0.003)
         if i == 8:
             b.rotation_euler = (0, math.radians(-18), 0)
             b.location.x += 0.03
@@ -553,7 +553,7 @@ def build(screen_px=(540, 820), flame_px=(960, 1060), moon_px=(930, 330)):
     # лежащая стопка
     for k in range(3):
         box('flat', -0.70, -0.46 - k * 0.015, SY0 + 0.04, -0.03, 2.05 + k * 0.035, 2.085 + k * 0.035,
-            plain('flat%d' % k, cols[(k + 3) % 7], 0.7), room, bevel=0.003)
+            plain('flat%d' % k, cols[(k + 3) % 7], 0.7), shelfc, bevel=0.003)
     # кружка
     bpy.ops.mesh.primitive_cylinder_add(radius=0.035, depth=0.09, location=(-0.40, -0.12, 2.095))
     mug = bpy.context.object
@@ -562,10 +562,10 @@ def build(screen_px=(540, 820), flame_px=(960, 1060), moon_px=(930, 330)):
         c.objects.unlink(mug)
     shelfc.objects.link(mug)
     # нижняя полка: часы и растение
-    ck = box('clock', -1.08, -0.80, -0.16, -0.06, 1.65, 1.77, plain('clockbody', (0.015, 0.015, 0.02), 0.3), room, bevel=0.012)
+    ck = box('clock', -1.08, -0.80, -0.16, -0.06, 1.65, 1.77, plain('clockbody', (0.015, 0.015, 0.02), 0.3), shelfc, bevel=0.012)
     red = emission_mat('digits', (1.0, 0.12, 0.06), 9.0)
     seven_seg('01:47', -1.055, 1.675, -0.161, 0.07, red, shelfc)
-    pot2 = box('pot2', -0.72, -0.60, -0.18, -0.06, 1.65, 1.76, plain('pot2', (0.55, 0.45, 0.38)), room, bevel=0.01)
+    pot2 = box('pot2', -0.72, -0.60, -0.18, -0.06, 1.65, 1.76, plain('pot2', (0.55, 0.45, 0.38)), shelfc, bevel=0.01)
     leafm = plain('leaf', (0.06, 0.20, 0.10), 0.6)
     for k in range(9):
         a = -1.2 + k * 0.3
@@ -610,6 +610,17 @@ def build(screen_px=(540, 820), flame_px=(960, 1060), moon_px=(930, 330)):
     sm = pil.modifiers.new('round', 'SUBSURF')
     sm.levels = sm.render_levels = 1
     pil.rotation_euler = (math.radians(-12), math.radians(-14), 0)
+
+    # --- банки энергетика у дивана (кто-то не спит не первую ночь)
+    canm = [plain('can1', (0.05, 0.25, 0.30), 0.3), plain('can2', (0.35, 0.33, 0.36), 0.3)]
+    for k, (x, y, ang) in enumerate(((0.62, -1.22, 0), (0.80, -1.30, 75))):
+        bpy.ops.mesh.primitive_cylinder_add(radius=0.033, depth=0.12, location=(x, y, 0.06 if ang == 0 else 0.033),
+                                            rotation=(math.radians(ang), 0, math.radians(30)))
+        can = bpy.context.object
+        can.data.materials.append(canm[k])
+        for c in can.users_collection:
+            c.objects.unlink(can)
+        room.objects.link(can)
 
     # --- коврик на полу
     rug = box('rug', -0.75, 0.95, -2.25, -1.05, 0.0, 0.006, rug_mat(), room)

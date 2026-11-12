@@ -10,6 +10,7 @@ import chars
 import room
 
 PLANE_Y = -1.02   # перед подушками и краем сиденья: рисунок не прячется за 3D
+LINE_SCALE = 0.85  # линии чуть тоньше, как у образцов
 
 
 def _lin(c):
@@ -77,7 +78,7 @@ def add_items(frame, items, mats, proj, scale):
             s.points.foreach_set('pressure', [0.0] * n)
         else:
             s.use_cyclic = bool(it.get('closed'))
-            s.line_width = max(1, int(round(it['w'] * 2 * scale)))
+            s.line_width = max(1, int(round(it['w'] * 2 * scale * LINE_SCALE)))
             s.points.foreach_set('pressure', [x * 0.5 for x in it['press']])
         s.points.foreach_set('strength', [1.0] * n)
         s.points.update()   # пересчёт треугольников заливки: без него вогнутая форма заливается веером
@@ -93,7 +94,9 @@ def build(mode, nframes, info):
     gpd.stroke_depth_order = '2D'
     ob = bpy.data.objects.new('heroes', gpd)
     ob.use_grease_pencil_lights = False
-    sc.collection.objects.link(ob)
+    coll = bpy.data.collections.new('heroes')
+    sc.collection.children.link(coll)
+    coll.objects.link(ob)
     mats = Mats(gpd)
     proj = Projector()
     layers = {}

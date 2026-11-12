@@ -534,15 +534,19 @@ function drawCatFace(lid) {
     g.fillStyle = 'rgba(60,110,20,0.55)'; g.beginPath(); g.ellipse(cx, ey + 70, rx, 60, 0, 0, 7); g.fill();
     g.fillStyle = ink; g.beginPath(); g.ellipse(cx + (cx < 512 ? 8 : -8), ey + 4, 40, 74, 0, 0, 7); g.fill();
     g.fillStyle = '#ffffff'; g.beginPath(); g.arc(cx + 22, ey - 34, 15, 0, 7); g.fill();
-    if (lid > 0.01) { const ly = ey - ry + lid * ry * 2.05; g.fillStyle = '#26262f'; g.fillRect(cx - rx - 4, ey - ry - 4, 2 * rx + 8, ly - (ey - ry) + 4); }
     g.restore();
     e.save(); e.beginPath(); e.ellipse(cx, ey, rx, ry, 0, 0, 7); e.clip(); e.fillStyle = '#7fb02a'; e.fillRect(cx - rx, ey - ry, 2 * rx, 2 * ry);
     e.fillStyle = '#000'; e.beginPath(); e.ellipse(cx + (cx < 512 ? 8 : -8), ey + 4, 40, 74, 0, 0, 7); e.fill();
     if (lid > 0.01) { const ly = ey - ry + lid * ry * 2.05; e.fillRect(cx - rx - 4, ey - ry - 4, 2 * rx + 8, ly - (ey - ry) + 4); }
     e.restore();
-    g.strokeStyle = ink; g.lineWidth = 10;
-    if (lid > 0.97) { g.beginPath(); g.moveTo(cx - rx, ey + 10); g.quadraticCurveTo(cx, ey + 60, cx + rx, ey + 10); g.stroke(); }
-    else { g.beginPath(); g.ellipse(cx, ey, rx, ry, 0, 0, 7); g.stroke(); }
+    g.strokeStyle = ink; g.lineWidth = 10; g.beginPath(); g.ellipse(cx, ey, rx, ry, 0, 0, 7); g.stroke();
+    if (lid > 0.01) {                                   // веко шерстью сверху, затем край века дугой
+      const ly = ey - ry + lid * ry * 2.0;
+      g.save(); g.beginPath(); g.ellipse(cx, ey, rx + 8, ry + 8, 0, 0, 7); g.clip();
+      g.fillStyle = '#24242f'; g.beginPath(); g.moveTo(cx - rx - 10, ey - ry - 10); g.lineTo(cx + rx + 10, ey - ry - 10); g.lineTo(cx + rx + 10, ly - 8);
+      g.quadraticCurveTo(cx, ly + 30, cx - rx - 10, ly - 8); g.closePath(); g.fill(); g.restore();
+      const hw = rx * Math.sqrt(Math.max(0, 1 - Math.pow((ly - ey) / ry, 2))) + 4;
+      g.lineWidth = 10; g.beginPath(); g.moveTo(cx - hw, ly - 4); g.quadraticCurveTo(cx, ly + 30, cx + hw, ly - 4); g.stroke(); }
   }
   // полоски на щеках: по 2 с каждой стороны
   g.strokeStyle = '#ff8a2a'; g.lineWidth = 20; g.lineCap = 'round';
