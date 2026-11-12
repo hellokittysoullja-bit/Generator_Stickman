@@ -17,16 +17,16 @@ function seek(t) {
     set('dima_lid_' + nm, 'transform', `translate(0 ${bl * 58})`);
     set('dima_pupil_' + nm, 'transform', `translate(${px.toFixed(3)} ${(py * 6).toFixed(3)})`);
   }
-  const thr = `rotate(${(-13 * th).toFixed(3)} -50 62) translate(0 ${(-7 * th).toFixed(3)})`;
-  set('dima_thumb', 'transform', thr); set('thumb_rim', 'transform', thr);
+  // большой палец — за телефоном; свайп читается лёгким движением кисти с телефоном (вверх и поворот) и вспышкой экрана
+  set('dima_hand_move', 'transform', `translate(0 ${(-4 * th).toFixed(3)}) rotate(${(-2 * th).toFixed(3)} 60 120)`);
   const so = Math.min(1, 0.62 * sc);
   set('scr_dima', 'opacity', so.toFixed(4)); set('scr_plaid', 'opacity', (so * 0.75).toFixed(4));
-  set('scr_cat', 'opacity', Math.min(1, 0.55 * sc).toFixed(4)); set('screen_edge', 'opacity', Math.min(1, 0.7 * sc).toFixed(4));
+  set('scr_cat', 'opacity', Math.min(1, 0.55 * sc).toFixed(4));
   set('fl_cat', 'opacity', Math.min(1, 0.72 * fl).toFixed(4)); set('fl_plaid', 'opacity', Math.min(1, 0.72 * fl).toFixed(4));
   const rot = `rotate(${tail.toFixed(3)} 912 1272)`;
   set('cat_tail', 'transform', rot); set('tail_rim', 'transform', rot);
   const sk = 6 * Math.sin(t * 7.3) + 3 * Math.sin(t * 13.1 + 1);
-  set('cat_flame', 'transform', `${rot} translate(1000 1046) skewX(${sk.toFixed(3)}) scale(${(1 / Math.sqrt(fl)).toFixed(4)} ${fl.toFixed(4)}) translate(-1000 -1046)`);
+  set('cat_flame', 'transform', `${rot} translate(995 1076) skewX(${sk.toFixed(3)}) scale(${(1 / Math.sqrt(fl)).toFixed(4)} ${fl.toFixed(4)}) translate(-995 -1076)`);
   for (const nm of ['L', 'R']) {
     set('cat_lid_' + nm, 'transform', `translate(0 ${-84 + 84 * cb})`);
     set('cat_lidlo_' + nm, 'transform', `translate(0 ${48 - 48 * cb})`);
