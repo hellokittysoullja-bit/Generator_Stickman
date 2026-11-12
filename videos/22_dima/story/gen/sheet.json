@@ -1,0 +1,10 @@
+{
+ "prompt": "Reference image 1 is the black cat character: keep its identity, change only style, pose and expression. SCENE: Character design sheet on a plain light warm-grey studio background, two characters standing side by side, full body, front view, neutral relaxed pose, evenly lit. Left: Dima, a 24-year-old ordinary young man, slim, slightly slouched, messy dark-brown hair sticking up at the back, light stubble, tired kind eyes with faint grey bags under them, wearing a faded mustard-yellow hoodie, grey sweatpants and worn white socks. Right, sitting at his feet and reaching up to his knee: his black cat, round fluffy body, looking up at Dima with curiosity. Below them, smaller, three close-up head studies of Dima: bored with a glazed look, panicked with wide eyes, and a small proud smile. Generous empty space around each figure. The black cat is the cat from its reference image, redrawn in this cartoon style: same black fur, big green eyes, orange stripes on the cheeks, a small orange flame burning on the tip of its curled tail. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right Style: modern adult animated TV series look, flat 2D cel animation, clean confident black outlines of even weight, simple flat colours with one soft cel shadow tone, expressive cartoon faces with big white eyes and small pupils, slightly tired relatable characters; backgrounds are richly detailed and lived-in, painted with soft texture and warm natural light, believable everyday objects. Full-bleed vertical frame filled edge to edge, no border, no paper margin. Every surface is clean and unmarked: no letters, numbers, logos or writing anywhere — blank screens, blank clock faces, blank book covers, plain walls. Keep the main subject well inside the frame.",
+ "model": "cx/gpt-image-2.5",
+ "quality": "medium",
+ "size": "1024x1536",
+ "price": 197550,
+ "refs": [
+  "look/hero.png"
+ ]
+}
