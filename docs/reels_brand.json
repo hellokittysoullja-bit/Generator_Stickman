@@ -36,5 +36,7 @@
  "voice_template": "01a17014-ca70-7107-9d46-066b80ccf709",
  "voice_template_note": "голос всех рилсов: шаблон Lumean «03_Daniel_22_energetic_story» (ElevenLabs eleven_v4, голос Daniel, стабильность 0.5), выбран владельцем в рилсе эп.01 v10; им озвучены рилсы 01, 03, 04, 05. Менять — только со слова владельца.",
  "voice_template_female": "01a1d6b1-4915-7288-93eb-b10feb74a691",
- "voice_template_female_note": "Alisa — Natural Russian Female (ElevenLabs t6lBrEl93uCiLR1Lgm8v), эксперимент владельца 13.11: 10 рилсов женским голосом; в reel.json рилса \"voice\": \"female\""
+ "voice_template_female_note": "Alisa — Natural Russian Female (ElevenLabs t6lBrEl93uCiLR1Lgm8v), эксперимент владельца 13.11: 10 рилсов женским голосом; в reel.json рилса \"voice\": \"female\"",
+ "voice_template_female2": "01a1d6b5-7f80-7306-88d5-d5cf0a36e3cd",
+ "voice_template_female2_note": "Natalia — Warm, Lively Narrator (ElevenLabs sh62zStknvpIVpRnlOGE), второй женский голос, рилсы 65–69 (владелец 13.11: «другим милым голосом девушки»); в reel.json \"voice\": \"female2\""
 }
