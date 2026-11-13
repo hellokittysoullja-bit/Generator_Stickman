@@ -577,9 +577,9 @@ def bulb_state(t):
 
 def s06(t):
     td = T_DEVYANOSTO
-    k = ease_io(clamp((t - 8.15) / 2.35))
+    k = clamp((t - 8.15) / 2.35)
     hit = punch(t, td, .09, .05, .4)
-    strain = smooth(8.15, 8.5, t) * (1 - smooth(td + .3, td + .55, t))
+    strain = smooth(7.95, 8.4, t) * (1 - smooth(td + .3, td + .55, t))
     shake = strain * osc(t, 15)
     s = (2.4 + .3 * k) * (1 + hit)
     cam = (418 + 8 * k + 2.5 * shake, 948 - 10 * k, s, .6 - .9 * k + 1.0 * bump(t, td, .3) * osc(t, 9))
@@ -782,7 +782,7 @@ def s16(t):
 
 # ═════════════════════════ s14: кухня днём, каша, ложка в рот на «поесть», пар ═════════════════════════
 KHIP = np.array([250.0, 1262.0])
-BOWL = (560.0, 1104.0)
+BOWL = (500.0, 1108.0)
 
 
 def kitchen_back(t):
@@ -791,6 +791,11 @@ def kitchen_back(t):
          kitchen.clock_wall(10, 5 + t * .2, "morning") + kitchen.shelf(dust=0.0, wiped=1.0) + kitchen.cupboard() + kitchen.counter() +
          kitchen.fridge(magnets=True) + kitchen.floor("morning") + kitchen.lamp("morning", t, .02 * osc(t, .4)) + "</g>")
     return g
+
+
+def morning_light():
+    g = lib.rad_grad([(0, "#fff0c8", .4), (1, "#fff0c8", 0)], 100, 600, 1100, 1000)
+    return f'<rect x="-1400" y="-1400" width="4200" height="4400" fill="url(#{g})" style="mix-blend-mode:screen"/>'
 
 
 def table_top():
@@ -803,7 +808,7 @@ def table_top():
         inner += line([(x, yt + 4), (x - 8, yf + 54)], 7, "#e98a86", seed=6300 + j, op=.55, taper=.05, wmin=.9)
     inner += line([(x0, yt + 36), (x1, yt + 34)], 7, "#e98a86", seed=6320, op=.55, taper=.05, wmin=.9)
     o = [shape(cloth, "#f6e3d6", inner, w=4.2, seed=6301)]
-    o.append(shape(rect_pts(x0 + 40, yf + 50, x0 + 74, 1700), den.WOOD, blob(rect_pts(x0 + 58, yf + 50, x0 + 74, 1700), den.WOOD_SH, .9), w=3.6, seed=6302))
+    o.append(shape(rect_pts(x0 + 600, yf + 50, x0 + 634, 1700), den.WOOD, blob(rect_pts(x0 + 618, yf + 50, x0 + 634, 1700), den.WOOD_SH, .9), w=3.6, seed=6302))
     return "".join(o)
 
 
@@ -839,8 +844,8 @@ def s14(t):
     k = ease_io(clamp((t - 24.25) / 1.9))
     wh = whip_in(t, 24.25, .24)
     hit = punch(t, tp, .05, .05, .32)
-    s = (1.45 + .1 * k) * (1 + hit)
-    cam = (480 + 20 * k + 380 * wh, 965 - 15 * k, s, -2.6 * wh + .5 * k)
+    s = (1.95 + .12 * k) * (1 + hit)
+    cam = (430 + 12 * k + 380 * wh, 985 - 12 * k, s, -2.6 * wh + .5 * k)
     # ложка: зачерпнул (24.25–24.45) → ко рту, в рот на «поесть» (24.72) → жуёт, второй заход с 25.45
     t_dip2 = 25.42
     to_mouth = smooth(24.42, tp, t) * (1 - smooth(tp + .3, tp + .55, t))
@@ -875,20 +880,20 @@ def s14(t):
     # «мм!» — сердечки-искры у головы после «поесть»
     hu = clamp((t - tp - .15) / .6)
     if 0 < hu < 1:
-        hx, hy = head_pt(d, (150, -60))
+        hx, hy = head_pt(d, (150, -110))
         for j in range(3):
             v = clamp(hu * 1.3 - j * .15)
-            if v <= 0:
+            if v <= 0 or v >= 1:
                 continue
-            x, y = hx + 40 * j + 10 * math.sin(v * 6), hy - 30 - 120 * v - 30 * j
-            r = 14 * (1 - .4 * v)
+            x, y = hx + 34 * j + 8 * math.sin(v * 6), hy - 10 - 80 * v - 26 * j
+            r = 20 * math.sin(math.pi * min(1, v * 1.4)) + 1
             heart = [(x, y + r * 1.2), (x - r * 1.3, y), (x - r * 1.1, y - r * .9), (x - r * .3, y - r), (x, y - r * .4), (x + r * .3, y - r),
                      (x + r * 1.1, y - r * .9), (x + r * 1.3, y)]
             w.append(shape(heart, "#e2443a", "", w=3, seed=6600 + j))
     world = "".join(w)
     cx, cy, s_, r = cam
     set_ink(s_)
-    o = ['<rect width="1080" height="1920" fill="#f0dcb4"/>', f'<g transform="{lib.cam(cx, cy, s_, r)}">{world}{kitchen.lamp_glow("morning")}</g>',
+    o = ['<rect width="1080" height="1920" fill="#f0dcb4"/>', f'<g transform="{lib.cam(cx, cy, s_, r)}">{world}{morning_light()}</g>',
          vignette("#3a2a1a", .26)]
     return lib.svg("".join(o))
 
