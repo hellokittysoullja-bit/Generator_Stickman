@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1664, height=1475" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1664px; height: 1475px; overflow: hidden; background: #f7f3ea; }
+      #root { position: relative; width: 1664px; height: 1475px; overflow: hidden; }
+      .layer { position: absolute; left: 0; top: 0; width: 1664px; height: 1475px; }
+      .abs { position: absolute; display: block; }
+      svg.layer { overflow: visible; }
+      #rays line { stroke: #f2b632; stroke-linecap: round; }
+      #glow { position: absolute; border-radius: 50%;
+              background: radial-gradient(circle, rgba(255, 236, 150, 0.95) 0%, rgba(255, 226, 120, 0.55) 35%, rgba(255, 220, 110, 0) 70%); }
+    </style>
+  </head>
+  <body>
+    <!-- Хук рилса 52 «Двоечник стал гением?»: мир — рисунок g1_dunce_genius ×2 от (0, 350), в половинном размере.
+         Слои — anim/kit_genius.py, положение подставляет genius_hf.py из kit.json.
+         С кадра 0 всё уже в движении: кот вздрагивает за партой рывками (лист с каракулей трясётся в лапах), лампочка
+         над головой качается на невидимом проводе и мигает, свет от неё пульсирует; на ударном «гЕнием»
+         (data-vars.hit) лампочка вспыхивает, раздуваясь, вокруг неё выстреливают лучи, кот подпрыгивает на стуле.
+         Камеру, тряску, субтитры и звук даёт сборщик. -->
+    <div id="root" data-composition-id="main" data-start="0" data-duration="2.0" data-width="1664" data-height="1475"
+         data-vars='{"hit": 1.18}' data-motion-blur="on" data-layout-allow-overflow data-layout-allow-overlap>
+      <img id="bg" class="abs clip" src="assets/bg.png" style="left:0;top:0" data-start="0" data-duration="2.0" />
+      <div id="glow" class="clip" style="left:0px;top:0px;width:900px;height:900px" data-start="0" data-duration="2.0"></div>
+      <div id="catL" class="layer clip" data-start="0" data-duration="2.0">
+        <img id="cat" class="abs" src="assets/cat.png" style="left:0px;top:0px" />
+      </div>
+      <div id="bulbL" class="layer clip" data-start="0" data-duration="2.0">
+        <img id="bulb" class="abs" src="assets/bulb.png" style="left:0px;top:0px" />
+        <svg id="rays" class="layer" width="1664" height="1475" viewBox="0 0 1664 1475"></svg>
+      </div>
+    </div>
+    <script>
+      const root = document.getElementById("root");
+      const V = JSON.parse(root.dataset.vars), H = V.hit, K = V.kit;
+      const NS = "http://www.w3.org/2000/svg";
+      const tl = gsap.timeline({ paused: true });
+      const px = (p) => `${p[0]}px ${p[1]}px`;
+      const bx = K.bulb_c[0], by = K.bulb_c[1];
+      gsap.set("#catL", { transformOrigin: px(K.feet) });
+      gsap.set("#bulbL", { transformOrigin: `${bx}px ${by - 230}px` });      // провод сверху: лампочка — маятник
+      gsap.set("#glow", { left: bx - 450, top: by - 450, transformOrigin: "50% 50%" });
+      // кот вздрагивает рывками с кадра 0: в кадре 0 уже в полёте вверх, без разгона с нуля
+      const J = 0.13;
+      tl.fromTo("#catL", { y: -34, x: -10, rotation: -2.6, scaleY: 1.03 }, { y: 6, x: 8, rotation: 1.8, scaleY: 0.985, duration: J / 2, ease: "none" }, 0);
+      let t = J / 2, i = 0;
+      while (t < H - 0.1) {
+        const up = i % 2 === 0;
+        tl.to("#catL", { y: up ? -30 - 8 * (i % 3) : 4, x: up ? -12 : 10, rotation: up ? -2.4 : 2.0, scaleY: up ? 1.03 : 0.98,
+                         duration: J / 2, ease: up ? "power2.out" : "power2.in" }, t);
+        t += J / 2; i++;
+      }
+      // «гЕнием»: присел и подпрыгнул на стуле, потом пружиной на место
+      tl.to("#catL", { y: 14, x: 0, rotation: 0, scaleY: 0.94, scaleX: 1.04, duration: 0.07, ease: "power3.in" }, H - 0.07);
+      tl.to("#catL", { y: -90, scaleY: 1.06, scaleX: 0.97, rotation: -1.5, duration: 0.14, ease: "power3.out" }, H);
+      tl.to("#catL", { y: 0, scaleY: 1, scaleX: 1, rotation: 0, duration: 0.7, ease: "elastic.out(1, 0.4)" }, H + 0.14);
+      // лампочка: качается маятником и мигает с кадра 0
+      tl.fromTo("#bulbL", { rotation: -13 }, { rotation: 11, duration: 0.24, ease: "sine.inOut" }, 0);
+      for (let q = 0; 0.24 + q * 0.24 < H; q++) {
+        tl.to("#bulbL", { rotation: q % 2 ? 11 : -12, duration: 0.24, ease: "sine.inOut" }, 0.24 + q * 0.24);
+      }
+      for (let k = 0; k * 0.067 < H; k++) {
+        tl.to("#bulb", { opacity: k % 2 ? 1 : 0.35, duration: 0.067, ease: "none" }, k * 0.067);
+        tl.to("#glow", { opacity: k % 2 ? 0.95 : 0.15, scale: k % 2 ? 1.15 : 0.8, duration: 0.067, ease: "none" }, k * 0.067);
+      }
+      // вспышка на ударе: лампочка раздувается, свет заливает, лучи выстреливают
+      tl.to("#bulbL", { rotation: 0, duration: 0.08, ease: "power3.out" }, H);
+      tl.to("#bulb", { opacity: 1, scale: 1.35, transformOrigin: "50% 60%", duration: 0.08, ease: "power3.out" }, H);
+      tl.to("#bulb", { scale: 1.12, duration: 0.5, ease: "elastic.out(1, 0.5)" }, H + 0.08);
+      tl.to("#glow", { opacity: 1, scale: 2.1, duration: 0.1, ease: "power3.out" }, H);
+      tl.to("#glow", { opacity: 0.75, scale: 1.6, duration: 0.6, ease: "power2.out" }, H + 0.1);
+      for (let k = 0; k < 10; k++) {
+        const a = -Math.PI * (0.08 + 0.84 * k / 9);      // лучи — только вверх и в стороны, мимо ушей
+        const g = document.createElementNS(NS, "g"), m = document.createElementNS(NS, "g"), l = document.createElementNS(NS, "line");
+        g.setAttribute("transform", `translate(${bx + 190 * Math.cos(a)} ${by + 190 * Math.sin(a)}) rotate(${(a * 180) / Math.PI})`);
+        l.setAttribute("x1", 0); l.setAttribute("y1", 0); l.setAttribute("x2", 80); l.setAttribute("y2", 0); l.style.strokeWidth = 12;
+        m.appendChild(l); g.appendChild(m); document.getElementById("rays").appendChild(g);
+        tl.set(m, { opacity: 0, scaleX: 0, svgOrigin: "0 0" }, 0);
+        tl.set(m, { opacity: 1 }, H);
+        tl.to(m, { scaleX: 1, x: 40, duration: 0.09, ease: "power3.out" }, H);
+        tl.to(m, { x: 120, opacity: 0, duration: 0.35, ease: "power2.in" }, H + 0.2);
+      }
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
