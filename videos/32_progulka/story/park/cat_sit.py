@@ -142,7 +142,7 @@ def eyes(look, blink, lid_c=CAT):
     for i, (nm, ex, sd) in enumerate([("L", CX - 44, 255), ("R", CX + 44, 256)]):
         blink = bl[i]
         ep = ellipse_pts(ex, 1072, 34, 38, 16)
-        if blink > 0.97:
+        if blink > 0.74:          # веки сошлись — дуга закрытого глаза (иначе остаётся пустое кольцо)
             s.append(line([(ex - 32, 1076), (ex - 12, 1086), (ex + 12, 1086), (ex + 32, 1076)], 5.6, INK, seed=sd + 40, taper=.5, wmin=.3))
             continue
         cid = clip_of(ep)

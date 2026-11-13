@@ -70,13 +70,13 @@ def paw(leg, t):
     u = clamp((t - t1) / (n0 - t1))
     ux = (1 - math.cos(math.pi * u)) / 2
     xx = x + (nx - x) * ux
-    lift = 48 if kind == "f" else 30
+    lift = 38 if kind == "f" else 26
     yy = -C.ANK - lift * math.sin(math.pi * u) ** 1.1
     if kind == "h":
         xx -= 14 * math.sin(math.pi * clamp(u * 1.6))
-        rot = -0.35 * math.sin(math.pi * clamp(u * 1.2))
+        rot = -0.18 * math.sin(math.pi * clamp(u * 1.2))
     else:
-        rot = 0.75 * math.sin(math.pi * clamp(u * 1.3))
+        rot = 0.32 * math.sin(math.pi * clamp(u * 1.2))
     return np.array([xx, yy]), rot
 
 

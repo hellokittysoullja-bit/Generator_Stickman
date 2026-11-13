@@ -57,6 +57,7 @@ def frame(t):
     g, info = dima.draw(pose(t))
     wb.append(park.long_shadow(g, 0.0))
     wb.append(world.props_back(cx, s, t))
+    gi = len(wb)
     wb.append(g)
     hd = info["head"]
     if t >= T_ON - 0.02:
@@ -69,9 +70,10 @@ def frame(t):
         bx, by = hd[0] + 6, hd[1] - 228 + bob
         r = 82 * max(sc, 0.01)
         # тёплый свет на голову и плечи
-        wb.append(world.glow(hd[0], hd[1] - 60, 330, "#ffe27a", 0.35 * lit))
+        wb.insert(gi, bulb.halo(bx, by, 82 * max(sc, .01), lit, rays))
+        wb.insert(gi, world.glow(hd[0], hd[1] - 60, 330, "#ffe27a", 0.45 * lit))   # свет за героем, не поверх
         wb.append(f'<g transform="translate({bx:.1f} {by:.1f}) scale({max(sc, .01):.4f}) translate({-bx:.1f} {-by:.1f})">'
-                  f'{bulb.draw(bx, by, 82, lit, rays, t)}</g>')
+                  f'{bulb.draw(bx, by, 82, lit, rays, t, halo=False)}</g>')
         _ = r
     body.append(f'<g transform="{lib.cam(cx, cy, s, rot)}">{"".join(wb)}</g>')
     body.append(park.foreground(cx, cy, s, rot, t))

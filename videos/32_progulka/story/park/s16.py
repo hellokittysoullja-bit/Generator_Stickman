@@ -14,7 +14,7 @@ import world
 from lib import clamp, ease_io, smooth
 
 T_A, T_B = 27.80, 30.26
-GROUND_SY = 1255.0
+GROUND_SY = 1185.0
 
 
 def camera(t):

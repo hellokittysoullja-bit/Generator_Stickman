@@ -5,10 +5,10 @@ import lib
 from lib import INK, blob, ellipse_pts, line, shape
 
 
-def draw(x, y, r, lit, rays, t):
+def draw(x, y, r, lit, rays, t, halo=True):
     """(x, y) — центр колбы, r — радиус; lit 0..1 — накал; rays 0..1 — длина лучей."""
     o = []
-    if lit > 0:
+    if lit > 0 and halo:
         g = lib.rad_grad([(0, "#fff6b8", .95 * lit), (.35, "#ffe36a", .55 * lit), (1, "#ffd24a", 0)], x, y, r * (2.6 + 1.2 * rays))
         o.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{r * (2.6 + 1.2 * rays):.1f}" fill="url(#{g})"/>')
     if rays > 0:
@@ -50,3 +50,8 @@ def draw(x, y, r, lit, rays, t):
 
 
 _ = INK
+
+
+def halo(x, y, r, lit, rays):
+    g = lib.rad_grad([(0, "#fff6b8", .95 * lit), (.35, "#ffe36a", .55 * lit), (1, "#ffd24a", 0)], x, y, r * (2.6 + 1.2 * rays))
+    return f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{r * (2.6 + 1.2 * rays):.1f}" fill="url(#{g})"/>'
