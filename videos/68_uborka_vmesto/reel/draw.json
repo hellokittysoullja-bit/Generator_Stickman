@@ -1,0 +1,10 @@
+{
+ "style_refs": [
+  "../../01_sdvg_pismo/frames/004.png"
+ ],
+ "jobs": {
+  "g1_wipe_desk": "tall vertical picture: the main character polishes a plain desk with a cloth so hard that the desk shines with sparkles, an open laptop pushed aside with a blank screen. Intense focused face, tongue slightly out, sparkle stars around. LAYOUT: the main character is big and whole in the middle of the picture, with plain empty space at the top for a caption.",
+  "g2_whole_flat": "tall vertical picture: a spotless room, everything gleaming, folded towels, vacuum cleaner parked, the main character sits exhausted but proud in the middle holding a duster, while the laptop in the corner still shows a blank screen. LAYOUT: the main character is big and whole in the middle of the picture, with plain empty space at the top for a caption.",
+  "g3_timer_work": "tall vertical picture: the main character sits at the desk typing on the laptop with both paws, a small kitchen timer next to it, a little dust still on the shelf behind, totally absorbed. Focused calm face, flame bright. LAYOUT: the main character is big and whole in the middle of the picture, with plain empty space at the top for a caption."
+ }
+}

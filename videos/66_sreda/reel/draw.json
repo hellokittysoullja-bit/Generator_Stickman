@@ -1,0 +1,10 @@
+{
+ "style_refs": [
+  "../../01_sdvg_pismo/frames/004.png"
+ ],
+ "jobs": {
+  "g1_monday_list": "tall vertical picture: Monday morning. The main character stands proudly on a plain desk holding up a very long paper list that unrolls down to the floor in loops, covered only with plain lines and blank checkboxes, no writing. Chest puffed, confident grin. LAYOUT: the main character is big and whole in the middle of the picture, with plain empty space at the top for a caption.",
+  "g2_wednesday": "tall vertical picture: Wednesday evening. The main character lies flat on the floor under the same long paper list draped over it like a blanket, only its face peeking out, staring at the ceiling with a sulky offended expression. Flame a dim ember. LAYOUT: the main character is big and whole in the middle of the picture, with plain empty space at the top for a caption.",
+  "g3_one_card": "tall vertical picture: the main character sits at a plain desk with one small square sticky note in front of it, ticking a single big checkbox with a pencil, five small plain sticky notes lined up behind it each with one tick mark. Calm happy face, flame bright. LAYOUT: the main character is big and whole in the middle of the picture, with plain empty space at the top for a caption."
+ }
+}
