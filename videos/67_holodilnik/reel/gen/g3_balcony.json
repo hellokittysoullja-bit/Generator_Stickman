@@ -1,0 +1,12 @@
+{
+ "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, shading and simplicity, never their content, characters or colour scheme (the colours come from the palette below). Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: a small plain balcony at dusk with a plant in a pot. The main character stands on the balcony railing ledge stretching, breathing fresh air, eyes closed, calm smile, a light breeze in its fur, the city as soft simple shapes behind. Flame bright. LAYOUT: the main character is big and whole in the middle of the picture, with plain empty space at the top for a caption. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place, with the paper showing around it. Colours: black ink lines and soft grey washes on plain cream paper, like the style reference. Soft watercolour colour goes only on one or two things that matter in the picture, the main object and maybe one detail, each in its own natural muted colour (blue water, a green plant, a pink cushion, a red heart, a yellow lamp light), and not everything in the same orange; furniture, clothes, walls, floors and everything else stay ink and light grey. Some of the things are coloured, never all of them. The background always stays the plain cream paper, never a coloured wall or a tinted background. Never neon, never harsh. The main character stays black with green eyes, orange cheek marks and an orange tail flame.. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+ "model": "anymedia/gpt-image-2.5",
+ "quality": "medium",
+ "size": "1024x1536",
+ "price": 131700,
+ "refs": [
+  "look/style/1_colour.png",
+  "videos/01_sdvg_pismo/frames/004.png",
+  "look/hero.png"
+ ]
+}
