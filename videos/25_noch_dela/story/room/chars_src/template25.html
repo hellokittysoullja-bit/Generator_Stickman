@@ -117,7 +117,7 @@ function seek(t, shot) {
       const x0 = rx * Math.cos(th), y0 = ry * Math.sin(th);
       const a = -22 * Math.PI / 180;                       // орбита наклонена вдоль лежащей головы
       const x = 300 + x0 * Math.cos(a) - y0 * Math.sin(a), y = 1010 + x0 * Math.sin(a) + y0 * Math.cos(a), dep = Math.sin(th);
-      const k = (.5 + .26 * (dep + 1) / 2) * ss(0, 1, (ap * 14 - i * .45));
+      const k = (.62 + .3 * (dep + 1) / 2) * ss(0, 1, (ap * 14 - i * .45));
       if (k < .02) continue;
       const id = (dep > 0 ? 'ic_front_' : 'ic_back_') + i;
       set(id, 'transform', `translate(${x.toFixed(2)} ${y.toFixed(2)}) rotate(${(14 * Math.cos(th) - 6).toFixed(2)}) scale(${k.toFixed(4)})`);
@@ -128,8 +128,8 @@ function seek(t, shot) {
   show('cal', CUR === 's03' && t > TT.TOMORROW - .32);
   if (CUR === 's03') {
     const d = t - TT.TOMORROW, u = cl((d + .32) / .32), e = u * u * u;
-    let x = 760 + (300 - 760) * e, y = 560 + (930 - 560) * e, r = 38 * (1 - e) - 6, sc = .7 + .3 * e;
-    if (d > 0) { const w = Math.exp(-d * 7) * Math.sin(d * 34); sc = 1 + .16 * w; r = -6 + 5 * w; y = 930 - 10 * w; }
+    let x = 780 + (340 - 780) * e, y = 520 + (846 - 520) * e, r = 38 * (1 - e) - 6, sc = .62 + .26 * e;
+    if (d > 0) { const w = Math.exp(-d * 7) * Math.sin(d * 34); sc = .88 + .14 * w; r = -6 + 5 * w; y = 846 - 10 * w; }
     set('cal', 'transform', `translate(${x.toFixed(2)} ${y.toFixed(2)}) rotate(${r.toFixed(2)}) scale(${(sc * 1.05).toFixed(4)} ${(sc * 1.05 / (d > 0 && d < .06 ? 1.12 : 1)).toFixed(4)})`);
   }
   // Z сна: выплывают над головой спящего, растут, уходят вверх-вправо и сжимаются (без полупрозрачности)
