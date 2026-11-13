@@ -1,10 +1,10 @@
 # Библиотека оригиналов: кот и всё, что сгенерировано
 
-Картинок: **235**, 457 МБ. Оригиналы — `originals/` байт в байт, как пришли из модели (PNG без пересжатия); `thumbs/` — превью для этой страницы; `catalog.json` — промпт, модель, цена, где используется.
+Картинок: **236**, 458 МБ. Оригиналы — `originals/` байт в байт, как пришли из модели (PNG без пересжатия); `thumbs/` — превью для этой страницы; `catalog.json` — промпт, модель, цена, где используется.
 
 Пополняется сама: каждая генерация через шлюз (`llm_gateway.Gateway.image`) кладёт картинку сюда, включая забракованные варианты. Собрать уже лежащее в репозитории: `python scripts/cat_library.py --scan`.
 
-## генерация (159)
+## генерация (160)
 
 | превью | оригинал | где | промпт |
 |---|---|---|---|
@@ -160,6 +160,7 @@
 | ![](thumbs/2026-11-13_gen_anymedia_gpt-image-2_5_092f54e8.jpg) | [2026-11-13_gen_anymedia_gpt-image-2_5_092f54e8.jpg](originals/2026-11-13_gen_anymedia_gpt-image-2_5_092f54e8.jpg)<br>1664×2496, 2026-11-13 | scripts/reel_draw.py videos/65_idealno/reel --only | Reference images 1-2 show only the drawing style: take from them the line work, shading and simplicity, never their content, characters or colour scheme (the colours come from the palette below). Reference image 3 is the… |
 | ![](thumbs/2026-11-13_gen_anymedia_gpt-image-2_5_1f19e37c.jpg) | [2026-11-13_gen_anymedia_gpt-image-2_5_1f19e37c.jpg](originals/2026-11-13_gen_anymedia_gpt-image-2_5_1f19e37c.jpg)<br>1664×2496, 2026-11-13 | scripts/reel_draw.py videos/68_uborka_vmesto/reel | Reference images 1-2 show only the drawing style: take from them the line work, shading and simplicity, never their content, characters or colour scheme (the colours come from the palette below). Reference image 3 is the… |
 | ![](thumbs/2026-11-13_gen_anymedia_gpt-image-2_5_1f5944d1.jpg) | [2026-11-13_gen_anymedia_gpt-image-2_5_1f5944d1.jpg](originals/2026-11-13_gen_anymedia_gpt-image-2_5_1f5944d1.jpg)<br>1664×2496, 2026-11-13 | scripts/reel_draw.py videos/66_sreda/reel | Reference images 1-2 show only the drawing style: take from them the line work, shading and simplicity, never their content, characters or colour scheme (the colours come from the palette below). Reference image 3 is the… |
+| ![](thumbs/2026-11-13_gen_anymedia_gpt-image-2_5_22f91386.jpg) | [2026-11-13_gen_anymedia_gpt-image-2_5_22f91386.jpg](originals/2026-11-13_gen_anymedia_gpt-image-2_5_22f91386.jpg)<br>1664×2496, 2026-11-13 | scripts/reel_draw.py videos/52_mif_ejnshtejn/reel | Reference images 1-2 show only the drawing style: take from them the line work, shading and simplicity, never their content, characters or colour scheme (the colours come from the palette below). Reference image 3 is the… |
 | ![](thumbs/2026-11-13_gen_anymedia_gpt-image-2_5_32e0f3fe.jpg) | [2026-11-13_gen_anymedia_gpt-image-2_5_32e0f3fe.jpg](originals/2026-11-13_gen_anymedia_gpt-image-2_5_32e0f3fe.jpg)<br>1664×2496, 2026-11-13 | scripts/reel_draw.py videos/65_idealno/reel | Reference images 1-2 show only the drawing style: take from them the line work, shading and simplicity, never their content, characters or colour scheme (the colours come from the palette below). Reference image 3 is the… |
 | ![](thumbs/2026-11-13_gen_anymedia_gpt-image-2_5_516c272d.jpg) | [2026-11-13_gen_anymedia_gpt-image-2_5_516c272d.jpg](originals/2026-11-13_gen_anymedia_gpt-image-2_5_516c272d.jpg)<br>1664×2496, 2026-11-13 | scripts/reel_draw.py videos/66_sreda/reel | Reference images 1-2 show only the drawing style: take from them the line work, shading and simplicity, never their content, characters or colour scheme (the colours come from the palette below). Reference image 3 is the… |
 | ![](thumbs/2026-11-13_gen_anymedia_gpt-image-2_5_956be7cd.jpg) | [2026-11-13_gen_anymedia_gpt-image-2_5_956be7cd.jpg](originals/2026-11-13_gen_anymedia_gpt-image-2_5_956be7cd.jpg)<br>1664×2496, 2026-11-13 | scripts/reel_draw.py videos/66_sreda/reel | Reference images 1-2 show only the drawing style: take from them the line work, shading and simplicity, never their content, characters or colour scheme (the colours come from the palette below). Reference image 3 is the… |
