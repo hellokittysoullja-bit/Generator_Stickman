@@ -38,5 +38,7 @@
  "voice_template_female": "01a1d6b1-4915-7288-93eb-b10feb74a691",
  "voice_template_female_note": "Alisa — Natural Russian Female (ElevenLabs t6lBrEl93uCiLR1Lgm8v), эксперимент владельца 13.11: 10 рилсов женским голосом; в reel.json рилса \"voice\": \"female\"",
  "voice_template_female2": "01a1d6b5-7f80-7306-88d5-d5cf0a36e3cd",
- "voice_template_female2_note": "Natalia — Warm, Lively Narrator (ElevenLabs sh62zStknvpIVpRnlOGE), второй женский голос, рилсы 65–69 (владелец 13.11: «другим милым голосом девушки»); в reel.json \"voice\": \"female2\""
+ "voice_template_female2_note": "Natalia — Warm, Lively Narrator (ElevenLabs sh62zStknvpIVpRnlOGE), второй женский голос, рилсы 65–69 (владелец 13.11: «другим милым голосом девушки»); в reel.json \"voice\": \"female2\"",
+ "voice_template_male2": "01a1d6e0-baea-73c6-93c9-f1592d594029",
+ "voice_template_male2_note": "Evgeniy Rybakov — Expressive (ElevenLabs ws3YyKFd5whKb21yaXES), молодой парень, рилсы 70–74 (владелец 13.11: «молодым голосом парня новым»); в reel.json \"voice\": \"male2\""
 }
