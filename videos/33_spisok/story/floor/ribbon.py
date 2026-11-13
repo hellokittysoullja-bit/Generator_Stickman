@@ -51,6 +51,10 @@ def _scribbles(cam, P, s, T, B, W, s0, s1, ink_k, seed, gap=2.6, first=1.6):
         sj = first + j * gap
         if sj < s0 - 1 or sj > s1 + 1:
             continue
+        i0 = int(np.clip(np.searchsorted(s, sj), 1, len(s) - 1))
+        i1 = int(np.clip(np.searchsorted(s, sj + 0.8), 1, len(s) - 1))
+        if np.linalg.norm(cam.p(P[i1]) - cam.p(P[i0])) < 0.55 * cam.k(float(P[i0][2])) * 0.8:
+            continue
         rs = np.random.RandomState(seed + j * 7)
         L = rs.uniform(.42, .74)
         x0 = -W / 2 + W * .2
