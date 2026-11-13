@@ -1,10 +1,10 @@
 # Библиотека оригиналов: кот и всё, что сгенерировано
 
-Картинок: **224**, 452 МБ. Оригиналы — `originals/` байт в байт, как пришли из модели (PNG без пересжатия); `thumbs/` — превью для этой страницы; `catalog.json` — промпт, модель, цена, где используется.
+Картинок: **225**, 453 МБ. Оригиналы — `originals/` байт в байт, как пришли из модели (PNG без пересжатия); `thumbs/` — превью для этой страницы; `catalog.json` — промпт, модель, цена, где используется.
 
 Пополняется сама: каждая генерация через шлюз (`llm_gateway.Gateway.image`) кладёт картинку сюда, включая забракованные варианты. Собрать уже лежащее в репозитории: `python scripts/cat_library.py --scan`.
 
-## генерация (148)
+## генерация (149)
 
 | превью | оригинал | где | промпт |
 |---|---|---|---|
@@ -155,6 +155,7 @@
 | ![](thumbs/2026-11-12_gen_anymedia_gpt-image-2_5_4270276d.jpg) | [2026-11-12_gen_anymedia_gpt-image-2_5_4270276d.jpg](originals/2026-11-12_gen_anymedia_gpt-image-2_5_4270276d.jpg)<br>2496×1664, 2026-11-12 | videos/L02_otvlechenie/thumb/draw_thumb.py | Images 1-1: drawing style only (thin ink line, light watercolour, soft grey shading). Image 2: the main character, a black cat with green eyes, orange cheek stripes, a small flame on its curled tail, left ear (viewer's l… |
 | ![](thumbs/2026-11-12_gen_cx_gpt-image-2_5_1e5f8ff9.jpg) | [2026-11-12_gen_cx_gpt-image-2_5_1e5f8ff9.png](originals/2026-11-12_gen_cx_gpt-image-2_5_1e5f8ff9.png)<br>1024×1536, 2026-11-12 | scripts/story_draw.py videos/22_dima/story --only | Reference image 1 is the black cat character: keep its identity, change only style, pose and expression. SCENE: Character design sheet on a plain light warm-grey studio background, two characters standing side by side, f… |
 | ![](thumbs/2026-11-12_gen_cx_gpt-image-2_5_64b48afa.jpg) | [2026-11-12_gen_cx_gpt-image-2_5_64b48afa.png](originals/2026-11-12_gen_cx_gpt-image-2_5_64b48afa.png)<br>1039×1514, 2026-11-12 | scripts/story_draw.py videos/22_dima/story --only | Reference image 1 shows only the drawing style: copy its line work, flat colours, cel shading, way of drawing faces and eyes, textured detailed backgrounds and lighting; never its characters, people, objects, writing or … |
+| ![](thumbs/2026-11-13_gen_anymedia_gpt-image-2_5_081c8797.jpg) | [2026-11-13_gen_anymedia_gpt-image-2_5_081c8797.jpg](originals/2026-11-13_gen_anymedia_gpt-image-2_5_081c8797.jpg)<br>1664×2496, 2026-11-13 | scripts/reel_draw.py videos/65_idealno/reel | Reference images 1-2 show only the drawing style: take from them the line work, shading and simplicity, never their content, characters or colour scheme (the colours come from the palette below). Reference image 3 is the… |
 | ![](thumbs/2026-11-13_gen_anymedia_gpt-image-2_5_092f54e8.jpg) | [2026-11-13_gen_anymedia_gpt-image-2_5_092f54e8.jpg](originals/2026-11-13_gen_anymedia_gpt-image-2_5_092f54e8.jpg)<br>1664×2496, 2026-11-13 | scripts/reel_draw.py videos/65_idealno/reel --only | Reference images 1-2 show only the drawing style: take from them the line work, shading and simplicity, never their content, characters or colour scheme (the colours come from the palette below). Reference image 3 is the… |
 
 ## генерация (исправлена владельцем) (1)
