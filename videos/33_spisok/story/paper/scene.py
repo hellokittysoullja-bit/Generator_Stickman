@@ -420,7 +420,300 @@ def s09(t):
     return compose("".join(w), c, light_u=1.0, lcx=820, lcy=300)
 
 
-SHOTS = {"s02": s02, "s06": s06, "s07": s07, "s09": s09}
+# ═════════════════════════ карточка (s12–s16): «1. 2. 3.», квадратики, галочки, часы, лапа ═════════════════════════
+CARD_C = (520.0, 700.0)
+CARD_R = -3.0
+ROWY = [530.0, 700.0, 870.0]
+BOX_X = 446.0
+NUM_X = 340.0
+CARD_ROWS = [Pr.scribble(510, 770 - j * 40, ROWY[j] + 12, 1300 + j, h=18, pitch=14) for j in range(3)]
+ROW_A = [17.0, 17.44, 17.86]          # начало строк (номер → квадратик → каракули)
+CHECK_T = [T_OBED, T_TREM]            # 19.6, 20.72
+HAND_K = .92
+PEN_REST = ((598.0, 936.0), 24.0)    # где ручка ляжет (острие, угол): на нижний угол карточки
+
+
+def card_xy(p):
+    """Точка карточки → мир (поворот карточки)."""
+    return Pr.lib.T([p], CARD_C[0], CARD_C[1], 1, CARD_R, 0, 0)[0] if False else _crot(p)
+
+
+def _crot(p):
+    a = math.radians(CARD_R)
+    x, y = p[0] - CARD_C[0], p[1] - CARD_C[1]
+    return np.array([CARD_C[0] + x * math.cos(a) - y * math.sin(a), CARD_C[1] + x * math.sin(a) + y * math.cos(a)])
+
+
+def card(t, checks=(0.0, 0.0), paw_u=0.0, hop=0.0):
+    """Карточка-стикер. checks — доли двух галочек; paw_u — проявление отпечатка лапы в третьем квадратике.
+    Возвращает (svg, острие пера для текущего действия письма или None)."""
+    cx, cy = CARD_C
+    o = []
+    pts = [(cx - 280, cy - 280), (cx + 280, cy - 284), (cx + 284, cy + 280), (cx - 282, cy + 284)]
+    inner = blob([(cx - 290, cy - 290), (cx + 290, cy - 290), (cx + 290, cy - 236), (cx - 290, cy - 230)], "#f4cf55", .9)
+    inner += blob([(cx + 284, cy + 200), (cx + 284, cy + 284), (cx + 200, cy + 284)], "#f0c64a", .9)
+    body = [Pr.soft_shadow(pts, 14, 22, .32, 10), shape([p + (1,) for p in pts], "#ffe27a", inner, w=4.6, seed=6900)]
+    tip = None
+    for j in range(3):
+        a = ROW_A[j]
+        y = ROWY[j]
+        if t < a:
+            break
+        u_num = clamp((t - a) / .08)
+        sc = 1 + .45 * bump(u_num, 0, 1) if u_num < 1 else 1
+        body.append(Pr.text(NUM_X, y + 4, f"{j + 1}.", 64 * sc, Pr.PEN_INK, rot=-4))
+        bsv, btip = Pr.box(BOX_X, y + 2, 1.0, clamp((t - a - .08) / .12), seed=5800 + j)
+        body.append(bsv)
+        st, stip = Pr.reveal(CARD_ROWS[j], clamp((t - a - .2) / .22))
+        body.append(Pr.pen_path(st, Pr.PEN_INK, 4.4))
+        if t < a + .42:
+            tip = np.array([NUM_X + 20, y + 10]) if t < a + .08 else (btip if t < a + .2 else stip)
+    for j in range(2):
+        if checks[j] > 0:
+            csv_, ctip = Pr.check(BOX_X + 4, ROWY[j] - 2, 1.25, checks[j])
+            body.append(csv_)
+            if checks[j] < 1:
+                tip = ctip
+    if paw_u > 0:
+        body.append(Pr.paw_print(BOX_X + 2, ROWY[2] + 6, .78 * (1 + .25 * (1 - ease_out(paw_u))), rot=-8))
+    g = "".join(body)
+    o.append(f'<g transform="translate(0 {-hop:.1f}) rotate({CARD_R} {cx} {cy})">{g}</g>')
+    if tip is not None:
+        tip = _crot(tip) - np.array([0, hop])
+    return "".join(o), tip
+
+
+def clock_m(t):
+    """Минуты суток на часах."""
+    if t < 18.84:
+        return 9 * 60 + 40 + (t - 17.0) * 2
+    if t < 20.2:
+        return 13 * 60
+    if t < 20.62:
+        return 13 * 60 + 120 * ease_io((t - 20.2) / .42)
+    if t < 21.2:
+        return 15 * 60
+    if t < 21.66:
+        return 15 * 60 + 240 * ease_io((t - 21.2) / .46)
+    return 19 * 60
+
+
+def clock_now(t):
+    m = clock_m(t)
+    mm = m % 60
+    roll = clamp((mm - 48) / 12) if 20.2 < t < 21.66 else 0.0
+    shown = m - mm + (0 if roll == 0 else 0)
+    jolt = bump(t, 20.62, .2) + bump(t, 21.66, .2)
+    icon = "sun" if m < 17 * 60 else "dusk"
+    return Pr.clock(752, 278 + 6 * jolt * osc(t, 20), shown + (int(mm) if roll == 0 else 0), .8, roll=roll, icon=icon, icon_t=t)
+
+
+def evening_u(t):
+    return smooth(21.25, 21.75, t)
+
+
+def card_world(t, checks=(0.0, 0.0), paw_u=0.0, hop=0.0, pen_rest=False):
+    c_svg, tip = card(t, checks, paw_u, hop)
+    w = [Pr.wood(), clock_now(t)]
+    # пятно солнца из окна (днём — светлое слева, вечером — длинное оранжевое)
+    eu = evening_u(t)
+    sun = [(-300, 120 + 300 * eu), (420 - 120 * eu, 40 + 260 * eu), (300 - 60 * eu, 1500), (-300, 1500)]
+    col = lib.mix("#fff3d0", "#ffb15a", eu)
+    w.append(blob([p + (1,) for p in sun], col, .22 + .08 * eu, lib.blur(30) + ' style="mix-blend-mode:screen"'))
+    w.append(c_svg)
+    if pen_rest:
+        w.append(Pr.pen_at(*PEN_REST, HAND_K))
+    return w, tip
+
+
+def hover_path(t, pts):
+    """Кусочная траектория [(t, x, y, ang, lift)] с ease_io между ключами."""
+    if t <= pts[0][0]:
+        return pts[0][1:]
+    for a, b in zip(pts, pts[1:]):
+        if t <= b[0]:
+            e = ease_io((t - a[0]) / (b[0] - a[0]))
+            return tuple(a[i] + (b[i] - a[i]) * e for i in range(1, len(a)))
+    return pts[-1][1:]
+
+
+def card_cam(t, s, dx=0.0, dy=0.0, r=0.0):
+    set_ink(s * 1.36)
+    return (536 + dx, 622 + dy, s * 1.36, r)
+
+
+def s12(t):
+    hop = 26 * bump(t, T_TRI, .28)
+    w, tip = card_world(t, hop=hop)
+    if tip is None:
+        # между строками: перелёт к следующей; после третьей — отдых у карточки
+        if t < ROW_A[2]:
+            j = 0 if t < ROW_A[1] else 1
+            a0 = CARD_ROWS[j][-1][-1]
+            a1 = np.array([NUM_X + 20, ROWY[j + 1] + 10])
+            e = ease_io(clamp((t - (ROW_A[j + 1] - .02)) / .02))
+            tip = _crot(a0 + (a1 - a0) * e)
+            lift = 1.0
+        else:
+            end = _crot(CARD_ROWS[2][-1][-1])
+            x, y, _ = hover_path(t, [(18.28, end[0], end[1], 0), (18.6, 760, 980, 0)])
+            tip = np.array([x, y + 4 * osc(t, 1.3)])
+            lift = .6
+    else:
+        lift = 0.0
+    w.append(Pr.hand(tuple(tip), 46 + 3 * osc(t, 2.1), HAND_K, "pen", "#3b6fd8", lift=lift, seed=30))
+    kk = ease_io(clamp((t - 17.2) / 1.84))
+    s = (1.06 + .06 * kk) * (1 + punch(t, T_TRI, .05, .05, .3))
+    return compose("".join(w), card_cam(t, s, -20 + 40 * kk, 10 - 20 * kk, -.8 + 1.2 * kk), light_u=0.0)
+
+
+def check_tip(j):
+    return _crot(np.array([BOX_X + 4 - 26 * 1.25, ROWY[j] - 2 - 2 * 1.25]))
+
+
+def s13(t):
+    tc = T_OBED
+    ch0 = clamp((t - (tc - .14)) / .14)
+    w, tip = card_world(t, (ch0, 0.0))
+    if tip is None:
+        a = check_tip(0)
+        if t < tc - .14:
+            x, y = hover_path(t, [(18.64, 770, 990, 0), (19.0, 700, 900, 0), (tc - .14, a[0], a[1], 0)])[:2]
+            tip, lift = np.array([x, y]), 1.0
+        else:
+            end = Pr.check(BOX_X + 4, ROWY[0] - 2, 1.25, 1)[1]
+            end = _crot(end)
+            x, y = hover_path(t, [(tc, end[0], end[1], 0), (tc + .35, end[0] + 160, end[1] + 230, 0)])[:2]
+            tip, lift = np.array([x, y]), .7
+    else:
+        lift = 0.0
+    w.append(Pr.hand(tuple(tip), 46 + 3 * osc(t, 2.1), HAND_K, "pen", "#3b6fd8", lift=lift, seed=30))
+    if t > tc:
+        v = t - tc
+        bx = _crot(np.array([BOX_X + 60, ROWY[0] - 50]))
+        sc = min(1, v / .06) * (1 + .5 * math.exp(-7 * v) * math.sin(v * 24 + .4))
+        w.append(Pr.star(bx[0], bx[1], 30 * sc, "#f4c430", rot=20 * math.exp(-5 * v), seed=6950))
+        w.append(Pr.glint(bx[0] + 40, bx[1] - 30, 22 * math.sin(math.pi * clamp(v / .4)), "#fff6c8", rot=v * 90))
+    kk = ease_io(clamp((t - 18.64) / 1.72))
+    s = (1.12 + .05 * kk) * (1 + punch(t, tc, .06, .05, .3))
+    sx, sy, sr = shake(t, tc, 8, .25)
+    return compose("".join(w), card_cam(t, s, 10 - 30 * kk + sx, -10 + sy, .6 - 1 * kk + sr), light_u=0.0)
+
+
+def s14(t):
+    tc, tv = T_TREM, T_VECH
+    ch1 = clamp((t - (tc - .14)) / .14)
+    pen_down = t > 22.06
+    w, tip = card_world(t, (1.0, ch1), pen_rest=pen_down)
+    a = check_tip(1)
+    b3 = _crot(np.array([BOX_X + 2, ROWY[2] - 30]))
+    e1 = _crot(Pr.check(BOX_X + 4, ROWY[1] - 2, 1.25, 1)[1])
+    rest = PEN_REST[0]
+    tool = "pen"
+    ang = 46.0
+    if tip is None:
+        if t < tc - .14:
+            x, y = hover_path(t, [(19.96, 860, 1040), (20.3, 760, 900), (tc - .14, a[0], a[1])])[:2]
+            lift = 1.0
+        else:
+            # зависает над третьим квадратиком, колеблется, откладывает ручку
+            keys = [(tc, e1[0], e1[1]), (tc + .3, b3[0] + 30, b3[1] - 20), (21.2, b3[0] + 10, b3[1] - 10),
+                    (21.75, b3[0] + 18, b3[1] - 16), (22.06, rest[0], rest[1])]
+            x, y = hover_path(t, keys)[:2]
+            if tc + .3 < t < 21.9:
+                x += 9 * osc(t, 2.6)
+                y += 6 * osc(t, 3.4, 1)
+            lift = 1.0 if t < 22.0 else .3
+            ang = 46 + (PEN_REST[1] - 46) * smooth(21.8, 22.06, t)
+            if t > 22.06:
+                v = ease_in(clamp((t - 22.08) / .4), 2)
+                x, y = rest[0] + 300 * v, rest[1] + 520 * v
+                tool = "none"
+                lift = .5
+        tip = np.array([x, y])
+    else:
+        lift = 0.0
+    w.append(Pr.hand(tuple(tip), ang + 3 * osc(t, 2.1) * (1 - smooth(21.8, 22.0, t)), HAND_K, tool, "#3b6fd8", lift=lift, seed=30))
+    if t > tc:
+        v = t - tc
+        bx = _crot(np.array([BOX_X + 60, ROWY[1] - 50]))
+        sc = min(1, v / .06) * (1 + .5 * math.exp(-7 * v) * math.sin(v * 24 + .4))
+        w.append(Pr.star(bx[0], bx[1], 30 * sc, "#f4c430", rot=20 * math.exp(-5 * v), seed=6951))
+        w.append(Pr.glint(bx[0] + 40, bx[1] - 30, 22 * math.sin(math.pi * clamp(v / .4)), "#fff6c8", rot=v * 90))
+    kk = ease_io(clamp((t - 19.96) / 2.56))
+    s = (1.1 + .06 * kk) * (1 + punch(t, tc, .05, .05, .3) + .03 * bump(t, tv, .3))
+    wh = whip_in(t, 19.96, .22)
+    return compose("".join(w), card_cam(t, s, 40 - 60 * kk + 240 * wh, -20 + 30 * kk, -.6 + 1.1 * kk), light_u=evening_u(t), lcx=900, lcy=150)
+
+
+def paw_state(t):
+    """Лапа: (острие стопы, угол к плечу, подушечками к зрителю?, нажим, сплющ. флипа fy) или None."""
+    t_in = T_TREH - .04
+    if t < t_in:
+        return None
+    b3 = _crot(np.array([BOX_X + 2, ROWY[2] + 6]))
+    hov = (b3[0] + 70, b3[1] - 150)
+    keys = [(t_in, 1240, 360, -28), (t_in + .42, 820, 560, -32), (23.9, hov[0] + 40, hov[1] - 20, -34), (24.5, hov[0], hov[1], -36),
+            (24.92, b3[0] + 10, b3[1] - 40, -38), (T_LAPOY, b3[0], b3[1], -38), (25.3, b3[0] + 4, b3[1] - 4, -38),
+            (25.7, b3[0] + 300, b3[1] - 330, -32), (26.0, 1300, 300, -28)]
+    x, y, ang = hover_path(t, keys)
+    if t < 24.5:
+        x += 10 * osc(t, 1.7)
+        y += 8 * osc(t, 2.3, .5)
+    # флип: подушечками к зрителю → тыльной стороной (идёт вниз) → снова подушечки (уходит)
+    pads = not (24.8 <= t < 25.4)
+    fy = 1.0
+    for tf in (24.8, 25.4):
+        if abs(t - tf) < .06:
+            fy = max(.08, abs(t - tf) / .06)
+    press = bump(t, T_LAPOY - .02, .3) if t > T_LAPOY - .02 else 0.0
+    return (x, y), ang, pads, press, fy
+
+
+def draw_paw(t):
+    st = paw_state(t)
+    if st is None:
+        return ""
+    (x, y), ang, pads, press, fy = st
+    g = Pr.paw((x, y), ang, .92, pads=pads, press=press, seed=6000)
+    if fy < 1:
+        g = f'<g transform="translate({x:.1f} {y:.1f}) scale(1 {fy:.3f}) translate({-x:.1f} {-y:.1f})">{g}</g>'
+    return g
+
+
+def s15(t):
+    w, _ = card_world(t, (1.0, 1.0), pen_rest=True)
+    w.append(draw_paw(t))
+    kk = ease_io(clamp((t - 22.12) / 1.78))
+    s = 1.08 + .1 * kk
+    return compose("".join(w), card_cam(t, s, -10 * kk + 6 * osc(t, .5), 40 * kk, .5 - .9 * kk), light_u=1.0, lcx=900, lcy=150)
+
+
+def s16(t):
+    tl = T_LAPOY
+    pu = 1.0 if t > tl else 0.0
+    w, _ = card_world(t, (1.0, 1.0), paw_u=clamp((t - tl) / .2) * pu, pen_rest=True)
+    w.append(draw_paw(t))
+    b3 = _crot(np.array([BOX_X + 2, ROWY[2] + 6]))
+    if t > tl:
+        v = t - tl
+        w.append(Pr.burst(b3[0], b3[1], clamp(v / .35), 70, 170, 10, "#3a2a22", 7, seed=6960))
+        for j in range(6):
+            a = math.radians(j * 60 + 20)
+            r = 90 + 150 * ease_out(clamp(v / .5))
+            w.append(Pr.glint(b3[0] + r * math.cos(a), b3[1] + r * math.sin(a), 26 * math.sin(math.pi * clamp(v / .55)),
+                              "#ffd84a" if j % 2 else "#fff6c8", rot=v * 140))
+        u = clamp((v - .08) / .12)
+        if u > 0:
+            sc = (1 + .5 * math.exp(-6 * (v - .08)) * math.sin((v - .08) * 22 + .3)) * min(1, u * 1.5)
+            w.append(Pr.text(660, 458, "3/3", 104 * sc, "#2fa24a", rot=-8, stroke="#ffffff", sw=12))
+    kk = ease_io(clamp((t - 23.5) / 1.5))
+    s = (1.18 + .14 * kk) * (1 + punch(t, tl, .07, .05, .35))
+    sx, sy, sr = shake(t, tl, 16, .4)
+    return compose("".join(w), card_cam(t, s, -10 - 40 * kk + sx, 40 + 60 * kk + sy, .4 - .8 * kk + sr), light_u=1.0, lcx=900, lcy=150)
+
+
+SHOTS = {"s02": s02, "s06": s06, "s07": s07, "s09": s09, "s12": s12, "s13": s13, "s14": s14, "s15": s15, "s16": s16}
 
 
 def frame(sid, t):

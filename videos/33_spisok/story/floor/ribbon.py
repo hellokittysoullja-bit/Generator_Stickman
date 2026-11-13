@@ -45,7 +45,7 @@ def resample(P, step=0.6):
 def _scribbles(cam, P, s, T, B, W, s0, s1, ink_k, seed, gap=2.6, first=1.6):
     """Строки-каракули на куске [s0, s1]: у каждой строки точка-номер слева и волнистая линия своей длины."""
     out = []
-    j0 = max(0, int(math.floor((s0 - first) / gap)))
+    j0 = int(math.floor((s0 - first) / gap))
     j1 = int(math.ceil((s1 - first) / gap))
     for j in range(j0, j1 + 1):
         sj = first + j * gap

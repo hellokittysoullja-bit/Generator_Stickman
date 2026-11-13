@@ -201,7 +201,8 @@ def hand(tip, ang, k=1.0, tool="pen", col="#3b6fd8", lift=0.0, curl=0.0, arm_len
                            for j in range(3))
         back_in += "".join(line([(170, -40 + j * 16), (226, -34 + j * 18)], 1.4, SKIN_SH2, seed=seed + 5190 + j, op=.45) for j in range(3))
         o.append("".join(curls))
-        o.append(tool_svg(tool, col))
+        if tool != "none":
+            o.append(tool_svg(tool, col))
         o.append(shape(th, SKIN, th_in, w=3.0, seed=seed + 5120))
         o.append(shape(idx, SKIN, idx_in, w=3.0, seed=seed + 5121))
         o.append(shape(hb + [(110, -16)], SKIN, back_in, w=3.4, seed=seed + 5122, ink=False))
@@ -219,7 +220,7 @@ def hand(tip, ang, k=1.0, tool="pen", col="#3b6fd8", lift=0.0, curl=0.0, arm_len
         off = 14 + 26 * lift
         shadow = blob([(x + off, y + off * 1.5) for x, y in sh], "#1a0c04", .28, lib.blur(9 + 6 * lift))
         tl = lib.T([(30, 0), (224, 0)], tip[0], tip[1], k, ang)
-        pshadow = line([(tl[0][0] + 6 + off * .6, tl[0][1] + 10 + off * .6), (tl[1][0] + off, tl[1][1] + off * 1.4)], 9 * k, "#1a0c04", taper=.1,
+        pshadow = "" if tool == "none" else line([(tl[0][0] + 6 + off * .6, tl[0][1] + 10 + off * .6), (tl[1][0] + off, tl[1][1] + off * 1.4)], 9 * k, "#1a0c04", taper=.1,
                        wmin=.8, seed=5199, op=.22)
         return shadow + pshadow + g
     finally:
@@ -415,7 +416,7 @@ def clock(cx, cy, minutes, k=1.0, roll=0.0, seed=5900, icon="sun", icon_t=0.0):
 
 
 # ═════════════════════════ лапа кота ═════════════════════════
-def paw(tip, ang, k=1.0, pads=True, press=0.0, seed=6000, length=700):
+def paw(tip, ang, k=1.0, pads=True, press=0.0, seed=6000, length=1500):
     """Передняя лапа кота сверху: tip — центр стопы, ang — направление ОТ стопы к плечу (лапа входит из-за края).
     pads=True — стопа повёрнута подушечками к зрителю (поднята), иначе — вид сверху (пальцы-бугорки).
     press — 0..1 сплющивание при нажатии."""
@@ -425,10 +426,10 @@ def paw(tip, ang, k=1.0, pads=True, press=0.0, seed=6000, length=700):
         o = []
         sq = 1 + .12 * press
         # лапа в локальной системе: стопа в (0,0), плечо — по +x
-        leg = [(30, -46), (length * .5, -56), (length, -64), (length, 64), (length * .5, 56), (30, 46)]
+        leg = [(30, -46), (length * .2, -56), (length, -64, 1), (length, 64, 1), (length * .2, 56), (30, 46)]
         leg_in = blob([(30, 14), (length, 20), (length, 64), (30, 46)], CAT_SH, .85)
-        for j in range(4):
-            x = 120 + j * 120
+        for j in range(5):
+            x = 120 + j * 110
             leg_in += line([(x, -40 + (j % 2) * 10), (x + 26, -30 + (j % 2) * 10)], 2.2, CAT_FUR, seed=seed + 10 + j, op=.8)
             leg_in += line([(x + 50, 18), (x + 72, 26)], 2.2, CAT_FUR, seed=seed + 20 + j, op=.6)
         foot = []
@@ -486,3 +487,14 @@ def light(mode_u, cx=200, cy=200):
     g3 = lib.rad_grad([(0, "#0a0c1e", 0), (.55, "#0a0c1e", 0), (1, "#140a06", .38 + .25 * u)], 540, 760, 1100, 1350)
     o.append(f'<rect width="1080" height="1920" fill="url(#{g3})"/>')
     return "".join(o)
+
+
+def pen_at(tip, ang, k=1.0, col="#3b6fd8", seed=5620):
+    """Ручка лежит там, где её держала рука (то же положение, что tool_svg в hand)."""
+    tl = lib.T([(30, 0), (224, 0)], tip[0], tip[1], k, ang)
+    sh = line([(tl[0][0] + 8, tl[0][1] + 12), (tl[1][0] + 8, tl[1][1] + 12)], 14 * k, "#1a0c04", taper=.05, wmin=.9, seed=seed, op=.25)
+    old = lib.INK_K[0]
+    lib.INK_K[0] = old / k
+    g = tool_svg("pen", col)
+    lib.INK_K[0] = old
+    return sh + f'<g transform="translate({tip[0]:.2f} {tip[1]:.2f}) rotate({ang:.2f}) scale({k:.4f})">{g}</g>'

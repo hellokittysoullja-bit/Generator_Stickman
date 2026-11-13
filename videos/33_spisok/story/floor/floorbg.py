@@ -16,7 +16,8 @@ FLOOR_C = {"morning": ("#7a5238", "#5a3a26"), "evening": ("#5e3f2c", "#44301f"),
 
 
 class Room:
-    def __init__(self, cam, floor_y=45.0, desk_top=-30.0, desk_z=150.0, desk_x=(-17.0, 120.0), ped_x=60.0, mode="morning"):
+    def __init__(self, cam, floor_y=45.0, desk_top=-30.0, desk_z=150.0, desk_x=(-17.0, 120.0), ped_x=60.0, mode="morning", wall_z=None):
+        self.wz = WALL_Z if wall_z is None else wall_z
         self.cam, self.fy, self.dt, self.dz, self.dx, self.px, self.mode = cam, floor_y, desk_top, desk_z, desk_x, ped_x, mode
 
     def P(self, X, Y, Z):
@@ -31,25 +32,25 @@ class Room:
     def wall(self, t):
         a, b, c = PAL_WALL[self.mode]
         pid = "pWallF" + a[1:]
-        k = self.cam.k(WALL_Z)
+        k = self.cam.k(self.wz)
         pw, ph = 90 * k / 4.8, 120 * k / 4.8
-        x0, y0 = self.P(0, 0, WALL_Z)
+        x0, y0 = self.P(0, 0, self.wz)
         lib.DEFS.append(f'<pattern id="{pid}" x="{x0:.1f}" y="{y0:.1f}" width="{pw:.2f}" height="{ph:.2f}" patternUnits="userSpaceOnUse">'
                         f'<rect width="{pw:.2f}" height="{ph:.2f}" fill="{a}"/><rect x="0" width="{pw / 3:.2f}" height="{ph:.2f}" fill="{c}" opacity=".55"/>'
                         f'<path d="M{pw * .667:.1f} {ph * .15:.1f} l{pw * .078:.1f} {ph * .1:.1f} l{-pw * .078:.1f} {ph * .1:.1f} l{-pw * .078:.1f} {-ph * .1:.1f} Z '
                         f'M{pw * .667:.1f} {ph * .65:.1f} l{pw * .078:.1f} {ph * .1:.1f} l{-pw * .078:.1f} {ph * .1:.1f} l{-pw * .078:.1f} {-ph * .1:.1f} Z" '
                         f'fill="{b}" opacity=".7"/></pattern>')
-        yb = self.P(0, self.fy, WALL_Z)[1]
+        yb = self.P(0, self.fy, self.wz)[1]
         s = [f'<rect x="-400" y="-1400" width="1880" height="{yb + 1400:.1f}" fill="url(#{pid})"/>']
         # плинтус
-        s.append(self.quad([(-300, self.fy - 8, WALL_Z), (300, self.fy - 8, WALL_Z), (300, self.fy, WALL_Z), (-300, self.fy, WALL_Z)], "#3a2a22",
-                           blob(rect_pts(-400, self.P(0, self.fy - 3, WALL_Z)[1], 1480, yb), "#271b15", .9), seed=4001))
+        s.append(self.quad([(-300, self.fy - 8, self.wz), (300, self.fy - 8, self.wz), (300, self.fy, self.wz), (-300, self.fy, self.wz)], "#3a2a22",
+                           blob(rect_pts(-400, self.P(0, self.fy - 3, self.wz)[1], 1480, yb), "#271b15", .9), seed=4001))
         return "".join(s)
 
     def window(self, t, X0=-98.0, X1=-36.0, Y0=-160.0, Y1=-62.0):
-        x0, y0 = self.P(X0, Y0, WALL_Z)
-        x1, y1 = self.P(X1, Y1, WALL_Z)
-        k = self.cam.k(WALL_Z)
+        x0, y0 = self.P(X0, Y0, self.wz)
+        x1, y1 = self.P(X1, Y1, self.wz)
+        k = self.cam.k(self.wz)
         if self.mode == "evening":
             sky = lib.lin_grad([(0, "#1d2a52", 1), (.55, "#5a4a7a", 1), (1, "#e08a4a", 1)], 0, 0, 0, 1)
             hcol, wcol, lit = "#2a2a48", "#22223c", "#ffc56a"
@@ -88,7 +89,7 @@ class Room:
                                                                                                          "#cbbda4", .9), w=.45 * k, seed=3232))
         # штора
         cx0 = x1 + 4 * k
-        yb = self.P(0, self.fy - 10, WALL_Z)[1]
+        yb = self.P(0, self.fy - 10, self.wz)[1]
         cur = [(cx0, y0 - 7 * k), (cx0 + 8 * k, y0 - 7 * k), (cx0 + 9.5 * k, y0 + 24 * k), (cx0 + 7.5 * k, y1 + 7 * k), (cx0 + 11 * k, yb, 1),
                (cx0 + 1 * k, yb, 1), (cx0 + 1.6 * k, y1)]
         inn = blob([(cx0 + 4.5 * k, y0 - 7 * k), (cx0 + 8 * k, y0 - 7 * k), (cx0 + 9.5 * k, y0 + 24 * k), (cx0 + 7.5 * k, y1 + 7 * k), (cx0 + 11 * k, yb),
@@ -101,8 +102,8 @@ class Room:
         return "".join(s)
 
     def clock(self, X, Y, hour_a, min_a, R=13.0):
-        cx, cy = self.P(X, Y, WALL_Z)
-        r = R * self.cam.k(WALL_Z)
+        cx, cy = self.P(X, Y, self.wz)
+        r = R * self.cam.k(self.wz)
         k = r / 96
         s = [blob(lib.ellipse_pts(cx + 8 * k, cy + 12 * k, r + 12 * k, r + 12 * k, 28), "#0b0f1c", .3, lib.blur(5))]
         inner = blob(lib.ellipse_pts(cx + r * .22, cy + r * .22, r, r, 28), "#e3d8bf", .9)
@@ -132,18 +133,18 @@ class Room:
     # ─────────── пол
     def floor(self, z_near=30.0):
         c, cl = FLOOR_C[self.mode]
-        yb = self.P(0, self.fy, WALL_Z)[1]
+        yb = self.P(0, self.fy, self.wz)[1]
         s = [f'<rect x="-400" y="{yb - 1:.1f}" width="1880" height="3000" fill="{c}"/>']
         for j in range(-30, 31):
             X = j * 11.0
-            a = self.P(X, self.fy, WALL_Z)
+            a = self.P(X, self.fy, self.wz)
             b = self.P(X, self.fy, z_near)
             if max(a[0], b[0]) < -200 or min(a[0], b[0]) > 1280:
                 continue
             s.append(line([a, b], .22 * self.cam.k(80), cl, seed=3600 + j + 40, op=.75, taper=.1, wmin=.4))
         rs = np.random.RandomState(3660)
         for j in range(-30, 31):
-            Z = WALL_Z - rs.uniform(10, 120)
+            Z = self.wz - rs.uniform(10, 120)
             X = j * 11.0
             if Z < z_near:
                 continue
@@ -154,13 +155,13 @@ class Room:
     # ─────────── стол
     def desk(self, t, ped=True):
         x0, x1 = self.dx
-        z0, z1 = self.dz, WALL_Z
+        z0, z1 = self.dz, self.wz
         yt, yb = self.dt, self.dt + 4.0
         fy = self.fy
         s = []
         # тень под столом на стене и полу
-        s.append(blob([self.P(x0 + 6, yb, WALL_Z), self.P(x1, yb, WALL_Z), self.P(x1, fy, WALL_Z), self.P(x0 + 6, fy, WALL_Z)], "#0e0a12", .26, lib.blur(8)))
-        s.append(blob([self.P(x0 + 4, fy, WALL_Z), self.P(x1, fy, WALL_Z), self.P(x1, fy, z0 + 4), self.P(x0 + 4, fy, z0 + 4)], "#0e0a12", .26, lib.blur(8)))
+        s.append(blob([self.P(x0 + 6, yb, self.wz), self.P(x1, yb, self.wz), self.P(x1, fy, self.wz), self.P(x0 + 6, fy, self.wz)], "#0e0a12", .26, lib.blur(8)))
+        s.append(blob([self.P(x0 + 4, fy, self.wz), self.P(x1, fy, self.wz), self.P(x1, fy, z0 + 4), self.P(x0 + 4, fy, z0 + 4)], "#0e0a12", .26, lib.blur(8)))
         # задняя ножка (слева у стены)
         s.append(self.quad([(x0 + 1, yb, z1 - 6), (x0 + 5, yb, z1 - 6), (x0 + 5, fy, z1 - 6), (x0 + 1, fy, z1 - 6)], WOOD_SH, "", seed=3705))
         # низ столешницы (виден снизу)
@@ -196,8 +197,8 @@ class Room:
             return (f'<rect x="-400" y="-400" width="1880" height="2800" fill="url(#{g})" style="mix-blend-mode:screen"/>'
                     f'<rect x="-400" y="-400" width="1880" height="2800" fill="url(#{g2})"/>')
         # утро: луч из окна наискосок и тёплая заливка
-        x0, y0 = self.P(-98, -160, WALL_Z)
-        x1, y1 = self.P(-36, -62, WALL_Z)
+        x0, y0 = self.P(-98, -160, self.wz)
+        x1, y1 = self.P(-36, -62, self.wz)
         g = lib.lin_grad([(0, "#fff4cc", .32), (1, "#fff4cc", 0)], 0, 0, 1, 1)
         fl = .9 + .1 * math.sin(t * 1.3)
         beam = [(x0, y0), (x1, y0 + 40), (x1 + 900, y1 + 1300), (x0 + 520, y1 + 1500)]
