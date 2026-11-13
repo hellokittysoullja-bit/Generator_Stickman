@@ -61,9 +61,13 @@ def phrase_texts(beats):
     return out
 
 
-def voice_template():
-    """Шаблон голоса рилсов: из бренда (общий для всех машин), иначе из `.env`."""
-    brand = json.load(open(BRAND, encoding="utf8")).get("voice_template") if os.path.exists(BRAND) else None
+def voice_template(kind=None):
+    """Шаблон голоса рилсов: из бренда (общий для всех машин), иначе из `.env`. kind="female" — женский голос
+    (эксперимент владельца 13.11, `voice_template_female` в бренде)."""
+    key = "voice_template_female" if kind == "female" else "voice_template"
+    brand = json.load(open(BRAND, encoding="utf8")).get(key) if os.path.exists(BRAND) else None
+    if kind == "female":
+        return brand
     env = os.environ.get("LUMEAN_REEL_TEMPLATE_ID") or os.environ.get("LUMEAN_TEMPLATE_ID")
     if brand and env and env != brand:
         print(f"голос: в .env другой шаблон ({env}), беру голос рилсов из docs/reels_brand.json ({brand})")
@@ -103,7 +107,8 @@ def loudnorm_wav(src, dst):
 def build(reel_dir, force=False):
     load_env()
     key = os.environ.get("LUMEAN_API_KEY")
-    tpl = voice_template()
+    spec0 = json.load(open(os.path.join(reel_dir, "reel.json"), encoding="utf8"))
+    tpl = voice_template(spec0.get("voice"))
     if not key or not tpl:
         raise SystemExit("нужны LUMEAN_API_KEY в .env и voice_template в docs/reels_brand.json (или шаблон в .env)")
     spec = json.load(open(os.path.join(reel_dir, "reel.json"), encoding="utf8"))
