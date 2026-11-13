@@ -373,7 +373,7 @@ def window_frost(a, sd=1800):
         return ""
     s = []
     rs = np.random.RandomState(sd)
-    for k, (cx, cy, dx, dy) in enumerate(((330, 330, 1, 1), (750, 330, -1, 1), (330, 900, 1, -1), (750, 900, -1, -1))):
+    for k, (cx, cy, dx, dy) in enumerate(((330, 330, 1, 1), (750, 330, -1, 1))):
         n = 5
         for j in range(n):
             ang = math.radians(8 + 74 * j / (n - 1))
@@ -467,8 +467,8 @@ def seated_wide(t, ka, kb, poses, hands_a, hands_b, items_mid="", items_top="", 
 def hands_on_table(side, t, ph=0.0):
     """Кисти лежат на столешнице (мир), чуть шевелятся."""
     if side == "A":
-        return {"L": (428 + 3 * math.sin(t * 1.1 + ph), 1012), "R": (414 + 3 * math.sin(t * 1.3 + ph), 1034)}
-    return {"R": (652 + 3 * math.sin(t * 1.2 + ph), 1012), "L": (666 + 3 * math.sin(t * 1.4 + ph), 1034)}
+        return {"L": (410 + 3 * math.sin(t * 1.1 + ph), 1012), "R": (398 + 3 * math.sin(t * 1.3 + ph), 1034)}
+    return {"R": (672 + 3 * math.sin(t * 1.2 + ph), 1012), "L": (684 + 3 * math.sin(t * 1.4 + ph), 1034)}
 
 
 def lerp_hands(h0, h1, u):
@@ -505,12 +505,12 @@ def walk_in(t, t0, t1, x0, x1):
 
 def s08(t):
     fa, wa = walk_in(t, 15.05, 15.78, A_FEET - 220, A_FEET)
-    fb, wb = walk_in(t, 15.30, 16.18, B_FEET + 240, B_FEET)
+    fb, wb = walk_in(t, 15.52, 16.24, B_FEET + 300, B_FEET)
     ka = sit_k(t, 15.80, 16.50)
-    kb = sit_k(t, 16.22, 16.95)
+    kb = sit_k(t, 16.28, 17.0)
     # руки: пока садятся — висят, потом ложатся на стол
     ua = smooth(16.45, 16.95, t)
-    ub = smooth(16.95, 17.45, t)
+    ub = smooth(17.0, 17.5, t)
     ha = lerp_hands(hang_hands("A", A_FEET, ka), hands_on_table("A", t), ua)
     hb = lerp_hands(hang_hands("B", B_FEET, kb), hands_on_table("B", t, 1), ub)
     # взгляды: сначала на стул, потом друг на друга, неловкая улыбка, кивок

@@ -515,3 +515,96 @@ def zip_pos(x, y, k, zip_u):
     a, b = np.array(arc[j], float), np.array(arc[j + 1], float)
     p = a + (b - a) * (u - j)
     return np.array([x + p[0] * k, y + p[1] * k])
+
+
+# ═════════════════════════ вход (хук s01): дверь, колокольчик, стойка с кофемашиной ═════════════════════════
+DOOR = (30.0, 250.0, 350.0, 1330.0)
+
+
+def entrance(t, theta, bell):
+    """Стена у входа; дверь (петли слева) открыта на угол theta (0 — закрыта, 90° — к стене), за ней улица."""
+    o = []
+    g = lib.lin_grad([(0, "#c99a6c", 1), (.35, PLASTER, 1), (1, "#e6bd88", 1)], 0, 0, 0, 1000, units="userSpaceOnUse")
+    o.append(f'<rect x="-900" y="-800" width="3000" height="1800" fill="url(#{g})"/>')
+    for (x, y, r, a) in [(560, 420, 560, .5), (1150, 520, 300, .45)]:
+        gl = lib.rad_grad([(0, "#fff0c8", a), (.5, "#ffd89a", a * .45), (1, "#ffcf8a", 0)], x, y, r)
+        o.append(f'<rect x="{x - r}" y="{y - r}" width="{2 * r}" height="{2 * r}" fill="url(#{gl})"/>')
+    o.append(shape([(-600, 940, 1), (1800, 940, 1), (1800, 3200, 1), (-600, 3200, 1)], PANEL,
+                   blob([(-600, 940), (1800, 940), (1800, 966), (-600, 966)], PANEL_SH, .9), w=4, seed=5000))
+    for k in range(-5, 13):
+        x = k * 150 + 20
+        o.append(shape([(x + 14, 990, 1), (x + 136, 990, 1), (x + 136, 3200, 1), (x + 14, 3200, 1)], PANEL_HI,
+                       blob([(x + 120, 990), (x + 136, 990), (x + 136, 3200), (x + 120, 3200)], PANEL_SH, .7), w=2.8, seed=5010 + k))
+    o.append(shape([(-600, 924, 1), (1800, 924, 1), (1800, 950, 1), (-600, 950, 1)], WOOD_HI, w=3.6, seed=5001))
+    # проём двери и улица
+    x0, y0, x1, y1 = DOOR
+    clip = lib.clip_rect(x0, y0, x1 - x0, y1 - y0)
+    o.append(f'<g clip-path="url(#{clip})"><g transform="translate({x0 - 60} {y0 - 180})">{street(t)}</g></g>')
+    fw = 30
+    outer = [(x0 - fw, y0 - fw, 1), (x1 + fw, y0 - fw, 1), (x1 + fw, y1 + 300, 1), (x0 - fw, y1 + 300, 1)]
+    o.append(f'<path d="{lib.fill_d(outer)}M{x0} {y0}H{x1}V{y1 + 300}H{x0}Z" fill="{WOOD_DK}" fill-rule="evenodd"/>')
+    o.append(f'<path d="{lib.ink_closed(outer, 4.6 * lib.INK_K[0], seed=5020)}" fill="{INK}"/>')
+    o.append(f'<path d="{lib.ink_closed([(x0, y0, 1), (x1, y0, 1), (x1, y1 + 300, 1), (x0, y1 + 300, 1)], 3.8 * lib.INK_K[0], seed=5021)}" fill="{INK}"/>')
+    # тёплый свет из кафе на пороге улицы
+    gl = lib.rad_grad([(0, "#ffd99a", .35), (1, "#ffd99a", 0)], (x0 + x1) / 2, y1, 300, 140)
+    o.append(f'<ellipse cx="{(x0 + x1) / 2}" cy="{y1}" rx="300" ry="140" fill="url(#{gl})"/>')
+    # дверное полотно: петли слева, при открытии свободный край идёт к нам (выше, ниже) и влево
+    th = math.radians(theta)
+    w = (x1 - x0) * math.cos(th)
+    ex = x0 + w
+    grow = 70 * math.sin(th)
+    pts = [(x0, y0, 1), (ex, y0 - grow, 1), (ex, y1 + 300 + grow, 1), (x0, y1 + 300, 1)]
+
+    def L(u, v):
+        xa = x0 + (ex - x0) * u
+        ya = y0 - grow * u
+        yb = y1 + 300 + grow * u
+        return (xa, ya + (yb - ya) * v)
+    gl_pts = [L(.16, .06), L(.84, .06), L(.84, .5), L(.16, .5)]
+    inner = blob([L(0, 0), L(.2, 0), L(.2, 1), L(0, 1)], WOOD_SH, .8)
+    gl_in = f'<g clip-path="url(#{lib.clip_of(gl_pts)})"><g transform="translate({x0 - 60 - (1 - math.cos(th)) * 200:.1f} {y0 - 180})">{street(t)}</g></g>'
+    inner += lib.shape(gl_pts, "#3a3058", gl_in + blob([gl_pts[0], gl_pts[1], (gl_pts[1][0], gl_pts[1][1] + 40), (gl_pts[0][0], gl_pts[0][1] + 60)],
+                                                       "#ffffff", .1), w=3.4, seed=5031)
+    hx, hy = L(.88, .58)
+    inner += lib.shape(ellipse_pts(hx, hy, 9 * max(.3, math.cos(th)) + 3, 9, 10), "#d9b56a", w=2.4, seed=5032)
+    if abs(ex - x0) > 6:
+        o.append(lib.shape(pts, WOOD, inner, w=4.6, seed=5030))
+    # колокольчик над дверью
+    bx, by = (x0 + x1) / 2 + 60, y0 - 50
+    ang = bell
+    o.append(lib.line([(bx, y0 - 90), (bx, by - 20)], 3, "#2a2228", seed=5040))
+    c = math.radians(ang)
+    tip = (bx + math.sin(c) * 46, by - 20 + math.cos(c) * 46)
+    bell_pts = [(bx - 6, by - 20), (bx + 6, by - 20), (bx + 26, by + 16), (bx - 26, by + 16)]
+    o.append(f'<g transform="rotate({-ang:.2f} {bx} {by - 20})">' + lib.shape(bell_pts, "#e2b24a", blob([(bx + 6, by - 20), (bx + 26, by + 16),
+                                                                                                        (bx + 10, by + 16)], "#b8862e", .9), w=3, seed=5041) +
+             f'<circle cx="{bx}" cy="{by + 22}" r="6" fill="#b8862e"/></g>')
+    if abs(bell) > 4:
+        for j, sx in enumerate((-1, 1)):
+            o.append(lib.line([(bx + sx * 40, by - 10), (bx + sx * 56, by - 20)], 3.4, INK, seed=5045 + j, op=min(1, abs(bell) / 20)))
+            o.append(lib.line([(bx + sx * 42, by + 8), (bx + sx * 62, by + 6)], 3.4, INK, seed=5047 + j, op=min(1, abs(bell) / 20)))
+    _ = tip
+    # справа — стойка: полки с чашками, кофемашина
+    o.append(shape([(860, 520, 1), (1500, 520, 1), (1500, 542, 1), (860, 542, 1)], WOOD_HI, w=3.4, seed=5050))
+    o.append(shape([(860, 700, 1), (1500, 700, 1), (1500, 722, 1), (860, 722, 1)], WOOD_HI, w=3.4, seed=5051))
+    for k, x in enumerate(range(900, 1480, 70)):
+        col = ["#e85f4f", "#f2e6cf", "#4f8ea0", "#e3b14a"][k % 4]
+        o.append(shape([(x, 470), (x + 50, 470), (x + 46, 520, 1), (x + 4, 520, 1)], col, w=3, seed=5060 + k))
+        if k % 2 == 0:
+            o.append(shape([(x - 4, 610), (x + 52, 610), (x + 52, 700, 1), (x - 4, 700, 1)], "#e9e1d0",
+                           blob([(x - 4, 650), (x + 52, 646), (x + 52, 700), (x - 4, 700)], "#6b4a2e"), w=3, seed=5080 + k))
+    mx, my = 1010, 920
+    o.append(shape([(mx - 150, my - 170, 1), (mx + 150, my - 170, 1), (mx + 160, my, 1), (mx - 160, my, 1)], "#c9483a",
+                   blob([(mx + 60, my - 170), (mx + 150, my - 170), (mx + 160, my), (mx + 70, my)], "#9e3329", .9) +
+                   blob([(mx - 150, my - 170), (mx + 150, my - 170), (mx + 150, my - 140), (mx - 150, my - 140)], "#d8d6d0"), w=4.4, seed=5100))
+    for k, gx in enumerate((mx - 70, mx + 60)):
+        o.append(shape([(gx - 26, my - 110), (gx + 26, my - 110), (gx + 18, my - 84, 1), (gx - 18, my - 84, 1)], "#cfcdc6", w=3, seed=5110 + k))
+    sw = 6 * math.sin(t * 5)
+    for j in range(2):
+        u = (t * .8 + j * .5) % 1
+        o.append(lib.line([(mx + 120, my - 150 - 40 * u), (mx + 128 + sw, my - 200 - 50 * u), (mx + 116, my - 250 - 60 * u)], 6, "#ffffff",
+                          seed=5120 + j, op=.5 * math.sin(math.pi * u)))
+    o.append(shape([(760, my, 1), (1700, my, 1), (1700, my + 30, 1), (760, my + 30, 1)], WOOD_HI, w=4, seed=5130))
+    o.append(shape([(770, my + 30, 1), (1700, my + 30, 1), (1700, 3200, 1), (770, 3200, 1)], WOOD,
+                   blob([(770, my + 30), (1700, my + 30), (1700, my + 60), (770, my + 60)], WOOD_SH, .9), w=4, seed=5131))
+    return "".join(o)

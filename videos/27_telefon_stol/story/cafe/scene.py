@@ -529,7 +529,7 @@ def s13(t):
 def s14(t):
     fx, fy = cat_face()
     k = clamp((t - 30.8) / 2.0)
-    cam = (fx + 30 - 16 * k, fy + 90, 1.9 + .12 * ease_io(k), -.3 + .5 * k)
+    cam = (fx + 34 - 16 * k, fy + 70, 2.35 + .15 * ease_io(k), -.3 + .5 * k)
     set_ink(cam[2])
     tk = T_KOT
     turn = smooth(tk - .1, tk + .3, t)
@@ -551,7 +551,7 @@ def s14(t):
 def s15(t):
     fx, fy = cat_face()
     k = clamp((t - 32.4) / 3.9)
-    cam = (fx - 70 + 20 * ease_io(k), fy + 70, 2.55 + .3 * ease_io(k), .4 - .6 * k)
+    cam = (fx - 46 + 16 * ease_io(k), fy + 86, 3.55 + .35 * ease_io(k), .4 - .6 * k)
     set_ink(cam[2])
     tb = 34.25
     if t < tb:
@@ -564,13 +564,49 @@ def s15(t):
     shake = osc(t, 6)
     d, gb, gf = dima_cup(t, dict(lid=.7, look=(.5, -.05), brows="up", mouth="grin", open=.6, hair=2 * shake), head_ang=.02 * shake)
     f = friend_rest(t, dict(lid=.85, look=(.45, 0), brows="up", mouth="talk", open=talk(t, 32.4, 36.3, 5.5), smile=.9),
-                    near=(650 + 20 * osc(t, .8), 1040 - 40 * abs(osc(t, .8, .3))),
-                    hn=dict(kind="open", flip=-1, dir=(-.4, -1), curl=(.1,) * 4, spread=.25, thumb=.2))
+                    near=(720 + 14 * osc(t, .8), 1150 - 30 * abs(osc(t, .8, .3))))
     A = dict(dima=d, friend=f, cat=st, cups=cups_default(), phone=None, grip_back=gb, grip_front=gf, bp=dict(open_=0, zip_u=1))
     return table_scene(t, cam, A)
 
 
-SHOTS = {"s02": s02, "s03": s03, "s04": s04, "s05": s05, "s12": s12, "s13": s13, "s14": s14, "s15": s15}
+# ═════════════════════════ s01: хук — дверь распахивается, объятие, хлопки по спине; влёт камеры ═════════════════════════
+import hug as Hug  # noqa: E402
+
+HUG_O = (505.0, 900.0)
+HUG_U = 1.0
+
+
+def s01(t):
+    # влёт: масштаб 1/1.4 → перелёт 1.05 → 1 за 0.22 с, поворот −3.5° → +0.8° → 0
+    S0 = 1.08
+    u = clamp(t / .22)
+    z = 1 / 1.4 + (1 - 1 / 1.4) * ease_out(u, 3)
+    over = .05 * math.sin(math.pi * clamp((t - .16) / .3)) * (t > .16)
+    rotv = -3.5 * (1 - ease_out(u, 3)) + .9 * math.sin(math.pi * clamp((t - .16) / .34)) * (t > .16)
+    drift = clamp((t - .4) / 1.3)
+    s = S0 * (z + over) * (1 + .035 * ease_io(drift))
+    cam = (548 - 30 * (1 - ease_out(u, 3)), 880 + 60 * (1 - ease_out(u, 3)), s, rotv + .4 * osc(t, .6))
+    set_ink(cam[2])
+    # дверь: на кадре 0 уже летит, распахивается с отскоком
+    v = clamp(t / .3)
+    theta = 30 + 64 * (1 - math.exp(-5 * v) * math.cos(7 * v)) if t < .9 else 94
+    bell = 26 * math.exp(-3.5 * t) * math.sin(t * 22)
+    slaps = [(wt("Дима") + .02, -1), (wt("встретился") + .02, 1), (.74, -1), (wt("другом") + .02, 1)]
+    jolt = max([bump(t, ts - .01, .2) for ts, _ in slaps] + [bump(t, -.08, .3) * 1.4])
+    sway = math.sin(t * 3.2) * .8
+    body = []
+    body.append(room.entrance(t, theta, bell))
+    body.append(room.pendant(t, 560, 230))
+    g = Hug.hug(t, slaps, sway=sway, jolt=jolt)
+    sq = 1 + .02 * jolt
+    body.append(f'<g transform="translate({HUG_O[0]:.1f} {HUG_O[1] + 6 * jolt:.1f}) rotate({sway * 1.2:.2f}) scale({HUG_U * sq:.4f} {HUG_U / sq:.4f})">{g}</g>')
+    o = [f'<g transform="{cam_tf(cam)}">{"".join(body)}</g>']
+    o.append(f'<g transform="{cam_tf(cam)}">{room.garland(t, dy=-60)}</g>')
+    o.append(vignette())
+    return lib.svg("".join(o))
+
+
+SHOTS = {"s01": s01, "s02": s02, "s03": s03, "s04": s04, "s05": s05, "s12": s12, "s13": s13, "s14": s14, "s15": s15}
 
 
 def frame(sid, t):
