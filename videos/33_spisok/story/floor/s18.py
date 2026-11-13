@@ -88,7 +88,7 @@ def frame(t):
     sq = smooth(T_DL + .35, T_DL + .6, t)
     look = (0.8 * (1 - turn) + 0.02 * turn, 0.45 * (1 - turn) - 0.05 * turn + .25 * (1 - turn) * smooth(T_DL - .1, T_DL + .1, t))
     tilt = 6 * (1 - turn) - 5 * turn + 1.2 * math.sin(t * 1.4)
-    blink = .58 * sq
+    blink = min(1.0, 1.2 * sq)
     for tb in (27.5,):
         if abs(t - tb) < .09:
             blink = max(blink, min(1, 1.7 * (1 - abs(t - tb) / .09)))

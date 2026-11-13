@@ -41,7 +41,7 @@ def frame(t):
     fl = math.exp(-3.5 * max(0, t - T_KOT - .05)) * smooth(T_KOT - .05, T_KOT + .08, t)
     shadow = blob(lib.ellipse_pts(x + 30 * s, y - 2, 175 * s, 20 * s, 16), "#2a160a", .32, lib.blur(6))
     cat = cat_sit.draw(x, y, s, t, look=look, blink=blink, tilt=tilt, tail=tail, flick=flick, nod=nod, shadow=False, flame_k=1.3 + .7 * fl,
-                       smile=.6 * smooth(T_KOT, T_KOT + .3, t))
+                       smile=.6 * smooth(T_KOT + .3, T_KOT + .6, t))
     glow = ""
     if fl > .02:
         fx, fy = cat_sit.flame_world(x, y, s, tail)

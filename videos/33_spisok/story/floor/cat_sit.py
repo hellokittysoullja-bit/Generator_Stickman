@@ -139,7 +139,7 @@ def face_static(mouth=0.0, smile=0.0):
     return "".join(s)
 
 
-def eyes(look, blink, lid_c=CAT, scare=0.0):
+def eyes(look, blink, lid_c=CAT, scare=0.0, happy=False):
     """Глаза: blink 0 — открыт, 1 — закрыт (верхнее веко опускается до дуги, нижнее чуть поднимается)."""
     lx, ly = look
     s = []
@@ -148,7 +148,10 @@ def eyes(look, blink, lid_c=CAT, scare=0.0):
         blink = bl[i]
         ep = ellipse_pts(ex, 1072, 34 * (1 + .14 * scare), 38 * (1 + .12 * scare), 16)
         if blink > 0.74:          # веки сошлись — дуга закрытого глаза (иначе остаётся пустое кольцо)
-            s.append(line([(ex - 32, 1076), (ex - 12, 1086), (ex + 12, 1086), (ex + 32, 1076)], 5.6, INK, seed=sd + 40, taper=.5, wmin=.3))
+            if happy:
+                s.append(line([(ex - 32, 1086), (ex - 14, 1068), (ex + 14, 1068), (ex + 32, 1086)], 6.2, INK, seed=sd + 40, taper=.5, wmin=.3))
+            else:
+                s.append(line([(ex - 32, 1076), (ex - 12, 1086), (ex + 12, 1086), (ex + 32, 1076)], 5.6, INK, seed=sd + 40, taper=.5, wmin=.3))
             continue
         cid = clip_of(ep)
         o = [f'<path d="{fill_d(ep)}" fill="#a9d84a"/><g clip-path="url(#{cid})">']
@@ -263,7 +266,7 @@ def draw(x, y, s, t, look=(0, 0), blink=0.0, tilt=0.0, tail=0.0, flick=0.0, paw=
         P = PAW_REST if paw is None else paw
         o.append(leg_left(P, press))
     hy = -(sy - 1) * (CBOT - 1150) + nod
-    hg = st["head"] + ears(flick) + st["face"] + eyes(look, blink, scare=scare) + whiskers(t)
+    hg = st["head"] + ears(flick) + st["face"] + eyes(look, blink, scare=scare, happy=smile > .5) + whiskers(t)
     o.append(f'<g transform="translate(0 {hy:.2f}) rotate({tilt:.2f} {NECK[0]} {NECK[1]})">{hg}</g>')
     o.append(f'<g transform="{tw}">{flame(t, flame_k) if flame_fn is None else flame_fn(t)}</g>')
     return f'<g transform="translate({x - CX * s:.2f} {y - CBOT * s:.2f}) scale({s:.4f})">{"".join(o)}</g>'
