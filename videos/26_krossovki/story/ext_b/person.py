@@ -177,6 +177,18 @@ def back_head(spec, hx, hy, sd):
     return "".join(s)
 
 
+def _stripe(pts, color, side, w, sd, cut=1.0):
+    """Полоса вдоль конечности со смещением side·w/2 от средней линии (по нормали к отрезку бедро→колено)."""
+    S = lib.sample(pts, False, 3.0)
+    n = max(3, int(len(S) * cut))
+    S = S[:n]
+    T = np.gradient(S, axis=0)
+    T /= np.linalg.norm(T, axis=1, keepdims=True) + 1e-9
+    N = np.stack([-T[:, 1], T[:, 0]], 1)
+    Q = S + N * side * w / 2 * 0.62
+    return line([tuple(q) for q in Q[1:-1]], 6.5, color, taper=.15, wmin=.7, seed=sd)
+
+
 def person(spec, pose, sd=0):
     """spec: skin, hair, hair_c, top, top2 (низ), shoes, face(-1..1), h (масштаб). pose: walk (фаза, рад) или None,
     arms: {'L': (a1, a2), 'R': (a1, a2)} углы плечо/локоть, head_tilt, look, mouth, brow, basket ('L'/'R'), item."""
@@ -209,6 +221,8 @@ def person(spec, pose, sd=0):
         lift = max(0.0, foot[1] + 20)
         foot = (foot[0], foot[1] - lift)
         out = tube(hips[side], knee, foot, 46, 40, 34, low, sd + (1 if side == "L" else 2))
+        if spec.get("track"):       # лампасы спортивного костюма (рилс 26)
+            out += _stripe([hips[side], knee, foot], spec["track"], 0.62 * (1 if side == "R" else -1) * (1 if fc >= 0 else -1), 40, sd + 90)
         out += shoe((foot[0], foot[1] + 20), 1 if fc >= 0 else -1, spec.get("shoes", "#3a3440"), sd + 3 + (side == "L"))
         return out
 
@@ -218,6 +232,8 @@ def person(spec, pose, sd=0):
         sign = -1 if side == "L" else 1
         elbow, hnd = limb(p0, a1 * 1.0 + sign * 6, 130, a2, 120)
         out = tube(p0, elbow, hnd, 40, 34, 28, spec.get("sleeve", top), sd + 5 + (side == "L"))
+        if spec.get("track"):
+            out += _stripe([p0, elbow, hnd], spec["track"], 0.55 * sign, 34, sd + 92, cut=0.86)
         out += hand(hnd, 17, skin, sd + 7 + (side == "L"))
         return out, hnd
 

@@ -1,4 +1,4 @@
-"""Рендер 2D-клипов рилса 25 (clock / brain / study / list): python3 make.py s02 [s14 ...]  — клип clips/<id>.mp4 по контракту брифа;
+"""Рендер 2D-клипов рилса 26 (s07–s12: brain / street / form / rows): python3 make.py s02 [s14 ...]  — клип clips/<id>.mp4 по контракту брифа;
 python3 make.py s02 --sheet [t1,t2,...] — кадры PNG на эти моменты (по умолчанию 6 равномерно) + лист sheets/<id>.jpg.
 SVG кадров строятся в Python (несколько процессов), растр — Chromium в 4 процесса, PNG потоком в ffmpeg."""
 import importlib
@@ -15,21 +15,21 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 STORY = os.path.dirname(HERE)
 SH = json.load(open(os.path.join(STORY, "shots.json")))
 SHOTS = {s["id"]: s for s in SH["shots"]}
-SCENE_MOD = {"clock": "scene_clock", "brain": "scene_brain", "study": "scene_study", "list": "scene_list"}
+SCENE_MOD = {"s07": "scene_brain26", "s08": "scene_brain26", "s09": "scene_street", "s10": "scene_form", "s11": "scene_form", "s12": "scene_rows"}
 TMP = os.path.join(os.path.dirname(STORY), ".." , "..", "..")
 
 
 def span(sid):
     s = SHOTS[sid]
-    a = 0.0 if sid == "s01" else s["t0"] - SH["pad"]
-    b = SH["end"] if sid == "s14" else s["t1"] + SH["pad"]
+    a = max(0.0, s["t0"] - SH["pad"])
+    b = SH["end"] if sid == "s17" else s["t1"] + SH["pad"]
     n = int(round((b - a) * 30))
     return a, n
 
 
 def _job(args):
     sid, i, t, path = args
-    m = importlib.import_module(SCENE_MOD[SHOTS[sid]["scene"]])
+    m = importlib.import_module(SCENE_MOD[sid])
     open(path, "w").write(m.frame(sid, t))
     return path
 
@@ -46,7 +46,7 @@ def main():
     sheet = "--sheet" in args
     ids = [a for a in args if a.startswith("s") and a[1:].isdigit()]
     tl = [a for a in args if "," in a or a.replace(".", "").isdigit()]
-    base_tmp = "/tmp/claude-0/-home-user/7605bd81-268a-5536-b1b7-f9696ca784cb/scratchpad/a25ext/tmp"
+    base_tmp = "/tmp/claude-0/-home-user/7605bd81-268a-5536-b1b7-f9696ca784cb/scratchpad/b26/tmp"
     os.makedirs(base_tmp, exist_ok=True)
     for sid in ids:
         a, n = span(sid)

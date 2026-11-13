@@ -15,7 +15,7 @@ from skimage.morphology import skeletonize
 from scipy import ndimage
 
 SRC = "/tmp/nap/design/fonts/src/Caveat[wght].ttf"
-LINES = ["отчёт", "позвонить маме", "корм коту"]
+LINES = ["в понедельник", "после кофе", "надеваю кроссовки", "ЗАВТРА"]
 R = 0.25   # пикселей растра на единицу шрифта (upm 1000 -> 250 px)
 
 
