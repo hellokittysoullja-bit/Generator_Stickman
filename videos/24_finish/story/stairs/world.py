@@ -160,8 +160,8 @@ def cloud(cx, cy, w, h, seed, body, under, top_hi, ink_c=SKY_INK, ink_w=3.2, op=
 
 LAYERS = {
     # p — параллакс, cell — сетка, w/h — размер, цвета (тело, низ, блик), ink
-    "far": dict(p=0.12, cell=520, w=(260, 460), h=(60, 110), col=("#7e6aa6", "#b07a9a", "#9a88c2"), ink=0, dens=.55),
-    "mid": dict(p=0.38, cell=640, w=(320, 560), h=(80, 140), col=("#a48cc4", "#e7a08e", "#c7b5e2"), ink=2.6, dens=.5),
+    "far": dict(p=0.12, cell=520, w=(260, 460), h=(60, 110), col=("#7e6aa6", "#b07a9a", "#9a88c2"), ink=0, dens=.8),
+    "mid": dict(p=0.38, cell=640, w=(320, 560), h=(80, 140), col=("#a48cc4", "#e7a08e", "#c7b5e2"), ink=2.6, dens=.75),
     "near": dict(p=1.55, cell=900, w=(380, 640), h=(90, 150), col=("#cbb7df", "#f2b7a0", "#e8dcf2"), ink=3.6, dens=.33),
 }
 

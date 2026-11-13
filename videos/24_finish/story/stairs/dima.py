@@ -41,7 +41,11 @@ def line(pts, w=4.0, color=INK, taper=0.6, wmin=0.12, seed=3, peak=0.5, op=1.0):
 
 
 def far_c(h, far):
-    return lib.mul(h, FAR) if far else h
+    if not far:
+        return h
+    if h in (SKIN, SKIN_SH, SKIN_SH2):
+        return lib.mul(h, (0.93, 0.9, 0.93))
+    return lib.mul(h, FAR)
 
 
 def rot(v, a):
