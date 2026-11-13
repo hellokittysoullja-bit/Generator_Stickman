@@ -4002,6 +4002,24 @@
   "source": "scripts/reel_draw.py videos/52_mif_ejnshtejn/reel"
  },
  {
+  "file": "2026-11-13_gen_anymedia_gpt-image-2_5_28efa9ae.jpg",
+  "sha256": "28efa9aeea54ca74efe36e79ed9915137b5f01caa54233dc49b70416e12d3f03",
+  "bytes": 511843,
+  "size": [
+   1664,
+   2496
+  ],
+  "date": "2026-11-13",
+  "kind": "генерация",
+  "used_in": [],
+  "model": "anymedia/gpt-image-2.5",
+  "prompt": "Reference images 1-2 show only the drawing style: take from them the line work, shading and simplicity, never their content, characters or colour scheme (the colours come from the palette below). Reference image 3 is the main character: keep exactly its head, face, colors, markings, body proportions; change only pose, action and expression. Its ear on the viewer's left is folded down and its ear on the viewer's right stands up, exactly as in the reference image, whichever way it turns; when the character is seen from behind, the folded ear is on the viewer's right. SCENE: tall vertical picture: the main character sits on a plain armchair and peers through a big magnifying glass at a huge old yellowed newspaper unfolded in its paws; the newspaper pages show only grey blocks and a blank photo frame, no writing. Suspicious squinting eyes, one ear forward. LAYOUT: the main character is big and whole in the middle of the picture, with plain empty space at the top for a caption. If the picture has no specific place, its background is plain near-white paper, even and untinted, even if the reference images use a darker or coloured paper; a specific place is drawn as that place, with the paper showing around it. Colours: black ink lines and soft grey washes on plain cream paper, like the style reference. Soft watercolour colour goes only on one or two things that matter in the picture, the main object and maybe one detail, each in its own natural muted colour (blue water, a green plant, a pink cushion, a red heart, a yellow lamp light), and not everything in the same orange; furniture, clothes, walls, floors and everything else stay ink and light grey. Some of the things are coloured, never all of them. The background always stays the plain cream paper, never a coloured wall or a tinted background. Never neon, never harsh. The main character stays black with green eyes, orange cheek marks and an orange tail flame.. Every surface is clean and unmarked: blank paper, blank screens, plain envelopes, plain walls, unprinted floor. Keep the main subject well inside the frame, away from the edges. Draw everything in exactly the drawing style of the style references.",
+  "gen_size": "1024x1536",
+  "quality": "medium",
+  "price": 131700,
+  "source": "scripts/reel_draw.py videos/52_mif_ejnshtejn/reel"
+ },
+ {
   "file": "2026-11-13_gen_anymedia_gpt-image-2_5_32e0f3fe.jpg",
   "sha256": "32e0f3fe28a4b96376d21ce565fabe0885ced208f252260016e122aeb63c9411",
   "bytes": 463486,
