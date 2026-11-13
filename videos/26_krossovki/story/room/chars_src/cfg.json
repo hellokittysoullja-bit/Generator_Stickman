@@ -1,18 +1,18 @@
 [
  {
-  "id": "s05",
-  "start": 5.96,
-  "n": 62,
+  "id": "s17",
+  "start": 32.48,
+  "n": 109,
   "region": [
-   575,
-   551,
-   542,
-   963
+   388,
+   384,
+   752,
+   1337
   ],
-  "S": 2.6,
-  "ow": 1409,
-  "oh": 2504,
-  "out": "/home/user/Generator_Stickman/videos/26_krossovki/story/room/chars/s05",
+  "S": 1.902,
+  "ow": 1430,
+  "oh": 2543,
+  "out": "/home/user/Generator_Stickman/videos/26_krossovki/story/room/chars/s17",
   "html": "heroes26e.html"
  }
 ]

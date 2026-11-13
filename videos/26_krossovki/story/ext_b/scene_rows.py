@@ -10,7 +10,7 @@ from lib import (INK, W, H, back_out, blob, blur, cam, clamp, ease_io, ease_out,
                  rect_pts, shape, smooth, svg)
 
 _ST = {}
-ROW_Y = [820, 1230]           # линия ступней рядов
+ROW_Y = [700, 1130]           # линия ступней рядов
 X0, DX = 232, 86
 TOP_ON = [20.88 + k * (0.60 / 8) for k in range(9)]       # 9 из 10, по очереди
 TOP_IDX = [0, 1, 2, 3, 4, 5, 7, 8, 9]                       # шестой (5-й с нуля... 6) остаётся серым
@@ -19,15 +19,28 @@ BOT_ON = {1: 23.20, 5: 23.27, 8: 23.34}
 GREY, GREY_SH, GREY_LO = "#b9c1cd", "#9aa3b2", "#8a93a3"
 GREEN, GREEN_SH, GREEN_LO = "#3cbf63", "#279a4a", "#1f6e3a"
 SKIN_SET = ["#f2c9a8", "#c98e6a", "#e8b896", "#8a5a3c", "#f0c4a0", "#d9a07a", "#f4d0b4", "#a8704c", "#e9c0a0", "#c99470"]
-HAIR_SET = ["#3a2418", "#2a1a14", "#c8622a", "#5a3a26", "#e0b050", "#1a1210", "#6a4a30", "#2a1a14", "#9a9aa6", "#3a2a22"]
+HAIR_SET = ["#3a2418", "#2a1a14", "#c8622a", "#5a3a26", "#e0b050", "#1a1210", "#6a4a30", "#2a1a14", "#7a4a2a", "#3a2a22"]
 
 
 def background():
     s = []
-    lin_grad([(0, "#eef3f6", 1), (1, "#d9e4ea", 1)], 0, 0, 0, 1, gid="gBgR")
-    s.append(f'<rect x="-400" y="-400" width="{W + 800}" height="{H + 800}" fill="url(#gBgR)"/>')
-    g = rad_grad([(0, "#fff6e0", .8), (1, "#fff6e0", 0)], 300, 300, 900, 700)
-    s.append(f'<rect x="-400" y="-400" width="{W + 800}" height="{H + 800}" fill="url(#{g})"/>')
+    import numpy as np
+    lin_grad([(0, "#a9d3ef", 1), (1, "#e9f2ec", 1)], 0, 0, 0, 1, gid="gBgR")
+    s.append(f'<rect x="-400" y="-400" width="{W + 800}" height="800" fill="url(#gBgR)"/>')
+    g = rad_grad([(0, "#fff6e0", .9), (1, "#fff6e0", 0)], 860, 120, 600, 400)
+    s.append(f'<rect x="-400" y="-400" width="{W + 800}" height="800" fill="url(#{g})"/>')
+    # линия деревьев стадиона
+    rs = np.random.RandomState(5)
+    for k in range(16):
+        x = -300 + k * 110 + rs.uniform(-20, 20)
+        r = rs.uniform(70, 110)
+        y = 330 - rs.uniform(0, 50)
+        col = "#5f9e6a" if k % 2 else "#548f5f"
+        s.append(shape(ellipse_pts(x, y, r, r * .8, 14, jitter=.08, seed=k), col, blob(ellipse_pts(x + r * .3, y + r * .3, r * .8, r * .5, 12), "#467a50", .8),
+                       w=4, seed=30 + k))
+    # поле
+    s.append(shape([(-400, 380, 1), (W + 400, 380, 1), (W + 400, H + 400, 1), (-400, H + 400, 1)], "#8cc47a",
+                   "".join(f'<rect x="-400" y="{y}" width="{W + 800}" height="90" fill="#7fb86e"/>' for y in range(430, 1900, 180)), w=4.4, seed=29))
     # две беговые дорожки
     for k, y in enumerate(ROW_Y):
         tr = [(-200, y - 26, 1), (W + 200, y - 26, 1), (W + 200, y + 62, 1), (-200, y + 62, 1)]
@@ -127,11 +140,11 @@ def runner(x, y, i, row, on_t, t):
     # искры на загорании
     if 0 <= e < 0.45:
         for j in range(6):
-            a = -math.pi / 2 + (j - 2.5) * 0.42
-            r0 = 120 + 70 * ease_out(e / .45)
+            a = -math.pi / 2 + (j - 2.5) * 0.26
+            r0 = 105 + 40 * ease_out(e / .45)
             L = 26 * (1 - e / .45)
             cx, cy = x, y - 120
-            s.append(line([(cx + math.cos(a) * r0 * .7, cy + math.sin(a) * r0), (cx + math.cos(a) * (r0 + L) * .7, cy + math.sin(a) * (r0 + L))],
+            s.append(line([(cx + math.cos(a) * r0 * .45, cy + math.sin(a) * r0), (cx + math.cos(a) * (r0 + L) * .45, cy + math.sin(a) * (r0 + L))],
                           6, "#3cbf63", taper=.5, seed=400 + i * 9 + j))
     return "".join(s)
 
@@ -158,7 +171,7 @@ def s12(t):
                 on = BOT_ON[i]
             s.append(runner(X0 + i * DX, y, i, row, on, t))
     u = clamp((t - 20.08) / 4.04)
-    cm = cam(560, 900, 1.0 + 0.03 * ease_io(u), 0.3 - 0.6 * u)
+    cm = cam(560, 860, 1.0 + 0.03 * ease_io(u), 0.3 - 0.6 * u)
     return "".join(s), cm
 
 

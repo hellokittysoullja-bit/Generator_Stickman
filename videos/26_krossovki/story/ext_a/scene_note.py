@@ -190,6 +190,18 @@ def kitchen(night):
     inner += blob(rect_pts(1210, -420, 1230, 160), "#d9d2c4") + blob(rect_pts(1000, -150, 1440, -130), "#d9d2c4")
     s.append(shape(win, "#e9e1d2", inner, w=5, seed=906))
     s.append(shape(rect_pts(980, 150, 1460, 190, 6), "#e9e1d2", "", w=4.4, seed=907))
+    # полка с банками и цветком
+    s.append(shape(rect_pts(1500, 120, 3300, 150, 4), "#b98a5a" if not night else "#6b4a30", "", w=4.4, seed=911))
+    for k, (x, hgt, col) in enumerate([(2300, 120, "#e9c46a"), (2420, 90, "#9fc5a8"), (2520, 140, "#e07a5f"), (1620, 100, "#8ab6d6")]):
+        if night:
+            col = mix(col, "#2a3550", .55)
+        s.append(shape(rect_pts(x - 40, 120 - hgt, x + 40, 120, 14), col, blob(rect_pts(x - 40, 120 - hgt, x + 40, 120 - hgt + 24), "#c9c0b0"),
+                       w=4, seed=912 + k))
+    pc = "#c4673f" if not night else "#6a3e2c"
+    s.append(shape([(2830, 120, 1), (2950, 120, 1), (2970, 40, 1), (2810, 40, 1)], pc, "", w=4, seed=918))
+    for k in range(5):
+        a = -2.2 + k * 0.55
+        s.append(line([(2890, 40), (2890 + 90 * math.cos(a), 40 + 110 * math.sin(a))], 18, "#5f9a5a" if not night else "#2e4a3a", taper=.6, seed=919 + k))
     # стойка
     top = "#c98f5a" if not night else "#7a5232"
     s.append(shape(rect_pts(-1500, CTR - 40, 4100, CTR + 30), top, blob(rect_pts(-1500, CTR + 6, 4100, CTR + 30), mix(top, "#000000", .25)),
@@ -423,9 +435,9 @@ def desk():
     s.append('<rect x="-800" y="-800" width="2700" height="3400" fill="url(#pWoodN)"/>')
     g = rad_grad([(0, "#ffd890", .5), (.6, "#ffb860", .16), (1, "#ffb860", 0)], 520, 700, 900, 900)
     s.append(f'<rect x="-800" y="-800" width="2700" height="3400" fill="url(#{g})" style="mix-blend-mode:screen"/>')
-    # ключи и ручка-колпачок у края
-    s.append(shape(ellipse_pts(1010, 260, 60, 60, 16), "#c9ced8", blob(ellipse_pts(1010, 260, 30, 30, 12), "#8a5a34"), w=4, seed=1200))
-    s.append(shape(rect_pts(1000, 300, 1040, 460, 10), "#d4a23e", "", w=4, seed=1201))
+    # телефон экраном вниз у края стола
+    s.append(blob(rect_pts(1000, 140, 1250, 620), "#1a0e05", .4, blur(10)))
+    s.append(shape(rect_pts(980, 120, 1220, 600, 34), "#2b2f3a", blob(rect_pts(1000, 140, 1200, 580, 26), "#20242e"), w=4.6, seed=1200))
     return "".join(s)
 
 
@@ -513,21 +525,21 @@ def frame15(t):
         hy = y0 - 90 - lift
     # кроссовки: задник в кулаке — висят носками вниз, качаются
     sw = 0.0 if e < 0 else 10 * math.sin(e * 12) * math.exp(-e * 2)
-    sn = ""
     if e < 0:
         a, _ = sneaker(x0 + 190, y0 + 20, 1.0, -2, 1500)
         b, P = sneaker(x0 + 330, y0 + 4, 1.0, 4, 1520)
-        sn = a + b
+        clip = lib.clip_rect(x0 - 600, -3000, x1 - x0 + 1200, y0 + 3010)
+        s.append(f'<g clip-path="url(#{clip})">{a}{b}</g>')
+        s.append(box15_front(t))
+        if t > 28.93:
+            s.append(fist(hx, hy, 0.95, 0))
     else:
-        tx_, ty_ = hx, hy + 60
-        a, _ = sneaker(tx_ - 10 + 150 * 0.95, ty_ + 120, 0.95, 82 + sw, 1500)
-        b, P = sneaker(tx_ + 30 + 150 * 0.95, ty_ + 110, 0.95, 74 + sw * 1.2, 1520)
-        sn = f'<g transform="rotate(0)">{a}{b}</g>'
-    clip = lib.clip_rect(x0 - 600, -3000, x1 - x0 + 1200, y0 + 3010) if e < 0 else None
-    s.append(f'<g clip-path="url(#{clip})">{sn}</g>' if clip else sn)
-    s.append(box15_front(t))
-    if t > 28.93:
-        s.append(fist(hx, hy, 0.95, 180 + (sw * 0.3 if e > 0 else 0)))
+        a, _ = sneaker(hx - 22, hy + 96 + 140, 0.95, 96 + sw, 1500)
+        b, P = sneaker(hx + 26, hy + 90 + 140, 0.95, 84 + sw * 1.2, 1520)
+        c2 = lib.clip_rect(x0 - 2000, -4000, x1 - x0 + 4000, y1 - 20 + 4000)
+        s.append(f'<g clip-path="url(#{c2})">{a}{b}</g>')
+        s.append(box15_front(t))
+        s.append(fist(hx, hy, 0.95, sw * 0.2))
     # бумага вылетает из коробки
     if 0 < e < 0.7:
         rs = np.random.RandomState(5)
