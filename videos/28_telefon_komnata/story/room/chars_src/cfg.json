@@ -1,18 +1,18 @@
 [
  {
-  "id": "s04",
-  "start": 6.7,
-  "n": 56,
+  "id": "s14",
+  "start": 30.17,
+  "n": 55,
   "region": [
-   601,
-   623,
-   490,
-   856
+   65,
+   217,
+   911,
+   1605
   ],
-  "S": 2.561,
-  "ow": 1255,
-  "oh": 2192,
-  "out": "/home/user/Generator_Stickman/videos/28_telefon_komnata/story/room/chars/s04",
+  "S": 1.37,
+  "ow": 1248,
+  "oh": 2199,
+  "out": "/home/user/Generator_Stickman/videos/28_telefon_komnata/story/room/chars/s14",
   "html": "heroes28e.html"
  }
 ]
