@@ -19,9 +19,9 @@ FS = 128
 SC = FS / G["upm"]
 TX0 = 250
 BASES = [700, 900, 1100]
-SLOTS = [(22.74, 23.12), (23.24, 23.86), (23.96, 24.26)]   # письмо строк
+SLOTS = [(22.82, 23.16), (23.24, 23.86), (23.96, 24.26)]   # письмо строк
 ICON = ["report", "phone", "bowl"]
-ICON_IN = [22.50, 22.86, 23.52]                              # прилёт значка (начало)
+ICON_IN = [22.38, 22.52, 22.66]                              # прилёт значка (начало)
 INKC = "#26356f"
 ANG, HSC = -36, 1.12
 _ST = {}
@@ -171,37 +171,41 @@ def bullet(li, t):
 
 
 def flying_icon(li, t):
-    """Значок дела прилетает сверху по дуге к началу строки, ждёт и, когда перо начинает строку, сжимается в точку."""
+    """Значок дела прилетает сверху по дуге на свою строку и ждёт; когда перо начинает строку, он сжимается в точку-маркер
+    (с искорками) — дело превращается в строку."""
     t0 = ICON_IN[li]
     a = SLOTS[li][0]
     if t < t0:
         return ""
-    x1, y1 = TX0 - 46, BASES[li] - 26
-    sx, sy = [820, 300, 700][li], -260
-    T = max(0.22, min(0.36, a - t0 - 0.02))
+    bx, by = TX0 - 46, BASES[li] - 26
+    hx, hy = TX0 + 120, BASES[li] - 50
+    sx, sy = [900, 380, 760][li], -300
+    T = 0.32
     u = clamp((t - t0) / T)
     if t < a:
-        x = sx + (x1 + 70 - sx) * ease_out(u, 2)
-        y = sy + (y1 - 60 - sy) * ease_in(u, 1.6)
-        rot = 60 * (1 - u) * (1 if li % 2 else -1) + 6 * math.sin(t * 9)
-        sc = 1.25 * (1 + 0.15 * math.exp(-max(t - t0 - T, 0) * 12) * (u >= 1))
+        x = sx + (hx - sx) * ease_out(u, 2)
+        y = sy + (hy - sy) * ease_in(u, 1.4)
+        rot = 70 * (1 - u) * (1 if li % 2 else -1)
+        land = max(t - t0 - T, 0)
+        sc = 2.2 * (1 + 0.18 * math.exp(-land * 10) * math.cos(land * 30) * (u >= 1))
+        rot += 4 * math.sin(t * 7 + li) * (u >= 1)
         return icons.icon(ICON[li], x, y, sc, rot, 600 + li * 20)
     e = t - a
     k = 1 - ease_in(clamp(e / 0.16), 1.5)
     if k <= 0.02:
-        if e < 0.4:     # искорки на месте превращения
+        if e < 0.4:
             s = ""
             for j in range(6):
                 ang = j * math.pi / 3 + li
                 r0 = 30 + 70 * ease_out(e / .4)
                 L_ = 22 * (1 - e / .4)
-                s += line([(x1 + math.cos(ang) * r0, y1 + math.sin(ang) * r0), (x1 + math.cos(ang) * (r0 + L_), y1 + math.sin(ang) * (r0 + L_))],
+                s += line([(bx + math.cos(ang) * r0, by + math.sin(ang) * r0), (bx + math.cos(ang) * (r0 + L_), by + math.sin(ang) * (r0 + L_))],
                           6, "#f0a83a", taper=.5, seed=620 + j)
             return s
         return ""
-    x = x1 + 70 * k
-    y = y1 - 60 * k
-    return icons.icon(ICON[li], x, y, 1.25 * k, 0, 600 + li * 20)
+    x = bx + (hx - bx) * k
+    y = by + (hy - by) * k
+    return icons.icon(ICON[li], x, y, 2.2 * k, 0, 600 + li * 20)
 
 
 def frame(sid, t):
@@ -220,5 +224,5 @@ def frame(sid, t):
     art = _ST["paper"] + txt + shadow + hnd + ic
     lin = clamp((t - 22.5) / 2.6)
     u = 0.4 * lin + 0.6 * ease_io(lin)
-    cm = cam(590, 930 - 10 * u, 1.0 + 0.08 * u, -2.0 + 0.8 * u)
+    cm = cam(600, 900 - 10 * u, 1.24 + 0.08 * u, -2.0 + 0.8 * u)
     return svg(f'<rect width="{W}" height="{H}" fill="#8a5a34"/><g transform="{cm}">{art}</g>')

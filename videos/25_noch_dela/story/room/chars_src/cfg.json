@@ -1,18 +1,18 @@
 [
  {
-  "id": "s02",
-  "start": 1.28,
-  "n": 86,
+  "id": "s03",
+  "start": 3.76,
+  "n": 107,
   "region": [
-   -62,
-   -85,
-   1204,
-   2140
+   -13,
+   345,
+   770,
+   1370
   ],
-  "S": 1.566,
-  "ow": 1885,
-  "oh": 3351,
-  "out": "/home/user/Generator_Stickman/videos/25_noch_dela/story/room/chars/s02",
+  "S": 2.077,
+  "ow": 1599,
+  "oh": 2845,
+  "out": "/home/user/Generator_Stickman/videos/25_noch_dela/story/room/chars/s03",
   "html": "heroes25.html"
  }
 ]
