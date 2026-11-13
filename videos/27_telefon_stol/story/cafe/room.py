@@ -334,8 +334,8 @@ def bench(t):
                    "".join(line([(x0 + 10, y - 150 + k * 46), (x1 - 10, y - 150 + k * 46)], 2, WOOD_SH, seed=1900 + k, op=.8) for k in range(1, 4)),
                    w=4.2, seed=1901))
     cush = [(x0 + 20, y - 128), (x1 - 20, y - 128), (x1 - 10, y - 30), (x0 + 10, y - 30)]
-    o.append(shape(cush, "#5e7d5a", blob([(x0 + 20, y - 70), (x1 - 20, y - 70), (x1 - 10, y - 30), (x0 + 10, y - 30)], "#4a6447", .9) +
-                   line([((x0 + x1) / 2, y - 124), ((x0 + x1) / 2, y - 34)], 2.2, "#3c5139", seed=1903, op=.8), w=3.8, seed=1902))
+    o.append(shape(cush, "#c0704e", blob([(x0 + 20, y - 70), (x1 - 20, y - 70), (x1 - 10, y - 30), (x0 + 10, y - 30)], "#9c5238", .9) +
+                   line([((x0 + x1) / 2, y - 124), ((x0 + x1) / 2, y - 34)], 2.2, "#7e4029", seed=1903, op=.8), w=3.8, seed=1902))
     seat = [(x0 - 20, y - 30, 1), (x1 + 20, y - 30, 1), (x1 + 20, y, 1), (x0 - 20, y, 1)]
     o.append(shape(seat, WOOD_HI, blob([(x0 - 20, y - 14), (x1 + 20, y - 14), (x1 + 20, y), (x0 - 20, y)], WOOD_SH, .9), w=4, seed=1904))
     return "".join(o)
@@ -437,28 +437,81 @@ def cup(x, y, k=1.0, col="#f3ede2", band_col="#3f7a72", latte=True, steam_t=None
     return "".join(o)
 
 
-def phone(x, y, k=1.0, glow=0.0, buzz=(0.0, 0.0), ang=-6.0):
-    """Телефон лежит экраном вниз на столе (вид сверху-сбоку): виден чёрный корпус с камерой; glow — свет экрана из-под краёв."""
+def phone(x, y, k=1.0, glow=0.0, buzz=(0.0, 0.0), ang=-24.0, squash=0.42, lift=0.0):
+    """Телефон лежит экраном вниз на столе: план 150×300 (повёрнут на ang в плоскости стола), сжат по вертикали
+    (наклон столешницы), видна тонкая боковая грань; glow — свет экрана, выбивающийся из-под краёв (уведомление)."""
     o = []
-    gx, gy = x + buzz[0], y + buzz[1]
-    if glow > 0.01:
-        gl = lib.rad_grad([(0, "#cfe8ff", .75 * glow), (.5, "#9fcbff", .35 * glow), (1, "#7fb6ff", 0)], gx, gy + 6 * k, 130 * k, 46 * k)
-        o.append(f'<ellipse cx="{gx}" cy="{gy + 6 * k}" rx="{130 * k}" ry="{46 * k}" fill="url(#{gl})"/>')
+    gx, gy = x + buzz[0], y + buzz[1] - lift
     c, s = math.cos(math.radians(ang)), math.sin(math.radians(ang))
 
-    def T(p):
-        X, Y = p[0] * k, p[1] * k * .34
-        return (gx + X * c - Y * s, gy + X * s + Y * c) + ((1,) if len(p) > 2 else ())
-    side = [T((-80, -150)), T((80, -150)), T((80, 150)), T((-80, 150))]
-    o.append(blob([(p[0], p[1] + 6 * k) for p in side], "#000000", .22))
-    edge = [T((-82, -148)), T((82, -148)), T((84, 152)), (T((84, 152))[0], T((84, 152))[1] + 9 * k), (T((-82, 152))[0], T((-82, 152))[1] + 9 * k),
-            T((-82, 152))]
-    o.append(shape(edge, "#1b1c22", blob([T((-84, 140)), T((84, 140)), (T((84, 152))[0], T((84, 152))[1] + 10 * k), (T((-84, 152))[0], T((-84, 152))[1] + 10 * k)],
-                                        "#9fcbff" if glow > .2 else "#2a2b33", min(1.0, .2 + glow)), w=3.4, seed=2200))
-    body = [T((-80, -150)), T((-66, -158)), T((66, -158)), T((80, -150)), T((80, 140)), T((66, 150)), T((-66, 150)), T((-80, 140))]
-    inner = blob([T(p) for p in [(-80, -158), (80, -158), (80, -100), (-80, -60)]], "#3a3c47", .9)
-    inner += shape([T(p) for p in [(-58, -126), (-10, -126), (-10, -64), (-58, -64)]], "#2a2b33",
-                   blob(ellipse_pts(*T((-34, -110)), 9 * k, 4 * k, 8), "#596080") + blob(ellipse_pts(*T((-34, -80)), 9 * k, 4 * k, 8), "#596080"), w=2.2,
-                   seed=2202)
-    o.append(shape(body, "#262830", inner, w=3.6, seed=2201))
+    def T(p, dz=0.0):
+        X, Y = p[0] * k, p[1] * k
+        return (gx + X * c - Y * s, gy + (X * s + Y * c) * squash + dz)
+    th = 8 * k
+    if glow > 0.01:
+        gl = lib.rad_grad([(0, "#e6f4ff", min(1, 1.1 * glow)), (.4, "#a8d2ff", .6 * glow), (1, "#7fb6ff", 0)], gx, gy + th, 230 * k, 110 * k)
+        o.append(f'<ellipse cx="{gx}" cy="{gy + th + lift}" rx="{230 * k}" ry="{110 * k}" fill="url(#{gl})"/>')
+    R = [(-75, -150), (75, -150), (75, 150), (-75, 150)]
+    # тень на столе
+    o.append(blob([T(p, th + 4 * k + lift) for p in [(-70, -140), (80, -140), (80, 156), (-70, 156)]], "#3a2416", .28))
+    # боковая грань: нижний контур плана, вытянутый вниз на толщину
+    pts = [T(p) for p in R]
+    low = sorted(range(4), key=lambda i: pts[i][1])[2:]
+    hull = []
+    for i in range(4):
+        hull.append(pts[i])
+    side = []
+    for i in range(4):
+        a, b = pts[i], pts[(i + 1) % 4]
+        if i in low or (i + 1) % 4 in low:
+            pass
+    # грань — многоугольник: весь план, сдвинутый вниз, объединённый с планом (рисуется под корпусом)
+    ext = [T(p, th) for p in R]
+    edge_col = lib.mix("#2c2e36", "#bfe2ff", min(1.0, glow * 1.2))
+    for i in range(4):
+        a, b = pts[i], pts[(i + 1) % 4]
+        a2, b2 = ext[i], ext[(i + 1) % 4]
+        o.append(f'<path d="M{a[0]:.1f} {a[1]:.1f}L{b[0]:.1f} {b[1]:.1f}L{b2[0]:.1f} {b2[1]:.1f}L{a2[0]:.1f} {a2[1]:.1f}Z" fill="{edge_col}"/>')
+    o.append(f'<path d="{lib.ink_closed(_hull(pts + ext), 3.6 * lib.INK_K[0], seed=2199)}" fill="{INK}"/>')
+    # корпус (скруглённый)
+    rr = 22
+    body = []
+    for (cx_, cy_, a0) in [(75 - rr, -150 + rr, -90), (75 - rr, 150 - rr, 0), (-75 + rr, 150 - rr, 90), (-75 + rr, -150 + rr, 180)]:
+        for j in range(4):
+            a = math.radians(a0 + j * 30)
+            body.append(T((cx_ + rr * math.cos(a), cy_ + rr * math.sin(a))))
+    inner = blob([T(p) for p in [(-80, -160), (80, -160), (80, -40), (-80, 30)]], "#3b3e4a", .9)
+    inner += f'<path d="M{T((-40, 150))[0]:.1f} {T((-40, 150))[1]:.1f}L{T((75, 20))[0]:.1f} {T((75, 20))[1]:.1f}" stroke="#ffffff" stroke-opacity=".10" stroke-width="{14 * k:.1f}"/>'
+    cam_m = [T(p) for p in [(-58, -132), (-6, -132), (-6, -70), (-58, -70)]]
+    inner += lib.shape(cam_m, "#1c1d23", blob(ellipse_pts(*T((-32, -114)), 12 * k, 12 * k * squash, 10), "#4a5070") +
+                       blob(ellipse_pts(*T((-32, -86)), 12 * k, 12 * k * squash, 10), "#4a5070") +
+                       blob(ellipse_pts(*T((-34, -116)), 4 * k, 4 * k * squash, 6), "#9aa6d0"), w=2.2, seed=2202)
+    o.append(lib.shape(body, "#2a2c34", inner, w=3.4, seed=2201))
     return "".join(o)
+
+
+def _hull(P):
+    P = sorted(set((round(p[0], 2), round(p[1], 2)) for p in P))
+
+    def cross(o, a, b):
+        return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+    lo, up = [], []
+    for p in P:
+        while len(lo) >= 2 and cross(lo[-2], lo[-1], p) <= 0:
+            lo.pop()
+        lo.append(p)
+    for p in reversed(P):
+        while len(up) >= 2 and cross(up[-2], up[-1], p) <= 0:
+            up.pop()
+        up.append(p)
+    return [q + (1,) for q in lo[:-1] + up[:-1]]
+
+
+def zip_pos(x, y, k, zip_u):
+    """Где бегунок молнии рюкзака (для кисти, которая его тянет)."""
+    arc = [(-62, -140), (-36, -172), (0, -180), (36, -172), (62, -140)]
+    u = (1 - zip_u) * 4
+    j = min(int(u), 3)
+    a, b = np.array(arc[j], float), np.array(arc[j + 1], float)
+    p = a + (b - a) * (u - j)
+    return np.array([x + p[0] * k, y + p[1] * k])

@@ -389,7 +389,7 @@ def frame(k, heroes=True, post=True, t=None):
     if post and G['clip'] in HOOK and t < 0.3:
         # радиальное размытие движения, пока камера летит (сила — скорость зума за кадр)
         z0, z1 = hook_cam(max(0.0, t - 0.5 / FPS), G['clip'])[0], hook_cam(t + 0.5 / FPS, G['clip'])[0]
-        k = min(0.10, 0.55 * abs(np.log(z1 / z0)))
+        k = min(0.075, 0.5 * abs(np.log(z1 / z0)))
         if k > 0.004:
             acc_ = np.zeros_like(img)
             n_ = 9

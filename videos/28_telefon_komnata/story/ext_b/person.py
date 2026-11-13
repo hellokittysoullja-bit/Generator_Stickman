@@ -299,6 +299,10 @@ def person(spec, pose, sd=0):
         s.append(leg(near))
     a_near, hands[near] = arm(near)
     s.append(a_near)
+    if pose.get("only_arms"):
+        return a_far + a_near
+    if pose.get("no_arms"):
+        s = [x for x in s if x is not a_far and x is not a_near]
     a_near = ""
     # туловище
     torso = [(-sh_w, shY + 30 + bob), (-sh_w + 14, shY + 4 + bob), (-30, shY - 8 + bob), (30, shY - 8 + bob), (sh_w - 14, shY + 4 + bob),

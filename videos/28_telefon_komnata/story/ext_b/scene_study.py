@@ -144,26 +144,30 @@ def desk_front(x, yb, w, depth, floor, sd, col="#c99a62"):
     return "".join(s)
 
 
-def student(spec, x, yb, sc, t, ph, sd, write=True, mood="focus", extra_hand=None):
-    """Студент за партой: без ног, низ туловища на заднем краю крышки yb. Пишет правой рукой, левая на листе."""
-    feet = yb + 274 * sc
+def student(spec, x, yb, sc, t, ph, sd, write=True, mood="focus", extra=None):
+    """Студент за партой: без ног, низ туловища спрятан под крышкой (задний край yb). Возвращает (тело, руки):
+    тело рисуется ДО крышки, руки — после листа (лежат на парте). Пишет правой, левая придерживает лист."""
+    feet = yb + 330 * sc
     wph = t * 7.5 + ph
     look_up = smooth(.0, .25, math.sin(t * .9 + ph * 2) - .55)      # иногда поднимает глаза — вспоминает
-    jx, jy = (10 * math.sin(wph) + 6 * math.sin(wph * 2.3), 4 * math.cos(wph * 1.3)) if write else (0, 0)
+    jx, jy = (9 * math.sin(wph) + 5 * math.sin(wph * 2.3), 4 * math.cos(wph * 1.3)) if write else (0, 0)
+    bl = ((t + ph * .37) % 3.1)
     pose = {"no_legs": True,
-            "hand_target": {"L": (-58, -228), "R": (58 + jx * (1 - look_up), -232 + jy)},
+            "hand_target": {"L": (-58, -300), "R": (52 + jx * (1 - look_up), -296 + jy)},
             "curl": {"L": 0.15, "R": 0.75},
             "look": (0.15 * math.sin(ph), 0.75 - 1.1 * look_up),
             "brow": 0.6 + 0.4 * look_up if mood == "focus" else 0.0,
             "mouth": "flat" if mood == "focus" else mood,
             "head_tilt": 5 * math.sin(t * .8 + ph) - 4 * look_up,
-            "blink": max(0.0, 1 - abs(((t + ph) % 3.1) - 1.5) / 0.06) if True else 0.0}
+            "blink": max(0.0, 1 - abs(bl - 1.5) / 0.07)}
     if write:
         pose["over_hand"] = {"R": lambda h, a: pencil_item(h, a, 1.0)}
-    if extra_hand:
-        pose.update(extra_hand)
+    if extra:
+        pose.update(extra)
     breath = 2 * math.sin(t * 2.2 + ph)
-    return person.draw(spec, pose, x, feet + breath * sc, sc, sd=sd)
+    body = person.draw(spec, dict(pose, no_arms=True), x, feet + breath * sc, sc, sd=sd)
+    arms = person.draw(spec, dict(pose, only_arms=True), x, feet + breath * sc, sc, sd=sd)
+    return body, arms
 
 
 # ═══════════════════════════════ s08: корпус и аудитория
@@ -394,9 +398,9 @@ def beams(t):
 
 
 ROWS = [  # (y заднего края крышки, масштаб студента, x-центры, ширина парты)
-    (840, .30, [180, 420, 660, 900], 210),
-    (1000, .38, [130, 400, 680, 950], 250),
-    (1210, .50, [180, 540, 900], 320),
+    (830, .50, [175, 415, 655, 895], 200),
+    (1010, .64, [140, 410, 680, 950], 245),
+    (1230, .80, [190, 545, 900], 300),
 ]
 
 
@@ -410,11 +414,13 @@ def classroom(t, extra=None):
         for j, x in enumerate(xs):
             spec = STUDENTS[(n * 4 + 1) % len(STUDENTS)]
             ph = n * 1.7
-            s.append(desk_surface(x, yb + 8 * sc, dw, depth, 1400 + n * 10))
+            body, arms = student(spec, x, yb, sc, t, ph, 1500 + n * 100)
+            s.append(body)
+            s.append(desk_surface(x, yb, dw, depth, 1400 + n * 10))
             prog = clamp((t - 15.0 - n * 0.13) / 2.6) * 7 + 1
-            s.append(paper(x + dw * .08, yb + depth * .55, dw * .42, depth * .62, prog, sd=n))
-            s.append(student(spec, x, yb + 10 * sc, sc, t, ph, 1500 + n * 100))
-            s.append(desk_front(x, yb + 8 * sc, dw, depth, floor, 1450 + n * 10))
+            s.append(paper(x + dw * .02, yb + depth * .58, dw * .40, depth * .62, prog, sd=n))
+            s.append(arms)
+            s.append(desk_front(x, yb, dw, depth, floor, 1450 + n * 10))
             n += 1
     return "".join(s)
 
@@ -422,7 +428,7 @@ def classroom(t, extra=None):
 def s08(t):
     # камера: 14.97–15.55 мягкий наезд на фасад, 15.55–16.2 влёт в окно (экспоненциально), дальше — внутри
     zin = ease_io(clamp((t - 15.5) / 0.75))
-    s_end = 1.0 / WK
+    s_end = 1.05 / WK
     if zin < 1:
         s0 = 0.95 + 0.12 * ease_out(clamp((t - 14.97) / 0.6), 2)
         S = s0 * (s_end / s0) ** zin
@@ -437,13 +443,13 @@ def s08(t):
             shape(rect_pts(*WIN), "none", "", w=3.6, seed=1999) + cacti(t)
         return art, cam(cx, cy, S, 0.6 * (1 - zin)), "#9cc8ee"
     u = clamp((t - 16.25) / 1.75)
-    return classroom(t), cam(540, 960 - 30 * u, 1.0 + 0.10 * (0.5 * u + 0.5 * ease_io(u)), -0.4 * u), "#e8d6b0"
+    return classroom(t), cam(540, 960 - 30 * u, 1.05 + 0.08 * (0.5 * u + 0.5 * ease_io(u)), -0.4 * u), "#e8d6b0"
 
 
 # ═══════════════════════════════ s09 / s10: три варианта
 D3 = [200, 540, 880]
 YB3 = 1000
-SC3 = .56
+SC3 = .78
 DW3 = 300
 
 
@@ -475,8 +481,8 @@ def pop_ring(x, y, rx, ry, e, sd):
     m = max(3, int(n * u * 1.08))
     pts = []
     for i in range(m):
-        a = -math.pi * .6 + 2.15 * math.pi * i / n
-        r = 1 + 0.04 * math.sin(i * 1.7) + 0.05 * math.sin(e * 6)
+        a = -math.pi * .6 + 2.06 * math.pi * i / n
+        r = 1 + 0.025 * math.sin(i * 1.3) + 0.03 * math.sin(e * 6) + 0.05 * (i / n)
         pts.append((x + rx * r * math.cos(a), y + ry * r * math.sin(a)))
     return line(pts, 9, "#ffcf3a", taper=.25, wmin=.5, seed=sd)
 
@@ -485,7 +491,7 @@ def spot(x, y0, y1, k):
     """Пятно тёплого света на варианте."""
     if k <= 0.01:
         return ""
-    g = rad_grad([(0, "#fff1b0", .85 * k), (.6, "#ffe27a", .35 * k), (1, "#ffe27a", 0)], x, (y0 + y1) / 2, 230, (y1 - y0) * .62)
+    g = rad_grad([(0, "#fff6c8", 1.0 * k), (.55, "#ffe27a", .55 * k), (1, "#ffe27a", 0)], x, (y0 + y1) / 2, 230, (y1 - y0) * .62)
     return f'<ellipse cx="{f(x)}" cy="{f((y0 + y1) / 2)}" rx="230" ry="{f((y1 - y0) * .62)}" fill="url(#{g})"/>'
 
 
@@ -506,6 +512,14 @@ def wall9():
     for k, (kind, x) in enumerate([("circle", 200), ("star", 540), ("tri", 880)]):
         s.append(mini_shape(kind, x, 500, 50, "#2f5a46", 1640 + k).replace('fill="#2f5a46"', 'fill="none"'))
         s.append(f'<g opacity=".95">{line([(x - 70, 600), (x + 70, 598)], 5, "#eef4ea", taper=.3, seed=1650 + k)}</g>')
+    # потолок и лампы
+    s.append(blob(rect_pts(-900, -900, W + 900, 150), "#e6d3ac"))
+    s.append(line([(-900, 150), (W + 900, 150)], 4, INK, taper=.05, wmin=.9, seed=1670))
+    for k, x in enumerate([200, 540, 880]):
+        s.append(line([(x, 150), (x, 220)], 4, "#5a5f6e", taper=.05, wmin=.9, seed=1671 + k))
+        s.append(shape([(x - 70, 262, 1), (x - 34, 218, 1), (x + 34, 218, 1), (x + 70, 262, 1)], "#3f8a7a",
+                       blob([(x + 10, 218), (x + 34, 218), (x + 70, 262), (x + 30, 262)], "#2f6a5e"), w=3.6, seed=1675 + k))
+        s.append(shape(ellipse_pts(x, 264, 40, 9, 12), "#fff3c4", "", w=2.6, seed=1679 + k))
     # тонкие разделители-перегородки между вариантами
     for x in (370, 710):
         s.append(shape(rect_pts(x - 6, 760, x + 6, fl), "#d6c4a0", "", w=3, seed=1660 + x))
@@ -523,13 +537,15 @@ def three_desks(t):
     specs = [STUDENTS[0], STUDENTS[3], STUDENTS[2]]
     moods = ["focus", "focus", "smile"]
     for i, x in enumerate(D3):
+        body, arms = student(specs[i], x - 10, YB3, SC3, t, i * 2.1, 1800 + i * 100, mood=moods[i])
+        s.append(body)
         s.append(desk_surface(x, YB3, DW3, depth, 1700 + i * 10))
         s.append(paper(x - 30, YB3 + depth * .55, DW3 * .4, depth * .62, 1 + clamp((t - 17.5) / 2) * (3 + 2 * i), sd=3 + i))
         if i == 0:
             pe = t - T_TABLE
             sc = 1 + 0.35 * math.exp(-max(pe, 0) * 6) * math.sin(max(pe, 0) * 14) * (pe > 0) + 0.15 * smooth(T_TABLE - .05, T_TABLE + .1, t)
             s.append(phone_flat(x + 95, YB3 + depth * .5, .9 * sc, -6, 1710, glow=k1))
-        s.append(student(specs[i], x - 10, YB3 + 4, SC3, t, i * 2.1, 1800 + i * 100, mood=moods[i]))
+        s.append(arms)
         s.append(desk_front(x, YB3, DW3, depth, fl, 1750 + i * 10))
     pe2 = t - T_BAG
     bsc = 1 + 0.12 * math.exp(-max(pe2, 0) * 6) * math.sin(max(pe2, 0) * 14) * (pe2 > 0)
@@ -541,10 +557,15 @@ def three_desks(t):
 
 
 def s09(t):
-    u = clamp((t - 17.56) / 2.14)
-    e = 0.4 * u + 0.6 * ease_io(u)
+    # общий план всех трёх → к столу на «столе» → панорама к сумке на «в сумке»
+    a = ease_io(clamp((t - 18.45) / 0.55))
+    b = ease_io(clamp((t - 19.18) / 0.32))
+    drift = clamp((t - 17.56) / 2.14)
+    cx = 540 + (300 - 540) * a + (600 - 300) * b + 10 * drift
+    cy = 860 + (900 - 860) * a + (930 - 900) * b
+    sc = 1.0 + 0.03 * drift + 0.36 * a + 0.06 * b
     push = 0.03 * math.exp(-max(t - T_TABLE, 0) * 5) * (t > T_TABLE) + 0.03 * math.exp(-max(t - T_BAG, 0) * 5) * (t > T_BAG)
-    return three_desks(t), cam(400 + 210 * e, 960 - 20 * e, 1.16 - 0.06 * e + push, 0.5 - 0.9 * e), "#e8d6b0"
+    return three_desks(t), cam(cx, cy, sc + push, 0.5 - 0.9 * drift), "#e8d6b0"
 
 
 # ─── s10: дверь в соседнюю комнату
@@ -630,6 +651,9 @@ def s10_student(t):
     pose = {"look": (0.6 * (1 - turn) - 0.5 * turn, 0.2 * (1 - turn)), "mouth": "flat" if t < 20.7 else "smile", "brow": 0.0}
     if walk is not None:
         pose["walk"] = walk
+        pose["curl"] = {"L": 0.6, "R": 0.6}
+        sw_ = math.sin(walk)
+        pose["hand_target"] = {"L": (-104 - 14 * sw_, -282 + 16 * sw_), "R": (104 - 14 * sw_, -282 - 16 * sw_)}
     # правая рука: телефон → на столик → назад
     reach = smooth(19.25, 19.62, t) * (1 - smooth(19.8, 20.05, t))
     hold = t < 19.72
@@ -641,7 +665,7 @@ def s10_student(t):
         pose["hand_target"] = {"R": tgt, "L": (-80, -300 + 4 * math.sin(t * 3))}
         pose["curl"] = {"R": 0.55 if hold else 0.2}
         if hold:
-            pose["in_hand"] = {"R": lambda h, a: phone_up(h[0] + 30 * math.cos(math.radians(a)), h[1] + 30 * math.sin(math.radians(a)) - 6, .55, a - 90 + 90, 0.7)}
+            pose["in_hand"] = {"R": lambda h, a: phone_up(h[0] + 34 * math.cos(math.radians(a)), h[1] + 34 * math.sin(math.radians(a)) - 18, .95, 0, 0.0, 2140)}
         if t > 20.66 - 0.01 and t < 21.0:
             pose["mouth"] = "smile"
     bob = 0.0
@@ -655,14 +679,28 @@ def slam_fx(t):
     x0, y0, x1, y1 = DOOR
     s = []
     u = e / 0.5
-    for k in range(6):
-        y = y0 + 60 + k * 100
-        L = 60 * (1 - u)
-        s.append(line([(x0 - 34 - 30 * u, y), (x0 - 34 - 30 * u - L, y + 6)], 7, INK, taper=.6, seed=2000 + k, op=1))
     for k in range(5):
-        xx = x0 + k * 60 - 20
-        r = 14 + 26 * ease_out(u)
-        s.append(f'<circle cx="{f(xx)}" cy="{f(y1 - 8 - 10 * u)}" r="{f(r * (1 - u) + 4)}" fill="#f1e4c8" stroke="{INK}" stroke-width="2.4"/>')
+        a = math.radians(-160 + k * 35)
+        r0 = 40 + 50 * ease_out(u)
+        L = 50 * (1 - u)
+        if L < 8:
+            break
+        cx, cy = (x0 + x1) / 2, y0 - 30
+        s.append(line([(cx + math.cos(a) * r0 * 2.2, cy + math.sin(a) * r0), (cx + math.cos(a) * (r0 + L) * 2.2, cy + math.sin(a) * (r0 + L))], 8, INK,
+                      taper=.6, seed=2000 + k))
+    for k, (cx, sd) in enumerate([(x0 + 10, 2010), (x1 - 10, 2020)]):
+        r = (26 + 40 * ease_out(u)) * (1 - ease_in(u, 3))
+        if r < 4:
+            continue
+        side = -1 if k == 0 else 1
+        pts = []
+        for i in range(9):
+            a = math.pi + math.pi * i / 8
+            rr = r * (1 + 0.10 * math.sin(i * 1.9 + k))
+            pts.append((cx + side * r * .5 + rr * 1.3 * math.cos(a), y1 + 2 + rr * .8 * math.sin(a)))
+        pts += [(cx + side * r * .5 + r * 1.3, y1 + 4, 1), (cx + side * r * .5 - r * 1.3, y1 + 4, 1)]
+        s.append('<g>' + shape(pts, "#f1e4c8", blob(ellipse_pts(cx + side * r * .5 + 10, y1 - r * .2, r * .8, r * .3, 10), "#dccaa6", .8),
+                                                                 w=3.2, seed=sd) + "</g>")
     return "".join(s)
 
 
@@ -677,12 +715,12 @@ def s10(t):
     nr = next_room(t)
     if phone_on_table:
         land = t - 19.72
-        nr += phone_up(TABLE10[0] - 20, TABLE10[1] - 58 + (-10 * math.exp(-land * 14) * abs(math.cos(land * 18))), .55, 0, 0.0, 2150)
+        nr += phone_up(TABLE10[0] - 20, TABLE10[1] - 56 + (-10 * math.exp(-land * 14) * abs(math.cos(land * 18))), .55 * 0.95 / .55 * .74, 0, 0.0, 2150)
     stud, sx = s10_student(t)
     art = _ST["wall10"] + nr + door_leaf(theta) + door_frame() + slam_fx(t) + stud
     shake = 8 * math.exp(-max(t - SLAM, 0) * 10) * math.sin((t - SLAM) * 60) * (t > SLAM)
     u = clamp((t - 19.3) / 2.34)
-    return art, cam(600 + 20 * u + shake, 940, 1.10 + 0.04 * ease_io(u), -0.3 + 0.5 * u), "#e8d6b0"
+    return art, cam(625 - 50 * ease_io(clamp((t - 20.7) / 0.9)) + shake, 990, 1.66 + 0.06 * ease_io(u), -0.3 + 0.5 * u), "#e8d6b0"
 
 
 # ═══════════════════════════════ s11 / s12: столбики
@@ -697,10 +735,10 @@ def bar_heights(t):
     h = []
     for i in range(3):
         if i < 2:
-            u = clamp((t - 21.5 - i * 0.12) / 0.75)
+            u = clamp((t - 21.28 - i * 0.12) / 0.75)
             h.append(BH[i] * (ease_out(u, 3) + 0.05 * math.sin(math.pi * u) * (u < 1)))
         else:
-            u = clamp((t - 21.6) / 2.25)
+            u = clamp((t - 21.36) / 2.49)
             v = 0.55 * ease_out(clamp(u / 0.35), 2) + 0.45 * ease_in(clamp((u - 0.35) / 0.65), 1.3) if u < 1 else 1.0
             hh = BH[2] * v
             if t > 23.85:
@@ -790,7 +828,7 @@ def bars(t, h, star_t=STAR):
                 s.append(blob([(sx, sy - r), (sx + r * .3, sy - r * .3), (sx + r, sy), (sx + r * .3, sy + r * .3), (sx, sy + r), (sx - r * .3, sy + r * .3),
                                (sx - r, sy), (sx - r * .3, sy - r * .3)], "#ffcf3a"))
     for i, kind in enumerate(["table", "bag", "door"]):
-        s.append(badge(BX[i], BASE + 100, kind, t, i, 2260 + i * 60))
+        s.append(f'<g transform="translate({BX[i]} {BASE - 92}) scale(.92) translate({-BX[i]} {-(BASE - 92)})">' + badge(BX[i], BASE - 92, kind, t, i, 2260 + i * 60) + "</g>")
     return "".join(s)
 
 
@@ -798,12 +836,12 @@ def s11(t):
     h = bar_heights(t)
     u = clamp((t - 21.24) / 3.73)
     push = 0.03 * math.exp(-max(t - STAR, 0) * 5) * (t > STAR)
-    return _ST["chart"] + bars(t, h), cam(540 + 30 * ease_io(u), 860 - 30 * u, 1.0 + 0.04 * ease_io(u) + push, 0.4 - 0.7 * u), "#f0e4c8"
+    return _ST["chart"] + bars(t, h), cam(540 + 20 * ease_io(u), 835 - 20 * u, 1.30 + 0.05 * ease_io(u) + push, 0.4 - 0.7 * u), "#f0e4c8"
 
 
 # ─── s12: выключатель у телефона, столбик не меняется
-SW = (1150, 900)       # выключатель
-PH12 = (1150, 700)     # телефон
+SW = (1150, 930)       # выключатель
+PH12 = (1150, 600)     # телефон
 
 
 def switch_state(t):
@@ -866,7 +904,7 @@ def level_line(h, t, k):
         return ""
     y = BASE - h
     x0 = BX[2] + BW / 2 + 10
-    x1 = x0 + (PH12[0] - 90 - x0) * k
+    x1 = x0 + (PH12[0] + 120 - x0) * k
     s = []
     n = int((x1 - x0) / 34)
     for i in range(n):
@@ -887,17 +925,17 @@ def s12(t):
     last = max([c for c in CLICKS if c <= t], default=None)
     if last is not None and t - last < 0.07:
         on_amt = 0.5
-    ph = phone_up(PH12[0], PH12[1], 1.8 * k, 4 * math.sin(t * 1.6), on_amt, 2350)
+    ph = phone_up(PH12[0], PH12[1], 2.5 * k, 4 * math.sin(t * 1.6), on_amt, 2350)
     if on_amt > 0.6:
-        g = rad_grad([(0, "#9fdcff", .5), (1, "#9fdcff", 0)], PH12[0], PH12[1], 190, 230)
-        ph = f'<ellipse cx="{PH12[0]}" cy="{PH12[1]}" rx="{f(190 * k)}" ry="{f(230 * k)}" fill="url(#{g})"/>' + ph
+        g = rad_grad([(0, "#9fdcff", .6), (1, "#9fdcff", 0)], PH12[0], PH12[1], 240, 300)
+        ph = f'<ellipse cx="{PH12[0]}" cy="{PH12[1]}" rx="{f(240 * k)}" ry="{f(300 * k)}" fill="url(#{g})"/>' + ph
     # провод от телефона к выключателю
-    wire = line([(PH12[0], PH12[1] + 104 * k), (PH12[0] - 24, PH12[1] + 150), (SW[0] - 10, SW[1] - 104)], 6, "#3a3f4c", taper=.05, wmin=.9, seed=2360) if k > .6 else ""
-    swg = f'<g transform="translate({SW[0]} {SW[1]}) scale({f(k)}) translate({-SW[0]} {-SW[1]})">{sw}</g>'
+    wire = line([(PH12[0], PH12[1] + 140 * k), (PH12[0] - 30, PH12[1] + 200), (SW[0] - 10, SW[1] - 118)], 6, "#3a3f4c", taper=.05, wmin=.9, seed=2360) if k > .6 else ""
+    swg = f'<g transform="translate({SW[0]} {SW[1]}) scale({f(1.15 * k)}) translate({-SW[0]} {-SW[1]})">{sw}</g>'
     art = _ST["chart"] + bars(t, h) + level_line(h[2], t, smooth(24.9, 25.3, t)) + wire + ph + swg + click_fx(t)
     u = clamp((t - 24.57) / 2.64)
     pop = 0.025 * sum(math.exp(-max(t - c, 0) * 8) * (t > c) for c in CLICKS)
-    return art, cam(930 + 20 * ease_io(u), 740, 1.12 + 0.05 * ease_io(u) + pop, 0.3 - 0.6 * u), "#f0e4c8"
+    return art, cam(960 + 15 * ease_io(u), 815, 1.32 + 0.05 * ease_io(u) + pop, 0.3 - 0.6 * u), "#f0e4c8"
 
 
 # ═══════════════════════════════ кадр

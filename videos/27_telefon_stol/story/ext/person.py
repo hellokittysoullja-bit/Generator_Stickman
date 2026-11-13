@@ -257,9 +257,13 @@ def person(spec, pose, sd=0):
         s.append(a_far)
     s.append(leg(near))
     a_near, hands[near] = arm(near)
-    if not front:
+    near_front = pose.get("near_front", False)
+    if not front and not near_front:
         s.append(a_near)
-        a_far = a_near = ""
+    if not front:
+        a_far = ""
+        if not near_front:
+            a_near = ""
     # туловище
     torso = [(-sh_w, shY + 30 + bob), (-sh_w + 14, shY + 4 + bob), (-30, shY - 8 + bob), (30, shY - 8 + bob), (sh_w - 14, shY + 4 + bob),
              (sh_w, shY + 30 + bob), (sh_w - 10, hipY - 60 + bob), (sh_w - 6, hipY + 26 + bob, 1), (-sh_w + 6, hipY + 26 + bob, 1),
@@ -281,6 +285,7 @@ def person(spec, pose, sd=0):
                        spec["collar"], w=3.4, seed=sd + 34))
     if front:                 # руки на столе: дальняя за ближней, обе перед туловищем
         s.append(a_far)
+    if front or near_front:   # ближняя рука перед туловищем
         s.append(a_near)
         a_near = ""
     # голова

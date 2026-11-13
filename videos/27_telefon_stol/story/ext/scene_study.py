@@ -26,7 +26,7 @@ FAR_T = 23.92        # «дальше»
 FLOOR_Y = 1250       # низ задней стены
 FEET_Y = 1268        # где стоят ступни сидящих
 TOP_B, TOP_F = 1000, 1046      # стол: задний и передний край столешницы
-TX0, TX1 = 405, 675
+TX0, TX1 = 375, 705
 SC_P = 0.95
 
 WALL = "#efe6d3"
@@ -78,7 +78,7 @@ def seat_person(spec, k, feet_x, floor_y, sc, hands=None, pose=None, sd=0, rot=0
             sign = -1 if side == "L" else 1
             arms[side] = (a - sign * 6, b)
         pose["arms"] = arms
-        pose["arms_front"] = True
+        pose["near_front"] = True
     g = person.draw(spec, pose, ox, oy, sc, sd=sd)
     if rot:
         g = f'<g transform="rotate({f(rot)} {f(feet_x)} {f(floor_y)})">{g}</g>'
@@ -239,8 +239,6 @@ def room_static():
     for i, x in enumerate(range(-300, W + 400, 160)):
         s.append(line([(x, FLOOR_Y), (x + (x - 540) * 1.2, H + 100)], 2.2, "#a8774d", taper=.05, wmin=.9, seed=140 + i, op=.55))
     s.append(blob(rect_pts(-400, FLOOR_Y, W + 400, FLOOR_Y + 30), "#a8774d", .45))
-    # пятно солнца на полу
-    s.append(blob([(400, 1300), (760, 1300), (860, 1560), (300, 1560)], "#ffe9c2", .35, blur(10)))
     return "".join(s)
 
 
@@ -316,6 +314,14 @@ def cup(x, y, sd, steam_t=None, frost=0.0):
         s.append(crystal(x - 16, y - 30, 8 * frost, sd + 32, frost))
         s.append(crystal(x + 14, y - 22, 6 * frost, sd + 33, frost))
     return "".join(s)
+
+
+def cups(t, frost=0.0):
+    out = ""
+    for (x, y, sd, ph) in ((508, 1014, 500, 0.0), (574, 1010, 520, 0.3)):
+        c = cup(0, 0, sd, steam_t=t + ph, frost=frost)
+        out += f'<g transform="translate({x} {y}) scale(0.84)">{c}</g>'
+    return out
 
 
 # ───────────────────────── иней
@@ -425,17 +431,17 @@ def thermo(x, y0, y1, level, t, sd=950):
 
 
 # ───────────────────────── общий кадр сидящих (s08, s10)
-A_FEET = 452          # ступни A (сидит лицом вправо)
-B_FEET = 628          # ступни B (лицом влево)
-A_CH = 316
-B_CH = 764
+A_FEET = 425          # ступни A (сидит лицом вправо)
+B_FEET = 655          # ступни B (лицом влево)
+A_CH = 290
+B_CH = 790
 
 
-def seated_wide(t, ka, kb, poses, hands_a, hands_b, items_mid="", items_top="", frost=0.0):
+def seated_wide(t, ka, kb, poses, hands_a, hands_b, items_mid="", items_top="", frost=0.0, fa=A_FEET, fb=B_FEET):
     pa = dict(poses.get("A", {}))
     pb = dict(poses.get("B", {}))
-    a_svg, _ = seat_person(A_SPEC, ka, A_FEET - 140 * SC_P * (1 - ka) * 0, FEET_Y, SC_P, hands_a, pa, sd=3000)
-    b_svg, _ = seat_person(B_SPEC, kb, B_FEET, FEET_Y, SC_P, hands_b, pb, sd=4000)
+    a_svg, _ = seat_person(A_SPEC, ka, fa, FEET_Y, SC_P, hands_a, pa, sd=3000)
+    b_svg, _ = seat_person(B_SPEC, kb, fb, FEET_Y, SC_P, hands_b, pb, sd=4000)
     s = [chair(A_CH, 1, 300), chair(B_CH, -1, 320), table_back(), table_top(frost), table_frost(frost), items_mid, a_svg, b_svg, table_front(), items_top]
     return "".join(s)
 
@@ -443,8 +449,8 @@ def seated_wide(t, ka, kb, poses, hands_a, hands_b, items_mid="", items_top="", 
 def hands_on_table(side, t, ph=0.0):
     """Кисти лежат на столешнице (мир), чуть шевелятся."""
     if side == "A":
-        return {"L": (482 + 3 * math.sin(t * 1.1 + ph), 1010), "R": (468 + 3 * math.sin(t * 1.3 + ph), 1032)}
-    return {"R": (600 + 3 * math.sin(t * 1.2 + ph), 1010), "L": (614 + 3 * math.sin(t * 1.4 + ph), 1032)}
+        return {"L": (428 + 3 * math.sin(t * 1.1 + ph), 1012), "R": (414 + 3 * math.sin(t * 1.3 + ph), 1034)}
+    return {"R": (652 + 3 * math.sin(t * 1.2 + ph), 1012), "L": (666 + 3 * math.sin(t * 1.4 + ph), 1034)}
 
 
 def lerp_hands(h0, h1, u):
@@ -472,26 +478,35 @@ def sit_k(t, t0, t1):
     return clamp(k, 0, 1.05)
 
 
+def walk_in(t, t0, t1, x0, x1):
+    """Подходит к столу: x ступней и фаза шага (None — стоит)."""
+    u = clamp((t - t0) / (t1 - t0))
+    x = x0 + (x1 - x0) * (u * (2 - u) if u < 1 else 1)
+    return x, ((t - t0) * 10.0 if u < 1 else None)
+
+
 def s08(t):
-    ka = sit_k(t, 15.20, 16.05)
-    kb = sit_k(t, 15.95, 16.85)
+    fa, wa = walk_in(t, 15.05, 15.78, A_FEET - 220, A_FEET)
+    fb, wb = walk_in(t, 15.30, 16.18, B_FEET + 240, B_FEET)
+    ka = sit_k(t, 15.80, 16.50)
+    kb = sit_k(t, 16.22, 16.95)
     # руки: пока садятся — висят, потом ложатся на стол
-    ua = smooth(16.05, 16.55, t)
-    ub = smooth(16.85, 17.35, t)
+    ua = smooth(16.45, 16.95, t)
+    ub = smooth(16.95, 17.45, t)
     ha = lerp_hands(hang_hands("A", A_FEET, ka), hands_on_table("A", t), ua)
     hb = lerp_hands(hang_hands("B", B_FEET, kb), hands_on_table("B", t, 1), ub)
     # взгляды: сначала на стул, потом друг на друга, неловкая улыбка, кивок
-    pa = dict(look=(0.2, 0.7) if t < 16.0 else (0.9, 0.0), mouth="flat" if t < 16.8 else "smile", blink=blink_at(t, 2.7, 0.4),
+    pa = dict(look=(0.2, 0.7) if t < 16.0 else (0.9, 0.0), mouth="flat" if t < 16.8 else "smile", blink=blink_at(t, 2.7, 0.4), walk=wa,
               head_tilt=-6 * (1 - ka) + 3 * math.sin(t * 1.6) * ka + 5 * math.exp(-max(t - 17.2, 0) * 3) * (t > 17.2), brow=.3,
               hmode={"L": "rest", "R": "rest"})
-    pb = dict(look=(-0.2, 0.7) if t < 16.7 else (-0.9, 0.0), mouth="flat" if t < 17.4 else "smile", blink=blink_at(t, 3.1, 1.2),
+    pb = dict(look=(-0.2, 0.7) if t < 16.7 else (-0.9, 0.0), mouth="flat" if t < 17.4 else "smile", blink=blink_at(t, 3.1, 1.2), walk=wb,
               head_tilt=6 * (1 - kb) - 3 * math.sin(t * 1.4 + 1) * kb - 5 * math.exp(-max(t - 17.6, 0) * 3) * (t > 17.6), brow=.2,
               hmode={"L": "rest", "R": "rest"})
-    items = cup(458, 1024, 500, steam_t=t) + cup(624, 1018, 520, steam_t=t + .3)
+    items = cups(t)
     art = _ST["room"] + plant(70, FLOOR_Y + 20, t, 600) + tripod_cam(985, FLOOR_Y + 40, t) + lamp(t)
-    art += seated_wide(t, ka, kb, {"A": pa, "B": pb}, ha, hb, items_mid=items)
+    art += seated_wide(t, ka, kb, {"A": pa, "B": pb}, ha if ua > 0 else None, hb if ub > 0 else None, items_mid=items, fa=fa, fb=fb)
     u = clamp((t - 15.44) / 2.96)
-    cm = cam(500 + 70 * (0.3 * u + 0.7 * ease_io(u)), 905, 1.10 + 0.03 * u, -0.5 + 0.9 * u)
+    cm = cam(505 + 70 * (0.3 * u + 0.7 * ease_io(u)), 905, 1.52 + 0.05 * u, -0.5 + 0.9 * u)
     return art, cm
 
 
@@ -534,59 +549,207 @@ def sleeve_arm(wx, wy, ang, sc, sd):
     return s
 
 
+# камера крупного плана: над столом, смотрит вниз на 28°
+CH, CD, CTH, CF, CCY = 0.38, 0.40, 28.0, 1400.0, 880.0
+_cs, _cc = math.sin(math.radians(CTH)), math.cos(math.radians(CTH))
+
+
+def PC(X, Y, Z):
+    """Мир крупного плана (м): X вправо, Y вниз (0 — столешница), Z от переднего края вглубь → (x, y, глубина)."""
+    ry, rz = Y + CH, Z + CD
+    d = ry * _cs + rz * _cc
+    sy = ry * _cc - rz * _sn
+    return (540 + CF * X / d, CCY + CF * sy / d, d)
+
+
+_sn = _cs
+
+
+def phone3d(cx, h, cz, yaw, roll=0.0, sd=0):
+    """Телефон экраном вниз в перспективе: центр (cx, −h над столом, cz) м, поворот yaw вокруг вертикали, крен roll вокруг
+    длинной оси. Размеры внутри — в мм."""
+    L, Wd, TH = 155.0, 75.0, 9.0
+    cyw, syw = math.cos(math.radians(yaw)), math.sin(math.radians(yaw))
+    sr, cr = math.sin(math.radians(roll)), math.cos(math.radians(roll))
+
+    def M(u, v, w=0.0):
+        vv = v * cr
+        y = -h + (w + v * sr) / 1000
+        X = cx + (u * cyw - vv * syw) / 1000
+        Z = cz + (u * syw + vv * cyw) / 1000
+        return PC(X, y, Z)[:2]
+
+    def mp(pts, w=0.0):
+        return [M(p[0], p[1], w) + ((1,) if len(p) > 2 and p[2] else ()) for p in pts]
+
+    body = rect_pts(-L / 2, -Wd / 2, L / 2, Wd / 2, 11)
+    s = []
+    s.append(shape(mp(body, TH), "#0c0d11", "", w=4.2, seed=sd + 1))
+    inner = blob(mp([(-L / 2, Wd * .12, 1), (L / 2, Wd * .2, 1), (L / 2, Wd / 2, 1), (-L / 2, Wd / 2, 1)]), "#15171d", .9)
+    inner += blob(mp([(-L * .42, -Wd * .36, 1), (L * .22, -Wd * .36, 1), (L * .12, -Wd * .25, 1), (-L * .44, -Wd * .25, 1)]), "#5a6480", .75)
+    s.append(shape(mp(body), "#23262f", inner, w=4.6, seed=sd + 2))
+    blk = mp(rect_pts(-L / 2 + 8, -Wd / 2 + 7, -L / 2 + 40, -Wd / 2 + 39, 7))
+    s.append(shape(blk, "#30343f", "", w=3.2, seed=sd + 3))
+    for k, (pu, pv) in enumerate([(-L / 2 + 16, -Wd / 2 + 15), (-L / 2 + 32, -Wd / 2 + 15), (-L / 2 + 16, -Wd / 2 + 31)]):
+        ring = [M(pu + 5.5 * math.cos(a), pv + 5.5 * math.sin(a)) for a in np.linspace(0, 2 * math.pi, 12, endpoint=False)]
+        hi = [M(pu - 2 + 1.8 * math.cos(a), pv - 2 + 1.4 * math.sin(a)) for a in np.linspace(0, 2 * math.pi, 8, endpoint=False)]
+        s.append(shape(ring, "#0b0c10", blob(hi, "#8a98b8", .9), w=2.6, seed=sd + 4 + k))
+    q = M(-L / 2 + 32, -Wd / 2 + 31)
+    s.append(f'<circle cx="{f(q[0])}" cy="{f(q[1])}" r="5" fill="#e8e2c8"/>')
+    end = M(L / 2 - 12, 0.0)
+    mid = M(0.0, 0.0)
+    return "".join(s), end, mid
+
+
+def cup3d(X, Z, sd, steam_t=None):
+    """Чашка с блюдцем на столе в перспективе крупного плана."""
+    s = []
+    def ring(r, y, n=24, cx=X, cz=Z):
+        return [PC(cx + r * math.cos(a), y, cz + r * math.sin(a))[:2] for a in np.linspace(0, 2 * math.pi, n, endpoint=False)]
+    sau = ring(0.075, 0)
+    s.append(blob([(x + 6, y + 8) for x, y in sau], "#7a5234", .35, blur(4)))
+    s.append(shape(sau, "#fbf8f0", blob(ring(0.05, 0), "#e6dfd0", .9), w=3.6, seed=sd))
+    top = ring(0.042, -0.072)
+    bot = ring(0.034, -0.004)
+    pts = np.array(top + bot)
+    hull = _hull(pts)
+    # ручка — справа
+    hp = [PC(X + 0.042 + 0.022 * math.cos(a), -0.040 + 0.020 * math.sin(a), Z)[:2] for a in np.linspace(-math.pi / 2, math.pi / 2, 9)]
+    s.append(line(hp, 11, INK, taper=.05, wmin=.9, seed=sd + 1))
+    s.append(line(hp, 6, "#f2ece0", taper=.05, wmin=.9, seed=sd + 2))
+    band = ring(0.0425, -0.050) + ring(0.041, -0.040)[::-1]
+    s.append(shape([tuple(p) + (1,) for p in hull], "#f6f1e6",
+                   blob([tuple(p) for p in pts[len(top) // 2:len(top)]] + [tuple(p) for p in pts[len(top) + len(bot) // 2:][::-1]], "#ddd4c2", .0) +
+                   line(ring(0.0425, -0.046)[:13], 9, "#5aa0a0", taper=.05, wmin=.9, seed=sd + 5, op=.9), w=3.6, seed=sd + 3))
+    s.append(shape(top, "#f6f1e6", blob(ring(0.036, -0.066), "#8a5a34") + blob(ring(0.02, -0.066, cx=X - 0.008, cz=Z + 0.006), "#b07a4a", .8),
+                   w=3.2, seed=sd + 4))
+    if steam_t is not None:
+        c = PC(X, -0.075, Z)
+        for k in range(2):
+            ph = (steam_t * 0.7 + k * 0.5) % 1
+            yy = c[1] - 20 - ph * 90
+            xx = c[0] - 14 + k * 26 + 8 * math.sin(steam_t * 3 + k)
+            s.append(line([(xx, yy + 40), (xx + 10, yy + 20), (xx - 5, yy), (xx + 5, yy - 18)], 5, "#ffffff", taper=.6, seed=sd + 10 + k,
+                          op=.6 * math.sin(math.pi * ph)))
+    return "".join(s)
+
+
+def _hull(P_):
+    pts = sorted(map(tuple, P_))
+    def cross(o, a, b):
+        return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+    lo, up = [], []
+    for p in pts:
+        while len(lo) >= 2 and cross(lo[-2], lo[-1], p) <= 0:
+            lo.pop()
+        lo.append(p)
+    for p in reversed(pts):
+        while len(up) >= 2 and cross(up[-2], up[-1], p) <= 0:
+            up.pop()
+        up.append(p)
+    return lo[:-1] + up[:-1]
+
+
+def sleeve_to(edge_pt, wrist, w0, w1, col, shd, sd, cuff=None):
+    """Рукав от края кадра до запястья (полоса с тенью), по желанию — манжета у кисти."""
+    pts = [edge_pt, ((edge_pt[0] * 2 + wrist[0]) / 3, (edge_pt[1] * 2 + wrist[1]) / 3 + 10), wrist]
+    pl = lib.band(pts, w0, w1, step=6, cap=False)
+    inner = blob(lib.band([(x, y + w1 * .22) for x, y in pts], w0 * .5, w1 * .45, step=6, cap=False), shd, .9)
+    s = shape(pl, col, inner, w=4.6, seed=sd)
+    if cuff:
+        dx, dy = wrist[0] - pts[1][0], wrist[1] - pts[1][1]
+        L = math.hypot(dx, dy) + 1e-6
+        c0 = (wrist[0] - dx / L * w1 * .5, wrist[1] - dy / L * w1 * .5)
+        s += shape(lib.band([c0, wrist], w1 * 1.04, w1 * 1.0, step=3, cap=False), cuff[0], blob(lib.band([(c0[0], c0[1] + w1 * .2), (wrist[0], wrist[1] + w1 * .2)],
+                                                                                                      w1 * .45, w1 * .4, step=3, cap=False), cuff[1], .9), w=4, seed=sd + 1)
+    return s
+
+
+def closeup_bg():
+    """Фон крупного плана: стена с панелями и окно — размыто (глубина резкости)."""
+    room = f'<g transform="translate(540 300) scale(1.9) translate(-540 -720)">{_ST["room"]}</g>'
+    return f'<g {blur(7)}>{room}</g>'
+
+
+def table3d():
+    s = []
+    top = [PC(x, 0, z)[:2] + (1,) for x, z in ((-0.62, 0.0), (0.62, 0.0), (0.62, 0.80), (-0.62, 0.80))]
+    inner = ""
+    rs = np.random.RandomState(4)
+    for k in range(9):
+        z = 0.06 + k * 0.085
+        pts = [PC(x, 0, z + 0.006 * math.sin(x * 9 + k))[:2] for x in np.linspace(-0.6, 0.6, 12)]
+        inner += line(pts, 2.2, WOOD_SH, taper=.4, wmin=.3, seed=1500 + k, op=.45)
+    inner += blob([PC(x, 0, z)[:2] + (1,) for x, z in ((-0.62, 0.55), (0.62, 0.62), (0.62, 0.80), (-0.62, 0.80))], WOOD_HI, .45)
+    s.append(shape(top, WOOD, inner, w=5, seed=1490))
+    # передняя кромка (толщина столешницы)
+    fe = [PC(x, y, 0)[:2] + (1,) for x, y in ((-0.62, 0), (0.62, 0), (0.62, 0.03), (-0.62, 0.03))]
+    s.append(shape(fe, WOOD_SH, "", w=4.4, seed=1491))
+    return "".join(s)
+
+
 def s09(t):
-    # телефон: несут сверху-справа, опускают, касание на PHONE_T, лёгкий отскок
     e = t - PHONE_T
     if e < 0:
-        u = ease_out(clamp((t - 18.0) / (PHONE_T - 18.0)), 2.2)
-        px = 760 + (PH_REST[0] - 760) * u
-        py = 640 + (PH_REST[1] - 640) * u
-        tilt = 16 * (1 - u)
-        sq = SQT + 0.25 * (1 - u)
-        lift = (1 - u)
+        u = ease_out(clamp((t - 17.95) / (PHONE_T - 17.95)), 2.0)
+        cx = 0.30 + (0.02 - 0.30) * u
+        cz = 0.34 + (0.12 - 0.34) * u
+        h = 0.20 * (1 - u) ** 1.3
+        yaw = 24 * (1 - u) - 6
+        roll = -16 * (1 - u)
     else:
-        px, py = PH_REST
-        py -= 6 * math.exp(-e * 10) * abs(math.sin(e * 22))
-        tilt, sq, lift = 0.0, SQT, 0.0
-    # рука: держит телефон до касания, после — раскрывается и уходит вверх-вправо
-    rel = smooth(PHONE_T + 0.08, PHONE_T + 0.30, t)
-    away = ease_in(clamp((t - PHONE_T - 0.30) / 0.55), 2)
-    hx = px + 6 + 40 * rel + 380 * away
-    hy = py - 18 - 34 * rel - 560 * away
-    hang = 158 - 10 * rel
-    hs = 1.15
-    mode = "rest" if rel < 0.5 else "open"
-    # фон: тот же общий план, люди сидят, смотрят на телефон
-    look_a = (0.9, 0.4) if t > 18.6 else (0.9, 0.0)
-    look_b = (-0.9, 0.4) if t > 18.7 else (-0.9, 0.0)
-    pa = dict(look=look_a, mouth="flat" if t < PHONE_T + .2 else "o", blink=blink_at(t, 2.9, 0.2), head_tilt=4 * math.sin(t * 1.3), brow=.5 if t > PHONE_T else .2)
-    pb = dict(look=look_b, mouth="smile" if t < PHONE_T else "flat", blink=blink_at(t, 3.3, 1.0), head_tilt=-4 * math.sin(t * 1.2), brow=.4 if t > PHONE_T else .2)
-    jolt = 1.5 * math.exp(-max(e, 0) * 12) * math.sin(max(e, 0) * 50) * (e > 0)
-    shadow = ""
-    sh_a = 0.45 * (1 - 0.6 * lift)
-    shadow = blob(ellipse_pts(PH_REST[0] + 10 + 30 * lift, PH_REST[1] + 10, 88 * (1 + .4 * lift), 16 * (1 + .4 * lift), 16, rot=PH_ANG), "#5a3a22", sh_a,
-                  blur(4 + 8 * lift))
-    ph = phone_flat(px, py, PH_ANG + tilt, 1.0, sq, sd=700)
-    hand = hand5(hx, hy, hang, "#f0cfb4", "#d4a98a", sd=720, sc=hs, mode=mode, thumb_up=False, ink_w=3.0)
-    arm = sleeve_arm(hx, hy, hang, 1.0, 740)
-    items = cup(458, 1024, 500, steam_t=t) + cup(624, 1018, 520, steam_t=t + .3)
-    art = _ST["room"] + plant(70, FLOOR_Y + 20, t, 600) + lamp(t)
-    art += seated_wide(t, 1.0, 1.0, {"A": pa, "B": pb}, hands_on_table("A", t), hands_on_table("B", t, 1), items_mid=items + shadow,
-                       items_top=ph + arm + hand)
-    # удар касания: штрихи
-    if 0 <= e < 0.3:
-        for k in range(5):
-            a = math.pi + (k - 2) * 0.35 - math.pi / 2
-            r0 = 90 + 60 * ease_out(e / .3)
-            L = 22 * (1 - e / .3)
-            for sgn in (-1, 1):
-                aa = -math.pi / 2 + sgn * (0.5 + k * 0.22)
-                art += line([(PH_REST[0] + math.cos(aa) * r0 * 1.2, PH_REST[1] + math.sin(aa) * r0 * .5),
-                             (PH_REST[0] + math.cos(aa) * (r0 + L) * 1.2, PH_REST[1] + math.sin(aa) * (r0 + L) * .5)], 4, INK, taper=.5,
-                            seed=760 + k + (sgn > 0) * 10)
+        cx, cz, yaw, roll = 0.02, 0.12, -6.0, 0.0
+        h = -0.0 + 0.004 * math.exp(-e * 10) * abs(math.sin(e * 22))
+    ph_svg, end, mid = phone3d(cx, h, cz, yaw, roll, sd=1520)
+    # рука: держит телефон за правый короткий край; после касания пальцы раскрываются, рука уходит вверх-вправо
+    rel = smooth(PHONE_T + 0.06, PHONE_T + 0.26, t)
+    away = ease_in(clamp((t - PHONE_T - 0.26) / 0.62), 2.0)
+    ang = math.degrees(math.atan2(mid[1] - end[1], mid[0] - end[0]))
+    depth = PC(cx, -h, cz)[2]
+    hs = CF * 0.19 / depth / 82
+    # запястье: от края телефона назад вдоль его оси на ~длину кисти
+    k_back = 64 * hs
+    wx = end[0] - math.cos(math.radians(ang)) * k_back
+    wy = end[1] - math.sin(math.radians(ang)) * k_back - 16 * hs
+    wx += 30 * rel + 520 * away
+    wy -= 46 * rel + 700 * away
+    hs *= 1 + 0.12 * away
+    mode = "grip" if rel < 0.4 else ("rest" if rel < 0.8 else "open")
+    hand = hand5(wx, wy, ang + 8 * rel, "#f0cfb4", "#d4a98a", sd=1560, sc=hs, mode=mode, thumb_up=True, ink_w=1.15)
+    sleeve = sleeve_to((wx + 520, wy - 760), (wx - math.cos(math.radians(ang)) * 6 * hs, wy - math.sin(math.radians(ang)) * 6 * hs),
+                       120 * hs / 2.2, 96 * hs / 2.2, "#f7f8fb", "#d5dbe4", 1580, cuff=("#8fb6e6", "#6f97c8"))
+    # тень телефона на столе
+    sc_ = PC(cx + 0.02 + 0.25 * h, 0, cz + 0.02 + 0.3 * h)
+    shadow = blob(ellipse_pts(sc_[0], sc_[1], 200 * (1 + 1.5 * h), 60 * (1 + 1.5 * h), 18, rot=yaw * .5), "#6b4426", .42 * (1 - 2.2 * h), blur(6 + 30 * h))
+    # руки участников по бокам стола (рукава из-за края кадра)
+    arms = ""
+    for (X, Z, col, shd, skin, side, sd, ph) in ((-0.36, 0.30, "#2f8f8a", person.shade("#2f8f8a"), A_SPEC["skin"], -1, 1600, 0.0),
+                                                  (-0.30, 0.52, "#2f8f8a", person.shade("#2f8f8a"), A_SPEC["skin"], -1, 1620, 0.7),
+                                                  (0.40, 0.34, "#33467a", person.shade("#33467a"), B_SPEC["skin"], 1, 1640, 1.1),
+                                                  (0.33, 0.56, "#33467a", person.shade("#33467a"), B_SPEC["skin"], 1, 1660, 1.9)):
+        X2 = X + 0.004 * math.sin(t * 1.3 + ph)
+        wr = PC(X2, -0.012, Z)
+        k_ = CF * 0.19 / wr[2] / 82
+        edge = (-140 if side < 0 else 1220, wr[1] + 150 * k_ * 0.3)
+        a_ = math.degrees(math.atan2(wr[1] - edge[1], wr[0] - edge[0])) + (-10 if side < 0 else 10) * 0
+        arms += sleeve_to(edge, wr[:2], 70 * k_, 58 * k_, col, shd, sd)
+        twitch = 4 * math.exp(-max(t - PHONE_T, 0) * 6) * (t > PHONE_T) * (1 if side < 0 else -1)
+        arms += hand5(wr[0], wr[1], a_ + twitch, skin, person.shade(skin), sd=sd + 5, sc=k_, mode="rest", thumb_up=side > 0, ink_w=1.4)
+    bg = closeup_bg()
+    art = bg + table3d() + cup3d(-0.24, 0.55, 1680, steam_t=t) + cup3d(0.22, 0.60, 1700, steam_t=t + .4) + shadow + arms + ph_svg + sleeve + hand
+    # касание: штрихи-удар
+    if 0 <= e < 0.32:
+        c = PC(0.02, 0, 0.12)
+        for k in range(8):
+            aa = -math.pi * (0.04 + 0.92 * k / 7)
+            r0 = 230 + 120 * ease_out(e / .32)
+            L = 46 * (1 - e / .32)
+            art += line([(c[0] + math.cos(aa) * r0, c[1] + math.sin(aa) * r0 * .42), (c[0] + math.cos(aa) * (r0 + L), c[1] + math.sin(aa) * (r0 + L) * .42)],
+                        7, INK, taper=.5, seed=1720 + k)
     u = clamp((t - 18.0) / 2.4)
-    z = 2.05 + 0.35 * ease_io(u) + 0.04 * jolt
-    cm = cam(552 + 6 * u, 952 + 30 * ease_io(u) + jolt * 2, z, 0.4 - 0.7 * u)
+    jolt = math.exp(-max(e, 0) * 12) * math.sin(max(e, 0) * 50) * (e > 0)
+    c = PC(0.02, 0, 0.12)
+    cm = cam(540 + (c[0] - 540) * 0.5 * u, 900 + (c[1] - 900) * 0.45 * ease_io(u) + 3 * jolt, 1.0 + 0.10 * ease_io(u) + 0.01 * jolt, 0.6 - 1.0 * u)
     return art, cm
 
 
@@ -627,7 +790,7 @@ def s10(t):
               head_tilt=-3 * math.sin(t * 1.8) * (1 - ph_look), brow=.2 + .5 * ph_look,
               hmode={"L": "open" if 21.0 <= t < 21.9 else "rest", "R": "rest"})
     shiver = 2.0 * fr * math.sin(t * 40)
-    items = cup(458, 1024, 500, steam_t=t, frost=fr) + cup(624, 1018, 520, steam_t=t + .3, frost=fr)
+    items = cups(t, fr)
     items += blob(ellipse_pts(PH_REST[0] + 10, PH_REST[1] + 10, 88, 16, 16, rot=PH_ANG), "#5a3a22", .45, blur(4))
     items += phone_flat(PH_REST[0], PH_REST[1], PH_ANG, 1.0, SQT, sd=700)
     art = _ST["room"] + plant(70, FLOOR_Y + 20, t, 600) + lamp(t)
@@ -652,15 +815,16 @@ def s10(t):
             art += crystal(x, y, 7 * smooth(COLD_T, COLD_T + .3, t), 980 + k, .9)
     u = clamp((t - 20.0) / 2.92)
     jolt = 0.012 * math.exp(-max(t - COLD_T, 0) * 6) * (t > COLD_T)
-    cm = cam(585 + 10 * u, 905, 1.12 + 0.02 * u + jolt, 0.3 - 0.5 * u)
+    cm = cam(600 + 10 * u, 900, 1.48 + 0.03 * u + jolt, 0.3 - 0.5 * u)
     return art, cm, ck
 
 
 # ───────────────────────── s11: вид вдоль стола, стол растягивается
-FOC = 920.0
-HZ = 760.0          # горизонт (высота глаз)
-EYE = 1.22          # высота камеры над полом, м
+FOC = 940.0
+HZ = 700.0          # горизонт (высота глаз) на экране
+EYE = 1.42          # высота камеры над полом, м (чуть выше сидящих — стол виден сверху)
 PX_M = 400.0        # единиц человека на метр
+TBL_H = 0.76        # высота столешницы
 
 
 def P(X, Y, Z):
@@ -668,145 +832,150 @@ def P(X, Y, Z):
     return (540 + FOC * X / Z, HZ + FOC * Y / Z)
 
 
-def quad(pts3, cz):
-    return [P(x, y, z + cz) + (1,) for x, y, z in pts3]
+def Q(*pts3):
+    """Многоугольник по точкам (X, Y, Z) — все вершины углы (без сглаживания)."""
+    return [P(*p) + (1,) for p in pts3]
+
+
+def poly(pts3, fill, op=1.0):
+    return blob(Q(*pts3), fill, op)
 
 
 def s11(t):
-    cz = 0.10 * ease_io(clamp((t - 22.52) / 2.4)) + 0.12 * smooth(FAR_T - 0.25, FAR_T + 0.3, t)
-    stretch = smooth(FAR_T - 0.32, FAR_T + 0.30, t)
-    over = 0.25 * math.exp(-max(t - FAR_T - 0.3, 0) * 5) * math.sin(max(t - FAR_T - 0.3, 0) * 12) * (t > FAR_T + 0.3)
-    z_far = 2.35 + 5.6 * stretch + over + 0.04 * math.sin(t * 1.3)
-    zb = z_far + 1.7                      # задняя стена
-    zn = 1.25                             # ближний край стола
+    cz = 0.12 * ease_io(clamp((t - 22.52) / 2.4)) + 0.18 * smooth(FAR_T - 0.25, FAR_T + 0.35, t)
+    stretch = smooth(FAR_T - 0.34, FAR_T + 0.30, t)
+    e_ = max(t - FAR_T - 0.30, 0)
+    over = 0.30 * math.exp(-e_ * 5) * math.sin(e_ * 12) * (t > FAR_T + 0.30)
+    z_far = 2.25 + 6.2 * stretch + over + 0.03 * math.sin(t * 1.3)
+    zb = z_far + 1.6                      # задняя стена
+    zn = 1.30                             # ближний край стола
+    z0 = 0.35                             # ближняя граница стен (за кадром)
     fy = EYE                              # пол
-    cy_ = EYE - 2.75                      # потолок
-    xl, xr = -2.1, 2.1
+    cy_ = EYE - 2.8                       # потолок
+    xl, xr = -1.9, 1.9
+    Z = lambda z: z + cz                  # камера отъезжает: всё дальше на cz
     s = []
-    # задняя стена с окном (то же окно на улицу)
-    bw = [P(xl, cy_, zb + cz), P(xr, cy_, zb + cz), P(xr, fy, zb + cz), P(xl, fy, zb + cz)]
-    s.append(blob(bw, WALL))
-    # окно на задней стене
-    w0, w1 = -0.75, 0.75
-    wy0, wy1 = EYE - 2.15, EYE - 0.95
-    win = [P(w0, wy0, zb + cz), P(w1, wy0, zb + cz), P(w1, wy1, zb + cz), P(w0, wy1, zb + cz)]
-    sc_w = FOC / (zb + cz)
-    ox, oy = win[0]
-    # outside(): прямоугольник 330..750 × 330..900 → в окно
+    # потолок, стены, пол
+    s.append(poly([(xl, cy_, Z(z0)), (xr, cy_, Z(z0)), (xr, cy_, Z(zb)), (xl, cy_, Z(zb))], "#f6f1e6"))
+    for X, col in ((xl, "#ece2cc"), (xr, "#e6dbc3")):
+        s.append(poly([(X, cy_, Z(z0)), (X, cy_, Z(zb)), (X, fy, Z(zb)), (X, fy, Z(z0))], col))
+        s.append(poly([(X, EYE - 0.95, Z(z0)), (X, EYE - 0.95, Z(zb)), (X, fy, Z(zb)), (X, fy, Z(z0))], PANEL))
+        s.append(line([P(X, EYE - 0.95, Z(z0)), P(X, EYE - 0.95, Z(zb))], 4, INK, taper=.05, wmin=.5, seed=1101 + (X > 0)))
+    s.append(poly([(xl, fy, Z(z0)), (xr, fy, Z(z0)), (xr, fy, Z(zb)), (xl, fy, Z(zb))], "#c99a6b"))
+    for i, X in enumerate(np.linspace(xl, xr, 13)[1:-1]):
+        s.append(line([P(X, fy, Z(z0)), P(X, fy, Z(zb))], 2.4, "#9c6c44", taper=.05, wmin=.5, seed=1120 + i, op=.75))
+    # поперечные стыки досок и картины на стенах через каждые 1.4 м — видно, как растёт глубина
+    for i, zz in enumerate(np.arange(1.0, 16.0, 1.4)):
+        if zz > zb - 0.05:
+            break
+        s.append(line([P(xl, fy, Z(zz)), P(xr, fy, Z(zz))], 1.8, "#a8774d", taper=.05, wmin=.6, seed=1140 + i, op=.55))
+        if i % 2 == 1 and zz + 0.7 < zb:
+            for X in (xl, xr):
+                kk = FOC / Z(zz) / 400
+                fr_ = Q((X, EYE - 2.05, Z(zz)), (X, EYE - 2.05, Z(zz + 0.7)), (X, EYE - 1.5, Z(zz + 0.7)), (X, EYE - 1.5, Z(zz)))
+                inn = blob(Q((X, EYE - 1.75, Z(zz)), (X, EYE - 1.85, Z(zz + 0.35)), (X, EYE - 1.7, Z(zz + 0.7)), (X, EYE - 1.5, Z(zz + 0.7)),
+                             (X, EYE - 1.5, Z(zz))), "#7fae7a")
+                s.append(shape(fr_, "#bfd8e8", inn, w=max(1.6, 5 * kk), seed=1160 + i + (X > 0) * 20))
+    # задняя стена с окном (то же окно на улицу, что в общем плане)
+    s.append(poly([(xl, cy_, Z(zb)), (xr, cy_, Z(zb)), (xr, fy, Z(zb)), (xl, fy, Z(zb))], WALL))
+    s.append(poly([(xl, EYE - 0.95, Z(zb)), (xr, EYE - 0.95, Z(zb)), (xr, fy, Z(zb)), (xl, fy, Z(zb))], PANEL))
+    w0, w1 = -0.72, 0.72
+    wy0, wy1 = EYE - 2.35, EYE - 1.05
+    win = Q((w0, wy0, Z(zb)), (w1, wy0, Z(zb)), (w1, wy1, Z(zb)), (w0, wy1, Z(zb)))
+    kw = FOC / Z(zb) / 400
+    ox, oy = win[0][:2]
     kx = (win[1][0] - win[0][0]) / 420
     ky = (win[2][1] - win[0][1]) / 570
-    c = lib.clip_of([p + (1,) for p in win])
+    c = lib.clip_of(win)
     s.append(f'<g clip-path="url(#{c})"><g transform="translate({f(ox)} {f(oy)}) scale({kx:.5f} {ky:.5f}) translate(-330 -330)">{_ST["outside"]}</g></g>')
     fw = 0.07
-    frame = [P(w0 - fw, wy0 - fw, zb + cz), P(w1 + fw, wy0 - fw, zb + cz), P(w1 + fw, wy1 + fw, zb + cz), P(w0 - fw, wy1 + fw, zb + cz)]
-    d = lib.fill_d([p + (1,) for p in frame]) + lib.fill_d([p + (1,) for p in win[::-1]])
+    frame = Q((w0 - fw, wy0 - fw, Z(zb)), (w1 + fw, wy0 - fw, Z(zb)), (w1 + fw, wy1 + fw, Z(zb)), (w0 - fw, wy1 + fw, Z(zb)))
+    d = lib.fill_d(frame) + lib.fill_d(win[::-1])
     s.append(f'<path d="{d}" fill="#fbf8f0" fill-rule="evenodd"/>')
-    s.append(f'<path d="{lib.ink_closed([p + (1,) for p in frame], max(1.5, 4.0 * sc_w / 400), seed=1101)}" fill="{INK}"/>')
+    s.append(f'<path d="{lib.ink_closed(frame, max(1.4, 5 * kw), seed=1191)}" fill="{INK}"/>')
     mxw = (win[0][0] + win[1][0]) / 2
-    s.append(f'<rect x="{f(mxw - 3 * sc_w / 400)}" y="{f(win[0][1])}" width="{f(6 * sc_w / 400)}" height="{f(win[2][1] - win[0][1])}" fill="#fbf8f0"/>')
     myw = (win[0][1] + win[2][1]) / 2
-    s.append(f'<rect x="{f(win[0][0])}" y="{f(myw - 4 * sc_w / 400)}" width="{f(win[1][0] - win[0][0])}" height="{f(8 * sc_w / 400)}" fill="#fbf8f0"/>')
-    # боковые стены, пол, потолок
-    for X, col, seed in ((xl, "#e8dec8", 1110), (xr, "#e3d8c0", 1111)):
-        wall = [P(X, cy_, 0.3 + cz), P(X, cy_, zb + cz), P(X, fy, zb + cz), P(X, fy, 0.3 + cz)]
-        s.append(blob(wall, col))
-        # панель снизу
-        py_ = EYE - 0.62
-        pan = [P(X, py_, 0.3 + cz), P(X, py_, zb + cz), P(X, fy, zb + cz), P(X, fy, 0.3 + cz)]
-        s.append(blob(pan, PANEL))
-        s.append(line([P(X, py_, 0.3 + cz), P(X, py_, zb + cz)], 4, INK, taper=.05, wmin=.6, seed=seed))
-    ceil = [P(xl, cy_, 0.3 + cz), P(xr, cy_, 0.3 + cz), P(xr, cy_, zb + cz), P(xl, cy_, zb + cz)]
-    s.append(blob(ceil, "#f6f1e6"))
-    flr = [P(xl, fy, 0.3 + cz), P(xr, fy, 0.3 + cz), P(xr, fy, zb + cz), P(xl, fy, zb + cz)]
-    s.append(blob(flr, "#c99a6b"))
-    # доски пола — вдоль глубины
-    for i, X in enumerate(np.linspace(xl, xr, 15)[1:-1]):
-        s.append(line([P(X, fy, 0.3 + cz), P(X, fy, zb + cz)], 2.4, "#9c6c44", taper=.05, wmin=.5, seed=1120 + i, op=.75))
-    # поперечные стыки досок и картины на стенах — через каждые 1.5 м (видно, как растёт глубина)
-    for i, Z in enumerate(np.arange(1.0, 14.0, 1.5)):
-        if Z > zb:
-            break
-        s.append(line([P(xl, fy, Z + cz), P(xr, fy, Z + cz)], 1.8, "#a8774d", taper=.05, wmin=.6, seed=1140 + i, op=.55))
-        for X, sgn in ((xl, 1), (xr, -1)):
-            if Z + 0.6 < zb and i % 2 == 1:
-                fr_ = [P(X, EYE - 1.75, Z + cz), P(X, EYE - 1.75, Z + 0.6 + cz), P(X, EYE - 1.3, Z + 0.6 + cz), P(X, EYE - 1.3, Z + cz)]
-                s.append(shape([p + (1,) for p in fr_], "#bfd8e8", "", w=max(1.4, 3.4 * FOC / (Z + cz) / 400), seed=1160 + i,
-                               ink_color="#7a5634"))
-    # углы комнаты — линии туши
-    for a3, b3 in (((xl, fy, 0.3), (xl, fy, zb)), ((xr, fy, 0.3), (xr, fy, zb)), ((xl, cy_, 0.3), (xl, cy_, zb)), ((xr, cy_, 0.3), (xr, cy_, zb)),
-                   ((xl, cy_, zb), (xl, fy, zb)), ((xr, cy_, zb), (xr, fy, zb)), ((xl, fy, zb), (xr, fy, zb))):
-        s.append(line([P(a3[0], a3[1], a3[2] + cz), P(b3[0], b3[1], b3[2] + cz)], 3.6, INK, taper=.05, wmin=.6, seed=1180 + int(a3[2] * 10)))
-    # человек напротив: за дальним краем стола, анфас
-    zB = z_far + 0.5 + cz
-    scB = FOC / zB / PX_M
-    hipY = EYE - 0.47
-    hx, hy = P(0.0, hipY, zB)
+    s.append(f'<rect x="{f(mxw - 7 * kw)}" y="{f(win[0][1])}" width="{f(14 * kw)}" height="{f(win[2][1] - win[0][1])}" fill="#fbf8f0"/>')
+    s.append(f'<rect x="{f(win[0][0])}" y="{f(myw - 9 * kw)}" width="{f(win[1][0] - win[0][0])}" height="{f(18 * kw)}" fill="#fbf8f0"/>')
+    # углы комнаты — тушью
+    for a3, b3 in (((xl, fy, z0), (xl, fy, zb)), ((xr, fy, z0), (xr, fy, zb)), ((xl, cy_, z0), (xl, cy_, zb)), ((xr, cy_, z0), (xr, cy_, zb)),
+                   ((xl, cy_, zb), (xl, fy, zb)), ((xr, cy_, zb), (xr, fy, zb)), ((xl, fy, zb), (xr, fy, zb)), ((xl, EYE - 0.95, zb), (xr, EYE - 0.95, zb))):
+        s.append(line([P(a3[0], a3[1], Z(a3[2])), P(b3[0], b3[1], Z(b3[2]))], 3.6, INK, taper=.05, wmin=.6, seed=1180 + int(a3[2] * 10) + int(a3[1] * 7)))
+    # человек напротив: стул, сам человек (анфас), за дальним краем стола
+    zB = z_far + 0.42
+    scB = FOC / Z(zB) / PX_M
+    ty = EYE - TBL_H
+    kB = FOC / Z(zB) / 400
+    s.append(shape(Q((-0.22, EYE - 0.95, Z(zB + 0.22)), (0.22, EYE - 0.95, Z(zB + 0.22)), (0.22, EYE - 0.47, Z(zB + 0.22)), (-0.22, EYE - 0.47, Z(zB + 0.22))),
+                   "#b5845a", "", w=max(1.4, 4.4 * kB), seed=1200))
+    hx, hy = P(0.0, EYE - 0.47, Z(zB))
     B2 = dict(B_SPEC, face=0.0)
-    lean = 1.0
-    poseB = dict(look=(0, 0.2), mouth="flat", brow=.6, blink=blink_at(t, 3.0, .5), head_tilt=2 * math.sin(t * 1.4), legs={"L": (0, 0), "R": (0, 0)},
-                 arms={"L": (-20, 30), "R": (20, -30)}, hmode={"L": "rest", "R": "rest"})
-    # стул B
-    chs = []
-    seat = [P(-0.24, hipY + 0.06, zB + 0.05), P(0.24, hipY + 0.06, zB + 0.05)]
-    chs.append(shape([P(-0.26, EYE - 1.25, zB + 0.25) + (1,), P(0.26, EYE - 1.25, zB + 0.25) + (1,), P(0.26, hipY, zB + 0.25) + (1,),
-                      P(-0.26, hipY, zB + 0.25) + (1,)], "#b5845a", "", w=max(1.4, 3.6 * scB), seed=1200))
-    s += chs
-    hy_o = hy + 300 * scB * B_SPEC["h"]
-    s.append(person.draw(B2, poseB, hx, hy_o, scB, sd=4000))
-    # стол: ближний край → дальний
-    ty = EYE - 0.74
-    top = [P(-0.42, ty, zn + cz) + (1,), P(0.42, ty, zn + cz) + (1,), P(0.42, ty, z_far + cz) + (1,), P(-0.42, ty, z_far + cz) + (1,)]
+    poseB = dict(look=(0, 0.25), mouth="flat", brow=.6, blink=blink_at(t, 3.0, .5), head_tilt=2 * math.sin(t * 1.4), legs={"L": (0, 0), "R": (0, 0)},
+                 arms={"L": (14, 0), "R": (-14, 0)})
+    fe = P(0, ty, Z(z_far))
+    cB = lib.clip_rect(-2000, -4000, 5000, 4000 + fe[1] + 2)
+    s.append(f'<g clip-path="url(#{cB})">{person.draw(B2, poseB, hx, hy + 300 * scB * B_SPEC["h"], scB, sd=4000)}</g>')
+    # тень под столом и ножки
+    s.append(blob(Q((-0.46, fy, Z(zn)), (0.46, fy, Z(zn)), (0.46, fy, Z(z_far)), (-0.46, fy, Z(z_far))), "#6b4a32", .35))
+    for k, (X, zz) in enumerate(((-0.37, z_far - 0.05), (0.37, z_far - 0.05), (-0.37, zn + 0.05), (0.37, zn + 0.05))):
+        kk = FOC / Z(zz) / 400
+        p0, p1 = P(X, ty + 0.03, Z(zz)), P(X, fy, Z(zz))
+        wd = 11 * kk
+        s.append(shape([(p0[0] - wd, p0[1], 1), (p0[0] + wd, p0[1], 1), (p1[0] + wd, p1[1], 1), (p1[0] - wd, p1[1], 1)], WOOD_SH, "",
+                       w=max(1.4, 3.6 * kk ** .5), seed=1215 + k))
+    # стол: столешница от ближнего края до дальнего
+    top = Q((-0.42, ty, Z(zn)), (0.42, ty, Z(zn)), (0.42, ty, Z(z_far)), (-0.42, ty, Z(z_far)))
     inner = ""
-    for i, X in enumerate((-0.25, -0.05, 0.18, 0.33)):
-        inner += line([P(X, ty, zn + cz), P(X + 0.02, ty, z_far + cz)], 2.2, WOOD_SH, taper=.3, wmin=.4, seed=1210 + i, op=.6)
-    inner += blob([P(-0.42, ty, zn + cz), P(0.42, ty, zn + cz), P(0.42, ty, zn + 0.3 + cz), P(-0.42, ty, zn + 0.3 + cz)], WOOD_HI, .5)
-    # торец дальнего края (кромка столешницы) — тонкая полоса
+    for i, X in enumerate((-0.27, -0.08, 0.14, 0.31)):
+        inner += line([P(X, ty, Z(zn)), P(X + 0.02, ty, Z(z_far))], 2.2, WOOD_SH, taper=.3, wmin=.4, seed=1210 + i, op=.6)
+    inner += blob(Q((-0.42, ty, Z(zn)), (0.42, ty, Z(zn)), (0.42, ty, Z(zn + 0.35)), (-0.42, ty, Z(zn + 0.35))), WOOD_HI, .5)
     s.append(shape(top, WOOD, inner, w=4.4, seed=1205))
-    edge = [P(-0.42, ty, zn + cz) + (1,), P(0.42, ty, zn + cz) + (1,), P(0.42, ty + 0.04, zn + cz) + (1,), P(-0.42, ty + 0.04, zn + cz) + (1,)]
-    s.append(shape(edge, WOOD_SH, "", w=3.6, seed=1206))
-    fr = 1.0
+    s.append(blob(Q((-0.42, ty, Z(zn)), (0.42, ty, Z(zn)), (0.42, ty + 0.035, Z(zn)), (-0.42, ty + 0.035, Z(zn))), WOOD_SH))
+    s.append(line([P(-0.42, ty + 0.035, Z(zn)), P(0.42, ty + 0.035, Z(zn))], 4, INK, taper=.05, wmin=.8, seed=1208))
+    # кромка дальнего края — за ней сидит B
+    s.append(line([P(-0.42, ty, Z(z_far)), P(0.42, ty, Z(z_far))], max(1.6, 4 * kB), INK, taper=.05, wmin=.8, seed=1207))
     # кисти B на дальнем крае стола
-    for k, X in enumerate((-0.16, 0.16)):
-        q = P(X, ty, z_far - 0.06 + cz)
-        s.append(hand5(q[0], q[1], 90 + (-12 if X < 0 else 12), B_SPEC["skin"], person.shade(B_SPEC["skin"]), sd=1230 + k, sc=0.95 * scB * 1.05,
-                       mode="rest", thumb_up=X > 0, ink_w=3.0))
+    for k, X in enumerate((-0.15, 0.15)):
+        q = P(X, ty, Z(z_far - 0.07))
+        s.append(hand5(q[0], q[1], 90 + (14 if X < 0 else -14), B_SPEC["skin"], person.shade(B_SPEC["skin"]), sd=1230 + k, sc=scB * 0.86,
+                       mode="rest", thumb_up=X < 0, ink_w=3.0))
     # иней по краям столешницы
     rs = np.random.RandomState(11)
-    for i in range(22):
-        side_ = -0.41 if i % 2 == 0 else 0.41
-        Z = zn + (z_far - zn) * rs.uniform(0, 1)
-        q = P(side_, ty, Z + cz)
-        s.append(crystal(q[0] - side_ * 8, q[1] - 3, 9 * FOC / (Z + cz) / 600, 1240 + i, .9))
-    s.append(line([P(-0.41, ty, zn + cz), P(-0.41, ty, z_far + cz)], 4, "#f4fbff", taper=.1, wmin=.4, seed=1270, op=.8))
-    s.append(line([P(0.41, ty, zn + cz), P(0.41, ty, z_far + cz)], 4, "#f4fbff", taper=.1, wmin=.4, seed=1271, op=.8))
-    # чашки: ближняя (у A) и дальняя (у B, уезжает)
-    for k, (X, Z) in enumerate(((-0.24, zn + 0.32), (0.22, z_far - 0.28))):
-        q = P(X, ty, Z + cz)
-        k_ = FOC / (Z + cz) / 400 * 1.25
-        s.append(f'<g transform="translate({f(q[0])} {f(q[1])}) scale({k_:.4f}) translate(-500 -1000)">{cup(500, 1000, 1250 + k * 10, frost=fr)}</g>')
-    # телефон посередине стола (тоже уезжает, но меньше — лежит ближе к A)
-    zph = zn + 0.55 + (z_far - zn) * 0.18
-    q = P(0.04, ty, zph + cz)
-    kph = FOC / (zph + cz) / 400 * 1.2
-    s.append(blob(ellipse_pts(q[0] + 6 * kph, q[1] + 6 * kph, 90 * kph, 14 * kph, 14), "#5a3a22", .4, blur(3)))
-    s.append(f'<g transform="translate({f(q[0])} {f(q[1])})">{phone_flat(0, 0, 4, kph, 0.20 + 0.3 / (zph + cz), sd=1300)}</g>')
-    # A на переднем плане: со спины, слева внизу (голова, плечи)
-    za = 0.95 + cz
+    for i in range(24):
+        side_ = -0.40 if i % 2 == 0 else 0.40
+        zz = zn + (z_far - zn) * rs.uniform(0, 1)
+        q = P(side_, ty, Z(zz))
+        s.append(crystal(q[0] - side_ * 10, q[1] - 2, 11 * FOC / Z(zz) / 700, 1240 + i, .9))
+    s.append(line([P(-0.405, ty, Z(zn)), P(-0.405, ty, Z(z_far))], 5, "#f4fbff", taper=.1, wmin=.3, seed=1270, op=.85))
+    s.append(line([P(0.405, ty, Z(zn)), P(0.405, ty, Z(z_far))], 5, "#f4fbff", taper=.1, wmin=.3, seed=1271, op=.85))
+    # чашки: ближняя (у A) стоит, дальняя (у B) уезжает с ним
+    for k, (X, zz) in enumerate(((-0.25, zn + 0.30), (0.20, z_far - 0.26))):
+        q = P(X, ty, Z(zz))
+        k_ = FOC / Z(zz) / 400 * 1.15
+        s.append(f'<g transform="translate({f(q[0])} {f(q[1])}) scale({k_:.4f})">{cup(0, 0, 1250 + k * 10, frost=1.0)}</g>')
+    # телефон между ними, ближе к A (уезжает меньше)
+    zph = zn + 0.50 + (z_far - zn) * 0.16
+    q = P(0.05, ty, Z(zph))
+    kph = FOC / Z(zph) / 400 * 1.15
+    s.append(blob(ellipse_pts(q[0] + 6 * kph, q[1] + 6 * kph, 80 * kph, 14 * kph, 14), "#5a3a22", .4, blur(3)))
+    s.append(phone_flat(q[0], q[1], 3, kph, 0.30, sd=1300))
+    # A на переднем плане: со спины, слева внизу; ниже лопаток — спинка стула
+    za = 0.70 + 0.4 * cz            # A едет вместе с камерой (лишь чуть отстаёт)
     scA = FOC / za / PX_M
     A2 = dict(A_SPEC, back=True, face=0.0)
-    poseA = dict(legs={"L": (0, 0), "R": (0, 0)}, arms={"L": (10, 30), "R": (-10, -30)}, head_tilt=-3 + 2 * math.sin(t * 1.1))
-    ax, ay = P(-0.42, EYE - 0.47, za)
+    poseA = dict(legs={"L": (0, 0), "R": (0, 0)}, arms={"L": (4, 0), "R": (-4, 0)}, head_tilt=-4 + 2 * math.sin(t * 1.1))
+    ax, ay = P(-0.40, EYE - 0.47, za)
     s.append(person.draw(A2, poseA, ax, ay + 300 * scA * A_SPEC["h"], scA, sd=3000))
     # «дальше»: штрихи скорости вдоль стола
-    e = t - (FAR_T - 0.2)
-    if 0 <= e < 0.7:
-        a = math.sin(math.pi * e / 0.7)
-        for k, X in enumerate((-0.6, -0.3, 0.3, 0.6)):
-            z0 = 1.6 + e * 6 + k * 0.4
-            p0, p1 = P(X, ty - 0.35 - 0.1 * k, z0 + cz), P(X, ty - 0.35 - 0.1 * k, z0 + 1.6 + cz)
-            s.append(line([p0, p1], 6, "#ffffff", taper=.6, seed=1320 + k, op=.8 * a))
+    e = t - (FAR_T - 0.25)
+    if 0 <= e < 0.75:
+        a = math.sin(math.pi * e / 0.75)
+        for k, X in enumerate((-0.75, -0.5, 0.5, 0.75)):
+            zz = 1.8 + e * 7 + k * 0.5
+            yy = ty - 0.45 - 0.12 * (k % 2)
+            s.append(line([P(X, yy, Z(zz)), P(X, yy, Z(zz + 1.8))], 7, "#ffffff", taper=.6, seed=1320 + k, op=.85 * a))
     u = clamp((t - 22.52) / 2.4)
-    cm = cam(560 - 10 * u, 905 - 8 * u, 1.04 - 0.03 * ease_io(u), 0.2 - 0.4 * u)
+    cm = cam(555 - 8 * u, 930 - 6 * u, 1.0 - 0.02 * ease_io(u), 0.2 - 0.4 * u)
     return "".join(s), cm
 
 
