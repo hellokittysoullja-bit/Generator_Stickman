@@ -26,7 +26,7 @@ def dima_back_head(hb=0.0, turn=0.0):
     C = Pp.C
     s = []
     # шея
-    neck = [(-66, 60), (64, 60), (70, 200, 1), (-72, 200, 1)]
+    neck = [(-62, 50), (60, 50), (68, 150, 1), (-70, 150, 1)]
     s.append(Pp.shape(neck, C["SKIN"], blob([(-80, 60), (80, 60), (80, 120), (-80, 130)], C["SKIN_SH"], .9), w=4.6, seed=4000))
     # уши
     for sx, sd in ((-1, 4001), (1, 4002)):
@@ -44,8 +44,7 @@ def dima_back_head(hb=0.0, turn=0.0):
     # волосы: вся макушка и затылок, пряди торчат
     hair = [(-112, 40), (-128, 0), (-150, -30, 1), (-130, -50), (-160, -96, 1), (-120, -104), (-140, -160, 1), (-90, -150), (-90, -206, 1),
             (-46, -168), (-20, -224, 1), (6, -176), (40, -222, 1), (56, -170), (102, -196, 1), (98, -146), (150, -146, 1), (126, -100),
-            (162, -66, 1), (128, -44), (146, -6, 1), (112, 24), (96, 66), (60, 54), (40, 90, 1), (16, 58), (-10, 92, 1), (-34, 56), (-62, 86, 1),
-            (-80, 52)]
+            (162, -66, 1), (128, -44), (146, -6, 1), (112, 24), (100, 56), (70, 66), (40, 80), (10, 72), (-20, 82), (-50, 70), (-80, 56)]
     hair = Pp._bounce(hair, hb, y0=-60, k=80)
     inner = blob([(20, -240), (180, -200), (180, 100), (40, 100), (70, -60)], C["HAIR_SH"], .9)
     inner += blob(Pp._bounce([(-90, -170), (-30, -196), (10, -160), (-40, -140)], hb, -60, 80), C["HAIR_HI"], .85)
@@ -73,6 +72,8 @@ def dima_back_torso(hood_b=0.0, bump=0.0, dent=None):
             inner += Pp.line([(x - 70, y - 20), (x - 30, y + 10 * k), (x + 30, y + 10 * k), (x + 70, y - 20)], 3.0, C["FOLD"], seed=4104, op=.9 * k)
             inner += blob(ellipse_pts(x, y, 80, 40, 12), C["TOP_SH"], .5 * k)
     s = [Pp.shape(body, C["TOP"], inner, w=5.4, seed=4100)]
+    col = [(-96, -24), (-50, -44), (0, -48), (50, -44), (96, -24), (70, -6), (0, -14), (-70, -6)]
+    s.append(Pp.shape(col, C["TOP_SH"], "", w=4.0, seed=4105))
     # капюшон на спине
     hb = hood_b
     hood = [(-120, -10), (-60, -36), (0, -40), (60, -36), (120, -10), (112, 70 + hb), (60, 140 + hb * 1.2), (0, 160 + hb * 1.3), (-60, 140 + hb * 1.2),
@@ -125,7 +126,7 @@ def friend_front_torso():
         col = [(cx + sx * 70, -236), (cx + sx * 130, -196), (cx + sx * 150, -110, 1), (cx + sx * 96, -150), (cx + sx * 64, -190)]
         inner += Pp.shape(col, C["TOP_SH"], "", w=3.8, seed=4330 + sx)
     s = Pp.shape(body, C["TOP"], inner, w=5.4, seed=4300)
-    neck = [(cx - 60, -320), (cx + 60, -320), (cx + 66, -186, 1), (cx - 66, -186, 1)]
+    neck = [(cx - 60, -300), (cx + 60, -300), (cx + 66, -186, 1), (cx - 66, -186, 1)]
     s = Pp.shape(neck, C["SKIN"], blob([(cx - 70, -320), (cx + 70, -320), (cx + 70, -260), (cx - 70, -250)], C["SKIN_SH"], .9), w=4.6, seed=4340) + s
     return s
 
@@ -165,7 +166,7 @@ def hug(t, slaps, sway=0.0, jolt=0.0):
     expr = dict(lid=.9, look=(.3, 0), brows="up", mouth="laugh", open=.85 + .15 * jolt, laugh=1.0)
     Pp.C = hd["friend"]
     fh = Pp.friend_head(expr)
-    o.append(f'<g transform="translate(262 -446) rotate({-6 + 3 * sway:.2f}) scale(-1 1)">{fh}</g>')
+    o.append(f'<g transform="translate(262 -420) rotate({-6 + 3 * sway:.2f}) scale(-1 1)">{fh}</g>')
     o.append(db_mid)
     o.append(dima_back_torso(hood_b=10 * jolt, dent=dent))
     arms = {}
@@ -176,7 +177,7 @@ def hug(t, slaps, sway=0.0, jolt=0.0):
         dd = (d[0], d[1] - .5 * li)
         arms[side] = friend_arm(S, E, Wr, dd, li, sd, flip)
     o.append(arms[-1])
-    o.append(f'<g transform="translate(-50 -250) rotate({4 * sway + 2 * jolt:.2f})">{dima_back_head(hb=8 * jolt, turn=.6)}</g>')
+    o.append(f'<g transform="translate(-50 -196) rotate({4 * sway + 2 * jolt:.2f})">{dima_back_head(hb=8 * jolt, turn=.6)}</g>')
     o.append(arms[1])
     for side, u in impact:
         x, y = (-10, 130) if side < 0 else (60, 430)
