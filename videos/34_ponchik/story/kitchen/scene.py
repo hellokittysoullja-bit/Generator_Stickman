@@ -457,9 +457,9 @@ def s06(t):
         up = np.array([0.0, -70.0]) * lift * (1 - drop) + np.array([20.0, 6.0]) * drop
         c4 = s4 + np.array([-10.0, -10.0]) + up + np.array([-40.0, 0]) * lift
         c1 = s1 + np.array([-20.0, -12.0]) + up + np.array([-30.0, 0]) * lift
-        if drop > .5:
-            c4 = np.array([bx - 20.0, 1120.0]) + np.array([0, -4 * bounce])
-            c1 = np.array([bx + 40.0, 1100.0])
+        if drop > 0:
+            c4 = c4 + (np.array([bx - 20.0, 1120.0]) + np.array([0, -4 * bounce]) - c4) * drop
+            c1 = c1 + (np.array([bx + 40.0, 1100.0]) - c1) * drop
         m4, wn, hn = donut_in_hand(t, c4, "white", (1, .3), tilt=.55, r=r4, seed=31)
         m1, wf, hf = donut_in_hand(t, c1, "pink", (1, .3), tilt=.55, r=r1, seed=32)
         wn, wf = np.array(wn), np.array(wf)
@@ -519,17 +519,25 @@ def s14(t):
         mid, wr, hand_n = donut_in_hand(t, c, "white", (-.45, -.9), tilt=.72, r=27, bite=1.0, bite_ang=-60, curl=.45, seed=60)
         arms_n = ("ik", wr, -1)
     elif chest <= 0:
-        # салфетка: рука берёт со стола и вытирает рот (ходит вбок)
-        go = ease_io(clamp((t - tp - .05) / .3))
-        wipe_dx = 16 * math.sin(wipe * math.pi * 3) * (wipe > 0) * (wipe < 1)
-        pos = np.array([560.0, 1110.0]) * (1 - go) + (mouth + np.array([30.0 + wipe_dx, 14.0])) * go
-        mid = Wd.napkin(pos[0], pos[1], .62, -20 + 10 * go, crumple=.6 * go)
-        napkin_on = ""
-        wr = pos + np.array([42.0, 40.0])
-        arms_n = ("ik", tuple(wr), -1)
-        hand_n = dict(kind="open", dir=(-.7, -.7), curl=(.55, .6, .65, .7), spread=.04, thumb=.5)
-        if go >= 1 and wipe >= 1:
-            pass
+        # салфетка: рука от рта к салфетке на столе, салфетку — к рту, вытирает (ходит вбок)
+        nap = np.array([560.0, 1110.0])
+        t_take = tp + .27
+        if t < t_take:
+            u = ease_io(clamp((t - tp - .05) / (t_take - tp - .05)))
+            p0 = mouth + np.array([72.0, 54.0])
+            wr = p0 + (nap + np.array([-30.0, 0.0]) - p0) * u + np.array([0, -30 * math.sin(math.pi * u)])
+            hand_n = dict(kind="open", dir=(.4 + .6 * u, .3 * u - .8 * (1 - u)), curl=(.5 - .2 * u,) * 4, spread=.06, thumb=.4)
+            arms_n = ("ik", tuple(wr), -1)
+        else:
+            go = ease_io(clamp((t - t_take) / .2))
+            w_ = clamp((t - t_take - .2) / .25)
+            wipe_dx = 18 * math.sin(w_ * math.pi * 3)
+            pos = nap * (1 - go) + (mouth + np.array([30.0 + wipe_dx, 14.0])) * go
+            mid = Wd.napkin(pos[0], pos[1], .62, -20 + 10 * go, crumple=.6 * go)
+            napkin_on = ""
+            wr = pos + np.array([42.0, 40.0]) * go + np.array([-30.0, 0]) * (1 - go)
+            arms_n = ("ik", tuple(wr), -1)
+            hand_n = dict(kind="open", dir=(1 - 1.7 * go, -.7 * go), curl=(.55, .6, .65, .7), spread=.04, thumb=.5)
     else:
         # ладонь на груди
         chest_p = probe["head"] + np.array([20.0, 150.0])
@@ -537,7 +545,11 @@ def s14(t):
         wr = start + (chest_p + np.array([50.0, 34.0]) - start) * chest
         arms_n = ("ik", tuple(wr), -1)
         hand_n = dict(kind="open", dir=(-.85, -.5), curl=(.1, .1, .15, .2), spread=.06, thumb=.2, bend=.08)
-        napkin_on = Wd.napkin(560, 1124, .62, -10, crumple=.6)
+        fall = ease_in(clamp((t - (T_GOVOR - .25)) / .22), 2)
+        p0 = mouth + np.array([30.0, 14.0])
+        p1 = np.array([590.0, 1120.0])
+        pn = p0 + (p1 - p0) * np.array([fall ** .6, fall])
+        napkin_on = Wd.napkin(pn[0], pn[1], .62, -10 + 40 * fall, crumple=.6)
     farA, farH = far_rest(405, 1102)
     d = dima(t, {"n": arms_n, "f": farA}, {"n": hand_n, "f": farH}, expr, lean=lean, head_ang=ha)
     on = Wd.donut_box(BOX_X + 150, BOX_Y, BOX_K, lid=0.0) + Wd.plate(*PLATE, salad=0.0) + napkin_on
@@ -574,15 +586,16 @@ def s15(t):
         tn = fe + np.array([-80.0, -30.0])
         tf = fe + np.array([-20.0, -36.0])
         if t > T_DALSHE:
-            tn = np.array([bx - 60.0, hinge_y - 30])
-            tf = np.array([bx + 10.0, hinge_y - 36])
+            m = ease_io(clamp((t - T_DALSHE - .2) / (T_KOROBKA - T_DALSHE - .25)))
+            tn = np.array([bx - 60.0, hinge_y - 30]) * (1 - m) + np.array([bx - 155.0, BOX_Y - 40]) * m
+            tf = np.array([bx + 10.0, hinge_y - 36]) * (1 - m) + np.array(far_rest(405, 1102)[0][1]) * m
         wn = rest_n + (tn - rest_n) * hold
         wf = rest_f + (tf - rest_f) * hold
         arms = {"n": ("ik", tuple(wn), -1), "f": ("ik", tuple(wf), -1)}
         hands = {"n": dict(kind="open", dir=(1, .5), curl=(.2,) * 4, spread=.08, thumb=.3), "f": dict(kind="open", dir=(1, .5), curl=(.2,) * 4, spread=.08, thumb=.3)}
     else:
         # ближняя толкает коробку вправо, потом большой палец вверх
-        push = np.array([bx - 170.0, BOX_Y - 40])
+        push = np.array([bx - 155.0, BOX_Y - 40])
         up = np.array([470.0, 960.0])
         wn = push + (up - push) * thumb
         arms = {"n": ("ik", tuple(wn), -1), "f": far_rest(405, 1102)[0]}
