@@ -193,6 +193,9 @@ def dima_head(expr):
         inner.append(blob(ellipse_pts(4, 46, 30, 14, 10), "#e98a86", .5 * blush))
     s.append(shape(FACE, C["SKIN"], "".join(inner), w=5.6, seed=153))
     s.append(line([(-66, 70), (-30, 104), (6, 118)], 2.4, C["SKIN_SH2"], seed=159, op=.8))
+    puff = expr.get("puff", 0.0)
+    if puff > 0.01:
+        s.append(cheeks(puff, expr.get("chew", 0.0)))
     s.append(eyes(expr, EYE_N, EYE_F, bags=True))
     br = expr.get("brows", "tired")
     B = BROWS[br]
@@ -203,6 +206,7 @@ def dima_head(expr):
     s.append(blob(ellipse_pts(64, 69, 8, 3, 8), C["SKIN_SH2"], .7))
     s.append(line([(44, 70), (38, 80), (36, 88)], 2.2, C["SKIN_SH2"], seed=170, op=.75))
     s.append(dima_mouth(expr))
+    s.append(sugar(expr.get("sugar", 0.0)))
     hair = _bounce(HAIR_PTS, hb)
     inner = blob(_bounce([(-160, -190), (-20, -190), (-30, -130), (-70, -100), (-80, -40), (-160, -20)], hb), C["HAIR_SH"], .95)
     inner += blob(_bounce([(10, -150), (60, -120), (100, -80), (70, -112), (40, -128)], hb), C["HAIR_HI"], .9)
@@ -213,6 +217,56 @@ def dima_head(expr):
         inner += line(_bounce(st, hb), 3.2, "#2a170f", seed=172 + i, op=.85)
     s.append(shape(hair, C["HAIR"], inner, w=5.4, seed=171))
     return "".join(s)
+
+
+def cheeks(p, chew=0.0):
+    """Щёки хомяка (рилс 34): дальняя щека выпирает за правый контур лица, низ лица круглее и ниже (подбородок
+    опускается), румянец. Внутренняя дуга щеки и старый контур подбородка закрыты заливкой — без двойных линий.
+    p 0..1 — набитость, chew −1..1 — жевание (щёки ходят)."""
+    s = []
+    q = p * (1 + .07 * chew)
+    sh = lib.mix(C["SKIN_SH"], "#9e8a96", .4)
+    # низ лица: старый контур подбородка + полоса над ним, новый низ ниже на 18q
+    old = [(112, 42), (108, 64), (90, 96), (62, 116), (30, 126), (2, 124), (-30, 112), (-60, 88), (-74, 64)]
+    up = [(x - 2, y - 14) for (x, y) in old]
+    dn = [(x * (1 + .06 * q), y + 18 * q * max(0.0, min(1.0, (y - 40) / 60))) for (x, y) in old]
+    jaw = up + dn[::-1]
+    inner = blob([(x, y - 4) for x, y in dn] + [(-80, 40), (120, 40)][::-1], C["SKIN_SH"], .0)
+    s.append(f'<path d="{fill_d(jaw)}" fill="{sh}"/>')
+    rs = np.random.RandomState(9)
+    for _ in range(60):
+        x, y = rs.uniform(-50, 104), rs.uniform(100, 130 + 18 * q)
+        if (x - 25) ** 2 / 82 ** 2 + (y - 100) ** 2 / (34 + 18 * q) ** 2 > 1.0:
+            continue
+        s.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{rs.uniform(1.2, 2.2):.1f}" fill="#5c4446" opacity=".55"/>')
+    s.append(line(dn[1:-1], 5.6, seed=192, taper=.15, wmin=.6))
+    _ = inner
+    # дальняя щека — шар за правым контуром; его внутренняя дуга закрыта заливкой
+    cx, cy, rx, ry = 100 + 12 * q, 76 + 6 * q, 22 + 22 * q, 26 + 22 * q
+    far = ellipse_pts(cx, cy, rx, ry, 20)
+    s.append(shape(far, C["SKIN"], blob(ellipse_pts(cx + rx * .25, cy + ry * .45, rx * .8, ry * .5, 14), C["SKIN_SH"], .75), w=5.4, seed=191))
+    cover = [(cx - rx * .2, cy - ry * 1.3), (cx - rx * 1.5, cy - ry * 1.3), (cx - rx * 1.5, cy + ry * 1.3), (cx - rx * .2, cy + ry * 1.3)]
+    c = lib.clip_of(ellipse_pts(cx, cy, rx + 5, ry + 5, 20))
+    s.append(f'<g clip-path="url(#{c})"><path d="{fill_d(cover)}" fill="{C["SKIN"]}"/></g>')
+    s.append(blob(ellipse_pts(cx - rx * .1, cy - ry * .15, rx * .5, ry * .3, 12), "#e98a86", .45 * p))
+    s.append(blob(ellipse_pts(4, 50, 30 * q, 15 * q, 10), "#e98a86", .4 * p))
+    return "".join(s)
+
+
+def sugar(p, seed=11):
+    """Сахарная пудра и крошки на щетине вокруг рта (рилс 34)."""
+    if p <= 0.01:
+        return ""
+    rs = np.random.RandomState(seed)
+    o = []
+    for j in range(int(26 * p)):
+        x, y = rs.uniform(20, 112), rs.uniform(80, 132)
+        r = rs.uniform(1.8, 3.6)
+        o.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{r:.1f}" fill="#ffffff"/>')
+    for j in range(int(5 * p)):
+        x, y = rs.uniform(30, 104), rs.uniform(96, 130)
+        o.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{rs.uniform(2.5, 4):.1f}" fill="#c98a45" stroke="{INK}" stroke-width="1.2"/>')
+    return "".join(o)
 
 
 BROWS = {"tired": ([(-30, -76), (4, -86), (46, -80)], [(72, -80), (100, -86), (126, -76)]),
@@ -231,6 +285,12 @@ def dima_mouth(expr):
         o = line([(36, 84 - 6 * k), (52, 92 + 2 * k), (72, 94 + 2 * k), (90, 86 - 6 * k)], 4.8, seed=165, peak=.5)
         o += line([(32, 80 - 5 * k), (38, 86 - 6 * k)], 2.4, seed=166, op=.8 * k)
         return o + blob([(50, 102), (76, 102), (72, 108), (54, 108)], C["SKIN_SH"], .7)
+    if m == "full":       # рот набит: губы поджаты, уголки вниз
+        o = line([(46, 100), (62, 96), (80, 99)], 4.6, seed=165, peak=.5)
+        return o + blob([(52, 106), (74, 106), (70, 112), (56, 112)], C["SKIN_SH"], .7)
+    if m == "chew":       # жуёт с открытым ртом: o — раскрытие
+        o_ = expr.get("open", .4)
+        return talk_mouth(64, 90, o_, wide=.7, smile=expr.get("smile", .2), seed=165)
     if m == "flat":
         return line([(40, 90), (62, 89), (86, 90)], 4.6, seed=165, peak=.5) + blob([(52, 98), (76, 98), (72, 104), (56, 104)], C["SKIN_SH"], .7)
     if m in ("grin", "laugh"):

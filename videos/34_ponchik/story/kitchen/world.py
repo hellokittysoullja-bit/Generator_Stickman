@@ -726,11 +726,14 @@ def donut_box(x, y, k=1.0, lid=0.0, donuts=None, glow=0.0, t=0.0, seed=3800, lid
         inner = blob([(-W2, hinge), (W2, hinge), (W2, hinge + 16), (-W2, hinge + 16)], BOX_IN_SH, .9)
         for i, (sx, sy, rr) in enumerate(box_slots()):
             inner += blob(ellipse_pts(sx, sy + 6, rr * 1.05, rr * .5, 14), "#d98ba1", .7)
-        o.append(shape(inside, "#f1b6c6", inner, w=3.4, seed=seed + 1))
-        for i, (sx, sy, rr) in enumerate(box_slots()):
-            kd = donuts[i] if i < len(donuts) else None
-            if kd:
-                o.append(donut(sx, sy, rr, kd, .5, seed=seed + 20 + i))
+        if lid < .22:          # щель: внутри темно, только тёплый отсвет
+            o.append(shape(inside, "#6a3346", blob([(-W2, -HF - 14), (W2, -HF - 14), (W2, -HF), (-W2, -HF)], "#b35a6e", .9), w=3.4, seed=seed + 1))
+        else:
+            o.append(shape(inside, "#f1b6c6", inner, w=3.4, seed=seed + 1))
+            for i, (sx, sy, rr) in enumerate(box_slots()):
+                kd = donuts[i] if i < len(donuts) else None
+                if kd:
+                    o.append(donut(sx, sy, rr, kd, .5, seed=seed + 20 + i))
     # передняя стенка
     front = rect_pts(-W2, -HF, W2, 0, 3)
     inner = blob(rect_pts(-W2, -18, W2, 0), BOX_SH, .9)
