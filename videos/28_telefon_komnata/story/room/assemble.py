@@ -1,4 +1,4 @@
-"""Клипы сцены room рилса 26 «кроссовки» (код — из рилсов 23–25): мультиплан комнаты из проходов света + слои героев, numpy/OpenCV → ffmpeg.
+"""Клипы сцены room рилса 28 «телефон в другой комнате» (код — рилса 26 «кроссовки», из рилсов 23–25): мультиплан комнаты из проходов света + слои героев, numpy/OpenCV → ffmpeg.
 
     python3 assemble.py clip  --id s01 [--passes DIR] [--chars DIR] [--jobs 4]      # → ../clips/<id>.mp4
     python3 assemble.py sheet --id s01 [--n 6]                                       # лист кадров клипа (PNG)
@@ -29,7 +29,7 @@ import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__))
 STORY = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
-import timing26 as timing  # noqa: E402
+import timing28 as timing  # noqa: E402
 
 for extra in os.environ.get('NAPARNIK_PYLIB313', '').split(':'):
     if extra:
@@ -44,20 +44,19 @@ K_TV, K_LAMP = 0.30, 0.42
 EVE_TONE = np.float32([0.70, 0.64, 0.62])   # вечер: лунный base тише, торшер ведёт
 LAP_PX = (128, 1078)                         # центр экрана ноутбука (кадр 0)
 LAMP_PX = (-260, 640)
-DEFAULT_ORDER = ['L_dima', 'L_plaid', 'L_cat', 'L_fx']
-DEPTH_DEFAULT = {'far': 4.25, 'sofa': 3.85, 'floor': 2.75, 'L_dima': 3.75, 'L_plaid': 3.33, 'L_cat': 3.42}
+DEFAULT_ORDER = ['L_fxb', 'L_dima', 'L_plaid', 'L_cat', 'L_fx']
+DEPTH_DEFAULT = {'L_fxb': 3.8, 'far': 4.25, 'sofa': 3.85, 'floor': 2.75, 'L_dima': 3.75, 'L_plaid': 3.33, 'L_cat': 3.42}
 # запасные окна камеры, если SVG-агент не дал cameras.json: [cx, cy, h] на t0 и t1
 CAM_DEFAULT = {
-    's02': [[505, 1035, 1720], [500, 1045, 1650]],
-    's05': [[858, 1030, 830], [860, 1020, 790]],
-    's13': [[520, 1020, 1570], [518, 1028, 1480]],
-    's17': [[764, 1052, 1170], [764, 1046, 1070]],
+    's01': [[322, 1010, 1240], [330, 1010, 1175]],   # конечное окно влёта; начало — hook_cam (окно ×1.4 от центра кадра)
+    's04': [[846, 1050, 830], [848, 1040, 790]],
+    's14': [[520, 1020, 1570], [518, 1028, 1480]],
 }
 SHAKE = {}   # тряска: (время, амплитуда px выхода, затухание с, Гц)
-CLOCK = {'s02': '2115', 's05': '2115', 's13': '2115', 's17': '2115'}
+CLOCK = {'s01': '2040', 's04': '2040', 's14': '2040'}
 NIGHT_TONE = EVE_TONE
 # свет огонька прохода — у сидящего кота 24-го (987, 934); в s02 кот сидит левее и выше (на голенях лежащего Димы)
-FLAME_SHIFT = {'s02': (-92.0, -124.0), 's13': (-140.0, 0.0)}   # s02 = flame26l.json − (987, 934); s13 — CAT_DX template26e
+FLAME_SHIFT = {'s14': (-140.0, 0.0)}   # s14 — кот подсел к Диме (CAT_DX template28e)
 
 
 def read_exr(path):
@@ -161,6 +160,8 @@ def load(passes_dir, chars_dir, clip):
              shot=shots[clip], pad=sj['pad'], end=sj['end'], clip=clip)
     # предфильтр проходов под самое сильное уменьшение в этом клипе (дешевле, чем размывать каждый кадр)
     smin = min(layer_scale(depths[L], c[2], cams[clip][0][2], depths['L_dima']) for L in ROOM for c in cams[clip]) / over
+    if clip in HOOK:
+        smin /= 1.4
     if smin < 0.85:
         for key in room:
             room[key] = cv2.GaussianBlur(room[key], (0, 0), 0.42 / smin)
@@ -188,6 +189,10 @@ def window(t):
     (c0x, c0y, h0), (c1x, c1y, h1) = G['cams'][s['id']]
     u = (t - s['t0']) / max(1e-6, s['t1'] - s['t0'])
     cx, cy, h = c0x + (c1x - c0x) * u, c0y + (c1y - c0y) * u, h0 * (h1 / h0) ** u
+    if s['id'] in HOOK:
+        e = hook_ease(t)
+        cx += (HOOK[s['id']]['from'][0] - c0x) * (1 - e)
+        cy += (HOOK[s['id']]['from'][1] - c0y) * (1 - e)
     for (ts, amp, dec, hz) in G['shake'].get(s['id'], []):
         dt = t - ts
         if 0 <= dt < dec:
@@ -195,6 +200,51 @@ def window(t):
             cx += k * np.sin(dt * 2 * np.pi * hz)
             cy += k * np.cos(dt * 2 * np.pi * hz * 0.73)
     return cx, cy, h, h0
+
+
+# ── влёт камеры хука (правила 28–29, эталон рилса 17 и s01 рилса 26): 1/1.4 → 1.05 за 0.22 с, затухающий перелёт,
+# поворот −3.2° → 0 с отскоком; второй удар +8 % на ударном слоге; центр окна летит от центра кадра к рисунку.
+# Это 2D-движение (зум объектива) поверх окна: все слои масштабируются одинаково, без параллакса.
+HOOK = {'s01': {'from': (540, 985), 'hit': timing.HIT}}
+
+
+def hook_ease(t):
+    return 1 - (1 - min(1.0, max(0.0, t / 0.22))) ** 3
+
+
+def hook_cam(t, clip):
+    """(z, rot°, dx, dy): z > 1 — ближе."""
+    if clip not in HOOK:
+        return 1.0, 0.0, 0.0, 0.0
+    if t < 0.22:
+        e = hook_ease(t)
+        z = 1 / 1.4 + (1.05 - 1 / 1.4) * e
+        rot = -3.2 * (1 - e)
+    else:
+        q = t - 0.22
+        z = 1 + 0.05 * np.exp(-q * 8) * np.cos(q * 16)
+        rot = 0.9 * np.exp(-q * 6) * np.sin(q * 15)
+    hit = HOOK[clip]['hit']
+    dx = dy = 0.0
+    if t >= hit - 0.04:
+        q = t - (hit - 0.04)
+        z *= 1 + 0.08 * (1 - np.exp(-q * 40)) * np.exp(-max(0.0, q - 0.06) * 3.2)
+        rot += 1.1 * np.exp(-q * 7) * np.sin(q * 34)
+    if t >= hit:
+        q = t - hit
+        dx = 8 * np.exp(-q * 10) * np.sin(q * 70)
+        dy = 5 * np.exp(-q * 10) * np.cos(q * 53)
+    return float(z), float(rot), float(dx), float(dy)
+
+
+def hook_matrix(t):
+    z, rot, dx, dy = hook_cam(t, G['clip'])
+    if z == 1.0 and rot == 0.0 and dx == 0.0 and dy == 0.0:
+        return None
+    A = cv2.getRotationMatrix2D((W / 2, H / 2), -rot, z)   # rot > 0 — по часовой на экране
+    A[0, 2] += dx
+    A[1, 2] += dy
+    return A
 
 
 def layer_scale(depth, h, h0, dref=None):
@@ -208,8 +258,13 @@ def layer_scale(depth, h, h0, dref=None):
 def affine(depth, t, src_scale=1.0, offset=(0.0, 0.0)):
     cx, cy, h, h0 = window(t)
     S = layer_scale(depth, h, h0)
-    return np.array([[S / src_scale, 0, (offset[0] - cx) * S + W / 2],
-                     [0, S / src_scale, (offset[1] - cy) * S + H / 2]], np.float32), S
+    M = np.array([[S / src_scale, 0, (offset[0] - cx) * S + W / 2],
+                  [0, S / src_scale, (offset[1] - cy) * S + H / 2]], np.float64)
+    A = hook_matrix(t)
+    if A is not None:
+        M = A @ np.vstack([M, [0, 0, 1]])
+        S = S * hook_cam(t, G['clip'])[0]
+    return M.astype(np.float32), S
 
 
 def apply(img, M, interp=cv2.INTER_LINEAR, border=cv2.BORDER_REPLICATE):
@@ -217,7 +272,7 @@ def apply(img, M, interp=cv2.INTER_LINEAR, border=cv2.BORDER_REPLICATE):
 
 
 def to_out(pt, M):
-    return (M[0, 0] * pt[0] + M[0, 2], M[1, 1] * pt[1] + M[1, 2])
+    return (M[0, 0] * pt[0] + M[0, 1] * pt[1] + M[0, 2], M[1, 0] * pt[0] + M[1, 1] * pt[1] + M[1, 2])
 
 
 # ---------------------------------------------------------------- герои
@@ -299,7 +354,7 @@ def frame(k, heroes=True, post=True, t=None):
         # контактная тень; у прыгающего кота — его альфа, опущенная на пол, слабее с высотой
         parts = []
         for n, h_ in hs.items():
-            if n == 'L_fx':
+            if n.startswith('L_fx'):
                 continue
             a_ = h_[..., 3]
             if n == 'L_cat' and cdy < 0:
@@ -331,6 +386,18 @@ def frame(k, heroes=True, post=True, t=None):
         r2 = ((xx - lp_[0]) ** 2 + (yy - lp_[1]) ** 2) / (S * S)
         glow = tv * (0.06 * np.exp(-r2 / (2 * 150.0 ** 2)) + 0.05 * np.exp(-r2 / (2 * 55.0 ** 2)))
         img += glow[..., None] * np.float32([0.55, 0.72, 1.0])
+    if post and G['clip'] in HOOK and t < 0.3:
+        # радиальное размытие движения, пока камера летит (сила — скорость зума за кадр)
+        z0, z1 = hook_cam(max(0.0, t - 0.5 / FPS), G['clip'])[0], hook_cam(t + 0.5 / FPS, G['clip'])[0]
+        k = min(0.10, 0.55 * abs(np.log(z1 / z0)))
+        if k > 0.004:
+            acc_ = np.zeros_like(img)
+            n_ = 9
+            for j in range(n_):
+                f = 1 + k * j / (n_ - 1)
+                Mz = cv2.getRotationMatrix2D((W / 2, H / 2), 0, f)
+                acc_ += cv2.warpAffine(img, Mz, (W, H), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
+            img = acc_ / n_
     if post:
         bright = np.clip(img - 0.9, 0, None)
         small = cv2.resize(bright, (W // 4, H // 4), interpolation=cv2.INTER_AREA)

@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const NP = parseInt(process.argv[2] || '4');
 const only = process.argv[3] ? process.argv[3].split(',') : null;
-const LAYERS = ['L_dima', 'L_plaid', 'L_cat', 'L_fx'];
+const LAYERS = ['L_fxb', 'L_dima', 'L_plaid', 'L_cat', 'L_fx'];
 const cfg = JSON.parse(fs.readFileSync(path.join(__dirname, 'cfg.json'))).filter(c => !only || only.includes(c.id));
 (async () => {
   const jobs = [];

@@ -1,0 +1,32 @@
+{
+ "shot": "s04",
+ "fps": 30,
+ "t_start": 6.7,
+ "frames": 56,
+ "frame_time": "t = t_start + k/30",
+ "scale": 2.561,
+ "offset_px": [
+  601,
+  623
+ ],
+ "size_px": [
+  490,
+  856
+ ],
+ "out_size": [
+  1255,
+  2192
+ ],
+ "order": [
+  "L_fxb",
+  "L_dima",
+  "L_plaid",
+  "L_cat",
+  "L_fx"
+ ],
+ "flame_px": [
+  987,
+  934
+ ],
+ "notes": "пиксель (u, v) PNG = точка кадра 0 комнаты (offset_px + (u, v) / scale). Камера — room/cameras.json + hook_cam. L_fxb — карточки за головой; L_dima — Дима; L_plaid — плед, учебник и руки; L_cat — кот с огоньком; L_fx — карточки перед лицом, искры."
+}

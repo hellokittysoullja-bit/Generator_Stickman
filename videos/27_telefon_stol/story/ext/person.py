@@ -5,6 +5,7 @@ import math
 import numpy as np
 
 import lib
+from hands5 import hand5
 from lib import INK, band, blob, ellipse_pts, f, line, shape
 
 SH_K = (0.80, 0.78, 0.86)        # cel-тень: умножение цвета (чуть в холод)
@@ -115,11 +116,19 @@ def face(spec, pose, sd):
         for x in ex_:
             s.append(f'<ellipse cx="{f(x)}" cy="-8" rx="21" ry="20" fill="#cfe4ff" fill-opacity=".18" stroke="{INK}" stroke-width="3.6"/>')
         s.append(line([(ex_[0] + 20, -10), (ex_[1] - 20, -10)], 3.2, seed=sd + 16, taper=.1, wmin=.9))
+    mx = fc * 24 + 2
+    if spec.get("beard"):
+        bc = spec["beard"]
+        s.append(shape([(-hx + 6, 10), (-hx + 14, 44), (fc * 20 - 30, 74), (fc * 20, 86), (fc * 20 + 32, 74), (hx - 12, 44), (hx - 6, 10),
+                        (hx - 18, 30), (mx + 22, 38), (mx, 34), (mx - 22, 38), (-hx + 18, 30)], bc,
+                       blob([(fc * 20, 86), (fc * 20 + 32, 74), (hx - 12, 44), (hx - 18, 30), (mx + 20, 50)], shade(bc), .9), w=3.6, seed=sd + 25))
     # нос и рот
     nx = fc * 30 + 4
     s.append(line([(nx - 2, 6), (nx + 7 * (1 if fc >= 0 else -1), 22), (nx, 26)], 3, seed=sd + 17, taper=.4, wmin=.3))
     m = pose.get("mouth", "flat")
     mx = fc * 24 + 2
+    if spec.get("beard"):
+        s.append(blob(ellipse_pts(mx, 46, 20, 9, 10), "#c9806e", .9))
     if m == "smile":
         s.append(line([(mx - 16, 42), (mx, 50), (mx + 16, 42)], 3.6, seed=sd + 18))
     elif m == "o":
@@ -234,17 +243,23 @@ def person(spec, pose, sd=0):
         out = tube(p0, elbow, hnd, 40, 34, 28, spec.get("sleeve", top), sd + 5 + (side == "L"))
         if spec.get("track"):
             out += _stripe([p0, elbow, hnd], spec["track"], 0.55 * sign, 34, sd + 92, cut=0.86)
-        out += hand(hnd, 17, skin, sd + 7 + (side == "L"))
+        ang = math.degrees(math.atan2(hnd[1] - elbow[1], hnd[0] - elbow[0])) + pose.get("hang", {}).get(side, 0.0)
+        mode = pose.get("hmode", {}).get(side, "rest")
+        tu = pose.get("thumb", {}).get(side, (side == "R") == (fc >= 0))
+        out += hand5(hnd[0], hnd[1], ang, skin, shade(skin), sd + 7 + (side == "L"), sc=0.86, mode=mode, thumb_up=tu, ink_w=3.2)
         return out, hnd
 
     hands = {}
     s.append(leg(far))
     a_far, hands[far] = arm(far)
-    s.append(a_far)
+    front = pose.get("arms_front", False)
+    if not front:
+        s.append(a_far)
     s.append(leg(near))
     a_near, hands[near] = arm(near)
-    s.append(a_near)
-    a_near = ""
+    if not front:
+        s.append(a_near)
+        a_far = a_near = ""
     # туловище
     torso = [(-sh_w, shY + 30 + bob), (-sh_w + 14, shY + 4 + bob), (-30, shY - 8 + bob), (30, shY - 8 + bob), (sh_w - 14, shY + 4 + bob),
              (sh_w, shY + 30 + bob), (sh_w - 10, hipY - 60 + bob), (sh_w - 6, hipY + 26 + bob, 1), (-sh_w + 6, hipY + 26 + bob, 1),
@@ -264,6 +279,10 @@ def person(spec, pose, sd=0):
     if spec.get("collar"):
         s.append(shape([(-34, shY - 4 + bob), (0, shY + 22 + bob), (34, shY - 4 + bob), (24, shY + 10 + bob), (0, shY + 34 + bob), (-24, shY + 10 + bob)],
                        spec["collar"], w=3.4, seed=sd + 34))
+    if front:                 # руки на столе: дальняя за ближней, обе перед туловищем
+        s.append(a_far)
+        s.append(a_near)
+        a_near = ""
     # голова
     tilt = pose.get("head_tilt", 0.0)
     s.append(f'<g transform="translate({fc * 6:.1f} {f(shY - 104 + bob)}) rotate({tilt:.2f})">{face(spec, pose, sd + 40)}</g>')

@@ -1,0 +1,168 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Рилс 28 — вечер, слои</title>
+<style>@font-face{font-family:"SH";src:url(data:font/ttf;base64,/*FONT*/)}html,body{margin:0;background:transparent}svg{display:block}</style></head>
+<body>
+<!--SVG-->
+<script src="../timing28.js"></script>
+<script>
+// Планы room рилса 28 (s01 s04 s14): торшер, огонёк — ../timing28.js; поза B (учебник), мимика, карточки слов, кот — по плану и t.
+const TT = window.Timing28, $ = id => document.getElementById(id);
+const set = (id, a, v) => { const e = $(id); if (e) e.setAttribute(a, v); };
+const show = (id, on) => { const e = $(id); if (e) e.style.display = on ? '' : 'none'; };
+const cl = x => Math.min(1, Math.max(0, x));
+const ss = (a, b, x) => { const u = cl((x - a) / (b - a)); return u * u * (3 - 2 * u); };
+const ssInt = (a, b, x) => { if (x <= a) return 0; if (x >= b) return (b - a) / 2 + (x - b); const u = (x - a) / (b - a); return (b - a) * (u * u * u - u * u * u * u / 2); };
+const eo = (u, p = 3) => 1 - Math.pow(1 - cl(u), p);
+const LAYERS = ['L_fxb', 'L_dima', 'L_plaid', 'L_cat', 'L_fx'];
+const NC = 12;
+const h01 = (i, s) => { const x = Math.sin(i * 127.1 + s * 311.7) * 43758.5453123; return x - Math.floor(x); };
+const SHOT = {
+  s01: {cat: 0, rest: .30, blinks: [0.92], mouth: () => 'm_flat', brows: () => 'brows_tired', cards: 'orbit'},
+  s04: {cat: 1, rest: .30, blinks: [7.6], mouth: () => 'm_flat', brows: () => 'brows_tired', catBlinks: [[7.22, .26]],
+        catLook: t => [-2.5 + 2.5 * ss(7.4, 7.7, t), .5],
+        tilt: t => 12 * ss(TT.WHY - .04, TT.WHY + .26, t) - 2.5 * Math.max(0, Math.sin((t - TT.WHY - .26) * 5)) * Math.exp(-(t - TT.WHY - .26) * 4) * (t > TT.WHY + .26)},
+  s14: {cat: 1, rest: .14, blinks: [31.45], mouth: t => t < TT.SMILE - .06 ? 'm_flat' : 'm_smile', brows: t => t < TT.SMILE - .06 ? 'brows_calm' : 'brows_up',
+        catBlinks: [[30.9, .24]], catLook: t => [-8 + 1.5 * Math.sin(t * 1.3), 1 - 3 * ss(30.6, 30.9, t)], tilt: t => 4 * ss(30.5, 30.9, t), cards: 'absorb'},
+};
+function blinkAt(t, list) {
+  let v = 0;
+  for (const b of list) { const d = t - b; if (d >= 0 && d < .08) v = Math.max(v, ss(0, .08, d)); else if (d >= .08 && d < .17) v = Math.max(v, 1 - ss(.08, .17, d)); }
+  return v;
+}
+function catBlinkAt(t, list) {
+  let v = 0;
+  for (const [b, dur] of list) {
+    const d = t - b, q = dur * .35;
+    if (d < 0 || d > dur) continue;
+    v = Math.max(v, d < q ? ss(0, q, d) : d < dur - q ? 1 : 1 - ss(dur - q, dur, d));
+  }
+  return v;
+}
+function mat(r, g, b) { return `${r * .9} ${r * .1} 0 0 0  ${g * .05} ${g * .9} ${g * .05} 0 0  0 ${b * .1} ${b * .9} 0 0  0 0 0 1 0`; }
+let CUR = 's01';
+// ── карточки s01: рой вокруг головы. Кольцо над лицом (центр C, полуоси RX/RY), у каждой карточки свой ярус и радиус.
+const C1 = [300, 785], RX = 236, RY = 58;
+const ENTER = [-1, -1, -1, -1, -1, -1, .12, .26, .4, .54, 1.5, 1.66];
+function orbit(t, i) {
+  const dense = ss(1.45, 1.8, t);
+  const A = 2.6 * t + 2.0 * ssInt(1.45, 1.8, t);
+  const ph = 2 * Math.PI * i / NC + .4 * h01(i, 3), rr = 1 + .32 * (h01(i, 5) - .5), w = 1 + .16 * (h01(i, 7) - .5);
+  const a = ph + w * A, k = 1 - .2 * dense;
+  const dy = (h01(i, 9) - .5) * 120 * (1 - .3 * dense);
+  let x = C1[0] + RX * rr * k * Math.cos(a), y = C1[1] + dy + RY * rr * k * Math.sin(a) + 6 * Math.sin(3 * a + i);
+  const z = Math.sin(a);
+  let sc = .84 + .2 * z, rot = 13 * Math.cos(a) + 16 * (h01(i, 11) - .5), sx = .84 + .16 * z, vis = true;
+  const e = ENTER[i];
+  if (e > -1) {
+    const u = (t - e) / .42;
+    if (u < 0) vis = false;
+    else if (u < 1) {
+      const dx = Math.cos(ph + 1.1), dyy = -.55 + .3 * h01(i, 13);
+      const n = Math.hypot(dx, dyy), fx = C1[0] + dx / n * 760, fy = C1[1] + dyy / n * 760;
+      const q = eo(u, 3);
+      x = fx + (x - fx) * q; y = fy + (y - fy) * q;
+      sc *= 1 + .45 * (1 - q); rot += 70 * (1 - q) * (h01(i, 15) > .5 ? 1 : -1);
+    }
+  }
+  return {x, y, sc, rot, sx, front: z > 0, vis};
+}
+// ── карточки s14: влетают в голову по дуге с разгоном, сжимаются в точку на лбу, вспышка
+const TGT = [286, 800];
+function absorb(t, i) {
+  if (i >= 10) return {vis: false};
+  const L = 30.02 + i * .15, D = .5, u = (t - L) / D;
+  if (u < 0 || u >= 1) return {vis: false, glint: u >= 1 && u < 1 + .2 / D ? (u - 1) * D / .2 : -1};
+  const th = (200 + 140 * h01(i, 21) + (i % 2 ? 0 : 0)) * Math.PI / 180;
+  const R = 520 + 80 * h01(i, 23);
+  const sx0 = TGT[0] + Math.cos(th) * R * 1.05, sy0 = TGT[1] + Math.sin(th) * R * .75 + 40;
+  const q = Math.pow(u, 1.7);
+  const bulge = Math.sin(Math.PI * q) * 110 * (h01(i, 25) > .5 ? 1 : -1);
+  const nx = -(TGT[1] - sy0), ny = TGT[0] - sx0, nn = Math.hypot(nx, ny);
+  const x = sx0 + (TGT[0] - sx0) * q + nx / nn * bulge, y = sy0 + (TGT[1] - sy0) * q + ny / nn * bulge;
+  const sc = 1.0 - .9 * Math.pow(q, 1.3);
+  return {x, y, sc, rot: (h01(i, 27) - .5) * 30 + 45 * q * (h01(i, 29) > .5 ? 1 : -1), sx: 1, front: true, vis: true};
+}
+function drawCards(t, mode) {
+  for (let i = 0; i < NC; i++) {
+    const c = mode === 'orbit' ? orbit(t, i) : mode === 'absorb' ? absorb(t, i) : {vis: false};
+    const tf = c.vis ? `translate(${c.x.toFixed(2)} ${c.y.toFixed(2)}) rotate(${c.rot.toFixed(3)}) scale(${(c.sc * c.sx).toFixed(4)} ${c.sc.toFixed(4)})` : '';
+    show('cf' + i, c.vis && c.front); show('cb' + i, c.vis && !c.front);
+    if (c.vis) { set('cf' + i, 'transform', tf); set('cb' + i, 'transform', tf); }
+    const g = c.glint !== undefined ? c.glint : -1;
+    show('gl' + i, g >= 0);
+    if (g >= 0) {
+      const s = Math.sin(Math.PI * g) * 1.1, r = 40 * g;
+      set('gl' + i, 'transform', `translate(${TGT[0] + (i % 2 ? 6 : -6)} ${TGT[1] - 8}) rotate(${r.toFixed(2)}) scale(${s.toFixed(4)})`);
+    }
+  }
+}
+function seek(t, shot) {
+  if (shot) CUR = shot;
+  const S = SHOT[CUR], fl = TT.flame(t, CUR), lamp = TT.lamp(t, CUR);
+  const m = mat(0.66, 0.58, 0.56);
+  set('fNightM', 'values', m);
+  { const v = m.split(/\s+/).map(Number), c = [58, 54, 70];
+    const rgb = [0, 1, 2].map(r => Math.round(v[r * 5] * c[0] + v[r * 5 + 1] * c[1] + v[r * 5 + 2] * c[2]));
+    for (const e of document.querySelectorAll('.catlid')) e.setAttribute('fill', `rgb(${rgb.join(',')})`); }
+  show('dima_all', true);
+  for (const p of ['L', 'P', 'N', 'S']) show('pose_' + p, false);
+  show('pose_B', true);
+  show('box17', false);
+  show('lap_screen_g', false); show('fx_pop', false); show('fx_cat', false);
+  drawCards(t, S.cards);
+  // голова и корпус Димы: лёгкое покачивание, в s14 — кивок на каждую карточку, что влетела
+  let hr = -5.5 + .7 * Math.sin(t * 2 * Math.PI * .45), hy = .8 * Math.sin(t * 2 * Math.PI / 2.6);
+  if (CUR === 's14') for (let i = 0; i < 10; i++) { const d = t - (30.52 + i * .15); if (d > 0 && d < .35) hy += 2.2 * Math.sin(Math.PI * d / .35); }
+  if (CUR === 's14') hr += 2.0 * ss(TT.SMILE - .1, TT.SMILE + .25, t);
+  const htf = `translate(0 ${hy.toFixed(2)}) rotate(${hr.toFixed(3)} 330 1010)`;
+  for (const id of ['dima_head_pose', 'face_light_tv', 'face_light_lamp']) set(id, 'transform', htf);
+  for (const id of ['dima_lean', 'lean_tv', 'lean_lamp']) set(id, 'transform', 'rotate(0.6 300 1300)');
+  const bl = blinkAt(t, S.blinks || []);
+  const lid = Math.max(bl, S.rest || 0) * 58;
+  for (const nm of ['N', 'F']) set('dima_lid_' + nm, 'transform', `translate(0 ${lid.toFixed(2)})`);
+  for (const nm of ['N', 'F']) set('dima_pupil_' + nm, 'transform', 'translate(4 7)');
+  show('dima_eyes', true); show('dima_eyes_laugh', false);
+  const brows = S.brows(t);
+  for (const k of ['brows_tired', 'brows_up', 'brows_calm']) show(k, k === brows);
+  const mouth = S.mouth(t);
+  for (const k of ['m_tired', 'm_tense', 'm_smile', 'm_open', 'm_chew', 'm_flat', 'm_warm', 'm_laugh']) show(k, k === mouth);
+  show('dima_sweat', false);
+  // свет
+  set('tv_dima', 'opacity', 0); set('tv_plaid', 'opacity', 0); set('tv_cat', 'opacity', 0);
+  set('lamp_dima', 'opacity', Math.min(1, .36 * lamp).toFixed(4));
+  set('lamp_plaid', 'opacity', Math.min(1, .34 * lamp).toFixed(4));
+  set('lamp_cat', 'opacity', Math.min(1, .5 * lamp).toFixed(4));
+  set('fl_cat', 'opacity', Math.min(1, .72 * fl).toFixed(4)); set('fl_plaid', 'opacity', Math.min(1, .72 * fl).toFixed(4));
+  // кот: в s01 за кадром (не рисуется); наклон, взгляд, моргание, дыхание, хвост, огонёк
+  show('cat_jump', !!S.cat); show('cat_shadow', !!S.cat);
+  const tilt = S.tilt ? S.tilt(t) : 0;
+  const ttf = `rotate(${tilt.toFixed(3)} 836 1146)`;
+  for (const id of ['cat_headg', 'cat_eyes_tilt', 'cat_head_rim', 'cat_head_rim_tv_cat', 'cat_head_rim_lamp_cat']) set(id, 'transform', ttf);
+  const [cx_, cy_] = S.catLook ? S.catLook(t) : [0, 0];
+  for (const nm of ['L', 'R']) set('cat_pupil_' + nm, 'transform', `translate(${cx_.toFixed(2)} ${cy_.toFixed(2)})`);
+  const cb = catBlinkAt(t, S.catBlinks || []);
+  for (const nm of ['L', 'R']) {
+    set('cat_lid_' + nm, 'transform', `translate(0 ${(-84 + 84 * cb).toFixed(2)})`);
+    set('cat_lidlo_' + nm, 'transform', `translate(0 ${(48 - 48 * cb).toFixed(2)})`);
+    const shut = cb >= .9;
+    show('cat_ring_' + nm, !shut); show('cat_eye_' + nm, !shut); show('cat_closed_' + nm, shut); show('cat_happy_' + nm, false);
+  }
+  show('cat_mouth_n', true); show('cat_mouth_h', false);
+  const br = Math.sin(2 * Math.PI * t / 2.3);
+  const dxc = CUR === 's14' ? -140 : 0;
+  set('cat_shadow', 'transform', `translate(${dxc} 0)`); set('fl_plaid', 'transform', `translate(${dxc} 0)`);
+  set('cat_jump', 'transform', `translate(${dxc} 0) translate(812 1244) scale(${(1 + .004 * br).toFixed(5)} ${(1 + .010 * br).toFixed(5)}) translate(-812 -1244)`);
+  const tail = 4 * Math.sin(2 * Math.PI * t / 2.2) + 1.5 * Math.sin(2 * Math.PI * t / 0.9 + 1);
+  const rot = `rotate(${tail.toFixed(3)} 912 1272)`;
+  set('cat_tail', 'transform', rot); set('tail_rim', 'transform', rot);
+  const sk = 6 * Math.sin(t * 7.3) + 3 * Math.sin(t * 13.1 + 1), fs = Math.max(.6, Math.min(1.25, fl || 1));
+  set('cat_flame', 'transform', `${rot} translate(995 1076) skewX(${sk.toFixed(3)}) scale(${(1 / Math.sqrt(fs)).toFixed(4)} ${fs.toFixed(4)}) translate(-995 -1076)`);
+}
+function only(name) { for (const L of LAYERS) $(L).style.display = (!name || L === name) ? '' : 'none'; }
+function setView(x, y, w, h, ow, oh) {
+  const s = $('scene'); s.setAttribute('viewBox', `${x} ${y} ${w} ${h}`); s.setAttribute('width', ow); s.setAttribute('height', oh);
+}
+window.seek = seek; window.only = only; window.setView = setView;
+seek(1.0, 's01');
+</script>
+</body></html>

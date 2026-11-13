@@ -19,9 +19,9 @@ from lib import (INK, W, H, back_out, blob, blur, cam, clamp, ease_in, ease_io, 
 _ST = {}
 JERK = 12.36      # «тянуться»
 LESS = 14.40      # «меньше»
-PHONE = (905, 884)            # центр телефона (лежит на табурете)
-STOOL_TOP = 902
-GAUGE = (150, 300, 250, 930)  # x0, y0, x1, y1 шкалы
+PHONE = (985, 1020)            # центр телефона (лежит на табурете)
+STOOL_TOP = 1038
+GAUGE = (52, 330, 168, 940)  # x0, y0, x1, y1 шкалы
 CELLS = 10
 DRAIN0, DRAIN_DT = 13.34, 0.125
 
@@ -29,14 +29,14 @@ DRAIN0, DRAIN_DT = 13.34, 0.125
 # ───────────────────────── предметы
 def stool():
     s = []
-    x0, x1 = 760, 1050
-    s.append(sb.shadow(905, sb.FLOOR + 4, 170, .5))
-    for k, (xa, xb) in enumerate([(790, 770), (1020, 1040), (860, 852), (950, 958)]):
+    x0, x1 = 860, 1110
+    s.append(sb.shadow(985, sb.FLOOR + 4, 150, .5))
+    for k, (xa, xb) in enumerate([(888, 870), (1082, 1100), (950, 944), (1022, 1028)]):
         col = "#8a5a36" if k < 2 else "#6e4528"
         s.append(shape([(xa - 12, STOOL_TOP + 20, 1), (xa + 12, STOOL_TOP + 20, 1), (xb + 12, sb.FLOOR, 1), (xb - 12, sb.FLOOR, 1)], col,
                        blob([(xa + 2, STOOL_TOP + 20), (xa + 12, STOOL_TOP + 20), (xb + 12, sb.FLOOR), (xb + 2, sb.FLOOR)], "#5a3820", .8),
                        w=3.6, seed=900 + k))
-    s.append(shape(rect_pts(780, STOOL_TOP + 60, 1030, STOOL_TOP + 80), "#7a4c2c", "", w=3.2, seed=905))
+    s.append(shape(rect_pts(880, STOOL_TOP + 52, 1090, STOOL_TOP + 70), "#7a4c2c", "", w=3.2, seed=905))
     top = rect_pts(x0, STOOL_TOP, x1, STOOL_TOP + 30, 10)
     s.append(shape(top, "#b07a48", blob(rect_pts(x0, STOOL_TOP + 16, x1, STOOL_TOP + 30), "#8a5a36", .9) +
                    line([(x0 + 20, STOOL_TOP + 7), (x1 - 40, STOOL_TOP + 6)], 3.4, "#d8a874", seed=906, op=.8), w=4.4, seed=907))
@@ -101,8 +101,8 @@ def grip_pose(t):
         out = ease_out(u, 3)
         back = 1 - spring(max(e - 0.10, 0), 2.2, 6.0) if e > 0.10 else 1.0
         lunge = out * back
-    base = (735 + 30 * creep, 805 + 14 * creep)
-    tgt = (842, 850)
+    base = (742 + 26 * creep, 880 + 14 * creep)
+    tgt = (838, 944)
     wx = base[0] + (tgt[0] - base[0]) * lunge + tremble * 0.6
     wy = base[1] + (tgt[1] - base[1]) * lunge + tremble * 0.4
     ang = 24 + 8 * lunge + 2 * math.sin(t * 37)
@@ -120,7 +120,7 @@ def struggle(t, pose, extra_grip_glow=0.0):
     L = math.hypot(dx, dy) + 1e-6
     nx, ny = -dy / L, dx / L
     C = ((SR[0] + wr[0]) / 2 + nx * bend_r, (SR[1] + wr[1]) / 2 + ny * bend_r)
-    u = 0.66
+    u = 0.70
     gp = ((1 - u) ** 2 * SR[0] + 2 * (1 - u) * u * C[0] + u * u * wr[0], (1 - u) ** 2 * SR[1] + 2 * (1 - u) * u * C[1] + u * u * wr[1])
     tx, ty = 2 * (1 - u) * (C[0] - SR[0]) + 2 * u * (wr[0] - C[0]), 2 * (1 - u) * (C[1] - SR[1]) + 2 * u * (wr[1] - C[1])
     ta = math.degrees(math.atan2(ty, tx))
@@ -163,7 +163,7 @@ def brain_pose(t):
     breath = 1 + 0.012 * math.sin(t * 2.6)
     strain = 0.035 * math.sin(t * 13)                  # трясётся от натуги
     lean = 3.5 + 7 * lunge + 1.6 * math.sin(t * 9)
-    pose = sb.Pose(520 + 22 * lunge + 2.5 * math.sin(t * 23), 600 + 6 * math.sin(t * 2.6) - 10 * lunge, 1.0 * breath,
+    pose = sb.Pose(430 + 22 * lunge + 2.5 * math.sin(t * 23), 500 + 6 * math.sin(t * 2.6) - 10 * lunge, 1.0 * breath,
                    lean, 1 - 0.06 * lunge - 0.02 + strain * 0.4)
     return pose, lunge
 
@@ -176,11 +176,11 @@ def jerk_lines(t):
     s = []
     a = 1 - e / 0.42
     for k in range(3):
-        y = 790 + k * 34
-        s.append(line([(640 - 30 * k, y), (740 - 20 * k, y + 18)], 7, "#e9eeff", taper=.6, seed=950 + k, op=a))
+        y = 860 + k * 34
+        s.append(line([(660 - 30 * k, y), (760 - 20 * k, y + 18)], 7, "#e9eeff", taper=.6, seed=950 + k, op=a))
     if 0.08 < e < 0.4:
         u = (e - 0.08) / 0.32
-        cx, cy = 770, 790
+        cx, cy = 690, 840
         for k in range(8):
             ang = k * math.pi / 4 + 0.3
             r0 = 40 + 70 * ease_out(u)
@@ -299,7 +299,7 @@ def s06(t):
     u = clamp((t - 10.68) / 2.8)
     jolt = 0.04 * math.exp(-max(t - JERK, 0) * 6) * (t > JERK)
     shake = 6 * math.exp(-max(t - JERK - .1, 0) * 9) * math.sin((t - JERK) * 55) * (t > JERK + .1)
-    cm = cam(650 + 30 * u + shake, 760 - 10 * u, 1.10 + 0.10 * (0.4 * u + 0.6 * ease_io(u)) + jolt, -0.8 + 1.2 * u)
+    cm = cam(655 + 10 * u + shake, 770 - 10 * u, 1.04 + 0.09 * (0.4 * u + 0.6 * ease_io(u)) + jolt, -0.8 + 1.2 * u)
     return art, cm
 
 
@@ -311,14 +311,14 @@ def s07(t):
         if 0 < e < 0.3:
             glow = max(glow, 1 - e / 0.3)
     art, gp, pose, lunge = common(t, glow)
-    bk = (215, 1086)
+    bk = (190, 1096)
     gl = 0.25 + 0.45 * smooth(LESS, LESS + 0.3, t) * (0.8 + 0.2 * math.sin((t - LESS) * 6))
     appear = (t - 13.12) / 0.3
     left = book(bk[0], bk[1], gl * clamp(appear), sd=1200) + gauge(t, appear) + book_stream(t, (bk[0] + 10, bk[1] - 40))
     art = left + art + flows(t, gp)
     u = clamp((t - 13.08) / 2.3)
     pop = 0.025 * math.exp(-max(t - LESS, 0) * 6) * (t > LESS)
-    cm = cam(560 - 14 * u, 760, 0.98 + 0.03 * ease_io(u) + pop, 0.5 - 0.7 * u)
+    cm = cam(598 - 10 * u, 790, 0.94 + 0.025 * ease_io(u) + pop, 0.5 - 0.7 * u)
     return art, cm
 
 

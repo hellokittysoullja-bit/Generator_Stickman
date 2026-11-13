@@ -1,0 +1,18 @@
+[
+ {
+  "id": "s01",
+  "start": 0.0,
+  "n": 73,
+  "region": [
+   -39,
+   81,
+   1125,
+   1808
+  ],
+  "S": 1.814,
+  "ow": 2041,
+  "oh": 3280,
+  "out": "/home/user/Generator_Stickman/videos/28_telefon_komnata/story/room/chars/s01",
+  "html": "heroes28e.html"
+ }
+]

@@ -40,9 +40,41 @@ def tube(p0, p1, p2, w0, w1, w2, fill, sd, inner_sh=True):
     return shape(pl, fill, inner, w=3.6, seed=sd)
 
 
-def hand(c, r, skin, sd, ang=0):
-    pts = [rot((c[0] + r * 1.0 * math.cos(a), c[1] + r * 1.15 * math.sin(a)), ang, c) for a in np.linspace(0, 2 * math.pi, 10, endpoint=False)]
-    return shape(pts, skin, blob([(c[0], c[1] - r), (c[0] + r, c[1]), (c[0], c[1] + r * 1.1)], shade(skin), .8), w=3, seed=sd)
+def _finger(base, ang, L, wd, curl, skin, sd):
+    from scene_brain import sausage
+    pts = [base]
+    a, x, y = ang, base[0], base[1]
+    for k in range(3):
+        a += curl * 30
+        x += L / 3 * math.cos(math.radians(a))
+        y += L / 3 * math.sin(math.radians(a))
+        pts.append((x, y))
+    return shape(sausage(pts, wd, wd * .9), skin, "", w=3.0, seed=sd)
+
+
+def fhand(x, y, ang, skin, sd=0, sc=1.0, curl=0.3, spread=1.0, thumb_up=True):
+    """Кисть с пальцами (как у ручек мозга, тон кожи): запястье (x, y), пальцы вдоль ang (градусы экрана).
+    Три пальца и большой; curl 0..1 — сжатие (хват)."""
+    sh = shade(skin)
+    palm = [(-6, -13), (14, -22), (36, -22), (50, -10), (52, 6), (42, 19), (18, 22), (-6, 12)]
+    inner = blob([(-6, 6), (16, 13), (40, 11), (52, 6), (42, 19), (18, 22), (-6, 12)], sh, .85)
+    s = [_finger((22, -18), -62 + 30 * curl, 26, 15, curl * .8, skin, sd + 20)]
+    s.append(shape(palm, skin, inner, w=3.4, seed=sd + 1))
+    for k, (bx, by, fa, L) in enumerate([(46, -14, -14 * spread, 34), (50, -1, 0, 38), (46, 12, 14 * spread, 33)]):
+        s.append(_finger((bx, by), fa, L, 15, curl, skin, sd + 10 + k))
+    flip = math.cos(math.radians(ang)) < 0
+    if not thumb_up:
+        flip = not flip
+    rot = ang if not flip else ang - 180
+    sx = -1 if flip else 1
+    if flip and thumb_up:
+        pass
+    return f'<g transform="translate({f(x)} {f(y)}) rotate({f(rot)}) scale({f(sc * sx)} {f(sc)})">{"".join(s)}</g>'
+
+
+def hand(c, r, skin, sd, ang=90, curl=0.3):
+    """Кисть на конце руки: запястье в c, пальцы по направлению ang (по умолчанию вниз)."""
+    return fhand(c[0], c[1], ang, skin, sd, sc=r * 0.042, curl=curl)
 
 
 def shoe(c, face, color, sd):
@@ -207,6 +239,19 @@ def person(spec, pose, sd=0):
         legs = pose.get("legs", {"L": (3, 0), "R": (-3, 0)})
         arms = {"L": (8, -6), "R": (-8, 6)}
     arms.update(pose.get("arms", {}))
+    sh_w0 = 74 * spec.get("bw", 1.0)
+    for side, tgt in pose.get("hand_target", {}).items():          # IK: кисть в точку (координаты человека)
+        sign = -1 if side == "L" else 1
+        p0 = (sign * (sh_w0 - 10), shY + 18 + bob)
+        dx, dy = tgt[0] - p0[0], tgt[1] - p0[1]
+        d = min(math.hypot(dx, dy), 249.0)
+        d = max(d, 20.0)
+        base = math.degrees(math.atan2(dx, dy))
+        al = math.degrees(math.acos(max(-1, min(1, (130 ** 2 + d ** 2 - 120 ** 2) / (2 * 130 * d)))))
+        a1 = base + al * sign            # локоть наружу
+        ex, ey = p0[0] + 130 * math.sin(math.radians(a1)), p0[1] + 130 * math.cos(math.radians(a1))
+        a2 = math.degrees(math.atan2(tgt[0] - ex, tgt[1] - ey)) - a1
+        arms[side] = (a1 - sign * 6, a2)
     top, low, skin = spec["top"], spec["low"], spec["skin"]
     sh_w = 74 * spec.get("bw", 1.0)
     # порядок: дальняя рука и нога — первыми
@@ -234,14 +279,24 @@ def person(spec, pose, sd=0):
         out = tube(p0, elbow, hnd, 40, 34, 28, spec.get("sleeve", top), sd + 5 + (side == "L"))
         if spec.get("track"):
             out += _stripe([p0, elbow, hnd], spec["track"], 0.55 * sign, 34, sd + 92, cut=0.86)
-        out += hand(hnd, 17, skin, sd + 7 + (side == "L"))
+        ang = math.degrees(math.atan2(hnd[1] - elbow[1], hnd[0] - elbow[0]))
+        item = pose.get("in_hand", {}).get(side)
+        if item:
+            out += item(hnd, ang)
+        out += hand(hnd, 17, skin, sd + 7 + (side == "L"), ang, pose.get("curl", {}).get(side, 0.3))
+        top_item = pose.get("over_hand", {}).get(side)
+        if top_item:
+            out += top_item(hnd, ang)
         return out, hnd
 
     hands = {}
-    s.append(leg(far))
+    nl = pose.get("no_legs")
+    if not nl:
+        s.append(leg(far))
     a_far, hands[far] = arm(far)
     s.append(a_far)
-    s.append(leg(near))
+    if not nl:
+        s.append(leg(near))
     a_near, hands[near] = arm(near)
     s.append(a_near)
     a_near = ""
