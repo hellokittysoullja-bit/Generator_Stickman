@@ -104,7 +104,7 @@ def eyes(expr, EN, EF, bags=True, lash_col=INK):
             s.append(line([(cx + rx * .95, cy + ry * .35), (cx + rx * 1.25, cy + ry * .45)], 2.2, C["SKIN_SH2"], seed=sd + 72))
             tr = expr.get("tears", 0.0)
             if tr > 0.02:
-                tx, ty = cx + rx * (.7 if nm == "N" else -.7), cy + ry * .4
+                tx, ty = cx + rx * (-.8 if nm == "N" else .8), cy + ry * .45
                 drop_y = ty + 40 * tr
                 drop = [(tx, drop_y - 22 - 18 * tr), (tx + 10, drop_y - 4), (tx + 8, drop_y + 8), (tx, drop_y + 12), (tx - 8, drop_y + 8),
                         (tx - 10, drop_y - 4)]

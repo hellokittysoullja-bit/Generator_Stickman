@@ -43,8 +43,8 @@ BS = 0.6
 D_HIP = np.array([250.0, 1262.0])
 F_HIP = np.array([830.0, 1262.0])
 F_K = 1.08
-CAT_POS = (566.0, 1080.0, 0.55)
-BP_POS = (452.0, 1080.0, 0.74)
+CAT_POS = (562.0, 1080.0, 0.55)
+BP_POS = (432.0, 1080.0, 0.64)
 CUP_D = (430.0, 1150.0, 0.8)
 CUP_F = (668.0, 1146.0, 0.8)
 PHONE = (548.0, 1176.0, 0.62)
@@ -379,11 +379,11 @@ def s12(t):
     # фазы ближней руки: от чашки к телефону, взял, поднёс к рюкзаку, опустил внутрь, застегнул, вернулся к чашке
     cupw = np.array(cup_wrist(CUP_D, -1, "dima"))
     ph_w = np.array([PHONE[0] - 70, PHONE[1] - 6])
-    above = np.array([BP_MOUTH[0] + 22, BP_MOUTH[1] - 50])
+    above = np.array([BP_MOUTH[0] - 46, BP_MOUTH[1] - 88])
     bpx, bpy, bpk = BP_POS[0], BP_POS[1] - 30, BP_POS[2]
     t_grab, t_lift = 25.15, 26.5
     t_zip0, t_zip1 = tr + .2, tr + .62
-    near_mouth = above + np.array([-4, 26])
+    near_mouth = above + np.array([0, 28])
     zw = lambda zu: room.zip_pos(bpx, bpy, bpk, zu) + np.array([50, 16])  # noqa: E731
     if t < t_grab:
         u = ease_io(clamp((t - 24.6) / (t_grab - 24.6)))
@@ -415,7 +415,7 @@ def s12(t):
     look_bp = smooth(25.9, 26.3, t) * (1 - to_friend)
     expr = dict(lid=.6 + .2 * to_friend, look=(.35 + .15 * to_friend - .35 * look_bp, .55 * (1 - look_bp - to_friend) + .1 - .5 * look_bp),
                 brows="calm" if to_friend < .5 else "up", mouth="smile", smile=.4 + .6 * to_friend)
-    d_hand = dict(kind="open", dir=(1, -.2) if not hold else (1, .1), curl=(.55, .6, .65, .7) if hold else (.2, .25, .3, .35), spread=.05,
+    d_hand = dict(kind="open", dir=(1, -.2) if not hold else (1, .35), curl=(.55, .6, .65, .7) if hold else (.2, .25, .3, .35), spread=.05,
                   thumb=.75 if hold else .3)
     if t_zip0 - .1 < t < t_zip1 + .1:       # пальцы тянут бегунок: щепоть
         d_hand = dict(kind="open", dir=(-1, .2), flip=-1, curl=(.35, .75, .85, .9), spread=.03, thumb=.85)
@@ -431,6 +431,7 @@ def s12(t):
                                         blink=blink_at(t, 24.9)),
              cups=cups_default(), grip_back=gb, grip_front=gf, bp=dict(open_=1 - zip_u, zip_u=zip_u))
     wr = d["wrist"]["n"]
+    near_mouth_w = near_mouth
     if t < t_grab:
         A["phone"] = dict()
     elif t < tr + .02:
@@ -440,20 +441,37 @@ def s12(t):
         A["phone"] = None
         drop = clamp((t - tr - .02) / .2)
         if drop < 1:
-            A["behind_table"] = phone_drop(drop)
+            c0 = held_center(near_mouth_w, 1.0)
+            A["mid"] = phone_drop(drop, c0)
     return table_scene(t, cam, A)
 
 
+PH_HELD_K = 0.36
+
+
+def held_center(wr, u):
+    return np.array([wr[0] + 40 + 8 * u, wr[1] + 10 + 26 * u])
+
+
+def bp_clip():
+    """Всё, кроме тела рюкзака ниже горловины: телефон «уходит» внутрь."""
+    x, y, k = BP_POS[0], BP_POS[1] - 30, BP_POS[2]
+    my = BP_MOUTH[1] + 6
+    c = lib.uid()
+    lib.DEFS.append(f'<clipPath id="{c}"><path clip-rule="evenodd" d="M-2000 -2000H4000V4000H-2000Z M{x - 90 * k:.1f} {my:.1f}H{x + 90 * k:.1f}V{y + 40:.1f}H{x - 90 * k:.1f}Z"/></clipPath>')
+    return c
+
+
 def held_phone(wr, t, u):
-    """Телефон в руке: от «лежит на столе» к «стоит в пальцах» (поворот и подъём плоскости), тот же рисунок."""
-    k = PHONE[2] * (1 - .25 * u)
-    return room.phone(wr[0] + 44 + 6 * u, wr[1] + 6 - 30 * u, k, ang=-24 - 56 * u, squash=.42 + .5 * u)
+    """Телефон в пальцах: от «лежит на столе» к «висит вертикально» (поворот плоскости), тот же рисунок."""
+    k = PHONE[2] + (PH_HELD_K - PHONE[2]) * u
+    c = held_center(wr, u)
+    return f'<g clip-path="url(#{bp_clip()})">{room.phone(c[0], c[1], k, ang=-24 - 66 * u, squash=.42 + .52 * u)}</g>'
 
 
-def phone_drop(u):
-    x, y = BP_MOUTH[0] + 14, BP_MOUTH[1] - 50 + 90 * u * u
-    clip = lib.clip_rect(x - 120, y - 400, 240, BP_MOUTH[1] + 8 - (y - 400))
-    return f'<g clip-path="url(#{clip})">{room.phone(x, y, PHONE[2] * .75, ang=-80, squash=.92)}</g>'
+def phone_drop(u, c0):
+    c = c0 + np.array([0, 110 * u * u])
+    return f'<g clip-path="url(#{bp_clip()})">{room.phone(c[0], c[1], PH_HELD_K, ang=-90, squash=.94)}</g>'
 
 
 def backpack_lip(t):
@@ -476,7 +494,7 @@ def s13(t):
     tears = smooth(th + .2, th + .9, t)
     # друг: рассказ, руки широко; на смехе — ладонь к груди, другая хлопает по столу
     sw = osc(t, 1.25)
-    near_story = (650 - 40 * sw, 980 - 70 * abs(osc(t, 1.25, .5)))
+    near_story = (690 - 30 * sw, 1050 - 50 * abs(osc(t, 1.25, .5)))
     far_story = (900 + 30 * sw, 920 - 50 * osc(t, 1.8))
     near_l = (700, 1060 + 10 * shake)
     slap = bump(t, th + .02, .22)
@@ -486,7 +504,7 @@ def s13(t):
     f = friend_rest(t, dict(lid=.9, look=(.45, -.05), brows="up", mouth="talk" if lg < .5 else "laugh", open=talk(t, 28.0, th, 6.5) if lg < .5 else
                             .8 + .2 * osc(t, 7.5), smile=1.0, laugh=lg, tears=tears),
                     near=near, far=far, head_ang=-.05 * osc(t, 1.25) * (1 - lg) - .12 * lg + .03 * shake, hip_off=(0, 6 * shake),
-                    hn=dict(kind="open", flip=-1, dir=(-.5 + .5 * lg, -1 + 1.4 * lg), curl=(.05 + .3 * lg,) * 4, spread=.3 * (1 - lg) + .08, thumb=.2),
+                    hn=dict(kind="open", flip=-1, dir=(-1 + .9 * lg, -.5 + .9 * lg), curl=(.05 + .3 * lg,) * 4, spread=.3 * (1 - lg) + .08, thumb=.2),
                     hf=dict(kind="open", flip=-1, dir=(.2, -1), curl=(.05,) * 4, spread=.3, thumb=.15), lean=.06 - .05 * lg)
     # Дима: смеётся, на «хохочут» хлопает ладонью по столу (чашки подпрыгивают)
     slap_d = bump(t, th, .26)

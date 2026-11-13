@@ -352,18 +352,36 @@ def table_frost(a, sd=900):
         x1 = TX1 - (0 if k == 0 else 20)
         n = 26
         pts = [(x0 + (x1 - x0) * i / n, y + (-1 if k == 0 else 1) * (3 + 5 * rs.uniform()) * a) for i in range(n + 1)]
-        s.append(line(pts, 6, "#f4fbff", taper=.1, wmin=.6, seed=sd + k, op=.85 * a))
-    for i in range(14):
+        s.append(line(pts, 9, "#f4fbff", taper=.1, wmin=.6, seed=sd + k, op=.9 * a))
+    for i in range(24):
         x = rs.uniform(TX0 + 20, TX1 - 20)
         y = TOP_F - 6 if rs.uniform() < .55 else TOP_B + 8
         y += rs.uniform(-4, 4)
-        r = rs.uniform(4, 9) * smooth(i / 14 * 0.6, i / 14 * 0.6 + 0.4, a)
+        r = rs.uniform(6, 12) * smooth(i / 24 * 0.6, i / 24 * 0.6 + 0.4, a)
         s.append(crystal(x, y, r, sd + 10 + i, a))
     # уголки — веточки инея
     for (cx, cy, dx) in ((TX0 + 6, TOP_F - 6, 1), (TX1 - 6, TOP_F - 6, -1)):
         L = 40 * a
         s.append(line([(cx, cy), (cx + dx * L, cy - L * .5)], 3.4, "#ffffff", taper=.4, seed=sd + 40 + dx, op=.9 * a))
         s.append(line([(cx + dx * L * .5, cy - L * .25), (cx + dx * L * .6, cy - L * .7)], 2.6, "#ffffff", taper=.4, seed=sd + 42 + dx, op=.9 * a))
+    return "".join(s)
+
+
+def window_frost(a, sd=1800):
+    """Морозные узоры веером из углов стёкол окна (окно 330..750 × 330..900)."""
+    if a <= 0.01:
+        return ""
+    s = []
+    rs = np.random.RandomState(sd)
+    for k, (cx, cy, dx, dy) in enumerate(((330, 330, 1, 1), (750, 330, -1, 1), (330, 900, 1, -1), (750, 900, -1, -1))):
+        n = 5
+        for j in range(n):
+            ang = math.radians(8 + 74 * j / (n - 1))
+            L = (70 + 40 * rs.uniform()) * a
+            ex, ey = cx + dx * math.cos(ang) * L, cy + dy * math.sin(ang) * L
+            s.append(line([(cx, cy), (ex, ey)], 4, "#ffffff", taper=.5, wmin=.2, seed=sd + k * 10 + j, op=.85 * a))
+            mx, my = (cx + ex) / 2, (cy + ey) / 2
+            s.append(crystal(mx, my, 8 * a, sd + 100 + k * 10 + j, a))
     return "".join(s)
 
 
@@ -550,7 +568,7 @@ def sleeve_arm(wx, wy, ang, sc, sd):
 
 
 # камера крупного плана: над столом, смотрит вниз на 28°
-CH, CD, CTH, CF, CCY = 0.38, 0.40, 28.0, 1400.0, 880.0
+CH, CD, CTH, CF, CCY = 0.38, 0.40, 28.0, 1150.0, 860.0
 _cs, _cc = math.sin(math.radians(CTH)), math.cos(math.radians(CTH))
 
 
@@ -650,6 +668,12 @@ def _hull(P_):
     return lo[:-1] + up[:-1]
 
 
+def flat_hand(x, y, ang, k, *a, **kw):
+    """Кисть, лежащая на плоскости стола: сжата по вертикали в k раз (вид сверху под углом), направление на экране — ang."""
+    a2 = math.degrees(math.atan2(math.sin(math.radians(ang)) / k, math.cos(math.radians(ang))))
+    return f'<g transform="translate({f(x)} {f(y)}) scale(1 {k:.3f}) translate({f(-x)} {f(-y)})">{hand5(x, y, a2, *a, **kw)}</g>'
+
+
 def sleeve_to(edge_pt, wrist, w0, w1, col, shd, sd, cuff=None):
     """Рукав от края кадра до запястья (полоса с тенью), по желанию — манжета у кисти."""
     pts = [edge_pt, ((edge_pt[0] * 2 + wrist[0]) / 3, (edge_pt[1] * 2 + wrist[1]) / 3 + 10), wrist]
@@ -667,7 +691,7 @@ def sleeve_to(edge_pt, wrist, w0, w1, col, shd, sd, cuff=None):
 
 def closeup_bg():
     """Фон крупного плана: стена с панелями и окно — размыто (глубина резкости)."""
-    room = f'<g transform="translate(540 300) scale(1.9) translate(-540 -720)">{_ST["room"]}</g>'
+    room = f'<g transform="translate(540 250) scale(1.8) translate(-540 -720)">{_ST["room"]}</g>'
     return f'<g {blur(7)}>{room}</g>'
 
 
@@ -708,25 +732,25 @@ def s09(t):
     depth = PC(cx, -h, cz)[2]
     hs = CF * 0.19 / depth / 82
     # запястье: от края телефона назад вдоль его оси на ~длину кисти
-    k_back = 64 * hs
+    k_back = 40 * hs
     wx = end[0] - math.cos(math.radians(ang)) * k_back
     wy = end[1] - math.sin(math.radians(ang)) * k_back - 16 * hs
     wx += 30 * rel + 520 * away
     wy -= 46 * rel + 700 * away
     hs *= 1 + 0.12 * away
-    mode = "grip" if rel < 0.4 else ("rest" if rel < 0.8 else "open")
-    hand = hand5(wx, wy, ang + 8 * rel, "#f0cfb4", "#d4a98a", sd=1560, sc=hs, mode=mode, thumb_up=True, ink_w=1.15)
+    mode = "rest" if rel < 0.5 else "open"
+    hand = flat_hand(wx, wy, ang + 8 * rel, 0.62 + 0.3 * away, "#f0cfb4", "#d4a98a", sd=1560, sc=hs, mode=mode, thumb_up=True, ink_w=1.15)
     sleeve = sleeve_to((wx + 520, wy - 760), (wx - math.cos(math.radians(ang)) * 6 * hs, wy - math.sin(math.radians(ang)) * 6 * hs),
                        120 * hs / 2.2, 96 * hs / 2.2, "#f7f8fb", "#d5dbe4", 1580, cuff=("#8fb6e6", "#6f97c8"))
     # тень телефона на столе
-    sc_ = PC(cx + 0.02 + 0.25 * h, 0, cz + 0.02 + 0.3 * h)
-    shadow = blob(ellipse_pts(sc_[0], sc_[1], 200 * (1 + 1.5 * h), 60 * (1 + 1.5 * h), 18, rot=yaw * .5), "#6b4426", .42 * (1 - 2.2 * h), blur(6 + 30 * h))
+    sc_ = PC(cx - 0.01, 0, cz - 0.012)
+    shadow = blob(ellipse_pts(sc_[0], sc_[1] + 8, 150 * (1 + 1.5 * h), 34 * (1 + 1.5 * h), 18, rot=-yaw * .3), "#6b4426", .45 * clamp(1 - 2.6 * h), blur(5 + 30 * h))
     # руки участников по бокам стола (рукава из-за края кадра)
     arms = ""
-    for (X, Z, col, shd, skin, side, sd, ph) in ((-0.36, 0.30, "#2f8f8a", person.shade("#2f8f8a"), A_SPEC["skin"], -1, 1600, 0.0),
-                                                  (-0.30, 0.52, "#2f8f8a", person.shade("#2f8f8a"), A_SPEC["skin"], -1, 1620, 0.7),
-                                                  (0.40, 0.34, "#33467a", person.shade("#33467a"), B_SPEC["skin"], 1, 1640, 1.1),
-                                                  (0.33, 0.56, "#33467a", person.shade("#33467a"), B_SPEC["skin"], 1, 1660, 1.9)):
+    for (X, Z, col, shd, skin, side, sd, ph) in ((-0.33, 0.62, "#2f8f8a", person.shade("#2f8f8a"), A_SPEC["skin"], -1, 1620, 0.7),
+                                                  (-0.36, 0.40, "#2f8f8a", person.shade("#2f8f8a"), A_SPEC["skin"], -1, 1600, 0.0),
+                                                  (0.36, 0.64, "#33467a", person.shade("#33467a"), B_SPEC["skin"], 1, 1660, 1.9),
+                                                  (0.39, 0.42, "#33467a", person.shade("#33467a"), B_SPEC["skin"], 1, 1640, 1.1)):
         X2 = X + 0.004 * math.sin(t * 1.3 + ph)
         wr = PC(X2, -0.012, Z)
         k_ = CF * 0.19 / wr[2] / 82
@@ -734,18 +758,18 @@ def s09(t):
         a_ = math.degrees(math.atan2(wr[1] - edge[1], wr[0] - edge[0])) + (-10 if side < 0 else 10) * 0
         arms += sleeve_to(edge, wr[:2], 70 * k_, 58 * k_, col, shd, sd)
         twitch = 4 * math.exp(-max(t - PHONE_T, 0) * 6) * (t > PHONE_T) * (1 if side < 0 else -1)
-        arms += hand5(wr[0], wr[1], a_ + twitch, skin, person.shade(skin), sd=sd + 5, sc=k_, mode="rest", thumb_up=side > 0, ink_w=1.4)
+        arms += flat_hand(wr[0], wr[1], a_ + twitch, 0.6, skin, person.shade(skin), sd=sd + 5, sc=k_, mode="rest", thumb_up=side < 0, ink_w=1.4)
     bg = closeup_bg()
-    art = bg + table3d() + cup3d(-0.24, 0.55, 1680, steam_t=t) + cup3d(0.22, 0.60, 1700, steam_t=t + .4) + shadow + arms + ph_svg + sleeve + hand
+    art = bg + table3d() + cup3d(-0.13, 0.70, 1680, steam_t=t) + cup3d(0.17, 0.72, 1700, steam_t=t + .4) + shadow + arms + ph_svg + sleeve + hand
     # касание: штрихи-удар
     if 0 <= e < 0.32:
         c = PC(0.02, 0, 0.12)
         for k in range(8):
             aa = -math.pi * (0.04 + 0.92 * k / 7)
-            r0 = 230 + 120 * ease_out(e / .32)
-            L = 46 * (1 - e / .32)
+            r0 = 210 + 110 * ease_out(e / .32)
+            L = 46 - 16 * e / .32
             art += line([(c[0] + math.cos(aa) * r0, c[1] + math.sin(aa) * r0 * .42), (c[0] + math.cos(aa) * (r0 + L), c[1] + math.sin(aa) * (r0 + L) * .42)],
-                        7, INK, taper=.5, seed=1720 + k)
+                        7, INK, taper=.5, seed=1720 + k, op=1 - ease_in(e / .32, 2))
     u = clamp((t - 18.0) / 2.4)
     jolt = math.exp(-max(e, 0) * 12) * math.sin(max(e, 0) * 50) * (e > 0)
     c = PC(0.02, 0, 0.12)
@@ -791,20 +815,12 @@ def s10(t):
               hmode={"L": "open" if 21.0 <= t < 21.9 else "rest", "R": "rest"})
     shiver = 2.0 * fr * math.sin(t * 40)
     items = cups(t, fr)
-    items += blob(ellipse_pts(PH_REST[0] + 10, PH_REST[1] + 10, 88, 16, 16, rot=PH_ANG), "#5a3a22", .45, blur(4))
-    items += phone_flat(PH_REST[0], PH_REST[1], PH_ANG, 1.0, SQT, sd=700)
+    items += blob(ellipse_pts(PH_REST[0] + 4, PH_REST[1] + 6, 52, 10, 16, rot=PH_ANG), "#5a3a22", .45, blur(3))
+    items += phone_flat(PH_REST[0], PH_REST[1], PH_ANG, 0.62, SQT, sd=700)
     art = _ST["room"] + plant(70, FLOOR_Y + 20, t, 600) + lamp(t)
-    art += thermo(968, 430, 880, thermo_level(t), t)
+    art += window_frost(fr) + thermo(948, 330, 700, thermo_level(t), t)
     body = seated_wide(t, 1.0, 1.0, {"A": pa, "B": pb}, hA, hB, items_mid=items, frost=fr)
     art += f'<g transform="translate({f(shiver)} 0)">{body}</g>'
-    # пар изо рта, когда похолодало
-    if t > COLD_T + 0.2:
-        for k, (mx, my, d) in enumerate([(392, 790, 1), (690, 784, -1)]):
-            ph = ((t - COLD_T - 0.2) * 0.9 + k * 0.45) % 1
-            a = math.sin(math.pi * ph) * 0.7
-            x = mx + d * 40 * ph
-            y = my - 26 * ph
-            art += blob(ellipse_pts(x, y, 16 + 20 * ph, 10 + 12 * ph, 12), "#ffffff", a * .8)
     # снежинки — пара штук плывут сверху после удара
     if t > COLD_T:
         rs = np.random.RandomState(5)
@@ -815,7 +831,7 @@ def s10(t):
             art += crystal(x, y, 7 * smooth(COLD_T, COLD_T + .3, t), 980 + k, .9)
     u = clamp((t - 20.0) / 2.92)
     jolt = 0.012 * math.exp(-max(t - COLD_T, 0) * 6) * (t > COLD_T)
-    cm = cam(600 + 10 * u, 900, 1.48 + 0.03 * u + jolt, 0.3 - 0.5 * u)
+    cm = cam(598 + 8 * u, 880, 1.30 + 0.03 * u + jolt, 0.3 - 0.5 * u)
     return art, cm, ck
 
 
