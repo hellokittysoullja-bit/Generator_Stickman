@@ -41,10 +41,10 @@ T_KOT = wt("кот", 31)              # 31.12
 
 BS = 0.6
 D_HIP = np.array([250.0, 1262.0])
-F_HIP = np.array([830.0, 1262.0])
+F_HIP = np.array([850.0, 1262.0])
 F_K = 1.08
-CAT_POS = (562.0, 1080.0, 0.55)
-BP_POS = (432.0, 1080.0, 0.64)
+CAT_POS = (592.0, 1080.0, 0.55)
+BP_POS = (488.0, 1080.0, 0.64)
 CUP_D = (430.0, 1150.0, 0.8)
 CUP_F = (668.0, 1146.0, 0.8)
 PHONE = (548.0, 1176.0, 0.62)
@@ -260,9 +260,9 @@ def s02(t):
     tp = T_POLGODA
     g = smooth(tp - .34, tp - .04, t)
     wave = osc(t, 1.7)
-    n_free = (690 - 30 * wave, 1030 - 40 * abs(osc(t, 1.7, .6)))
+    n_free = (726 - 24 * wave, 1070 - 36 * abs(osc(t, 1.7, .6)))
     f_free = (880 + 20 * osc(t, 1.3), 1000 - 40 * osc(t, 2.1))
-    n_t = (n_free[0] * (1 - g) + 686 * g, n_free[1] * (1 - g) + 1010 * g)
+    n_t = (n_free[0] * (1 - g) + 738 * g, n_free[1] * (1 - g) + 1062 * g)
     f_t = (f_free[0] * (1 - g) + 892 * g, f_free[1] * (1 - g) + 880 * g)
     pop = bump(t, tp - .04, .3)
     n_t = (n_t[0], n_t[1] - 18 * pop)
@@ -296,7 +296,7 @@ def s03(t):
     glow = buzz_k * (.65 + .35 * abs(osc(t, 3.5)))
     d, gb, gf = dima_cup(t, dict(lid=.6, look=(.5, .3), brows="calm", mouth="smile", smile=.6))
     f = friend_rest(t, dict(lid=.8, look=(.45, .0), brows="up", mouth="talk", open=talk(t, 3.3, 5.4, 6), smile=.7),
-                    near=(712 + 6 * osc(t, .9), 1196), hn=dict(kind="open", flip=-1, dir=(-1, .22), curl=(.15 + .1 * osc(t, 1.1), .25, .3, .38),
+                    near=(712 + 6 * osc(t, .9), 1196), far=(784, 1186), hn=dict(kind="open", flip=-1, dir=(-1, .22), curl=(.15 + .1 * osc(t, 1.1), .25, .3, .38),
                                                              spread=.08, thumb=.4, bend=.1))
     A = dict(dima=d, friend=f, cat=dict(look=(.1, .6), tail=3 * osc(t, .5)), cups=cups_default(), phone=dict(glow=glow, buzz=buzz),
              grip_back=gb, grip_front=gf)
@@ -327,7 +327,7 @@ def s04(t):
     op = talk(t, 5.0, ts - .05, 5.5) * (1 - fade)
     # друг рассказывает, жесты стихают; к «склеился» рука падает на стол
     g = 1 - smooth(5.6, ts, t)
-    near = (660 - 26 * g * osc(t, 1.4), 1186 - 150 * g * (.6 + .4 * abs(osc(t, 1.4, .4))))
+    near = (692 - 26 * g * osc(t, 1.4), 1186 - 150 * g * (.6 + .4 * abs(osc(t, 1.4, .4))))
     f = friend_rest(t, dict(lid=.8 - .2 * fade, look=(.45, .05 + .1 * fade), brows="up" if fade < .5 else "calm",
                             mouth="talk" if fade < .5 else "flat", open=op, smile=.7 * (1 - fade)),
                     near=near, hn=dict(kind="open", flip=-1, dir=(-1, .25 - .9 * g), curl=(.2 * (1 - g) + .05,) * 4, spread=.08 + .14 * g, thumb=.4),
@@ -362,7 +362,7 @@ def s05(t):
     st = dict(look=(.06 * osc(t, .3), .05), tilt=tilt, ear=10 * bump(t, 8.9, .25) - 8 * bump(t, 9.05, .25), tail=5 * osc(t, .45),
               blink=blink_at(t, 9.62, .2), perk=.4 * bump(t, tp, .8), flame_e=1.2)
     d, gb, gf = dima_cup(t, dict(lid=.5, look=(.3, .6), brows="calm", mouth="flat"))
-    f = friend_rest(t, dict(lid=.6, look=(.4, .2), brows="calm", mouth="flat"))
+    f = friend_rest(t, dict(lid=.6, look=(.4, .2), brows="calm", mouth="flat"), hip_off=(110, 0))
     A = dict(dima=d, friend=f, cat=st, cups=cups_default(), phone=dict(), grip_back=gb, grip_front=gf)
     return table_scene(t, cam, A)
 
@@ -379,19 +379,19 @@ def s12(t):
     # фазы ближней руки: от чашки к телефону, взял, поднёс к рюкзаку, опустил внутрь, застегнул, вернулся к чашке
     cupw = np.array(cup_wrist(CUP_D, -1, "dima"))
     ph_w = np.array([PHONE[0] - 70, PHONE[1] - 6])
-    above = np.array([BP_MOUTH[0] - 46, BP_MOUTH[1] - 88])
+    above = np.array([BP_MOUTH[0] - 48, BP_MOUTH[1] - 80])
     bpx, bpy, bpk = BP_POS[0], BP_POS[1] - 30, BP_POS[2]
     t_grab, t_lift = 25.15, 26.5
     t_zip0, t_zip1 = tr + .2, tr + .62
-    near_mouth = above + np.array([0, 28])
-    zw = lambda zu: room.zip_pos(bpx, bpy, bpk, zu) + np.array([50, 16])  # noqa: E731
+    near_mouth = above + np.array([0, 60])
+    zw = lambda zu: room.zip_pos(bpx, bpy, bpk, zu) + np.array([-46, 10])  # noqa: E731
     if t < t_grab:
         u = ease_io(clamp((t - 24.6) / (t_grab - 24.6)))
         w = cupw + (ph_w - cupw) * u
         hold = False
     elif t < t_lift:
         u = clamp((t - t_grab) / (t_lift - t_grab))
-        mid = ph_w + np.array([-10, -110])
+        mid = ph_w + np.array([10, -90])
         w = ph_w + (mid - ph_w) * ease_io(u / .55) if u < .55 else mid + (above - mid) * ease_io((u - .55) / .45)
         hold = True
     elif t < tr:
@@ -418,7 +418,7 @@ def s12(t):
     d_hand = dict(kind="open", dir=(1, -.2) if not hold else (1, .35), curl=(.55, .6, .65, .7) if hold else (.2, .25, .3, .35), spread=.05,
                   thumb=.75 if hold else .3)
     if t_zip0 - .1 < t < t_zip1 + .1:       # пальцы тянут бегунок: щепоть
-        d_hand = dict(kind="open", dir=(-1, .2), flip=-1, curl=(.35, .75, .85, .9), spread=.03, thumb=.85)
+        d_hand = dict(kind="open", dir=(1, .3), curl=(.35, .75, .85, .9), spread=.03, thumb=.85)
     farw = (cupw[0] + 40, cupw[1] - 30)
     pd = dict(arms={"n": ("ik", tuple(w), -1), "f": ("ik", farw)}, hands={"n": d_hand, "f": dict(kind="none")},
               expr=expr, head_ang=-.08 * look_bp + .05 * to_friend, lean=.12 - .04 * look_bp)
@@ -496,16 +496,16 @@ def s13(t):
     sw = osc(t, 1.25)
     near_story = (690 - 30 * sw, 1050 - 50 * abs(osc(t, 1.25, .5)))
     far_story = (900 + 30 * sw, 920 - 50 * osc(t, 1.8))
-    near_l = (700, 1060 + 10 * shake)
+    near_l = (772, 1046 + 10 * shake)
     slap = bump(t, th + .02, .22)
-    far_l = (640, 1170 - 60 * (1 - slap) * lg * abs(osc(t, 3.5)))
+    far_l = (588, 1192 - 60 * (1 - slap) * lg * abs(osc(t, 3.5)))
     near = tuple(np.array(near_story) * (1 - lg) + np.array(near_l) * lg)
-    far = tuple(np.array(far_story) * (1 - lg) + np.array((740, 1080)) * lg)
+    far = tuple(np.array(far_story) * (1 - lg) + np.array((744, 1170 - 30 * slap)) * lg)
     f = friend_rest(t, dict(lid=.9, look=(.45, -.05), brows="up", mouth="talk" if lg < .5 else "laugh", open=talk(t, 28.0, th, 6.5) if lg < .5 else
                             .8 + .2 * osc(t, 7.5), smile=1.0, laugh=lg, tears=tears),
                     near=near, far=far, head_ang=-.05 * osc(t, 1.25) * (1 - lg) - .12 * lg + .03 * shake, hip_off=(0, 6 * shake),
                     hn=dict(kind="open", flip=-1, dir=(-1 + .9 * lg, -.5 + .9 * lg), curl=(.05 + .3 * lg,) * 4, spread=.3 * (1 - lg) + .08, thumb=.2),
-                    hf=dict(kind="open", flip=-1, dir=(.2, -1), curl=(.05,) * 4, spread=.3, thumb=.15), lean=.06 - .05 * lg)
+                    hf=dict(kind="open", flip=-1, dir=(.2 - 1.1 * lg, -1 + 1.3 * lg), curl=(.05 + .2 * lg,) * 4, spread=.3 - .2 * lg, thumb=.15), lean=.06 - .05 * lg)
     # Дима: смеётся, на «хохочут» хлопает ладонью по столу (чашки подпрыгивают)
     slap_d = bump(t, th, .26)
     dn = (390 + 10 * lg, 1196 - 70 * lg * (1 - slap_d) * (.5 + .5 * abs(osc(t, 3.5, .5))))
@@ -529,7 +529,7 @@ def s13(t):
 def s14(t):
     fx, fy = cat_face()
     k = clamp((t - 30.8) / 2.0)
-    cam = (fx + 34 - 16 * k, fy + 70, 2.35 + .15 * ease_io(k), -.3 + .5 * k)
+    cam = (552 + 10 * ease_io(k), fy + 64 - 10 * k, 1.78 + .14 * ease_io(k), -.3 + .5 * k)
     set_ink(cam[2])
     tk = T_KOT
     turn = smooth(tk - .1, tk + .3, t)
@@ -564,7 +564,7 @@ def s15(t):
     shake = osc(t, 6)
     d, gb, gf = dima_cup(t, dict(lid=.7, look=(.5, -.05), brows="up", mouth="grin", open=.6, hair=2 * shake), head_ang=.02 * shake)
     f = friend_rest(t, dict(lid=.85, look=(.45, 0), brows="up", mouth="talk", open=talk(t, 32.4, 36.3, 5.5), smile=.9),
-                    near=(720 + 14 * osc(t, .8), 1150 - 30 * abs(osc(t, .8, .3))))
+                    near=(720 + 14 * osc(t, .8), 1150 - 30 * abs(osc(t, .8, .3))), hip_off=(120, 0))
     A = dict(dima=d, friend=f, cat=st, cups=cups_default(), phone=None, grip_back=gb, grip_front=gf, bp=dict(open_=0, zip_u=1))
     return table_scene(t, cam, A)
 
