@@ -185,8 +185,8 @@ def speech(x, y, w, h, text, fs, sc, tail=(-60, 90), sd=0, col="#ffffff"):
     body = lib.rect_pts(x0, y0, x1, y1, h * .45)
     tl = [(x - 70, y1 - 30), (tx, ty, 1), (x - 6, y1 - 20)]
     s = shape(tl, col, "", w=4.6, seed=sd + 1)
-    s += shape(body, col, blob(lib.rect_pts(x0 + 10, y1 - 26, x1 - 10, y1 - 4, 12), "#e4ecf6", .9), w=5, seed=sd + 2)
-    s += lib.blob([(x - 64, y1 - 34), (x - 4, y1 - 30), (x - 8, y1 + 6), (x - 60, y1 + 6)], col)       # стык хвоста без туши
+    s += shape(body, col, "", w=5, seed=sd + 2)
+    s += lib.blob([(x - 64, y1 - 34), (x - 4, y1 - 30), (x - 8, y1 + 1), (x - 60, y1 + 1)], col)       # стык хвоста без туши
     s += (f'<text x="{f(x)}" y="{f(y + fs * .36)}" text-anchor="middle" font-family="IDB" font-weight="900" font-size="{fs}" '
           f'fill="{INK}">{text}</text>')
     return f'<g transform="translate({f(tx)} {f(ty)}) scale({sc:.4f}) translate({f(-tx)} {f(-ty)})">{s}</g>'
