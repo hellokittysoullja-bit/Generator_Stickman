@@ -1,17 +1,17 @@
 [
  {
-  "id": "s03",
-  "start": 2.2199999999999998,
-  "n": 40,
+  "id": "s07",
+  "start": 7.64,
+  "n": 95,
   "region": [
-   -41,
-   113,
-   1043,
-   1854
+   571,
+   567,
+   498,
+   886
   ],
-  "S": 1.357,
-  "ow": 1415,
-  "oh": 2516,
-  "out": "/home/user/Generator_Stickman/videos/24_finish/story/room/chars/s03"
+  "S": 2.2,
+  "ow": 1096,
+  "oh": 1949,
+  "out": "/home/user/Generator_Stickman/videos/24_finish/story/room/chars/s07"
  }
 ]

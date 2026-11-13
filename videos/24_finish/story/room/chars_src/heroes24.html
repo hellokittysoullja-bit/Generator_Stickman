@@ -39,7 +39,7 @@ const LAYERS = ['L_dima', 'L_plaid', 'L_cat', 'L_fx'];
 const h01 = (i, s) => { const v = Math.sin(i * 127.1 + s * 311.7) * 43758.5453123; return v - Math.floor(v); };
 const SHOT = {
   s03: {pose: 'L', look: 'lap', mouth: 'm_flat', rest: .22, blinks: [3.18], catBlinks: [[2.9, .22]], catLook: [-5, 2]},
-  s04: {pose: 'P', look: 'empty', mouth: 'm_flat', rest: .16, blinks: [3.72], catBlinks: []},
+  s04: {pose: 'P', look: 'empty', mouth: 'm_flat', rest: .16, blinks: [3.74], catBlinks: []},
   s07: {pose: 'L', look: 'lap', mouth: 'm_flat', rest: .22, blinks: [], catBlinks: [[9.62, .22]], tilt: 1},
   s14: {pose: 'N', look: 'book', mouth: 'm_flat', rest: .3, blinks: [25.62], catBlinks: [[25.95, .24]], catLook: [-7, 1], open: 1, write: 1},
   s16: {pose: 'N', look: 'up', mouth: 'm_warm', rest: .38, blinks: [30.72], catBlinks: [[30.2, .26]], catLook: [-6, 0], lean: 1, done: 1},
@@ -94,7 +94,7 @@ function seek(t, shot) {
     const pf = d < 0 ? 0 : d < .1 ? d / .1 : Math.max(0, 1 - (d - .1) / .3);
     set('pop_puff', 'transform', `translate(${mx.toFixed(2)} ${my.toFixed(2)}) rotate(-14) scale(${(0.001 + pf).toFixed(4)})`);
     for (let i = 0; i < 2; i++) {
-      const vx = i ? 50 : 118, up = i ? 205 : 105;
+      const vx = i ? 92 : 150, up = i ? 95 : 45;
       let x = mx, y = my - 6, rot = 0, sx = 1, sc = 0.001;
       if (d >= 0) {
         const u = Math.min(1, d / .32), e = 1 - Math.pow(1 - u, 2);
@@ -105,7 +105,7 @@ function seek(t, shot) {
         sx = Math.cos(d * (i ? 10 : 13));
         sc = Math.min(1, d / .05);
       }
-      set('pop_c' + i, 'transform', `translate(${x.toFixed(2)} ${y.toFixed(2)}) rotate(${rot.toFixed(2)}) scale(${(sc * (Math.abs(sx) < .12 ? .12 * Math.sign(sx || 1) : sx)).toFixed(4)} ${sc.toFixed(4)})`);
+      set('pop_c' + i, 'transform', `translate(${x.toFixed(2)} ${y.toFixed(2)}) rotate(${rot.toFixed(2)}) scale(${(1.25 * sc * (Math.abs(sx) < .12 ? .12 * Math.sign(sx || 1) : sx)).toFixed(4)} ${(1.25 * sc).toFixed(4)})`);
     }
   }
   // блокнот: обложка открывается, строчка пишется, галочка
@@ -145,7 +145,7 @@ function seek(t, shot) {
   const ltf = `rotate(${lean.toFixed(3)} 300 1300)`;
   for (const id of ['dima_lean', 'lean_tv', 'lean_lamp']) set(id, 'transform', ltf);
   // глаза
-  const bl = Math.max(blinkAt(t, S.blinks), CUR === 's04' ? catBlinkAt(t, [[3.70, .42]]) : 0);
+  const bl = blinkAt(t, S.blinks);
   const lid = Math.max(bl, S.rest) * 58;
   for (const nm of ['N', 'F']) set('dima_lid_' + nm, 'transform', `translate(0 ${lid.toFixed(2)})`);
   let px = 0, py = 0;
