@@ -172,12 +172,12 @@ QUILT, QUILT_SH, QUILT_ST = "#6f9bc8", "#557fae", "#9cc0e2"
 def blanket(lie, head_x):
     """Одеяло: lie 1 — укрыт до подбородка, 0 — сидит, одеяло на коленях. Левый край — по подбородку или у пояса."""
     hx, hy = HIP
-    ex = (head_x + 98) * lie + (hx - 150) * (1 - lie)
+    ex = (head_x + 50) * lie + (hx - 150) * (1 - lie)
     ty = hy - 96 * lie - 18 * (1 - lie)
     kx, ky = hx + 260, hy - 100 - 30 * (1 - lie)
     top = [(ex, ty + 40 * lie + 6), (ex + 40, ty + 10 * lie - 4), ((ex + kx) / 2, ty - 8 + 6 * (1 - lie)), (kx - 40, ky + 6), (kx, ky), (kx + 60, ky + 14),
            (hx + 470, hy - 70), (hx + 560, hy - 40), (BED_X1 + 30, MAT + 10)]
-    pts = top + [(BED_X1 + 30, MAT + 132, 1), (ex + 20, MAT + 140), (ex - 6, MAT + 60)]
+    pts = top + [(BED_X1 + 30, MAT + 132, 1), (ex + 20 - 60 * lie, MAT + 140), (ex - 6 - 70 * lie, MAT + 40)]
     inner = blob([(ex - 20, MAT + 60), (BED_X1 + 40, MAT + 50), (BED_X1 + 40, MAT + 150), (ex - 20, MAT + 150)], QUILT_SH, .9)
     for k in range(9):
         x = ex + 60 + k * 90
@@ -232,7 +232,7 @@ def sunbeams(t):
     g = lin_grad([(0, "#fff6d0", .45), (1, "#fff6d0", 0)], x1, y0, 400, 1100, units="userSpaceOnUse")
     pts = [(x0 + 20, y0 + 40), (x1 - 10, y0 + 20), (560, 1180), (90, 1150)]
     sway = 0.04 * math.sin(t * 1.2)
-    return f'<path d="{lib.fill_d(pts)}" fill="url(#{g})" opacity="{.75 + sway:.3f}" style="mix-blend-mode:screen"/>'
+    return f'<path d="{lib.fill_d(pts)}" fill="url(#{g})" opacity="{.6 + sway:.3f}" {blur(14)} style="mix-blend-mode:screen"/>'
 
 
 # ───────────────────────── Дима
@@ -243,15 +243,29 @@ def dima(t, lie, expr, arm_n=None, arms_up=0.0, hand_n=None, breath=0.0, side=-1
     hip = (HIP[0], HIP[1] + breath)
     if arms_up > 0:
         u = arms_up
-        arms = {"n": ("ang", math.pi * (0.55 + 0.42 * u), 0.5 * (1 - u) - 0.15), "f": ("ang", math.pi * (0.55 + 0.4 * u) + 0.2, 0.3 * (1 - u))}
+        # руки вверх «буквой V» за головой: ближняя вверх-вперёд, дальняя вверх-назад, локти чуть согнуты
+        an = 0.62 * math.pi + (math.pi - 0.62 - 0.62 * math.pi) * u
+        af = 0.62 * math.pi + (math.pi + 0.5 - 0.62 * math.pi) * u
+        arms = {"n": ("ang", an, 0.35 * (1 - u) + 0.12), "f": ("ang", af, -0.35 * (1 - u) - 0.12)}
         hands = {"n": {"kind": "open", "spread": .5, "curl": (.1, .1, .1, .15)}, "f": {"kind": "open", "spread": .5}}
     else:
         # тянется дальней рукой (она за головой и под одеялом у плеча — без рук поперёк лица); ближняя под одеялом
         tgt = arm_n if arm_n is not None else (hip[0] - 120, hip[1] + 10)
-        arms = {"f": ("ik", tgt, side), "n": ("ang", 0.65 * math.pi, 0.2)}
-        hands = {"f": hand_n or {"kind": "open"}, "n": {"kind": "open"}}
-    pose = dict(hip=hip, scale=SC, lean=lean, feet=None, pelvis=False, arms=arms, hands=hands, head_ang=lean * 0.5, expr=expr)
+        near = (hip[0] + 130, hip[1] - 40)
+        arms = {"f": ("ik", tgt, side), "n": ("ik", near, -1)}
+        hands = {"f": hand_n or {"kind": "open"}, "n": {"kind": "open", "dir": (1, 0.35), "curl": (.3, .3, .35, .4)}}
+    pose = dict(hip=hip, scale=SC, lean=lean, feet=None, pelvis=False, arms=arms, hands=hands, head_ang=lean * 0.22, expr=expr)
     return people.draw(pose)
+
+
+def head_over(d, lie, expr):
+    """Голова поверх одеяла (лёжа одеяло натянуто до подбородка и закрывает шею и плечи)."""
+    if lie < 0.3:
+        return ""
+    lean = -math.pi / 2 * lie - 0.08 * (1 - lie)
+    hx, hy = d["head"]
+    return (f'<g transform="translate({hx:.2f} {hy:.2f}) scale({SC}) rotate({math.degrees(lean * 0.72):.3f})">'
+            f'{people.dima_head(expr)}</g>')
 
 
 def dima_layers(d, arm_visible, arms_back=False):
@@ -306,18 +320,18 @@ def blink_at(t, times, dur=0.16):
 def s09(t):
     br = 5 * math.sin(t * 2 * math.pi / 3.0)
     # рука: лежит на одеяле → тянется к бусине (15.55–16.0) → дёргает на 16.16 → медленно опускается
-    rest = (600, 912)
+    rest = (620, 1000)
     tug = smooth(CLICK9 - 0.1, CLICK9, t) * (1 - smooth(CLICK9 + 0.05, CLICK9 + 0.25, t))
     bead = (BEAD0[0], BEAD0[1] + 34 * tug)
     reach = smooth(15.45, 16.0, t) * (1 - smooth(16.45, 16.95, t))
-    tgt = (rest[0] + (bead[0] - rest[0]) * reach, rest[1] + (bead[1] + 22 - rest[1]) * reach)
+    tgt = (rest[0] + (bead[0] + 30 - rest[0]) * reach, rest[1] + (bead[1] + 50 - rest[1]) * reach)
     on = 1 - smooth(CLICK9 - 0.02, CLICK9 + 0.04, t)
     expr = {"closed": 1.0, "mouth": "gape", "open": 0.25 + 0.1 * math.sin(t * 2 * math.pi / 3.0), "bags": True, "brows": "calm",
             "hair": 2 * math.sin(t * 2)}
     d = dima(t, 1.0, expr, arm_n=tgt, hand_n={"kind": "open", "curl": tuple([.35 + .4 * reach] * 4), "spread": .1}, breath=br * .4)
     before, after = dima_layers(d, True)
     head_x = d["head"][0]
-    o = [_ST["room_night"], lamp(on, t), _ST["bed_back"], pillow(), before, blanket(1.0, head_x), after, cord(bead, t)]
+    o = [_ST["room_night"], lamp(on, t), _ST["bed_back"], pillow(), before, blanket(1.0, head_x), head_over(d, 1.0, expr), after, cord(bead, t)]
     o.append(zzz(t, d["head"][0] - 120, d["head"][1] - 90, 15.0))
     o.append(dark(0.42 + 0.2 * (1 - on)))
     o.append(lamp_glow(on))
@@ -346,16 +360,16 @@ def s13(t):
     elif t < STRETCH + 0.5:
         expr = {"laugh": 1.0, "mouth": "grin", "open": .9, "bags": False, "brows": "up", "hair": 8 * math.sin((t - STRETCH) * 18)}
     else:
-        expr = {"lid": .7, "look": (.3, -.2), "mouth": "grin", "open": .5, "bags": False, "brows": "up",
+        expr = {"lid": .45, "look": (.3, -.3), "mouth": "grin", "open": .5, "bags": False, "brows": "up",
                 "closed": blink_at(t, [24.25]), "hair": 3 * math.sin(t * 6)}
     br = 4 * math.sin(t * 2 * math.pi / 3.0) * (1 - up)
     d = dima(t, lie, expr, arms_up=arms, breath=br)
     before, after = dima_layers(d, False, arms_back=arms > 0)
     head_x = d["head"][0] if lie > 0.5 else HIP[0]
-    o = [_ST["room_day"], lamp(0, t), cord(BEAD0, t), _ST["bed_back"], pillow(), before, blanket(lie, d["head"][0]), after]
+    o = [_ST["room_day"], lamp(0, t), cord(BEAD0, t), _ST["bed_back"], pillow(), before, blanket(lie, d["head"][0]), head_over(d, lie, expr), after]
     # кот сидит на одеяле у ног, смотрит на Диму; на «выспаться» — радостный прищур
     happy = 1.0 if t > STRETCH + 0.15 else 0.0
-    o.append(cat_sit(t, 1140, 948, 0.6, look=(-0.8, -0.3) if t < STRETCH else (-0.6, -0.6), happy=happy,
+    o.append(cat_sit(t, 1030, 952, 0.55, look=(-0.8, -0.3) if t < STRETCH else (-0.6, -0.6), happy=happy,
                      blink=blink_at(t, [23.1]), tilt=-6 + 4 * math.sin(t * 2)))
     o.append(sunbeams(t))
     if t < STRETCH:
@@ -370,7 +384,7 @@ def s13(t):
             sc_ = math.sin(math.pi * e / 0.7)
             o.append(star(hx + math.cos(a) * r, hy + math.sin(a) * r, 18 * sc_ + 1, "#f2b43a", 2950 + k))
     u = clamp((t - 22.65) / 2.0)
-    cx, cy, sc = 640 - 40 * u, 820 - 40 * ease_io(u), 0.97 + 0.05 * u
+    cx, cy, sc = 640 + 70 * ease_io(u), 830 - 40 * ease_io(u), 1.2 + 0.05 * u
     e = t - STRETCH
     if e > 0:
         kk = math.exp(-e * 7)
@@ -397,13 +411,13 @@ def s17(t):
     lie = smooth(a, b, t)
     tug = smooth(CLICK17 - 0.1, CLICK17, t) * (1 - smooth(CLICK17 + 0.05, CLICK17 + 0.25, t))
     bead = (BEAD0[0], BEAD0[1] + 34 * tug)
-    rest = (600, 912)
+    rest = (620, 1000)
     reach = smooth(29.3, 29.6, t) * (1 - smooth(29.9, 30.4, t))
-    tgt = (rest[0] + (bead[0] - rest[0]) * reach, rest[1] + (bead[1] + 22 - rest[1]) * reach)
+    tgt = (rest[0] + (bead[0] + 30 - rest[0]) * reach, rest[1] + (bead[1] + 50 - rest[1]) * reach)
     if t < b:
         expr = {"lid": .35, "look": (.6, .2), "mouth": "smile", "smile": .4, "bags": True, "brows": "calm", "closed": blink_at(t, [28.9])}
     else:
-        cl = smooth(30.0, 30.4, t)
+        cl = smooth(29.95, 30.12, t)
         expr = {"lid": .3, "look": (-.4, -.6), "mouth": "smile", "smile": .5, "bags": True, "brows": "calm", "closed": cl}
     on = smooth(CLICK17 - 0.02, CLICK17 + 0.06, t)
     br = 4 * math.sin(t * 2 * math.pi / 3.0) * lie
@@ -412,17 +426,17 @@ def s17(t):
     before, after = dima_layers(d, lie > 0.5)
     o = [_ST["room_eve"], lamp(on, t), _ST["bed_back"], pillow()]
     o.append(curled(t, smolder=1.0))
-    o += [before, blanket(lie, d["head"][0]), after, cord(bead, t)]
+    o += [before, blanket(lie, d["head"][0]), head_over(d, lie, expr), after, d["arm_n"] if lie < 0.5 else "", cord(bead, t)]
     o.append(dark(0.38 - 0.16 * on, "#1c1640"))
     o.append(lamp_glow(on * 0.85))
     e = t - CLICK17
     if 0 <= e < 0.35:
         o.append(props.burst(LAMP[0], LAMP[1] + 20, 1.0, e / 0.35, seed=2900, color="#7a5a20", n=6, r0=90, r1=140))
     # камера: на Диме → панорама к подушке и коту (к «кот»)
-    p = ease_io(clamp((t - 29.9) / 0.75))
-    cx = 640 + (330 - 640) * p
-    cy = 830 + (900 - 830) * p
-    sc = 0.98 + (1.42 - 0.98) * p + 0.03 * clamp((t - 30.65) / 1.6)
+    p = ease_io(clamp((t - 29.95) / 0.65))
+    cx = 760 - 40 * clamp((t - 28.75) / 1.2) + (290 - 720) * p
+    cy = 820 + (935 - 820) * p
+    sc = 1.18 + (1.62 - 1.18) * p + 0.06 * clamp((t - 30.6) / 1.7)
     e = t - CLICK17
     if e > 0:
         kk = math.exp(-e * 8)
@@ -443,22 +457,22 @@ def curled(t, smolder=1.0, blink=1.0, look=(0, 0), flame_k=1.0, glow=0.0, head_l
 def s18(t):
     # глаза: спит → приоткрывает (32.3–32.9) → смотрит → медленное моргание (33.9–34.6) → снова смотрит
     op = smooth(32.25, 32.95, t)
-    bl = 1 - 0.78 * op
+    bl = 1 - 0.9 * op
     sb = (t - 33.9) / 0.75
     if 0 <= sb <= 1:
-        bl = max(bl, 0.22 + 0.78 * math.sin(math.pi * sb))
+        bl = max(bl, 0.1 + 0.9 * math.sin(math.pi * sb))
     ign = smooth(32.6, 33.5, t)
     o = [_ST["room_eve"], lamp(1, t), _ST["bed_back"], pillow()]
+    o.append(dark(0.2, "#1c1640"))
+    o.append(lamp_glow(0.55))
     o.append(curled(t, smolder=1 - ign, blink=bl, look=(0.0, 0.15), flame_k=1.0 + 0.25 * ign, glow=ign, head_lift=0.6 * op))
-    o.append(dark(0.22, "#1c1640"))
-    o.append(lamp_glow(0.85))
     x, y, s = CAT_POS
     hx, hy = catcurl.HEAD_C
     wx = x + (hx - catcurl.BX) * s
     wy = y + (hy - catcurl.BY) * s
     u = clamp((t - 31.9) / 3.8)
-    cx, cy = wx + 30 - 20 * u, wy + 40 - 10 * u
-    sc = 3.0 + 0.35 * ease_io(u)
+    cx, cy = wx + 38 - 14 * u, wy + 62 - 8 * u
+    sc = 4.0 + 0.4 * ease_io(u)
     return o, (cx, cy, sc, -0.6 + 0.8 * u)
 
 

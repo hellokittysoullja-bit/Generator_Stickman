@@ -38,10 +38,11 @@ def char(pose, levels, fc, wl, wr, al, ar, cl=0.3, cr=0.3, bl=-40, br=40, legs="
     B.set_skin(live)
     sc = pose.sc
     SL, SR = pose.pt(*SH_L), pose.pt(*SH_R)
-    s = [behind, legs, arm(SL, wl, bl, 1301, sc), arm(SR, wr, br, 1302, sc)]
-    inner = ""
+    s = []
     if halo:
-        inner += BA.halo(levels, lit, warm, halo)
+        s.append(f'<g transform="{pose.tf()}">{BA.halo(levels, lit, warm, halo)}</g>')
+    s += [behind, legs, arm(SL, wl, bl, 1301, sc), arm(SR, wr, br, 1302, sc)]
+    inner = ""
     inner += BA.brain(levels, lit, pink, warm) + fc + hat
     s.append(f'<g transform="{pose.tf()}">{inner}</g>')
     s.append(front)
@@ -612,7 +613,7 @@ def s10(t):
         k = clamp((e2 + 0.15) / 0.85)
         art.append(B.sweat(fx - 140 * k, fy - 60 * math.sin(math.pi * k) + 200 * k * k, 1.6 * (1 - 0.3 * k)))
     u = clamp((t - 16.75) / 2.15)
-    return "".join(art), cam(690 + 30 * u, 820 - 10 * u, 1.0 + 0.04 * u, 0.6 - 1.0 * u)
+    return "".join(art), cam(665 + 30 * u, 820 - 10 * u, 1.0 + 0.04 * u, 0.6 - 1.0 * u)
 
 
 # ───────────────────────── s15: тёплый свет, большой палец и подмигивание

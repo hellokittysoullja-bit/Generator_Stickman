@@ -269,7 +269,7 @@ def progress(t, x0, y0, w, h, fill, lock_shake=0.0, red=0.0):
     cid = lib.clip_rect(fx + 2, y0 + 4, x0 + w - 4 - fx - 2, h - 8, h / 2 - 4)
     hatch = "".join(f'<path d="M{x0 + j * 22 - 40:.1f} {y0 + h} L{x0 + j * 22:.1f} {y0}" stroke="#4a5470" stroke-width="7"/>' for j in range(int(w / 22) + 4))
     o.append(f'<g clip-path="url(#{cid})"><rect x="{fx:.1f}" y="{y0}" width="{x0 + w - fx:.1f}" height="{h}" fill="{mix("#2c3550", "#7a2430", red)}"/>{hatch}</g>')
-    o.append(text(x0 + w * .58 + lock_shake, y0 - 18, "90 %", 64, mix("#ffffff", "#ff8a80", red), INK, 7))
+    o.append(text(x0 + w * .58 + lock_shake, y0 - 30, "90 %", 64, mix("#ffffff", "#ff8a80", red), INK, 7))
     o.append(padlock(x0 + w * .58, y0 + h / 2 - 4, 1.0, lock_shake, red))
     return "".join(o)
 
@@ -373,8 +373,9 @@ def headband(bulb=1.0, t=0.0, smoke=0.0):
     # датчики-присоски на обруче
     for j, (x, y) in enumerate([(-96, -128), (-20, -150), (88, -130)]):
         o.append(shape(ellipse_pts(x, y, 13, 13, 12), "#4f8ea0", blob(ellipse_pts(x - 3, y - 3, 5, 5, 8), "#a8dde8"), w=3, seed=5810 + j))
-    # патрон и колба
+    # патрон и колба (крупнее обруча — читается на общем плане)
     bx, by = 40, -156
+    o.append(f'<g transform="translate({bx} {by}) scale(1.45) translate({-bx} {-by})">')
     o.append(shape([(bx - 18, by + 4), (bx + 18, by + 4), (bx + 16, by - 24), (bx - 16, by - 24)], "#8a909c",
                    line([(bx - 15, by - 8), (bx + 15, by - 8)], 2.6, INK, seed=5821) + line([(bx - 15, by - 16), (bx + 15, by - 16)], 2.6, INK, seed=5822),
                    w=3.4, seed=5820))
@@ -396,17 +397,51 @@ def headband(bulb=1.0, t=0.0, smoke=0.0):
             o.append(line([(gx + r0 * math.cos(a), gy + r0 * math.sin(a)), (gx + r1 * math.cos(a), gy + r1 * math.sin(a))], 6, "#ffd23a", seed=5840 + j,
                           taper=.4, wmin=.4, op=bulb))
     if smoke > 0:
-        for j in range(3):
-            v = clamp(smoke - j * .15)
-            if v <= 0:
+        for j in range(4):
+            v = clamp(smoke * 1.4 - j * .18)
+            if v <= 0 or v >= 1:
                 continue
-            sx, sy = gx + 10 * math.sin(j * 2 + smoke * 5), gy - 50 - 90 * v - j * 26
-            rr = (14 + 8 * j) * (.6 + .6 * v)
-            o.append(shape(ellipse_pts(sx, sy, rr, rr * .85, 12), mix("#b8bcc6", "#e3e6ec", v), "", w=3, seed=5850 + j))
+            sx, sy = gx + 12 * math.sin(j * 2.3 + v * 5), gy - 50 - 110 * v - j * 8
+            rr = (10 + 4 * j) * math.sin(math.pi * min(1, v * 1.2)) + 1
+            o.append(shape(ellipse_pts(sx, sy, rr, rr * .85, 12), "#c9cdd6", blob(ellipse_pts(sx + rr * .3, sy + rr * .25, rr * .6, rr * .5, 10), "#a9aeb9"),
+                           w=2.6, seed=5850 + j))
+    o.append("</g>")
     return "".join(o)
 
 
-def wires(a, b, t, sag=120, seed=5900, cols=("#d8483c", "#3f7aa8"), wob=0.0):
+def strain_face(k=1.0, t=0.0):
+    """Поверх лица Димы (единицы головы): зажмуренные глаза-щёлки с морщинками, стиснутые зубы, красное лицо."""
+    if k <= 0:
+        return ""
+    o = []
+    skin = people.PAL["dima"]["SKIN"]
+    cid = lib.clip_of(people.FACE)
+    o.append(f'<g clip-path="url(#{cid})">')
+    o.append(blob(ellipse_pts(48, -10, 92, 66, 16), "#e2685e", .28 * k))
+    for (cx, cy, rx, ry), sd, sgn in ((people.EYE_N, 6700, 1), (people.EYE_F, 6710, 1)):
+        o.append(blob(ellipse_pts(cx, cy, rx + 7, ry + 7, 16), skin))
+        o.append(blob(ellipse_pts(cx, cy, rx + 7, ry + 7, 16), "#e2685e", .28 * k))
+        # щёлка: дуга вниз, сжатая
+        o.append(line([(cx - rx * .85, cy - ry * .05), (cx - rx * .35, cy + ry * .22), (cx + rx * .3, cy + ry * .22), (cx + rx * .85, cy - ry * .1)],
+                      6.4, INK, seed=sd, taper=.35, wmin=.4))
+        for j in range(3):
+            a = math.radians(-30 + j * 30)
+            ox = cx + rx * .95
+            o.append(line([(ox, cy + ry * .05 + j * 8 - 8), (ox + 18 * math.cos(a), cy + ry * .05 + j * 8 - 8 + 18 * math.sin(a))], 2.8,
+                          people.PAL["dima"]["SKIN_SH2"], seed=sd + 1 + j))
+        o.append(line([(cx - rx * .7, cy + ry * .55), (cx, cy + ry * .7), (cx + rx * .6, cy + ry * .55)], 2.4, people.PAL["dima"]["SKIN_SH2"], seed=sd + 5))
+    # стиснутые зубы
+    jit = 1.5 * math.sin(t * 60)
+    teeth = [(34, 82 + jit), (94, 80 + jit), (92, 100 + jit), (36, 102 + jit)]
+    tin = "".join(line([(x, 81 + jit), (x, 101 + jit)], 2.2, INK, seed=6730 + i) for i, x in enumerate((48, 62, 78)))
+    tin += line([(36, 91 + jit), (92, 90 + jit)], 2.2, INK, seed=6735)
+    o.append(blob([(28, 74), (100, 72), (100, 108), (28, 110)], skin))
+    o.append(shape(teeth, "#f6f2ea", tin, w=3.8, seed=6720))
+    o.append("</g>")
+    return "".join(o)
+
+
+def wires(a, b, t, sag=120, seed=5900, cols=("#d8483c", "#3f7aa8"), wob=0.0, plug=True):
     """Два провода от a к b с провисом и мелкими витками."""
     o = []
     a, b = np.array(a, float), np.array(b, float)
@@ -415,10 +450,14 @@ def wires(a, b, t, sag=120, seed=5900, cols=("#d8483c", "#3f7aa8"), wob=0.0):
         for i in range(29):
             u = i / 28
             p = a + (b - a) * u + np.array([0, sag * math.sin(math.pi * u)]) + np.array([j * 10, j * 6])
-            p += np.array([0, 7 * math.sin(u * 40 + j) + wob * math.sin(u * 9 + t * 20)]) * (u * (1 - u) * 4)
+            p += np.array([0, 3 * math.sin(u * 26 + j) + wob * math.sin(u * 9 + t * 20)]) * (u * (1 - u) * 4)
             pts.append(tuple(p))
         o.append(line(pts, 9, INK, taper=.02, wmin=.95, seed=seed + j))
         o.append(line(pts, 4.6, col, taper=.02, wmin=.95, seed=seed + j))
+    if plug:
+        for j in range(2):
+            e = b + np.array([j * 10, j * 6])
+            o.append(shape(rect_pts(e[0] - 7, e[1] - 6, e[0] + 9, e[1] + 6, 2), "#2b2e38", "", w=2.4, seed=seed + 10 + j))
     return "".join(o)
 
 
@@ -521,7 +560,7 @@ def s05(t):
 
 
 # ═════════════════════════ s06: обруч, лампочка, тужится; «девяносто» — лампочка мигает и тухнет, пот ═════════════════════════
-LAP6 = Laptop(470.0, 1094.0, 1.0)
+LAP6 = Laptop(410.0, 1092.0, .8)
 
 
 def bulb_state(t):
@@ -542,40 +581,41 @@ def s06(t):
     hit = punch(t, td, .09, .05, .4)
     strain = smooth(8.15, 8.5, t) * (1 - smooth(td + .3, td + .55, t))
     shake = strain * osc(t, 15)
-    s = (1.85 + .25 * k) * (1 + hit)
-    cam = (392 + 12 * k + 2.5 * shake, 935 - 16 * k, s, .6 - .9 * k + 1.0 * bump(t, td, .3) * osc(t, 9))
+    s = (2.4 + .3 * k) * (1 + hit)
+    cam = (418 + 8 * k + 2.5 * shake, 948 - 10 * k, s, .6 - .9 * k + 1.0 * bump(t, td, .3) * osc(t, 9))
     L = LAP6
     after = smooth(td + .35, td + .6, t)
-    fist_n = np.array([452.0, 1062.0]) + np.array([3 * shake, -10 * strain])
-    fist_f = L.key(.25, .5) + np.array([-10 + 2 * shake, -12])
+    fist_n = np.array([420.0, 1068.0]) + np.array([3 * shake, -10 * strain])
+    fist_f = L.key(.3, .5) + np.array([-10 + 2 * shake, -12])
     arms = {"n": ("ik", tuple(fist_n), -1), "f": ("ik", tuple(fist_f), -1)}
     hands = {"n": hnd(FIST, (.35, -1)), "f": hnd(FIST, (1, .1))}
     if after > .5:
         hands["n"] = hnd(REST, (.6, .8))
-    expr = dict(lid=.2 + .55 * after, look=(.5, -.75 * after), brows="det" if after < .5 else "worry", mouth="flat",
-                closed=strain if after < .5 else blink_at(t, 10.05, .14), blush=strain * .95, hair=2 * shake + 6 * bump(t, td, .3))
+    sq = strain if after < .5 else 0.0
+    expr = dict(lid=.25 + .6 * after, look=(.45, -.8 * after), brows="det" if after < .5 else "worry", mouth="flat",
+                closed=blink_at(t, 10.1, .14), blush=strain * .95, hair=2 * shake + 6 * bump(t, td, .3))
     d = dima(t, arms, hands, expr, lean=.2 + .02 * strain, head_ang=.02 * shake - .07 * after)
     bulb = bulb_state(t)
     smoke = clamp((t - td - .4) / .7)
-    band = f'<g transform="{head_tf(d)}">{headband(bulb, t, smoke)}</g>'
-    a = head_pt(d, (118, -98))
-    b = L.BL + np.array([-4, -40])
-    wr = wires(a, b, t, sag=70, wob=6 * strain)
+    band = f'<g transform="{head_tf(d)}">{strain_face(1.0 if sq > .3 else 0.0, t)}{headband(bulb, t, smoke)}</g>'
+    a = head_pt(d, (120, -100))
+    b = L.TL + (L.TR - L.TL) * .08 + np.array([0, 8])
+    wr = wires(a, b, t, sag=26, wob=4 * strain)
     # экран: шкала тужится 10 → 12 %, на «девяносто» — замок краснеет и трясётся, шкала падает к 10
     fill = .1 + .03 * strain * (.5 + .5 * osc(t, 6)) if t < td else .1
     red = bump(t, td, .5)
-    scr = text(150, 54, "МОЗГ", 34, "#9cc8ff") + progress(t, 22, 118, 256, 54, fill, 8 * red * osc(t, 14), red)
+    scr = text(150, 36, "МОЗГ", 28, "#9cc8ff") + progress(t, 22, 118, 256, 54, fill, 8 * red * osc(t, 14), red)
     lap = L.draw(scr, bg=("#141c38", "#25356a"))
     # капля пота у виска, вторая — позже
-    sw = sweat(*head_pt(d, (-58, -52)), 1.0, clamp((t - td - .05) / .6), seed=3001)
-    sw += sweat(*head_pt(d, (104, -40)), .8, clamp((t - td - .35) / .55), seed=3002)
+    sw = sweat(*head_pt(d, (-96, -70)), .6, clamp((t - td - .05) / .6), seed=3001)
+    sw += sweat(*head_pt(d, (-60, -96)), .5, clamp((t - td - .4) / .55), seed=3002)
     # штрихи натуги
     strain_l = ""
     if strain > .2:
         hx, hy = head_pt(d, (-10, -40))
         for j in range(4):
             aa = math.radians(-175 + j * 30)
-            r0 = 165 + 7 * osc(t, 10, j)
+            r0 = 190 + 7 * osc(t, 10, j)
             strain_l += line([(hx + r0 * math.cos(aa), hy + r0 * math.sin(aa)), (hx + (r0 + 34) * math.cos(aa), hy + (r0 + 34) * math.sin(aa))], 5.5, "#3a2a22",
                              seed=5950 + j, taper=.3, wmin=.4)
     w = desk_world(t, d, False, on_desk=lap, mid=band, front=wr + sw + strain_l)
@@ -583,23 +623,39 @@ def s06(t):
 
 
 # ═════════════════════════ s16: день, «ВЕРНУТЬ», монетки обратно на «деньги», снимает обруч и бросает в коробку ═════════════════════════
-LAP16 = Laptop(470.0, 1098.0, .92)
-WAL16 = (790.0, 1138.0)
-BOX = (930.0, 1146.0)
+LAP16 = Laptop(420.0, 1096.0, .8)
+WAL16 = (694.0, 1158.0)
+BOX = (796.0, 1150.0, .72)
 
 
-def box_back(x, y):
-    o = [shape([(x - 80, y - 100), (x + 70, y - 100), (x + 96, y - 130), (x - 56, y - 130)], "#b98a52", "", w=3.4, seed=6001)]   # задняя стенка-клапан
-    o.append(blob([(x - 78, y - 100), (x + 70, y - 100), (x + 62, y - 88), (x - 70, y - 88)], "#6e4d28", .9))
+def box_back(x, y, k):
+    P = lambda pts: T(pts, x, y, k)  # noqa: E731
+    o = [shape(P([(-80, -100), (70, -100), (96, -134), (-56, -134)]), "#b98a52", "", w=3.4, seed=6001)]   # задний клапан
+    o.append(blob(P([(-78, -100), (70, -100), (62, -86), (-70, -86)]), "#6e4d28", .9))
     return "".join(o)
 
 
-def box_front(x, y):
-    o = [blob(ellipse_pts(x + 6, y + 2, 100, 10, 12), "#1a100a", .3)]
-    o.append(shape(rect_pts(x - 84, y - 100, x + 70, y), "#d4a464", blob(rect_pts(x + 40, y - 100, x + 70, y), "#b98a52", .9) +
-                   line([(x - 84, y - 50), (x + 70, y - 50)], 6, "#e8c78e", seed=6012, op=.8), w=4, seed=6010))
-    o.append(shape([(x - 84, y - 100), (x - 128, y - 70), (x - 120, y - 60), (x - 80, y - 88)], "#c99a5a", "", w=3.4, seed=6011))
-    o.append(shape([(x + 70, y - 100), (x + 112, y - 76), (x + 104, y - 66), (x + 70, y - 88)], "#b98a52", "", w=3.4, seed=6013))
+def box_front(x, y, k):
+    P = lambda pts: T(pts, x, y, k)  # noqa: E731
+    o = [blob(P(ellipse_pts(6, 2, 100, 10, 12)), "#1a100a", .3)]
+    o.append(shape(P(rect_pts(-84, -100, 70, 0)), "#d4a464", blob(P(rect_pts(40, -100, 70, 0)), "#b98a52", .9) +
+                   line(P([(-84, -50), (70, -50)]), 6, "#e8c78e", seed=6012, op=.8), w=4, seed=6010))
+    o.append(shape(P([(-84, -100), (-128, -70), (-120, -60), (-80, -88)]), "#c99a5a", "", w=3.4, seed=6011))
+    o.append(shape(P([(70, -100), (112, -76), (104, -66), (70, -88)]), "#b98a52", "", w=3.4, seed=6013))
+    return "".join(o)
+
+
+def dangle_wires(t, swing=0.0):
+    """Отключённые провода, свисают с конца обруча (единицы головы), со штекерами; swing — раскачка."""
+    o = []
+    for j, col in enumerate(("#d8483c", "#3f7aa8")):
+        x0, y0 = -148 + 8 * j, -96 + 4 * j
+        sw = 30 * swing + 6 * math.sin(t * 3 + j)
+        pts = [(x0, y0), (x0 - 18 + sw * .3, y0 + 70), (x0 - 20 + sw * .7, y0 + 150), (x0 - 10 + sw, y0 + 220)]
+        o.append(line(pts, 14, INK, taper=.02, wmin=.95, seed=6050 + j) + line(pts, 7.5, col, taper=.02, wmin=.95, seed=6050 + j))
+        e = pts[-1]
+        o.append(shape(rect_pts(e[0] - 11, e[1], e[0] + 11, e[1] + 26, 3), "#2b2e38", line([(e[0] - 4, e[1] + 26), (e[0] - 4, e[1] + 38)], 4, "#c9ced8", seed=6060 + j) +
+                       line([(e[0] + 4, e[1] + 26), (e[0] + 4, e[1] + 38)], 4, "#c9ced8", seed=6062 + j), w=2.6, seed=6055 + j))
     return "".join(o)
 
 
@@ -607,118 +663,119 @@ def s16(t):
     tv, tdg = T_VERNUL, T_DENGI
     k = ease_io(clamp((t - 27.1) / 2.05))
     wh = whip_in(t, 27.1, .24)
-    hit = punch(t, tv, .05, .05, .3) + punch(t, tdg + .38, .05, .05, .3)
-    s = (1.22 + .12 * k) * (1 + hit)
-    cam = (575 + 15 * k - 380 * wh, 975 - 20 * k, s, 2.6 * wh - .4 * k)
+    t_up, t_grab, t_lift, t_throw, t_land = 28.22, 28.42, 28.6, 28.72, 28.96
+    hit = punch(t, tv, .05, .05, .3) + punch(t, tdg + .38, .04, .05, .3) + punch(t, t_land, .05, .05, .3)
+    s = (1.44 + .08 * k) * (1 + hit)
+    cam = (522 + 8 * k - 380 * wh, 975 - 15 * k, s, 2.6 * wh - .4 * k + .6 * bump(t, t_land, .3) * osc(t, 9))
     L = LAP16
-    # 1) замах и нажатие «ВЕРНУТЬ» на «вернул»; 2) рука к обручу (28.32), снимает (28.55), бросок (28.72) → коробка (28.98)
-    key_pt = L.key(.86, .42)
+    key_pt = L.key(.45, .5)
     wind = smooth(tv - .36, tv - .12, t)
     strike = smooth(tv - .1, tv, t)
-    tip = key_pt + np.array([-6, -4]) + np.array([-18, -70]) * wind * (1 - strike)
+    tip = key_pt + np.array([-6, -4]) + np.array([-14, -48]) * wind * (1 - strike)
     hd = np.array([.55, .83])
     hd = hd / np.linalg.norm(hd)
     wr_key = tip - hd * 92 * BS
-    t_up, t_grab, t_lift, t_throw, t_land = 28.2, 28.42, 28.62, 28.76, 29.0
     pressed = bump(t, tv - .02, .3)
     relief = smooth(tdg + .3, tdg + .5, t)
-    expr = dict(lid=.7 + .2 * pressed, look=(.75, .3), brows="det" if t < tv + .2 else "calm", mouth="smile", smile=.6 + .4 * relief,
+    expr = dict(lid=.7 + .2 * pressed, look=(.75, .35), brows="det" if t < tv + .2 else "calm", mouth="smile", smile=.6 + .4 * relief,
                 closed=blink_at(t, 27.35, .14), hair=4 * bump(t, tv, .3))
-    lean0, hang0 = .17, 0.0
-    probe = dima(t, {"n": ("ik", tuple(wr_key), -1), "f": ("ik", tuple(L.key(.25, .55)), -1)}, {}, expr, lean=lean0, head_ang=hang0)
-    grab_local = np.array([16.0, -168.0])               # верх обруча над макушкой (ед. головы)
+    lean0 = .2
+    far_t = tuple(L.key(.22, .6) + np.array([0, 2 * osc(t, 1.6)]))
+    probe = dima(t, {"n": ("ik", tuple(wr_key), -1), "f": ("ik", far_t, -1)}, {}, expr, lean=lean0)
+    grab_local = np.array([30.0, -190.0])                # патрон лампочки — за него берёт
     grab_w = head_pt(probe, grab_local)
-    hd_g = np.array([.35, .94])
+    hd_g = np.array([.2, .98])
     hd_g = hd_g / np.linalg.norm(hd_g)
-    wr_grab = grab_w - hd_g * 70 * BS
-    lift_off = np.array([40.0, -120.0])
+    wr_grab = grab_w - hd_g * 64 * BS
+    lift_off = np.array([20.0, -70.0])
+    band_off = None
+    # ближняя рука жмёт и остаётся на клавиатуре; дальняя (за головой — лицо видно) снимает обруч и бросает
+    wr_n = wr_key + np.array([0, 3 * osc(t, 2)]) * (1 - strike)
+    hn = hnd(POINT, tuple(hd))
+    if t > tv + .25:
+        u = ease_io(clamp((t - tv - .25) / .25))
+        rest_n = L.key(.4, .62) + np.array([-30, -14])
+        wr_n = wr_key + (rest_n - wr_key) * u
+        hn = hnd(REST, (1, .3))
+    far_hd = (1, .25)
     if t < t_up:
-        wr = wr_key + np.array([0, 3 * osc(t, 2)])
-        hn = hnd(POINT, tuple(hd))
-        band_off = None
+        wr_f = np.array(far_t)
+        hf = hnd(REST, far_hd)
     elif t < t_grab:
         u = ease_io(clamp((t - t_up) / (t_grab - t_up)))
-        wr = wr_key + (wr_grab - wr_key) * u
-        hn = hnd(REST, tuple(hd + (hd_g - hd) * u))
-        band_off = None
-    else:
-        lift = ease_io(clamp((t - t_grab - .05) / (t_lift - t_grab)))
-        wr = wr_grab + lift_off * lift
-        hn = hnd(FIST, tuple(hd_g))
+        wr_f = np.array(far_t) + (wr_grab - np.array(far_t)) * u
+        hf = hnd(REST, tuple(np.array(far_hd) + (hd_g - np.array(far_hd)) * u))
+    elif t < t_throw:
+        lift = ease_io(clamp((t - t_grab - .03) / (t_lift - t_grab)))
+        wr_f = wr_grab + lift_off * lift
+        hf = hnd(FIST, tuple(hd_g))
         band_off = lift_off * lift
-    look = (.75, .3)
+    else:
+        v = ease_out(clamp((t - t_throw) / .22), 2)
+        wr_f = wr_grab + lift_off + np.array([170, 30]) * v
+        hf = hnd(REST, tuple(hd_g + (np.array([.9, .3]) - hd_g) * v))
     if t > t_up:
-        look = (.6, -.6)
+        expr["look"] = (.55, -.7)
     if t > t_throw:
-        look = (.85, .2)
-    expr["look"] = look
-    if t > t_lift:
+        expr["look"] = (.9, .35)
         expr["mouth"] = "grin"
-    if t >= t_throw:
-        # рука после броска уходит вправо-вниз
-        v = ease_out(clamp((t - t_throw) / .25), 2)
-        wr = wr_grab + lift_off + np.array([140, 60]) * v
-        hn = hnd(REST, (.8, .3))
-    arms = {"n": ("ik", tuple(wr), -1), "f": ("ik", tuple(L.key(.25, .55) + np.array([0, 2 * osc(t, 1.6)])), -1)}
-    hands = {"n": hn, "f": hnd(REST, (1, .25))}
-    d = dima(t, arms, hands, expr, lean=lean0, head_ang=hang0 - .05 * bump(t, t_lift, .3) + .02 * osc(t, 1.2))
-    # обруч: на голове → в руке → летит в коробку
+        expr["open"] = .6
+    arms = {"n": ("ik", tuple(wr_n), -1), "f": ("ik", tuple(wr_f), -1)}
+    hands = {"n": hn, "f": hf}
+    d = dima(t, arms, hands, expr, lean=lean0, head_ang=-.04 * bump(t, t_lift, .3) + .02 * osc(t, 1.2))
+    swing = bump(t, t_lift, .4) * 1.2 + (.6 * osc(t, 3) if t_grab < t < t_throw else 0)
     band_svg = ""
     band_fly = ""
-    if band_off is None and t < t_throw:
-        band_svg = f'<g transform="{head_tf(d)}">{headband(0.0, t)}</g>'
-        band_at = head_pt(d, (118, -98))
+    in_box = ""
+    gear = lambda: headband(0.0, t) + dangle_wires(t, swing)  # noqa: E731
+    if t < t_grab:
+        band_svg = f'<g transform="{head_tf(d)}">{gear()}</g>'
     elif t < t_throw:
-        # в руке: тот же рисунок, сдвинут вместе с кистью
-        hx, hy = d["head"]
-        band_svg = (f'<g transform="translate({band_off[0]:.2f} {band_off[1]:.2f})"><g transform="{head_tf(d)}">{headband(0.0, t)}</g></g>')
-        band_at = head_pt(d, (118, -98)) + band_off
+        band_svg = f'<g transform="translate({band_off[0]:.2f} {band_off[1]:.2f})"><g transform="{head_tf(d)}">{gear()}</g></g>'
     else:
         u = clamp((t - t_throw) / (t_land - t_throw))
         p0 = head_pt(d, grab_local) + lift_off
-        p1 = np.array([BOX[0] - 8, BOX[1] - 110])
+        p1 = np.array([BOX[0] - 6, BOX[1] - 92 * BOX[2]])
         x = p0[0] + (p1[0] - p0[0]) * u
-        y = p0[1] + (p1[1] - p0[1]) * u - 160 * math.sin(math.pi * u)
-        ang = 220 * u
-        sc = 1 - .25 * u
+        y = p0[1] + (p1[1] - p0[1]) * ease_in(u, 1.3) - 150 * math.sin(math.pi * u)
+        ang = math.degrees(d["hang"]) + 200 * ease_io(u)
+        sc = BS * (1 - .3 * u)
+        g = (f'<g transform="translate({x:.1f} {y:.1f}) rotate({ang:.1f}) scale({sc:.3f}) translate({-grab_local[0]:.1f} {-grab_local[1]:.1f})">'
+             f'{headband(0.0, t)}{dangle_wires(t, 1.0 - u)}</g>')
         if u < 1:
-            band_fly = (f'<g transform="translate({x:.1f} {y:.1f}) rotate({ang:.1f}) scale({BS * sc:.3f}) translate({-grab_local[0]:.1f} {-grab_local[1]:.1f})">'
-                        f'{headband(0.0, t)}</g>')
-            band_at = np.array([x, y]) + rot(np.array([118 - grab_local[0], -98 - grab_local[1]]), math.radians(ang)) * BS * sc
+            band_fly = g
         else:
-            band_at = None
+            # лежит в коробке: торчат дуга обруча и колба, остальное за передней стенкой
+            wob = 6 * math.exp(-6 * (t - t_land)) * math.sin((t - t_land) * 30)
+            in_box = (f'<g transform="translate({p1[0]:.1f} {p1[1] + 14:.1f}) rotate({-18 + wob:.1f}) scale({BS * .7:.3f}) translate({-grab_local[0]:.1f} {-grab_local[1]:.1f})">'
+                      f'{headband(0.0, t)}</g>')
     flash = clamp((t - tv) / .35) if t > tv else 0.0
-    scr = (text(150, 58, "КУРС", 30, "#7d8796") + text(150, 96, "«РАСКРОЙ 90 %»", 26, "#7d8796") +
-           button(150, 160, 230, 64, "ВЕРНУТЬ", "#3aa86b", pressed, 40, flash if 0 < flash < 1 else 0.0))
+    scr = (text(150, 40, "КУРС", 30, "#7d8796") + text(150, 76, "«РАСКРОЙ 90 %»", 26, "#7d8796") +
+           button(150, 140, 240, 68, "ВЕРНУТЬ", "#3aa86b", pressed, 42, flash if 0 < flash < 1 else 0.0))
     if t > tv + .2:
-        scr += text(150, 212, "деньги возвращены", 20, "#3aa86b")
-    lap = L.draw(scr, bg=("#f4f7fb", "#dde7f2"), press=((1, 9), pressed))
-    # монетки влетают в кошелёк
-    landed = smooth(tdg + .3, tdg + .55, t)
-    wal = wallet(*WAL16, .92, 1.0, puff=landed + .15 * bump(t, tdg + .45, .3), gape=bump(t, tdg + .3, .3) * osc(t, 12))
-    coins = coin_flight(t, tdg, (WAL16[0], WAL16[1] - 28), (1180, 600), n=7, dur=.42, up=120, rev=True)
+        scr += text(150, 205, "ДЕНЬГИ ВОЗВРАЩЕНЫ", 20, "#2f8f5a")
+    lap = L.draw(scr, bg=("#f4f7fb", "#dde7f2"), press=((2, 4), pressed))
+    landed = smooth(tdg + .3, tdg + .5, t)
+    wal = wallet(*WAL16, .82, 1.0, puff=landed + .15 * bump(t, tdg + .45, .3), gape=bump(t, tdg + .3, .3) * osc(t, 12))
+    coins = coin_flight(t, tdg, (WAL16[0], WAL16[1] - 70), (560, 380), n=7, dur=.42, up=120, rev=True, r=19)
     spark = ""
     u = clamp((t - tdg - .45) / .35)
     if 0 < u < 1:
         for j in range(6):
-            a = math.radians(-160 + j * 28)
+            a_ = math.radians(-160 + j * 28)
             r0, r1 = 60 + 30 * u, 90 + 46 * u
-            spark += line([(WAL16[0] + r0 * math.cos(a), WAL16[1] - 40 + r0 * math.sin(a)), (WAL16[0] + r1 * math.cos(a), WAL16[1] - 40 + r1 * math.sin(a))],
+            spark += line([(WAL16[0] + r0 * math.cos(a_), WAL16[1] - 60 + r0 * math.sin(a_)), (WAL16[0] + r1 * math.cos(a_), WAL16[1] - 60 + r1 * math.sin(a_))],
                           6, "#f2b33a", seed=6100 + j, taper=.3, wmin=.4, op=1 - u)
-    # провода: от обруча к ноутбуку, пока обруч не в коробке
-    wr_svg = ""
-    if band_at is not None:
-        wr_svg = wires(band_at, L.BL + np.array([-4, -40]), t, sag=60 + 30 * (t > t_throw))
     land = clamp((t - t_land) / .3)
     thud = ""
     if 0 < land < 1:
+        bx, by = BOX[0], BOX[1] - 100 * BOX[2]
         for j in range(5):
-            a = math.radians(-150 + j * 30)
-            thud += line([(BOX[0] + 80 * math.cos(a), BOX[1] - 110 + 60 * math.sin(a)), (BOX[0] + (110 + 30 * land) * math.cos(a),
-                                                                                        BOX[1] - 110 + (80 + 24 * land) * math.sin(a))],
-                          5, INK, seed=6200 + j, taper=.3, wmin=.4, op=1 - land)
-    on_desk = lap + wal + box_back(*BOX)
-    front = wr_svg + band_fly + box_front(*BOX) + coins + spark + thud
+            a_ = math.radians(-150 + j * 30)
+            thud += line([(bx + 70 * math.cos(a_), by + 50 * math.sin(a_)), (bx + (100 + 30 * land) * math.cos(a_), by + (70 + 24 * land) * math.sin(a_))],
+                         5, INK, seed=6200 + j, taper=.3, wmin=.4, op=1 - land)
+    on_desk = lap + wal + box_back(*BOX) + in_box + box_front(*BOX)
+    front = band_fly + coins + spark + thud
     w = desk_world(t, d, True, on_desk=on_desk, mid=band_svg, front=front)
     return compose(w, cam, True)
 
