@@ -1,6 +1,6 @@
 # Библиотека оригиналов: кот и всё, что сгенерировано
 
-Картинок: **211**, 424 МБ. Оригиналы — `originals/` байт в байт, как пришли из модели (PNG без пересжатия); `thumbs/` — превью для этой страницы; `catalog.json` — промпт, модель, цена, где используется.
+Картинок: **223**, 452 МБ. Оригиналы — `originals/` байт в байт, как пришли из модели (PNG без пересжатия); `thumbs/` — превью для этой страницы; `catalog.json` — промпт, модель, цена, где используется.
 
 Пополняется сама: каждая генерация через шлюз (`llm_gateway.Gateway.image`) кладёт картинку сюда, включая забракованные варианты. Собрать уже лежащее в репозитории: `python scripts/cat_library.py --scan`.
 
@@ -228,7 +228,7 @@
 | ![](thumbs/2026-10-07_look_style_1_desk_1c1c5a17.jpg) | [2026-10-07_look_style_1_desk_1c1c5a17.jpg](originals/2026-10-07_look_style_1_desk_1c1c5a17.jpg)<br>1264×848, 2026-10-07 | `look/style/1_desk.png` |  |
 | ![](thumbs/2026-10-07_look_style_2_objects_3fa15648.jpg) | [2026-10-07_look_style_2_objects_3fa15648.jpg](originals/2026-10-07_look_style_2_objects_3fa15648.jpg)<br>1264×848, 2026-10-07 | `look/style/2_objects.png` |  |
 
-## от владельца (6)
+## от владельца (18)
 
 | превью | оригинал | где | промпт |
 |---|---|---|---|
@@ -238,6 +238,18 @@
 | ![](thumbs/2026-11-05_owner_mouse_pounce_322919c4.jpg) | [2026-11-05_owner_mouse_pounce_322919c4.png](originals/2026-11-05_owner_mouse_pounce_322919c4.png)<br>1536×1024, 2026-11-05 |  |  |
 | ![](thumbs/2026-11-05_owner_sleep_blanket_e1e88816.jpg) | [2026-11-05_owner_sleep_blanket_e1e88816.png](originals/2026-11-05_owner_sleep_blanket_e1e88816.png)<br>1672×941, 2026-11-05 |  |  |
 | ![](thumbs/2026-11-05_owner_sleep_laptop_efd6df9e.jpg) | [2026-11-05_owner_sleep_laptop_efd6df9e.png](originals/2026-11-05_owner_sleep_laptop_efd6df9e.png)<br>1671×941, 2026-11-05 |  |  |
+| ![](thumbs/2026-11-13_owner_IMG_4930_442d86df.jpg) | [2026-11-13_owner_IMG_4930_442d86df.png](originals/2026-11-13_owner_IMG_4930_442d86df.png)<br>1536×1024, 2026-11-13 | владелец 13.11, сделал сам |  |
+| ![](thumbs/2026-11-13_owner_IMG_4931_0629e83d.jpg) | [2026-11-13_owner_IMG_4931_0629e83d.png](originals/2026-11-13_owner_IMG_4931_0629e83d.png)<br>1536×1024, 2026-11-13 | владелец 13.11, сделал сам |  |
+| ![](thumbs/2026-11-13_owner_IMG_4932_fe45b33b.jpg) | [2026-11-13_owner_IMG_4932_fe45b33b.png](originals/2026-11-13_owner_IMG_4932_fe45b33b.png)<br>1536×1024, 2026-11-13 | владелец 13.11, сделал сам |  |
+| ![](thumbs/2026-11-13_owner_IMG_4933_a4157715.jpg) | [2026-11-13_owner_IMG_4933_a4157715.png](originals/2026-11-13_owner_IMG_4933_a4157715.png)<br>1536×1024, 2026-11-13 | владелец 13.11, сделал сам |  |
+| ![](thumbs/2026-11-13_owner_IMG_4934_83897867.jpg) | [2026-11-13_owner_IMG_4934_83897867.png](originals/2026-11-13_owner_IMG_4934_83897867.png)<br>1536×1024, 2026-11-13 | владелец 13.11, сделал сам |  |
+| ![](thumbs/2026-11-13_owner_IMG_4935_ed4e01e1.jpg) | [2026-11-13_owner_IMG_4935_ed4e01e1.png](originals/2026-11-13_owner_IMG_4935_ed4e01e1.png)<br>1536×1024, 2026-11-13 | владелец 13.11, сделал сам |  |
+| ![](thumbs/2026-11-13_owner_IMG_4936_94b46fdf.jpg) | [2026-11-13_owner_IMG_4936_94b46fdf.png](originals/2026-11-13_owner_IMG_4936_94b46fdf.png)<br>1536×1024, 2026-11-13 | владелец 13.11, сделал сам |  |
+| ![](thumbs/2026-11-13_owner_IMG_4942_dc8302d8.jpg) | [2026-11-13_owner_IMG_4942_dc8302d8.png](originals/2026-11-13_owner_IMG_4942_dc8302d8.png)<br>1672×941, 2026-11-13 | владелец 13.11, сделал сам |  |
+| ![](thumbs/2026-11-13_owner_IMG_4944_54122419.jpg) | [2026-11-13_owner_IMG_4944_54122419.png](originals/2026-11-13_owner_IMG_4944_54122419.png)<br>1536×1024, 2026-11-13 | владелец 13.11, сделал сам |  |
+| ![](thumbs/2026-11-13_owner_IMG_4948_5531c43c.jpg) | [2026-11-13_owner_IMG_4948_5531c43c.png](originals/2026-11-13_owner_IMG_4948_5531c43c.png)<br>1672×941, 2026-11-13 | владелец 13.11, сделал сам |  |
+| ![](thumbs/2026-11-13_owner_IMG_4949_1ab0c390.jpg) | [2026-11-13_owner_IMG_4949_1ab0c390.png](originals/2026-11-13_owner_IMG_4949_1ab0c390.png)<br>1672×941, 2026-11-13 | владелец 13.11, сделал сам |  |
+| ![](thumbs/2026-11-13_owner_IMG_4952_708b771e.jpg) | [2026-11-13_owner_IMG_4952_708b771e.png](originals/2026-11-13_owner_IMG_4952_708b771e.png)<br>1532×1027, 2026-11-13 | владелец 13.11, сделал сам |  |
 
 ## предмет (1)
 
