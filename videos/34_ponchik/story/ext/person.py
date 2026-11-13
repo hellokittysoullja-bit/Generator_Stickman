@@ -102,9 +102,18 @@ def face(spec, pose, sd):
     if hair == "bob":
         s.append(shape([(-hx - 10, -20), (-hx - 4, -70), (-30, -100), (30, -100), (hx + 4, -70), (hx + 12, -10), (hx + 10, 50, 1),
                         (-hx - 12, 50, 1)], hc, w=4, seed=sd + 1))
+    if hair == "long":            # длинные распущенные волосы ниже плеч
+        s.append(shape([(-hx - 12, -20), (-hx - 6, -72), (-30, -102), (30, -102), (hx + 6, -72), (hx + 14, -10), (hx + 22, 90), (hx + 10, 150, 1),
+                        (hx - 30, 140), (-hx + 30, 140), (-hx - 10, 150, 1), (-hx - 20, 90)], hc,
+                       blob([(hx * .3, -100), (hx + 14, -10), (hx + 22, 90), (hx + 10, 150), (hx - 30, 140)], shade(hc), .9) +
+                       line([(-hx + 4, 20), (-hx + 2, 120)], 3, shade(hc, (.6, .6, .7)), seed=sd + 8) + line([(hx - 8, 30), (hx - 2, 120)], 3, shade(hc, (.6, .6, .7)), seed=sd + 9),
+                       w=4, seed=sd + 7))
     if hair == "ponytail":
-        tail = [(-fc * 50, -60), (-fc * 110, -40), (-fc * 128, 10), (-fc * 116, 70), (-fc * 96, 40), (-fc * 92, -10), (-fc * 60, -40)]
-        s.append(shape(tail if fc >= 0 else tail[::-1], hc, blob([(-fc * 100, -20), (-fc * 116, 40), (-fc * 100, 30)], shade(hc), .9), w=4, seed=sd + 2))
+        sg = 1 if fc >= 0 else -1      # хвост всегда виден с затылка (у рилса 32 при fc≈0.3 он прятался за голову)
+        tail = [(-sg * 40, -70), (-sg * 104, -60), (-sg * 136, -10), (-sg * 140, 60), (-sg * 120, 120), (-sg * 112, 60), (-sg * 100, 10), (-sg * 60, -36)]
+        s.append(shape(tail if sg > 0 else tail[::-1], hc, blob([(-sg * 120, -10), (-sg * 136, 50), (-sg * 118, 110), (-sg * 110, 40)], shade(hc), .9) +
+                       line([(-sg * 110, -30), (-sg * 126, 40), (-sg * 120, 100)], 2.6, shade(hc, (.6, .6, .7)), seed=sd + 28), w=4, seed=sd + 2))
+        s.append(shape(ellipse_pts(-sg * 86, -52, 12, 14, 10, rot=30 * sg), "#e8413a", "", w=3, seed=sd + 29))
     if hair == "bun":
         s.append(shape(ellipse_pts(-fc * 10, -96, 34, 28, 12), hc, blob(ellipse_pts(-fc * 2, -90, 22, 16, 10), shade(hc), .8), w=4, seed=sd + 3))
     # ухо (на дальней от взгляда стороне)
@@ -139,6 +148,11 @@ def face(spec, pose, sd):
                            w=3.2, seed=sd + 10 + i))
         else:
             s.append(line([(x - rx, ey + 2), (x, ey + 6), (x + rx, ey + 2)], 3.4, seed=sd + 12 + i))
+        if spec.get("lashes") and blink < .95:        # ресницы у внешнего угла (девушки)
+            sg = -1 if i == 0 else 1
+            for j in range(2):
+                s.append(line([(x + sg * rx * (.55 + .25 * j), ey - ry * (.8 - .3 * j)), (x + sg * (rx * (.95 + .25 * j) + 6), ey - ry * (1.05 - .3 * j) - 6)],
+                              3.4, seed=sd + 50 + i * 3 + j, taper=.6, wmin=.3))
         # бровь
         br = pose.get("brow", 0.0)
         tilt = (-1 if i == 0 else 1) * br * 6
@@ -165,7 +179,7 @@ def face(spec, pose, sd):
     if spec.get("mustache"):
         s.append(shape([(mx - 22, 36), (mx, 30), (mx + 22, 36), (mx + 14, 40), (mx, 36), (mx - 14, 40)], spec["hair_c"], w=2.6, seed=sd + 19))
     # волосы сверху
-    if hair in ("short", "bob", "ponytail", "bun") and not (spec.get("cap") and hair == "short"):
+    if hair in ("short", "bob", "ponytail", "bun", "long") and not (spec.get("cap") and hair == "short"):
         top = [(-hx - 6, -4), (-hx - 4, -50), (-40, -hy - 22), (10, -hy - 30), (hx - 2, -hy - 6), (hx + 6, -40), (hx + 4, -6),
                (hx - 10, -36), (fc * 20 + 20, -54), (fc * 20 - 10, -46), (-hx + 14, -30)]
         if hair == "short":
@@ -173,6 +187,11 @@ def face(spec, pose, sd):
                    (hx + 6, -38), (hx + 2, -8), (hx - 10, -40), (fc * 18 + 14, -58), (fc * 18 - 20, -50), (-hx + 12, -34), (-hx + 6, 0)]
         s.append(shape(top, hc, blob([(hx * .2, -hy - 20), (hx + 6, -40), (hx - 10, -40), (fc * 18 + 14, -58)], shade(hc), .9)
                        + line([(-30, -hy - 10), (-10, -64)], 3, shade(hc, (.6, .6, .7)), seed=sd + 21), w=4.4, seed=sd + 20))
+        if hair == "long":        # пробор и пряди — чтобы читались распущенные волосы, а не платок
+            pc = fc * 18 + 8
+            s.append(line([(pc, -hy - 26), (pc - 30, -hy + 2), (-hx + 4, -36)], 3.2, shade(hc, (.6, .6, .7)), seed=sd + 25))
+            s.append(line([(pc, -hy - 26), (pc + 28, -hy + 4), (hx - 2, -34)], 3.2, shade(hc, (.6, .6, .7)), seed=sd + 26))
+            s.append(line([(pc - 2, -hy - 26), (pc + 2, -hy - 6)], 3.6, shade(hc, (.55, .55, .65)), seed=sd + 27))
     elif hair == "curly":
         bumps = []
         for k in range(15):
@@ -304,6 +323,15 @@ def person(spec, pose, sd=0):
     if pose.get("no_arms"):
         s = [x for x in s if x is not a_far and x is not a_near]
     a_near = ""
+    if spec.get("coat"):           # полы лабораторного халата — поверх ног, под туловищем
+        cc = spec["top"]
+        y0, y1 = hipY - 40 + bob, hipY + 150 + bob
+        for sg in (-1, 1):
+            pl = [(0, y0), (sg * (sh_w - 2), y0), (sg * (sh_w + 18), y1, 1), (sg * 4, y1 + 4, 1)]
+            if sg < 0:
+                pl = pl[::-1]
+            s.append(shape(pl, cc, blob([(sg * 20, y0), (sg * (sh_w + 18), y0), (sg * (sh_w + 18), y1), (sg * 30, y1)], shade(cc), .55 if sg > 0 else .25),
+                           w=4.4, seed=sd + 36 + sg))
     # туловище
     torso = [(-sh_w, shY + 30 + bob), (-sh_w + 14, shY + 4 + bob), (-30, shY - 8 + bob), (30, shY - 8 + bob), (sh_w - 14, shY + 4 + bob),
              (sh_w, shY + 30 + bob), (sh_w - 10, hipY - 60 + bob), (sh_w - 6, hipY + 26 + bob, 1), (-sh_w + 6, hipY + 26 + bob, 1),
@@ -320,6 +348,15 @@ def person(spec, pose, sd=0):
     # воротник/шея
     s.append(shape([(-22, shY - 10 + bob), (22, shY - 10 + bob), (20, shY - 40 + bob), (-20, shY - 40 + bob)], skin,
                    blob([(-22, shY - 40 + bob), (22, shY - 40 + bob), (22, shY - 24 + bob), (-22, shY - 24 + bob)], shade(skin), .9), w=3.6, seed=sd + 33))
+    if spec.get("coat"):           # вырез халата: блузка в V, лацканы, карман с ручкой
+        bl = spec.get("blouse", "#8fb4e0")
+        s.append(shape([(-30, shY - 6 + bob), (30, shY - 6 + bob), (2, shY + 96 + bob, 1)], bl, "", w=3.4, seed=sd + 37))
+        for sg in (-1, 1):
+            lap = [(sg * 30, shY - 8 + bob), (sg * 52, shY + 10 + bob), (sg * 26, shY + 70 + bob), (sg * 4, shY + 100 + bob)]
+            s.append(line(lap, 3.4, seed=sd + 38 + sg, taper=.2, wmin=.6))
+        s.append(line([(2, shY + 100 + bob), (2, hipY + 20 + bob)], 3, seed=sd + 39, taper=.1, wmin=.7, op=.8))
+        s.append(shape(lib.rect_pts(-62, shY + 70 + bob, -22, shY + 112 + bob, 4), spec["top"], "", w=3, seed=sd + 41))
+        s.append(shape(lib.rect_pts(-52, shY + 50 + bob, -45, shY + 86 + bob, 2), "#2f6db5", "", w=2.4, seed=sd + 42))
     if spec.get("collar"):
         s.append(shape([(-34, shY - 4 + bob), (0, shY + 22 + bob), (34, shY - 4 + bob), (24, shY + 10 + bob), (0, shY + 34 + bob), (-24, shY + 10 + bob)],
                        spec["collar"], w=3.4, seed=sd + 34))
