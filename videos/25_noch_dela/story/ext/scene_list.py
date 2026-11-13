@@ -221,7 +221,7 @@ def frame(sid, t):
     hnd = f'<g transform="translate({f(x)} {f(y)}) scale({f(HSC * lift)})">{hand.hand(ang, 7, curl)}</g>'
     txt = "".join(text_line(i, t) + bullet(i, t) for i in range(3))
     ic = "".join(flying_icon(i, t) for i in range(3))
-    art = _ST["paper"] + txt + shadow + hnd + ic
+    art = _ST["paper"] + txt + ic + shadow + hnd
     lin = clamp((t - 22.5) / 2.6)
     u = 0.4 * lin + 0.6 * ease_io(lin)
     cm = cam(600, 900 - 10 * u, 1.24 + 0.08 * u, -2.0 + 0.8 * u)
