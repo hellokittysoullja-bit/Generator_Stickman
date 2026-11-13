@@ -221,9 +221,10 @@ def s06(t):
                 mouth="sheep" if t > tr - .05 else ("flat" if t < 7.95 else "smile"), smile=.6 + .4 * after, closed=max(squint, blink(t, [7.62, 8.95])),
                 blush=after * .9)
     hands = {"f": dict(kind="open", flip=FLIP6, dir=tuple(fdir), curl=(0.0, .95, 1.0, 1.0), spread=.0, thumb=.95, bend=.04, front=True, nails=True)}
-    d = dima(hip, s, lean=.02, arms={"f": ("ik", tuple(wr), -1), "n": ("ang", -.32, .12)}, hands=hands, expr=expr,
+    d = dima(hip, s, lean=.02, arms={"f": ("ik", tuple(wr), -1), "n": ("ang", -.6, .1)}, hands=hands, expr=expr,
              head_ang=jolt - .05 * after + .02 * osc(t, 1.1), cam_s=cam[2])
-    o.append(layers(d))
+    # ближняя рука опущена и отведена назад — за туловищем (иначе на крупном плане внизу висит круглый рукав)
+    o.append(d.get("legs", "") + d["arm_f"] + d["arm_n"] + d["body"] + d.get("hand_f", ""))
     # облако-мысль
     src = head_pt(d, (150, -170))
     cu = clamp((t - 7.78) / .3)
@@ -429,7 +430,7 @@ def s15(t):
         look = (.5, -.8 * math.sin(math.pi * (t - tt + .06) / .56))
     joy = smooth(tt + .5, tt + .7, t)
     expr = dict(lid=.75 + .2 * fly, look=look, brows="up", mouth="grin" if t > 25.2 else "smile", smile=1.0, open=.6,
-                laugh=.45 * joy, lid_=0, closed=blink(t, [24.75]), hair=5 * caught)
+                laugh=.45 * joy, closed=blink(t, [24.75]), hair=5 * caught)
     d = dima(hip, s, lean=.03 - .04 * fly, arms={"n": ("ik", tuple(nt), -1), "f": ("ik", ft)}, hands={"n": hn, "f": hf}, expr=expr,
              head_ang=-.08 * fly + .03 * osc(t, 1.2) - .04 * reach * (1 - take), cam_s=cam[2])
     lib.INK_K[0] = 1.0 / cam[2] ** .62
