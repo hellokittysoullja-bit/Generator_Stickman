@@ -4,18 +4,18 @@
  "t_start": 5.96,
  "frames": 62,
  "frame_time": "t = t_start + k/30",
- "scale": 2.6,
+ "scale": 2.576,
  "offset_px": [
-  575,
-  551
+  587,
+  549
  ],
  "size_px": [
   542,
   963
  ],
  "out_size": [
-  1409,
-  2504
+  1396,
+  2481
  ],
  "order": [
   "L_dima",

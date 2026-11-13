@@ -5,7 +5,7 @@ set -e
 cd "$(dirname "$0")"
 export NAPARNIK_PYLIB313=${NAPARNIK_PYLIB313:-/tmp/claude-0/-home-user/7605bd81-268a-5536-b1b7-f9696ca784cb/scratchpad/blender/pylib313}
 export NODE_PATH=${NODE_PATH:-$(npm root -g)}
-(cd chars_src && python3 heroes26e.py )
+(cd chars_src && python3 heroes26e.py && python3 heroes26l.py)
 for id in "$@"; do
   python3 chars_src/make_cfg.py $id
   (cd chars_src && node render25.js ${NP:-3} $id)

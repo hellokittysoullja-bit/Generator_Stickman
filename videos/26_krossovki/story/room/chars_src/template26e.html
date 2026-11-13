@@ -13,6 +13,7 @@ const cl = x => Math.min(1, Math.max(0, x));
 const ss = (a, b, x) => { const u = cl((x - a) / (b - a)); return u * u * (3 - 2 * u); };
 const LAYERS = ['L_dima', 'L_plaid', 'L_cat', 'L_fx'];
 // catLook(t) — зрачки кота; catBlinks — [начало, длительность]; tilt(t) — наклон головы, °
+const CAT_DX = {s05: 0, s13: -140, s17: 0};   // кот в s13 подсел ближе к Диме (свет огонька прохода сдвигает сборка)
 const SHOT = {
   s05: {dima: 1, pose: 'S0', look: 'book', rest: .3, blinks: [6.9], catBlinks: [[7.35, .26]],
         catLook: t => [-1.5 + 1.5 * ss(6.2, 6.5, t), .5],
@@ -145,7 +146,9 @@ function seek(t, shot) {
   }
   show('cat_mouth_n', true); show('cat_mouth_h', false);
   const br = Math.sin(2 * Math.PI * t / 2.3);
-  set('cat_jump', 'transform', `translate(812 1244) scale(${(1 + .004 * br).toFixed(5)} ${(1 + .010 * br).toFixed(5)}) translate(-812 -1244)`);
+  const dxc = CAT_DX[CUR] || 0;
+  set('cat_shadow', 'transform', `translate(${dxc} 0)`); set('fl_plaid', 'transform', `translate(${dxc} 0)`);
+  set('cat_jump', 'transform', `translate(${dxc} 0) translate(812 1244) scale(${(1 + .004 * br).toFixed(5)} ${(1 + .010 * br).toFixed(5)}) translate(-812 -1244)`);
   const tail = 4 * Math.sin(2 * Math.PI * t / 2.2) + 1.5 * Math.sin(2 * Math.PI * t / 0.9 + 1);
   const rot = `rotate(${tail.toFixed(3)} 912 1272)`;
   set('cat_tail', 'transform', rot); set('tail_rim', 'transform', rot);

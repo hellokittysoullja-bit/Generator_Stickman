@@ -33,6 +33,18 @@ _src = inspect.getsource(H.cat_ears).replace("""f'<g clip-path="url(#{c})">' + "
 assert _src.count("_head_inner()") == 2
 exec(_src, H.__dict__)
 
+# тень кота на пледе — отдельной фигурой (кот в s13 подсаживается ближе к Диме: CAT_DX в template26e.html), свет огонька
+# на пледе — прямоугольником с запасом, чтобы его можно было сдвигать вместе с котом
+_src = inspect.getsource(H.plaid).replace(
+    'inner.append(blob(ellipse_pts(822, 1250, 120, 20, 12), "#0d160f", .7, blur(7)))', '')
+assert "822, 1250" not in _src
+exec(_src, H.__dict__)
+_src = inspect.getsource(H.lights_plaid).replace(
+    """f'<g id="fl_plaid"><rect width="{W}" height="{H}" fill="url(#gFl)" opacity=".85"/></g>'""",
+    """f'<g id="fl_plaid"><rect x="-500" y="-500" width="{W + 1000}" height="{H + 1000}" fill="url(#gFl)" opacity=".85"/></g>'""")
+assert "W + 1000}\" height=\"{H + 1000}\" fill=\"url(#gFl)" in _src
+exec(_src, H.__dict__)
+
 # ─── стикер: на коленях, левая кисть придерживает его край, пишется две строки
 ST = [(296, 1160, 1), (404, 1154, 1), (412, 1236, 1), (292, 1242, 1)]
 ARM_S, ARM_E, ARM_W = (452, 1078), (520, 1222), (430, 1196)     # плечо, локоть, запястье (как поза N рилса 24)
@@ -149,8 +161,14 @@ def shoebox():
     return "".join(s)
 
 
+def cat_shadow():
+    pc = H.clip_of(H.REG["plaid"])
+    return (f'<g clip-path="url(#{pc})"><g id="cat_shadow">' + blob(ellipse_pts(822, 1250, 120, 20, 12), "#0d160f", .7, blur(7)) +
+            "</g></g>")
+
+
 def front26():
-    s = [_front24()]
+    s = [cat_shadow(), _front24()]
     s.append('<g id="pose_S" style="display:none">')
     s.append(sticker())
     up, fore = arm_parts(H.L_S, (150, 1200), (236, 1218), seed=940)

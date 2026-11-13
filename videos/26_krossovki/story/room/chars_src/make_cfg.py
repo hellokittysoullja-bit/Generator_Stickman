@@ -46,7 +46,7 @@ for sid, (c0, c1) in CAM_DEFAULT.items():
     kind = 'lie' if sid == 's02' else 'eve'
     lay = {"shot": sid, "fps": FPS, "t_start": round(start, 4), "frames": n, "frame_time": "t = t_start + k/30",
            "scale": S, "offset_px": region[:2], "size_px": region[2:], "out_size": [ow, oh], "order": ORDER,
-           "flame_px": FLAME[kind],
+           "flame_px": [FLAME[kind][0] + (-140 if sid == 's13' else 0), FLAME[kind][1]],
            "notes": "пиксель (u, v) PNG = точка кадра 0 комнаты (offset_px + (u, v) / scale). Камера — room/cameras.json. "
                     "L_dima — Дима (и подушка в s02); L_plaid — плед и всё поверх него (руки, стикер, чипсы, коробка); L_cat — кот с огоньком; L_fx — пусто."}
     json.dump(lay, open(os.path.join(out, 'layout.json'), 'w'), ensure_ascii=False, indent=1)
