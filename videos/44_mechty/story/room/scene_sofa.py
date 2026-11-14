@@ -89,8 +89,9 @@ def blur_px(t):
 
 # ═════════════════════════════ Дима на диване ═════════════════════════════
 def dima(t, arms, hands=None, expr=None, lean=-0.42, head_ang=-0.22, hip=None, breath=0.0):
+    lean = -0.42 if lean is None else lean
     h = HIP if hip is None else hip
-    p = dict(hip=tuple(h), scale=BS, lean=lean + .012 * breath, feet={"n": ((612, 1508), 0.05), "f": ((570, 1496), 0.05)}, arms=arms,
+    p = dict(hip=tuple(h), scale=BS, lean=lean + .012 * breath, feet={"n": ((520, 1478), 0.0), "f": ((486, 1468), 0.0)}, arms=arms,
              hands=hands or {}, expr=expr or {}, head_ang=head_ang, hood=0.0, strings=(1.5 * osc(t, 1.1), 1.2 * osc(t, .9, 1)))
     return people.draw(p, "dima")
 
@@ -118,6 +119,20 @@ def dreamy_expr(t, smile=1.0, look=(.35, -.85), closed=0.0, mouth="smile", open_
     return dict(lid=.42, look=look, brows="up", mouth=mouth, smile=smile, open=open_, closed=closed, blush=.55 * smile, hair=2 * osc(t, 1.2))
 
 
+HN_REST = dict(kind="open", flip=1, dir=(.4, .9), curl=(.35, .4, .45, .5), spread=.1, thumb=.4, bend=.2)
+
+
+def lazy_dima(t, expr, ha, br, hip=None, lean=-0.42, n_arm=None, n_hand=None):
+    """Развалился: дальняя рука закинута за голову (кисть спрятана за затылком), ближняя лежит на животе."""
+    probe = dima(t, {"n": ("ik", (440, 1120), -1), "f": ("ik", (300, 900), 1)}, {"f": dict(kind="none")}, expr, head_ang=ha, breath=br,
+                 hip=hip, lean=lean)
+    hx, hy = probe["head"]
+    tgt = (hx - 58, hy - 10 + 3 * br)
+    na = n_arm or ("ik", (440 + 6 * br, 1120 + 4 * br), -1)
+    return dima(t, {"n": na, "f": ("ik", tgt, 1)}, {"n": n_hand or HN_REST, "f": dict(kind="none")}, expr, head_ang=ha, breath=br, hip=hip,
+                lean=lean)
+
+
 # ═════════════════════════════ s01 — хук ═════════════════════════════
 CL01 = (690.0, 470.0)      # центр облака мечты (мир)
 
@@ -131,9 +146,8 @@ def s01(t):
     br = osc(t, .55)
     sm = .75 + .25 * smooth(T_VECH, hit, t)
     expr = dreamy_expr(t, sm, look=(.42 + .05 * osc(t, .7), -.9), closed=blink_at(t, .95, .16))
-    d = dima(t, {"n": ("ik", (440 + 6 * br, 1120 + 4 * br), -1), "f": ("ang", -2.5, -.6)},
-             {"n": dict(kind="open", flip=1, dir=(.4, .9), curl=(.35, .4, .45, .5), spread=.1, thumb=.4, bend=.2)},
-             expr, head_ang=-.24 + .03 * osc(t, .8) - .04 * bump(t, hit, .4), breath=br)
+    ha = -.24 + .03 * osc(t, .8) - .04 * bump(t, hit, .4)
+    d = lazy_dima(t, expr, ha, br)
     # пузыри мысли: три кружка вылетают из головы, облако растёт; на «мечтает» — раздувается до края кадра
     hx, hy = d["head"]
     puffs = []
@@ -146,7 +160,7 @@ def s01(t):
     sc = grow + (1.9 - grow) * swell
     rx, ry = 300 * sc, 240 * sc
     pan = 30 * t
-    inside = dream.scene_inside(t, 1000, 780, pan)
+    inside = f'<g transform="scale(.6)">{dream.scene_inside(t, 1000, 760, pan)}</g>'
     cl = dream.cloud(t, 300, 240, inside, wob=.05, seed=4500)
     cx = CL01[0] + 40 * swell
     cy = CL01[1] + 60 * swell
@@ -162,7 +176,121 @@ def s01(t):
     return compose(inner, cam, blur=blur_px(t))
 
 
-SHOTS = {"s01": s01}
+# ═════════════════════════════ s04 — пунктирный билет, облако лопается на «нет» ═════════════════════════════
+def ticket_d(w=250.0, h=128.0, r=16.0, notch=17.0):
+    """Контур посадочного талона с центром (0, 0): скруглённые углы, полукруглые вырезы на коротких сторонах."""
+    x0, y0, x1, y1 = -w / 2, -h / 2, w / 2, h / 2
+    return (f"M{x0 + r} {y0} H{x1 - r} A{r} {r} 0 0 1 {x1} {y0 + r} V{-notch} A{notch} {notch} 0 0 0 {x1} {notch} V{y1 - r} "
+            f"A{r} {r} 0 0 1 {x1 - r} {y1} H{x0 + r} A{r} {r} 0 0 1 {x0} {y1 - r} V{notch} A{notch} {notch} 0 0 0 {x0} {-notch} "
+            f"V{y0 + r} A{r} {r} 0 0 1 {x0 + r} {y0} Z")
+
+
+def plane_d(k=1.0):
+    p = [(-34, 4), (-6, 2), (8, -26), (18, -26), (10, 2), (30, 2), (38, -10), (46, -10), (40, 6), (46, 22), (38, 22), (30, 10), (10, 10),
+         (18, 38), (8, 38), (-6, 12), (-34, 10)]
+    return "M" + " L".join(f"{x * k:.1f} {y * k:.1f}" for x, y in p) + " Z"
+
+
+def ticket(x, y, rot, t, glow=0.0, k=1.0):
+    """Пустой пунктирный билет: только штриховой контур (внутри пусто), перфорация, пунктирный самолётик.
+    glow 0..1 — мигание на «билета»: штрихи бегут и вспыхивают жёлтым."""
+    col = lib.mix("#fbf3df", "#ffd84a", glow)
+    off = -t * 60
+    sw = 7.0 + 2.5 * glow
+    d = ticket_d()
+    o = [f'<g transform="translate({x:.1f} {y:.1f}) rotate({rot:.2f}) scale({k:.4f})">']
+    for c, wdt in ((INK, sw + 5), (col, sw)):
+        o.append(f'<path d="{d}" fill="none" stroke="{c}" stroke-width="{wdt:.1f}" stroke-dasharray="18 13" stroke-dashoffset="{off:.1f}" '
+                 f'stroke-linecap="round" stroke-linejoin="round"/>')
+        o.append(f'<line x1="62" y1="-50" x2="62" y2="50" stroke="{c}" stroke-width="{wdt * .7:.1f}" stroke-dasharray="7 10" '
+                 f'stroke-dashoffset="{off * .5:.1f}" stroke-linecap="round"/>')
+    o.append("</g>")
+    return "".join(o)
+
+
+def splash(cx, cy, e, seed=4800):
+    """Облако лопнуло: белые клочья и капли разлетаются, штрихи «хлоп», лепестки падают."""
+    if e < 0 or e > 0.8:
+        return ""
+    o = []
+    rs = np.random.RandomState(seed)
+    for j in range(16):
+        a = rs.uniform(0, 2 * math.pi)
+        sp = rs.uniform(260, 520)
+        d = sp * (1 - math.exp(-e * 6)) / 6 * 4
+        x = cx + math.cos(a) * (120 + d) * 1.25
+        y = cy + math.sin(a) * (90 + d) + 260 * e * e
+        r = rs.uniform(14, 34) * (1 - smooth(.35, .8, e))
+        if r < 2:
+            continue
+        if j % 3 == 0:
+            o.append(dream.puff(x, y, r * 1.3, seed + j * 7, e))
+        else:
+            o.append(shape(ellipse_pts(x, y, r * .55, r * .7, 10, rot=math.degrees(a) + 90), "#ffffff",
+                           blob(ellipse_pts(x + r * .15, y + r * .25, r * .4, r * .4, 8), dream.CLOUD_SH, .9), w=3.4, seed=seed + 50 + j))
+    u = clamp(e / .3)
+    if u < 1:
+        for j in range(10):
+            a = 2 * math.pi * j / 10 + .2
+            r0, r1 = 200 + 150 * ease_out(u), 250 + 230 * ease_out(u)
+            o.append(line([(cx + math.cos(a) * r0 * 1.2, cy + math.sin(a) * r0), (cx + math.cos(a) * r1 * 1.2, cy + math.sin(a) * r1)],
+                          9 * (1 - u) + 1.5, INK, seed=seed + 90 + j, taper=.3, wmin=.4))
+    return "".join(o)
+
+
+CL04 = (510.0, 520.0)
+
+
+def s04(t):
+    world_back(t)
+    lib.dyn_begin()
+    tn = T_NET
+    e = t - tn
+    deflate = ease_io(clamp((t - (tn + .12)) / .45))
+    br = osc(t, .55)
+    # глаза: в мечте вверх; на «нет» — моргнул (два раза) и смотрит перед собой растерянно
+    bl = max(blink_at(t, tn + .1, .16), blink_at(t, tn + .42, .14))
+    look = (.42 - .1 * deflate, -.9 + .9 * deflate)
+    gape = 1 - deflate
+    expr = dict(lid=.42 + .2 * deflate, look=look, brows="up" if deflate < .5 else "worry", mouth="laugh" if deflate < .5 else "flat",
+                open=.35 + .1 * osc(t, .7) if deflate < .5 else 0.0, smile=1, closed=bl, blush=.5 * gape, hair=2 * osc(t, 1.2) + 6 * bump(t, tn, .3))
+    hip = HIP + np.array([10.0, 14.0]) * deflate
+    lean = -.42 - .1 * deflate
+    ha = -.24 + .02 * osc(t, .8) + .2 * deflate
+    # ближняя рука держит билет перед собой, после «нет» медленно опускается на живот
+    up = np.array([470.0 + 4 * br, 960.0 + 3 * br])
+    down = np.array([440.0, 1110.0])
+    wr = up + (down - up) * deflate
+    hn = dict(kind="open", flip=1, dir=(.55, -.83), curl=(.62, .7, .75, .8), spread=.04, thumb=.05, bend=.2)
+    d = lazy_dima(t, expr, ha, br, hip=hip, lean=lean, n_arm=("ik", tuple(wr), -1), n_hand=hn)
+    w0 = d["wrist"]["n"]
+    gl = max(bump(t, T_BIL, .22), bump(t, T_BIL + .25, .22))
+    tk = ticket(w0[0] + 118, w0[1] - 66, -10 + 4 * osc(t, .9) + 22 * deflate, t, glow=gl, k=.82 * (1 + .1 * gl))
+    # облако: раздувается к «нет», хлоп — исчезает, клочья разлетаются
+    swell = 1 + .12 * smooth(tn - .35, tn, t)
+    cloud = ""
+    if e < 0:
+        inside = f'<g transform="scale(.6)">{dream.scene_inside(t, 1000, 760, 30 * t)}</g>'
+        cl = dream.cloud(t, 300, 240, inside, wob=.05 + .1 * smooth(tn - .3, tn, t), seed=4500)
+        cloud = (f'<g transform="translate({CL04[0]:.1f} {CL04[1]:.1f}) scale({.76 * swell:.4f}) rotate({1.5 * osc(t, .4) + 3 * osc(t, 7) * smooth(tn - .3, tn, t):.2f})">'
+                 f'{cl}</g>')
+        hx, hy = d["head"]
+        for k, (dx, dy, r) in enumerate([(110, -150, 20), (180, -240, 30)]):
+            cloud = dream.puff(hx + dx, hy + dy + 4 * osc(t, 1, k), r, 4700 + k * 10, t) + cloud
+    sp = splash(CL04[0], CL04[1], e)
+    pet = dream.petals(t, 9, (0, 200, 1100, 1400), seed=4620, k=1.0, wind=(-120, 160)) if e < .5 else ""
+    inner = (_ST["back"] + _ST["seat"] + d.get("legs", "") + d["arm_f"] + d["body"] + tk + d["arm_n"] + world.evening_light(t)
+             + cloud + sp + pet)
+    u = clamp((t - 5.0) / 2.05)
+    pk = kick(t, tn, .45, 2.0)
+    s = (1.5 + .08 * ease_io(u)) * (1 + .06 * max(0.0, pk))
+    sh = bump(t, tn, .3)
+    cam = (390 - 15 * u + 6 * sh * osc(t, 15), 830 + 30 * u + 5 * sh * osc(t, 19, 1), s, -.6 + .8 * u + .8 * sh * osc(t, 11))
+    set_ink(s)
+    return compose(inner, cam)
+
+
+SHOTS = {"s01": s01, "s04": s04}
 
 
 def frame(sid, t):

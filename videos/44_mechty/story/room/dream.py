@@ -15,7 +15,7 @@ SAKURA, SAKURA_SH, SAKURA_HI = "#f6b7c9", "#e48aa6", "#fde2ea"
 TORII, TORII_SH = "#d8402e", "#a52b20"
 
 
-def cloud_pts(rx, ry, n=12, wob=0.0, t=0.0, seed=0):
+def cloud_pts(rx, ry, n=12, wob=0.0, t=0.0, seed=0, bulge=.5):
     """Контур облака: n выпуклых «бугров» по эллипсу (дуги по 4 точки), впадины между ними помечены углом —
     тушь рисует настоящие пушистые бугры, а не волнистый овал."""
     rs = np.random.RandomState(seed)
@@ -30,12 +30,12 @@ def cloud_pts(rx, ry, n=12, wob=0.0, t=0.0, seed=0):
         mx, my = (p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2
         L = math.hypot(p1[0] - p0[0], p1[1] - p0[1])
         nx, ny = mx / max(1e-6, math.hypot(mx, my)), my / max(1e-6, math.hypot(mx, my))
-        bulge = L * .42 * amp[i] * (1 + wob * math.sin(t * 3.1 + ph[i]))
+        bg = L * bulge * amp[i] * (1 + wob * math.sin(t * 3.1 + ph[i]))
         out.append((p0[0], p0[1], 1))
         for k in (1, 2, 3):
             u = k / 4
-            bx = p0[0] + (p1[0] - p0[0]) * u + nx * bulge * math.sin(math.pi * u)
-            by = p0[1] + (p1[1] - p0[1]) * u + ny * bulge * math.sin(math.pi * u)
+            bx = p0[0] + (p1[0] - p0[0]) * u + nx * bg * math.sin(math.pi * u)
+            by = p0[1] + (p1[1] - p0[1]) * u + ny * bg * math.sin(math.pi * u)
             out.append((bx, by))
     return out
 
@@ -60,8 +60,8 @@ def scene_inside(t, w=1000.0, h=760.0, pan=0.0):
     # Фудзи: синий конус, снежная шапка с зубцами
     fx, fb = -pan * .35, y0 + h * .78
     top = fb - h * .5
-    mt = [(fx - w * .62, fb + 40, 1), (fx - w * .2, top + h * .2), (fx - w * .07, top + 6), (fx + w * .07, top + 6), (fx + w * .2, top + h * .2),
-          (fx + w * .62, fb + 40, 1)]
+    mt = [(fx - w * .55, fb + 40, 1), (fx - w * .2, top + h * .2), (fx - w * .07, top + 6), (fx + w * .07, top + 6), (fx + w * .2, top + h * .2),
+          (fx + w * .55, fb + 40, 1)]
     snow = [(fx - w * .16, top + h * .17), (fx - w * .07, top + 6), (fx + w * .07, top + 6), (fx + w * .16, top + h * .17), (fx + w * .11, top + h * .22),
             (fx + w * .06, top + h * .16), (fx + w * .02, top + h * .23), (fx - w * .03, top + h * .15), (fx - w * .08, top + h * .22),
             (fx - w * .12, top + h * .16)]
@@ -87,13 +87,13 @@ def scene_inside(t, w=1000.0, h=760.0, pan=0.0):
     o.append(shape([(tx - 132, tb - th - 22), (tx - 60, tb - th - 8), (tx + 60, tb - th - 8), (tx + 132, tb - th - 22, 1), (tx + 126, tb - th - 6, 1),
                     (tx - 126, tb - th - 6, 1)], "#2b1d22", "", w=3, seed=4425))
     # сакура слева: ствол и шапка цветов
-    bx, bb = x0 + w * .16 - pan * .8, y0 + h + 30
+    bx, bb = x0 + w * .2 - pan * .8, y0 + h - 40
     trunk = [(bx - 22, bb, 1), (bx - 14, bb - 160), (bx - 50, bb - 260), (bx - 40, bb - 268), (bx - 2, bb - 190), (bx + 34, bb - 290),
              (bx + 46, bb - 282), (bx + 16, bb - 170), (bx + 22, bb, 1)]
     o.append(shape(trunk, "#5a3a32", blob([(bx + 4, bb), (bx + 8, bb - 170), (bx + 22, bb - 160), (bx + 22, bb)], "#3e2620", .8), w=3.6, seed=4430))
     for k, (cx, cy, r) in enumerate([(-60, -300, 90), (40, -330, 100), (-10, -380, 84), (110, -280, 70), (-120, -250, 66)]):
         sw = 4 * math.sin(t * 1.7 + k)
-        pts = cloud_pts(r * 1.05, r * .82, n=7, seed=4440 + k)
+        pts = cloud_pts(r * 1.05, r * .82, n=9, seed=4440 + k, bulge=.38)
         pts = [(bx + cx + sw + p[0], bb + cy + p[1]) + tuple(p[2:]) for p in pts]
         inn = blob([(bx + cx - r, bb + cy + r * .1), (bx + cx + r * 1.1, bb + cy), (bx + cx + r * 1.1, bb + cy + r), (bx + cx - r, bb + cy + r)],
                    SAKURA_SH, .8)
@@ -109,7 +109,7 @@ def cloud(t, rx, ry, inside="", wob=0.04, seed=4500, ink_w=5.2):
     """Облако с центром (0, 0): белый пушистый край (кольцо) и окно с мечтой внутри.
     Кольцо — сам контур облака, окно — тот же контур, сжатый на ~13 %; тень голубая по низу кольца."""
     outer = cloud_pts(rx, ry, wob=wob, t=t, seed=seed)
-    win = cloud_pts(rx * .86, ry * .82, n=12, wob=wob * .6, t=t + 1.3, seed=seed + 1)
+    win = cloud_pts(rx * .8, ry * .76, n=9, wob=wob * .6, t=t + 1.3, seed=seed + 1, bulge=.22)
     o = []
     c_out = lib.clip_of(outer)
     sh = blob([(-rx * 1.3, ry * .35), (rx * 1.3, ry * .25), (rx * 1.3, ry * 1.3), (-rx * 1.3, ry * 1.3)], CLOUD_SH, .95)
@@ -125,7 +125,7 @@ def cloud(t, rx, ry, inside="", wob=0.04, seed=4500, ink_w=5.2):
 
 def puff(x, y, r, seed, t=0.0):
     """Маленький пузырь-облачко мысли."""
-    pts = cloud_pts(r, r * .86, n=6, wob=.05, t=t, seed=seed)
+    pts = cloud_pts(r, r * .86, n=7, wob=.05, t=t, seed=seed, bulge=.32)
     pts = [(x + p[0], y + p[1]) + tuple(p[2:]) for p in pts]
     inner = blob([(x - r * 1.4, y + r * .25), (x + r * 1.4, y + r * .15), (x + r * 1.4, y + r * 1.4), (x - r * 1.4, y + r * 1.4)], CLOUD_SH, .9)
     return shape(pts, CLOUD, inner, w=4.2, seed=seed + 7)
