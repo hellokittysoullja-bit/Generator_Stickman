@@ -150,7 +150,14 @@ def head(st, t):
             s.append(line([(x0, 1100 + dy), (x0 + sx * ln, 1094 + dy + k * 3)], 5.6, "#f0903e", seed=260 + k + sx, taper=.3, wmin=.5))
     for nm, ex, sd in [("L", CXH - 44 - 4 * turn, 255), ("R", CXH + 44 - 4 * turn, 256)]:
         sq = 1.0 - .22 * max(0.0, turn if nm == "R" else -turn)
-        s.append(eye(ex, 1072, 34, 38, look, st.get("blink_" + nm, blink), sd, sq))     # рилс 64: blink_L / blink_R — один глаз отдельно
+        bl_ = st.get("blink_" + nm, blink)
+        if st.get("smug", 0.0) > .02:     # тяжёлые веки надменности
+            bl_ = max(bl_, (.5 if nm == "L" else .38) * st["smug"])
+        s.append(eye(ex, 1072, 34, 38, look, bl_, sd, sq))     # рилс 64: blink_L / blink_R — один глаз отдельно
+    sm = st.get("smug", 0.0)
+    if sm > .02:      # рилс 72: надменность — штрих-брови над глазами: над правым (от зрителя) взлетела, над левым опущена к носу
+        s.append(line([(CXH - 76, 1022), (CXH - 46, 1024 + 4 * sm), (CXH - 16, 1030 + 6 * sm)], 5.0, INK, seed=290, op=min(1.0, sm * 1.5)))
+        s.append(line([(CXH + 14, 1024 - 4 * sm), (CXH + 44, 1010 - 12 * sm), (CXH + 78, 1016 - 8 * sm)], 5.0, INK, seed=291, op=min(1.0, sm * 1.5)))
     s.append(shape([(826 + FX, 1108), (846 + FX, 1108), (836 + FX, 1119)], "#c47a72", w=2.6, seed=262))
     s.append(line([(836 + FX, 1119), (836 + FX, 1124)], 2.4, seed=263))
     tg = st.get("tongue", 0.0)
@@ -159,6 +166,9 @@ def head(st, t):
         tp = [(824 + FX, 1124, 1), (848 + FX, 1124, 1), (850 + FX, 1124 + L_ * .6), (844 + FX, 1124 + L_), (836 + FX, 1124 + L_ + 4), (828 + FX, 1124 + L_), (822 + FX, 1124 + L_ * .6)]
         s.append(shape([(818 + FX, 1121), (854 + FX, 1121), (846 + FX, 1131), (826 + FX, 1131)], "#5a2b33", w=2.4, seed=266))
         s.append(shape(tp, "#e8808c", line([(836 + FX, 1128), (836 + FX, 1124 + L_)], 1.6, "#c4565f", seed=267), w=2.8, seed=268))
+    elif st.get("smug", 0) > .5:     # ухмылка краем рта: правый уголок вверх
+        s.append(line([(818 + FX, 1126), (836 + FX, 1129), (852 + FX, 1123), (864 + FX, 1110)], 4.6, seed=269))
+        s.append(line([(862 + FX, 1106), (868 + FX, 1116)], 2.6, seed=268, op=.8))
     elif st.get("smile", 0) > .5:
         s.append(line([(818 + FX, 1122), (828 + FX, 1134), (836 + FX, 1126), (844 + FX, 1134), (854 + FX, 1122)], 3.2, seed=265))
     else:
@@ -169,10 +179,12 @@ def head(st, t):
             wv = 3 * math.sin(t * 2.3 + k + sx)
             s.append(line([(x0, 1128 + dy * .8), (x0 + sx * 50, 1126 + dy + dl * .5 + wv * .5), (x0 + sx * 96, 1124 + dy * 1.2 + dl + wv)], 1.4,
                           "#cfcbe0", seed=270 + k + sx, op=.9))
+    if st.get("mouth_item"):       # рилс 72: предмет в зубах (SVG в координатах кота, рот ≈ (836, 1130))
+        s.append(st["mouth_item"])
     return "".join(s)
 
 
-def body(walk=None, legs=0.0, paw=0.0, paw_dx=70.0):
+def body(walk=None, legs=0.0, paw=0.0, paw_dx=70.0, paw_l=0.0, paw_l_dx=70.0):
     """walk — фаза шага (передние лапы по очереди поднимаются, задние в противофазе); legs 0..1 — задние лапы вытянуты (толчок/полёт)."""
     s = []
     bd = [(760, 1296), (744, 1240), (756, 1180), (790, 1142), (880, 1142), (916, 1180), (928, 1240), (912, 1296)]
@@ -205,14 +217,16 @@ def body(walk=None, legs=0.0, paw=0.0, paw_dx=70.0):
             lift = max(0.0, math.sin(2 * math.pi * walk + (0 if sx < 0 else math.pi))) * 30
         lift += 26 * legs * (1 if sx < 0 else .8)      # в прыжке передние подобраны
         dx = 0.0
-        if sx > 0 and paw > .02:    # рилс 64: правая (от зрителя) передняя лапа тянется вперёд-вверх (тянет ящик, трогает)
+        pw_ = paw if sx > 0 else paw_l
+        pdx = paw_dx if sx > 0 else -paw_l_dx
+        if pw_ > .02:    # рилс 64: правая (от зрителя) передняя лапа тянется вперёд-вверх (тянет ящик, трогает)
             from ink import band as _band
-            tip = (fx + paw_dx * paw * 1.6, 1306 - 150 * paw)
-            arm = _band([(fx, 1236), (fx + paw_dx * paw * .8, 1270 - 70 * paw), tip], 40, 34, step=4, cap=False)
-            s.append(shape(arm, CAT, blob([(fx + 6, 1230), (fx + 30, 1230), (tip[0] + 20, tip[1]), (tip[0], tip[1])], CAT_SH, .6), w=4.6, seed=sd))
-            pp = ellipse_pts(tip[0] + 4, tip[1], 24, 21, 12, rot=-30 * paw)
+            tip = (fx + pdx * pw_ * 1.6, 1306 - 150 * pw_)
+            arm = _band([(fx, 1236), (fx + pdx * pw_ * .8, 1270 - 70 * pw_), tip], 40, 34, step=4, cap=False)
+            s.append(shape(arm, CAT, blob([(fx + 6 * sx, 1230), (fx + 30 * sx, 1230), (tip[0] + 20 * sx, tip[1]), (tip[0], tip[1])], CAT_SH, .6), w=4.6, seed=sd))
+            pp = ellipse_pts(tip[0] + 4 * sx, tip[1], 24, 21, 12, rot=-30 * pw_ * sx)
             s.append(shape(pp, CAT, "", w=4.4, seed=sd + 50))
-            s.append(blob(ellipse_pts(tip[0] + 10, tip[1] + 4, 9, 7, 8), "#e8823a"))
+            s.append(blob(ellipse_pts(tip[0] + 10 * sx, tip[1] + 4, 9, 7, 8), "#e8823a"))
             for kk in (-8, 6):
                 s.append(line([(tip[0] + kk - 6, tip[1] - 14), (tip[0] + kk + 2, tip[1] - 4)], 2.2, seed=sd + kk))
             continue
@@ -236,7 +250,7 @@ def draw(x, y, k, st, t):
     o.append(f'<g transform="rotate({tail_a:.2f} {TAIL_PIVOT[0]} {TAIL_PIVOT[1]})">{tail_art()}{flame(t, 1.3 - .45 * sl, st.get("flame_e", 1.0))}</g>')
     sy = br * (1 - .2 * sl) * st.get("sy", 1.0)
     sx = (1 + .12 * sl) * st.get("sx", 1.0)
-    o.append(f'<g transform="translate({CX} {CBOT}) scale({sx:.4f} {sy:.4f}) translate({-CX} {-CBOT})">{body(st.get("walk"), st.get("legs", 0.0), st.get("paw", 0.0), st.get("paw_dx", 70.0))}</g>')
+    o.append(f'<g transform="translate({CX} {CBOT}) scale({sx:.4f} {sy:.4f}) translate({-CX} {-CBOT})">{body(st.get("walk"), st.get("legs", 0.0), st.get("paw", 0.0), st.get("paw_dx", 70.0), st.get("paw_l", 0.0), st.get("paw_l_dx", 70.0))}</g>')
     hy = -(sy - 1) * (CBOT - NECK[1]) + 34 * sl + 70 * st.get("drop", 0.0)
     o.append(f'<g transform="translate({22 * sl:.2f} {hy:.2f}) rotate({tilt:.2f} {NECK[0]} {NECK[1]})">{head(st, t)}</g>')
     return f'<g transform="translate({x:.2f} {y:.2f}) rotate({st.get("rot", 0.0):.2f}) scale({k:.4f}) translate({-CX} {-CBOT})">{"".join(o)}</g>'

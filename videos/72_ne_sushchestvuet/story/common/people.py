@@ -2571,3 +2571,314 @@ def cocoon_blanket(x, y, k=1.0, u=0.0, t=0.0, seed=0, col=C_COCOON):
     yy = y - 900 * fl * fl
     rr = 25 * fl + 6 * math.sin(t * 6)
     return f'<g transform="translate({x:.1f} {yy:.1f}) rotate({rr:.2f}) scale({k * (1 - .3 * fl):.4f})">{shape(pts, c, inner, w=5.6, seed=sd)}</g>'
+
+
+# ═════════════════════════════ РИЛС 72 «СДВГ НЕ СУЩЕСТВУЕТ» (автор — группа B) ═════════════════════════════
+# Дима взрослый (горчичное худи) — dima(x, y, scale, expr, pose, **ноги). (x, y) — таз, Дима смотрит вправо (flip=True — влево).
+# Позы POSE (цели рук — в долях масштаба от таза):
+#   phone_face  — развалился, ближняя кисть держит телефон у лица (центр телефона ≈ (215, −470)·sc, экран к Диме: рисовать
+#                 people.mobilnik ПОСЛЕ фигуры в hand_pos(...) — спинка к зрителю), дальняя на животе
+#   hand_hang   — ближняя рука зависла вперёд, пальцы полусогнуты (телефон забрали) ≈ (330, −330)·sc
+#   press_back  — вжимается: кисти к груди, плечи вверх (с shrug=0.6–1 и expr "saucer")
+#   hug_knees   — сидит, обнял колени (ноги — knees_kw); chin_knees — уткнулся подбородком в колени; lift_head — поднимает голову
+#   pull_cord   — стоит, дальняя рука вперёд на раме, ближняя тянет тросик (цель ближней руки — ручка: arms={"n": ("ik", ручка, -1)})
+#   strain      — тужится как атлет: кулаки у груди, локти в стороны (expr "strain" + strain_marks)
+#   palm_up     — ближняя ладонь вверх перед собой ≈ (320, −250)·sc (клочок кладёт сцена: palm_point(...))
+#   lid_finger  — (уже есть, из 71) крышка ноутбука одним пальцем; laptop_lap — обе кисти у ноутбука на коленях
+#   lean_back   — откинулся назад, руки упёрты сзади (рисовать layers=LAYERS_BEHIND)
+# Ноги: beanbag_kw (полулёжа в кресле-мешке, ноги вперёд), knees_kw (колени к груди, сидит на бревне/земле; tight 0…1),
+#   plop_kw (сел на траву, ноги вытянуты), crouch_kw (присел на корточки), sit_kw/stand_kw — из 70/63.
+# Мимика EXPR["dima"]: glassy (стеклянный взгляд в телефон), slump (обмяк), strain (надутые щёки, брови сведены), downcast (утыкается),
+#   dawn (озарение), giggle (прыскает от смеха), warm (тёплый у огня), lean_rest (откинулся, глаза прикрыты).
+# strain_marks(head_xy, scale, t, u) — жилка на виске и капля пота (поверх фигуры).
+# dima_shadow(x, y, k, age_u, t, col) — ТЕНЬ Димы (сплошной силуэт без деталей) растёт из детской (kid2) во взрослую; (x, y) — ступни.
+# smoke_figure(kind, x, y, k, u, t, fade, seed) — силуэт из дыма ТОЛЬКО ЛИНИЕЙ (без заливки), (x, y) — низ по центру, высота ≈ 900·k:
+#   "teacher" — учительница с пучком, указка в одной руке, другой грозит пальцем; "mom" — мама руки в боки, качает головой;
+#   "self" — крупное хмурое лицо Димы (лохматый, щетина-штрихи). u 0…1 — дым сплетается в контур; fade 0…1 — рассыпается клочьями
+#   вверх (для s11); t — дым колышется.
+# Кот (cat.py, новые ключи st): paw_l (левая передняя лапа тянется, как paw у правой), paw_l_dx; smug 0…1 (тяжёлые веки, бровь-штрих
+#   вверх, ухмылка краем рта); mouth_item — SVG в точке рта (локально (836, 1130) кота, до масштаба: кубик в зубах).
+#   cat_paw_tip(x, y, k, st, side="r"|"l") → кончик лапы в мире (без rot/sx), cat_nod(t, t0, dur, amp) → st["drop"] кивка.
+#   CAT_ST[имя] — готовые состояния: smug, spread (разводит лапами), point (показывает лапой вправо), warm (тёплый, глаза щёлочками),
+#   reach (тянет лапу к зрителю), split (обе лапы вниз на лёд).
+EXPR["dima"].update({
+    "glassy": {"brows": "calm", "mouth": "flat", "lid": .5, "look": (.1, -.15), "bags": False},
+    "slump": {"brows": "tired", "mouth": "tired", "lid": .32, "look": (.2, -.1), "bags": False},
+    "strain": {"brows": "pinch", "mouth": "puff", "puff": 1.0, "lid": .35, "squeeze": 1.0, "bags": False},
+    "downcast": {"brows": "sad", "mouth": "frown", "lid": .25, "look": (.2, .8)},
+    "dawn": {"brows": "up", "mouth": "o", "open": .25, "lid": 1.0, "look": (.4, -.2)},
+    "giggle": {"brows": "up", "mouth": "laugh", "open": .6, "laugh": 1.0, "hair": 4, "bags": False},
+    "warm": {"brows": "calm", "mouth": "smile", "smile": .6, "lid": .6, "look": (.5, .2)},
+    "lean_rest": {"brows": "calm", "mouth": "smile", "smile": .8, "lid": .3, "look": (.2, -.3)},
+    "smug72": {"brows": "one_up", "mouth": "side", "lid": .5, "look": (.4, 0), "bags": False},
+})
+
+POSE.update({
+    "phone_face": (-0.22, 0.05, {"f": ("ik", (140, -150), -1), "n": ("ik", (190, -400), -1)},
+                   {"f": {"curl": (.4, .4, .45, .5), "thumb": .4, "dir": (1, .3)}, "n": {"dir": (.2, -1), "curl": (.6, .62, .66, .7), "thumb": .6}}),
+    "hand_hang": (-0.12, 0.08, {"f": ("ik", (140, -150), -1), "n": ("ik", (330, -330), -1)},
+                  {"f": {"curl": (.4, .4, .45, .5), "thumb": .4, "dir": (1, .3)}, "n": {"dir": (1, -.2), "curl": (.35, .45, .5, .55), "thumb": .45}}),
+    "press_back": (-0.28, -0.05, {"f": ("ik", (110, -290), -1), "n": ("ik", (160, -305), -1)},
+                   {"f": {"dir": (.3, -1), "curl": (.7, .7, .75, .75), "thumb": .6}, "n": {"dir": (.2, -1), "curl": (.7, .72, .75, .78), "thumb": .6}}),
+    "hug_knees": (0.22, 0.12, {"f": ("ik", (200, -200), -1), "n": ("ik", (250, -190), -1)},
+                  {"f": {"dir": (-.6, .6), "curl": (.55, .6, .65, .7), "thumb": .5}, "n": {"dir": (-.8, .4), "curl": (.55, .6, .65, .7), "thumb": .5}}),
+    "chin_knees": (0.5, 0.45, {"f": ("ik", (200, -190), -1), "n": ("ik", (250, -180), -1)},
+                   {"f": {"dir": (-.6, .6), "curl": (.55, .6, .65, .7), "thumb": .5}, "n": {"dir": (-.8, .4), "curl": (.55, .6, .65, .7), "thumb": .5}}),
+    "lift_head": (0.08, -0.22, {"f": ("ik", (200, -205), -1), "n": ("ik", (250, -195), -1)},
+                  {"f": {"dir": (-.6, .6), "curl": (.55, .6, .65, .7), "thumb": .5}, "n": {"dir": (-.8, .4), "curl": (.55, .6, .65, .7), "thumb": .5}}),
+    "pull_cord": (-0.12, -0.05, {"f": ("ik", (330, -190), -1), "n": ("ik", (-170, -180), 1)},
+                  {"f": {"dir": (1, .4), "curl": (.6, .65, .7, .7), "thumb": .5}, "n": {"dir": (-.3, -1), "curl": (.75, .78, .8, .8), "thumb": .7}}),
+    "strain": (0.05, 0.05, {"f": ("ik", (120, -300), -1), "n": ("ik", (230, -290), -1)},
+               {"f": {"dir": (.3, -1), "curl": (.85, .9, .9, .9), "thumb": .8}, "n": {"dir": (.2, -1), "curl": (.85, .9, .9, .9), "thumb": .8}}),
+    "palm_up": (0.2, 0.15, {"f": ("ik", (180, -160), -1), "n": ("ik", (330, -260), -1)},
+                {"f": {"curl": (.4, .4, .45, .5), "thumb": .4}, "n": {"dir": (1, -.15), "flip": -1, "spread": .3, "curl": (.05, .1, .15, .2), "thumb": .15}}),
+    "laptop_lap": (0.12, 0.15, {"f": ("ik", (230, -200), -1), "n": ("ik", (320, -210), -1)},
+                   {"f": {"dir": (1, .3), "curl": (.3, .35, .4, .45), "thumb": .3}, "n": {"dir": (1, .3), "curl": (.3, .3, .35, .4), "thumb": .3}}),
+    "lean_back": (-0.22, -0.12, {"f": ("ang", -0.5, -0.1), "n": ("ang", -0.4, -0.1)},
+                  {"f": {"dir": (-.6, 1), "curl": (.2, .2, .25, .3), "thumb": .2}, "n": {"dir": (-.6, 1), "curl": (.2, .2, .25, .3), "thumb": .2}}),
+})
+
+
+def beanbag_kw(x, y, scale, sag=0.0, who="dima"):
+    """Полулёжа в кресле-мешке: ноги вперёд-вниз, пятки на полу (≈ 330·sc ниже таза)."""
+    sc = scale * HEIGHT.get(who, 1.0)
+    return {"feet": {"n": ((x + (470 + 30 * sag) * sc, y + (300 - 30 * sag) * sc), -.25), "f": ((x + (420 + 30 * sag) * sc, y + (306 - 30 * sag) * sc), -.25)}}
+
+
+def knees_kw(x, y, scale, tight=1.0, ground=190.0, who="dima"):
+    """Колени к груди: стопы на земле (ground·sc ниже таза), близко к тазу (tight 1) … дальше (tight 0)."""
+    sc = scale * HEIGHT.get(who, 1.0)
+    u = lib.clamp(tight)
+    ax = 320 - 210 * u
+    return {"feet": {"n": ((x + ax * sc, y + ground * sc), 0.0), "f": ((x + (ax - 40) * sc, y + (ground + 6) * sc), 0.0)}}
+
+
+def plop_kw(x, y, scale, who="dima"):
+    """Сел на землю: ноги вытянуты вперёд, носки вверх."""
+    sc = scale * HEIGHT.get(who, 1.0)
+    return {"feet": {"n": ((x + 560 * sc, y + 40 * sc), -.9), "f": ((x + 520 * sc, y + 50 * sc), -.9)}}
+
+
+def crouch_kw(x, y, scale, who="dima"):
+    """На корточках: таз низко над пятками, колени высоко вперёд."""
+    sc = scale * HEIGHT.get(who, 1.0)
+    return {"feet": {"n": ((x + 170 * sc, y + 140 * sc), -.5), "f": ((x + 110 * sc, y + 146 * sc), -.5)}}
+
+
+def hand_pos(fig, side="n", ahead=60.0):
+    """Точка в ладони: запястье + ahead·scale по направлению предплечья (для телефона, клочка, ручки)."""
+    w = np.array(fig["wrist"][side], float)
+    e = np.array(fig["elbow"][side], float)
+    d = (w - e) / (np.linalg.norm(w - e) + 1e-6)
+    p = w + d * ahead * fig["scale"]
+    return float(p[0]), float(p[1])
+
+
+def strain_marks(head, scale, t=0.0, u=1.0, flip=False):
+    """Жилка на виске (зигзаг) и капля пота у лба. head — центр головы из figure()."""
+    if u <= 0.01:
+        return ""
+    s = scale
+    sx = -1 if flip else 1
+    hx, hy = head
+    pul = 1 + .15 * math.sin(t * 20)
+    vx, vy = hx + sx * 20 * s, hy - 70 * s
+    v = [(vx - sx * 18 * s * pul, vy - 14 * s), (vx, vy), (vx - sx * 14 * s * pul, vy + 12 * s), (vx + sx * 4 * s, vy + 26 * s)]
+    o = line(v, 7 * s * 2, "#C2493D", taper=.3, wmin=.4, seed=7201, op=u)
+    o += line([(vx + sx * 30 * s, vy - 26 * s), (vx + sx * 42 * s, vy - 38 * s)], 5 * s * 2, "#C2493D", taper=.6, wmin=.2, seed=7202, op=u)
+    o += line([(vx + sx * 30 * s, vy + 30 * s), (vx + sx * 44 * s, vy + 40 * s)], 5 * s * 2, "#C2493D", taper=.6, wmin=.2, seed=7203, op=u)
+    dy = 40 * s * ((t * 1.3) % 1)
+    dxp, dyp = hx - sx * 110 * s, hy - 40 * s + dy
+    drop = [(dxp, dyp - 26 * s, 1), (dxp + 12 * s, dyp), (dxp, dyp + 12 * s), (dxp - 12 * s, dyp)]
+    o += shape(drop, "#9BD3F0", blob([(dxp - 4 * s, dyp - 4 * s), (dxp - 1 * s, dyp - 10 * s), (dxp + 1 * s, dyp - 2 * s)], "#FFFFFF"), w=3.2, seed=7204)
+    return o
+
+
+_SHADOW_F = "dshadowfill"
+
+
+def dima_shadow(x, y, k=1.0, age_u=1.0, t=0.0, col="#0B0E22", blur_sd=3.0):
+    """Тень-силуэт Димы стоя (сплошной цвет col, без деталей): age_u 0 — мальчик (kid2), 1 — взрослый. Рост тени плавно растёт;
+    на середине (0.45–0.55) силуэт меняется под прикрытием — оба одного роста в этот момент. (x, y) — ступни."""
+    u = lib.clamp(age_u)
+    fid = f"{_SHADOW_F}{col[1:]}"
+    if not any(f'id="{fid}"' in d for d in lib.DEFS):
+        r, g, b = (int(col[i:i + 2], 16) / 255 for i in (1, 3, 5))
+        lib.DEFS.append(f'<filter id="{fid}" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0 0 0 0 {r:.3f} '
+                        f'0 0 0 0 {g:.3f} 0 0 0 0 {b:.3f} 0 0 0 1 0"/><feGaussianBlur stdDeviation="{blur_sd}"/></filter>')
+    h_kid, h_ad = .62, 1.0
+    hgt = h_kid + (h_ad - h_kid) * lib.ease_io(u)
+    adult = u >= .5
+    sc0 = .5
+    legs_h = (LEG_LEN - 12) * sc0
+    if adult:
+        fig = person("dima", 0, -legs_h, sc0, "warm", "rest", feet=stand_kw(0, -legs_h, sc0)["feet"])
+        base_h = 1.0
+    else:
+        hk = HEIGHT.get("kid2", .66)
+        fig = person("kid2", 0, -(LEG_LEN * KID_LEG_K - 12) * sc0 * hk, sc0, "beam", "rest",
+                     feet=stand_kw(0, -(LEG_LEN * KID_LEG_K - 12) * sc0 * hk, sc0, who="kid2")["feet"])
+        base_h = h_kid
+    s = k * hgt / base_h
+    sway = 1.5 * math.sin(t * 5)
+    return f'<g transform="translate({x:.2f} {y:.2f}) rotate({sway:.2f}) scale({s:.4f})" filter="url(#{fid})">{fig["svg"]}</g>'
+
+
+# ── дымные силуэты: только линия дыма ──
+SMOKE_COL = "#C9D3E3"
+SMOKE_HI = "#EEF2F8"
+
+
+def _smoke_line(pts, k, t, u, fade, seed, w=12.0):
+    """Полилиния дыма: проявляется по длине (u), колышется (t), рассыпается вверх клочьями (fade)."""
+    P_ = lib.sample([(p[0], p[1]) for p in pts], False, 6.0) if len(pts) > 2 else np.array(pts, float)
+    P_ = np.array(P_, float)
+    n = len(P_)
+    if n < 2:
+        return ""
+    m = max(2, int(n * lib.clamp(u)))
+    P_ = P_[:m]
+    Tg = np.gradient(P_, axis=0)
+    Tg /= (np.linalg.norm(Tg, axis=1, keepdims=True) + 1e-6)
+    N = np.stack([-Tg[:, 1], Tg[:, 0]], 1)
+    idx = np.arange(m)
+    wob = 7 * np.sin(t * 2.4 + idx * .35 + seed) + 4 * np.sin(t * 4.1 + idx * .8)
+    Q = P_ + N * wob[:, None]
+    Q[:, 1] -= (t * 6) % 1 * 0      # без дрейфа целиком: колышется на месте
+    o = []
+    if fade <= 0.01:
+        pts2 = [(x * k, y * k) for x, y in Q]
+        o.append(line(pts2, w * k * 2.2 + 3, "#8E9AB0", taper=.35, wmin=.2, seed=seed))
+        o.append(line(pts2, w * k * 2.2, SMOKE_COL, taper=.4, wmin=.15, seed=seed + 1))
+        o.append(line(pts2, w * k * .8, SMOKE_HI, taper=.6, wmin=.1, seed=seed + 2))
+        return "".join(o)
+    # рассыпается: куски по 6 точек, каждый уплывает вверх и тает
+    rs = np.random.RandomState(seed % 2**31)
+    f = lib.clamp(fade)
+    for a in range(0, m - 2, 5):
+        seg = Q[a:a + 6].copy()
+        if len(seg) < 2:
+            continue
+        drift = rs.uniform(.6, 1.4)
+        seg[:, 1] -= 260 * f * drift
+        seg[:, 0] += 60 * f * rs.uniform(-1, 1)
+        shrink = 1 - f
+        if shrink < .05:
+            continue
+        c = seg.mean(0)
+        seg = c + (seg - c) * (.4 + .6 * shrink)
+        pts2 = [(x * k, y * k) for x, y in seg]
+        o.append(line(pts2, w * k * 2 * shrink + 2, "#8E9AB0", taper=.5, wmin=.2, seed=seed + a))
+        o.append(line(pts2, w * k * 2 * shrink, SMOKE_COL, taper=.5, wmin=.2, seed=seed + a + 1))
+        if f > .3 and a % 10 == 0:   # искорки
+            cx, cy = c[0] * k, c[1] * k - 40 * f * k
+            o.append(blob(ellipse_pts(cx, cy, 6 * k * shrink + 2, 6 * k * shrink + 2, 8), "#FFD24A"))
+    return "".join(o)
+
+
+def _arc(cx, cy, rx, ry, a0, a1, n=14):
+    return [(cx + rx * math.cos(math.radians(a0 + (a1 - a0) * i / n)), cy + ry * math.sin(math.radians(a0 + (a1 - a0) * i / n))) for i in range(n + 1)]
+
+
+def _smoke_paths(kind, t):
+    """Контуры силуэтов в своих координатах: низ по центру (0, 0), высота ≈ 900."""
+    if kind == "teacher":
+        wag = 14 * math.sin(t * 9)
+        P_ = []
+        P_.append(_arc(0, -720, 70, 82, 0, 360, 20))                                   # голова
+        P_.append(_arc(10, -820, 44, 36, 180, 540, 14))                                # пучок
+        P_.append([(-46, -644), (-70, -600), (-120, -560), (-150, -300), (-200, 0)])   # левый бок платья
+        P_.append([(46, -644), (70, -600), (120, -560), (150, -300), (200, 0)])        # правый бок
+        P_.append([(-200, 0), (0, 12), (200, 0)])                                      # подол
+        # правая рука вверх, грозит пальцем
+        ex, ey = 230, -700
+        P_.append([(110, -570), (200, -600), (ex, ey)])
+        P_.append([(ex, ey), (ex + 6 + wag, ey - 70), (ex + 10 + wag * 1.5, ey - 120)])     # палец
+        P_.append(_arc(ex, ey + 6, 26, 30, 0, 360, 10))                                # кулак
+        # левая рука с указкой
+        P_.append([(-110, -570), (-190, -470), (-230, -420)])
+        P_.append([(-230, -420), (-330, -640), (-380, -760)])                          # указка
+        P_.append([(-28, -722), (-10, -730)])                                          # бровь-хмурь
+        P_.append([(26, -730), (44, -722)])
+        P_.append([(-14, -680), (16, -684)])                                           # поджатые губы
+        return P_
+    if kind == "mom":
+        sh = 10 * math.sin(t * 7)
+        P_ = []
+        P_.append([(p[0] + sh, p[1]) for p in _arc(0, -720, 72, 84, 0, 360, 20)])     # голова (качает)
+        P_.append([(p[0] + sh, p[1]) for p in _arc(0, -748, 92, 82, 190, 350, 14)])   # волосы шапкой
+        P_.append([(-80 + sh, -700), (-96 + sh, -640), (-82 + sh, -600)])            # пряди
+        P_.append([(80 + sh, -700), (96 + sh, -640), (82 + sh, -600)])
+        P_.append([(-40 + sh, -730), (-14 + sh, -722)])                                # брови домиком
+        P_.append([(14 + sh, -722), (40 + sh, -730)])
+        P_.append([(-16 + sh, -676), (0 + sh, -684), (16 + sh, -676)])                # рот вниз
+        P_.append([(-50, -640), (-110, -590), (-118, -420), (-160, 0)])                # бока
+        P_.append([(50, -640), (110, -590), (118, -420), (160, 0)])
+        P_.append([(-160, 0), (0, 12), (160, 0)])
+        # руки в боки: локти наружу треугольником
+        P_.append([(-110, -580), (-240, -480), (-118, -400)])
+        P_.append([(110, -580), (240, -480), (118, -400)])
+        return P_
+    # self: крупное хмурое лицо Димы
+    lean = 4 * math.sin(t * 3)
+    P_ = []
+    P_.append(_arc(0, -450, 260, 320, 20, 160, 18))                                    # низ лица (подбородок)
+    P_.append([(-250, -340), (-262, -460), (-240, -580)])
+    P_.append([(250, -340), (262, -460), (240, -580)])
+    hair = [(-260, -560), (-300, -700, ), (-200, -660), (-210, -820), (-100, -720), (-60, -880), (20, -740), (110, -870), (140, -710), (260, -790), (240, -640),
+            (300, -620), (250, -560)]
+    P_.append(hair)
+    P_.append([(-170, -520 + lean), (-110, -490 + lean), (-50, -470 + lean)])          # брови сведены
+    P_.append([(50, -470 + lean), (110, -490 + lean), (170, -520 + lean)])
+    P_.append(_arc(-100, -410, 36, 26, 200, 340, 8))                                   # глаза-прищур
+    P_.append(_arc(100, -410, 36, 26, 200, 340, 8))
+    P_.append([(-80, -230), (0, -250), (80, -230)])                                    # рот вниз
+    for j in range(5):
+        P_.append([(-150 + 75 * j, -200 + 12 * (j % 2)), (-140 + 75 * j, -180 + 12 * (j % 2))])   # щетина
+    return P_
+
+
+def smoke_figure(kind, x, y, k=1.0, u=1.0, t=0.0, fade=0.0, seed=0):
+    if u <= 0.01:
+        return ""
+    o = []
+    for j, pts in enumerate(_smoke_paths(kind, t)):
+        uj = lib.clamp(u * 1.4 - j * .03)
+        if uj <= 0:
+            continue
+        w = 12.0 if len(pts) > 3 else 9.0
+        o.append(_smoke_line(pts, 1.0, t + j * .7, uj, fade, 7300 + seed * 50 + j, w=w))
+    rise = 0.0
+    return f'<g transform="translate({x:.2f} {y + rise:.2f}) scale({k:.4f})">{"".join(o)}</g>'
+
+
+# ── кот: помощники ──
+CAT_ST = {
+    "smug": {"smug": 1.0, "look": (.3, .1), "tilt": -6, "smile": 0.0},
+    "spread": {"paw": .8, "paw_l": .8, "paw_dx": 90, "paw_l_dx": 90, "smug": .7, "tilt": 6},
+    "point": {"paw": 1.0, "paw_dx": 110, "look": (.8, 0), "smug": .5},
+    "warm": {"blink": .55, "smile": 1.0, "look": (0, .2), "flame_e": 1.5},
+    "reach": {"paw": 1.0, "paw_dx": 30, "look": (0, 0), "smile": 1.0},
+    "split": {"paw": .7, "paw_l": .7, "paw_dx": 40, "paw_l_dx": 40, "perk": 1.0, "look": (0, .7)},
+}
+
+
+def cat_nod(t, t0, dur=0.32, amp=0.28):
+    """st["drop"] кивка: голова опускается и возвращается (одно движение на [t0, t0+dur])."""
+    u = (t - t0) / dur
+    if u <= 0 or u >= 1:
+        return 0.0
+    return amp * math.sin(math.pi * u) ** 1.5
+
+
+def cat_paw_tip(x, y, k, st, side="r"):
+    """Кончик вытянутой передней лапы в мире (как в cat.body; поворот rot и sx/sy не учитываются)."""
+    import cat
+    if side == "r":
+        paw, dx, fx = st.get("paw", 0.0), st.get("paw_dx", 70.0), cat.CX + 25
+        lx = fx + dx * paw * 1.6
+    else:
+        paw, dx, fx = st.get("paw_l", 0.0), st.get("paw_l_dx", 70.0), cat.CX - 25
+        lx = fx - dx * paw * 1.6
+    ly = 1306 - 150 * paw
+    return x + (lx - cat.CX) * k, y + (ly - cat.CBOT) * k
