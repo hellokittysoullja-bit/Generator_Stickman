@@ -80,26 +80,6 @@ def notebook(t, bounce):
     return "".join(s)
 
 
-def hand_flat(x, y, ang=0.0, k=1.0, sd=0, flip=1):
-    """Кисть, лежащая на странице: ладонь-тыл и четыре пальца-колбаски (вид сверху-спереди)."""
-    o = []
-    pts = [(-40, -10), (-20, -34), (30, -36), (62, -18), (66, 16), (40, 36), (-20, 34), (-44, 14)]
-    o.append(shape(pts, dima.SKIN, blob([(-44, 14), (-20, 34), (40, 36), (66, 16), (30, 18)], dima.SKIN_SH, .9), w=4.6, seed=sd))
-    for j in range(4):
-        fy = -26 + j * 17
-        fp_ = [(60, fy - 8), (104, fy - 8 + j * 1.5), (112, fy + 1 + j), (100, fy + 8 + j), (60, fy + 8)]
-        o.append(shape(fp_, dima.SKIN, blob([(60, fy + 3), (104, fy + 4 + j), (100, fy + 8 + j), (60, fy + 8)], dima.SKIN_SH, .85), w=3.8, seed=sd + 3 + j))
-    o.append(line([(-20, -20), (24, -22)], 2.4, dima.SKIN_SH2, seed=sd + 9, op=.7))
-    tr = f'translate({f(x)} {f(y)}) rotate({f(ang)}) scale({f(k * flip)} {f(k)})'
-    return f'<g transform="{tr}">{"".join(o)}</g>'
-
-
-def forearm(a, b, w0=92, w1=70, sd=0):
-    pts = lib.band([a, ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2 + 20), b], w0, w1, step=6, cap=True)
-    return shape(pts, dima.HOOD, blob(lib.band([a, ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2 + 40), b], 40, 30, step=6, cap=True), dima.HOOD_SH, .8) +
-                 line([(a[0] + 30, a[1] + 30), ((a[0] + b[0]) / 2 + 10, (a[1] + b[1]) / 2 + 40)], 3.4, dima.FOLD, seed=sd + 1, op=.7), w=5.2, seed=sd)
-
-
 def cat_st(t):
     st = cat.__dict__.get("_x", None)
     flip = t - T_LAND
@@ -174,10 +154,10 @@ def frame(sid, t):
     s.append(desk())
     fl = 10 * math.sin(t * 3.1)
     arms = [notebook(t, land_bump),
-            forearm((60, 1020), (180, DESK_Y + 70 + land_bump), 104, 74, SEED + 200),
-            hand_flat(196, DESK_Y + 92 + land_bump, -4, .85, SEED + 210),
-            forearm((640, 1020), (516 + fl * .5, DESK_Y + 76 + land_bump), 104, 74, SEED + 220),
-            hand_flat(504 + fl * .5, DESK_Y + 98 + land_bump, 190, .85, SEED + 230, flip=-1)]
+            bits.forearm((60, 1020), (180, DESK_Y + 70 + land_bump), 104, 74, SEED + 200),
+            bits.hand_flat(196, DESK_Y + 92 + land_bump, -4, .85, SEED + 210),
+            bits.forearm((640, 1020), (516 + fl * .5, DESK_Y + 76 + land_bump), 104, 74, SEED + 220),
+            bits.hand_flat(504 + fl * .5, DESK_Y + 98 + land_bump, 190, .85, SEED + 230, flip=-1)]
     s.append(f'<g transform="translate(110 0)">{"".join(arms)}</g>')
     if t >= T_LAND:
         s.append(cat_svg)

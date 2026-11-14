@@ -118,3 +118,27 @@ def hood_body(sd=0):
         pts = [(x0, 262), (x0 - 6 + 4 * k, 330), (x0 - 2, 400)]
         s.append(lib.line(pts, 7, "#efe8da", taper=.2, wmin=.8, seed=sd + 10 + k) + lib.line(pts, 2.4, INK, taper=.2, wmin=.8, seed=sd + 12 + k, op=.7))
     return "".join(s)
+
+
+import dima  # noqa
+from lib import shape, blob, line, f  # noqa
+
+
+def hand_flat(x, y, ang=0.0, k=1.0, sd=0, flip=1):
+    """Кисть, лежащая на странице: ладонь-тыл и четыре пальца-колбаски (вид сверху-спереди)."""
+    o = []
+    pts = [(-40, -10), (-20, -34), (30, -36), (62, -18), (66, 16), (40, 36), (-20, 34), (-44, 14)]
+    o.append(shape(pts, dima.SKIN, blob([(-44, 14), (-20, 34), (40, 36), (66, 16), (30, 18)], dima.SKIN_SH, .9), w=4.6, seed=sd))
+    for j in range(4):
+        fy = -26 + j * 17
+        fp_ = [(60, fy - 8), (104, fy - 8 + j * 1.5), (112, fy + 1 + j), (100, fy + 8 + j), (60, fy + 8)]
+        o.append(shape(fp_, dima.SKIN, blob([(60, fy + 3), (104, fy + 4 + j), (100, fy + 8 + j), (60, fy + 8)], dima.SKIN_SH, .85), w=3.8, seed=sd + 3 + j))
+    o.append(line([(-20, -20), (24, -22)], 2.4, dima.SKIN_SH2, seed=sd + 9, op=.7))
+    tr = f'translate({f(x)} {f(y)}) rotate({f(ang)}) scale({f(k * flip)} {f(k)})'
+    return f'<g transform="{tr}">{"".join(o)}</g>'
+
+
+def forearm(a, b, w0=92, w1=70, sd=0):
+    pts = lib.band([a, ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2 + 20), b], w0, w1, step=6, cap=True)
+    return shape(pts, dima.HOOD, blob(lib.band([a, ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2 + 40), b], 40, 30, step=6, cap=True), dima.HOOD_SH, .8) +
+                 line([(a[0] + 30, a[1] + 30), ((a[0] + b[0]) / 2 + 10, (a[1] + b[1]) / 2 + 40)], 3.4, dima.FOLD, seed=sd + 1, op=.7), w=5.2, seed=sd)

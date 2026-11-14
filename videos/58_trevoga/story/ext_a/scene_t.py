@@ -140,8 +140,8 @@ def corridor_static():
 def queue(t, k=1.0):
     """Очередь силуэтов у двери (дальний план, слегка выцвечены): стоят, кто-то в телефоне, покачиваются."""
     o = []
-    for i, (x, col, hair, face, bag, ph, kk) in enumerate(((600, "#C9744A", "#3A2A20", 1, "#4A5A8C", False, .92), (700, "#5F86A8", "#8A5A2A", 1, None, True, .96),
-                                                           (800, "#7D9A6A", "#2A2A32", -1, "#8A4A5A", False, .9), (1190, "#8A5A9A", "#6A4A30", -1, None, False, .94))):
+    for i, (x, col, hair, face, bag, ph, kk) in enumerate(((650, "#C9744A", "#3A2A20", 1, "#4A5A8C", False, .84), (790, "#5F86A8", "#8A5A2A", 1, None, True, .88),
+                                                           (930, "#7D9A6A", "#2A2A32", -1, "#8A4A5A", False, .82), (1210, "#8A5A9A", "#6A4A30", -1, None, False, .86))):
         o.append(student(x, 1392, kk * k, col, hair, i + 3, face, bag=bag, phone=ph, sway=3.5, t=t, tone=.32))
     return "".join(o)
 
@@ -151,10 +151,10 @@ def corridor_world(t):
 
 
 # ═════════════════════════ зачётка в руках ═════════════════════════
-HB = dict(n_off=(26, 60), f_off=(-30, 62), n_dir=(-.35, -1), f_dir=(.4, -1), n_flip=-1, f_flip=1, n_curl=.7, f_curl=.6, n_th=.5, f_th=.4)
+HB = dict(n_off=(36, 64), f_off=(-34, 66), n_dir=(-.35, -1), f_dir=(.4, -1), n_flip=-1, f_flip=1, n_curl=.7, f_curl=.6, n_th=.5, f_th=.4)
 
 
-def hold_book(t, x, hip_y, *, lean=.04, ha=0.0, expr=None, shake=1.0, calm=0.0, book_k=1.5, extra_drop=None, hip_dx=0.0, seed=0.0, sx=1.0):
+def hold_book(t, x, hip_y, *, lean=.04, ha=0.0, expr=None, shake=1.0, calm=0.0, book_k=1.8, extra_drop=None, hip_dx=0.0, seed=0.0, sx=1.0):
     """Дима стоит и держит зачётку двумя руками на груди. shake 0…1 — сила дрожи рук, calm — спокойствие позы. Возвращает слои."""
     px, py = x + hip_dx, 0.0
     jx, jy = tremor(t, 5.5 * shake, seed)
