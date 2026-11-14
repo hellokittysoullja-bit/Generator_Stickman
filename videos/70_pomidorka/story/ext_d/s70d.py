@@ -173,5 +173,63 @@ def s06(t):
     return lib.svg(f'<rect width="1080" height="1920" fill="#2a2440"/>{body}')
 
 
+# ═════════════════════════ s12: у закрытой двери ═════════════════════════
+T_A, T_TOMU, T_STOIT, T_U, T_DVERI = wt("а", 20.9), wt("тому"), wt("стоит"), wt("у", 21.9), wt("двери")    # 21.0 21.18 21.65 21.96 22.05
+HIP12 = (300.0, R.FL - (people.LEG_LEN - 12))
+
+
+def s12(t):
+    lib.dyn_begin()
+    h = R.hall_scene(t, "night")
+    dx, fy, _, _ = R.HALL_DOOR
+    k = R.HALL_DOOR_K
+    door = f'<g transform="translate({2 * dx:.1f} 0) scale(-1 1)">{PR.door(dx, fy, k, seed=3)}</g>'
+    hx_, hy_ = dx - 150 * k, fy - 470 * k                     # ручка (зеркально — слева)
+    # «стоит»: переминается (таз качнулся), «у двери»: пальцы отпускают ручку, рука вниз, взгляд в пол
+    shift = 14 * math.sin(math.pi * clamp((t - T_STOIT) / .5)) if T_STOIT < t < T_STOIT + .5 else 0.0
+    hip = (HIP12[0] + shift + 3 * math.sin(t * 1.9), HIP12[1] + 4 * abs(math.sin(math.pi * clamp((t - T_STOIT) / .5))))
+    rel = sm(t, T_U - .02, T_DVERI + .2)
+    squeeze = sm(t, T_A, T_TOMU + .1) * (1 - sm(t, T_U - .1, T_U + .05))
+    on_handle = (hx_ - 46, hy_ + 10 + 3 * squeeze * math.sin(t * 30))
+    down = (hip[0] + 90, hip[1] + 60)
+    W = lerp2(on_handle, down, rel)
+    curl = .66 + .2 * squeeze - .5 * sm(t, T_U - .05, T_U + .12)
+    hn = {"dir": lerp2((1, .08), (.25, 1), rel), "curl": (curl, curl + .04, curl + .06, curl + .08), "thumb": .6 - .3 * rel}
+    e = ex("resolve", look=(.85, .1)) if t < T_STOIT else ex("frowny", look=(.7, .15))
+    if t > T_U - .05:
+        e = ex("sink", look=(.25, .85))
+    e["closed"] = blinkv(t, [21.5, 22.5])
+    fig = people.dima(hip[0], hip[1], 1.0, e, "door", arms={"n": ("ik", W, -1)}, hands={"n": hn},
+                      lean_add=.02 * math.sin(t * 2.3) + .06 * rel, head_add=.14 * sm(t, T_U, T_DVERI + .25) + .03 * math.sin(t * 1.7),
+                      shrug=.3 * sm(t, T_U, T_DVERI + .2), **people.stand_kw(HIP12[0], HIP12[1], 1.0))
+    # таймер на полу у ног: тикает и подпрыгивает
+    tx, ty = 600.0, fy + 8 - PR.TOMATO_RY * .6
+    ph = (t * 2.0) % 1
+    hop = 10 * math.sin(math.pi * ph / .25) if ph < .25 else 0.0
+    tim = PR.tomato_timer(tx, ty - hop, .6, -6, wedge=PR.WEDGE_25 * .9, shake=2.0, leaf_swing=8 * math.sin(t * 6), t=t, seed=1)
+    tsh = f'<ellipse cx="{tx + 4:.1f}" cy="{fy + 10:.1f}" rx="{60 - hop:.1f}" ry="11" fill="#000" opacity=".2"/>'
+    ticks = ""
+    if ph < .25:
+        q = ph / .25
+        for i, ang in enumerate((-50, -25, 25, 50)):
+            a = math.radians(ang - 90)
+            r0 = 85 + 14 * q
+            ticks += line([(tx + math.cos(a) * r0, ty - 10 + math.sin(a) * r0), (tx + math.cos(a) * (r0 + 22), ty - 10 + math.sin(a) * (r0 + 22))],
+                          4 * (1 - q) + 1.2, INK, taper=.5, wmin=.2, seed=5600 + i)
+    world = [h["bg"], door, tsh, tim, ticks, fig["svg"]]
+    # камера: хлёст на входе, медленный наезд на руку с ручкой, потом к лицу
+    wx, wr = whip_in(t, 20.75)
+    hx, hy = fig["head"]
+    u1 = sm(t, 20.8, 21.7)
+    u2 = sm(t, 21.8, 22.6)
+    cx0, cy0, s0 = R.CAM_HALL
+    cx = lerp(lerp(cx0, (hx_ + hx) / 2, u1), hx + 120, u2) + wx
+    cy = lerp(lerp(cy0, (hy_ + cy0) / 2, u1), hy + 330, u2)
+    s = s0 * (1 + .14 * u1 + .1 * u2)
+    set_ink(s)
+    body = f'<g transform="{lib.cam(cx, cy, s, wr + .4 * math.sin(t * .8))}">{"".join(world)}</g>'
+    return lib.svg(f'<rect width="1080" height="1920" fill="#2a2440"/>{body}')
+
+
 def frame(sid, t):
-    return {"s03": s03, "s06": s06}[sid](t)
+    return {"s03": s03, "s06": s06, "s12": s12}[sid](t)

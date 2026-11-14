@@ -54,9 +54,11 @@
     CAM_SHOULDER=(540, 960, 1.0); наезд на стену — к WALL_SPOT_V, без рывков.
 
 КОРИДОР (s12) — hall_scene(t, mode="night") -> dict(bg, front): стена коридора (другого цвета), плинтус, пол, вешалка с курткой
-    слева, коврик; место двери — HALL_DOOR=(600, FL, 330, 820) (центр x, пол, ширина, высота): дверь из props ставит сцена, здесь —
+    у левого края, коврик; место двери — HALL_DOOR=(867, FL, 684, 1392) (центр x, пол, ширина, высота): дверь из props ставит сцена, здесь —
     только наличник (рама) и тень на полу; front — пусто. Свет — плафон сверху (небольшой круг с чёткой формой).
     CAM_HALL=(600, 1080, 1.0).
+    Дверь — props.door(dx, FL, HALL_DOOR_K) ЗЕРКАЛЬНО (ручка слева, к Диме): ручка в мире (dx − 150·k, FL − 470·k) ≈ (650, 878);
+    Дима в позе people "door" стоит слева, таз ≈ (300, 962) при scale 1. Наличник у props.door свой — frame из hall_scene не нужен.
 """
 import math
 import os
@@ -99,7 +101,8 @@ TIMER_V = (905.0, 1300.0)
 DIMA_V = (250.0, 1470.0)
 CAM_SHOULDER = (540.0, 960.0, 1.0)
 # коридор
-HALL_DOOR = (600.0, FL, 330.0, 820.0)
+HALL_DOOR = (867.0, FL, 684.0, 1392.0)
+HALL_DOOR_K = 1.45
 CAM_HALL = (600.0, 1080.0, 1.0)
 # окно в полный рост
 WIN_TALL = (-700.0, 150.0, -120.0, 1150.0)
@@ -700,12 +703,12 @@ def hall_scene(t, mode="night"):
         o.append(line([(x, y0), (x + r.uniform(-4, 4), y0 + 70)], w=2.4, color=M["ln"], taper=0.0, wmin=1, seed=7920 + k, op=.45))
     # плафон: небольшой круг с чёткой формой, свет — чёткое пятно на стене под ним
     dx, fy, dw, dh = HALL_DOOR
-    lx = dx - 420
+    lx = dx - 300
     o.append(f'<ellipse cx="{f(lx)}" cy="250" rx="150" ry="60" fill="{M["light"]}" opacity=".22"/>')
     o.append(shape(ellipse_pts(lx, 170, 70, 30, 18), "#f6efd8", blob(ellipse_pts(lx, 182, 60, 14, 14), "#fff8e0"), w=3.0, seed=7930))
     o.append(line([(lx, -600), (lx, 142)], 4, "#3a3d46", taper=0, wmin=1, seed=7931))
     # вешалка с курткой (тёмно-синяя, без надписей) и шарфом
-    hx = dx - 520
+    hx = dx - 1060
     o.append(shape(lib.rrect(hx - 150, 520, hx + 150, 556, 8), lib.mul(WOOD_SH, (.95, .95, .95)), "", w=3.2, seed=7940))
     for i, kx in enumerate((hx - 100, hx, hx + 100)):
         o.append(line([(kx, 548), (kx + 4, 600), (kx + 22, 606)], 6, "#3a3d46", taper=.2, wmin=.6, seed=7941 + i))
