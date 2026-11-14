@@ -304,7 +304,7 @@ FLOOR = 1330
 
 
 # ═════════════════════════════ коридор: стена, пол, двери ═════════════════════════════
-def door(x, y_floor, w=300, h=700, handle_side=1, hl=0.0, t=0.0, tag=0):
+def door(x, y_floor, w=300, h=700, handle_side=1, hl=0.0, t=0.0, tag=0, lever_ang=0.0, hfrac=.47):
     """Дверь аудитории (дерево, две филёнки, металлический рычаг справа/слева). Возвращает (svg_дверь, (hx, hy) точка рычага)."""
     x0, x1, y0 = x - w / 2, x + w / 2, y_floor - h
     o = shape(rrect(x0 - 26, y0 - 26, x1 + 26, y_floor, 6), "#8d5f35", blob(rrect(x0 - 26, y0 - 26, x0 - 8, y_floor), "#a97542", .7), w=5, seed=4100 + tag)
@@ -313,10 +313,11 @@ def door(x, y_floor, w=300, h=700, handle_side=1, hl=0.0, t=0.0, tag=0):
         o += shape(rrect(x0 + 40, a, x1 - 40, b, 4), "#b98350", blob(rrect(x0 + 40, a, x1 - 40, a + 14), "#9a6a3c", .8), w=3.6, seed=4110 + i + tag)
     o += shape(rrect(x - 44, y0 + 110, x + 44, y0 + 250, 10), "#dfe9ee", blob(rrect(x - 44, y0 + 110, x - 4, y0 + 250), "#c3d6df", .8), w=3.6, seed=4120 + tag)  # окошко без стекла-текста
     hx = x + handle_side * (w / 2 - 50)
-    hy = y_floor - h * .47
+    hy = y_floor - h * hfrac
     plate = shape(rrect(hx - 14, hy - 74, hx + 14, hy + 40, 8), "#9AA0A6", blob(rrect(hx - 14, hy - 74, hx - 2, hy + 40), "#b8bec3", .8), w=3.4, seed=4130 + tag)
     lever = shape(rrect(hx - 14, hy - 12, hx - handle_side * 100 + 8, hy + 14, 10), "#9AA0A6", blob(rrect(hx - 14, hy - 12, hx - handle_side * 100 + 8, hy - 2), "#c8ced2", .9),
                   w=3.6, seed=4131 + tag)
+    lever = f'<g transform="rotate({lever_ang * handle_side * -1:.2f} {hx:.1f} {hy:.1f})">{lever}</g>'
     return o + plate + lever, (hx - handle_side * 70, hy)
 
 
@@ -600,3 +601,83 @@ def frame12(t):
 
 
 FRAMES["s12"] = frame12
+
+
+# ═════════════════════════════ s16 33.7–36.7: коридор, боковой трекинг ═════════════════════════════
+T_PROV, T_DVERI = wt(79), wt(82)        # 34.70, 35.73
+DOOR_X = 1520
+A16 = 33.7
+V0, V_STOP = 470.0, (35.1, 35.55)
+X0_D = 380.0
+
+
+def _walk_x(t):
+    """Положение таза Димы (мир): ровный шаг, подталкивание котом на 34.7 слегка ускоряет, у двери — торможение."""
+    x, tt = X0_D, A16
+    dt = 1 / 120
+    while tt < t:
+        v = V0 * (1 - smooth(V_STOP[0], V_STOP[1], tt)) * (1 + .22 * bump(tt, T_PROV + .08, .5))
+        x += v * dt
+        tt += dt
+    return x
+
+
+def frame16(t):
+    set_ink(1.05)
+    dxh = DOOR_X - 110
+    x = _walk_x(t)
+    v_now = (_walk_x(t + .02) - x) / .02
+    moving = clamp(v_now / V0)
+    ph = x / 250.0 * math.pi
+    A = 250 / math.pi
+    hip_y = 806 + 7 * abs(math.cos(ph)) * moving - 3 * (1 - moving) * 0
+    bs = .8
+    # дальние двери и стена
+    o = [corridor(-400, 2600)]
+    for i, dx in enumerate((520, 1020)):
+        dd, _ = door(dx, FLOOR, 300, 760, handle_side=-1, tag=10 + i, hfrac=.5)
+        o.append(dd)
+    press = smooth(T_DVERI, T_DVERI + .25, t)
+    dd, hpt = door(DOOR_X, FLOOR, 320, 820, handle_side=-1, tag=2, lever_ang=-16 * press, hfrac=.5)
+    o.append(dd)
+    # пятна света на полу и тени
+    o.append(blob(ellipse_pts(x + 20, FLOOR + 30, 150, 18, 14), "#7a6a50", .45))
+    swing = {}
+    for side, off in (("n", 0.0), ("f", math.pi)):
+        pp = ph + off
+        lift = 52 * max(0.0, -math.cos(pp)) ** .8 * moving
+        fx = x + (-A * math.sin(pp)) * moving + (14 if side == "n" else -10)
+        swing[side] = ((fx, FLOOR - 34 - lift), -.25 * lift / 52)
+    # руки: пока идёт — маятником; к двери — ближняя тянется к рычагу
+    reach = smooth(35.15, T_DVERI - .02, t)
+    asw = math.sin(ph) * 55 * moving
+    grip = (hpt[0] - 6, hpt[1] + 4 + 8 * press)
+    arm_n_t = (x + 20 * bs + asw * bs * 1.2 + 40, hip_y + 300 * bs - 30 * math.cos(ph) * moving)
+    nt = (arm_n_t[0] + (grip[0] - arm_n_t[0]) * reach, arm_n_t[1] + (grip[1] - arm_n_t[1]) * reach)
+    ft = (x - 30 * bs - asw * bs * 1.1, hip_y + 320 * bs)
+    expr = dict(lid=.9, look=(.5, .15), closed=blink_of(t, (34.1, 35.9)), brows="calm" if t < T_DVERI else "up", mouth="smile",
+                smile=.55 if t < T_PROV else .8, blush=.2)
+    grip_k = smooth(T_DVERI - .02, T_DVERI + .12, t)
+    lean = .06 * moving + .03 * bump(t, T_PROV + .1, .35) * 1 + .02 * reach
+    d = standing_dima((x, hip_y), bs, lean, expr, arms={"n": ("ik", nt, -1), "f": ("ik", ft, -1)},
+                      hands={"n": open_hand(.2 + .65 * grip_k, (1, .25 + .3 * reach), .1, .3 - .15 * grip_k, flip=-1), "f": open_hand(.35, (0, 1), .15, .3)},
+                      feet=swing, head_ang=-.02 + .02 * math.sin(ph) * moving)
+    o.append(d.get("legs", "") + d["arm_f"] + d["body"] + d["arm_n"])
+    # кот идёт следом, на «провожает» догоняет и тычется носом в пятку
+    nud = ease_io(clamp((t - T_PROV + .15) / .45)) * (1 - smooth(T_PROV + .5, T_PROV + 1.0, t))
+    cat_x = x - 300 + 190 * nud + 40 * smooth(T_PROV + .5, T_PROV + 1.2, t) * 0
+    hop = abs(math.sin(ph * 1.0)) * 16 * moving
+    cy_ = FLOOR - 8 - hop
+    st = cstate(t, look=(.5 - .3 * nud, .2), turn=.3, blink=blink_of(t, (34.4, 36.0)), ear=3 * bump(t, T_PROV, .4), perk=.3 * nud, tail=9 * math.sin(ph * .8),
+                smile=0, flame_e=1.4 + .3 * math.sin(t * 9), tilt=-3 - 7 * nud + 2.5 * math.sin(ph))
+    o.append(blob(ellipse_pts(cat_x, FLOOR + 28, 110, 14, 14), "#7a6a50", .45))
+    o.append(Cat.draw(cat_x, cy_, .95, st, t))
+    o.append(sparks(t, cat_x + (995 - 836) * .95, cy_ + (1076 - 1306) * .95 - 15, 5, 41, 90))
+    cxc = x - 50 + 150 * smooth(35.4, 36.6, t) + 25 * math.sin(t * 1.5) * moving
+    z = 1.02 + .12 * smooth(34.9, 36.5, t)
+    set_ink(z)
+    cam = lib.cam(cxc, 900 - 25 * smooth(35, 36.5, t), z, -.5 * (1 - smooth(34, 36, t)) + .6 * bump(t, T_DVERI, .3) + .6 * math.sin(ph * 2) * moving * .3)
+    return f'<g transform="{cam}">{"".join(o)}</g>'
+
+
+FRAMES["s16"] = frame16
