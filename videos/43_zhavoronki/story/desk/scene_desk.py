@@ -440,11 +440,11 @@ FOLD_W, FOLD_D, FOLD_H = 214.0, .55, 74.0
 F_BLUE, F_BLUE_SH, F_PAGE, F_PAGE_SH = "#3f6fb0", "#2c5288", "#fbf6e8", "#e4dcc6"
 
 
-def folder(O, open_=0.0, sq=1.0, pages_left=1.0, sd=6100, label=True):
+def folder(O, open_=0.0, sq=1.0, pages_left=1.0, sd=6100, label=True, fw=FOLD_W):
     """Толстая папка на столе (вид 3/4 как у ноутбука): O — передний левый нижний угол; обложка на петлях слева,
     open_ 0..1 — раскрыта (0 — закрыта, 1 — лежит раскрытой влево); sq — сплющивание при ударе; pages_left — доля стопки."""
     O = np.array(O, float)
-    Wv = np.array([FOLD_W, -8.0])
+    Wv = np.array([fw, -8.0])
     Dv = -FWD * FOLD_D
     h = FOLD_H * sq * (.25 + .75 * pages_left)
     up = np.array([0.0, -h])
@@ -474,7 +474,7 @@ def folder(O, open_=0.0, sq=1.0, pages_left=1.0, sd=6100, label=True):
                        seed=sd + 4))
     # обложка: петля по левому краю, поворот вокруг оси глубины
     th = math.pi * .96 * ease_io(open_)
-    cw = -Wv * math.cos(th) + np.array([0.0, -FOLD_W * .85]) * math.sin(th)
+    cw = -Wv * math.cos(th) + np.array([0.0, -fw * .85]) * math.sin(th)
     c0 = top + Wv + [0, -2]
     cov = [tuple(c0) + (1,), tuple(c0 + cw) + (1,), tuple(c0 + cw + Dv) + (1,), tuple(c0 + Dv) + (1,)]
     inner = ""
@@ -597,7 +597,203 @@ def s14(t):
     return compose(w, cam, lamp_on=1.0, scr_on=.6, dawn=.85)
 
 
-SCENES = {"s06": s06, "s14": s14}
+# ═════════════════════════════════════ s15 — ночь: бодро печатает, «свежая» — лампочка, листы летят в «готово» ═════════════════════════════════════
+FO15 = np.array([752.0, 1152.0])
+STACK = np.array([935.0, 1150.0])
+FW15 = 160.0
+
+
+def sheet_fly(p0, p1, u, sd, spin=1.0):
+    """Лист в полёте: дуга от p0 к p1, кувыркается (сжатие по ширине = поворот), u 0..1."""
+    x = p0[0] + (p1[0] - p0[0]) * ease_io(u)
+    y = p0[1] + (p1[1] - p0[1]) * u - 170 * math.sin(math.pi * u)
+    a = math.radians(-20 + 380 * u * spin)
+    sx = .35 + .65 * abs(math.cos(math.pi * u * 1.5))
+    w, h = 54 * sx, 70
+    pts = [(-w, -h * .5), (w, -h * .5), (w, h * .5), (-w, h * .5)]
+    ca, sa = math.cos(a * .25), math.sin(a * .25)
+    pp = [(x + px * ca - py * sa * .45, y + px * sa + py * ca * .45, 1) for px, py in pts]
+    rows = "".join(line([(x - w * .6, y - 12 + k * 10), (x + w * .5, y - 12 + k * 10)], 2.2, "#9aa0ad", seed=sd + k, op=.9) for k in range(3))
+    return shape(pp, "#fbf8ee", rows, w=3.0, seed=sd)
+
+
+def done_stack(n, pop_k=0.0):
+    """Стопка готовых листов справа и бирка «ГОТОВО» на прищепке."""
+    O = STACK
+    Wv = np.array([118.0, -5.0])
+    Dv = -FWD * .45
+    h = 6 + 5.2 * n
+    up = np.array([0.0, -h])
+    o = [blob([tuple(O + [-4, 4]), tuple(O + Wv + [8, 4]), tuple(O + Wv + Dv + [8, 2]), tuple(O + Dv + [-4, 2])], "#1a100a", .3, lib.blur(5))]
+    stripes = "".join(line([tuple(O + up * (k / 8)), tuple(O + Wv + up * (k / 8))], 1.4, "#cbc3ad", seed=6400 + k, op=.9) for k in range(1, 8))
+    o.append(shape([tuple(O) + (1,), tuple(O + Wv) + (1,), tuple(O + Wv + up) + (1,), tuple(O + up) + (1,)], F_PAGE, stripes, w=3.0, seed=6410))
+    o.append(shape([tuple(O + Wv) + (1,), tuple(O + Wv + Dv) + (1,), tuple(O + Wv + Dv + up) + (1,), tuple(O + Wv + up) + (1,)], F_PAGE_SH, "", w=2.8,
+                   seed=6411))
+    tp = O + up
+    o.append(shape([tuple(tp) + (1,), tuple(tp + Wv) + (1,), tuple(tp + Wv + Dv) + (1,), tuple(tp + Dv) + (1,)], "#fffdf6",
+                   line([tuple(tp + Wv * .15 + Dv * .4), tuple(tp + Wv * .8 + Dv * .4)], 2.2, "#9aa0ad", seed=6412, op=.9), w=2.8, seed=6413))
+    sc = 1 + .12 * pop_k
+    lx, ly = O[0] + 60, O[1] - h - 64
+    tag = (shape(lib.rect_pts(-74, -26, 74, 26, 10), "#7ccf5a", blob(lib.rect_pts(-74, 12, 74, 26), "#58a83e", .9), w=4, seed=6420) +
+           '<text x="0" y="13" text-anchor="middle" font-family="IDB" font-size="34" fill="#1c1622">ГОТОВО</text>')
+    o.append(line([(lx, ly + 26), (lx + 4, O[1] - h + 2)], 4, INK, seed=6421))
+    o.append(f'<g transform="translate({lx:.1f} {ly:.1f}) rotate(-5) scale({sc:.3f})">{tag}</g>')
+    return "".join(o)
+
+
+def bulb(x, y, k, t, on):
+    """Лампочка-идея над головой: стекло, цоколь, лучи; on 0..1 — свет."""
+    if k <= .02:
+        return ""
+    o = []
+    if on > 0:
+        g = lib.rad_grad([(0, "#fff3a0", .7 * on), (1, "#ffd84a", 0)], 0, -10, 150)
+        o.append(f'<circle cx="0" cy="-10" r="150" fill="url(#{g})" style="mix-blend-mode:screen"/>')
+        for j in range(8):
+            a = math.radians(j * 45 + 10 * math.sin(t * 6))
+            r0, r1 = 74, 74 + 34 * on * (1 + .15 * math.sin(t * 20 + j))
+            o.append(line([(math.cos(a) * r0, -10 + math.sin(a) * r0), (math.cos(a) * r1, -10 + math.sin(a) * r1)], 8, "#ffc21a", taper=.3,
+                          wmin=.5, seed=6500 + j))
+    glass = [(0, -64), (34, -54), (48, -24), (40, 6), (24, 26), (22, 44, 1), (-22, 44, 1), (-24, 26), (-40, 6), (-48, -24), (-34, -54)]
+    col = lib.mix("#f4f1e6", "#ffe45a", on)
+    o.append(shape(glass, col, blob([(10, -56), (40, -40), (40, 4), (20, 26)], lib.mix("#d9d4c4", "#ffc93a", on), .8) +
+                   line([(-26, -30), (-18, -46), (-4, -54)], 5, "#ffffff", seed=6511, op=.8), w=4.6, seed=6510))
+    o.append(line([(-10, 40), (-6, 14), (0, 26), (6, 14), (10, 40)], 3, "#c98a10" if on > .5 else "#8a8478", seed=6512))
+    o.append(shape(lib.rect_pts(-24, 44, 24, 74, 6), "#a9adb8", line([(-24, 54), (24, 54)], 2.6, "#6d727e", seed=6514) +
+                   line([(-24, 64), (24, 64)], 2.6, "#6d727e", seed=6515), w=3.6, seed=6513))
+    return f'<g transform="translate({x:.1f} {y:.1f}) scale({k:.3f})">{"".join(o)}</g>'
+
+
+def flights(t):
+    """Время вылета листов: ровно до «свежая», после — чаще."""
+    ts = []
+    x = 26.72
+    while x < 29.0:
+        ts.append(x)
+        x += .3 if x < T_SVEZH else .14
+    return ts
+
+
+def s15(t):
+    MODE[0] = "night"
+    people.ROLL.update(n=1.0, f=1.0)
+    tv = T_SVEZH
+    tn, tf_ = type_targets(t, amp=1.2, rate=1.35)
+    hn = dict(HN, curl=(.3, .35, .4, .45))
+    idea = smooth(tv - .02, tv + .12, t)
+    expr = dict(lid=.78 + .15 * idea, look=(.62, .22 - .2 * idea), brows="up" if idea > .5 else "calm", mouth="smirk", smile=.5 + .4 * idea,
+                red=0.0, bags=False, closed=blink_at(t, 27.4, .14), hair=3 * math.sin(t * 5) + 6 * jolt(t, tv, 1, .5, 4))
+    d = dima(t, {"n": ("ik", tuple(tn), -1), "f": ("ik", tuple(tf_), -1)}, {"n": hn, "f": HF}, expr, lean=.18 + .015 * math.sin(t * 6),
+             head_ang=.03 * math.sin(t * 3.1) - .08 * bump(t, tv, .4))
+    people.ROLL.clear()
+    fl = flights(t)
+    landed = sum(1 for x in fl if t >= x + .45)
+    src = FO15 + np.array([80.0, -FOLD_H * .9])
+    fly = ""
+    for i, x in enumerate(fl):
+        u = (t - x) / .45
+        if 0 <= u < 1:
+            dst = STACK + np.array([58.0, -6 - 5.2 * (landed + 1) - 20])
+            fly += sheet_fly(src, dst, u, 6600 + i * 7, spin=1 if i % 2 else -.8)
+    pages_left = 1 - .6 * clamp(landed / max(1, len(fl)))
+    fo = folder(FO15, open_=1.0, pages_left=pages_left, sd=6100, fw=FW15)
+    land_pop = max([bump(t, x + .45, .2) for x in fl] + [0.0])
+    stack = done_stack(4 + landed, land_pop)
+    scr = doc_screen(t, 1.5 + 2.6 * (t - 26.64) * (1 + .6 * idea), errs=0, scroll=max(0.0, 1.5 + 2.6 * (t - 26.64) - 9), title="ОТЧЁТ")
+    w = world(t, d, dawn=0.0, scr=scr, on_desk="", front=fo + stack + fly, clock=(21 * 30 + 20, 40 * 6), lamp_on=1.0, floor_papers=False)
+    hd = d["head"]
+    w += bulb(hd[0] + 10, hd[1] - 215, back_out(clamp((t - (tv - .04)) / .25), 2.2) * .95, t, idea)
+    u = clamp((t - 26.64) / 2.36)
+    k = ease_io(u)
+    pk = bump(t, tv, .3)
+    s = (1.2 + .1 * k) * (1 + .05 * pk)
+    cam = (650 - 25 * k + 5 * jolt(t, tv, 1, .4, 13), 930 - 10 * k + 6 * jolt(t, tv, 1, .4, 11), s, -.6 + 1.0 * u + .7 * jolt(t, tv, 1, .4, 9))
+    set_ink(s)
+    return compose(w, cam, lamp_on=1.0, scr_on=1.0, dawn=0.0)
+
+
+# ═════════════════════════════════════ s16 — список дел: галочки на «сделано» и «больше», откинулся довольный ═════════════════════════════════════
+LIST_C = np.array([668.0, 1146.0])          # низ-центр планшета со списком
+ITEMS = ["почта", "отчёт", "звонок", "спорт", "книга"]
+
+
+def check_times():
+    return [28.72, T_SDEL, T_SDEL + .16, T_BOLSHE, T_BOLSHE + .16]
+
+
+def clipboard(t, tilt=-6.0):
+    o = []
+    x, y = LIST_C
+    W2, Hh = 118.0, 330.0
+    o.append(blob([(x - W2 - 10, y + 4), (x + W2 + 30, y + 4), (x + W2 + 30, y - 6), (x - W2 - 10, y - 6)], "#1a100a", .35, lib.blur(5)))
+    g = []
+    g.append(shape(lib.rect_pts(-W2, -Hh, W2, 0, 14), "#a7713f", blob(lib.rect_pts(W2 - 18, -Hh, W2, 0), "#7f522c", .9), w=4.6, seed=6700))
+    g.append(shape(lib.rect_pts(-W2 + 16, -Hh + 34, W2 - 16, -14, 4), "#fdfaf1", blob(lib.rect_pts(-W2 + 16, -30, W2 - 16, -14), "#ece5d2", .9),
+                   w=3.4, seed=6701))
+    g.append(shape([(-44, -Hh - 14, 1), (44, -Hh - 14, 1), (52, -Hh + 30, 1), (-52, -Hh + 30, 1)], "#b9bec8",
+                   blob([(-52, -Hh + 14), (52, -Hh + 14), (52, -Hh + 30), (-52, -Hh + 30)], "#8d929e", .9), w=3.6, seed=6702))
+    g.append(f'<text x="0" y="{-Hh + 72:.0f}" text-anchor="middle" font-family="IDB" font-size="30" fill="{INK}">ДЕЛА</text>')
+    for i, (txt, tc) in enumerate(zip(ITEMS, check_times())):
+        yy = -Hh + 112 + i * 48
+        g.append(shape(lib.rect_pts(-W2 + 30, yy - 16, -W2 + 62, yy + 16, 4), "#ffffff", "", w=3.2, seed=6710 + i))
+        u = clamp((t - tc) / .14)
+        done = u > 0
+        g.append(f'<text x="{-W2 + 76:.0f}" y="{yy + 10:.0f}" font-family="IDB" font-size="27" fill="{"#8a8f9c" if done else INK}">{txt}</text>')
+        if done:
+            # зачёркивание и галочка: штрих растёт
+            a, m, b = (-W2 + 30, yy - 2), (-W2 + 44, yy + 14), (-W2 + 74, yy - 26)
+            if u < .4:
+                pts = [a, (a[0] + (m[0] - a[0]) * u / .4, a[1] + (m[1] - a[1]) * u / .4)]
+            else:
+                v = (u - .4) / .6
+                pts = [a, m, (m[0] + (b[0] - m[0]) * v, m[1] + (b[1] - m[1]) * v)]
+            g.append(line(pts, 9, "#2f9a3a", taper=.15, wmin=.6, seed=6720 + i))
+            if u >= 1:
+                p = bump(t, tc + .14, .25)
+                if p > 0:
+                    for j in range(3):
+                        ang = math.radians(-60 + j * 40)
+                        r0 = 30 + 20 * p
+                        cx, cy = -W2 + 52, yy - 6
+                        g.append(line([(cx + math.cos(ang) * r0, cy + math.sin(ang) * r0), (cx + math.cos(ang) * (r0 + 18), cy + math.sin(ang) * (r0 + 18))],
+                                      4, "#2f9a3a", taper=.3, wmin=.4, seed=6730 + i * 3 + j))
+    o.append(f'<g transform="translate({x:.1f} {y:.1f}) rotate({tilt:.2f})">{"".join(g)}</g>')
+    return "".join(o)
+
+
+def s16(t):
+    MODE[0] = "night"
+    people.ROLL.update(n=1.0, f=1.0)
+    back = ease_io(clamp((t - 28.75) / .55))
+    tn, tf_ = type_targets(t, amp=.8 * (1 - back), rate=1.2)
+    lean = .18 - .3 * back + .015 * math.sin(t * 2.4) * back
+    hip = np.array(HIP)
+    belly_n = hip + np.array([150.0, -30.0])
+    belly_f = hip + np.array([180.0, -36.0])
+    an = tn + (belly_n - tn) * back
+    af = tf_ + (belly_f - tf_) * back
+    hn = dict(HN, curl=(.3 + .3 * back, .35 + .3 * back, .4 + .3 * back, .45 + .3 * back), dir=(.95, -.05 + .45 * back))
+    hf = dict(HF, curl=(.35 + .3 * back, .4 + .3 * back, .45 + .3 * back, .5 + .3 * back), dir=(.95, -.1 + .45 * back))
+    sat = smooth(29.0, 29.3, t)
+    expr = dict(lid=.7, look=(.7 - .3 * back, .3 - .2 * back), brows="calm", mouth="smile" if sat < .5 else "grin", smile=.6 + .4 * sat, open=.3,
+                laugh=.75 * sat, closed=0.0, red=0.0, bags=False, hair=2 * math.sin(t * 2))
+    sd_ = -1
+    d = dima(t, {"n": ("ik", tuple(an), sd_), "f": ("ik", tuple(af), sd_)}, {"n": hn, "f": hf}, expr, lean=lean,
+             head_ang=-.12 * back + .03 * math.sin(t * 2.2) * back)
+    people.ROLL.clear()
+    pops = sum(bump(t, c, .2) for c in check_times())
+    scr = doc_screen(t, 14.0, errs=0, scroll=6.0, title="ОТЧЁТ")
+    w = world(t, d, dawn=0.0, scr=scr, on_desk="", front=clipboard(t, -6 + 1.2 * pops), clock=(21 * 30 + 45, 30 * 6), lamp_on=1.0,
+              floor_papers=False)
+    u = clamp((t - 28.6) / 1.9)
+    k = ease_io(u)
+    s = 1.5 + .14 * (.4 * u + .6 * k)
+    cam = (470 + 25 * k, 960 - 10 * k, s * (1 + .02 * pops), .4 - .7 * u)
+    set_ink(s)
+    return compose(w, cam, lamp_on=1.0, scr_on=.8, dawn=0.0)
+
+
+SCENES = {"s06": s06, "s14": s14, "s15": s15, "s16": s16}
 _INIT = []
 
 
