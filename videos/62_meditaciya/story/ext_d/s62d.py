@@ -404,7 +404,7 @@ def wave_line(x0, x1, y, amp, t, k=0.022, w=7.0, col="#e07a3a", seed=0, front=1.
 
 
 # ================================================================ s12
-FLAME_HOME = (726.0, 520.0)
+FLAME_HOME = (742.0, 640.0)
 CLOUD12 = (858.0, 352.0)
 
 
@@ -494,11 +494,11 @@ def frame13(t):
     bx, by_ = FIG["chest"]
     rise = 8 * br
     calm = smooth(T_DYH, T_DYH + .5, t)
-    o.append(lotus_figure(t, rise=rise, smile=.7 + .3 * calm))
-    # волна дыхания из шарика (после «дыханию»)
+    # волна дыхания из шарика (после «дыханию»): за фигурой, выходит из боков
     if t > T_DYH:
         front = ease_out(clamp((t - T_DYH) / .7))
         o.append(wave_line(-700, 1780, by_ - rise * .5, 46 * (.55 + .45 * (br + 1) / 2), t, front=front, cx=bx, seed=90))
+    o.append(lotus_figure(t, rise=rise, smile=.7 + .3 * calm))
     # пунктир обратного пути (рисуется перед «возвращаться»)
     u_dash = ease_io(clamp((t - (T_VOZ - .35)) / .32))
     roll = ease_io(clamp((t - T_VOZ) / (T_DYH - T_VOZ - .06)))
@@ -519,8 +519,8 @@ def frame13(t):
             sx, sy = pop_s(t, 19.98 + (0.0 if kind == "mob" else .08))
         if sx <= 0:
             continue
-        u = clamp((t - tt) / 1.45)
-        e = ease_in(u, 1.7)
+        u = clamp((t - tt) / 1.0)
+        e = ease_in(u, 1.45)
         bob = 10 * osc(t, .7, sd)
         x = p0[0] + (p1[0] - p0[0]) * e + 40 * math.sin(u * 5 + sd) * u
         y = p0[1] + (p1[1] - p0[1]) * e + bob

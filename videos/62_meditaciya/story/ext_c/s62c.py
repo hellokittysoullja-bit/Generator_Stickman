@@ -171,7 +171,7 @@ def lunch(t, steam=1.0, sx=1.0, sy=1.0, wob=0.0):
 def friend_fig(t, x, y, sc, stomp_t, seed=0):
     """Друг во весь рост (лицом вправо, к Диме — нет, лицом к зрителю 3/4), ближняя рука держит мобильник у груди.
     stomp_t — время топа ногой."""
-    who = "friend"
+    who = "pal"
     s = sc * people.HEIGHT.get(who, 1.0)
     # топ: колено поднимается за .18 с до удара, потом ступня бьёт об пол
     up = smooth(stomp_t - .22, stomp_t - .06, t) * (1 - smooth(stomp_t - .03, stomp_t, t))
@@ -188,14 +188,13 @@ def friend_fig(t, x, y, sc, stomp_t, seed=0):
     wr = mob + np.array([60 * s, 34 * s])
     arms = {"f": ("ik", (x - 150 * s, y - 40 * s), 1), "n": ("ik", tuple(wr), -1)}
     hands = {"n": {"kind": "none"}, "f": {"curl": (.5, .5, .55, .6), "thumb": .4, "dir": (-.2, 1)}}
-    brow = "skeptic" if t > stomp_t - .1 else "calm"
-    expr = {"brows": brow, "mouth": "flat", "open": .2, "lid": .7 if t > stomp_t - .1 else .85, "look": (.35, -.1)}
+    expr = dict(people.EXPR["pal"]["hurt" if t > stomp_t - .1 else "cross"])
     fig = people.figure(who, hip[0], hip[1], sc, expr, lean=-.04 - .05 * up, head_ang=.08 * shk, arms=arms, hands=hands, feet=feet)
     o = [fig["svg"]]
     # мобильник в кулаке: ладонь за корпусом, пальцы обхватывают спереди
     k = s / .3 * .62
     gb, gf = people.grip_svg(who, (0, 0), 36, +1, k=k, h=78, seed=seed + 40)
-    o.append(G(gb + mobilnik(seed + 50) + gf, mob[0], mob[1], 1.0, mob_rot))
+    o.append(G(gb + people.mobilnik(0, 0, 1.0, 0, seed=seed + 50) + gf, mob[0], mob[1], 1.0, mob_rot))
     # пыль от топа
     if t > stomp_t:
         u = clamp((t - stomp_t) / .35)
@@ -255,20 +254,18 @@ def frame04(t):
     smack = smooth(T_OBED + .05, T_OBED + .2, t) * (1 - smooth(5.85, 6.0, t))
     chew = abs(math.sin((t - T_OBED) * 2 * math.pi * 2.6)) if smack > 0 else 0.0
     sway = 2.2 * osc(t, .45)
-    expr = {"laugh": .85, "lid": .5, "brows": ("calm", "up", smooth(T_OBED, T_OBED + .15, t) * .55),
-            "mouth": "talk" if smack > .2 else "smile", "open": .05 + .32 * chew * smack, "smile": .55 + .3 * smack, "hair": 3 * decay(t, T_POD4, 6, 4)}
+    expr = dict(people.EXPR["dima"]["smack" if smack > .2 else "bliss"])
+    if smack > .2:
+        expr["chew"] = .2 + .8 * chew
+        expr["drool"] = .3 + .5 * smooth(T_OBED + .25, T_OBED + .6, t)
+    expr["hair"] = 3 * decay(t, T_POD4, 6, 4)
     hx, hy = 560, 1160 - 10 * osc(t, .5) - 18 * abs(decay(t, T_POD4, 7, 3))
     dsvg, P = dima_bust(hx, hy, 1.9, expr, t, ha=math.radians(sway) * .02 * 0 + .02 * osc(t, .45))
     o.append(dsvg)
-    # слюнка: капля у уголка рта, блестит
-    if smack > .3:
-        dl = smooth(T_OBED + .25, T_OBED + .5, t)
-        p = P((36, 98 + 14 * dl))
-        r = 7 + 3 * dl
-        drop = [(p[0], p[1] - r * 1.8), (p[0] + r, p[1]), (p[0], p[1] + r), (p[0] - r, p[1])]
-        o.append(shape(drop, "#bfe6fa", blob(ellipse_pts(p[0] - 2, p[1] - 2, 2.6, 3.6, 6), "#ffffff"), w=3.4, seed=77))
-        if osc(t, 2.2) > .3:
-            o.append(star4(p[0] + 16, p[1] - 14, 9, "#ffffff", rot=t * 120, w=3, seed=78))
+    # блеск слюнки у уголка рта (капля — в мимике «smack» общего people.py)
+    if smack > .3 and osc(t, 2.2) > .2:
+        p = P((30, 112))
+        o.append(star4(p[0] - 14, p[1] - 6, 10, "#ffffff", rot=t * 120, w=3, seed=78))
     # макушка
     top = P((-10, -170))
     # облако: выскакивает из макушки
@@ -311,7 +308,7 @@ def frame05(t):
     # Дима снизу слева: на «вспомнил» и «не ответил» брови дёргаются
     tw = max(0.0, decay(t, T_VSP, 7, 5)) + max(0.0, decay(t, T_OTV, 7, 5))
     br_u = clamp(.35 + .9 * tw + .3 * smooth(T_VSP, T_VSP + .2, t))
-    expr = {"closed": 0.0, "lid": -1.05, "brows": ("calm", "worry", br_u), "mouth": "flat", "hair": 4 * decay(t, T_VSP, 6, 4)}
+    expr = {"shut": 1.0, "brows": ("calm", "worry", br_u), "mouth": "flat", "hair": 4 * decay(t, T_VSP, 6, 4)}
     hx, hy = 300, 1310 + 8 * osc(t, .5)
     dsvg, P = dima_bust(hx, hy, 1.32, expr, t, ha=-.04 + .03 * decay(t, T_OTV, 6, 3))
     top = P((-10, -170))
@@ -361,7 +358,7 @@ def frame07(t):
 
     up = smooth(T_UTUG - .02, T_UTUG + .1, t)
     # Дима снизу по центру: напряжённо зажмурен, капля пота
-    expr = {"closed": 0.0, "lid": -1.05, "brows": "worry", "mouth": "flat", "hair": 4 * decay(t, T_VYK, 6, 4) + 3 * decay(t, T_UTUG, 6, 4)}
+    expr = {**people.EXPR["dima"]["squeeze"], "hair": 4 * decay(t, T_VYK, 6, 4) + 3 * decay(t, T_UTUG, 6, 4)}
     hx, hy = 520, 1420 + 6 * osc(t, .7)
     dsvg, P = dima_bust(hx, hy, 1.3, expr, t, ha=.03 * osc(t, 3.2) * smooth(T_VYK, T_VYK + .3, t))
     top = P((-10, -170))
@@ -390,40 +387,40 @@ def frame07(t):
     pre = smooth(T_UTUG - .2, T_UTUG - .02, t) * (1 - up)
     isx, isy = 1 + .1 * pre + .12 * land, 1 - .12 * pre + .14 * jump - .14 * land
     hot = smooth(9.7, T_UTUG, t)
-    inner = [ironing_board(seed=600)]
-    # дым: сплошные клубы и завитки из-под утюга, после прыжка гуще
+    BY = 150.0                      # центр крышки доски; утюг стоит на ней
+    inner = [PR.ironing_board(0, BY, 1.25, 560, seed=1)]
+    IX, IY, IK = 30.0, BY - 20, 1.75
+    iy = -120 * jump
+    irot = 14 * jump - 5 * land
+    # дым: сплошные клубы из-под подошвы, после прыжка гуще (растут, поднимаются и сжимаются в точку — без прозрачности)
     sm = []
     nP = 3 + int(5 * up)
     for k in range(nP):
         life = ((t - 9.4) * (.9 + .5 * up) + k / nP) % 1
         if t < 9.6 + .1 * k and up <= 0:
             continue
-        r = (16 + 30 * life) * (1 - smooth(.8, 1.0, life)) * (.6 + .4 * hot)
+        r = (16 + 32 * life) * (1 - smooth(.78, 1.0, life)) * (.6 + .4 * hot)
         if r < 3:
             continue
-        px = -40 + 40 * math.sin(k * 2.1) + 26 * math.sin(life * 6 + k)
-        py = -10 - 360 * life
-        sm.append(smoke_puff(px, py, r, 650 + k, col=mix("#a8acb3", "#7d828a", life)))
-    for k in range(2 + int(up)):
-        h = 160 + 120 * up
-        sm.append(wisp(curl_path(-60 + 70 * k, -20, h, t, k * 2.3, 26, 1.4), 12 + 6 * up, "#9ea3ab", 680 + 5 * k))
-    iy = -110 * jump
-    irot = -14 * jump + 5 * land
-    iron_svg = G(iron(t, glow=hot, seed=620), 0, iy, 1.0, irot, isx, isy)
+        px = IX - 60 + 70 * math.sin(k * 2.1) + 26 * math.sin(life * 6 + k)
+        py = IY - 30 - 380 * life
+        sm.append(smoke_puff(px, py, r, 650 + k, col=mix("#b4b8bf", "#868b93", life)))
+    iron_svg = G(PR.iron(0, 0, IK, 0, smoke=.35 + .65 * max(hot, up), t=t, seed=3), IX, IY + iy, 1.0, irot, isx, isy)
     steam = ""
-    if t > T_UTUG + .05:      # язычок пара из носика
+    if t > T_UTUG + .05:      # язычок пара из носика (нос влево)
         u = clamp((t - T_UTUG - .05) / .25)
-        L = 90 * back_out(u, 2) * (1 + .15 * osc(t, 6))
-        steam = wisp([(150, iy - 30), (150 + L * .5, iy - 40 - 14 * osc(t, 5)), (150 + L, iy - 30)], 16, "#ffffff", 700, 6)
-    inner.append(G("".join(sm), 20, 0) + G(iron_svg + steam, 20, -6))
+        L = 110 * back_out(u, 2) * (1 + .15 * osc(t, 6))
+        nx, ny = IX - 92 * IK, IY + iy - 20
+        steam = wisp([(nx, ny), (nx - L * .5, ny - 14 - 14 * osc(t, 5)), (nx - L, ny - 6)], 18, "#ffffff", 700, 6)
+    inner.append("".join(sm) + iron_svg + steam)
     # искры тревоги вокруг утюга после прыжка
     if t > T_UTUG:
         for k in range(5):
             a = -math.pi / 2 + (k - 2) * .55
             uu = clamp((t - T_UTUG) / .25)
-            inner.append(line([(math.cos(a) * 190, -80 + math.sin(a) * 170), (math.cos(a) * (190 + 70 * uu), -80 + math.sin(a) * (170 + 70 * uu))],
+            inner.append(line([(IX + math.cos(a) * 230, IY - 90 + math.sin(a) * 190), (IX + math.cos(a) * (230 + 70 * uu), IY - 90 + math.sin(a) * (190 + 70 * uu))],
                               12, INK, taper=.5, wmin=.4, seed=720 + k))
-    inner_svg = G("".join(inner), 0, 40, .78)
+    inner_svg = G("".join(inner), 0, 0, .9)
     o.append(bubbles((top[0] + 20, top[1] - 30), (C7[0] - 40, C7[1] + 380), t, T_VYK - .08, r=(22, 34, 48), seed=740))
     o.append(cloud(C7[0], C7[1] + 6 * osc(t, .8), 430, 360, sx, sy * (1 + .03 * decay(t, T_UTUG, 8, 6)), 77, inner_svg, t=t, rot=-1.5,
                    col="#fffdf6", n=12, w=9))
