@@ -32,12 +32,9 @@ def frame_svg(body, cx, cy, s, rot, bg):
 
 
 def paper_bg(col=None, grid="#D7DFE6"):
-    o = [blob(rect_pts(-900, -900, 2000, 2800), col or P.C_PAGE)]
-    for i in range(-14, 44):
-        o.append(line([(-900, i * 64), (2000, i * 64)], 2.0, grid, taper=0, wmin=1, seed=300 + i))
-    for i in range(-14, 32):
-        o.append(line([(i * 64, -900), (i * 64, 2800)], 2.0, grid, taper=0, wmin=1, seed=360 + i))
-    return "".join(o)
+    d = "".join(f"M-900 {i * 64}H2000" for i in range(-14, 44)) + "".join(f"M{i * 64} -900V2800" for i in range(-14, 32))
+    return (f'<path d="M-900 -900H2000V2800H-900Z" fill="{col or P.C_PAGE}"/>'
+            f'<path d="{d}" stroke="{grid}" stroke-width="2" fill="none"/>')
 
 
 def bezier(p0, p1, p2, u):
@@ -216,6 +213,101 @@ def frame(sid, t):
     return {"s05": s05, "s06": s06, "s12": s12}[sid](t)
 
 
+# ═══════════════════════════════ s06: Дима по-турецки, пузыри-воспоминания ═══════════════════════════════
+D6 = (520, 1250, 1.0)                  # таз Димы (x, y), масштаб
+T_MEM, T_GOOD, T_RARE = 14.14, 14.56, 15.41
+# пузыри: центр, ширина, высота, момент выскока
+BUB = [((190, 560), 330, 250, T_MEM), ((420, 250), 330, 250, T_MEM + .11), ((760, 240), 330, 250, T_MEM + .22), ((925, 580), 300, 240, T_MEM + .33)]
+
+
+def pie(x, y, k=1.0):
+    """Пирог на блюде (ЦЕНТР дна) — для пузыря «мама с пирогом»."""
+    o = [lib.shape(ellipse_pts(0, 0, 120, 26, 18), "#EDE6D6", blob(ellipse_pts(0, 8, 110, 16, 14), "#CFC4AE"), w=3.2, seed=6101)]
+    o.append(lib.shape([(-96, -4, 1), (-90, -56), (-40, -76), (40, -76), (90, -56), (96, -4, 1)], "#D99A4E",
+                       blob(ellipse_pts(0, -60, 84, 18, 14), "#EDB86A") + blob(rect_pts(-100, -30, 100, 0), "#B77A35"), w=3.6, seed=6102))
+    for j in range(4):
+        o.append(line([(-60 + 40 * j, -66), (-48 + 40 * j, -58)], 4, "#9A5F28", taper=.4, wmin=.4, seed=6110 + j))
+    return f'<g transform="translate({x:.1f} {y:.1f}) scale({k:.4f})">{"".join(o)}</g>'
+
+
+def bub_inner(i, t):
+    """Картинка внутри пузыря i (локально: (0, 0) — центр). Люди и кот — из common/people.py, cat.py."""
+    import people as PP
+    if i == 0:   # учительница с листом (молодая, как в s02)
+        r = PP.teacher("young", 0, 150, .2, "praise", "letter", layers=("arm_f", "body", "pelvis"))
+        w = r["wrist"]
+        lt = P.letter((w["n"][0] + w["f"][0]) / 2 + 6, (w["n"][1] + w["f"][1]) / 2 - 18, .28, -6, write=1.0, seed=11)
+        r2 = PP.teacher("young", 0, 150, .2, "praise", "letter", layers=("arm_n",))
+        return r["svg"] + lt + r2["svg"]
+    if i == 1:   # друг протягивает руку для пожатия
+        sw = 4 * math.sin(t * 6)
+        r = PP.person("friend", -20, 150, .2, "", None, arms={"n": ("ik", (90 + sw, 20), -1)},
+                      hands={"n": {"dir": (1, -.15), "curl": (.15, .15, .2, .25), "spread": .1, "thumb": .45}})
+        return r["svg"]
+    if i == 2:   # мама с пирогом
+        r = PP.person("mama", -40, 160, .2, "", None, arms={"f": ("ik", (20, 40), -1), "n": ("ik", (75, 46), -1)},
+                      hands={"f": {"curl": (.5, .5, .55, .6), "thumb": .5, "dir": (1, .2)}, "n": {"curl": (.5, .5, .55, .6), "thumb": .5, "dir": (-.2, 1)}},
+                      layers=("arm_f", "body", "pelvis"))
+        r2 = PP.person("mama", -40, 160, .2, "", None, arms={"f": ("ik", (20, 40), -1), "n": ("ik", (75, 46), -1)},
+                       hands={"f": {"curl": (.5, .5, .55, .6), "thumb": .5, "dir": (1, .2)}, "n": {"curl": (.5, .5, .55, .6), "thumb": .5, "dir": (-.2, 1)}},
+                       layers=("arm_n",))
+        return r["svg"] + pie(55, 40, .55) + r2["svg"]
+    # кот на подоконнике: окно днём, подоконник, кот сидит и щурится
+    o = P.window(0, 40, 230, 220, "day", t, seed=21, curtain=False)
+    o += lib.shape(rect_pts(-150, 36, 150, 56), P.C_WOOD, blob(rect_pts(-150, 48, 150, 58), P.C_WOOD_SH), w=3.2, seed=6120)
+    import cat
+    o += cat.draw(-10, 40, .32, {"tail": 6 * math.sin(t * 2), "blink": 1.0 if (t % 2.3) < .12 else 0.0, "smile": .6}, t)
+    return o
+
+
 def s06(t):
-    import s64a_s06
-    return s64a_s06.s06(t)
+    import people as PP
+    x, y, sc = D6
+    o = [paper_bg()]
+    # пол-подушка под Димой: тень на бумаге
+    o.append(blob(ellipse_pts(x + 30, y + 150 * sc, 360 * sc, 40 * sc, 22), "#E6D9B8"))
+    # Дима: по-турецки, ближняя ладонь подпирает щёку, локоть на колене; живое качание и вдох
+    sway = .03 * math.sin(t * 2.1)
+    ex = "thoughtful"
+    if t >= T_GOOD - .05:
+        ex = dict(PP.EXPR["dima"]["calm_smile"], look=(.3, -.55))
+    if t >= T_RARE + .1:
+        ex = dict(PP.EXPR["dima"]["thoughtful"], look=(.1, -.3))
+    kw = PP.lotus_kw("sit", x, y, sc)
+    base = PP.figure("dima", x, y, sc, PP.EXPR["dima"]["thoughtful"], **kw)
+    hx, hy = base["head"]
+    kw["arms"]["n"] = ("ik", (hx + 46 * sc, hy + 200 * sc), -1)
+    kw["hands"]["n"] = {"dir": (.15, -1), "curl": (.35, .4, .45, .5), "thumb": .3}
+    kw["hands"]["f"] = {"dir": (.2, 1), "curl": (.35, .4, .45, .5), "thumb": .45}
+    kw["head_ang"] = .16 + .03 * math.sin(t * 1.3)
+    kw["lean"] = kw["lean"] + sway
+    exd = PP.EXPR["dima"][ex] if isinstance(ex, str) else ex
+    fig = PP.figure("dima", x, y, sc, exd, **kw)
+    o.append(fig["svg"])
+    hx, hy = fig["head"]
+    head_top = (hx - 10, hy - 150 * sc)
+    # пузыри
+    for i, ((bx, by), bw, bh, t0) in enumerate(BUB):
+        if t < t0:
+            continue
+        sx_, sy_ = P.pop(t, t0, amp=.28)
+        u = min(sx_, sy_) if t - t0 < 1.0 else 1.0
+        warm = ease_out((t - (T_GOOD + .07 * i)) / .3)
+        pale = ease_io((t - (T_RARE + .05 * i)) / .4)
+        thread = ease_out((t - (T_RARE + .08 + .05 * i)) / .45)
+        pull = ease_io((t - (T_RARE + .15)) / .6)
+        bx2 = lerp(bx, head_top[0], .14 * pull)
+        by2 = lerp(by, head_top[1], .14 * pull) + 6 * math.sin(t * 2.4 + i)
+        u *= 1 - .12 * pull
+        warm *= 1 - pale
+        o.append(P.memory_bubble(bx2, by2, bw, bh, u, seed=i + 1, inner=bub_inner(i, t), head=head_top, thread=thread, pale=pale, warm=warm))
+        if T_GOOD + .07 * i <= t < T_GOOD + .07 * i + .5:
+            o.append(P.sparkles(bx2, by2, 1.2, 1 - (t - T_GOOD - .07 * i) / .5, t, seed=30 + i, n=4, r=bw * .62))
+    # камера: медленный дрейф вверх за пузырями, лёгкий откат; к «редко» — чуть вниз к голове
+    u = ease_io(clamp((t - 12.97) / 2.2))
+    cx_, cy_, s = lerp(560, 540, u), lerp(1010, 880, u), lerp(1.04, .97, u)
+    if t > T_RARE:
+        e = ease_io((t - T_RARE) / .7)
+        cy_ += 50 * e
+        s += .03 * e
+    return frame_svg("".join(o), cx_, cy_, s, .6 * math.sin(t * .9), P.C_PAGE)

@@ -103,7 +103,7 @@ def s14(t):
     kw = dict(feet=feet, flip=True, shrug=shrug, lean_add=lean - .02 + breath, head_add=trem + lerp(.08, -.04, u))
     # письмо в дальней руке: дрожит, пока голос дрожит
     let_d = (1 - u) * 3.5 * math.sin(t * 2 * math.pi * 7.3)
-    arms = {"f": ("ik", (hip[0] - 205 * sc, hip[1] - (250 + 30 * u) * sc), -1)}
+    arms = {"f": ("ik", (hip[0] + 215 * sc, hip[1] - (250 + 30 * u) * sc), -1)}
     base = P.dima(hip[0], hip[1], sc, ex, "mobile_letter", layers=("legs", "pelvis", "arm_f", "body"), arms=arms, **kw)
     wf = base["wrist"]["f"]
     lx, ly = wf[0] - 38 * sc, wf[1] - 120 * sc + let_d
