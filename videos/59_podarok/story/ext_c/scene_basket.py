@@ -17,8 +17,8 @@ T0 = 13.3
 BX, BY, BK = 540, 1090, 3.6                 # центр дна корзины и масштаб (172 px при k=1 → 620)
 RIM = BY - 100 * BK                         # y обода
 # вещь, x, низ (от обода вниз), поворот покоя, момент приземления; падение 0.36 с
-ORDER = [("lamp", 410, 30, -8, 14.20), ("kettle", 670, 24, 5, 14.50), ("book", 440, 34, -12, 14.76),
-         ("sneaker", 655, 26, 7, 14.98), ("scarf", 520, 22, 0, 15.12), ("teddy", 545, 14, 3, 15.24)]
+ORDER = [("lamp", 410, 30, -8, 14.20), ("kettle", 660, 30, 5, 14.50), ("book", 440, 34, -12, 14.76),
+         ("sneaker", 690, -12, 7, 14.98), ("scarf", 400, -2, -4, 15.12), ("teddy", 545, 4, 3, 15.24)]
 FALL = 0.36
 LAND = [o[4] for o in ORDER]
 IK = 3.6
@@ -82,7 +82,6 @@ def room(t):
         s.append(line([(k * 180 - 40, 1030), (k * 180 - 140, 1900)], 4, "#5E3A25", taper=.1, wmin=.9, seed=40 + k))
     s.append(line([(-700, 1250), (1800, 1250)], 4, "#5E3A25", taper=.1, wmin=.9, seed=60))
     # пятно закатного света на полу (сплошная трапеция)
-    s.append(blob([(300, 1050), (780, 1050), (900, 1400), (180, 1400)], "#9A6340"))
     return "".join(s)
 
 
@@ -129,8 +128,8 @@ def dima_hand(t):
     people.C = people.PAL["dima"]
     p = ease_io(clamp((t - T0) / 1.0))
     jerk = sum(math.exp(-(t - tl) * 9) * math.sin((t - tl) * 36) * (14 if i < 5 else 28) for i, tl in enumerate(LAND) if t > tl)
-    wr = (lerp(1230, 900, p) + 8 * math.sin(t * 6) + jerk * .4, lerp(470, 600, p) - 6 * math.cos(t * 5) + jerk)
-    el = (1330, 170)
+    wr = (lerp(1230, 985, p) + 8 * math.sin(t * 6) + jerk * .4, lerp(300, 340, p) - 6 * math.cos(t * 5) + jerk)
+    el = (1300, 20)
     d = (-0.62, 0.78)
     nrm = math.hypot(*d)
     d = (d[0] / nrm, d[1] / nrm)
@@ -138,9 +137,9 @@ def dima_hand(t):
     cur = (0.1 + .35 * wob, .2 + .3 * (1 - wob), .15 + .35 * wob, .3 + .3 * (1 - wob))
     o = []
     import numpy as np
-    S, E, Wr = np.array((1450, -80.0)), np.array(el, float), np.array(wr, float)
+    S, E, Wr = np.array((1500, -260.0)), np.array(el, float), np.array(wr, float)
     o.append(people.sleeve(S, E, Wr, False, 80, "dima"))
-    o.append(people.hand_svg("dima", wr, d, k=2.5, flip=-1, curl=cur, spread=.3, thumb=.1, bend=.12, seed=720))
+    o.append(people.hand_svg("dima", wr, d, k=1.55, flip=-1, curl=cur, spread=.3, thumb=.1, bend=.12, seed=720))
     return "".join(o)
 
 
