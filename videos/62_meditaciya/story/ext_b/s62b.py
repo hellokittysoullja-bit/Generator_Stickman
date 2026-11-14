@@ -18,6 +18,7 @@ import cat as Cat  # noqa: E402
 import lib  # noqa: E402
 import people  # noqa: E402
 import props as PR  # noqa: E402
+import room as R  # noqa: E402
 from lib import (INK, blob, clamp, ease_in, ease_io, ease_out, ellipse_pts, f, line, mix, rect_pts, shape, smooth, spring)  # noqa: E402,F401
 
 WORDS = json.load(open(os.path.join(STORY, "voice", "words.json")))
@@ -205,5 +206,62 @@ def s11(t):
     return lib.svg("".join(o))
 
 
+# ═════════════════════════════ s10: кот входит в комнату и садится рядом ═════════════════════════════
+T_KOT, T_SEL, T_RYADOM = 15.26, 15.50, 15.733
+
+
+def s10(t):
+    lib.dyn_begin()
+    DX = -175.0                     # подушка и Дима левее центра: справа место коту
+    hx, hy = R.seat()
+    hx += DX
+    s = 1.08
+    # Дима расстроен: сполз, губа дрожит, дыхание тяжёлое; на «рядом» косится на кота (голова чуть к нему)
+    br = math.sin(2 * math.pi * (t - 14.55) / 1.7)
+    if t < T_RYADOM:
+        ex = dict(E["dima"]["upset"], trem=t)
+    else:
+        u = smooth(T_RYADOM, T_RYADOM + .18, t)
+        ex = dict(E["dima"]["side_eye"], mouth="wobble", trem=t * .5, look=(.6 + .35 * u, .15 - .1 * u))
+        if u < .5:
+            ex = dict(E["dima"]["upset"], trem=t, look=(.6, .2))
+    kw = people.lotus_kw("slump", hx, hy + 6 * br, s, sag=.6)
+    kw["head_ang"] += .05 * br - .14 * smooth(T_RYADOM, T_RYADOM + .25, t)
+    kw["lean"] += .015 * br
+    fig = people.figure("dima", hx, hy + 6 * br, s, ex, **kw)
+    # кот: шагает справа (лапы по очереди), на «кот» останавливается, на «сел» садится с отскоком, хвост обвивает лапы
+    FLOOR_Y = 1745.0
+    k = 1.25
+    x_end = 790.0
+    if t < T_KOT:
+        u = clamp((t - 14.4) / (T_KOT - 14.4))
+        x = 1400 + (x_end - 1400) * (1 - (1 - u) ** 1.6)
+        walk = (t - 14.4) / .36
+        st = {"turn": -.45, "look": (-.6, .1), "legs": .3, "perk": .4}
+        cat = people.cat_walk(x, FLOOR_Y, k, t, st, period=.36)
+    else:
+        x = x_end
+        sx_, sy_ = 1.0, 1.0
+        legs = .3
+        tail = -4.0
+        st = {"turn": -.45 + .2 * smooth(T_SEL, T_SEL + .4, t), "look": (-.6 + .4 * smooth(T_SEL + .2, T_SEL + .6, t), .1), "perk": .4 * (1 - smooth(T_SEL, T_SEL + .3, t))}
+        if t >= T_SEL:
+            e = t - T_SEL
+            legs = .3 * (1 - ease_out(clamp(e / .12), 2))
+            sx_, sy_ = PR.squash(t, T_SEL + .1, amp=.16, freq=2.6, damp=6.0)
+            tail = -4 + 14 * ease_out(clamp(e / .45), 3)
+            st["blink"] = .35 * smooth(T_SEL + .3, T_SEL + .6, t)
+        st.update(legs=legs, sx=sx_, sy=sy_, tail=tail, rot=-2 * decay(t, T_KOT, 6, 3))
+        cat = people.cat_svg(x, FLOOR_Y, k, st, t)
+    rb = R.room_bg(t, "evening")
+    w = [rb["bg"], R.cushion_layer(1.0, DX), fig["svg"], cat, rb["front"]]
+    # камера: общий план, лёгкая панорама за котом, мини-толчок на «сел»
+    pan = 610 - 50 * ease_io(clamp((t - 14.55) / 1.2))
+    sx, sy = shake2(t, T_SEL + .1, 5)
+    set_ink(1.0)
+    o = [f'<g transform="{lib.cam(pan - sx, 1080 - sy, 1.0 + .015 * clamp((t - 14.55) / 1.8))}">{"".join(w)}</g>']
+    return lib.svg("".join(o))
+
+
 def frame(sid, t):
-    return {"s06": s06, "s11": s11}[sid](t)
+    return {"s06": s06, "s10": s10, "s11": s11}[sid](t)
