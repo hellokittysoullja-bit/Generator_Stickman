@@ -2430,3 +2430,498 @@ def day_arc(cx, cy, R=330.0, phase=0.0, seed=0):
         night = clamp(min(q, 1 - q) * 6)
         s = moon(px, py, 40, .6)
     return s, night
+
+
+# ═════════════════════════════ РИЛС 70 «ПОМИДОРКА» (автор — группа A) ═════════════════════════════
+# Букв и цифр нет нигде: циферблат — только риски и красный клин, клавиши пустые, экран — пустая страница / волнистые штрихи.
+#   tomato_timer(x, y, k, rot, wedge, ring, shake, leaf_swing, hands, t, seed, arms)
+#                         кухонный таймер-помидорка, (x, y) — ЦЕНТР тела, тело 220×180·k (полуширина TOMATO_RX·k, полувысота TOMATO_RY·k).
+#                         wedge 0…1 — заведённая доля круга (красный клин на белом циферблате от «12» по часовой):
+#                         WEDGE_25 ≈ почти полкруга, WEDGE_2 — тонкий ломтик; ring 0…1 — звон (подскок задаёт сцена, тут — дрожь и дуги);
+#                         shake — дрожь тиканья (px·k); leaf_swing — качание листика (градусы); hands 0…1 — ручки-штрихи с
+#                         варежками (s11), arms=((dxl, dyl), (dxr, dyr)) — куда тянутся кисти (локально, в единицах k).
+#   tomato_dial(x, y, k, rot, wedge, seed)        только белый циферблат с рисками и клином (для макро)
+#   tomato_pts(x, y, k, rot)              → dict: top (основание хвостика), left/right (бока для хвата), dial (центр циферблата), r_dial
+#   ring_arcs(x, y, k, u, t, seed, r)     дуги-штрихи звона по бокам точки (u — сила, мерцают по t)
+#   laptop(x, y, k, open, screen, lines, t, seed, reflect, turn, glow)
+#                         ноутбук анфас-сверху, (x, y) — ЦЕНТР ПЕРЕДНЕГО КРАЯ корпуса; корпус 520×200·k (в перспективе), экран 470×300·k.
+#                         open 0…1 — крышка поднимается (0 — закрыт, видна крышка сверху); screen "dark" | "reflect" | "page" | "lines";
+#                         lines 0…1 — сколько волнистых строк написано; reflect — SVG отражения (локально: (0, 0) — центр экрана,
+#                         ширина 470, приглушается само); turn −1…1 — поворот на три четверти (0 — анфас, − влево); glow 0…1 — свет экрана.
+#   laptop_pts(x, y, k, open, turn)       → dict: screen (центр), sw, sh, keys (центр клавиатуры), keys_w, hinge, lid_top
+#   pedestal(x, y, k, crack, split, seed) тумба-пьедестал (ЦЕНТР ДНА) 300×330·k; crack 0…1 — трещина зигзагом сверху вниз; split 0…1 —
+#                         половинки разъезжаются и кренятся. pedestal_top(x, y, k) → (x, y) центр верхней крышки.
+#   laurel(x, y, k, u, side, seed)        лавровая веточка (основание в (x, y)), side +1 — вправо-вверх, −1 — влево; u — дорисовка
+#   splat(x, y, k, u, drip, t, seed)      красная клякса-помидор с семечками (ЦЕНТР), u 0…1 — растеклась, drip 0…1 — капли стекают вниз
+#   mountain(x, y, k, grow, hatch, seed)  гора (ЦЕНТР ОСНОВАНИЯ) 980×1150·k с вершиной-помидоркой и зелёной шапкой-листиком;
+#                         grow 0…1 — вырастает снизу вверх (вершина поднимается), hatch 0…1 — склоны штрихуются пером.
+#                         mountain_peak(x, y, k, grow) → (x, y) вершина.
+#   step_wall(x, y, k, u, glow, t, seed)  ступенька-камень (ЦЕНТР ДНА) 240×80·k, u 0…1 — вытягивается в отвесную стену 240×(80+940u)·k;
+#                         glow 0…1 — тёплое свечение ступеньки (чёткий ореол, не овал на весь кадр). step_top(x, y, k, u) → y верха.
+#   swing(x, y, k, ang, t, seed, layer)   качели СБОКУ: А-рама 660×760·k (ЦЕНТР ОСНОВАНИЯ), ось сверху, верёвка 520·k, сиденье ребром;
+#                         ang — угол качания (градусы, + сиденье уходит вправо); layer "back" (дальняя рама и верёвка) | "front"
+#                         (ближняя верёвка, сиденье, ближняя рама — её рисовать ПОСЛЕ человека) | "all".
+#                         swing_seat(x, y, k, ang) → (sx, sy, deg) центр сиденья; swing_rope_pts(...) → [(верх, низ)] ближней верёвки.
+#   fence(x0, x1, y, k, seed)             штакетник от x0 до x1, низ на y, высота 200·k
+#   door(x, y, k, ajar, seed)             закрытая дверь комнаты (ЦЕНТР ДНА) 420×920·k, ручка справа, без табличек; door_handle(x, y, k) → (x, y)
+#   wind_lines(x, y, k, u, t, seed, n)    штрихи ветра (бегут влево от точки)
+WEDGE_25 = 0.42
+WEDGE_2 = 0.045
+TOMATO_RX, TOMATO_RY = 112.0, 92.0
+C_TOMATO = "#E2412F"
+C_TOMATO_SH = "#B52A1F"
+C_TOMATO_HI = "#FF7A5E"
+C_LEAF = "#4E9A3E"
+C_LEAF_SH = "#357029"
+C_DIAL = "#FBF8F0"
+C_STONE = "#A7A2A0"
+C_STONE_SH = "#7F7A7C"
+
+
+def _tomato_body_pts(rx=TOMATO_RX, ry=TOMATO_RY):
+    pts = []
+    for i in range(36):
+        a = 2 * math.pi * i / 36
+        r = 1 - .05 * (.5 + .5 * math.cos(4 * a)) * (1 if math.sin(a) < 0 else .3)     # лёгкие дольки сверху
+        y = math.sin(a) * ry * r
+        x = math.cos(a) * rx * r * (1 - .06 * (math.sin(a) > 0) * math.sin(a))
+        pts.append((x, y - 6 * (math.sin(a) < 0) * (1 - abs(math.cos(a))) ** 3))
+    return pts
+
+
+def tomato_dial(x, y, k=1.0, rot=0.0, wedge=WEDGE_25, seed=0, r=58.0):
+    sd = 70100 + seed
+    o = [shape(ellipse_pts(0, 0, r, r * .96, 30), C_DIAL, blob(ellipse_pts(r * .18, r * .22, r * .78, r * .7, 20), "#ECE6D8"), w=3.6, seed=sd)]
+    wu = clamp(wedge)
+    if wu > 0.002:
+        n = max(3, int(40 * wu) + 2)
+        rr = r * .8
+        P = [(0.0, 0.0)] + [(rr * math.sin(2 * math.pi * wu * i / (n - 1)), -rr * math.cos(2 * math.pi * wu * i / (n - 1))) for i in range(n)]
+        d = "M0 0 " + " ".join(f"L{f(p[0])} {f(p[1])}" for p in P[1:]) + "Z"
+        o.append(f'<path d="{d}" fill="{C_TOMATO}"/>')
+        o.append(line([P[1], (0, 0), P[-1]], 2.6, C_TOMATO_SH, taper=.1, wmin=.7, seed=sd + 1))
+    for j in range(24):
+        a = 2 * math.pi * j / 24
+        L = .2 if j % 2 == 0 else .11
+        o.append(line([(r * .9 * math.sin(a), -r * .9 * math.cos(a)), (r * (.9 - L) * math.sin(a), -r * (.9 - L) * math.cos(a))],
+                      3.0 if j % 2 == 0 else 2.2, lib.INK, taper=.2, wmin=.6, seed=sd + 3 + j))
+    o.append(line([(0, 0), (0, -r * .74)], 3.4, lib.INK, taper=.3, wmin=.6, seed=sd + 40))     # стрелка-указатель «12»
+    o.append(blob(ellipse_pts(0, 0, r * .09, r * .09, 10), lib.INK))
+    return _tf("".join(o), x, y, k, rot)
+
+
+def tomato_pts(x, y, k=1.0, rot=0.0):
+    c, s = math.cos(math.radians(rot)), math.sin(math.radians(rot))
+
+    def P(px, py):
+        return (x + (px * c - py * s) * k, y + (px * s + py * c) * k)
+    return dict(top=P(0, -TOMATO_RY + 4), left=P(-TOMATO_RX, 6), right=P(TOMATO_RX, 6), dial=P(0, 10), r_dial=58 * k, bottom=P(0, TOMATO_RY))
+
+
+def ring_arcs(x, y, k=1.0, u=1.0, t=0.0, seed=0, r=150.0):
+    if u <= 0.01:
+        return ""
+    o = []
+    for side in (-1, 1):
+        for j in range(3):
+            q = clamp(u * (1.25 - j * .2))
+            if q <= .02:
+                continue
+            ph = .5 + .5 * math.sin(t * 38 + j * 1.9 + side)
+            rr = (r + 34 * j) * k * (1 + .05 * ph)
+            a0, a1 = -.55 * q, .55 * q
+            pts = [(x + side * rr * math.cos(a0 + (a1 - a0) * i / 6), y + rr * math.sin(a0 + (a1 - a0) * i / 6)) for i in range(7)]
+            o.append(line(pts, (7.5 - 1.5 * j) * k, "#F2B632" if j == 0 else lib.INK, taper=.5, wmin=.25, seed=70200 + seed + j * 3 + side))
+    return "".join(o)
+
+
+def tomato_timer(x, y, k=1.0, rot=0.0, wedge=WEDGE_25, ring=0.0, shake=0.0, leaf_swing=0.0, hands=0.0, t=0.0, seed=0, arms=None,
+                 dial=True):
+    sd = 70300 + seed
+    jx = jy = jr = 0.0
+    if shake > 0 or ring > 0:
+        a = shake + 9 * ring
+        jx = a * math.sin(t * 61 + seed) * .8
+        jy = a * math.cos(t * 47 + seed) * .4
+        jr = (1.2 * shake / 4 + 6 * ring) * math.sin(t * 53 + seed * .7)
+    o = []
+    hu = clamp(hands)
+    if hu > 0.01:      # ручки-штрихи за телом
+        arms = arms or ((-190, 10), (190, 10))
+        for side, (ax, ay) in zip((-1, 1), arms):
+            sx0, sy0 = side * TOMATO_RX * .9, 18
+            ex, ey = sx0 + (ax - sx0) * hu, sy0 + (ay - sy0) * hu
+            mx, my = (sx0 + ex) / 2, (sy0 + ey) / 2 - 22
+            o.append(line([(sx0, sy0), (mx, my), (ex, ey)], 8, lib.INK, taper=.15, wmin=.7, seed=sd + 1 + side))
+            o.append(shape(ellipse_pts(ex, ey, 17, 15, 12), "#FBF8F0", line([(ex - side * 4, ey - 12), (ex - side * 13, ey - 4)], 2.6, seed=sd + 5 + side),
+                           w=3.4, seed=sd + 3 + side))
+    body = _tomato_body_pts()
+    inner = blob([(30, -100), (130, -60), (130, 100), (-20, 100), (60, 40)], C_TOMATO_SH, .95)
+    inner += blob(ellipse_pts(-52, -46, 26, 15, 12, rot=-.6), C_TOMATO_HI, .95)
+    inner += blob(ellipse_pts(-74, -20, 8, 6, 8), "#FFD3C4")
+    for j, xs in enumerate((-58, 0, 58)):
+        inner += line([(xs, -80), (xs * 1.18, -10), (xs * 1.05, 70)], 2.4, C_TOMATO_SH, taper=.6, wmin=.15, seed=sd + 10 + j, op=.9)
+    o.append(shape(body, C_TOMATO, inner, w=5.0, seed=sd))
+    if dial:
+        o.append(tomato_dial(0, 10, 1.0, 0, wedge, seed))
+    # хвостик и листики
+    sw = leaf_swing
+    leaves = []
+    for j, (a, L) in enumerate(((-150, 62), (-115, 50), (-65, 50), (-30, 62), (-90, 40))):
+        aa = math.radians(a + sw * (1 if j % 2 else .7))
+        tip = (L * math.cos(aa), -84 + L * math.sin(aa) * .55)
+        nx, ny = -math.sin(aa) * 11, math.cos(aa) * 6
+        pts = [(-3, -86, 1), (tip[0] * .5 + nx, tip[1] * .5 - 86 * .5 + ny - 2), (tip[0], tip[1], 1), (tip[0] * .5 - nx, tip[1] * .5 - 86 * .5 - ny + 2)]
+        leaves.append(shape(pts, C_LEAF if j % 2 == 0 else C_LEAF_SH, "", w=3.0, seed=sd + 20 + j))
+    o.append("".join(leaves))
+    st_a = math.radians(-90 + sw * 1.4)
+    o.append(shape(lib.band([(0, -84), (4 * math.cos(st_a) * 0 + 2, -104), (10 * math.sin(math.radians(sw)), -122)], 11, 8, step=4, cap=True),
+                   C_LEAF_SH, "", w=2.8, seed=sd + 30))
+    rg = ring_arcs(0, 0, 1.0, ring, t, seed, r=150)
+    return _tf("".join(o) , x + jx * k, y + jy * k, k, rot + jr) + (_tf(rg, x, y, k, 0) if rg else "")
+
+
+def _lid_dir(open_):
+    a = math.radians(108 * clamp(open_))
+    return .45 * math.cos(a) - .97 * math.sin(a)       # смещение по y на единицу длины крышки (− вверх)
+
+
+def laptop_pts(x, y, k=1.0, open_=1.0, turn=0.0):
+    D, L = 200.0, 300.0
+    hinge_y = -D * .45
+    top_y = hinge_y + L * _lid_dir(open_)
+    sx = 1 - .42 * abs(turn)
+    return dict(screen=(x, y + k * (hinge_y + top_y) / 2), sw=470 * k * sx, sh=abs(top_y - hinge_y) * k, keys=(x, y - D * .22 * k),
+                keys_w=420 * k * sx, hinge=(x, y + hinge_y * k), lid_top=(x, y + top_y * k))
+
+
+def laptop(x, y, k=1.0, open_=1.0, screen="dark", lines=0.0, t=0.0, seed=0, reflect="", turn=0.0, glow=0.0):
+    sd = 70500 + seed
+    D, L = 200.0, 300.0
+    hinge = -D * .45
+    o = []
+    # корпус: передний край y=0 (шире), задний — hinge (уже)
+    deck = [(-260, 0, 1), (-232, hinge, 1), (232, hinge, 1), (260, 0, 1), (262, 14, 1), (-262, 14, 1)]
+    keys = []
+    for r_ in range(4):
+        v0, v1 = .16 + r_ * .17, .16 + r_ * .17 + .13
+        y0, y1 = hinge * (1 - v0) * 1 + 0, hinge * (1 - v1)
+        yy0, yy1 = hinge + (0 - hinge) * v0 * 0 + hinge * -v0 + hinge, 0
+        del yy0, yy1
+        ya, yb = hinge * (1 - v0), hinge * (1 - v1)
+        ya, yb = min(ya, yb), max(ya, yb)
+        wa, wb = 220 - 26 * (1 - v0), 220 - 26 * (1 - v1)
+        n = 11 if r_ < 3 else 1
+        for c_ in range(n):
+            if r_ == 3:
+                ka, kb = -.42, .42
+            else:
+                ka, kb = -1 + 2 * c_ / n + .02, -1 + 2 * (c_ + 1) / n - .02
+            keys.append(f'<path d="M{f(ka * wa)} {f(ya)}L{f(kb * wa)} {f(ya)}L{f(kb * wb)} {f(yb)}L{f(ka * wb)} {f(yb)}Z" fill="#3A3F49"/>')
+        del y0, y1
+    pad = f'<path d="M-62 -14L62 -14L60 -4L-60 -4Z" fill="#C8CCD4"/>'
+    o.append(shape(deck, "#C9CDD5", "".join(keys) + pad + blob([(-262, 2), (262, 2), (262, 16), (-262, 16)], "#9FA4AE"), w=4.2, seed=sd))
+    dy = _lid_dir(open_)
+    top = hinge + L * dy
+    if dy > -.05:     # крышка лежит/почти лежит: видна её внешняя сторона
+        lid = [(-236, hinge, 1), (236, hinge, 1), (258 + 4 * dy, top, 1), (-258 - 4 * dy, top, 1)]
+        o.append(shape(lid, "#AEB3BD", blob(ellipse_pts(0, (hinge + top) / 2, 50, 18 * max(.2, dy), 12), "#C3C7CF"), w=4.2, seed=sd + 1))
+    else:
+        fr = [(-240, hinge + 4, 1), (240, hinge + 4, 1), (244, top, 1), (-244, top, 1)]
+        o.append(shape(fr, "#2E323A", "", w=4.4, seed=sd + 2))
+        sx0, sx1 = -222, 222
+        sy0, sy1 = top + 16 * (-dy), hinge - 10
+        spts = [(sx0, sy1, 1), (sx1, sy1, 1), (sx1 + 2, sy0, 1), (sx0 - 2, sy0, 1)]
+        cid = lib.clip_of(spts)
+        cx, cy = 0.0, (sy0 + sy1) / 2
+        sh = abs(sy1 - sy0)
+        if screen in ("page", "lines"):
+            inner = f'<path d="{lib.fill_d(spts)}" fill="#FDFCF7"/>'
+            inner += blob([(sx0, sy0), (sx1, sy0), (sx1, sy0 + sh * .1), (sx0, sy0 + sh * .1)], "#E6E8EE")
+            if screen == "lines" and lines > 0:
+                inner += _lines_block(sx0 + 38, sx1 - 40, sy0 + sh * .2, sh * .105, 7, lines, sd + 50, w=4.0, col="#5B6170")
+                wl = _lines_tip(sx0 + 38, sx1 - 40, sy0 + sh * .2, sh * .105, 7, lines, sd + 50)
+                cur = wl
+            else:
+                cur = (sx0 + 56, sy0 + sh * .2)
+            if (t * 1.6) % 1 < .6:
+                inner += line([(cur[0] + 4, cur[1] - 13), (cur[0] + 4, cur[1] + 13)], 3.6, "#2B2F38", taper=.05, wmin=.9, seed=sd + 60)
+        else:
+            inner = f'<path d="{lib.fill_d(spts)}" fill="#141821"/>'
+            if screen == "reflect" and reflect:
+                inner += f'<g transform="translate({f(cx)} {f(cy)})" opacity=".42" style="mix-blend-mode:screen">{reflect}</g>'
+            inner += f'<path d="M{f(sx0 + 40)} {f(sy0)}L{f(sx0 + 120)} {f(sy0)}L{f(sx0 + 20)} {f(sy1)}L{f(sx0 - 60)} {f(sy1)}Z" fill="#FFFFFF" opacity=".05"/>'
+        o.append(f'<g clip-path="url(#{cid})">{inner}</g>')
+        if glow > 0.01:
+            o.append(globals()["glow"](0, (sy0 + sy1) / 2, 300, .35 * glow, "#DDE8FF", ry=200))
+    g = "".join(o)
+    if abs(turn) > 0.001:
+        sxk = 1 - .42 * abs(turn)
+        g = f'<g transform="matrix({sxk:.4f} {-.16 * turn:.4f} 0 1 0 0)">{g}</g>'
+    return _tf(g, x, y, k)
+
+
+def pedestal(x, y, k=1.0, crack_=0.0, split=0.0, seed=0):
+    sd = 70700 + seed
+    su = clamp(split)
+    parts = []
+    for side in (-1, 1):
+        o = []
+        body = [(0, -300, 1), (side * 120, -300, 1), (side * 120, -40, 1), (0, -40, 1)]
+        o.append(shape(body, "#F2EADB", blob([(side * 80, -300), (side * 120, -300), (side * 120, -40), (side * 80, -40)], "#D8CDB8")
+                       + line([(side * 40, -280), (side * 40, -60)], 3, "#CDBFA6", taper=.3, wmin=.4, seed=sd + 3 + side)
+                       + line([(side * 82, -280), (side * 82, -60)], 3, "#CDBFA6", taper=.3, wmin=.4, seed=sd + 5 + side), w=0, seed=sd, ink=False))
+        o.append(shape([(0, -330, 1), (side * 150, -330, 1), (side * 150, -296, 1), (0, -296, 1)], "#E8DCC4", "", w=0, ink=False))
+        o.append(shape([(0, -44, 1), (side * 150, -44, 1), (side * 150, 0, 1), (0, 0, 1)], "#E8DCC4", "", w=0, ink=False))
+        for pts in ([(0, -330), (side * 150, -330), (side * 150, -296), (side * 120, -296), (side * 120, -44), (side * 150, -44), (side * 150, 0), (0, 0)],):
+            o.append(line(pts, 4.6, lib.INK, taper=.05, wmin=.9, seed=sd + 9 + side))
+        g = "".join(o)
+        if su > 0:
+            g = f'<g transform="translate({side * 40 * su:.2f} {12 * su:.2f}) rotate({side * 9 * su:.2f} 0 0)">{g}</g>'
+        parts.append(g)
+    o = parts
+    cu = clamp(crack_)
+    if cu > 0 and su < .05:
+        rs = _rs(sd + 30)
+        pts = [(0, -330)]
+        for i in range(1, 9):
+            pts.append((rs.uniform(-18, 18), -330 + i * 41))
+        n = max(2, int(1 + 8 * cu))
+        o.append(line(pts[:n], 7, lib.INK, taper=.3, wmin=.4, seed=sd + 31))
+    elif su < .05:
+        o.append(line([(0, -330), (0, -296)], 2.6, lib.INK, seed=sd + 32, op=0))
+    return _tf("".join(o), x, y, k)
+
+
+def pedestal_top(x, y, k=1.0):
+    return (x, y - 330 * k)
+
+
+def laurel(x, y, k=1.0, u=1.0, side=1, seed=0):
+    if u <= 0.01:
+        return ""
+    sd = 70800 + seed
+    o = []
+    stem = [(0, 0), (side * 40, -60), (side * 60, -130), (side * 56, -200)]
+    S = lib.sample(stem, False, 4)
+    n = max(2, int(len(S) * clamp(u)))
+    o.append(line([(float(p[0]), float(p[1])) for p in S[:n]], 5, C_LEAF_SH, taper=.5, wmin=.3, seed=sd))
+    for j in range(6):
+        q = clamp(u * 7 - j - .5)
+        if q <= 0:
+            continue
+        p = S[min(len(S) - 1, int(len(S) * (j + 1) / 7))]
+        for s2 in (-1, 1):
+            a = math.radians(-90 + side * 20 + s2 * 50)
+            L = 34 * q
+            tip = (p[0] + L * math.cos(a), p[1] + L * math.sin(a))
+            nx, ny = -math.sin(a) * 9 * q, math.cos(a) * 9 * q
+            m = ((p[0] + tip[0]) / 2, (p[1] + tip[1]) / 2)
+            o.append(shape([(p[0], p[1], 1), (m[0] + nx, m[1] + ny), (tip[0], tip[1], 1), (m[0] - nx, m[1] - ny)], C_LEAF, "", w=2.6, seed=sd + j * 2 + s2))
+    return _tf("".join(o), x, y, k)
+
+
+def splat(x, y, k=1.0, u=1.0, drip=0.0, t=0.0, seed=0):
+    if u <= 0.01:
+        return ""
+    sd = 70900 + seed
+    rs = _rs(sd)
+    uu = clamp(u)
+    pts = []
+    n = 26
+    for i in range(n):
+        a = 2 * math.pi * i / n
+        r = (1 + (rs.uniform(-.12, .3) if i % 3 else rs.uniform(.25, .55))) * 140 * uu
+        pts.append((r * math.cos(a), r * .55 * math.sin(a)))
+    inner = blob(ellipse_pts(30 * uu, 22 * uu, 120 * uu, 50 * uu, 16), C_TOMATO_SH, .9)
+    inner += blob(ellipse_pts(-50 * uu, -24 * uu, 34 * uu, 12 * uu, 10, rot=-.3), C_TOMATO_HI, .9)
+    o = [shape(pts, C_TOMATO, inner, w=4.6, seed=sd + 1)]
+    for j in range(5):       # брызги-капельки вокруг
+        a = rs.uniform(0, 2 * math.pi)
+        d = rs.uniform(190, 260) * uu
+        rr = rs.uniform(8, 16) * uu
+        o.append(shape(ellipse_pts(d * math.cos(a), d * .55 * math.sin(a), rr, rr * .8, 10), C_TOMATO, "", w=3, seed=sd + 10 + j))
+    for j in range(7):       # семечки
+        a = rs.uniform(0, 2 * math.pi)
+        d = rs.uniform(10, 90) * uu
+        o.append(shape(ellipse_pts(d * math.cos(a), d * .5 * math.sin(a), 9 * uu, 5.5 * uu, 8, rot=a), "#F5E6A8", "", w=2.0, seed=sd + 20 + j))
+    du = clamp(drip)
+    if du > 0:
+        for j, (dx, L) in enumerate(((-60, 170), (34, 260), (96, 120))):
+            q = clamp(du * 1.3 - j * .15)
+            if q <= 0:
+                continue
+            y0 = 70 * uu * (1 - (dx / 150) ** 2) ** .5 - 6
+            yl = y0 + L * q
+            o.append(shape([(dx - 13, y0 - 12, 1), (dx + 13, y0 - 12, 1), (dx + 8, yl - 10), (dx, yl + 12), (dx - 8, yl - 10)], C_TOMATO, "", w=3.2, seed=sd + 40 + j))
+            o.append(shape(ellipse_pts(dx, yl + 4, 14, 16, 10), C_TOMATO, blob(ellipse_pts(dx - 4, yl - 2, 4, 5, 8), C_TOMATO_HI), w=3.2, seed=sd + 45 + j))
+    return _tf("".join(o), x, y, k)
+
+
+def mountain_peak(x, y, k=1.0, grow=1.0):
+    return (x, y - (120 + 1030 * clamp(grow)) * k)
+
+
+def mountain(x, y, k=1.0, grow=1.0, hatch=1.0, seed=0):
+    sd = 71000 + seed
+    g = clamp(grow)
+    if g <= 0.01:
+        return ""
+    Hh = 120 + 1030 * g
+    Wd = 260 + 720 * g
+    rs = _rs(sd)
+    left = [(-Wd / 2, 0, 1)]
+    right = []
+    for i in range(1, 7):
+        v = i / 7
+        left.append((-Wd / 2 * (1 - v) + rs.uniform(-18, 18) * g, -Hh * v * (.92 + .08 * v)))
+    for i in range(6, 0, -1):
+        v = i / 7
+        right.append((Wd / 2 * (1 - v) + rs.uniform(-18, 18) * g, -Hh * v * (.9 + .1 * v)))
+    right.append((Wd / 2, 0, 1))
+    peak = (0, -Hh)
+    pts = left + [(-Wd * .07, -Hh * .93), peak, (Wd * .07, -Hh * .93)] + right
+    inner = blob([peak, (Wd * .08, -Hh * .9), (Wd / 2 + 10, 10), (Wd * .05, 10), (Wd * .12, -Hh * .5)], "#8E9198", .9)
+    hu = clamp(hatch)
+    if hu > 0:
+        nh = int(26 * hu)
+        for j in range(nh):
+            v = .12 + .8 * j / 26
+            yy = -Hh * v
+            half = Wd / 2 * (1 - v)
+            xa = half * (.15 + .5 * rs.uniform(0, 1))
+            inner += line([(xa, yy), (xa + 70 * (1 - v) + 20, yy + 60 * (1 - v) + 30)], 3.2, "#5E6168", taper=.6, wmin=.15, seed=sd + 50 + j)
+            xb = -half * (.3 + .55 * rs.uniform(0, 1))
+            inner += line([(xb, yy), (xb + 40 * (1 - v) + 10, yy + 50 * (1 - v) + 20)], 2.6, "#7C8088", taper=.6, wmin=.15, seed=sd + 90 + j)
+    o = [shape(pts, "#B4B6BB", inner, w=5.4, seed=sd + 1)]
+    # вершина-помидорка с шапкой-листиком (масштаб от роста)
+    tk = .55 + .9 * g
+    tp = (0, -Hh + 40 * tk)
+    o.append(tomato_timer(tp[0], tp[1], tk, 0, wedge=0, dial=False, seed=seed + 5))
+    return _tf("".join(o), x, y, k)
+
+
+def step_top(x, y, k=1.0, u=0.0):
+    return y - (80 + 940 * clamp(u)) * k
+
+
+def step_wall(x, y, k=1.0, u=0.0, glow_=0.0, t=0.0, seed=0):
+    sd = 71100 + seed
+    uu = clamp(u)
+    Hh = 80 + 940 * uu
+    rs = _rs(sd)
+    o = []
+    gu = clamp(glow_)
+    if gu > 0.01:
+        o.append(shape(rrect(-150, -Hh - 30, 150, 14, 40), "#FFD98A", "", w=0, ink=False, attrs=f'opacity="{.55 * gu:.3f}"'))
+        o.append(shape(rrect(-136, -Hh - 16, 136, 8, 30), "#FFE9B8", "", w=0, ink=False, attrs=f'opacity="{.7 * gu:.3f}"'))
+    pts = [(-120, 0, 1), (-118, -Hh * .5), (-122, -Hh + 14), (-110, -Hh, 1), (110, -Hh, 1), (122, -Hh + 12), (118, -Hh * .5), (120, 0, 1)]
+    col = mix(C_STONE, "#E8C27A", .55 * gu)
+    inner = blob([(60, -Hh), (130, -Hh), (130, 10), (70, 10)], mix(C_STONE_SH, "#C99A4A", .5 * gu), .95)
+    inner += blob([(-120, -Hh), (120, -Hh), (120, -Hh + 22), (-120, -Hh + 22)], mix("#C3BFBC", "#FFE3A0", .6 * gu))
+    nb = int(Hh / 110)
+    for j in range(nb):         # швы кладки
+        yy = -60 - j * 110 + rs.uniform(-8, 8)
+        inner += line([(-120, yy), (-40, yy + rs.uniform(-6, 6)), (40, yy + rs.uniform(-6, 6)), (120, yy)], 3.2, C_STONE_SH, taper=.4, wmin=.3, seed=sd + 5 + j)
+        xs = rs.uniform(-60, 60)
+        inner += line([(xs, yy), (xs + rs.uniform(-8, 8), yy - 104)], 3.0, C_STONE_SH, taper=.4, wmin=.3, seed=sd + 40 + j)
+    o.append(shape(pts, col, inner, w=5.2, seed=sd + 1))
+    return _tf("".join(o), x, y, k)
+
+
+SWING_TOP = 760.0
+SWING_ROPE = 520.0
+
+
+def swing_rope_pts(x, y, k=1.0, ang=0.0):
+    """Качели сбоку: верёвка от оси (x, y − SWING_TOP·k) под углом ang (+ — сиденье уходит вправо). → [(верх, низ)] ближней верёвки."""
+    a = math.radians(ang)
+    top = (x, y - SWING_TOP * k)
+    return [(top, (top[0] + SWING_ROPE * k * math.sin(a), top[1] + SWING_ROPE * k * math.cos(a)))]
+
+
+def swing_seat(x, y, k=1.0, ang=0.0):
+    a = math.radians(ang)
+    return (x + SWING_ROPE * k * math.sin(a), y - SWING_TOP * k + SWING_ROPE * k * math.cos(a), -ang)
+
+
+def swing(x, y, k=1.0, ang=0.0, t=0.0, seed=0, layer="all"):
+    """Качели СБОКУ (А-рама, верёвка и сиденье ребром), (x, y) — середина основания; ось сверху."""
+    sd = 71200 + seed
+    o = []
+    wood, wsh = C_WOOD, C_WOOD_SH
+    top = (x, y - SWING_TOP * k)
+    if layer in ("back", "all"):
+        bx, by = 34 * k, -26 * k      # дальняя рама чуть выше и правее
+        for j, dx in enumerate((-330, 330)):
+            o.append(shape(lib.band([(x + dx * k + bx, y + by), (top[0] + bx, top[1] + by)], 30 * k, 22 * k, step=6, cap=True), wsh, "", w=4 * k, seed=sd + 1 + j))
+        tp, bt = swing_rope_pts(x, y, k, ang)[0]
+        o.append(line([(tp[0] + bx, tp[1] + by), (bt[0] + bx, bt[1] + by)], 6 * k, "#6E5238", taper=.05, wmin=.9, seed=sd + 9))
+        o.append(shape(ellipse_pts(top[0] + bx * .5, top[1] + by * .5, 30 * k, 26 * k, 14), wood, blob(ellipse_pts(top[0] + bx * .5 + 8 * k, top[1] + by * .5 + 6 * k,
+                                                                                                                     18 * k, 14 * k, 10), wsh), w=4 * k, seed=sd + 3))
+    if layer in ("front", "all"):
+        tp, bt = swing_rope_pts(x, y, k, ang)[0]
+        o.append(line([tp, ((tp[0] + bt[0]) / 2, (tp[1] + bt[1]) / 2), bt], 7.5 * k, "#8A6A48", taper=.05, wmin=.9, seed=sd + 10))
+        sx, sy, sdg = swing_seat(x, y, k, ang)
+        seat = lib.T(rrect(-95, -6, 95, 20, 6), sx, sy, k, sdg)
+        o.append(shape(seat, wood, blob(lib.T(rect_pts(-95, 8, 95, 20), sx, sy, k, sdg), wsh), w=4.4 * k, seed=sd + 20))
+        for j, dx in enumerate((-330, 330)):          # ближняя А-рама
+            o.append(shape(lib.band([(x + dx * k, y), (top[0], top[1] - 10 * k)], 34 * k, 24 * k, step=6, cap=True), wood,
+                           line([(x + dx * k * .9, y - 20 * k), (top[0] + dx * k * .08, top[1] + 40 * k)], 2.6 * k, wsh, taper=.5, wmin=.2, seed=sd + 30 + j),
+                           w=4.4 * k, seed=sd + 4 + j))
+        o.append(blob(ellipse_pts(top[0], top[1], 11 * k, 11 * k, 8), lib.INK))
+    return "".join(o)
+
+
+def fence(x0, x1, y, k=1.0, seed=0):
+    sd = 71300 + seed
+    rs = _rs(sd)
+    o = []
+    for yy in (-150, -60):
+        o.append(shape([(x0, y + (yy - 12) * k, 1), (x1, y + (yy - 12) * k, 1), (x1, y + (yy + 12) * k, 1), (x0, y + (yy + 12) * k, 1)], "#D9C29A", "", w=3.2 * k,
+                       seed=sd + yy))
+    xx = x0 + 20 * k
+    j = 0
+    while xx < x1:
+        h = 200 + rs.uniform(-8, 8)
+        o.append(shape([(xx - 22 * k, y, 1), (xx - 22 * k, y - (h - 26) * k, 1), (xx, y - h * k, 1), (xx + 22 * k, y - (h - 26) * k, 1), (xx + 22 * k, y, 1)],
+                       "#EADCBE", blob([(xx + 8 * k, y - h * k), (xx + 22 * k, y - h * k), (xx + 22 * k, y), (xx + 8 * k, y)], "#CDB98F"), w=3.4 * k, seed=sd + 10 + j))
+        xx += 74 * k
+        j += 1
+    return "".join(o)
+
+
+def door_handle(x, y, k=1.0):
+    return (x + 150 * k, y - 470 * k)
+
+
+def door(x, y, k=1.0, ajar=0.0, seed=0, col="#C99A6B"):
+    sd = 71400 + seed
+    o = [shape([(-236, 0, 1), (-236, -960, 1), (236, -960, 1), (236, 0, 1), (210, 0, 1), (210, -936, 1), (-210, -936, 1), (-210, 0, 1)], "#EEE6D6", "",
+               w=4.2, seed=sd)]
+    inner = blob([(120, -940), (220, -940), (220, 10), (120, 10)], lib.mul(col, (.85, .83, .8)), .9)
+    for (a, b) in ((-150, -860), (-150, -500)):
+        h = 300 if b == -860 else 380
+        inner += shape(rrect(-150, b, 150, b + h, 10), lib.mul(col, (1.05, 1.04, 1.02)), blob(rect_pts(110, b, 150, b + h), lib.mul(col, (.9, .88, .85))),
+                       w=3.0, seed=sd + 3 + (b == -500))
+    o.append(shape([(-210, 0, 1), (-210, -936, 1), (210, -936, 1), (210, 0, 1)], col, inner, w=4.6, seed=sd + 1))
+    hx, hy = 150, -470
+    o.append(shape(ellipse_pts(hx, hy, 20, 30, 12), C_METAL_SH, "", w=3.0, seed=sd + 6))
+    o.append(shape(rrect(hx - 64, hy - 11, hx + 4, hy + 11, 10), C_METAL, blob(rect_pts(hx - 64, hy + 2, hx + 4, hy + 11), C_METAL_SH), w=3.4, seed=sd + 7))
+    o.append(blob(ellipse_pts(hx, hy + 48, 6, 10, 8), "#3A3530"))
+    return _tf("".join(o), x, y, k)
+
+
+def wind_lines(x, y, k=1.0, u=1.0, t=0.0, seed=0, n=4):
+    if u <= 0.01:
+        return ""
+    o = []
+    for j in range(n):
+        ph = (t * 1.8 + j * .29 + seed * .13) % 1
+        yy = y + (j - n / 2) * 60 * k
+        xa = x - ph * 380 * k
+        L = (120 + 60 * math.sin(j * 2.3)) * k * clamp(u)
+        pts = [(xa, yy), (xa - L * .5, yy - 8 * k), (xa - L, yy + 4 * k)]
+        if ph < .9:
+            o.append(line(pts, 5 * k * (1 - ph * .7), "#7C8794", taper=.7, wmin=.1, seed=71500 + seed + j))
+    return "".join(o)
