@@ -175,3 +175,113 @@ def s21(t):
 
 
 FRAMES["s21"] = s21
+
+
+# ═════════════════════════ s08: «и дело не в лени» — кокон сползает с плеч ═════════════════════════
+T_A08 = 12.92
+T_I08, T_DELO, T_NE08, T_LENI = wt(37), wt(38), wt(39), wt(41)       # 12.94, 13.02, 13.31, 13.48
+COC08 = (660.0, R.BM_SIT[1] + 380)       # дно кокона (Дима сидит на краю кровати, ступни на полу)
+CAT08 = (250.0, R.BM_SILL[1] + 4)
+CAT08_K = .82
+
+
+def s08(t):
+    sc = R.bed_mid(t)
+    # Дима: голова поникла под капюшоном → «и дело» выпрямляется, лицо светлеет → «не в лени» одеяло сползает с плеч до пояса, выдох
+    up = sm(t, T_I08 - .05, T_DELO + .2)
+    sag = .08 + .9 * ease_out(clamp((t - (T_NE08 - .05)) / (T_LENI + .32 - (T_NE08 - .05))), 2.2)
+    sag += .015 * math.sin(t * 7) * (sag < .95)
+    rel = sm(t, T_LENI - .05, T_LENI + .3)
+    if rel > .02:
+        e = ex("relief71" if "relief71" in people.EXPR["dima"] else "relief_day", closed=lerp(0, .75, bump(t, T_LENI + .2, .7)), look=(.2, .05))
+    elif up > .4:
+        e = ex("hope" if "hope" in people.EXPR["dima"] else "surprise_day", look=(.3, -.1), closed=blinks(t, (13.12,)))
+    else:
+        e = ex("gloom", look=(.3, .6), cover=.35 * (1 - up))
+    coc = people.dima_cocoon(COC08[0], COC08[1], 1.0, squash=.22 * (1 - up) + .05 * bump(t, T_LENI + .05, .3), sag=sag, expr=e, hood=True, t=t,
+                             feet=1.0, roll=20 * sag)
+    # выдох: две мягкие дуги у рта
+    puff = ""
+    q = clamp((t - T_LENI - .12) / .6)
+    if 0 < q < 1:
+        hx, hy = coc["head"]
+        for j in (0, 1):
+            x0 = hx + 140 + 50 * q + j * 16
+            y0 = hy + 60 + j * 26
+            puff += line([(x0, y0 - 14), (x0 + 18, y0), (x0, y0 + 14)], 4.5, "#8fa3b8", taper=.5, wmin=.2, seed=890 + j, op=math.sin(math.pi * q))
+    # кот на подоконнике дремлет сидя (голова опущена) → «лени» поднимает голову, дёргает ухом, смотрит на Диму
+    wk = sm(t, T_LENI - .05, T_LENI + .3)
+    st = dict(sleep=lerp(.85, 0.0, wk), blink=lerp(1.0, 0.0, sm(t, T_LENI, T_LENI + .2)) + blinks(t, (14.25,)), turn=lerp(.2, .55, wk),
+              look=(lerp(0, .8, wk), .1), ear=-10 * bump(t, T_LENI + .12, .18) + 7 * bump(t, T_LENI + .3, .16), perk=.4 * bump(t, T_LENI + .1, .5),
+              tail=4 * math.sin(t * 1.6), flame_e=.8 + .4 * wk)
+    cat = CAT.draw(CAT08[0], CAT08[1], CAT08_K, st, t)
+    world = [sc["bg"], cat, sc["bed"], coc["svg"], puff, sc["front"]]
+    # камера: лёгкий отъезд и мягкий подъём
+    u = sm(t, T_A08 - .2, 14.5)
+    s = lerp(1.12, 1.02, u) + .006 * math.sin(t * 2.1)
+    ccx = lerp(600, 580, u) + 4 * math.sin(t * 1.5)
+    ccy = lerp(1010, 950, u) + 3 * math.sin(t * 1.8)
+    set_ink(s)
+    return f'<g transform="{lib.cam(ccx, ccy, s, lerp(-.5, .3, u))}">{"".join(world)}</g>', BG
+
+
+FRAMES["s08"] = s08
+
+
+# ═════════════════════════ s13: на полу у стены, кот подталкивает носок ═════════════════════════
+T_A13 = 23.10
+T_ON, T_NASH, T_SVOI, T_SPOS = wt(73), wt(74), wt(75), wt(76)          # 23.23, 23.48, 23.82, 24.14
+HIP13 = (1290.0, R.FL - 72)
+FEET13 = {"n": ((1290 + 300, R.FL - 50), .05), "f": ((1290 + 265, R.FL - 48), .05)}
+CAT13_K = .85
+CAT13_X0, CAT13_X1 = 1900.0, 1820.0          # кот на переднем плане (ближе к камере, ниже линии ступней)
+CAT13_Y = R.FL + 70
+SOCK13_0, SOCK13_1 = (1715.0, R.FL + 52), (1590.0, R.FL + 40)
+
+
+def s13(t):
+    sc = R.day_room(t)
+    # кот: входит шагом справа → «нашёл» лапа толкает носок влево → садится и довольно щурится
+    walk = sm(t, T_A13 - .25, T_NASH - .12)
+    cx = lerp(CAT13_X0 + 120, CAT13_X1, walk)
+    push = bump(t, T_NASH - .02, .42)
+    slide = ease_out(clamp((t - (T_NASH + .08)) / .35), 2.4)
+    sit = sm(t, T_SVOI, T_SVOI + .35)
+    pleased = sm(t, T_SPOS, T_SPOS + .3)
+    st = dict(turn=lerp(-.6, -.2, sit), look=(lerp(-.8, -.5, sit), lerp(.5, .1, sit)), tilt=lerp(-8, 4, sit) + 2 * math.sin(t * 1.5),
+              blink=max(.6 * pleased, blinks(t, (23.35,))), smile=1.0 if pleased > .3 else 0.0, tail=-14 + 6 * math.sin(t * 2.4),
+              ear=4 * math.sin(t * 3.3) - 6 * bump(t, T_NASH + .1, .2), flame_e=1.0 + .3 * pleased, sy=1 - .04 * push)
+    if walk < 1:
+        st["walk"] = (t - T_A13) / .42
+        st["rot"] = 2.0 * math.sin(2 * math.pi * (t - T_A13) / .42)
+    if push > .02:
+        st["paw"] = push
+        st["paw_dx"] = -85.0
+    cat = CAT.draw(cx, CAT13_Y - 4 * abs(math.sin(math.pi * (t - T_A13) / .42)) * (walk < 1), CAT13_K, st, t)
+    sx_, sy_ = lerp2(SOCK13_0, SOCK13_1, slide)
+    sock = PR.striped_sock(sx_, sy_ - 6 * bump(t, T_NASH + .1, .3), .62, -6 * bump(t, T_NASH + .1, .35) + 4 * slide, seed=3)
+    # Дима: сидит на полу, подбородок на кулаке, скучает → носок подъехал: смотрит на него → хитрый прищур, уголок рта вверх
+    see = sm(t, T_NASH + .2, T_NASH + .45)
+    sly = sm(t, T_SVOI - .05, T_SVOI + .3)
+    if sly > .05:
+        e = ex("sly", lid=lerp(.7, .36, sly), smile=lerp(.2, .8, sly), look=(.55, .55), closed=0.0)
+    else:
+        e = ex("gloom", look=(lerp(.3, .6, see), lerp(.1, .6, see)), lid=lerp(.45, .75, see), closed=blinks(t, (23.05,)))
+    hx, hy = HIP13
+    lift = .06 * sly
+    kw = dict(feet=FEET13, lean_add=-.04 * see - lift + .01 * math.sin(t * 2.1), head_add=.05 * see + .02 * math.sin(t * 1.7))
+    hd = people.dima(hx, hy, 1.0, e, "chin_fist", **kw)["head"]
+    kw["arms"] = {"n": ("ik", (hd[0] + 40, hd[1] + 250 - 10 * sly), -1)}
+    dima = people.dima(hx, hy, 1.0, e, "chin_fist", **kw)["svg"]
+    shadow = blob(ellipse_pts(cx, CAT13_Y + 4, 120, 10, 14), "#6e4a2c", .25) + blob(ellipse_pts(hx + 120, R.FL - 4, 300, 14, 16), "#6e4a2c", .22)
+    world = [sc["bg"], sc["desk"], sc["stand"], sc["bed"], shadow, dima, sock, cat, sc["front"]]
+    # камера: низко у пола, лёгкий наезд от кота к лицу Димы
+    u = sm(t, T_A13 - .2, 25.15)
+    s = lerp(1.26, 1.34, u) + .008 * math.sin(t * 2)
+    ccx = lerp(1590, 1545, u) + 4 * math.sin(t * 1.4)
+    ccy = lerp(1385, 1370, u) + 3 * math.sin(t * 1.7)
+    set_ink(s)
+    return f'<g transform="{lib.cam(ccx, ccy, s, lerp(.6, -.2, u))}">{"".join(world)}</g>', BG
+
+
+FRAMES["s13"] = s13
