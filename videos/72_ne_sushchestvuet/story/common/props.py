@@ -3335,3 +3335,555 @@ def speed_arcs(x, y, k=1.0, u=1.0, t=0.0, seed=0, n=3, ang=180.0):
         p2 = (p0[0] + math.cos(a) * L, p0[1] + math.sin(a) * L)
         o.append(line([p0, p1, p2], 6 * k, INK, taper=.8, wmin=.1, seed=73500 + seed + j, op=.85))
     return "".join(o)
+
+
+# ═════════════════════════════ РИЛС 72 «СДВГ НЕ СУЩЕСТВУЕТ» (автор — группа A) ═════════════════════════════
+# (x, y) — ЦЕНТР ДНА, если не сказано иначе; букв, цифр, шильдиков нет нигде.
+#   phone_flat(x, y, k, rot, spin, face_down=True, glow_=0)  телефон лежит на столе в перспективе (ЦЕНТР), 150×290·k до сжатия;
+#                     spin — поворот В ПЛОСКОСТИ стола (градусы, волчок), rot — наклон картинки; face_down=True — видна спинка
+#                     с камерой (экран к столу), False — тёмный экран, glow_ — свет экрана (без букв)
+#   brain_balloon(x, y, k, t, pop, string)   шарик-мозг (ЦЕНТР шара): розовый, извилины; pop 0…1 — лопнул: клочья летят,
+#                     ниточка падает вниз, облачко-штрихи; pop>=1 — только упавшая ниточка
+#   paper_tower(x, y, k, lean, flutter, t, pull, n, seed)   башня чистых листов с красной лентой крест-накрест; ширина 340·k,
+#                     высота ≈ 11·n·k (n=60 → 660); lean — наклон (градусы, + вправо), башня гнётся дугой; flutter 0…1 — верхние
+#                     листы шуршат краями; pull 0…1 — клочок с горошину выезжает из основания вправо.
+#                     paper_tower_top(x, y, k, lean, n) → верх башни в мире; scrap_pos(x, y, k, pull) → клочок в мире
+#   scrap(x, y, k, rot, seed)                клочок бумаги с горошину (ЦЕНТР), 34×26·k
+#   pull_engine(x, y, k, cough, shake, cord, t, seed)   садовый моторчик на раме 300×230·k: бак, цилиндр с рёбрами, выхлоп;
+#                     cough 0…1 — клуб дыма из выхлопа (фаза), shake 0…1 — тряска корпуса; cord 0…1 — тросик вытянут (ручка
+#                     уходит влево-вверх). engine_handle(x, y, k, cord) → ручка тросика в мире (кисть Димы)
+#   puff_cloud(x, y, k, u, seed, col)        клуб дыма/пыли (ЦЕНТР): u 0…1 растёт и тает (рвётся на клочки), сплошной с тушью
+#   brain_kid(x, y, k, expr, hop, t, look, seed)   мозг-малыш (ЦЕНТР ДНА, ножки на земле), 260×300·k: розовый, мягкие извилины,
+#                     глаза-блюдца, ножки с ботиночками. expr: "calm" | "peek" | "wide" (глаза шире, зрачки-точки, извилины дыбом) |
+#                     "scared" (дрожит, брови домиком); hop — dy подскока; look=(x, y) −1…1 — взгляд
+#   campfire(x, y, k, u, t, seed)            костёр (ЦЕНТР ДНА): кольцо камней, два бревна крест-накрест, языки пламени;
+#                     u 0 — тлеющий уголёк с искрой и струйкой дыма, 1 — полное пламя (дробное — разгорается); искры вверх.
+#                     fire_light(x, y, k, u, t) → мерцание 0…1 для света сцены
+#   log_seat(x, y, k, w, seed)               бревно-сиденье (ЦЕНТР ДНА) лежит поперёк кадра, длина w·k, торец со спилом справа
+#   hanging_sack(x, y, k, sway, drop, t, seed)   ветка (от x влево за кадр) и мешок-узелок на верёвке: (x, y) — точка подвеса
+#                     на ветке; sway — качание (градусы); drop 0…1 — верёвка лопнула, мешок падает на 420·k вниз
+#   ice_block(x, y, k, crack, split, t, n, seed)   глыба льда 320×300·k; crack 0…1 — трещины бегут; split 0…1 — глыба
+#                     распадается на n кубиков, они разъезжаются в ряд по земле. ice_row_pos(x, y, k, split, n, i) → центр кубика i
+#   ice_cube(x, y, k, rot, seed)             один ледяной кубик (ЦЕНТР), 90·k, с бликом
+#   bean_bag(x, y, k, sag, seed, col)        кресло-мешок (ЦЕНТР ДНА) 520×360·k; sag 0…1 — оплывает (ниже и шире), вмятина под
+#                     сидящим. bean_seat(x, y, k, sag) → точка, куда садить таз
+C_ICE = "#BFE3F2"
+C_ICE_SH = "#8CC2DB"
+C_ICE_HI = "#EAF8FD"
+C_BRAIN = "#F3A1B5"
+C_BRAIN_SH = "#D97893"
+C_BRAIN_LN = "#B85A78"
+C_ENGINE = "#D9483B"
+C_ENGINE_SH = "#A5322A"
+C_BAG = "#5C9A78"
+C_BAG_SH = "#41735A"
+C_BAG_HI = "#7FBF98"
+C_RIBBON = "#D9483B"
+C_RIBBON_SH = "#A5322A"
+
+
+def phone_flat(x, y, k=1.0, rot=0.0, spin=0.0, face_down=True, glow_=0.0, seed=0):
+    sd = 72000 + seed
+    sy = .46
+    a = math.radians(spin)
+    ca, sa = math.cos(a), math.sin(a)
+
+    def tr(pts):
+        out = []
+        for p in pts:
+            px, py = p[0] * ca - p[1] * sa, p[0] * sa + p[1] * ca
+            out.append((px, py * sy) + ((1,) if len(p) > 2 and p[2] else ()))
+        return out
+    body = rrect(-75, -145, 75, 145, 22)
+    edge = [(p[0], p[1] + 16 / sy * 0) for p in body]
+    o = []
+    # торец (толщина) — тот же контур, опущен на 14 px
+    o.append(shape([(q[0], q[1] + 14) for q in tr(edge)], "#1F2228", "", w=3.6, seed=sd))
+    if face_down:
+        inner = blob(tr(rrect(-60, -130, 60, 130, 16)), "#3A3F49")
+        inner += shape(tr(rrect(-52, -128, -8, -84, 12)), "#2B2E35", blob(tr(ellipse_pts(-30, -106, 12, 12, 10)), "#14161B"), w=2.4, seed=sd + 3)
+        inner += line(tr([(40, -120), (48, 110)]), 4, "#5A616E", taper=.5, wmin=.3, seed=sd + 4)
+        o.append(shape(tr(body), "#2B2E35", inner, w=4.0, seed=sd + 1))
+    else:
+        scr = "#141821" if glow_ < .02 else mix("#141821", "#DDE8FF", clamp(glow_))
+        inner = blob(tr(rrect(-64, -132, 64, 132, 14)), scr)
+        o.append(shape(tr(body), "#2B2E35", inner, w=4.0, seed=sd + 1))
+        if glow_ > .02:
+            o.append(glow(0, 0, 220, .45 * glow_, "#DDE8FF", ry=140))
+    return _tf("".join(o), x, y, k, rot)
+
+
+def _gyri(rx, ry, seed, col=None, w=3.6, wild=0.0, t=0.0):
+    """Извилины мозга: волнистые петли внутри эллипса rx×ry (центр 0,0); wild 0…1 — встают дыбом (концы дрожат наружу)."""
+    rs = _rs(seed)
+    col = col or C_BRAIN_LN
+    o = []
+    for j in range(7):
+        cy = -ry * .62 + j * ry * .21
+        half = rx * math.sqrt(max(.05, 1 - (cy / ry) ** 2)) * .8
+        pts = []
+        for i in range(9):
+            u = i / 8
+            xx = -half + 2 * half * u
+            yy = cy + ry * .07 * math.sin(u * 9 + j * 1.7 + rs.uniform(0, 1))
+            pts.append((xx, yy))
+        o.append(line(pts, w, col, taper=.5, wmin=.25, seed=seed + j))
+    o.append(line([(0, -ry * .9), (3, -ry * .3), (-2, ry * .2)], w * .9, col, taper=.6, wmin=.2, seed=seed + 20))
+    if wild > .02:   # извилины дыбом: петельки торчат над макушкой
+        for j in range(5):
+            ang = math.radians(-150 + j * 30)
+            bx, by = rx * .92 * math.cos(ang), ry * .92 * math.sin(ang)
+            L = (26 + 8 * (j % 2)) * wild
+            wob = 5 * math.sin(t * 30 + j * 2) * wild
+            o.append(line([(bx, by), (bx + math.cos(ang) * L * .6 + wob, by + math.sin(ang) * L * .6), (bx + math.cos(ang) * L - wob, by + math.sin(ang) * L)],
+                          w * 1.3, lib.INK, taper=.7, wmin=.2, seed=seed + 40 + j))
+    return "".join(o)
+
+
+def _brain_outline(rx, ry, seed, n=11):
+    rs = _rs(seed)
+    pts = []
+    for i in range(n):
+        a0 = 2 * math.pi * i / n - math.pi / 2
+        a1 = 2 * math.pi * (i + 1) / n - math.pi / 2
+        b = rs.uniform(.06, .1)
+        for m in range(4):
+            a = a0 + (a1 - a0) * m / 4
+            r = 1 + b * math.sin(math.pi * m / 4)
+            pts.append((rx * r * math.cos(a), ry * r * math.sin(a)) + ((1,) if m == 0 else ()))
+    return pts
+
+
+def brain_balloon(x, y, k=1.0, t=0.0, pop=0.0, string=200.0, seed=0):
+    sd = 72100 + seed
+    o = []
+    if pop <= 0:
+        sw = [(5 * math.sin(t * 3 + i * .8) * (i / 6), 86 + string * i / 6) for i in range(7)]
+        o.append(line(sw, 3.4, lib.INK, taper=.2, wmin=.6, seed=sd))
+        o.append(shape([(-9, 90, 1), (0, 74), (9, 90, 1)], C_BRAIN_SH, "", w=2.8, seed=sd + 1))
+        body = _brain_outline(78, 82, sd + 2)
+        inner = blob(ellipse_pts(18, 24, 60, 58, 16), C_BRAIN_SH, .55) + _gyri(70, 74, sd + 3)
+        inner += blob(ellipse_pts(-30, -40, 11, 18, 10, rot=25), "#FFFFFF")
+        o.append(shape(body, C_BRAIN, inner, w=4.2, seed=sd + 4))
+        return _tf("".join(o), x, y, k)
+    # лопнул: клочья летят по кругу и вниз, ниточка падает свернувшись
+    u = clamp(pop)
+    rs = _rs(sd + 9)
+    for j in range(9):
+        a = 2 * math.pi * j / 9 + rs.uniform(-.3, .3)
+        d = 40 + 260 * lib.ease_out(u, 2)
+        cx, cy = math.cos(a) * d, math.sin(a) * d + 380 * u * u
+        s = (1 - .55 * u) * rs.uniform(.7, 1.1)
+        if s < .08:
+            continue
+        sh = [(-22, -8, 1), (-6, -16), (16, -12, 1), (24, 2), (8, 14, 1), (-12, 10)]
+        o.append(_tf(shape(sh, C_BRAIN if j % 2 else C_BRAIN_SH, line([(-12, 0), (10, -2)], 2.6, C_BRAIN_LN, seed=sd + 30 + j), w=3.0, seed=sd + 10 + j),
+                     cx, cy, s, math.degrees(a) + 400 * u))
+    # облачко-штрихи хлопка (первая треть)
+    if u < .5:
+        v = u / .5
+        for j in range(10):
+            a = 2 * math.pi * j / 10 + .2
+            r0, r1 = 70 + 120 * v, 110 + 170 * v
+            o.append(line([(math.cos(a) * r0, math.sin(a) * r0), (math.cos(a) * r1, math.sin(a) * r1)], 7 * (1 - v), lib.INK, taper=.7, wmin=.1,
+                          seed=sd + 50 + j))
+    fy = 90 + 520 * u * u
+    pts = [(10 * math.sin(i * 1.4 + u * 6) * (1 - i / 8), fy + i * (string / 8) * (1 - .5 * u)) for i in range(9)]
+    o.append(line(pts, 3.4, lib.INK, taper=.2, wmin=.6, seed=sd))
+    o.append(shape([(-8 + pts[0][0], fy + 2, 1), (pts[0][0], fy - 12), (8 + pts[0][0], fy + 2, 1)], C_BRAIN_SH, "", w=2.6, seed=sd + 1))
+    return _tf("".join(o), x, y, k)
+
+
+SHEET_T = 11.0
+
+
+def _tower_curve(lean, n):
+    """Смещение по x и угол каждого листа: башня гнётся дугой (верх уходит сильнее)."""
+    out = []
+    for j in range(n):
+        q = j / max(1, n - 1)
+        ang = lean * q
+        dx = 0.0
+        out.append((ang, dx))
+    xs, x = [], 0.0
+    for j in range(n):
+        xs.append(x)
+        x += math.sin(math.radians(out[j][0])) * SHEET_T
+    return [(xs[j], out[j][0]) for j in range(n)]
+
+
+def paper_tower_top(x, y, k=1.0, lean=0.0, n=60):
+    c = _tower_curve(lean, n)
+    dx, ang = c[-1]
+    return (x + dx * k, y - n * SHEET_T * math.cos(math.radians(lean * .5)) * k)
+
+
+def scrap_pos(x, y, k=1.0, pull=0.0):
+    u = lib.ease_out(pull, 2)
+    return (x + (150 + 170 * u) * k, y - (16 + 60 * math.sin(math.pi * min(1, u * 1.1)) * .4) * k)
+
+
+def scrap(x, y, k=1.0, rot=0.0, seed=0):
+    sd = 72300 + seed
+    pts = [(-17, -12, 1), (-4, -14), (17, -11, 1), (15, 2), (18, 12, 1), (2, 13), (-16, 12, 1), (-14, 0)]
+    inn = line([(-9, -2), (9, -3)], 2.2, "#B8B0A0", taper=.4, wmin=.4, seed=sd + 1)
+    return _tf(shape(pts, "#FFFFFF", inn, w=2.8, seed=sd), x, y, k, rot)
+
+
+def paper_tower(x, y, k=1.0, lean=0.0, flutter=0.0, t=0.0, pull=0.0, n=60, seed=0, ribbon=True):
+    sd = 72200 + seed
+    rs = _rs(sd)
+    W2 = 170.0
+    curve = _tower_curve(lean, n)
+    o = []
+    # тень у основания
+    o.append(blob(ellipse_pts(0, 4, 210, 22, 16), "#000000", .12))
+    # листы снизу вверх: торец-полоска 340×SHEET_T с лёгким разбросом
+    mid = n // 2
+    for j in range(n):
+        dx, ang = curve[j]
+        jitter = rs.uniform(-7, 7)
+        yb = -j * SHEET_T
+        fl = 0.0
+        if flutter > 0 and j > n - 9:
+            fl = flutter * (j - (n - 9)) / 9 * 9 * math.sin(t * 22 + j * 1.3)
+        col = "#FFFFFF" if j % 2 else "#F4F1EA"
+        pts = [(-W2 + jitter, yb, 1), (W2 + jitter, yb + fl * .2, 1), (W2 + jitter + fl * .4, yb - SHEET_T - fl, 1), (-W2 + jitter, yb - SHEET_T, 1)]
+        g = blob(pts, col) + line([(-W2 + jitter + 4, yb - 1), (W2 + jitter - 4, yb - 1 + fl * .2)], 1.6, "#C9C2B2", taper=.1, wmin=.6, seed=sd + j)
+        o.append(f'<g transform="translate({f(dx)} 0) rotate({f(ang)} 0 {f(yb)})">{g}</g>')
+    # верхний лист (крышка) в перспективе и контур башни
+    dx, ang = curve[-1]
+    ytop = -n * SHEET_T
+    top = [(-W2 - 6, ytop, 1), (W2 + 6, ytop, 1), (W2 - 14, ytop - 38, 1), (-W2 + 26, ytop - 38, 1)]
+    o.append(f'<g transform="translate({f(dx)} 0) rotate({f(ang)} 0 {f(ytop)})">' + shape(top, "#FFFFFF",
+             line([(-W2 + 40, ytop - 14), (W2 - 50, ytop - 18)], 2.0, "#D8D2C4", taper=.3, wmin=.4, seed=sd + 90) +
+             line([(-W2 + 60, ytop - 26), (W2 - 90, ytop - 28)], 2.0, "#D8D2C4", taper=.3, wmin=.4, seed=sd + 91), w=3.6, seed=sd + 92) + "</g>")
+    # боковые контуры тушью по дуге
+    lft = [(curve[j][0] - W2 + (math.sin(math.radians(curve[j][1])) * 0), -j * SHEET_T) for j in range(0, n, 4)] + [(curve[-1][0] - W2, ytop)]
+    rgt = [(curve[j][0] + W2, -j * SHEET_T) for j in range(0, n, 4)] + [(curve[-1][0] + W2, ytop)]
+    o.append(line(lft, 4.6, lib.INK, taper=.15, wmin=.6, seed=sd + 93))
+    o.append(line(rgt, 4.6, lib.INK, taper=.15, wmin=.6, seed=sd + 94))
+    o.append(line([(-W2 - 4, 0), (W2 + 4, 0)], 4.6, lib.INK, taper=.15, wmin=.6, seed=sd + 95))
+    # лента: вертикальная по середине и горизонтальная посередине высоты
+    if ribbon:
+        vb = [(curve[j][0] - 18, -j * SHEET_T) for j in range(0, n, 3)] + [(curve[-1][0] - 18, ytop)]
+        vr = [(curve[-1][0] + 18, ytop)] + [(curve[j][0] + 18, -j * SHEET_T) for j in range(n - 1, -1, -3)]
+        o.append(shape(vb + vr, C_RIBBON, blob([(p[0] + 26, p[1]) for p in vb] + [(p[0] + 8, p[1]) for p in vr], C_RIBBON_SH, .6), w=3.4, seed=sd + 96))
+        yh = -mid * SHEET_T
+        dxm = curve[mid][0]
+        hb = [(dxm - W2 - 3, yh + 18, 1), (dxm + W2 + 3, yh + 18, 1), (dxm + W2 + 3, yh - 18, 1), (dxm - W2 - 3, yh - 18, 1)]
+        o.append(shape(hb, C_RIBBON, blob([(dxm - W2, yh + 6), (dxm + W2, yh + 6), (dxm + W2, yh + 18), (dxm - W2, yh + 18)], C_RIBBON_SH, .7), w=3.4, seed=sd + 97))
+        # бантик на пересечении
+        bx, by = dxm, yh
+        for sx in (-1, 1):
+            o.append(shape([(bx, by, 1), (bx + sx * 46, by - 30), (bx + sx * 56, by + 4), (bx + sx * 40, by + 26)], C_RIBBON,
+                           blob([(bx, by), (bx + sx * 40, by + 10), (bx + sx * 40, by + 26)], C_RIBBON_SH, .7), w=3.2, seed=sd + 98 + sx))
+        o.append(shape(ellipse_pts(bx, by, 15, 14, 10), C_RIBBON_SH, "", w=3.0, seed=sd + 101))
+    g = "".join(o)
+    if pull > 0:
+        sx_, sy_ = scrap_pos(0, 0, 1.0, pull)
+        g += scrap(sx_, sy_, 1.4, -20 * pull, seed)
+    return _tf(g, x, y, k)
+
+
+def engine_handle(x, y, k=1.0, cord=0.0):
+    hx, hy = -96.0, -150.0
+    L = 300 * clamp(cord)
+    a = math.radians(-148)
+    return (x + (hx + math.cos(a) * L) * k, y + (hy + math.sin(a) * L) * k)
+
+
+def puff_cloud(x, y, k=1.0, u=1.0, seed=0, col="#D3D7DE"):
+    if u <= 0.01 or u >= 1:
+        return ""
+    sd = 72400 + seed
+    rs = _rs(sd)
+    o = []
+    grow = lib.ease_out(min(1, u / .45), 2)
+    fade = 1 - lib.ease_in(max(0, (u - .45) / .55), 2)
+    for j in range(5):
+        a = 2 * math.pi * j / 5 + rs.uniform(-.4, .4)
+        d = 30 * grow + 40 * (1 - fade)
+        r = (30 + rs.uniform(-6, 10)) * grow * (.35 + .65 * fade)
+        if r < 3:
+            continue
+        cx, cy = math.cos(a) * d, math.sin(a) * d * .7 - 20 * (1 - fade)
+        o.append(shape(_puff_pts(2 * r, 2 * r * .85, sd + j, n=6, bump=(.08, .16)), col, "", w=3.6 * (.5 + .5 * fade), seed=sd + 10 + j) if r > 8 else
+                 blob(ellipse_pts(cx, cy, r, r, 8), col))
+        o[-1] = f'<g transform="translate({f(cx)} {f(cy)})">{o[-1]}</g>' if r > 8 else o[-1]
+    return _tf("".join(o), x, y, k)
+
+
+def pull_engine(x, y, k=1.0, cough=0.0, shake=0.0, cord=0.0, t=0.0, seed=0):
+    sd = 72500 + seed
+    jx = shake * 7 * math.sin(t * 61)
+    jy = shake * 5 * math.cos(t * 47)
+    o = []
+    o.append(blob(ellipse_pts(0, 6, 190, 20, 16), "#000000", .14))
+    g = []
+    # рама-салазки
+    g.append(line([(-150, -6), (-140, 0), (150, 0), (160, -8)], 9, "#3B4048", taper=.05, wmin=.8, seed=sd))
+    g.append(line([(-110, 0), (-96, -50)], 8, "#3B4048", taper=.05, wmin=.8, seed=sd + 1))
+    g.append(line([(110, 0), (96, -50)], 8, "#3B4048", taper=.05, wmin=.8, seed=sd + 2))
+    # корпус-кожух
+    body = rrect(-120, -170, 110, -40, 26)
+    inn = blob(rrect(-120, -90, 110, -40, 20), C_ENGINE_SH, .8) + line([(-96, -150), (60, -154)], 4, "#F08A7C", taper=.4, wmin=.3, seed=sd + 3)
+    g.append(shape(body, C_ENGINE, inn, w=4.4, seed=sd + 4))
+    # цилиндр с рёбрами справа
+    cyl = rrect(90, -160, 170, -60, 12)
+    fins = "".join(line([(92, -150 + 16 * j), (168, -150 + 16 * j)], 3.2, "#868B96", taper=.1, wmin=.7, seed=sd + 10 + j) for j in range(6))
+    g.append(shape(cyl, C_METAL, fins, w=4.0, seed=sd + 5))
+    # бак сверху
+    g.append(shape(rrect(-70, -222, 50, -166, 16), "#E9C23E", blob(rrect(-70, -190, 50, -166, 12), "#C99A1E", .8), w=4.0, seed=sd + 6))
+    g.append(shape(ellipse_pts(-20, -226, 16, 8, 10), "#3B4048", "", w=3.0, seed=sd + 7))
+    # выхлоп справа вверху
+    g.append(shape(rrect(170, -150, 214, -124, 8), "#5A616E", "", w=3.4, seed=sd + 8))
+    # шкив стартера слева
+    g.append(shape(ellipse_pts(-104, -118, 38, 40, 16), "#3B4048", blob(ellipse_pts(-104, -118, 14, 14, 10), "#14161B"), w=4.0, seed=sd + 9))
+    o.append(f'<g transform="translate({f(jx)} {f(jy)})">{"".join(g)}</g>')
+    # тросик: от шкива к ручке
+    hx, hy = engine_handle(0, 0, 1.0, cord)
+    sag = 14 * (1 - clamp(cord))
+    o.append(line([(-104 + jx, -118 + jy), ((-104 + hx) / 2, (-118 + hy) / 2 + sag), (hx, hy)], 3.6, "#2B2E35", taper=.1, wmin=.7, seed=sd + 20))
+    a = math.radians(-148 if cord > .02 else -100)
+    ca, sa = math.cos(a), math.sin(a)
+    hp = [(hx - sa * 30, hy + ca * 30), (hx + sa * 30, hy - ca * 30)]
+    o.append(line(hp, 18, lib.INK, taper=.05, wmin=.9, seed=sd + 21))
+    o.append(line(hp, 12, "#E9C23E", taper=.05, wmin=.9, seed=sd + 22))
+    # кашель: клуб дыма из выхлопа
+    if 0 < cough < 1:
+        o.append(puff_cloud(250 + 120 * cough, -150 - 90 * cough, 1.2 + .8 * cough, cough, seed=sd % 97, col="#BFC4CC"))
+    return _tf("".join(o), x, y, k)
+
+
+def brain_kid(x, y, k=1.0, expr="calm", hop=0.0, t=0.0, look=(0.0, 0.0), seed=0, blink=0.0):
+    sd = 72600 + seed
+    wide = expr in ("wide", "scared")
+    trem = (3 * math.sin(t * 55)) if expr == "scared" else 0.0
+    o = []
+    o.append(blob(ellipse_pts(0, 4, 100 * (1 + hop / 400), 14, 14), "#000000", .13))
+    by = -120 + hop
+    # ножки с ботиночками
+    for sx in (-1, 1):
+        lx = sx * 42
+        o.append(line([(lx, by + 70), (lx + sx * 4, -16 + hop * .3)], 9, lib.INK, taper=.05, wmin=.9, seed=sd + sx))
+        o.append(shape(ellipse_pts(lx + sx * 16, -10 + hop * .3, 30, 15, 12), "#4F78B5", blob(ellipse_pts(lx + sx * 18, -4 + hop * .3, 22, 7, 10), "#36588C"), w=3.6,
+                       seed=sd + 5 + sx))
+    # тело-мозг
+    body = _brain_outline(130, 104, sd + 10)
+    inner = blob(ellipse_pts(24, 34, 100, 70, 16), C_BRAIN_SH, .5) + _gyri(118, 92, sd + 11, wild=1.0 if wide else 0.0, t=t)
+    o.append(f'<g transform="translate({f(trem)} {f(by)})">' + shape(body, C_BRAIN, inner, w=4.6, seed=sd + 12))
+    # глаза-блюдца
+    er = 40 if wide else 32
+    lx, ly = look
+    for sx in (-1, 1):
+        ex, ey = sx * 46, 6
+        if blink > .9 and not wide:
+            o.append(line([(ex - er, ey), (ex, ey + 8), (ex + er, ey)], 4.6, lib.INK, taper=.4, wmin=.3, seed=sd + 20 + sx))
+            continue
+        pr = 7 if wide else 15
+        ins = (f'<circle cx="{f(ex + lx * er * .4)}" cy="{f(ey + ly * er * .4)}" r="{pr}" fill="#14161B"/>'
+               f'<circle cx="{f(ex + lx * er * .4 - pr * .4)}" cy="{f(ey + ly * er * .4 - pr * .5)}" r="{max(2.5, pr * .35):.1f}" fill="#FFFFFF"/>')
+        o.append(shape(ellipse_pts(ex, ey, er, er * 1.08, 16), "#FFFFFF", ins, w=4.2, seed=sd + 22 + sx))
+    # брови и рот
+    if expr == "scared":
+        o.append(line([(-80, -46), (-46, -54), (-22, -66)], 4.6, lib.INK, seed=sd + 30))
+        o.append(line([(22, -66), (46, -54), (80, -46)], 4.6, lib.INK, seed=sd + 31))
+        o.append(line([(-20, 66), (-8, 60), (6, 66), (20, 60)], 4.0, lib.INK, taper=.3, wmin=.4, seed=sd + 32))
+    elif expr == "wide":
+        o.append(shape(ellipse_pts(0, 68, 11, 13, 10), "#5a2b33", "", w=3.6, seed=sd + 33))
+    elif expr == "peek":
+        o.append(line([(-14, 62), (0, 66), (14, 62)], 4.0, lib.INK, taper=.3, wmin=.4, seed=sd + 34))
+    else:
+        o.append(line([(-18, 60), (0, 70), (18, 60)], 4.0, lib.INK, taper=.3, wmin=.4, seed=sd + 35))
+    o.append(blob(ellipse_pts(-86, 44, 16, 9, 10), "#E98A86", .5) + blob(ellipse_pts(86, 44, 16, 9, 10), "#E98A86", .5))
+    o.append("</g>")
+    return _tf("".join(o), x, y, k)
+
+
+def fire_light(x, y, k=1.0, u=1.0, t=0.0):
+    return clamp(u) * (.86 + .08 * math.sin(t * 13) + .06 * math.sin(t * 29 + 1.3))
+
+
+def _flame_tongue(h, w, t, ph, col, core):
+    sw = .18 * w * math.sin(t * 9 + ph) + .1 * w * math.sin(t * 17 + ph * 2)
+    tip = (sw, -h)
+    pts = [(-w * .5, 0), (-w * .55, -h * .3), (-w * .3 + sw * .3, -h * .62), tip + (1,), (w * .32 + sw * .4, -h * .58), (w * .55, -h * .28), (w * .5, 0)]
+    inn = [(-w * .28, 0), (-w * .26, -h * .3), (sw * .6, -h * .62, 1), (w * .26, -h * .3), (w * .28, 0)]
+    return shape(pts, col, blob(inn, core), w=3.6, seed=int(ph * 100) % 997 + 72700, ink_color="#7a2a10", var=.2)
+
+
+def campfire(x, y, k=1.0, u=1.0, t=0.0, seed=0, stones=True):
+    sd = 72700 + seed
+    rs = _rs(sd)
+    o = []
+    # камни кольцом (дальние — сначала)
+    if stones:
+        ring_ = []
+        for j in range(11):
+            a = 2 * math.pi * j / 11 + .2
+            ring_.append((math.sin(a), 150 * math.cos(a), 52 * math.sin(a), j))
+        for sa, cx, cy, j in sorted(ring_, key=lambda r: r[2]):
+            if cy > 0:
+                continue
+            s = 1 + .1 * rs.uniform(-1, 1)
+            o.append(shape(ellipse_pts(cx, cy, 34 * s, 22 * s, 12), "#8A8F99", blob(ellipse_pts(cx + 6, cy + 8, 26 * s, 12 * s, 10), "#5F646E", .8), w=3.8, seed=sd + j))
+    # угли под брёвнами
+    glow_u = clamp(.25 + .75 * u)
+    o.append(shape(ellipse_pts(0, -6, 96, 26, 14), mix("#3B2A22", "#C2491E", glow_u), blob(ellipse_pts(-10, -10, 60, 12, 12), mix("#5A3524", "#FFB04A", glow_u), .9),
+                   w=3.6, seed=sd + 20))
+    # брёвна крест-накрест
+    for sx, sd2 in ((-1, 21), (1, 22)):
+        lg = [(-120 * sx, 6, 1), (-128 * sx, -18, 1), (40 * sx, -62, 1), (54 * sx, -40, 1)]
+        o.append(shape(lg, C_WOOD_SH, line([(-100 * sx, -10), (30 * sx, -48)], 3, "#5E3A1E", taper=.4, wmin=.3, seed=sd + sd2 + 50), w=4.2, seed=sd + sd2))
+        o.append(shape(ellipse_pts(-124 * sx, -6, 14, 14, 10), C_WOOD_HI, blob(ellipse_pts(-124 * sx, -6, 6, 6, 8), "#7A4A26"), w=3.4, seed=sd + sd2 + 5))
+    # пламя / тлеющий уголёк
+    if u < .15:
+        e = .5 + .5 * math.sin(t * 7)
+        o.append(blob(ellipse_pts(4, -40, 9 + 2 * e, 7 + 2 * e, 10), mix("#C2491E", "#FFD24A", e)))
+        o.append(blob(ellipse_pts(4, -40, 4, 3, 8), "#FFF2C0"))
+        o.append(smoke_curls(6, -50, .7, .8, t, seed=sd % 50, col="#6F7787", n=1))
+    else:
+        uu = clamp((u - .15) / .85)
+        H = 300 * (.25 + .75 * uu)
+        tongues = [(-46, .6, .55, 0.3), (40, .7, .5, 1.7), (-12, 1.0, .7, 2.9), (14, .82, .45, 4.1)]
+        for dx, hh, ww, ph in tongues:
+            o.append(f'<g transform="translate({f(dx * (.5 + .5 * uu))} -30)">' + _flame_tongue(H * hh, 150 * ww * (.5 + .5 * uu), t, ph, "#F28C28", "#FFD24A") + "</g>")
+        o.append(f'<g transform="translate(0 -30)">' + _flame_tongue(H * .55, 80 * (.5 + .5 * uu), t * 1.3, 5.3, "#FFC23A", "#FFF2C0") + "</g>")
+    # искры вверх
+    if u > .05:
+        for j in range(7):
+            ph = (t * .9 + j / 7 + rs.uniform(0, .1)) % 1
+            sx = 40 * math.sin(j * 2.1 + t * 2) * ph + rs.uniform(-60, 60)
+            sy = -60 - 420 * ph * (.4 + .6 * u)
+            r = 5 * (1 - ph) * clamp(u * 2)
+            if r > .8:
+                o.append(blob(ellipse_pts(sx, sy, r, r, 8), "#FFD24A"))
+    # ближние камни
+    if stones:
+        for sa, cx, cy, j in sorted(ring_, key=lambda r: r[2]):
+            if cy <= 0:
+                continue
+            s = 1 + .1 * rs.uniform(-1, 1)
+            o.append(shape(ellipse_pts(cx, cy, 38 * s, 24 * s, 12), "#8A8F99", blob(ellipse_pts(cx + 6, cy + 8, 28 * s, 13 * s, 10), "#5F646E", .8) +
+                           blob(ellipse_pts(cx - 8, cy - 10, 16 * s, 7 * s, 8), mix("#8A8F99", "#FFB04A", .4 * u)), w=3.8, seed=sd + j + 30))
+    return _tf("".join(o), x, y, k)
+
+
+def log_seat(x, y, k=1.0, w=700.0, seed=0):
+    sd = 72800 + seed
+    hw = w / 2
+    body = [(-hw, -10, 1), (-hw + 10, -96, 1), (hw - 30, -100, 1), (hw - 30, -6, 1)]
+    bark = "".join(line([(-hw + 40 + 90 * j, -88 + 6 * (j % 2)), (-hw + 80 + 90 * j, -60), (-hw + 60 + 90 * j, -20)], 3.2, "#5E3A1E", taper=.6, wmin=.2,
+                        seed=sd + j) for j in range(int(w / 90)))
+    o = [blob(ellipse_pts(0, 4, hw, 16, 16), "#000000", .18)]
+    o.append(shape(body, C_WOOD_SH, blob([(-hw, -60), (hw, -60), (hw, -6), (-hw, -6)], "#6E4626", .8) + bark, w=4.4, seed=sd + 50))
+    ins = "".join(blob(ellipse_pts(hw - 30, -53, 38 - 9 * j, 44 - 10 * j, 14), mix(C_WOOD_HI, "#E9C99A", j % 2)) for j in range(4))
+    o.append(shape(ellipse_pts(hw - 30, -53, 40, 47, 16), C_WOOD_HI, ins, w=4.2, seed=sd + 51))
+    return _tf("".join(o), x, y, k)
+
+
+def hanging_sack(x, y, k=1.0, sway=0.0, drop=0.0, t=0.0, seed=0):
+    sd = 72900 + seed
+    o = []
+    # ветка уходит влево за кадр, сучок вправо
+    o.append(line([(-900, -40), (-400, -20), (0, 0), (160, 14)], 30, C_WOOD_SH, taper=.15, wmin=.4, seed=sd))
+    o.append(line([(-900, -40), (-400, -20), (0, 0), (160, 14)], 6, lib.INK, taper=.15, wmin=.4, seed=sd + 1, op=.0))
+    o.append(line([(-300, -24), (-250, -90), (-210, -110)], 12, C_WOOD_SH, taper=.6, wmin=.2, seed=sd + 2))
+    for j, (lx, ly) in enumerate(((-240, -100), (-200, -112), (60, 10))):
+        o.append(shape(ellipse_pts(lx, ly - 18, 16, 30, 10, rot=-30 + 50 * j), C_GREEN, line([(lx, ly), (lx, ly - 36)], 2, C_GREEN_SH, seed=sd + 40 + j), w=3.2, seed=sd + 30 + j))
+    rope_len = 170.0
+    dy = 0.0
+    if drop > 0:
+        dy = 420 * lib.ease_in(clamp(drop), 2)
+    a = math.radians(sway + (0 if drop <= 0 else 14 * drop))
+    end = (math.sin(a) * rope_len, math.cos(a) * rope_len + dy)
+    if drop <= 0:
+        o.append(line([(0, 0), (end[0] * .5, end[1] * .5 + 4), end], 4, "#8A6A3E", taper=.05, wmin=.8, seed=sd + 3))
+    else:
+        o.append(line([(0, 0), (6 * math.sin(t * 9), 40)], 4, "#8A6A3E", taper=.4, wmin=.5, seed=sd + 3))
+    # мешок-узелок: тело ниже узла
+    sack = [(-70, 40, 1), (-96, 110), (-86, 170), (-40, 196), (40, 196), (86, 170), (96, 110), (70, 40, 1), (30, 18), (-30, 18)]
+    inn = blob([(10, 40), (96, 100), (90, 190), (20, 196)], "#A88A5C", .7) + line([(-40, 70), (-20, 150)], 3, "#8A6A3E", taper=.6, wmin=.2, seed=sd + 6)
+    s = shape(sack, "#C9A874", inn, w=4.4, seed=sd + 4)
+    s += shape([(-40, 22, 1), (-56, -18), (-10, 4), (10, 4), (56, -18), (40, 22, 1)], "#C9A874", "", w=3.8, seed=sd + 5)   # ушки узла
+    s += shape(ellipse_pts(0, 18, 20, 12, 10), "#A88A5C", "", w=3.4, seed=sd + 7)
+    o.append(f'<g transform="translate({f(end[0])} {f(end[1])}) rotate({f(-math.degrees(a) * .6)})">{s}</g>')
+    return _tf("".join(o), x, y, k)
+
+
+def ice_cube(x, y, k=1.0, rot=0.0, seed=0):
+    sd = 73000 + seed
+    s = 45
+    front = [(-s, -s + 14, 1), (s - 14, -s + 14, 1), (s - 14, s, 1), (-s, s, 1)]
+    top = [(-s, -s + 14, 1), (-s + 14, -s, 1), (s, -s, 1), (s - 14, -s + 14, 1)]
+    side = [(s - 14, -s + 14, 1), (s, -s, 1), (s, s - 14, 1), (s - 14, s, 1)]
+    o = shape(side, C_ICE_SH, "", w=3.2, seed=sd + 1) + shape(top, C_ICE_HI, "", w=3.2, seed=sd + 2)
+    o += shape(front, C_ICE, line([(-s + 10, -s + 26), (-s + 10, s - 18)], 4, "#FFFFFF", taper=.4, wmin=.3, seed=sd + 3) +
+               line([(-s + 22, -s + 24), (-s + 34, -s + 24)], 3, "#FFFFFF", taper=.3, wmin=.4, seed=sd + 4), w=3.6, seed=sd)
+    return _tf(o, x, y, k, rot)
+
+
+def ice_row_pos(x, y, k=1.0, split=0.0, n=5, i=0):
+    u = lib.ease_out(clamp(split), 3)
+    cols, rows = 3, 2
+    r_, c_ = divmod(i, cols)
+    sx, sy = -100 + 100 * c_, -200 + 110 * r_ if n > 3 else -100
+    tx, ty = (i - (n - 1) / 2) * 120, -48
+    hop_ = -60 * math.sin(math.pi * u)
+    return (x + (sx + (tx - sx) * u) * k, y + (sy + (ty - sy) * u + hop_) * k)
+
+
+def ice_block(x, y, k=1.0, crack=0.0, split=0.0, t=0.0, n=5, seed=0):
+    sd = 73100 + seed
+    o = []
+    if split <= 0.02:
+        o.append(blob(ellipse_pts(0, 6, 190, 20, 16), "#000000", .14))
+        front = [(-160, -250, 1), (110, -250, 1), (120, 0, 1), (-170, 0, 1)]
+        top = [(-160, -250, 1), (-110, -300, 1), (160, -300, 1), (110, -250, 1)]
+        side = [(110, -250, 1), (160, -300, 1), (170, -50, 1), (120, 0, 1)]
+        inn = line([(-140, -230), (-136, -40)], 6, "#FFFFFF", taper=.4, wmin=.3, seed=sd + 1) + line([(-120, -232), (-80, -232)], 4, "#FFFFFF", taper=.3, wmin=.4, seed=sd + 2)
+        inn += blob([(-40, -160), (40, -170), (60, -90), (-20, -70)], C_ICE_SH, .35)
+        if crack > 0:
+            rs = _rs(sd + 5)
+            for j in range(4):
+                p = [(-25 + 20 * j, -250)]
+                L = clamp(crack * 1.4 - j * .12)
+                for m in range(1, 7):
+                    if m / 6 > L:
+                        break
+                    p.append((p[-1][0] + rs.uniform(-34, 34), -250 + 250 * m / 6))
+                if len(p) > 1:
+                    inn += line(p, 5, "#3F7FA0", taper=.3, wmin=.3, seed=sd + 10 + j)
+        o.append(shape(side, C_ICE_SH, "", w=4.0, seed=sd + 3) + shape(top, C_ICE_HI, "", w=4.0, seed=sd + 4) + shape(front, C_ICE, inn, w=4.6, seed=sd))
+        if crack > .5:      # колкие искорки льда
+            for j in range(4):
+                a = math.radians(-120 + 30 * j)
+                r0 = 200 + 40 * math.sin(t * 20 + j)
+                o.append(line([(math.cos(a) * r0, -150 + math.sin(a) * r0), (math.cos(a) * (r0 + 40), -150 + math.sin(a) * (r0 + 40))], 5, "#3F7FA0", taper=.6,
+                              wmin=.1, seed=sd + 30 + j))
+        return _tf("".join(o), x, y, k)
+    for i in range(n):
+        cx, cy = ice_row_pos(0, 0, 1.0, split, n, i)
+        o.append(blob(ellipse_pts(cx, -2, 50, 9, 10), "#000000", .12 * clamp(split * 2)))
+        o.append(ice_cube(cx, cy, 1.25, (1 - clamp(split)) * (20 - 9 * i), seed=seed * 10 + i))
+    return _tf("".join(o), x, y, k)
+
+
+def bean_seat(x, y, k=1.0, sag=0.0):
+    return (x - 20 * k, y - (190 - 50 * sag) * k)
+
+
+def bean_bag(x, y, k=1.0, sag=0.0, seed=0, col=None):
+    sd = 73200 + seed
+    c, csh, chi = col or (C_BAG, C_BAG_SH, C_BAG_HI)
+    w = 260 * (1 + .14 * sag)
+    h = 360 * (1 - .18 * sag)
+    pts = [(-w, -6, 1), (-w - 14, -h * .32), (-w * .78, -h * .72), (-w * .3, -h * .98), (w * .2, -h), (w * .7, -h * .84), (w + 10, -h * .4), (w, -6, 1)]
+    inn = blob([(-w * .2, -h * .55), (w * .5, -h * .6), (w + 30, -h * .3), (w + 30, 10), (-w * .1, 10)], csh, .75)
+    inn += blob(ellipse_pts(-w * .25, -h * .58, w * .5, h * .2, 16), mix(csh, c, .3), .7)      # вмятина под сидящим
+    inn += line([(-w * .55, -h * .78), (-w * .35, -h * .5), (-w * .4, -h * .2)], 3.4, csh, taper=.6, wmin=.2, seed=sd + 1)
+    inn += line([(w * .4, -h * .8), (w * .55, -h * .5)], 3.4, csh, taper=.6, wmin=.2, seed=sd + 2)
+    inn += blob(ellipse_pts(-w * .5, -h * .82, 40, 16, 10, rot=-20), chi, .8)
+    o = blob(ellipse_pts(0, 4, w * 1.05, 22, 16), "#000000", .16) + shape(pts, c, inn, w=4.6, seed=sd)
+    return _tf(o, x, y, k)
