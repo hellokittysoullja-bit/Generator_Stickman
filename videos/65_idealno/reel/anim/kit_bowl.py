@@ -29,7 +29,8 @@ def P(pts):
 
 CAT_REG = P([(3, 270), (555, 270), (555, 500), (590, 560), (590, 660), (505, 720), (505, 935), (3, 935)])   # x≥3: save_layer берёт поле 6 px
 MARKS_BOX = tuple(int(v * K) for v in (555, 395, 622, 497))
-POST_L = P([(288, 822), (372, 822), (374, 1018), (286, 1018)])
+POST_L = P([(318, 852), (338, 852), (340, 863), (340, 984), (369, 991), (369, 1017), (289, 1017), (289, 991),
+             (317, 984), (317, 863)])   # столбик: шар, стойка, основание — узко, без меха
 ROPE_BOX = tuple(int(v * K) for v in (330, 815, 728, 918))
 EXHIBIT = P([(390, 905), (520, 905), (528, 798), (782, 798), (782, 1112), (348, 1112), (348, 1022), (390, 1000)])
 PAW_R = (467, 873, 38, 38)                # правая лапа кота на краю миски (вид): остаётся коту
@@ -62,13 +63,13 @@ def main():
     g = A.mean(2); sat = A.max(2) - A.min(2)
     non = ((g < 225) | (sat > 34)).astype(np.uint8)
     r, gg, bb = A[..., 0], A[..., 1], A[..., 2]
-    red = ((r > 120) & (r - gg > 50) & (r - bb > 40)).astype(np.uint8)
+    red = ((r > 110) & (r - gg > 60) & (bb > 0.7 * gg) & (r - bb > 40)).astype(np.uint8)   # канат, не оранжевые подушечки
     # экспонат спереди: столбики, канат, миска, табличка, крошки
     rope = cv2.morphologyEx(red & box_mask(A.shape, ROPE_BOX), cv2.MORPH_CLOSE, np.ones((9, 9), np.uint8))
     rope = cv2.dilate(rope, np.ones((9, 9), np.uint8)) & cv2.dilate(non, np.ones((3, 3), np.uint8))
     pl = poly_mask(A.shape, POST_L)
-    post = cv2.morphologyEx(((g > 100) & (g < 236) & (pl > 0)).astype(np.uint8), cv2.MORPH_OPEN, np.ones((5, 5), np.uint8))
-    post = cv2.dilate(anim.keep_attached(post), np.ones((15, 15), np.uint8)) & non & pl   # металл + контур тушью, без меха
+    cv2.circle(pl, (int(328 * K), int(841 * K)), int(15 * K), 1, -1)      # шар столбика
+    post = fill_holes(cv2.morphologyEx(non & pl, cv2.MORPH_CLOSE, np.ones((9, 9), np.uint8))) & pl
     paw = np.zeros(A.shape[:2], np.uint8)
     cx, cy, rx, ry = PAW_R; cv2.ellipse(paw, (int(cx * K), int(cy * K)), (int(rx * K), int(ry * K)), 0, 0, 360, 1, -1)
     exr = poly_mask(A.shape, EXHIBIT) & (1 - paw)
