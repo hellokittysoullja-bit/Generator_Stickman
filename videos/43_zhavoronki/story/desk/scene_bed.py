@@ -523,7 +523,7 @@ def s11(t):
 def s13(t):
     tv = T_VOSEM
     st = clamp((t - 23.24) / .55)
-    arms = .5 + .5 * back_out(st, 1.3) - .1 * smooth(tv + .1, tv + .6, t)
+    arms = .78 + .22 * back_out(st, 1.3) - .1 * smooth(tv + .1, tv + .6, t)
     arms += .04 * math.sin(t * 5.2) * st
     eyes_open = smooth(23.85, 24.1, t)
     look = smooth(tv + .02, tv + .2, t)
