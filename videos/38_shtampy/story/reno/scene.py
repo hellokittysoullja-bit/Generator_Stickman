@@ -571,10 +571,10 @@ def s14(t):
         for j in range(3):
             y = line_y(0) - 30 + j * 14
             x = tip[0] - 40 - 30 * j
-            mid = line([(max(x - 110, SH_X0 + 20), y), (max(x, SH_X0 + 40), y)], 4.2, WS.RED, seed=6300 + j, op=1 - a, taper=.3, wmin=.4)
+            mid += line([(max(x - 110, SH_X0 + 20), y), (max(x, SH_X0 + 40), y)], 4.2, WS.RED, seed=6300 + j, op=1 - a, taper=.3, wmin=.4)
     if t > STK[1]:
         front += sparkle_pop(SH_X0 + 200, line_y(0) - 60, clamp((t - STK[1]) / .45))
-    w += layers(d, msvg, front)
+    w += layers(d, mid, front)
     k = ease_io(clamp((t - 26.4) / 2.4))
     s = 1.95 * (1 + .06 * k) * (1 + punch(t, STK[0], .06, .05, .32))
     sh_ = bump(t, STK[0], .3)
