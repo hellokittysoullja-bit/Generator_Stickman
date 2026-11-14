@@ -912,3 +912,444 @@ def z_mark(x, y, k=1.0, u=1.0, col=None):
     c = col or "#3F6FB0"
     s = k * (.5 + .5 * clamp(u))
     return line([(x - 20 * s, y - 22 * s), (x + 20 * s, y - 22 * s), (x - 20 * s, y + 22 * s), (x + 22 * s, y + 22 * s)], 8 * s, c, taper=.15, wmin=.5, seed=9995)
+
+
+# ═══════════════════════════════ МЕДИТАЦИЯ (рилс 62) ═══════════════════════════════
+
+def pop(t, t0, dur=None, amp=0.32, freq=2.4, damp=6.5):
+    """(sx, sy) пружинного выскока после t0: масштаб 0 → перелёт → 1, сначала сжатие по вертикали, затем вытяжка, отскок."""
+    u = t - t0
+    if u <= 0:
+        return 0.0, 0.0
+    if dur is not None:
+        u = u * 0.9 / max(dur, 1e-3)
+    s = max(0.0, lib.spring(u, freq * 0.72, damp))
+    e = -amp * math.exp(-damp * 0.8 * u) * math.cos(2 * math.pi * freq * u)
+    return s * (1 - 0.6 * e), s * (1 + e)
+
+
+def squash(t, t0, amp=0.25, freq=3.0, damp=7.0):
+    """(sx, sy) удара: сплющивание и отскок с затуханием; до t0 — (1, 1)."""
+    u = t - t0
+    if u <= 0:
+        return 1.0, 1.0
+    e = amp * math.exp(-damp * u) * math.cos(2 * math.pi * freq * u)
+    return 1 + 0.6 * e, 1 - e
+
+
+def hop(t, t0, h=60.0, dur=0.32):
+    """dy подскока (вверх — отрицательный) по параболе на [t0, t0 + dur]."""
+    u = (t - t0) / dur
+    if u <= 0 or u >= 1:
+        return 0.0
+    return -4 * h * u * (1 - u)
+
+
+def unpop(t, t0, dur=0.22):
+    """Масштаб исчезновения: короткий вдох (до 1.12), затем 0."""
+    u = (t - t0) / dur
+    if u <= 0:
+        return 1.0
+    if u >= 1:
+        return 0.0
+    return (1 + 0.5 * math.sin(math.pi * min(u / .4, 1) * .5) * .24) * (1 - lib.ease_in(u, 3))
+
+
+def _puff_pts(w, h, seed, n=9, bump=(0.12, 0.2), cy=0.0):
+    rs = _rs(seed)
+    pts = []
+    for i in range(n):
+        a0 = 2 * math.pi * i / n
+        a1 = 2 * math.pi * (i + 1) / n
+        b = rs.uniform(*bump)
+        for m in range(5):
+            a = a0 + (a1 - a0) * m / 4
+            r = 1 + b * math.sin(math.pi * m / 4)
+            pts.append((w / 2 * r * math.cos(a), cy + h / 2 * r * math.sin(a)) + ((1,) if m == 0 else ()))
+    return pts
+
+
+def cloud(x, y, w=300.0, h=200.0, sx=1.0, sy=1.0, seed=0, col="#FFFFFF", dots=None, inner="", ink_w=4.2, anchor="bottom"):
+    """Облако-мысль: (x, y) — центр ДНА (якорь сжатия). dots=(dx, dy) — вектор от низа облака к макушке: три кружка-ступеньки."""
+    if sx <= 0.01 or sy <= 0.01:
+        return ""
+    sd = 12000 + seed
+    o = []
+    if dots:
+        g = clamp(min(sx, sy) * 1.4)
+        for j, (q, r) in enumerate(((0.22, 20), (0.52, 14), (0.8, 9))):
+            if g <= 0.02:
+                break
+            px, py = x + dots[0] * q, y + dots[1] * q
+            o.append(shape(ellipse_pts(px, py, r * g, r * g, 12), col, "", w=3.2, seed=sd + 40 + j))
+    hh = h * 1.16 / 2   # бугры выходят за h/2
+    pts = _puff_pts(w, h, sd)
+    sh = blob(ellipse_pts(w * .1, h * .22, w * .44, h * .3, 16), lib.mul(col, (.92, .93, .96)))
+    body = shape(pts, col, sh + inner, w=ink_w, seed=sd + 1)
+    oy = -hh if anchor == "bottom" else 0.0
+    o.append(f'<g transform="translate({f(x)} {f(y)}) scale({sx:.4f} {sy:.4f}) translate(0 {f(oy)})">{body}</g>')
+    return "".join(o)
+
+
+C_STORM = "#6C7280"
+C_STORM_SH = "#4E5360"
+C_STORM_HI = "#8E95A3"
+
+
+def storm(x, y, w=520.0, h=260.0, sx=1.0, sy=1.0, seed=0, flash=0.0, inner=""):
+    """Грозовая туча, (x, y) — центр ДНА. flash 0…1 — подсвечивается изнутри (тон светлеет)."""
+    if sx <= 0.01 or sy <= 0.01:
+        return ""
+    sd = 12100 + seed
+    fl = clamp(flash)
+    c = mix(C_STORM, "#C9CCD6", fl * .7)
+    csh = mix(C_STORM_SH, "#9CA1AE", fl * .7)
+    chi = mix(C_STORM_HI, "#F2F0E0", fl * .8)
+    pts = _puff_pts(w, h, sd, n=11, bump=(0.16, 0.28))
+    wav = [(-w * .62 + w * 1.24 * i / 16, h * (.06 + .05 * math.sin(i * 1.7 + seed))) for i in range(17)]
+    inn = blob(wav + [(w * .62, h * .7), (-w * .62, h * .7)], csh)
+    rs = _rs(sd + 3)
+    for j in range(4):   # светлые макушки клубов
+        cx = -w * .32 + j * w * .2 + rs.uniform(-10, 10)
+        inn += blob(ellipse_pts(cx, -h * .26 + rs.uniform(-8, 8), w * .09, h * .1, 12), chi)
+    body = shape(pts, c, inn + inner, w=4.6, seed=sd + 1)
+    hh = h * 1.28 / 2
+    return f'<g transform="translate({f(x)} {f(y)}) scale({sx:.4f} {sy:.4f}) translate(0 {f(-hh)})">{body}</g>'
+
+
+def bolt(x0, y0, x1, y1, u=1.0, w=34.0, seed=0, n=5):
+    """Молния зигзагом (x0,y0) → (x1,y1). u 0…0.3 — растёт, до 1 — стоит, > 1 — нет."""
+    if u <= 0 or u > 1:
+        return ""
+    g = clamp(u / .3)
+    rs = _rs(12200 + seed)
+    dx, dy = x1 - x0, y1 - y0
+    L = math.hypot(dx, dy)
+    nx, ny = -dy / L, dx / L
+    cen = []
+    for i in range(n + 1):
+        q = i / n * g
+        off = 0 if i in (0, n) else (1 if i % 2 else -1) * rs.uniform(.08, .13) * L
+        cen.append((x0 + dx * q + nx * off, y0 + dy * q + ny * off))
+    left, right = [], []
+    for i, (cx, cy) in enumerate(cen):
+        ww = w * (1 - .8 * i / n) / 2
+        left.append((cx + nx * ww, cy + ny * ww, 1))
+        right.append((cx - nx * ww, cy - ny * ww, 1))
+    pts = left + right[::-1]
+    return shape(pts, "#FFE14D", blob([(p[0] - 4, p[1]) for p in pts[:len(left)]] + [(p[0], p[1]) for p in pts[len(left):]], "#F7C531"),
+                 w=4.0, seed=12201 + seed)
+
+
+def flash_screen(u, col="#FFF6D8"):
+    """Вспышка света на весь кадр (u 0…1 — сила). Это свет, а не фигура."""
+    if u <= 0.003:
+        return ""
+    return f'<rect x="-200" y="-200" width="1480" height="2320" fill="{col}" opacity="{clamp(u):.3f}"/>'
+
+
+def drop(x, y, k=1.0, rot=0.0, col="#6FB7E8"):
+    pts = [(0, -24, 1), (7, -11), (13, 3), (11, 13), (0, 18), (-11, 13), (-13, 3), (-7, -11)]
+    o = shape(pts, col, blob(ellipse_pts(5, 8, 8, 7, 10), lib.mul(col, (.8, .85, .92))), w=3.0, seed=12300)
+    o += blob(ellipse_pts(-4, 1, 3, 5, 8), "#FFFFFF")
+    return _tf(o, x, y, k, rot)
+
+
+def sweat(x, y, k=1.0, rot=0.0):
+    return drop(x, y, k * 1.1, rot, "#9FD6F2")
+
+
+def rain(x, y, w, t, t0, n=7, seed=0, k=1.0, floor=1300.0, every=0.12):
+    """Крупные капли из полосы [x − w/2, x + w/2] на высоте y, после t0; падают с ускорением до floor (там — брызги)."""
+    if t < t0:
+        return ""
+    rs = _rs(12400 + seed)
+    o = []
+    for j in range(n * 4):
+        ts = t0 + j * every + rs.uniform(0, every * .6)
+        px = x + rs.uniform(-w / 2, w / 2)
+        u = t - ts
+        if u < 0:
+            continue
+        py = y + 300 * u + 1600 * u * u
+        if py < floor:
+            o.append(drop(px, py, k * rs.uniform(.9, 1.2)))
+        else:
+            tu = (py - floor) / 260
+            if tu < 1:
+                for s in (-1, 1):
+                    o.append(line([(px + s * 8 * k, floor), (px + s * (16 + 22 * tu) * k, floor - (22 - 10 * tu) * k)],
+                                  4 * k * (1 - tu), "#6FB7E8", taper=.4, wmin=.3, seed=12450 + j))
+    return "".join(o)
+
+
+C_SAND = "#E2B65C"
+C_SAND_SH = "#C49440"
+C_GLASS = "#E4F0F4"
+
+
+def hourglass(x, y, k=1.0, rot=0.0, flow=0.0, top=0.0, t=0.0, seed=0):
+    """Песочные часы без делений, ЦЕНТР (x, y), 160×252. top — доля песка в ВЕРХНЕЙ (по миру) колбе; flow — струя."""
+    sd = 12500 + seed
+    g = 1 if math.cos(math.radians(rot)) >= 0 else -1
+    rv = rot if g > 0 else rot - 180
+    a = clamp(top)
+    half = [(-58, -104, 1), (-56, -74), (-44, -40), (-20, -12), (-7, 0, 1)]
+    glass = half + [(-20, 12), (-44, 40), (-56, 74), (-58, 104, 1), (58, 104, 1), (56, 74), (44, 40), (20, 12), (7, 0, 1),
+                    (20, -12), (44, -40), (56, -74), (58, -104, 1)]
+    sand = ""
+    if a > 0.01:   # верхняя колба: песок у горлышка, воронка посередине
+        lv = -6 - 92 * a ** 0.75
+        dip = 10 * clamp(flow) * a
+        sand += shape([(-70, lv, 1), (-20, lv + 1), (0, lv + dip), (20, lv + 1), (70, lv, 1), (70, 6, 1), (-70, 6, 1)], C_SAND,
+                      blob([(-70, lv + 14), (70, lv + 14), (70, 6), (-70, 6)], C_SAND_SH), w=2.6, seed=sd + 2)
+    b = 1 - a
+    if b > 0.01:   # нижняя колба: горка
+        lv = 102 - 88 * b ** 0.8
+        pk = 16 * min(1, b * 3)
+        sand += shape([(-70, lv + 6, 1), (-30, lv + 2), (0, lv - pk), (30, lv + 2), (70, lv + 6, 1), (70, 110, 1), (-70, 110, 1)], C_SAND,
+                      blob([(-70, lv + 26), (70, lv + 26), (70, 110), (-70, 110)], C_SAND_SH), w=2.6, seed=sd + 3)
+    if flow > 0.02 and a > 0.01:
+        lv = 102 - 88 * b ** 0.8 - 16 * min(1, b * 3)
+        ys = [0 + (lv - 0) * i / 6 for i in range(7)]
+        sand += line([(1.2 * math.sin(t * 40 + i), yy) for i, yy in enumerate(ys)], 5 * flow, C_SAND, taper=0, wmin=1, seed=sd + 4)
+    o = [shape(glass, C_GLASS, sand + line([(-44, -86), (-38, -50), (-22, -24)], 6, "#FFFFFF", taper=.5, wmin=.3, seed=sd + 5) +
+               line([(-44, 88), (-40, 60)], 6, "#FFFFFF", taper=.5, wmin=.3, seed=sd + 6), w=3.6, seed=sd + 1)]
+    for s in (-1, 1):
+        o.append(shape(rrect(s * 72 - 6, -108, s * 72 + 6, 108, 3), C_WOOD, blob(rect_pts(s * 72 + 1, -110, s * 72 + 8, 110), C_WOOD_SH),
+                       w=3.0, seed=sd + 7 + s))
+    for s in (-1, 1):
+        o.append(shape(rrect(-84, s * 115 - 12, 84, s * 115 + 12, 7), C_WOOD,
+                       blob(rect_pts(-90, s * 115 + 3, 90, s * 115 + 14), C_WOOD_SH) + line([(-70, s * 115 - 6), (60, s * 115 - 6)], 3, C_WOOD_HI,
+                                                                                               taper=.5, wmin=.3, seed=sd + 11), w=3.6, seed=sd + 9 + s))
+    return _tf("".join(o), x, y, k, rv)
+
+
+def smoke_curls(x, y, k=1.0, u=1.0, t=0.0, seed=0, col="#D3D7DE", n=3):
+    """Сплошные завитки дыма над (x, y): каждый — S-лента с тушью, кончик закручен спиралью; растёт вверх и колышется."""
+    if u <= 0.01:
+        return ""
+    o = []
+    for j in range(n):
+        ph = t * 3.0 + j * 2.0
+        xs = (j - (n - 1) / 2) * 26
+        L = (64 + 14 * (j % 2)) * u
+        pts = []
+        for i in range(13):
+            q = i / 12
+            pts.append((xs + 11 * math.sin(ph + q * 4.2) * (0.3 + q), -q * L))
+        ex, ey = pts[-1]
+        sgn = 1 if j % 2 else -1
+        R = 11 * (0.5 + 0.5 * u)
+        cx, cy = ex - sgn * R, ey
+        for i in range(1, 15):   # спираль 1.1 оборота внутрь
+            a = math.pi * (0 if sgn > 0 else 1) - sgn * i * 0.5
+            r = R * (1 - i / 18)
+            pts.append((cx + r * math.cos(a), cy + r * math.sin(a)))
+        w0 = 10 * k
+        P = [(x + px * k, y + py * k) for px, py in pts]
+        o.append(line(P, w0 + 4.5, lib.INK, taper=.55, wmin=.3, seed=12600 + seed + j))
+        o.append(line(P, w0, col, taper=.6, wmin=.18, seed=12610 + seed + j))
+    return "".join(o)
+
+
+def plate_soup(x, y, k=1.0, steam=1.0, t=0.0, seed=0):
+    """Тарелка супа (дно по центру) Ø 220: морковные кружки, зелень, пар-завитки сверху."""
+    sd = 12700 + seed
+    o = []
+    o.append(shape([(-110, -38, 1), (-92, -14), (-56, 0, 1), (56, 0, 1), (92, -14), (110, -38, 1)], "#F4F1EA",
+                   blob([(-110, -30), (110, -30), (110, 4), (-110, 4)], "#D9D3C6"), w=3.8, seed=sd))
+    o.append(shape(ellipse_pts(0, -38, 112, 30, 22), "#FBF9F4", "", w=3.8, seed=sd + 1))
+    soup = blob(ellipse_pts(0, -36, 84, 20, 20), "#E58A3A")
+    soup += blob(ellipse_pts(14, -32, 60, 11, 16), "#D27428")
+    rs = _rs(sd + 2)
+    for j in range(5):
+        cx, cy = rs.uniform(-62, 62), rs.uniform(-44, -30)
+        soup += shape(ellipse_pts(cx, cy, 9, 5, 10), "#F2A23C", "", w=2.0, seed=sd + 10 + j)
+    for j in range(6):
+        cx, cy = rs.uniform(-66, 66), rs.uniform(-46, -28)
+        soup += blob(ellipse_pts(cx, cy, 4.5, 2.4, 8, rot=rs.uniform(0, 180)), "#4E9A3E")
+    o.append(soup)
+    o.append(line([(-86, -38), (-60, -52), (0, -58), (60, -52), (86, -38)], 2.6, "#D9D3C6", taper=.7, wmin=.2, seed=sd + 3))
+    if steam > 0.01:
+        o.append(smoke_curls(0, -60, 1.0, steam, t, seed=sd, col="#E6E8EC"))
+    return _tf("".join(o), x, y, k)
+
+
+def cutlet_fork(x, y, k=1.0, rot=0.0, seed=0):
+    """Котлета на вилке: ЦЕНТР котлеты (x, y); ручка вилки вниз (при rot=0), всего ~230."""
+    sd = 12800 + seed
+    o = [line([(0, 30), (0, 220)], 13, lib.INK, taper=0, wmin=1, seed=sd), line([(0, 32), (0, 218)], 8, C_METAL, taper=0, wmin=1, seed=sd + 1)]
+    for j in (-1, 0, 1):
+        o.append(line([(j * 12, 30), (j * 12, 52), (0, 62)], 5, C_METAL_SH, taper=0, wmin=1, seed=sd + 2 + j))
+    pts = ellipse_pts(0, 0, 72, 46, 18, jitter=.06, seed=sd)
+    rs = _rs(sd + 5)
+    crust = blob(ellipse_pts(10, 16, 64, 24, 16), "#7A4220")
+    for j in range(7):
+        crust += blob(ellipse_pts(rs.uniform(-50, 50), rs.uniform(-28, 26), rs.uniform(4, 8), rs.uniform(3, 5), 8), "#6A3618")
+    crust += line([(-44, -22), (-18, -34), (12, -34)], 6, "#C7864E", taper=.6, wmin=.2, seed=sd + 6)
+    o.append(shape(pts, "#9C5A2E", crust, w=4.0, seed=sd + 7))
+    return _tf("".join(o), x, y, k, rot)
+
+
+C_IRON = "#4F8FD0"
+C_IRON_SH = "#3769A0"
+
+
+def iron(x, y, k=1.0, rot=0.0, smoke=0.0, t=0.0, seed=0):
+    """Утюг (дно по центру), нос влево, 176×104; без значков и шкал. smoke — сплошные завитки над носом."""
+    sd = 12900 + seed
+    o = []
+    if smoke > 0.01:
+        o.append(smoke_curls(-40, -70, 0.9, smoke, t, seed=sd))
+    o.append(line([(78, -30), (100, -26), (118, -10), (130, 10)], 7, "#3A3D44", taper=0, wmin=1, seed=sd + 1))
+    o.append(line([(-30, -60), (-26, -96), (44, -96), (54, -54)], 16, lib.INK, taper=0, wmin=1, seed=sd + 2))
+    o.append(line([(-30, -60), (-26, -94), (44, -94), (54, -54)], 10, "#3A3D44", taper=0, wmin=1, seed=sd + 3))
+    body = [(-88, -12, 1), (-62, -38), (-20, -60), (40, -62), (72, -46), (84, -22), (86, -12, 1)]
+    o.append(shape(body, C_IRON, blob([(-90, -26), (90, -26), (90, -8), (-90, -8)], C_IRON_SH) +
+                   line([(-50, -36), (-14, -52), (30, -54)], 5, "#8FBCE8", taper=.6, wmin=.2, seed=sd + 4), w=4.0, seed=sd + 5))
+    o.append(shape([(-92, -12, 1), (88, -12, 1), (86, 0, 1), (-84, 0, 1)], C_METAL, blob(rect_pts(-92, -5, 90, 2), C_METAL_SH), w=3.2, seed=sd + 6))
+    return _tf("".join(o), x, y, k, rot)
+
+
+def ironing_board(x, y, k=1.0, w=520.0, seed=0):
+    """Гладильная доска: ЦЕНТР крышки (x, y), острый конец влево; ножки-крест вниз на 280."""
+    sd = 13000 + seed
+    o = []
+    for s in (-1, 1):
+        o.append(line([(s * -110, 14), (s * 110, 280)], 10, lib.INK, taper=0, wmin=1, seed=sd + s))
+        o.append(line([(s * -110, 14), (s * 110, 280)], 6, C_METAL, taper=0, wmin=1, seed=sd + 3 + s))
+    top = [(-w / 2, 0, 1), (-w / 2 + 70, -18), (w / 2 - 20, -18, 1), (w / 2, -6), (w / 2, 8), (w / 2 - 20, 18, 1), (-w / 2 + 70, 18)]
+    o.append(shape(top, "#A9CDE6", blob([(-w, 6), (w, 6), (w, 24), (-w, 24)], "#7FA9C9") +
+                   "".join(blob(ellipse_pts(-w / 2 + 90 + 70 * j, -4, 9, 5, 8), "#D6E9F5") for j in range(int((w - 120) / 70))), w=3.8, seed=sd + 6))
+    return _tf("".join(o), x, y, k)
+
+
+def mobilnik(x, y, k=1.0, rot=0.0):
+    """Мобильник-силуэт, ЦЕНТР, 70×130: тёмный корпус, без экрана, без букв."""
+    o = shape(rrect(-35, -65, 35, 65, 13), "#2B2E35", line([(-24, -52), (-26, 40)], 4, "#4A505C", taper=.5, wmin=.3, seed=13101), w=3.6, seed=13100)
+    return _tf(o, x, y, k, rot)
+
+
+C_CUSHION = "#7E5BA6"
+C_CUSHION_SH = "#5E4282"
+C_CUSHION_HI = "#9C7DC4"
+
+
+def cushion(x, y, k=1.0, sy=1.0, col=None, seed=0):
+    """Круглая подушка для медитации (дно по центру), Ø 300, высота 80·sy."""
+    sd = 13200 + seed
+    c, csh, chi = col or (C_CUSHION, C_CUSHION_SH, C_CUSHION_HI)
+    hgt = 80 * sy
+    body = [(-150, -hgt + 2), (-152, -hgt * .45), (-136, -10), (-90, 0), (90, 0), (136, -10), (152, -hgt * .45), (150, -hgt + 2)]
+    inn = blob([(-160, -hgt * .5), (160, -hgt * .5), (160, 6), (-160, 6)], csh)
+    for j in range(-3, 4):
+        inn += line([(j * 40, -hgt + 10), (j * 44, -6)], 3, csh, taper=.6, wmin=.2, seed=sd + 10 + j)
+    o = [shape(body, c, inn, w=4.0, seed=sd)]
+    o.append(shape(ellipse_pts(0, -hgt + 2, 150, 42 * min(1.2, sy ** .5), 24), chi,
+                   blob(ellipse_pts(20, -hgt + 12, 120, 26, 16), c) + blob(ellipse_pts(0, -hgt + 2, 14, 6, 10), csh), w=3.8, seed=sd + 1))
+    return _tf("".join(o), x, y, k)
+
+
+def mat(x, y, k=1.0, w=640.0, col="#6FA58A", seed=0):
+    """Коврик в перспективе, ЦЕНТР, w × 70."""
+    sh = lib.mul(col, (.8, .82, .82))
+    pts = [(-w / 2, -32, 1), (w / 2, -32, 1), (w / 2 + 34, 34, 1), (-w / 2 - 34, 34, 1)]
+    o = shape(pts, col, blob([(-w, 20), (w, 20), (w, 40), (-w, 40)], sh) + line([(-w / 2 + 10, -22), (w / 2 - 10, -22)], 4,
+                                                                                 lib.mul(col, (1.12, 1.1, 1.1)), taper=.3, wmin=.4, seed=13301),
+              w=3.6, seed=13300 + seed)
+    return _tf(o, x, y, k)
+
+
+_BALLOON = {"red": ("#E0574A", "#B23E33"), "blue": ("#5B8FD6", "#3F6DAE"), "yellow": ("#F2C53D", "#C99A1E"),
+            "green": ("#64B07C", "#468A5C"), "orange": ("#F08A3C", "#C46624"), "pink": ("#EE8FB0", "#C46A8A")}
+
+
+def balloon(x, y, k=1.0, col="red", t=0.0, seed=0, string=180.0, inner=""):
+    """Воздушный шарик, ЦЕНТР шара (x, y), r 60×70; нитка вниз длиной string, колышется от t. inner — рисунок на шаре (центр 0,0)."""
+    sd = 13400 + seed
+    c, csh = _BALLOON.get(col, _BALLOON["red"])
+    o = []
+    if string > 0:
+        pts = [(5 * math.sin(t * 3 + i * .8 + seed) * (i / 6), 78 + string * i / 6) for i in range(7)]
+        o.append(line(pts, 3.2, lib.INK, taper=.2, wmin=.6, seed=sd))
+    o.append(shape([(-8, 82, 1), (0, 68), (8, 82, 1)], csh, "", w=2.6, seed=sd + 1))
+    o.append(shape(ellipse_pts(0, 0, 60, 70, 22), c, blob(ellipse_pts(16, 20, 46, 50, 16), csh) + inner +
+                   blob(ellipse_pts(-24, -30, 10, 17, 10, rot=25), "#FFFFFF"), w=3.8, seed=sd + 2))
+    return _tf("".join(o), x, y, k)
+
+
+def att_flame(x, y, k=1.0, t=0.0, u=1.0, seed=0, halo=0.0):
+    """Огонёк-внимание (как на хвосте кота): ЦЕНТР ОСНОВАНИЯ (x, y), высота 70·u; язычок колышется."""
+    if u <= 0.01:
+        return ""
+    sw = 7 * math.sin(t * 7 + seed)
+    tip = (sw, -70)
+    outer = [(0, 4), (-22, -10), (-24, -30), (-10, -52), tip + (1,), (12, -50), (24, -28), (22, -10)]
+    inner = [(0, 0), (-12, -10), (-12, -26), (sw * .6, -46, 1), (12, -26), (12, -10)]
+    o = ""
+    if halo > 0:
+        o += glow(x, y - 30 * k * u, 120 * k * u, halo, "#FFC46B")
+    o += _tf(shape(outer, "#F28C28", blob(inner, "#FFD24A"), w=3.4, seed=13500 + seed), x, y, k * u)
+    return o
+
+
+def mote(x, y, r=7.0, u=1.0):
+    """Пылинка-точка со свечением."""
+    o = glow(x, y, r * 7, 0.55 * u, "#FFE7A3") if u > 0 else ""
+    return o + blob(ellipse_pts(x, y, r * (0.8 + 0.2 * u), r * (0.8 + 0.2 * u), 12), mix("#E8D9B0", "#FFF2C6", clamp(u)))
+
+
+def breath_wave(x0, x1, y, amp=30.0, t=0.0, phase=0.0, w=7.0, col="#5C9AD6", n=2.0, seed=0):
+    """Волна-лента дыхания от x0 до x1: n периодов, амплитуда amp, бежит со временем."""
+    pts = []
+    m = 48
+    for i in range(m + 1):
+        q = i / m
+        pts.append((x0 + (x1 - x0) * q, y + amp * math.sin(2 * math.pi * n * q - phase - t * 1.6)))
+    return line(pts, w, col, taper=.25, wmin=.4, seed=13600 + seed)
+
+
+def dash_path(pts, u=1.0, w=6.0, col=None, gap=26.0, dash=16.0, seed=0):
+    """Пунктир по точкам (мир); u 0…1 — доля проявленной длины."""
+    if u <= 0:
+        return ""
+    S = lib.sample(pts, False, 2.0)
+    L = [0.0]
+    for i in range(1, len(S)):
+        L.append(L[-1] + math.hypot(S[i][0] - S[i - 1][0], S[i][1] - S[i - 1][1]))
+    tot = L[-1] * clamp(u)
+    o = []
+    s0 = 0.0
+    j = 0
+    while s0 < tot:
+        s1 = min(s0 + dash, tot)
+        seg = [(float(S[i][0]), float(S[i][1])) for i in range(len(S)) if s0 <= L[i] <= s1]
+        if len(seg) >= 2:
+            o.append(line(seg, w, col or lib.INK, taper=.2, wmin=.6, seed=13700 + seed + j))
+        s0 += dash + gap
+        j += 1
+    return "".join(o)
+
+
+def torch(x, y, k=1.0, on=1.0, wall="#C9B79A", seed=0):
+    """Торшер (дно в (x, y)) с небольшим ЧЁТКИМ кругом света на стене вокруг абажура (сплошные тона, без размытия)."""
+    cx, cy = x, y - 360 * k
+    o = ""
+    if on > 0.01:
+        o += blob(ellipse_pts(cx, cy, 165 * k, 150 * k, 40), mix(wall, "#FFE7A3", .32 * on))
+        o += blob(ellipse_pts(cx, cy, 112 * k, 102 * k, 36), mix(wall, "#FFE7A3", .55 * on))
+    return o + lamp_floor(x, y, k, on, seed)
+
+
+def legs_run(x, y, k=1.0, t=0.0, seed=0, col="#2B2E35"):
+    """Две ножки-палочки с ботиночками (бегут), ЦЕНТР таза (x, y), длина 90·k."""
+    o = []
+    for j, ph in enumerate((0.0, math.pi)):
+        a = math.sin(t * 22 + ph) * 0.7
+        kx, ky = x + j * 14 * k - 7 * k + math.sin(a) * 40 * k, y + math.cos(a) * 44 * k
+        b = a - 0.3 - 0.7 * (0.5 + 0.5 * math.cos(t * 22 + ph))
+        fx, fy = kx + math.sin(b) * 42 * k, ky + math.cos(b) * 42 * k
+        o.append(line([(x + j * 14 * k - 7 * k, y), (kx, ky), (fx, fy)], 9 * k, col, taper=0, wmin=1, seed=13800 + seed + j))
+        o.append(shape(ellipse_pts(fx + 10 * k, fy + 4 * k, 17 * k, 9 * k, 12), "#C8553D", "", w=3.0, seed=13810 + seed + j))
+    return "".join(o)
