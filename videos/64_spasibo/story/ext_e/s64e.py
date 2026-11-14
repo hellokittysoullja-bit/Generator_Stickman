@@ -226,14 +226,222 @@ def s09(t):
     b = sm(t, 23.15, 24.25)
     L = info["curly"]["letter"]
     cx = lerp(lerp(800, 600, a), L[0] - 70, b)
-    cy = lerp(lerp(760, 1500, a), L[1] - 60, b)
-    s = lerp(lerp(1.45, .88, ease_out(a, 1.6)), 1.75, ease_in(b, 1.3))
+    cy = lerp(lerp(760, 1180, a), L[1] - 60, b)
+    s = lerp(lerp(1.45, 1.02, ease_out(a, 1.6)), 1.75, ease_in(b, 1.3))
     rot = lerp(-1.2, .6, a) + lerp(0, -.8, b)
     set_ink(s)
     return cam_wrap("".join(o), cx, cy, s, rot, bg="#F3EBDC")
 
 
+# ═════════════════════════ s10: гостиная, дочь читает письмо отцу ═════════════════════════
+T10_CHEL, T10_LICH = wt(49), wt(50)          # «человеку» 25.02, «лично» 25.58
+FL10 = 1700.0
+CUR10 = (290.0, .76)                          # x таза, масштаб участницы
+FA10 = (790.0, .78)                           # x таза, масштаб отца
+CH_BR, CH_BR_SH, CH_BR_HI = "#b0663e", "#8a4b2c", "#c98256"
+
+
+def living_bg(t):
+    o = [blob(rect_pts(-900, -900, 2000, FL10), "#e7d7c0")]
+    for i in range(-14, 34):       # обои: тонкая полоска
+        x = i * 70
+        o.append(blob(rect_pts(x, -900, x + 8, 1300), "#dccab0", .9))
+    o.append(shape(rect_pts(-900, 1300, 2000, FL10), "#c9a882", blob(rect_pts(-900, 1300, 2000, 1318), "#dcc09c"), w=3.4, seed=9401))
+    for i in range(-10, 26):
+        x = i * 120
+        o.append(line([(x, 1340), (x, FL10 - 20)], 2.2, "#b08d66", taper=0, wmin=.8, seed=9410 + i, op=.8))
+    o.append(blob(rect_pts(-900, FL10, 2000, 2800), "#a2704a"))
+    for i in range(10):
+        yy = FL10 + 26 + i * 36 + i * i * 3
+        o.append(line([(-900, yy), (2000, yy + 4)], 2.2, "#82553a", taper=0, wmin=1, seed=9420 + i, op=.6))
+    o.append(line([(-900, FL10), (2000, FL10)], 4, INK, taper=0, wmin=.8, seed=9430))
+    # окно между ними: занавески, небо с деревом
+    wx0, wy0, wx1, wy1 = 360.0, 330.0, 760.0, 880.0
+    sway = 5 * math.sin(t * 1.2)
+    sky = blob(rect_pts(wx0, wy0, wx1, wy1), "#cfe5f0") + blob(rect_pts(wx0, wy0 + 330, wx1, wy1), "#e2efe0", .8)
+    sky += blob(ellipse_pts(470 + sway, 640, 120, 90, 14), "#8fbc72") + blob(ellipse_pts(640 + sway * 1.2, 700, 110, 80, 14), "#7eae63")
+    sky += shape(rect_pts(540, 700, 560, wy1), "#6e4a2c", "", w=2.6, seed=9440)
+    o.append(shape(rect_pts(wx0, wy0, wx1, wy1), "#cfe5f0", sky, w=4.6, seed=9441))
+    o.append(shape(rect_pts((wx0 + wx1) / 2 - 9, wy0, (wx0 + wx1) / 2 + 9, wy1), "#f6f0e2", "", w=3, seed=9442))
+    o.append(shape(rect_pts(wx0, (wy0 + wy1) / 2 - 9, wx1, (wy0 + wy1) / 2 + 9), "#f6f0e2", "", w=3, seed=9443))
+    o.append(shape(rect_pts(wx0 - 30, wy1, wx1 + 30, wy1 + 26), "#f6f0e2", "", w=3.4, seed=9444))
+    for side, x in ((-1, wx0 - 20), (1, wx1 + 20)):
+        cur = [(x - 60, wy0 - 40), (x + 60, wy0 - 40), (x + 50 + side * 10, wy1 + 60), (x - 50 + side * 10, wy1 + 60)]
+        inner = "".join(line([(x - 40 + 26 * j, wy0 - 30), (x - 36 + 26 * j + side * 6, wy1 + 50)], 2.2, "#9a4f3a", seed=9450 + j + side * 7, op=.7)
+                        for j in range(4))
+        o.append(shape(cur, "#c4644a", inner, w=4, seed=9446 + side))
+    o.append(line([(wx0 - 110, wy0 - 40), (wx1 + 110, wy0 - 40)], 8, "#6e4a2c", taper=0, wmin=1, seed=9449))
+    # полоса солнца формы окна на стене справа (чёткая)
+    for (a0, a1) in ((wx0, (wx0 + wx1) / 2 - 9), ((wx0 + wx1) / 2 + 9, wx1)):
+        for (b0, b1) in ((wy0, (wy0 + wy1) / 2 - 9), ((wy0 + wy1) / 2 + 9, wy1)):
+            q = [(a0 + 560, b0 + 260), (a1 + 560, b0 + 260), (a1 + 560 + (b1 - b0) * .25, b1 + 260), (a0 + 560 + (b1 - b0) * .25, b1 + 260)]
+            o.append(f'<polygon points="{" ".join(f"{p[0]:.1f},{p[1]:.1f}" for p in q)}" fill="#fff3d6" opacity=".4"/>')
+    # картинка без букв
+    o.append(P.wall_sketch(-120, 560, 1.2, 0, seed=3, kind="house"))
+    o.append(blob(ellipse_pts(560, FL10 + 120, 620, 90, 24), "#7f9a8a"))
+    o.append(blob(ellipse_pts(560, FL10 + 120, 520, 66, 24), "#97b2a0"))
+    return "".join(o)
+
+
+def armchair10(x, y, sc):
+    """Кресло отца (лицом влево): спинка справа от таза, сиденье, подлокотник ближний — отдельно."""
+    k = sc / .78
+    back = [(x - 40 * k, y + 60 * k, 1), (x - 10 * k, y - 470 * k), (x + 80 * k, y - 560 * k, 1), (x + 240 * k, y - 540 * k), (x + 300 * k, y - 420 * k, 1),
+            (x + 300 * k, y + 80 * k, 1)]
+    o = [shape(back, CH_BR, blob([(x + 160 * k, y - 520 * k), (x + 300 * k, y - 420 * k), (x + 300 * k, y + 80 * k), (x + 170 * k, y + 80 * k)], CH_BR_SH, .85)
+               + blob([(x + 40 * k, y - 520 * k), (x + 140 * k, y - 545 * k), (x + 110 * k, y - 500 * k)], CH_BR_HI, .9), w=5, seed=9460)]
+    seat = [(x - 330 * k, y - 30 * k, 1), (x + 260 * k, y - 40 * k, 1), (x + 290 * k, y + 200 * k, 1), (x - 320 * k, y + 210 * k, 1)]
+    o.append(shape(seat, CH_BR_SH, blob(rect_pts(x - 340 * k, y + 120 * k, x + 300 * k, y + 220 * k), "#6f3c22", .9), w=5, seed=9461))
+    for lx in (x - 290 * k, x + 250 * k):
+        o.append(shape(rect_pts(lx - 16 * k, y + 205 * k, lx + 16 * k, FL10 - 4), "#5a3a24", "", w=3, seed=9462 + int(lx) % 5))
+    return "".join(o)
+
+
+def armchair10_arm(x, y, sc):
+    k = sc / .78
+    arm = [(x - 300 * k, y - 140 * k, 1), (x - 100 * k, y - 150 * k, 1), (x - 80 * k, y + 200 * k, 1), (x - 300 * k, y + 205 * k, 1)]
+    return shape(arm, CH_BR, blob(rect_pts(x - 310 * k, y + 20 * k, x - 70 * k, y + 210 * k), CH_BR_SH, .85)
+                 + blob(ellipse_pts(x - 200 * k, y - 140 * k, 100 * k, 22 * k, 14), CH_BR_HI, .9), w=5, seed=9465)
+
+
+def speaking(t, amp=.3, base=.08):
+    for w in WORDS:
+        if w["start"] - .03 <= t <= w["end"]:
+            ph = (t - w["start"]) / max(.08, (w["end"] - w["start"])) * max(1, len(w["word"]) // 3)
+            return base + amp * abs(math.sin(math.pi * ph))
+    return 0.0
+
+
+def s10(t):
+    # отец: сидит лицом влево; «человеку» поднимает глаза, «лично» — ладонь на сердце, глаза блестят
+    fx, fs = FA10
+    fsc = fs * PE.HEIGHT["father"]
+    fy = FL10 - 24 - 300 * fsc
+    up = sm(t, T10_CHEL - .05, T10_CHEL + .3)
+    hrt = sm(t, T10_LICH - .1, T10_LICH + .35)
+    fex = ex_mix(E("father", "serious"), E("father", "look_up"), up)
+    fex = ex_mix(fex, dict(E("father", "moved"), look=(.35, -.25), tear=.8), hrt)
+    if hrt > .6:
+        fex["mouth"], fex["smile"] = "smile", .55 * hrt
+    fex["closed"] = max(bump(t, 24.4, .16), bump(t, 26.1, .16))
+    knee = (230.0, -40.0)
+    heart = (55.0, -250.0)
+    ln = (lerp(knee[0], heart[0], hrt), lerp(knee[1], heart[1], hrt))
+    farms = {"n": ("ik", (fx + ln[0] * fsc, fy + ln[1] * fsc), -1), "f": ("ik", (fx + 250 * fsc, fy - 30 * fsc), -1)}
+    fh_n = {"curl": (.4, .4, .45, .5), "thumb": .4, "dir": (1, .4)} if hrt < .5 else {"dir": (-.3, -1), "curl": (.15, .15, .2, .25), "spread": .12, "thumb": .2}
+    fhands = {"n": fh_n, "f": {"curl": (.45, .45, .5, .55), "thumb": .4, "dir": (1, .3)}}
+    ffeet = {"n": ((fx + 330 * fsc, FL10 - 20), 0.0), "f": ((fx + 285 * fsc, FL10 - 26), 0.0)}     # ноги в координатах до зеркала (flip)
+    fkw = dict(feet=ffeet, flip=True, arms=farms, hands=fhands, lean_add=.05 - .08 * up + .015 * math.sin(t * 1.9), head_add=-.12 * up + .03 * math.sin(t * 1.3))
+    f_low = PE.old_father(fx, fy, fs, fex, None, layers=("legs", "pelvis", "arm_f", "body"), **fkw)
+    f_arm = PE.old_father(fx, fy, fs, fex, None, layers=("arm_n",), **fkw)
+    # дочь: стоит, держит письмо двумя руками, читает вслух; на «лично» поднимает глаза на отца и смущённо улыбается
+    cx_, cs = CUR10
+    csc = cs * PE.HEIGHT["curly"]
+    cy_ = FL10 - (PE.LEG_LEN - 12) * csc
+    shy = sm(t, T10_LICH - .05, T10_LICH + .4)
+    cex = ex_mix(dict(E("curly", "serious"), look=(.45, .6), brows="calm"), E("curly", "shy"), shy)
+    if shy < .5:
+        cex["mouth"] = "talk"
+        cex["open"] = speaking(t, .28, .05)
+        cex["smile"] = .15
+    cex["look"] = (lerp(.45, .6, shy), lerp(.6, -.05, shy))
+    cex["closed"] = bump(t, 24.7, .15)
+    Lc = (cx_ + 250 * csc, cy_ - 330 * csc + 3 * math.sin(t * 2.3) + 18 * shy)
+    lk = csc * .82
+    lw, lh = 200.0, 250.0
+    Gl = (Lc[0] - lw / 2 * lk + 6, Lc[1] + 30 * lk)
+    Gr = (Lc[0] + lw / 2 * lk - 6, Lc[1] + 40 * lk)
+    carms = {"f": ("ik", (Gl[0] - 50 * csc, Gl[1] + 40 * csc), -1), "n": ("ik", (Gr[0] + 30 * csc, Gr[1] + 55 * csc), -1)}
+    chands = {"f": {"kind": "none"}, "n": {"kind": "none"}}
+    cfeet = PE.stand_kw(cx_, cy_, cs, "curly", spread=60)["feet"]
+    ckw = dict(feet=cfeet, arms=carms, hands=chands, lean_add=.03 * math.sin(t * 1.6) + .04 * shy, head_add=.06 - .1 * shy, shrug=.25 * shy)
+    c_body = PE.participant("curly", cx_, cy_, cs, cex, None, layers=("legs", "pelvis", "arm_f", "body", "arm_n"), **ckw)
+    gbl, gfl = PE.grip_svg("curly", Gl, 6 * lk, -1, k=csc * .95, h=64, seed=9470)
+    gbr, gfr = PE.grip_svg("curly", Gr, 6 * lk, +1, k=csc * .95, h=64, seed=9471)
+    letter = P.letter(Lc[0], Lc[1], lk, 4 - 3 * shy, lw, lh, write=1.0, seed=21)
+    body = (living_bg(t) + armchair10(fx, fy, fsc) + f_low["svg"] + armchair10_arm(fx, fy, fsc) + f_arm["svg"]
+            + c_body["svg"] + gbl + gbr + letter + gfl + gfr)
+    if hrt > .5:
+        hd = f_low["head"]
+        body += P.sparkles(hd[0] - 40, hd[1] - 20, .9, (hrt - .5) * 2, t, seed=4, n=2, r=110)
+    # камера: мягкий наезд, дрейф от дочери к отцу и обратно на «лично»
+    a = sm(t, 23.84, 26.6)
+    cx = lerp(470, 600, sm(t, 24.4, 25.3)) - 60 * shy
+    cy = lerp(1090, 1050, a)
+    s = lerp(1.0, 1.14, a)
+    set_ink(s)
+    return cam_wrap(body, cx, cy, s, .5 * math.sin(t * .8), bg="#e7d7c0")
+
+
+# ═════════════════════════ s11: три лица в ряд — серые заливаются цветом ═════════════════════════
+T11_SCH, T11_CHUV = wt(51), wt(55)           # «Счастливее» 26.40, «чувствовали» 28.29
+ROW11 = [("curly", 215.0, 1520.0, .9, 0.0), ("beard", 520.0, 1440.0, .9, .32), ("father", 865.0, 1530.0, .9, .64)]
+
+
+def s11(t):
+    o = [blob(rect_pts(-900, -900, 2000, 2900), "#efe3cf")]
+    # мягкие тёплые полосы фона (бумага), без пятен света
+    for i in range(-6, 14):
+        o.append(blob(rect_pts(-900, i * 180, 2000, i * 180 + 90), "#eadcc4", .8))
+    for who, x, y, sc, d in ROW11:
+        tc = T11_SCH + .12 + d * 1.15
+        col = ease_io(clamp((t - tc) / .55))
+        happy = ease_out(clamp((t - tc - .1) / .5))
+        e0 = E(who, "serious")
+        e1 = dict(E(who, "happy" if who != "father" else "happy"))
+        ex = ex_mix(e0, e1, happy)
+        if who == "father":
+            ex = ex_mix(ex, dict(E("father", "happy"), tear=.6), 1.0) if happy > .5 else ex
+        ex["look"] = (lerp(.3, -.2, happy), lerp(.4, 0.0, happy))
+        lean = .02 * math.sin(t * 1.8 + d * 5)
+        head = .03 * math.sin(t * 1.4 + d * 3) - .06 * happy
+        arms = None
+        hands = None
+        pose = None
+        # «чувствовали»: бородач смеётся, участница прикрывает рот ладонью
+        lu = ease_out(clamp((t - T11_CHUV + .05) / .3))
+        if who == "beard" and lu > 0:
+            ex = ex_mix(ex, E("beard", "laugh"), lu)
+            hh = abs(math.sin((t - T11_CHUV) * 2 * math.pi * 3.0))
+            ex["open"] = ex.get("open", .8) * (.65 + .35 * hh)
+            head -= .22 * lu
+            lean -= .08 * lu + .03 * hh * lu
+        if who == "curly":
+            pose = "hand_mouth"
+            hm = lu
+            kw0 = PE.pose_kw("hand_mouth", x, y, sc, "curly")
+            tgt_up = kw0["arms"]["n"][1]
+            rest = (x + 150 * sc * PE.HEIGHT["curly"], y + 120 * sc)
+            arms = {"f": ("ang", .18, .2), "n": ("ik", (lerp(rest[0], tgt_up[0], hm), lerp(rest[1], tgt_up[1], hm)), -1)}
+            hands = {"n": {"dir": (.1, -1), "curl": (.15, .15, .2, .25), "spread": .1, "thumb": .2}}
+            if hm > .3:
+                ex = ex_mix(ex, E("curly", "cover"), hm)
+                ex["look"] = (-.2, 0.0)
+        ex["closed"] = bump(t, 26.55 + d * 2.1, .15)
+        fig = PE.figure(who, x, y, sc, ex, lean=lean + (PE.POSE["hand_mouth"][0] if pose else 0), head_ang=head, arms=arms or {"f": ("ang", .18, .2), "n": ("ang", -.05, .25)},
+                        hands=hands, layers=("body", "arm_n") if who == "curly" else ("body",), flip=(who == "father"))
+        flt = P.desat(1 - col)
+        o.append(f'<g {flt}>{fig["svg"]}</g>' if flt else fig["svg"])
+        if happy > .2:
+            hx, hy = fig["head"]
+            o.append(P.sparkles(hx + 30, hy - 10, .9, happy, t, seed=int(x) % 11, n=3, r=130))
+    # стол перед ними закрывает низ (таз), на столе — три листа-письма
+    ty = 1395.0
+    o.append(shape(rect_pts(-400, ty, 1480, ty + 60), "#c99a62", blob(rect_pts(-400, ty + 44, 1480, ty + 60), "#a07440"), w=4, seed=9480))
+    o.append(shape(rect_pts(-400, ty + 60, 1480, 2600), "#b4834f", blob(rect_pts(-400, ty + 60, 1480, ty + 90), "#946235"), w=4, seed=9481))
+    for j, (lx, rr) in enumerate(((260, -8), (560, 5), (860, -3))):
+        o.append(P.letter(lx, ty + 22, .5, rr, 200, 250, write=1.0, seed=30 + j, sy=.22))
+    a = ease_io(clamp((t - 26.2) / 3.2))
+    cx, cy, s = 540, lerp(1110, 1130, a), lerp(1.36, 1.26, a)
+    sx = 0.0
+    if t > T11_CHUV:
+        h = t - T11_CHUV
+        sx = 6 * math.exp(-4 * h) * math.sin(h * 50)
+    set_ink(s)
+    return cam_wrap("".join(o), cx + sx, cy, s, .4 * math.sin(t * .9), bg="#efe3cf")
+
+
 def frame(sid, t):
     lib.dyn_begin()
     lib.DEFS.clear()
-    return {"s09": s09}[sid](t)
+    return {"s09": s09, "s10": s10, "s11": s11}[sid](t)
