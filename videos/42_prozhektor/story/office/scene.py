@@ -905,6 +905,8 @@ def cloud_pts(cx, cy, rx, ry, n=11, bump_k=.16, ph=0.0):
 
 def tag_icon(x, y, s, ang=0.0, seed=9500):
     """Ворот футболки крупно, из него торчит белая бирка."""
+    if s < .05:
+        return ""
     o = []
     fab = T([(-70, 6, 1), (-46, -6), (0, -14), (46, -6), (70, 6, 1), (70, 52, 1), (-70, 52, 1)], x, y + 20 * s, s)
     rib = lib.band([tuple(p) for p in T([(-66, 4), (-30, -8), (30, -8), (66, 4)], x, y + 20 * s, s)], 14 * s, 14 * s, step=3, cap=False)
@@ -918,6 +920,8 @@ def tag_icon(x, y, s, ang=0.0, seed=9500):
 
 
 def tee_icon(x, y, s, seed=9520):
+    if s < .05:
+        return ""
     pts = [(-30, -50, 1), (-12, -50), (0, -40), (12, -50), (30, -50, 1), (62, -24, 1), (46, -4, 1), (32, -14, 1), (32, 52, 1), (-32, 52, 1), (-32, -14, 1),
            (-46, -4, 1), (-62, -24, 1)]
     P_ = T(pts, x, y, s)
@@ -928,6 +932,8 @@ def tee_icon(x, y, s, seed=9520):
 
 
 def face_icon(x, y, s, t):
+    if s < .05:
+        return ""
     people.C = people.PAL["dima"]
     lib.INK_K[0], k0 = lib.INK_K[0] * 1.3, lib.INK_K[0]
     o = (f'<g transform="translate({x:.1f} {y:.1f}) scale({s:.3f})">'
