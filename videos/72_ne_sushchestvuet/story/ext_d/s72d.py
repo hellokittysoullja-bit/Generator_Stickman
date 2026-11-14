@@ -166,5 +166,106 @@ def cat_back(x, y, k, st, t):
     return body + nape
 
 
+# ═════════════════════════ дым над огнём: столб от огня к силуэту ═════════════════════════
+def smoke_column(x, y0, y1, t, u=1.0, n=3, seed=0, sway=1.0):
+    """Столб дыма от огня вверх к силуэту: несколько волнистых лент дымного цвета (без заливки), колышутся."""
+    if u <= .01:
+        return ""
+    o = []
+    for j in range(n):
+        pts = []
+        for i in range(19):
+            q = i / 18
+            yy = y0 + (y1 - y0) * q * u
+            xx = x + (j - (n - 1) / 2) * 26 * (1 - q) + sway * (34 * q + 10) * math.sin(t * 2.2 + q * 5.0 + j * 1.9)
+            pts.append((xx, yy))
+        o.append(line(pts, 11 + 2 * j, "#8E9AB0", taper=.7, wmin=.15, seed=7500 + seed + j, op=.8))
+        o.append(line(pts, 8 + 2 * j, people.SMOKE_COL, taper=.75, wmin=.12, seed=7510 + seed + j, op=.9))
+    return "".join(o)
+
+
+def front_head(t, look_up=0.6, x=250.0, y=1990.0, scale=1.45, tilt=-4.0):
+    """Макушка и плечи Димы со спины внизу кадра (экранные координаты), в свете огня."""
+    r = people.dima_back(x, y, scale, tilt=tilt + 1.5 * math.sin(t * 1.4), look_up=look_up, hair=2 * math.sin(t * 3), t=t)
+    return warm(r["svg"], t)
+
+
+# ═════════════════════════ s08: дымная учительница ═════════════════════════
+T_UCH = wt("учителей", 9.5)       # 9.81
+SM_BASE = (R.FIRE[0] + 10, R.FIRE[1] - 250)
+
+
+def s08(t):
+    lib.dyn_begin()
+    sc, back = scene(t, "smoke")
+    fx, fy = R.FIRE
+    u = clamp(.35 + (t - 9.35) / .45)
+    fade = .4 * sm(t, 10.38, 10.65)
+    pulse = bump(t, T_UCH - .04, .45)
+    k = .7 * (1 + .07 * pulse)
+    bx, by = SM_BASE[0] - 10 * pulse, SM_BASE[1] + 10 * pulse
+    fig = people.smoke_figure("teacher", bx, by, k, u=u, t=t, fade=fade, seed=8)
+    col = smoke_column(fx + 6, fy - 170, by + 10, t, u=1.0, seed=8)
+    world = [back, sc["fire"], col, fig, sc["stones_front"]]
+    q = sm(t, 9.35, 10.65)
+    cy = lerp(1080.0, 820.0, q)
+    s = 1.18
+    set_ink(s)
+    return lib.svg(f'<rect width="1080" height="1920" fill="#05080f"/><g transform="{lib.cam(fx + 20 + 10 * math.sin(t * 1.3), cy, s, .6 * math.sin(t * .9))}">'
+                   f'{"".join(world)}</g>{front_head(t, look_up=.7 + .1 * pulse)}')
+
+
+# ═════════════════════════ s09: дымная мама ═════════════════════════
+T_MAM = wt("мамы", 10.4)          # 10.72
+
+
+def s09(t):
+    lib.dyn_begin()
+    sc, back = scene(t, "smoke")
+    fx, fy = R.FIRE
+    u = clamp(.3 + (t - 10.25) / .35)
+    fade = .35 * sm(t, 11.15, 11.38)
+    sigh = bump(t, T_MAM - .05, .55)
+    k = .7
+    bx, by = SM_BASE[0] + 40 * sm(t, 10.25, 11.38), SM_BASE[1]
+    fig = people.smoke_figure("mom", 0, 0, k, u=u, t=t, fade=fade, seed=9)
+    fig = f'<g transform="translate({bx:.1f} {by:.1f}) scale(1 {1 + .05 * sigh - .03 * bump(t, T_MAM + .4, .4):.4f})">{fig}</g>'
+    col = smoke_column(fx + 6, fy - 170, by + 10, t, u=1.0, seed=9, sway=1.2)
+    e = ex("downcast" if t > T_MAM - .1 else "glassy", closed=blinks(t, (10.55,)), look=(.4, .7) if t > T_MAM - .1 else (.6, -.3))
+    dsvg, dfig = dima_seated(t, e=e, head=.05 * sm(t, T_MAM - .1, T_MAM + .3), shrug=.25 * sm(t, T_MAM, T_MAM + .4))
+    world = [back, sc["fire"], col, fig, sc["stones_front"], sc["log"], warm(dsvg, t)]
+    q = sm(t, 10.25, 11.38)
+    cx = lerp(560.0, 640.0, q)
+    s = 1.2
+    set_ink(s)
+    return lib.svg(f'<rect width="1080" height="1920" fill="#05080f"/><g transform="{lib.cam(cx, 900.0 - 20 * q, s)}">{"".join(world)}</g>')
+
+
+# ═════════════════════════ s10: дымное лицо самого Димы ═════════════════════════
+T_SEB = wt("себя", 11.2)          # 11.52
+
+
+def s10(t):
+    lib.dyn_begin()
+    sc, back = scene(t, "face")
+    fx, fy = R.FIRE
+    u = clamp(.3 + (t - 10.98) / .4)
+    loom = sm(t, T_SEB - .1, T_SEB + .35)
+    k = .66 + .2 * loom
+    bx, by = lerp(SM_BASE[0] + 190, SM_BASE[0] + 140, loom), SM_BASE[1] + 60 + 30 * loom
+    fig = people.smoke_figure("self", bx, by, k, u=u, t=t, seed=10)
+    col = smoke_column(fx + 6, fy - 170, by + 10, t, u=1.0, seed=10)
+    hide = sm(t, T_SEB - .15, T_SEB + .45)
+    e = ex("downcast", closed=max(blinks(t, (11.0,)), .8 * sm(t, T_SEB + .2, T_SEB + .6)), look=(.5, -.4) if hide < .3 else (.2, .8))
+    dsvg, dfig = dima_seated(t, "hug_knees", "chin_knees", hide, e=e, shrug=.6 * hide)
+    world = [back, sc["fire"], col, fig, sc["stones_front"], sc["log"], warm(dsvg, t)]
+    q = sm(t, 10.98, 12.6)
+    cx = lerp(470.0, 440.0, q)
+    cy = lerp(1000.0, 1060.0, q)
+    s = lerp(1.18, 1.34, q)
+    set_ink(s)
+    return lib.svg(f'<rect width="1080" height="1920" fill="#05080f"/><g transform="{lib.cam(cx, cy, s)}">{"".join(world)}</g>')
+
+
 def frame(sid, t):
-    return {"s07": s07}[sid](t)
+    return {"s07": s07, "s08": s08, "s09": s09, "s10": s10}[sid](t)
