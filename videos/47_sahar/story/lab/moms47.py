@@ -138,7 +138,9 @@ def frame09(t):
     S = SC_M
     y = FLOOR - 4 + 2 * math.sin(t * 2.4)
     hands = {"R": (MX + 62 * S * 0.5 + 8, y - 548 * S + 2 * math.sin(t * 3)), "L": (MX - 40 * S, y - 235 * S)}
-    s.append(with_hands(MOM, MX, y, SC_M, hands, mpose, 8000))
+    mpose['arms'] = {'L': (6 + 2 * math.sin(t * 1.7), -4), 'R': (-6 - 2 * math.sin(t * 1.9), 4)}
+    import person
+    s.append(person.draw(MOM, mpose, MX, y, SC_M, sd=8000))
     # ребёнок
     q = t - T_VYP
     lift = 0.0

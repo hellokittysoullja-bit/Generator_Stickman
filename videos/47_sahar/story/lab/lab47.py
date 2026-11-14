@@ -44,13 +44,16 @@ ADULTS = [
 ]
 
 
-def ik(sh, tgt, L1=130, L2=120):
+def ik(sh, tgt, L1=130, L2=120, out=0):
     dx, dy = tgt[0] - sh[0], tgt[1] - sh[1]
     L = max(abs(L1 - L2) + 1, min(L1 + L2 - 0.5, math.hypot(dx, dy)))
     base = math.degrees(math.atan2(dx, dy))
     c = clamp((L1 * L1 + L * L - L2 * L2) / (2 * L1 * L), -1, 1)
     d = math.degrees(math.acos(c))
-    a1 = min((base - d, base + d), key=lambda a: abs(((a + 180) % 360) - 180))
+    if out:
+        a1 = max((base - d, base + d), key=lambda a: out * math.sin(math.radians(a)))
+    else:
+        a1 = min((base - d, base + d), key=lambda a: abs(((a + 180) % 360) - 180))
     ex, ey = sh[0] + L1 * math.sin(math.radians(a1)), sh[1] + L1 * math.cos(math.radians(a1))
     a_f = math.degrees(math.atan2(tgt[0] - ex, tgt[1] - ey))
     return a1, a_f - a1
@@ -64,8 +67,8 @@ def with_hands(spec, x, y, sc, hands, pose, sd):
     arms = {}
     for side, tw in hands.items():
         tl = ((tw[0] - x) / S, (tw[1] - y) / S)
-        a, b = ik(shs[side], tl)
         sign = -1 if side == "L" else 1
+        a, b = ik(shs[side], tl, out=sign)
         arms[side] = (a - sign * 6, b)
     pose = dict(pose)
     pose["arms"] = arms
@@ -213,8 +216,8 @@ def kid_pose(i, t, calm=False):
 def kid(i, t, hands=None, **kw):
     x = KX[i]
     bob = 1.6 * math.sin(t * 2.6 + i * 1.1)
-    hl = (x - 44, TOP_Y0 - 14 + bob * .3)
-    hr = (x + 40, TOP_Y0 - 14 - bob * .3)
+    hl = (x - 84, TOP_Y0 - 14 + bob * .3)
+    hr = (x + 84, TOP_Y0 - 14 - bob * .3)
     h = {"L": hl, "R": hr}
     if hands:
         h.update(hands)
@@ -495,7 +498,7 @@ def frame_s07(t):
     tilt = -24 * lift
     pose = dict(mouth="smile" if lift < .2 else "flat", brow=0.0, look=(0.0, 0.2 + 0.2 * lift), head_tilt=2 + 3 * lift)
     hr = (gx - 4, gy - 40)
-    s.append(kid(KID_I, t, hands={"R": hr, "L": (x - 52, TOP_Y0 - 16)}, calm=True, pose=pose))
+    s.append(kid(KID_I, t, hands={"R": hr, "L": (x - 84, TOP_Y0 - 14)}, calm=True, pose=pose))
     s.append(_ST["top"])
     for i in range(5):
         if i != KID_I:
