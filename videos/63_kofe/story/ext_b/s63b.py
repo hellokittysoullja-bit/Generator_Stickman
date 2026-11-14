@@ -527,5 +527,81 @@ def s06(t):
     return lib.svg(f'<rect width="1080" height="1920" fill="#efe2c6"/><g transform="{cam}">{"".join(world)}</g>')
 
 
+# ═════════════════════════════ s08: диван, кофе и чай в ладонях как весы, чокается ═════════════════════════════
+T8_DEN, T8_NE, T8_VAZH, T8_CHAYA = 15.82, 16.27, 16.72, 16.84
+T8_CLINK = 17.02
+SC8 = 1.05
+
+
+def s08(t):
+    lib.dyn_begin()
+    s = SC8
+    x, y = R.L_DIMA
+    x -= 90
+    br = math.sin(2 * math.pi * (t - 15.2) / 2.0)
+    shrug = bump(t, T8_CHAYA - .04, .5)
+    y_ = y + 3 * br - 16 * shrug
+    km, kt = 1.0 * s, 1.05 * s
+    # чаши-весы: кофе (ближняя рука) и чай (дальняя) поочерёдно вверх-вниз, на «не важнее» — ровно, на «чая» — сходятся и чокаются
+    wv = smooth(T8_DEN - .1, T8_DEN + .1, t) * (1 - smooth(T8_NE - .05, T8_NE + .25, t))
+    sway = 70 * wv * math.sin(2 * math.pi * (t - T8_DEN) * 2.1)
+    level_bounce = 18 * decay(t, T8_NE + .2, 6, 2.2)
+    meet = smooth(T8_CHAYA, T8_CLINK, t) * (1 - smooth(17.25, 17.55, t) * .55)
+    lift = 40 * shrug
+    cof = np.array([x + 270 * s, y_ - 250 * s - sway * s + level_bounce * s - lift * s])        # дно кружки кофе
+    tea = np.array([x + 490 * s, y_ - 280 * s + sway * s - level_bounce * s - lift * s])        # дно чашки чая (без блюдца)
+    # чокаются: края кружек сходятся до касания
+    gap_x = (tea[0] - 62 * kt) - (cof[0] + 55 * km)
+    cof = cof + np.array([gap_x * .5 * meet, -60 * s * meet])
+    tea = tea - np.array([gap_x * .5 * meet, 60 * s * meet - 18 * s * meet])
+    rot_c = 6 * meet - 4 * wv * math.sin(2 * math.pi * (t - T8_DEN) * 2.1)
+    rot_t = -6 * meet
+    Hc = np.array(cof) + np.array(_rot((-MUG_HANDLE[0], MUG_HANDLE[1]), rot_c)) * km
+    Ht = np.array(tea) + np.array(_rot((-TEA_HANDLE[0], TEA_HANDLE[1]), rot_t)) * kt
+    HO = 46 * s * 1.15
+    arms = {"n": ("ik", (Hc[0] - HO, Hc[1] + 4 * s), -1), "f": ("ik", (Ht[0] - HO, Ht[1] + 4 * s), -1)}
+    hands = {"n": {"kind": "none"}, "f": {"kind": "none"}}
+    feet = {"n": ((x + 330 * s, R.L_FLOOR + 40), 0.0), "f": ((x + 270 * s, R.L_FLOOR + 30), 0.0)}
+    if t < T8_DEN:
+        ex = dict(E["dima"]["doubt"], look=(.75, .45))
+    elif t < T8_NE:
+        ph = math.sin(2 * math.pi * (t - T8_DEN) * 2.1)
+        ex = dict(E["dima"]["focus"], look=(.7 + .2 * ph, .4 - .2 * ph))
+    elif t < T8_CHAYA:
+        ex = dict(E["dima"]["surprise"], look=(.6, .3))
+        ex["closed"] = blink_of(t, [16.5], .15)
+    elif t < T8_CLINK + .05:
+        ex = dict(E["dima"]["shrug"], look=(.6, .1))
+    else:
+        ex = dict(E["dima"]["cheerful"], look=(.5, .1))
+    ha = .03 * br + .12 * shrug - .05 * bump(t, T8_CLINK, .3)
+    kw = dict(lean=-.04 - .03 * shrug, head_ang=ha, arms=arms, hands=hands, feet=feet)
+    back_fig = people.figure("dima", x, y_, s, ex, layers=("legs", "pelvis", "arm_f", "body"), **kw)
+    near = people.figure("dima", x, y_, s, ex, layers=("arm_n",), **kw)
+    Wf, Wn = back_fig["wrist"]["f"], near["wrist"]["n"]
+    # предметы по настоящим запястьям
+    Ht2 = (Wf[0] + HO, Wf[1] - 4 * s)
+    tb = base_from_point(Ht2, TEA_HANDLE, kt, rot_t, -1)
+    bk, fr = people.handle_grip("dima", Ht2, k=s, side=-1, far=True, seed=971)
+    tea_svg = bk + tcup(tb[0], tb[1], kt, rot_t, -1, steam=1.0, t=t, seed=2) + fr
+    Hc2 = (Wn[0] + HO, Wn[1] - 4 * s)
+    cb = base_from_point(Hc2, MUG_HANDLE, km, rot_c, -1)
+    bk, fr = people.handle_grip("dima", Hc2, k=s, side=-1, seed=972)
+    cof_svg = bk + cmug(cb[0], cb[1], km, rot_c, -1, fill=.8, steam=1.0, t=t, seed=4) + fr
+    ring = ""
+    u = (t - T8_CLINK) / .35
+    if 0 < u < 1:
+        ring = PR.clink((cb[0] + 55 * km + tb[0] - 62 * kt) / 2, min(cb[1] - 120 * km, tb[1] - 90 * kt) - 10, 1.3, u, seed=3)
+    rb = R.living(t)
+    world = [rb["bg"], back_fig["svg"], tea_svg, near["svg"], cof_svg, ring, rb["front"]]
+    # камера: откат и лёгкий дрейф вверх, толчок на звоне
+    u = clamp((t - 15.2) / 2.4)
+    z = 1.2 - .17 * ease_out(u, 2) + .03 * bump(t, T8_CLINK, .35)
+    sx, sy = shake2(t, T8_CLINK, 7)
+    set_ink(z)
+    cam = lib.cam(600 - sx, 1000 - 70 * u - sy, z, -.4 * math.sin((t - 15.2) * .9))
+    return lib.svg(f'<rect width="1080" height="1920" fill="#e9d9bd"/><g transform="{cam}">{"".join(world)}</g>')
+
+
 def frame(sid, t):
-    return {"s04": s04, "s06": s06}[sid](t)
+    return {"s04": s04, "s06": s06, "s08": s08}[sid](t)
