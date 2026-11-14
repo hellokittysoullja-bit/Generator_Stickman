@@ -27,8 +27,8 @@ SOFA_Y = 1210
 # пачки срывов: (время, сторона); листки летят влево (над окном) и вправо
 TEARS = []
 _rs = np.random.RandomState(44)
-for b, tb in enumerate([3.26, 3.46, 3.66, 3.86, 4.06, 4.26, 4.42]):
-    for j in range(4 if b < 6 else 3):
+for b, tb in enumerate([3.24, 3.42, 3.60, 3.78, 3.96, 4.14, 4.30]):
+    for j in range(3):
         TEARS.append((tb + j * 0.034 + _rs.uniform(0, .01), -1 if (b + j) % 3 else 1, _rs.uniform(.8, 1.25), _rs.uniform(-1, 1)))
 FLY = 0.62
 DAY0 = 9
@@ -162,6 +162,22 @@ def sheet_back():
     return shape([(PX0, PTOP, 1), (PX1, PTOP, 1), (PX1, PBOT, 1), (PX0, PBOT, 1)], BACK, inner, w=4.2, seed=5450)
 
 
+def backing():
+    """Картонная подложка: стопка кончилась, у зажимов — рваные корешки листков."""
+    inner = "".join(line([(PX0 + 30, PTOP + 140 + k * 120), (PX1 - 30, PTOP + 150 + k * 120)], 3, "#b48a5c", taper=.3, seed=5460 + k, op=.7)
+                    for k in range(4))
+    s = [shape([(PX0, PTOP, 1), (PX1, PTOP, 1), (PX1, PBOT, 1), (PX0, PBOT, 1)], "#cfa877", inner, w=4.4, seed=5470)]
+    rs = np.random.RandomState(9)
+    pts = [(PX0 + 2, PTOP + 4, 1), (PX1 - 2, PTOP + 4, 1)]
+    x = PX1 - 2
+    while x > PX0 + 10:
+        pts.append((x, PTOP + 40 + rs.uniform(0, 16)))
+        x -= rs.uniform(16, 30)
+    pts.append((PX0 + 2, PTOP + 44, 1))
+    s.append(shape(pts, PAPER, "", w=3, seed=5471))
+    return "".join(s)
+
+
 def board():
     s = []
     s.append(line([(PCX, 300), (PX0 + 40, 440)], 4, "#6b5a46", taper=.1, wmin=.8, seed=5501))
@@ -195,12 +211,15 @@ def tear_xf(t, t0, side, vk, wob):
     peel = ease_in(clamp(e / 0.07), 1.4)
     q = max(0.0, e - 0.05)
     # отрыв: лист загибается вверх вокруг верхнего края (cos), дальше кувыркается в полёте
-    phi = math.radians(70 * peel) + q * (9.0 + 3 * wob) * vk
+    phi = math.radians(50 * peel + 32 * math.sin(q * (6 + 2 * wob) * vk))
     sy = math.cos(phi)
-    dx = side * (520 * vk * q + 120 * q * q * 8) + wob * 40 * q
-    dy = -760 * q + 0.5 * 4200 * q * q - 30 * peel
-    rot = side * (-10 * peel - 260 * q * vk) + wob * 30 * q
-    xf = (f"translate({f(PCX + dx)} {f(PTOP + dy)}) rotate({f(rot)}) scale(1 {f(sy)}) translate({f(-PCX)} {-PTOP})")
+    if abs(sy) < 0.08:
+        sy = 0.08 if sy >= 0 else -0.08
+    dx = side * (900 * vk * q + 600 * q * q) + wob * 40 * q
+    dy = -300 * q + 0.5 * 3600 * q * q - 20 * peel
+    rot = side * (-8 * peel - 160 * q * vk) + wob * 30 * q
+    k = 1 - 0.3 * clamp(q / 0.5)
+    xf = (f"translate({f(PCX + dx)} {f(PTOP + dy)}) rotate({f(rot)}) scale({f(k)} {f(sy * k)}) translate({f(-PCX)} {-PTOP})")
     return xf, sy
 
 
@@ -211,10 +230,11 @@ def n_torn(t):
 def calendar(t):
     s = [blob([(PX0 + 34, 440, 1), (PX1 + 40, 450, 1), (PX1 + 46, PBOT + 44, 1), (PX0 + 40, PBOT + 40, 1)], "#1d2412", .34, blur(16))]
     s.append(board())
-    s.append(pad_edges())
     n = n_torn(t)
+    if n < len(TEARS):
+        s.append(pad_edges())
     # верхний неподвижный лист — следующий день; под летящими
-    s.append(_ST["front"][day_of(n + 1)] if (n + 1) in range(1, 999) else "")
+    s.append(_ST["front"][day_of(n + 1)] if n < len(TEARS) else _ST["backing"])
     return "".join(s)
 
 
@@ -272,7 +292,7 @@ def three(t):
         k = 1.0
         sq = 0.16 * math.exp(-q * 11) * math.cos(q * 26)
         sqx, sqy = 1 + sq, 1 - sq
-    x, y = 440, 930
+    x, y = PCX - 10, 880
     rot = -7 + 4 * math.exp(-max(0, e - .07) * 8)
     g = (f'<g transform="translate({f(x)} {f(y)}) rotate({f(rot)}) scale({f(k * sqx)} {f(k * sqy)})">'
          + hand_text(0, 0, "3", 640, "#e0352b", "#fbf3e2", 46, weight=700)
@@ -282,11 +302,11 @@ def three(t):
     # удар: лучики и пыль вокруг
     if 0.07 <= e < 0.45:
         u = clamp((e - 0.07) / 0.36)
-        s.append(props.burst(x - 10, y - 230, 2.2, u, seed=5701, color=INK, n=9, r0=95, r1=150))
+        s.append(props.burst(x, y - 210, 2.2, u, seed=5701, color=INK, n=9, r0=95, r1=150))
     # «года» — дописывается слева направо
     w = clamp((t - T_GODA + 0.02) / 0.38)
     if w > 0:
-        gx, gy = 610, 1060
+        gx, gy = PX0 + 30, 1010
         c = lib.clip_rect(gx - 30, gy - 230, 30 + 400 * ease_io(w), 320)
         txt = (hand_text(gx, gy, "года", 230, "#2a2230", "#fbf3e2", 30, anchor="start", rot=-6)
                + hand_text(gx, gy, "года", 230, "#2a2230", anchor="start", rot=-6))
@@ -305,9 +325,9 @@ def frame03(t):
 
 def cam03(t):
     u = ease_io(clamp((t - 3.55) / 1.85))
-    sc = 1.03 + 0.07 * u
-    cx = 600 - 50 * u + 6 * math.sin(t * 1.6)
-    cy = 800 + 30 * u
+    sc = 1.16 + 0.08 * u
+    cx = 560 + 60 * u + 6 * math.sin(t * 1.6)
+    cy = 770 + 20 * u
     k, rot = kick(t, [T_TRI], 0.07, 9)
     dx, dy = shake(t, T_TRI, 16, 8, 60)
     k2, r2 = kick(t, [T_GODA + 0.05], 0.015, 12)
@@ -324,6 +344,7 @@ def frame(sid, t):
         _ST["wframe"] = window_frame()
         _ST["front"] = {d: sheet_front(d) for d in range(1, 32)}
         _ST["back"] = sheet_back()
+        _ST["backing"] = backing()
         _ST["sofa"] = sofa()
         lib.static_done()
     lib.dyn_begin()
