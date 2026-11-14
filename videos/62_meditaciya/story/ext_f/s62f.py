@@ -269,7 +269,7 @@ S18_A = 29.8
 T_POP18 = T_OBED + .01
 # камера: конец s17 → общий план кадра хука (s01, группа E)
 CAM17_END = None
-HOOK_CAM = (ROOM.CAM_WIDE[0] + 50, ROOM.CAM_WIDE[1], ROOM.CAM_WIDE[2] * .98, 0.0)
+HOOK_CAM = (ROOM.CAM_WIDE[0] + 110, ROOM.CAM_WIDE[1] + 10, ROOM.CAM_WIDE[2] * .96, 0.0)
 
 
 def s18(t):
