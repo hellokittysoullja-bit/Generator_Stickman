@@ -373,8 +373,8 @@ def s05_frame(t):
     s.append("</g>")
     # камера: сверху, наезд и накренённые удары
     u = clamp((t - 7.7) / 2.9)
-    sc = lerp(0.94, 1.14, ease_io(u))
-    ccx, ccy = lerp(540, 540, u), lerp(800, 900, u)
+    sc = lerp(1.04, 1.28, ease_io(u))
+    ccx, ccy = lerp(540, 540, u), lerp(930, 1010, u)
     rot = lerp(3.5, -1.0, ease_io(u)) + 0.5 * math.sin(t * 2.5)
     for n, c in LAND_T.items():
         e = t - c
