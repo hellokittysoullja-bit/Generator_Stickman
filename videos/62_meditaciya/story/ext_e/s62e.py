@@ -100,7 +100,7 @@ def speed_lines(p, vel, k=1.0, seed=0, u=1.0):
     nx, ny = -dy, dx
     o = []
     for i, (off, ln) in enumerate(((-150, 240), (-40, 320), (80, 260), (190, 200))):
-        a = (p[0] - dx * (230 + 40 * (i % 2)) + nx * off * k, p[1] - dy * (230 + 40 * (i % 2)) + ny * off * k)
+        a = (p[0] - dx * (150 + 40 * (i % 2)) + nx * off * k, p[1] - dy * (150 + 40 * (i % 2)) + ny * off * k)
         b = (a[0] - dx * ln * k * u, a[1] - dy * ln * k * u)
         o.append(line([a, b], 7 * k, INK, taper=.8, wmin=.1, seed=seed + i, peak=.15))
     return "".join(o)
@@ -137,10 +137,10 @@ def frame01(t):
     if t < TL:
         u = t / TL
         x = lerp(X - 330, X, u)
-        y = lerp(Y - 560, Y, u * u * .55 + u * .45) - 120 * 4 * u * (1 - u) * .35
+        y = lerp(Y - 400, Y, u * u * .55 + u * .45) - 120 * 4 * u * (1 - u) * .35
         spin = lerp(-.42, -.05, u)
         fold = lerp(.05, .45, u)
-        vel = (330 / TL, (560 * (1.1 * u + .45)) / TL)
+        vel = (330 / TL, (400 * (1.1 * u + .45)) / TL)
     else:
         x, y = X, Y
         spin = -.05 * math.exp(-8 * (t - TL))
@@ -194,7 +194,8 @@ def frame01(t):
     sh = PR.shake(t, TL, 18, .4, seed=3)
     drift = sm(t, .6, 1.6)
     cx = 545 + hside + sh[0] + lerp(-120, 0, ease_out(clamp(t / .4), 2)) * 0
-    cy = lerp(1000, 960, drift) + sh[1] - 60 * (1 - ease_out(clamp(t / .35), 2))
+    fly_cy = y - 330
+    cy = lerp(fly_cy, lerp(1000, 960, drift), sm(t, .2, .55)) + sh[1]
     s = 1.0 * hs * lerp(1.0, 1.04, drift)
     set_ink(s)
     return lib.svg(cam_wrap(world, cx, cy, s, hrot))

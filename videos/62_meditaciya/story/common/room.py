@@ -80,7 +80,7 @@ def wall_floor(mode="evening"):
     w0, w1, w2 = PAINT[mode]
     o = []
     g = lib.lin_grad([(0, w1, 1), (.55, w0, 1), (1, w2, 1)], 0, -300, 0, WALL_Y, units="userSpaceOnUse")
-    o.append(f'<rect x="-900" y="-400" width="3400" height="{f(WALL_Y + 400)}" fill="url(#{g})"/>')
+    o.append(f'<rect x="-1600" y="-1400" width="4800" height="{f(WALL_Y + 1400)}" fill="url(#{g})"/>')
     # тонкие панели-рейки внизу стены (без узора-шума)
     for i in range(-8, 24):
         x = i * 96.0
@@ -91,7 +91,7 @@ def wall_floor(mode="evening"):
                    w=3.4, seed=70))
     fa, fb, fl = FLOOR[mode]
     gf = lib.lin_grad([(0, fa, 1), (1, fb, 1)], 0, WALL_Y, 0, 2300, units="userSpaceOnUse")
-    o.append(f'<rect x="-900" y="{f(WALL_Y + 6)}" width="3400" height="{f(2400 - WALL_Y)}" fill="url(#{gf})"/>')
+    o.append(f'<rect x="-1600" y="{f(WALL_Y + 6)}" width="4800" height="{f(2400 - WALL_Y)}" fill="url(#{gf})"/>')
     ys = [WALL_Y + 6, 1385, 1455, 1545, 1660, 1810, 2000, 2240]
     for k, y in enumerate(ys[1:]):
         o.append(line([(-900, y), (2500, y)], w=3.0, color=fl, taper=0.0, wmin=1, seed=80 + k, op=.6))
@@ -272,7 +272,7 @@ def cushion_layer(sy=1.0, dx=0.0):
 def room_bg(t, mode="evening", flick=0.0, sway=0.0):
     """Фон уголка без подушки и людей: dict(bg, front). Порядок в клипе: bg → подушка → Дима → front."""
     lp = lamp(mode, flick)
-    o = ['<rect x="-1200" y="2200" width="4000" height="900" fill="#ab7a50"/>', wall_floor(mode), lp["light"], window(t, mode), shelf(t, mode)]
+    o = [f'<rect x="-1600" y="2200" width="4800" height="1400" fill="{FLOOR[mode][1]}"/>', wall_floor(mode), lp["light"], window(t, mode), shelf(t, mode)]
     if mode == "morning":
         o.append(sun_strip(t))
     o += [lp["lamp"], plant(t, sway, mode), mat_layer()]
