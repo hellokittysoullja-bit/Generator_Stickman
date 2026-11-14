@@ -1320,9 +1320,8 @@ def _spruce(x, y, h, w, col, seed, edge=None, lit=0.0):
         left.append((x - ww * .55, yy - h * .05))
     pts += left
     o = blob(pts, col)
-    if edge and lit > .01:
-        o += line([(x + 4, y - h * .9), (x + w * .5, y - h * .45), (x + w * .9, y - h * .05)], 6, edge, taper=.6, wmin=.2, seed=9810 + seed,
-                  op=.55 * lit)
+    if edge and lit > .01:      # тёплый отсвет огня по нижним ярусам (по краю силуэта, не штрих поперёк)
+        o += blob([(x + w * .55, y - h * .2), (x + w, y, 1), (x + w * .1, y)], edge, .18 * lit)
     return o
 
 
@@ -1489,12 +1488,6 @@ def fire_scene(t, u=1.0, mode="wide"):
                    w=4.2, seed=9412))
     for k_, (a, c) in enumerate((((860, 455), (820, 380)), ((620, 490), (590, 430)))):        # сучки
         b.append(line([a, c], 9, NIGHT["log_sh"], taper=.5, wmin=.3, seed=9413 + k_))
-    # большой камень за спиной Димы (на нём растёт тень, s07)
-    sx, sy = STONE_SHADOW
-    sp = stone_shadow_pts()
-    lit = lib.mix(NIGHT["stone"], "#8a6248", clamp01(.75 * u * fl))
-    b.append(shape(sp, NIGHT["stone"], blob([(sx - 120, sy - 300), (sx + 160, sy - 320), (sx + 300, sy - 200), (sx + 340, HORIZON + 420), (sx - 200, HORIZON + 420),
-                                             (sx - 260, sy - 120)], lit, .95), w=5, seed=9420))
     # земля и круг света: пятна по форме, края колышутся
     g = [blob(rect_pts(-1400, HORIZON, 2600, 2600), NIGHT["ground"])]
     g.append(blob(_jag(FIRE[0], FIRE[1] + 40, 1150, 330, t, 1, amp=.04, speed=.6), NIGHT["ground2"]))
@@ -1505,6 +1498,12 @@ def fire_scene(t, u=1.0, mode="wide"):
                 continue
             g.append(blob(_jag(FIRE[0], FIRE[1] + 10, rx * (.55 + .45 * q) * fl, ry * (.55 + .45 * q) * fl, t, 10 + j, amp=.07, speed=1.4)
                           , col, .5 + .5 * q))
+    # большой камень за спиной Димы (на нём растёт тень, s07)
+    sx, sy = STONE_SHADOW
+    sp = stone_shadow_pts()
+    lit = lib.mix(NIGHT["stone"], "#8a6248", clamp01(.75 * u * fl))
+    g.append(shape(sp, NIGHT["stone"], blob([(sx - 120, sy - 300), (sx + 160, sy - 320), (sx + 300, sy - 200), (sx + 340, HORIZON + 420), (sx - 200, HORIZON + 420),
+                                             (sx - 260, sy - 120)], lit, .95), w=5, seed=9420))
     for j in range(9):      # травинки на краю света
         gx = -300 + j * 170 + 40 * math.sin(j * 7)
         g.append(line([(gx, 1560), (gx + 8, 1520), (gx + 14, 1500)], 4, "#2a3348", taper=.5, wmin=.3, seed=9430 + j))

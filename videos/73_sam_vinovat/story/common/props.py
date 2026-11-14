@@ -3535,16 +3535,22 @@ def scrap(x, y, k=1.0, rot=0.0, seed=0):
 def paper_tower(x, y, k=1.0, lean=0.0, flutter=0.0, t=0.0, pull=0.0, n=60, seed=0, ribbon=True, taper=0.0):
     sd = 72200 + seed
     rs = _rs(sd)
-    W2 = 170.0
     curve = _tower_curve(lean, n)
+
+    def hw(j):          # полуширина листа j (ракурс снизу — верх уже)
+        return 170.0 * (1 - taper * j / n)
+
+    def at(j, v):       # точка на листе j: v −1…1 поперёк, с наклоном листа
+        dx, ang = curve[min(j, n - 1)]
+        a_ = math.radians(ang)
+        xx = v * hw(j)
+        return (dx + xx * math.cos(a_), -j * SHEET_T + xx * math.sin(a_))
     o = []
-    # тень у основания
     o.append(blob(ellipse_pts(0, 4, 210, 22, 16), "#000000", .12))
-    # листы снизу вверх: торец-полоска 340×SHEET_T с лёгким разбросом
-    mid = n // 2
     for j in range(n):
         dx, ang = curve[j]
-        jitter = rs.uniform(-7, 7)
+        W2 = hw(j)
+        jitter = rs.uniform(-7, 7) * (1 - taper * j / n)
         yb = -j * SHEET_T
         fl = 0.0
         if flutter > 0 and j > n - 9:
@@ -3553,48 +3559,33 @@ def paper_tower(x, y, k=1.0, lean=0.0, flutter=0.0, t=0.0, pull=0.0, n=60, seed=
         pts = [(-W2 + jitter, yb, 1), (W2 + jitter, yb + fl * .2, 1), (W2 + jitter + fl * .4, yb - SHEET_T - fl, 1), (-W2 + jitter, yb - SHEET_T, 1)]
         g = blob(pts, col) + line([(-W2 + jitter + 4, yb - 1), (W2 + jitter - 4, yb - 1 + fl * .2)], 1.6, "#C9C2B2", taper=.1, wmin=.6, seed=sd + j)
         o.append(f'<g transform="translate({f(dx)} 0) rotate({f(ang)} 0 {f(yb)})">{g}</g>')
-    # верхний лист (крышка) в перспективе и контур башни
     dx, ang = curve[-1]
     ytop = -n * SHEET_T
-    top = [(-W2 - 6, ytop, 1), (W2 + 6, ytop, 1), (W2 - 14, ytop - 38, 1), (-W2 + 26, ytop - 38, 1)]
+    W2 = hw(n)
+    dep = 38 * (1 - .6 * taper)
+    top = [(-W2 - 6, ytop, 1), (W2 + 6, ytop, 1), (W2 - 14, ytop - dep, 1), (-W2 + 26, ytop - dep, 1)]
     o.append(f'<g transform="translate({f(dx)} 0) rotate({f(ang)} 0 {f(ytop)})">' + shape(top, "#FFFFFF",
-             line([(-W2 + 40, ytop - 14), (W2 - 50, ytop - 18)], 2.0, "#D8D2C4", taper=.3, wmin=.4, seed=sd + 90) +
-             line([(-W2 + 60, ytop - 26), (W2 - 90, ytop - 28)], 2.0, "#D8D2C4", taper=.3, wmin=.4, seed=sd + 91), w=3.6, seed=sd + 92) + "</g>")
-    # боковые контуры тушью по дуге
-    lft = [(curve[j][0] - W2 + (math.sin(math.radians(curve[j][1])) * 0), -j * SHEET_T) for j in range(0, n, 4)] + [(curve[-1][0] - W2, ytop)]
-    rgt = [(curve[j][0] + W2, -j * SHEET_T) for j in range(0, n, 4)] + [(curve[-1][0] + W2, ytop)]
-    o.append(line(lft, 4.6, lib.INK, taper=.15, wmin=.6, seed=sd + 93))
-    o.append(line(rgt, 4.6, lib.INK, taper=.15, wmin=.6, seed=sd + 94))
-    o.append(line([(-W2 - 4, 0), (W2 + 4, 0)], 4.6, lib.INK, taper=.15, wmin=.6, seed=sd + 95))
-    # лента: вертикальная по середине и горизонтальная посередине высоты
+             line([(-W2 + 40, ytop - dep * .37), (W2 - 50, ytop - dep * .47)], 2.0, "#D8D2C4", taper=.3, wmin=.4, seed=sd + 90), w=3.6, seed=sd + 92) + "</g>")
+    js = list(range(0, n, 3)) + [n]
+    o.append(line([at(j, -1) for j in js], 4.6, lib.INK, taper=.15, wmin=.6, seed=sd + 93))
+    o.append(line([at(j, 1) for j in js], 4.6, lib.INK, taper=.15, wmin=.6, seed=sd + 94))
+    o.append(line([at(0, -1.02), at(0, 1.02)], 4.6, lib.INK, taper=.15, wmin=.6, seed=sd + 95))
     if ribbon:
-        vb = [(curve[j][0] - 18, -j * SHEET_T) for j in range(0, n, 3)] + [(curve[-1][0] - 18, ytop)]
-        vr = [(curve[-1][0] + 18, ytop)] + [(curve[j][0] + 18, -j * SHEET_T) for j in range(n - 1, -1, -3)]
-        o.append(shape(vb + vr, C_RIBBON, blob([(p[0] + 26, p[1]) for p in vb] + [(p[0] + 8, p[1]) for p in vr], C_RIBBON_SH, .6), w=3.4, seed=sd + 96))
-        yh = -mid * SHEET_T
-        dxm = curve[mid][0]
-        hb = [(dxm - W2 - 3, yh + 18, 1), (dxm + W2 + 3, yh + 18, 1), (dxm + W2 + 3, yh - 18, 1), (dxm - W2 - 3, yh - 18, 1)]
-        o.append(shape(hb, C_RIBBON, blob([(dxm - W2, yh + 6), (dxm + W2, yh + 6), (dxm + W2, yh + 18), (dxm - W2, yh + 18)], C_RIBBON_SH, .7), w=3.4, seed=sd + 97))
-        # бантик на пересечении
-        bx, by = dxm, yh
+        rw = 18 / 170
+        vb = [at(j, -rw * 170 / hw(j) * (1 - taper * j / n)) for j in js]
+        vr = [at(j, rw * 170 / hw(j) * (1 - taper * j / n)) for j in js[::-1]]
+        o.append(shape(vb + vr, C_RIBBON, blob([at(j, .05) for j in js] + [at(j, rw) for j in js[::-1]], C_RIBBON_SH, .6), w=3.4, seed=sd + 96))
+        mid = n // 2
+        hb = [at(mid - 2, -1.02), at(mid - 2, 1.02), at(mid + 2, 1.02), at(mid + 2, -1.02)]
+        hb = [p + (1,) for p in hb]
+        o.append(shape(hb, C_RIBBON, blob([at(mid - 2, -1), at(mid - 2, 1), at(mid - 1, 1), at(mid - 1, -1)], C_RIBBON_SH, .7), w=3.4, seed=sd + 97))
+        bx, by = at(mid, 0)
+        bk = 1 - taper * .5
         for sx in (-1, 1):
-            o.append(shape([(bx, by, 1), (bx + sx * 46, by - 30), (bx + sx * 56, by + 4), (bx + sx * 40, by + 26)], C_RIBBON,
-                           blob([(bx, by), (bx + sx * 40, by + 10), (bx + sx * 40, by + 26)], C_RIBBON_SH, .7), w=3.2, seed=sd + 98 + sx))
-        o.append(shape(ellipse_pts(bx, by, 15, 14, 10), C_RIBBON_SH, "", w=3.0, seed=sd + 101))
+            o.append(shape([(bx, by, 1), (bx + sx * 46 * bk, by - 30 * bk), (bx + sx * 56 * bk, by + 4 * bk), (bx + sx * 40 * bk, by + 26 * bk)], C_RIBBON,
+                           blob([(bx, by), (bx + sx * 40 * bk, by + 10 * bk), (bx + sx * 40 * bk, by + 26 * bk)], C_RIBBON_SH, .7), w=3.2, seed=sd + 98 + sx))
+        o.append(shape(ellipse_pts(bx, by, 15 * bk, 14 * bk, 10), C_RIBBON_SH, "", w=3.0, seed=sd + 101))
     g = "".join(o)
-    if taper > 0.001:     # ракурс снизу: верх уже низа (перспектива), сжатие по x растёт с высотой — кусочно по полосам
-        H_ = n * SHEET_T + 40
-        bands = []
-        nb = 12
-        for b in range(nb):
-            y0_, y1_ = -H_ * (b + 1) / nb - 2, -H_ * b / nb + 2
-            q = (b + .5) / nb
-            sxk = 1 - taper * q
-            cx_ = curve[min(n - 1, int(q * (n - 1)))][0]
-            cid = lib.clip_rect(-2000, y0_, 4000, y1_ - y0_)
-            bands.append(f'<g clip-path="url(#{cid})"><g transform="translate({f(cx_)} 0) scale({sxk:.4f} 1) translate({f(-cx_)} 0)">{g}</g></g>')
-        bot = lib.clip_rect(-2000, -2, 4000, 400)
-        g = "".join(bands) + f'<g clip-path="url(#{bot})">{g}</g>'
     if pull > 0:
         sx_, sy_ = scrap_pos(0, 0, 1.0, pull)
         g += scrap(sx_, sy_, 1.4, -20 * pull, seed)
