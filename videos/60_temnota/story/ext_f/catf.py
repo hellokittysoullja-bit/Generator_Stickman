@@ -149,7 +149,7 @@ def back_ears(ear=0.0):
 def back_head(st, t):
     s = []
     hd = [(744, 1062), (760, 1012), (800, 990), (870, 990), (914, 1014), (930, 1062), (922, 1112), (884, 1146), (788, 1146), (750, 1112)]
-    hp = fur(hd, 8, 6, seed=29)
+    hp = fur(hd, 5, 9, seed=29)
     inner = blob([(884, 990), (940, 1050), (930, 1150), (870, 1150), (900, 1080)], CAT_SH, .85)
     inner += blob([(790, 1006), (836, 996), (876, 1006), (860, 1030), (810, 1030)], CAT_FUR, .5)
     for i, p in enumerate([[(812, 1016), (816, 1034)], [(836, 1010), (838, 1030)], [(860, 1016), (856, 1034)], [(826, 1060), (830, 1080)],
@@ -182,8 +182,8 @@ def back_body(legs=0.0, walk=None):
         s.append(shape(foot, CAT, blob(lib.T(ellipse_pts(px, 1296 + dy - lift, 26, 14, 10), sx * 6, 0), CAT_SH, .6), w=4.6, seed=382 + sx))
         # пятка: оранжевая подушечка видна сзади краешком
         s.append(blob(ellipse_pts(px + sx * 6, 1302 + dy - lift, 12, 5, 8), "#e8823a"))
-    bd = [(752, 1296), (736, 1236), (750, 1176), (788, 1140), (884, 1140), (922, 1176), (936, 1236), (920, 1296)]
-    bp = fur(bd, 7, 7, seed=27)
+    bd = [(756, 1296), (738, 1250), (744, 1196), (770, 1158), (806, 1140), (866, 1140), (902, 1158), (928, 1196), (934, 1250), (916, 1296)]
+    bp = fur(bd, 4, 10, seed=27)
     inner = blob([(862, 1140), (940, 1180), (940, 1300), (870, 1300), (890, 1220)], CAT_SH, .9)
     inner += blob([(822, 1150), (850, 1150), (848, 1290), (824, 1290)], CAT_FUR, .35)
     for i, p in enumerate([[(800, 1190), (808, 1208)], [(866, 1196), (860, 1214)], [(812, 1240), (818, 1258)], [(856, 1244), (852, 1262)],
@@ -197,8 +197,11 @@ def draw_back(x, y, k, st, t):
     """Кот со спины. st: sx, sy (сжатие/растяжение тела от точки опоры), legs, walk, tail (град), flame_e, ear, head_dx, head_dy, rot (град)."""
     br = 1 + 0.012 * math.sin(t * 2 * math.pi / 3.1)
     sx, sy = st.get("sx", 1.0), st.get("sy", 1.0) * br
-    o = [f'<g transform="translate({CX} {Cat.CBOT}) scale({sx:.4f} {sy:.4f}) translate({-CX} {-Cat.CBOT})">{back_body(st.get("legs", 0.0), st.get("walk"))}']
-    o.append(f'<g transform="rotate({st.get("tail", 0.0):.2f} {Cat.TAIL_PIVOT[0]} {Cat.TAIL_PIVOT[1]})">{Cat.tail_art()}{Cat.flame(t, 1.3, st.get("flame_e", 1.0))}</g></g>')
+    sq = f'translate({CX} {Cat.CBOT}) scale({sx:.4f} {sy:.4f}) translate({-CX} {-Cat.CBOT})'
+    o = [f'<g transform="{sq}">{back_body(st.get("legs", 0.0), st.get("walk"))}</g>']
     hy = -(sy - 1) * (Cat.CBOT - Cat.NECK[1]) + st.get("head_dy", 0.0)
     o.append(f'<g transform="translate({st.get("head_dx", 0.0):.2f} {hy:.2f}) rotate({st.get("tilt", 0.0):.2f} {Cat.NECK[0]} {Cat.NECK[1]})">{back_head(st, t)}</g>')
+    # со спины хвост лежит перед телом и поднимается справа, огонёк над ним не закрыт головой
+    o.append(f'<g transform="{sq}"><g transform="rotate({st.get("tail", 0.0):.2f} {Cat.TAIL_PIVOT[0]} {Cat.TAIL_PIVOT[1]})">{Cat.tail_art()}'
+             f'{Cat.flame(t, 1.3, st.get("flame_e", 1.0))}</g></g>')
     return f'<g transform="translate({x:.2f} {y:.2f}) rotate({st.get("rot", 0.0):.2f}) scale({k:.4f}) translate({-CX} {-Cat.CBOT})">{"".join(o)}</g>'

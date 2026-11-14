@@ -116,35 +116,35 @@ def frame16(t):
 T_KOT15, T_OKNO = wt("кот"), wt("окно")
 DP = people.PAL["dima"]
 SILL_TOP = room.WIN[3] + 18          # верх доски подоконника (мир)
-CAT_K15 = .56
+CAT_K15 = .62
 
 
 def dima_back(t, turn=0.0):
     """Взрослый Дима со спины у окна: горчичное худи с капюшоном, лохматый затылок, локти на подоконнике. turn 0..1 — голова к коту (вправо)."""
     o = []
-    hx, hy = 676 + 14 * turn, 902 + 2 * math.sin(t * 1.7)
+    hx, hy = 656 + 14 * turn, 902 + 2 * math.sin(t * 1.7)
     br = 3 * math.sin(t * 2 * math.pi / 3.4)
     # руки: плечо → локоть на подоконнике (предплечья лежат на доске, уходят от нас)
     for sx, sd in ((-1, 501), (1, 502)):
-        sh = (676 + sx * 128, 1050 + br)
-        el = (676 + sx * 176, SILL_TOP + 8)
+        sh = (656 + sx * 128, 1050 + br)
+        el = (656 + sx * 176, SILL_TOP + 8)
         arm = [(sh[0] - 46, sh[1] - 8), (sh[0] + 40, sh[1] - 14), (el[0] + 38 * (1 if sx > 0 else .7), el[1] - 10), (el[0] + 22, el[1] + 30),
                (el[0] - 24, el[1] + 34), (el[0] - 40 * (1 if sx < 0 else .7), el[1])]
         o.append(shape(arm, DP["TOP"], blob([(el[0] + sx * 6, sh[1]), (el[0] + sx * 60, sh[1]), (el[0] + sx * 60, el[1] + 40), (el[0] + sx * 10, el[1] + 40)],
                                          DP["TOP_SH"], .8) + line([(el[0] - 16, el[1] + 4), (el[0] + 14, el[1] + 10)], 2.6, DP["FOLD"], seed=sd + 9, op=.7),
                        w=5, seed=sd))
     # спина худи
-    bk = [(548, 1074 + br), (600, 1034 + br), (752, 1034 + br), (804, 1074 + br), (826, 1220), (838, 1500), (514, 1500), (526, 1220)]
-    inner = blob([(700, 1030), (840, 1060), (850, 1500), (720, 1500), (730, 1200)], DP["TOP_SH"], .75)
-    inner += line([(600, 1260), (640, 1330), (630, 1420)], 3, DP["FOLD"], seed=511, op=.6)
-    inner += line([(760, 1250), (742, 1340)], 3, DP["FOLD"], seed=512, op=.6)
+    bk = [(528, 1074 + br), (580, 1034 + br), (732, 1034 + br), (784, 1074 + br), (806, 1220), (812, 1330), (500, 1330), (506, 1220)]
+    inner = blob([(680, 1030), (820, 1060), (830, 1340), (700, 1340), (710, 1200)], DP["TOP_SH"], .75)
+    inner += line([(580, 1150), (612, 1220), (606, 1290)], 3, DP["FOLD"], seed=511, op=.6)
+    inner += line([(740, 1170), (726, 1260)], 3, DP["FOLD"], seed=512, op=.6)
     o.append(shape(bk, DP["TOP"], inner, w=5.4, seed=510))
     # капюшон лежит на спине
-    hood = [(588, 1040 + br), (676, 1022 + br), (764, 1040 + br), (750, 1130 + br), (676, 1170 + br), (602, 1130 + br)]
-    o.append(shape(hood, DP["TOP"], blob([(676, 1020), (780, 1040), (770, 1180), (690, 1180)], DP["TOP_SH"], .7) +
-                   line([(612, 1060 + br), (676, 1138 + br), (740, 1060 + br)], 3, DP["TOP_SH2"], seed=515, op=.9), w=5, seed=514))
+    hood = [(568, 1040 + br), (656, 1022 + br), (744, 1040 + br), (730, 1124 + br), (656, 1158 + br), (582, 1124 + br)]
+    o.append(shape(hood, DP["TOP"], blob([(656, 1020), (760, 1040), (750, 1170), (670, 1170)], DP["TOP_SH"], .7) +
+                   line([(592, 1058 + br), (656, 1128 + br), (720, 1058 + br)], 3, DP["TOP_SH2"], seed=515, op=.9), w=5, seed=514))
     # шея
-    o.append(shape([(640, 1000), (712, 1000), (716, 1046 + br), (636, 1046 + br)], DP["SKIN_SH"], w=4, seed=516))
+    o.append(shape([(620, 1000), (692, 1000), (696, 1046 + br), (616, 1046 + br)], DP["SKIN_SH"], w=4, seed=516))
     # уши
     for sx, sd in ((-1, 520), (1, 521)):
         ex = hx + sx * 92 - 6 * turn * (1 if sx > 0 else -1)
@@ -154,16 +154,26 @@ def dima_back(t, turn=0.0):
     if turn > .05:
         o.append(shape([(hx + 66, hy + 20), (hx + 92, hy + 40), (hx + 86, hy + 90), (hx + 62, hy + 100)], DP["SKIN"], w=4, seed=523))
     # затылок: волосы лохматые
-    hair = [(hx - 92, hy + 40), (hx - 104, hy - 10, 1), (hx - 90, hy - 60), (hx - 110, hy - 92, 1), (hx - 62, hy - 96), (hx - 64, hy - 136, 1), (hx - 20, hy - 112),
-            (hx + 4, hy - 150, 1), (hx + 30, hy - 112), (hx + 70, hy - 132, 1), (hx + 76, hy - 92), (hx + 112, hy - 84, 1), (hx + 98, hy - 40),
-            (hx + 106, hy + 6, 1), (hx + 88, hy + 48), (hx + 60, hy + 82), (hx + 30, hy + 74, 1), (hx + 10, hy + 100), (hx - 18, hy + 76, 1),
-            (hx - 44, hy + 98), (hx - 60, hy + 70, 1)]
+    hair = [(hx - 96, hy + 40), (hx - 108, hy - 6), (hx - 118, hy - 34, 1), (hx - 100, hy - 60), (hx - 104, hy - 92), (hx - 80, hy - 116, 1),
+            (hx - 54, hy - 118), (hx - 28, hy - 138), (hx + 6, hy - 128, 1), (hx + 34, hy - 140), (hx + 70, hy - 122), (hx + 84, hy - 98, 1),
+            (hx + 104, hy - 76), (hx + 112, hy - 40), (hx + 124, hy - 18, 1), (hx + 106, hy + 6), (hx + 104, hy + 34), (hx + 86, hy + 52, 1),
+            (hx + 70, hy + 76), (hx + 46, hy + 84), (hx + 30, hy + 98, 1), (hx + 10, hy + 84), (hx - 16, hy + 98, 1), (hx - 34, hy + 84),
+            (hx - 60, hy + 82, 1), (hx - 78, hy + 64)]
     hi = "".join(line(p, 3, DP["HAIR_HI"], seed=530 + i, op=.85) for i, p in enumerate([
         [(hx - 50, hy - 70), (hx - 30, hy - 20)], [(hx + 10, hy - 90), (hx + 16, hy - 40)], [(hx + 52, hy - 60), (hx + 44, hy - 10)], [(hx - 70, hy + 10), (hx - 56, hy + 50)]]))
     hi += "".join(line(p, 2.6, DP["HAIR_SH"], seed=540 + i) for i, p in enumerate([
         [(hx - 20, hy - 40), (hx - 10, hy + 20)], [(hx + 30, hy - 30), (hx + 24, hy + 30)], [(hx - 60, hy - 30), (hx - 48, hy + 10)]]))
     o.append(shape(hair, DP["HAIR"], blob([(hx + 20, hy - 140), (hx + 120, hy - 80), (hx + 110, hy + 60), (hx + 40, hy + 90)], DP["HAIR_SH"], .6) + hi,
                    w=5.2, seed=528))
+    # спинка стула перед Димой: две стойки и две перекладины
+    wood, wsh = "#a5744a", "#7d5434"
+    for x0, sd in ((486, 560), (800, 561)):
+        o.append(shape([(x0, 1170, 1), (x0 + 30, 1170, 1), (x0 + 34, room.FL + 40, 1), (x0 + 4, room.FL + 40, 1)], wood,
+                       blob([(x0 + 18, 1170), (x0 + 40, 1170), (x0 + 40, room.FL + 40), (x0 + 22, room.FL + 40)], wsh, .8), w=4.4, seed=sd))
+    for y0, hgt, sd in ((1176, 52, 562), (1272, 30, 563)):
+        o.append(shape([(480, y0, 1), (840, y0 - 4, 1), (840, y0 + hgt, 1), (480, y0 + hgt + 4, 1)], wood,
+                       blob([(480, y0 + hgt * .6), (840, y0 + hgt * .55), (840, y0 + hgt + 4), (480, y0 + hgt + 6)], wsh, .7) +
+                       line([(520, y0 + hgt * .35), (620, y0 + hgt * .3)], 2, "#c99a6c", seed=sd + 7, op=.8), w=4.6, seed=sd))
     return "".join(o)
 
 
@@ -171,7 +181,7 @@ def cat15(t):
     """Кот: идёт по полу к окну, приседает, на «кот» прыгает (толчок, дуга, лапы вытянуты), приземляется с осадкой, садится и смотрит в окно."""
     x_floor0, x_floor1 = 1050.0, 952.0
     xs, ys = 952.0, room.FL - 6
-    xe, ye = 884.0, SILL_TOP + 2
+    xe, ye = 916.0, SILL_TOP + 2
     tj0, tj1 = T_KOT15 - .02, T_KOT15 + .30
     st = dict(tail=6 * math.sin(t * 2.0), flame_e=1.0, ear=0.0)
     if t < 24.98:          # шаги
@@ -215,7 +225,7 @@ def cat15(t):
 
 
 def frame15(t):
-    o = [room.wall_floor(), room.window_view(t, par=.12 * sm(t, 24.7, 27.1)), room.window_frame(t, curtains=True, plant=True)]
+    o = [room.wall_floor(), room.window_view(t, par=.12 * sm(t, 24.7, 27.1)), room.window_frame(t, curtains=True, plant=False)]
     x, y, k, st = cat15(t)
     # тень кота на полу/подоконнике
     gy = room.FL if t < T_KOT15 + .1 else SILL_TOP + 4
@@ -224,9 +234,9 @@ def frame15(t):
     o.append(dima_back(t, turn=sm(t, 26.1, 26.6)))
     o.append(catf.draw_back(x, y, k, st, t))
     u = sm(t, 24.7, 27.1)
-    z = 1.12 + .3 * u
-    cx = 640 + 170 * u
-    cy = 1090 - 150 * u
+    z = 1.34 + .44 * u
+    cx = 690 + 120 * u
+    cy = 1120 - 170 * u
     set_ink(z)
     cam = lib.cam(cx, cy, z, .8 - 1.6 * u)
     return f'<g transform="{cam}">{"".join(o)}</g>'
