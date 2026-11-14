@@ -322,10 +322,71 @@ def frame13(t):
     return f'<g transform="{cam}">{"".join(scn)}</g>'
 
 
+# ═══════════════════════════════ s15: объятие, откат к кадру хука ═══════════════════════════════
+def chair(x, y, k=1.0):
+    """Деревянный стул (сиденье на y), цвет как ножки стола common/kitchen.py."""
+    o = shape(rrect(x - 20 * k, y - 330 * k, x + 4 * k, y + 190 * k, 3), "#A8692F", blob(rrect(x - 8 * k, y - 330 * k, x + 4 * k, y + 190 * k, 2), "#7F4B2B", .8), w=4, seed=9600)
+    o += shape(rrect(x - 20 * k, y - 330 * k, x + 150 * k, y - 290 * k, 4), "#A8692F", "", w=4, seed=9601)
+    o += shape(rrect(x - 20 * k, y - 240 * k, x + 150 * k, y - 205 * k, 4), "#A8692F", "", w=4, seed=9602)
+    o += shape(rrect(x + 120 * k, y + 20 * k, x + 146 * k, y + 190 * k, 3), "#A8692F", blob(rrect(x + 134 * k, y + 20 * k, x + 146 * k, y + 190 * k, 2), "#7F4B2B", .8), w=4, seed=9603)
+    o += shape(rrect(x - 30 * k, y - 10 * k, x + 160 * k, y + 28 * k, 6), "#C98A4B", blob(rrect(x - 30 * k, y + 14 * k, x + 160 * k, y + 28 * k, 4), "#A56F3E", .9), w=4.4, seed=9604)
+    return o
+
+
+def frame15(t):
+    T_POD = wt(WORDS_IDX["подарок"])
+    k = ease_io(clamp((t - 28.1) / 1.45))
+    z = 1.55 - .55 * k
+    cx, cy = 330 + 210 * k, 880 + 80 * k
+    set_ink(z)
+    FL = K.FLOOR_Y
+    scn = [K.static()]
+    lg, top = K.table(430, 930)
+    # стул с дремлющим котом справа
+    scn.append(lg + top)
+    scn.append(chair(930, 1270, .85))
+    scn.append(Cat.draw(985, 1262, .46, dict(look=(0, 0), blink=0.0, sleep=1.0, tail=2 * math.sin(t * 1.2), flame_e=.8), t))
+    # банка с цветами качнулась на «подарок», пирог с вырезанным куском
+    sw = 7 * math.exp(-max(0, t - T_POD) * 4.5) * math.sin(max(0, t - T_POD) * 24) if t >= T_POD else 0.0
+    scn.append(f'<g transform="rotate({sw:.2f} 640 1190)">{PR.jar_flowers(640, 1190, 1.55, seed=3)}</g>')
+    scn.append(PR.pie(800, 1198, 1.0, "cut"))
+    # люди
+    bs = .66
+    sd, sm = bs, bs * people.HEIGHT["mama"]
+    appr = ease_io(clamp((t - 28.1) / .55))
+    wrap = ease_io(clamp((t - 28.35) / .5))
+    dx = 215 + 8 * math.sin(t * 2.0) * .0
+    mx = 585 - 165 * appr
+    bob = 3 * math.sin(t * 2.6) * wrap
+    dh = (dx, FL - 600 * sd - bob)
+    mh = (mx, FL - 600 * sm - bob)
+
+    def feet(h, s_, sp=24):
+        return {"n": ((h[0] + sp * s_, FL - 4), 0.0), "f": ((h[0] - sp * s_, FL - 4), 0.0)}
+    d_arms = {"n": ("ik", (dh[0] + 60 * sd + (mx + 100 * sm - dh[0] - 60 * sd) * wrap, dh[1] + 330 * sd + (-250 * sd - 330 * sd) * wrap), -1 if wrap < .5 else 1),
+              "f": ("ik", (dh[0] + 20 * sd, dh[1] + 330 * sd), -1)}
+    m_arms = {"n": ("ik", (mh[0] - 60 * sm + (dx - 110 * sd - mh[0] + 60 * sm) * wrap, mh[1] + 330 * sm + (-250 * sm - 330 * sm) * wrap), -1 if wrap < .5 else 1),
+              "f": ("ik", (mh[0] - 20 * sm, mh[1] + 330 * sm), -1)}
+    dexp = dict(lid=.55, look=(.4, 0.1), closed=.0 + .8 * wrap, brows="calm", mouth="smile", smile=.9, blush=.8)
+    joy = ease_io(clamp((t - 28.4) / .3))
+    mexp = dict(lid=.7, look=(-.3, .2), closed=0.0, laugh=.9 * joy, tears=.9 * joy, tw=0.0, brows="up", mouth="smile", smile=.9, blush=1.0, open=.3)
+    dd = fig("dima", dh, bs, .0 + .03 * wrap, d_arms, {"n": open_hand(.15, (1, -.2), .1, .2, k=sd * 1.2), "f": open_hand(.25, (0, 1), .1, .3, flip=-1, k=sd * 1.2)}, dexp,
+             feet=feet(dh, sd), head_ang=.10 * wrap)
+    mm = fig("mama", mh, bs, -.02 * wrap, m_arms, {"n": open_hand(.15, (-1, -.2), .1, .2, flip=-1, k=sm * 1.2), "f": open_hand(.25, (0, 1), .1, .3, k=sm * 1.2)}, mexp,
+             feet=feet(mh, sm), head_ang=.10 * wrap, flip=True)
+    scn.append(dd.get("legs", "") + mm.get("legs", ""))
+    scn.append(dd["arm_f"] + mm["arm_f"])
+    scn.append(dd["body"] + mm["body"])
+    scn.append(dd["arm_n"] + mm["arm_n"])
+    scn.append(B.spark(dh[0] + 170, dh[1] - 330, 1.0, (t * .8) % 1.0) if wrap > .6 else "")
+    cam = lib.cam(cx, cy, z, 0.0)
+    return f'<g transform="{cam}">{"".join(scn)}</g>'
+
+
 WORDS_IDX = {w["word"].strip(".,!?"): i for i, w in enumerate(WORDS)}
 
 
 def frame(sid, t):
     lib.dyn_begin()
-    body = {"s12": frame12, "s13": frame13}[sid](t)
+    body = {"s12": frame12, "s13": frame13, "s15": frame15}[sid](t)
     return lib.svg(f'<rect width="1080" height="1920" fill="#EADFC6"/>{body}')
