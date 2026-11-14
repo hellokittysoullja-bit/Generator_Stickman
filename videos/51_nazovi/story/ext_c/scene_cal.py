@@ -209,7 +209,7 @@ def ppl_front(t, k):
         mouth = "frown"
     if k == 1:
         mouth = "o" if (20.3 < t < 21.3 and int(t * 6) % 2 == 0) else ("frown" if t > 19.3 else "flat")
-    pose = dict(arms={"L": (10, -8), "R": (-10, 8)}, mouth=mouth, brow=brow, look=(-0.7, -0.1 + 0.2 * react[1]), blink=blink,
+    pose = dict(arms={"L": (-16, 10), "R": (16, -10)}, mouth=mouth, brow=brow, look=(-0.7, -0.1 + 0.2 * react[1]), blink=blink,
                 head_tilt=(2.5 * math.sin(t * 1.4 + ph) + (6 * math.sin(t * 7 + ph) * smooth(20.9, 21.4, t) * (1 if k != 1 else 0)) + lean * .6))
     # кивки на слове (20.45–22.2): остальные кивают
     if k != 1:
@@ -272,7 +272,7 @@ def body(t):
         pop = 0.55 + 0.45 * back_out(clamp((t - 18.40) / 0.32), 2.2)
         sw = 1 + .05 * math.sin(t * 7) * smooth(18.4, 18.8, t)
         cw, ch = 330, 410
-        out.append(f'<g transform="translate({f(hx + 44)} {f(hy - 190)}) scale({pop * sw:.4f}) translate({f(-hx - 44)} {f(-hy + 190)})">'
+        out.append(f'<g transform="translate({f(hx + 44)} {f(hy + 15)}) scale({pop * sw:.4f}) translate({f(-hx - 44)} {f(-hy - 15)})">'
                    + card(kind, hx + 44, hy - 190, cw, ch, -7 + 3 * math.sin(t * 5), flip) + "</g>")
         # рука поверх карточки (кисть) — малая, чтобы пальцы держали край
         out.append(person.hand((hx + 4, hy - 4), 17 * SC_SCI * 1.25, SCI["skin"], 777))

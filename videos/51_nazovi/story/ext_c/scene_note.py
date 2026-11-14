@@ -62,15 +62,15 @@ def cloud_state(t):
         R = (290 + 30) * (1 - e) + 62 * e
         calm = e
         # полёт к листу: падает по дуге
-        tx, ty = 905, 1095
+        tx, ty = 935, 1195
         fx = ease_in(u, 1.4)
         cx = 850 + (tx - 850) * ease_io(u)
         cy = 170 + (ty - 170) * (ease_in(u, 2.0) * .75 + .25 * ease_io(u))
         sq = 1.0 - .16 * math.sin(math.pi * u)
         if t >= 28.84:
             tt = t - 28.84
-            cx = 905 + 4 * (1 - math.exp(-tt * 3))
-            cy = 1095 - 120 * abs(math.sin(math.pi * tt * 2.0)) * math.exp(-tt * 3.2)
+            cx = 935 + 4 * (1 - math.exp(-tt * 3))
+            cy = 1195 - 120 * abs(math.sin(math.pi * tt * 2.0)) * math.exp(-tt * 3.2)
             sq = 1.0 - 0.22 * max(0.0, math.cos(math.pi * tt * 2.0)) * math.exp(-tt * 4) * (1 if tt < .25 else 0)
             R = 62 + 4 * math.sin(tt * 5) * math.exp(-tt * 2)
     return cx, cy, R, sq, calm
@@ -86,7 +86,7 @@ def s14(t):
         out.append(C.sparks(cx, cy, R, t, n=8))
     # тень шарика / облака на листе
     if t >= 28.5:
-        out.append(blob(ellipse_pts(cx + 6, 1163, R * .95, R * .2, 18), "#6a4c30", .30 * max(0.0, 1 - (1095 - cy) / 400), blur(5)))
+        out.append(blob(ellipse_pts(cx + 6, 1263, R * .95, R * .2, 18), "#6a4c30", .30 * max(0.0, 1 - (1195 - cy) / 400), blur(5)))
     # строки: сначала письмо, потом облако сверху, если оно ещё большое
     for i in (0, 1, 2):
         out.append(lns[i].svg(t))
@@ -104,7 +104,7 @@ def s14(t):
                 if i == 2:
                     u = clamp((t - ln.t_end) / .25)
                     x0_, y0_ = ln.tip(ln.t_end)[:2]
-                    tipx, tipy = x0_ + 60 * u, y0_ - 40 * u
+                    tipx, tipy = x0_ + 40 * u, y0_ - 110 * u
             else:
                 tipx, tipy = ln.tip(t)[:2]
     if tipx is not None:
