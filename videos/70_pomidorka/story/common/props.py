@@ -2459,8 +2459,8 @@ def day_arc(cx, cy, R=330.0, phase=0.0, seed=0):
 #   step_wall(x, y, k, u, glow, t, seed)  ступенька-камень (ЦЕНТР ДНА) 240×80·k, u 0…1 — вытягивается в отвесную стену 240×(80+940u)·k;
 #                         glow 0…1 — тёплое свечение ступеньки (чёткий ореол, не овал на весь кадр). step_top(x, y, k, u) → y верха.
 #   swing(x, y, k, ang, t, seed, layer)   качели СБОКУ: А-рама 660×760·k (ЦЕНТР ОСНОВАНИЯ), ось сверху, верёвка 520·k, сиденье ребром;
-#                         ang — угол качания (градусы, + сиденье уходит вправо); layer "back" (дальняя рама и верёвка) | "front"
-#                         (ближняя верёвка, сиденье, ближняя рама — её рисовать ПОСЛЕ человека) | "all".
+#                         ang — угол качания (градусы, + сиденье уходит вправо); порядок: layer "back" (рамы, дальняя верёвка) →
+#                         "seat" → человек без ближней руки → "rope" (ближняя верёвка) → ближняя рука; "all" — без человека.
 #                         swing_seat(x, y, k, ang) → (sx, sy, deg) центр сиденья; swing_rope_pts(...) → [(верх, низ)] ближней верёвки.
 #   fence(x0, x1, y, k, seed)             штакетник от x0 до x1, низ на y, высота 200·k
 #   door(x, y, k, ajar, seed)             закрытая дверь комнаты (ЦЕНТР ДНА) 420×920·k, ручка справа, без табличек; door_handle(x, y, k) → (x, y)
@@ -2846,30 +2846,32 @@ def swing_seat(x, y, k=1.0, ang=0.0):
 
 
 def swing(x, y, k=1.0, ang=0.0, t=0.0, seed=0, layer="all"):
-    """Качели СБОКУ (А-рама, верёвка и сиденье ребром), (x, y) — середина основания; ось сверху."""
+    """Качели СБОКУ: А-рама (обе рамы — ЗА человеком, ближняя чуть левее и ниже), верёвка, сиденье ребром.
+    layer: "back" — рамы, перекладина-торец, дальняя верёвка (рисовать ПЕРВЫМ); "seat" — сиденье (до человека);
+    "rope" — ближняя верёвка (после тела, до ближней руки); "all" — всё подряд (без человека)."""
     sd = 71200 + seed
     o = []
     wood, wsh = C_WOOD, C_WOOD_SH
     top = (x, y - SWING_TOP * k)
     if layer in ("back", "all"):
-        bx, by = 34 * k, -26 * k      # дальняя рама чуть выше и правее
-        for j, dx in enumerate((-330, 330)):
-            o.append(shape(lib.band([(x + dx * k + bx, y + by), (top[0] + bx, top[1] + by)], 30 * k, 22 * k, step=6, cap=True), wsh, "", w=4 * k, seed=sd + 1 + j))
+        for fr_, (bx, by, col) in enumerate(((44 * k, -30 * k, wsh), (-60 * k, 24 * k, wood))):
+            for j, dx in enumerate((-330, 330)):
+                o.append(shape(lib.band([(x + dx * k + bx, y + by), (top[0] + bx, top[1] + by)], 34 * k, 24 * k, step=6, cap=True), col,
+                               line([(x + dx * k * .9 + bx, y - 20 * k + by), (top[0] + dx * k * .08 + bx, top[1] + 40 * k + by)], 2.6 * k, wsh, taper=.5,
+                                    wmin=.2, seed=sd + 30 + j + fr_ * 2) if col == wood else "", w=4.4 * k, seed=sd + 1 + j + fr_ * 2))
+        bar = [(top[0] - 60 * k, top[1] + 24 * k - 16 * k), (top[0] + 44 * k, top[1] - 30 * k - 16 * k), (top[0] + 50 * k, top[1] - 30 * k + 16 * k),
+               (top[0] - 54 * k, top[1] + 24 * k + 16 * k)]
+        o.append(shape(bar, wood, blob(bar[2:] + [((bar[0][0] + bar[3][0]) / 2, bar[3][1] - 8 * k)], wsh), w=4.4 * k, seed=sd + 5))
         tp, bt = swing_rope_pts(x, y, k, ang)[0]
-        o.append(line([(tp[0] + bx, tp[1] + by), (bt[0] + bx, bt[1] + by)], 6 * k, "#6E5238", taper=.05, wmin=.9, seed=sd + 9))
-        o.append(shape(ellipse_pts(top[0] + bx * .5, top[1] + by * .5, 30 * k, 26 * k, 14), wood, blob(ellipse_pts(top[0] + bx * .5 + 8 * k, top[1] + by * .5 + 6 * k,
-                                                                                                                     18 * k, 14 * k, 10), wsh), w=4 * k, seed=sd + 3))
-    if layer in ("front", "all"):
-        tp, bt = swing_rope_pts(x, y, k, ang)[0]
-        o.append(line([tp, ((tp[0] + bt[0]) / 2, (tp[1] + bt[1]) / 2), bt], 7.5 * k, "#8A6A48", taper=.05, wmin=.9, seed=sd + 10))
+        o.append(line([(tp[0] + 22 * k, tp[1] - 14 * k), (bt[0] + 22 * k, bt[1] - 14 * k)], 6 * k, "#6E5238", taper=.05, wmin=.9, seed=sd + 9))
+    if layer in ("seat", "all"):
         sx, sy, sdg = swing_seat(x, y, k, ang)
         seat = lib.T(rrect(-95, -6, 95, 20, 6), sx, sy, k, sdg)
         o.append(shape(seat, wood, blob(lib.T(rect_pts(-95, 8, 95, 20), sx, sy, k, sdg), wsh), w=4.4 * k, seed=sd + 20))
-        for j, dx in enumerate((-330, 330)):          # ближняя А-рама
-            o.append(shape(lib.band([(x + dx * k, y), (top[0], top[1] - 10 * k)], 34 * k, 24 * k, step=6, cap=True), wood,
-                           line([(x + dx * k * .9, y - 20 * k), (top[0] + dx * k * .08, top[1] + 40 * k)], 2.6 * k, wsh, taper=.5, wmin=.2, seed=sd + 30 + j),
-                           w=4.4 * k, seed=sd + 4 + j))
-        o.append(blob(ellipse_pts(top[0], top[1], 11 * k, 11 * k, 8), lib.INK))
+    if layer in ("rope", "all"):
+        tp, bt = swing_rope_pts(x, y, k, ang)[0]
+        o.append(line([tp, ((tp[0] + bt[0]) / 2, (tp[1] + bt[1]) / 2), bt], 7.5 * k, "#8A6A48", taper=.05, wmin=.9, seed=sd + 10))
+        o.append(blob(ellipse_pts(tp[0], tp[1], 10 * k, 10 * k, 8), lib.INK))
     return "".join(o)
 
 

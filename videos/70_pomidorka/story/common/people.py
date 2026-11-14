@@ -2170,3 +2170,152 @@ def mix_ang(a, b, u):
     u = max(0.0, min(1.0, u))
     d = (b[1] - a[1] + math.pi) % (2 * math.pi) - math.pi
     return ("ang", a[1] + d * u, a[2] + (b[2] - a[2]) * u)
+
+
+# ═════════════════════════════ РИЛС 70 «ПОМИДОРКА» (автор — группа B): позы, мимика, Дима со спины ═════════════════════════════
+# Мимика: ночью s01–s08 с мешками (по умолчанию), утром s13–s18 — имена с «_day» или bags=False.
+#   hope (надежда), resolve (решимость), numb (оцепенение, взгляд в стену), peer (всматривается), frowny (хмурится), sink (уныние,
+#   глаза вниз), surprise_day, laugh_day, relief_day, focus_smile (сосредоточенная улыбка), sly (хитрый прищур), smile_cam (улыбка в камеру).
+# Позы (POSE, по пояс; цели рук — в долях масштаба от таза, Дима смотрит вправо):
+#   hold_front — держит/заводит предмет перед грудью двумя руками (центр предмета ≈ (265, −330)·sc); hover — руки зависли над клавишами
+#   (≈ (290, −215)·sc); recoil — отдёрнул руки к груди; type — печатает (кисти на (300, −200)·sc, пальцы вниз; дрожь — сцена);
+#   cheek — ближние пальцы трогают щёку; head_arms — голова на скрещённых руках на столе (lean большой, лицо вниз);
+#   swing — обе руки держат верёвку качелей (цель руки задаёт сцена через arms=, см. swing_arms); door — ближняя ладонь на ручке
+#   двери (≈ (300, −40)·sc при стойке); mug — несёт кружку перед собой (≈ (250, −250)·sc); push — не глядя отодвигает предмет ладонью
+#   вправо-вниз (≈ (420, −190)·sc); pet — гладит (из 64).
+#   swing_kw(x, y, scale, kick) → feet для сидения на качелях: ноги вперёд (kick 0…1 — выпрямлены, волнообразно задаёт сцена).
+#   sit_kw(x, y, scale) → feet для сидения на стуле (колени вперёд, голени вниз).
+#   swing_arms(x, y, scale, rope_top, rope_bot, lean) → arms= для обеих рук на верёвке (кисти на верёвке на высоте плеч и чуть выше).
+#   dima_back(x, y, scale, tilt, look_up, shrug, hair, t) — Дима СО СПИНЫ: голова и плечи в горчичном худи (капюшон сзади).
+#                         (x, y) — основание шеи (между плеч), голова ≈ 300·scale; tilt — наклон головы набок (градусы),
+#                         look_up 0…1 — запрокидывает голову (затылок уходит к капюшону, видны уши ниже и шея короче);
+#                         shrug 0…1 — плечи к ушам. Возвращает dict(svg, head=(x, y) центр затылка, shoulders=(левое, правое)).
+EXPR["dima"].update({
+    "hope": {"brows": "up", "mouth": "smile", "smile": .5, "lid": .92, "look": (.45, .2)},                     # надежда
+    "resolve": {"brows": "det", "mouth": "pressed", "lid": .8, "look": (.55, .15)},                             # решимость
+    "numb": {"brows": "calm", "mouth": "flat", "lid": .42, "look": (.05, 0)},                                  # оцепенение
+    "peer": {"brows": "one_up", "mouth": "flat", "lid": .78, "look": (.8, .05)},                               # всматривается
+    "frowny": {"brows": "pinch", "mouth": "frown", "lid": .55, "look": (.7, .1)},                              # хмурится
+    "sink": {"brows": "sad", "mouth": "frown", "lid": .3, "look": (.3, .7)},                                   # уныние, глаза вниз
+    "surprise_day": {"brows": "up", "mouth": "o", "open": .35, "lid": 1.0, "look": (.3, -.1), "bags": False},
+    "laugh_day": {"brows": "up", "mouth": "laugh", "open": .9, "laugh": 1.0, "hair": 6, "bags": False},
+    "relief_day": {"brows": "calm", "mouth": "smile", "smile": .8, "lid": .45, "look": (.3, .3), "bags": False},
+    "focus_smile": {"brows": "det", "mouth": "smile", "smile": .4, "lid": .58, "look": (.6, .55), "bags": False},
+    "sly": {"brows": "one_up", "mouth": "side", "lid": .32, "look": (.5, 0), "bags": False},
+    "smile_cam": {"brows": "calm", "mouth": "smile", "smile": 1.0, "lid": .7, "look": (-.35, 0), "bags": False},
+})
+
+POSE.update({
+    "hold_front": (0.06, 0.1, {"f": ("ik", (205, -330), -1), "n": ("ik", (325, -335), -1)},
+                   {"f": {"dir": (.9, -.3), "curl": (.55, .55, .6, .62), "thumb": .5}, "n": {"dir": (-.6, -.7), "curl": (.6, .6, .65, .68), "thumb": .6}}),
+    "hover": (0.12, 0.12, {"f": ("ik", (235, -222), -1), "n": ("ik", (330, -228), -1)},
+              {"f": {"dir": (1, .35), "curl": (.18, .22, .25, .3), "spread": .25, "thumb": .2}, "n": {"dir": (1, .4), "curl": (.15, .2, .22, .28), "spread": .25, "thumb": .2}}),
+    "recoil": (-0.06, -0.06, {"f": ("ik", (110, -300), -1), "n": ("ik", (150, -315), -1)},
+               {"f": {"dir": (.3, -1), "curl": (.7, .7, .75, .75), "thumb": .6}, "n": {"dir": (.2, -1), "curl": (.7, .72, .75, .78), "thumb": .6}}),
+    "type": (0.14, 0.18, {"f": ("ik", (250, -205), -1), "n": ("ik", (335, -210), -1)},
+             {"f": {"dir": (1, .55), "curl": (.3, .35, .4, .45), "spread": .2, "thumb": .3}, "n": {"dir": (1, .6), "curl": (.3, .3, .35, .4), "spread": .2, "thumb": .3}}),
+    "cheek": (0.04, 0.06, {"f": ("ik", (220, -210), -1), "n": ("ik", (185, -455), -1)},
+              {"f": {"curl": (.4, .4, .45, .5), "thumb": .4}, "n": {"dir": (-.1, -1), "curl": (0, .55, .7, .75), "spread": .05, "thumb": .5}}),
+    "head_arms": (0.78, 0.45, {"f": ("ik", (330, -150), -1), "n": ("ik", (250, -165), -1)},
+                  {"f": {"dir": (-1, .1), "curl": (.5, .5, .55, .6), "thumb": .4}, "n": {"dir": (1, -.05), "curl": (.45, .45, .5, .55), "thumb": .4}}),
+    "swing": (-0.08, -0.06, {"f": ("ik", (60, -560), 1), "n": ("ik", (80, -575), 1)},
+              {"f": {"dir": (0, -1), "curl": (.75, .75, .8, .8), "thumb": .7}, "n": {"dir": (0, -1), "curl": (.75, .78, .8, .8), "thumb": .7}}),
+    "door": (0.02, 0.05, {"f": ("ang", 0.16, 0.2), "n": ("ik", (300, -40), -1)},
+             {"n": {"dir": (1, .1), "curl": (.65, .7, .72, .75), "thumb": .6}}),
+    "mug": (0.0, 0.05, {"f": ("ang", 0.18, 0.22), "n": ("ik", (250, -250), -1)},
+            {"n": {"dir": (.4, -1), "curl": (.6, .6, .65, .7), "thumb": .6}}),
+    "push": (0.1, 0.12, {"f": ("ik", (250, -205), -1), "n": ("ik", (430, -190), -1)},
+             {"f": {"dir": (1, .55), "curl": (.3, .35, .4, .45), "spread": .2, "thumb": .3}, "n": {"dir": (1, .15), "spread": .3, "curl": (0, .03, .06, .1), "thumb": .1}}),
+})
+
+
+def sit_kw(x, y, scale, who="dima"):
+    sc = scale * HEIGHT.get(who, 1.0)
+    return {"feet": {"n": ((x + 300 * sc, y + 300 * sc), 0.0), "f": ((x + 250 * sc, y + 306 * sc), 0.0)}}
+
+
+def swing_kw(x, y, scale, kick=0.5, who="dima"):
+    """Ноги на качелях: колени вперёд, голени вперёд-вниз (kick 0) … почти прямо вперёд (kick 1)."""
+    sc = scale * HEIGHT.get(who, 1.0)
+    k = lib.clamp(kick)
+    out = {}
+    for side, d in (("n", 0.0), ("f", -40.0)):
+        a = math.radians(70 - 58 * k)        # угол голени от горизонтали вниз
+        kx, ky = 290.0, 10.0
+        ax, ay = kx + 290 * math.cos(a) + d, ky + 290 * math.sin(a)
+        out[side] = ((x + ax * sc, y + ay * sc), -.6 * k)
+    return {"feet": out}
+
+
+def swing_arms(x, y, scale, rope_top, rope_bot, lean=0.0, who="dima"):
+    """Руки держат верёвку: кисти на верёвке выше плеча (ближняя чуть выше)."""
+    sc = scale * HEIGHT.get(who, 1.0)
+    t_, b_ = np.array(rope_top, float), np.array(rope_bot, float)
+    sh_y = y - TORSO * sc
+
+    def on_rope(yy):
+        u = lib.clamp((yy - t_[1]) / (b_[1] - t_[1] + 1e-6))
+        return tuple(t_ + (b_ - t_) * u)
+    return {"f": ("ik", on_rope(sh_y - 40 * sc), 1), "n": ("ik", on_rope(sh_y - 90 * sc), 1)}
+
+
+def dima_back(x, y, scale, tilt=0.0, look_up=0.0, shrug=0.0, hair=0.0, t=0.0, who="dima"):
+    global C
+    C = PAL[who]
+    s = scale
+    o = []
+    lu = lib.clamp(look_up)
+    sh = SHRUG * .9 * lib.clamp(shrug)
+    # спина и плечи худи (L-единицы: (0, 0) — основание шеи)
+    back = [(-300, 600, 1), (-306, 300), (-292, 150 - sh * .6), (-250, 66 - sh), (-150, 20 - sh), (0, 6), (150, 20 - sh), (250, 66 - sh),
+            (292, 150 - sh * .6), (306, 300), (300, 600, 1)]
+    inner = blob([(80, 0), (340, 120), (340, 560), (120, 560), (150, 300)], C["TOP_SH"], .85)
+    inner += line([(-40, 200), (-20, 400), (-34, 560)], 3.0, C["FOLD"], seed=7001, op=.7)
+    inner += line([(-230, 160), (-200, 300)], 2.6, C["FOLD"], seed=7002, op=.6)
+    inner += line([(230, 170), (205, 320)], 2.6, C["FOLD"], seed=7003, op=.6)
+    inner += line([(-250, 110), (-290, 220)], 2.8, C["FOLD"], seed=7004, op=.7)      # шов рукава
+    inner += line([(250, 110), (290, 220)], 2.8, C["FOLD"], seed=7005, op=.7)
+    o.append(shape(back, C["TOP"], inner, w=5.6, seed=7000))
+    # капюшон, лежащий на спине
+    hood = [(-150, 10 - sh * .5), (-170, 90), (-130, 190), (-40, 240), (40, 240), (130, 190), (170, 90), (150, 10 - sh * .5), (60, 40), (-60, 40)]
+    h_in = blob([(20, 40), (170, 80), (130, 200), (30, 240)], C["TOP_SH2"], .8)
+    h_in += line([(-110, 70), (-60, 160), (0, 190), (60, 160), (110, 70)], 3.0, C["FOLD"], seed=7011, op=.85)
+    o.append(shape(hood, C["TOP_SH"], h_in, w=5.0, seed=7010))
+    # шея
+    nk = [(-62, 40), (-58, -70), (58, -70), (62, 40), (0, 56)]
+    o.append(shape(nk, C["SKIN"], blob([(10, -80), (70, -80), (70, 50), (20, 50)], C["SKIN_SH"], .9), w=4.4, seed=7020))
+    # голова: затылок волосами, уши по бокам
+    hy = -205 + 70 * lu + sh
+    ear_dy = -24 * lu
+    hd = []
+    for side in (-1, 1):
+        ear = [(side * 104, -20), (side * 132, -34), (side * 146, -2), (side * 138, 36), (side * 116, 52), (side * 100, 40)]
+        ear = [(p[0], p[1] + ear_dy) for p in ear]
+        hd.append(shape(ear, C["SKIN"], blob([(side * 146, -2), (side * 138, 36), (side * 120, 30)], C["SKIN_SH"], .9), w=4.6, seed=7030 + side))
+        hd.append(line([(side * 112, 30 + ear_dy), (side * 132, 18 + ear_dy), (side * 128, -12 + ear_dy)], 3.0, seed=7034 + side))
+    skull = ellipse_pts(0, -10, 124, 150, 30)
+    hd.append(shape(skull, C["SKIN"], "", w=5.0, seed=7040))
+    hb = hair
+    hp = []
+    rs = np.random.RandomState(70)
+    n = 14
+    for i in range(n + 1):        # лохматый контур волос: от левого виска через макушку к правому, низ — неровная линия у шеи
+        a = math.pi * (1.05 + 0.9 * i / n) + rs.uniform(-.04, .04)
+        r = 1.0 + (rs.uniform(.08, .2) if i % 2 else .02) + rs.uniform(-.02, .03)
+        hp.append((132 * r * math.cos(a), -18 + 160 * r * math.sin(a) + (hb * math.sin(i * 1.7 + t * 14) * 4 if hb else 0)) + ((1,) if i % 2 else ()))
+    bottom_y = 96 - 40 * lu
+    hp += [(134, 20), (126, 60), (104, bottom_y - 4, 1), (80, bottom_y + 12), (50, bottom_y, 1), (20, bottom_y + 14), (-14, bottom_y, 1),
+           (-46, bottom_y + 12), (-80, bottom_y, 1), (-110, bottom_y - 8), (-128, 56), (-134, 20)]
+    h_in = blob([(10, -190), (150, -120), (150, 100), (40, 100), (70, -40)], C["HAIR_SH"], .9)
+    h_in += blob(ellipse_pts(-40, -120, 46, 24, 12, rot=-.4), C["HAIR_HI"], .7)
+    for j in range(10):
+        a = math.radians(-160 + j * 15)
+        p0 = (40 * math.cos(a) - 10, -70 + 50 * math.sin(a))
+        p1 = (120 * math.cos(a + .25) - 10, -40 + 140 * math.sin(a + .1))
+        h_in += line([p0, ((p0[0] + p1[0]) / 2 + 8, (p0[1] + p1[1]) / 2), p1], 3.0, "#2a170f", seed=7060 + j, op=.8)
+    h_in += f'<circle cx="-6" cy="-92" r="7" fill="{C["HAIR_SH"]}"/>'      # макушка-вихор
+    hd.append(shape(hp, C["HAIR"], h_in, w=5.2, seed=7050))
+    head_svg = f'<g transform="translate(0 {hy:.2f}) rotate({tilt:.3f} 0 120)">{"".join(hd)}</g>'
+    body = "".join(o[:2])
+    svg = (f'<g transform="translate({x:.2f} {y:.2f}) scale({s:.5f})">' + body + o[2] + head_svg + "</g>")
+    return dict(svg=svg, head=(x, y + (hy - 10) * s), shoulders=((x - 300 * s, y + 80 * s), (x + 300 * s, y + 80 * s)))
