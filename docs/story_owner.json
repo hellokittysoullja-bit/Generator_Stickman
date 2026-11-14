@@ -1,22 +1,22 @@
 {
  "session": "session_01WL83YHdupNJiw52fjyDVVG",
- "utc": "2026-11-14T04:34:08Z",
+ "utc": "2026-11-14T04:34:47Z",
  "note": "session — ведущая (диспетчер); worker — отдельная облачная сессия, которая сейчас делает один рилс",
  "workers": [
-  {
-   "reel": 40,
-   "session": "session_01XV6HF6jiGqvYrvJHf9pp9H",
-   "started": "2026-11-14T03:34:47Z"
-  },
-  {
-   "reel": 41,
-   "session": "session_01XV6HF7NikRRjAnoXY1N7gu",
-   "started": "2026-11-14T03:49:09Z"
-  },
   {
    "reel": 42,
    "session": "session_01XV6HF9xDS64CKcT53qmgfQ",
    "started": "2026-11-14T04:19:01Z"
+  },
+  {
+   "reel": 43,
+   "session": "session_01XV6HF7DA2T2FzvghVuPft9",
+   "started": "2026-11-14T04:34:47Z"
+  },
+  {
+   "reel": 44,
+   "session": "session_01XV6HF6pgQvs99FYqqddcoH",
+   "started": "2026-11-14T04:34:47Z"
   }
  ]
 }
