@@ -11,7 +11,7 @@
     FL=1560 пол под ногами (низ ножек), WALL_Y=1440 низ стены, DESK_TOP=960 передняя кромка столешниц, DESK_D=120 глубина верха
     CREATIVE=(−540, 380)  творческий стол у окна (слева)      CLEAN=(760, 1660) чистый стол у другой стены (справа)
     WIN=(−470, 200, 150, 780) окно над творческим столом      SKETCH_WALL=(170, 250, 420, 800) стена с набросками справа от окна
-    LAMP=(250, DESK_TOP−70) дно настольной лампы на творческом столе, LAMP_POOL — центр и радиусы светового круга на столе
+    LAMP=(170, DESK_TOP−70) дно настольной лампы на творческом столе, LAMP_POOL — центр и радиусы светового круга на столе
     MID_X=570  место крутящегося стула между столами (общий план); seat_y(bs) — высота сиденья под таз сидящего Димы масштаба bs
     DOOR=(1760, 300, 2120, WALL_Y) проём двери справа от чистого стола
 
@@ -31,8 +31,10 @@
     door(t, open_=1.0)                   проём двери: наличник, открытая створка, светлый коридор за ней (фигуру ставить между
                                           door_back() и door_front())
     door_back(t, open_) / door_front(open_)   слои двери: коридор и створка / наличник поверх фигуры
-    creative_clutter(t, k=1.0)           бардак на творческом столе из common/props.py (бумажки, кружки, провода), если есть
-    room_bg(t, lamp_on=1.0, flick=0.0, fly=0.0, pop=0.0)  весь фон: стена, окно, наброски, стикеры, полка, оба стола (без предметов),
+    creative_clutter(t, k, jump)         бардак на творческом столе из common/props.py (гора бумажек, кружки, провода, стикер); справа у лампы
+                                          свободно под рисование; jump — подскок предметов от хлопка
+    clean_top(t, checks, u)              чистый стол: закрытый ноутбук, ровная стопка, лист с чекбоксами (props.checklist) у левого края
+    room_bg(t, lamp_on, flick, fly, pop, items=False)  весь фон: стена, окно, наброски, стикеры, полка, оба стола (items=True — с предметами),
                                           лампа; возвращает dict(bg=..., lamp=..., pool=..., creative=desk dict, clean=desk dict)
 """
 import math
@@ -55,8 +57,8 @@ CREATIVE = (-540.0, 380.0)
 CLEAN = (760.0, 1660.0)
 WIN = (-470.0, 200.0, 150.0, 780.0)
 SKETCH_WALL = (170.0, 250.0, 420.0, 800.0)
-LAMP = (250.0, DESK_TOP - 70.0)
-LAMP_POOL = (190.0, DESK_TOP - 52.0, 150.0, 40.0)
+LAMP = (170.0, DESK_TOP - 70.0)
+LAMP_POOL = (230.0, DESK_TOP - 52.0, 150.0, 40.0)
 MID_X = 570.0
 DOOR = (1760.0, 300.0, 2120.0, WALL_Y)
 
@@ -176,14 +178,14 @@ def window(t, dim=0.0):
 
 # ═════════════════════════ наброски и стикеры ═════════════════════════
 SKETCHES = [  # (cx, cy, w, h, rot, kind)
-    (230.0, 330.0, 130.0, 160.0, -6.0, 0),
-    (370.0, 360.0, 120.0, 150.0, 5.0, 1),
-    (250.0, 540.0, 140.0, 110.0, 4.0, 2),
-    (380.0, 560.0, 110.0, 140.0, -7.0, 3),
-    (240.0, 720.0, 120.0, 120.0, -3.0, 4),
-    (365.0, 730.0, 120.0, 100.0, 8.0, 5),
+    (230.0, 300.0, 130.0, 150.0, -6.0, 0),
+    (370.0, 320.0, 120.0, 140.0, 5.0, 1),
+    (245.0, 475.0, 140.0, 110.0, 4.0, 2),
+    (385.0, 490.0, 110.0, 130.0, -7.0, 3),
+    (235.0, 630.0, 120.0, 110.0, -3.0, 4),
+    (375.0, 650.0, 120.0, 100.0, 8.0, 5),
 ]
-STICKERS = [(470.0, 280.0, "#f6d55c", -8.0), (330.0, 460.0, "#f29fb8", 6.0), (180.0, 640.0, "#8fd0c4", -5.0), (420.0, 460.0, "#f6d55c", 10.0),
+STICKERS = [(470.0, 280.0, "#f6d55c", -8.0), (310.0, 400.0, "#f29fb8", 6.0), (165.0, 560.0, "#8fd0c4", -5.0), (440.0, 410.0, "#f6d55c", 10.0),
             (170.0, 440.0, "#f6a65c", 4.0)]
 
 
@@ -269,7 +271,7 @@ def desk(x0, x1, kind="creative"):
     ins = 34.0
     back = []
     # задние ножки (видны между передними, короче — уходят за верх)
-    for lx in (x0 + ins + 40, x1 - ins - 40):
+    for lx in ((x1 - ins - 60,) if kind == "creative" else (x0 + ins + 40, x1 - ins - 40)):
         back.append(shape(rect_pts(lx - 12, y - 10, lx + 12, FL - 70), sh, w=3.0, seed=sd + int(lx) % 97))
     # верх (вид слегка сверху)
     top = [(x0 + 22, y - DESK_D, 1), (x1 - 22, y - DESK_D, 1), (x1, y, 1), (x0, y, 1)]
@@ -287,14 +289,14 @@ def desk(x0, x1, kind="creative"):
     back.append(shape(top, hi if kind == "clean" else c, inner, w=3.8, seed=sd + 1))
     # передняя кромка
     front = [shape(rect_pts(x0, y, x1, y + DESK_TH), c, blob(rect_pts(x0, y + DESK_TH - 10, x1, y + DESK_TH), sh, .9), w=3.8, seed=sd + 2)]
-    if kind == "creative":    # тумба с ящиками справа
-        bx0, bx1 = x1 - 270, x1 - 20
+    if kind == "creative":    # тумба с ящиками слева (справа под столом место для ног того, кто сидит на стуле MID_X)
+        bx0, bx1 = x0 + 20, x0 + 270
         front.append(shape(rect_pts(bx0, y + DESK_TH, bx1, FL - 10), c, blob(rect_pts(bx1 - 40, y + DESK_TH, bx1, FL - 10), sh, .9), w=3.6, seed=sd + 3))
         for k in range(3):
             ya = y + DESK_TH + 16 + k * 180
             front.append(shape(rect_pts(bx0 + 16, ya, bx1 - 16, ya + 160), hi, blob(rect_pts(bx0 + 16, ya + 140, bx1 - 16, ya + 160), sh, .6), w=3.0, seed=sd + 4 + k))
             front.append(shape(rect_pts((bx0 + bx1) / 2 - 28, ya + 64, (bx0 + bx1) / 2 + 28, ya + 80, 6), "#3a3d46", w=2.4, seed=sd + 8 + k))
-        legs = shape(rect_pts(x0 + ins - 16, y + DESK_TH, x0 + ins + 16, FL), c, blob(rect_pts(x0 + ins + 4, y + DESK_TH, x0 + ins + 16, FL), sh, .9), w=3.4, seed=sd + 12)
+        legs = shape(rect_pts(x1 - ins - 16, y + DESK_TH, x1 - ins + 16, FL), c, blob(rect_pts(x1 - ins + 4, y + DESK_TH, x1 - ins + 16, FL), sh, .9), w=3.4, seed=sd + 12)
     else:                     # тонкие ножки и узкая царга
         front.append(shape(rect_pts(x0 + 30, y + DESK_TH, x1 - 30, y + DESK_TH + 26), sh, w=3.0, seed=sd + 3))
         legs = ""
@@ -306,7 +308,7 @@ def desk(x0, x1, kind="creative"):
 
 
 def desk_lamp(on=1.0, flick=0.0, tilt=0.0):
-    """Настольная лампа на творческом столе (дно в LAMP), абажур-колокол смотрит вниз-влево; свет — небольшой круг на столе
+    """Настольная лампа на творческом столе (дно в LAMP), абажур-колокол смотрит вниз-вправо; свет — небольшой круг на столе
     с чётким краем (эллипс по форме проекции абажура), без огромного мягкого пятна."""
     lx, ly = LAMP
     o = [shape(ellipse_pts(lx, ly - 6, 50, 11, 16), "#3f6f7a", blob(ellipse_pts(lx + 12, ly - 3, 36, 6, 12), "#2c535c"), w=3.2, seed=3300)]
@@ -329,6 +331,7 @@ def desk_lamp(on=1.0, flick=0.0, tilt=0.0):
     if u > .02:
         o.append(blob(mouth, lib.mix("#cdbf9a", "#fff3c8", u)))
         o.append(line(mouth, w=3.0, seed=3304))
+    lamp_svg = f'<g transform="translate({f(2 * lx)} 0) scale(-1 1)">{"".join(o)}</g>'
     pool = ""
     if u > .02:
         px, py, rx, ry = LAMP_POOL
@@ -339,8 +342,9 @@ def desk_lamp(on=1.0, flick=0.0, tilt=0.0):
         pool += f'<ellipse cx="{f(px)}" cy="{f(py)}" rx="{f(rx)}" ry="{f(ry)}" fill="none" stroke="#f6c860" stroke-width="2.5" opacity="{.55 * a2:.3f}"/>'
         # узкий луч из абажура к кругу (чёткие края, слабая заливка)
         m0, m1 = H(-88, 52), H(36, 28)
+        m0, m1 = (2 * lx - m0[0], m0[1]), (2 * lx - m1[0], m1[1])
         pool += f'<path d="M{f(m0[0])} {f(m0[1])}L{f(m1[0])} {f(m1[1])}L{f(px + rx * .92)} {f(py)}L{f(px - rx * .92)} {f(py)}Z" fill="#fff0b8" opacity="{.16 * a2:.3f}"/>'
-    return dict(lamp="".join(o), pool=pool)
+    return dict(lamp=lamp_svg, pool=pool)
 
 
 def clean_wall(t):
@@ -449,32 +453,33 @@ def door(t, open_=1.0, figure=""):
 
 
 # ═════════════════════════ бардак творческого стола ═════════════════════════
-def creative_clutter(t, k=1.0):
-    """Бумажки, кружки и провода на творческом столе из common/props.py (если там есть такие функции); иначе — пусто."""
-    try:
-        import props as PR
-    except Exception:
-        return ""
-    o = []
-    y_back, y_front = DESK_TOP - DESK_D + 24, DESK_TOP - 10
-    calls = (("paper_stack", (-420, y_back + 30), {}), ("papers_scatter", (-180, y_front - 20), {}), ("mug", (-60, y_back + 40), {}),
-             ("mug", (60, y_front - 8), {"coffee": True}), ("wires", (-300, y_front - 6), {}))
-    for name, (x, y), kw in calls:
-        fn = getattr(PR, name, None)
-        if fn is None:
-            continue
-        try:
-            o.append(fn(x, y, k=k, **kw))
-        except TypeError:
-            try:
-                o.append(fn(x, y, k))
-            except Exception:
-                pass
+def creative_clutter(t, k=1.0, jump=0.0):
+    """Бардак творческого стола из common/props.py: гора бумажек слева, клубок проводов с зарядкой, две кружки с кольцом кофе,
+    стикер, карандаш. Место справа (x 200…380 у лампы) свободно — там рисует Дима. jump — подскок предметов (хлопок ладонью), px."""
+    import props as PR
+    yb, yf = DESK_TOP - DESK_D + 30, DESK_TOP - 8
+    j = -abs(jump)
+    o = [PR.coffee_ring(60, yf - 34, 1.0, seed=1), PR.paper_pile(-330, yf - 10 + j * .6, 1.05, seed=3),
+         PR.mug(-170, yb + 44 + j, .95, rot=-4 * (jump != 0), col="blue", coffee=True, seed=1),
+         PR.cable_tangle(-90, yf - 26 + j * .4, .8, seed=2, t=t), PR.charger(10, yf - 36 + j * .5, .8, rot=-20),
+         PR.sticky(-20, yb + 50 + j * .3, .8, rot=8, col="pink", seed=2, mark="star"),
+         PR.mug(110, yf + j * 1.2, 1.0, rot=3 * (jump != 0), col="red", coffee=True, steam=.7, t=t, seed=2),
+         PR.pencil(-250, yf - 6 + j, .8, rot=-6)]
+    return "".join(o)
+
+
+def clean_top(t, checks=0, u=0.0, k=1.0):
+    """Чистый стол: закрытый ноутбук, одна ровная стопка, лист с чекбоксами (без букв) у левого края — под руку сидящему на MID_X."""
+    import props as PR
+    yb, yf = DESK_TOP - DESK_D + 30, DESK_TOP - 8
+    o = [PR.laptop_closed(1180, yb + 50, 1.15), PR.paper_stack(1500, yb + 60, .9, n=5, seed=4, mess=0.0, sy=.4),
+         PR.marker(1020, yf - 20, .7, rot=-8, col="#4F8A8B", cap=True),
+         PR.checklist(890, yf - 52, 1.0 * k, rot=-3, checks=checks, u=u, seed=1, sy=.62)]
     return "".join(o)
 
 
 # ═════════════════════════ весь фон ═════════════════════════
-def room_bg(t, lamp_on=1.0, flick=0.0, fly=0.0, pop=0.0, win_dim=0.0, door_open=1.0, with_door=True):
+def room_bg(t, lamp_on=1.0, flick=0.0, fly=0.0, pop=0.0, win_dim=0.0, door_open=1.0, with_door=True, items=False):
     """Фон комнаты целиком без людей и предметов на столах. Порядок в клипе: bg → [предметы на столах, фигуры] → front-слои столов."""
     cr = desk(*CREATIVE, kind="creative")
     cl = desk(*CLEAN, kind="clean")
@@ -484,4 +489,6 @@ def room_bg(t, lamp_on=1.0, flick=0.0, fly=0.0, pop=0.0, win_dim=0.0, door_open=
     if with_door:
         o.append(door(t, door_open))
     o += [cr["back"], cr["front"], cr["legs"], cl["back"], cl["front"], cl["legs"]]
+    if items:
+        o += [lamp["pool"], creative_clutter(t), clean_top(t)]
     return dict(bg="".join(o), lamp=lamp["lamp"], pool=lamp["pool"], creative=cr, clean=cl)
