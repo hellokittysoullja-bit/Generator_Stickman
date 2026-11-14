@@ -27,6 +27,15 @@ PAL = {
                    LEGS="#6b5946", LEGS_SH="#4f4133", LEGS_SEAM="#86735e",
                    SHOE="#7a4a2a", SHOE_SH="#5a341c", SOLE="#3b2c22", SOLE_SH="#2a1f18", STRIPE="#a76a3e", NAIL="#f6dccd"),
 }
+PAL["granny"] = dict(SKIN="#f2d6c0", SKIN_SH="#dcb095", SKIN_SH2="#c8957e", HAIR="#dcdce4", HAIR_SH="#aeb0c0", HAIR_HI="#f6f6fa",
+                     TOP="#a283c4", TOP_SH="#7f62a3", TOP_SH2="#624a82", FOLD="#4a3563", STITCH="#e8d9f2", TEE="#f6efe2", TEE_SH="#ddd2bf",
+                     LEGS="#6c4c63", LEGS_SH="#523a4b", LEGS_SEAM="#8a6a80", SHOE="#5b3e3a", SHOE_SH="#43302c", SOLE="#e9e2d4", SOLE_SH="#c4bcad",
+                     STRIPE="#a76a3e", NAIL="#f6dccd")
+PAL["sport"] = dict(SKIN="#d9a67f", SKIN_SH="#bd8662", SKIN_SH2="#a56f50", HAIR="#2f2220", HAIR_SH="#1c1412", HAIR_HI="#4a3630",
+                    TOP="#d8483c", TOP_SH="#a8322a", TOP_SH2="#7e241e", FOLD="#5c1914", STITCH="#f4efe6", TEE="#f4efe6", TEE_SH="#d9d2c4",
+                    LEGS="#2a2c36", LEGS_SH="#1c1d25", LEGS_SEAM="#4a4d5c", SHOE="#f1efe8", SHOE_SH="#cfcbbf", SOLE="#e8883a", SOLE_SH="#b86a28",
+                    STRIPE="#d8483c", NAIL="#eac3a8")
+FRIENDLIKE = ("friend", "granny", "sport")
 FAR = (0.82, 0.82, 0.9)
 
 THIGH, SHIN, AH = 310.0, 300.0, 62.0
@@ -287,7 +296,16 @@ def friend_head(expr):
     for i, st in enumerate([[(-50, 70), (-36, 98)], [(-20, 110), (-6, 138)], [(20, 140), (30, 168)], [(64, 150), (66, 176)], [(98, 124), (102, 150)],
                             [(4, 96), (12, 118)], [(-62, 40), (-50, 60)]]):
         binner += line(st, 2.6, "#7d3514", seed=380 + i, op=.85)
-    s.append(shape(beard, C["HAIR"], binner, w=5.2, seed=354))
+    style = expr.get("style", "")
+    if style == "":
+        s.append(shape(beard, C["HAIR"], binner, w=5.2, seed=354))
+    elif style == "sport":      # щетина вместо бороды
+        rs2 = np.random.RandomState(9)
+        for _ in range(60):
+            x, y = rs2.uniform(-40, 112), rs2.uniform(84, 140)
+            if (x - 36) ** 2 / 90 ** 2 + (y - 112) ** 2 / 40 ** 2 > 1:
+                continue
+            s.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="1.6" fill="#6b4a3a" opacity=".6"/>')
     # нос
     s.append(blob([(48, 14), (64, 46), (54, 54), (42, 44)], C["SKIN_SH"], .9))
     s.append(line([(58, 2), (82, 40), (78, 56), (60, 58)], 5.0, seed=364, peak=.45))
@@ -306,13 +324,33 @@ def friend_head(expr):
         k = expr.get("smile", 0.0)
         s.append(line([(24, 92 - 6 * k), (50, 98 + 3 * k), (80, 98 + 3 * k), (104, 90 - 6 * k)], 4.8, seed=391, peak=.5))
     must = [(6, 80), (24, 66), (54, 62), (64, 70), (76, 62), (102, 64), (118, 76), (100, 82), (78, 78), (64, 84), (48, 78), (24, 84)]
-    s.append(shape(must, C["HAIR"], blob([(10, 80), (118, 78), (100, 86), (24, 88)], C["HAIR_SH"], .8), w=4.0, seed=355))
+    if style == "":
+        s.append(shape(must, C["HAIR"], blob([(10, 80), (118, 78), (100, 86), (24, 88)], C["HAIR_SH"], .8), w=4.0, seed=355))
+    if style == "granny":
+        for (a, b, c_) in (([(-20, 70), (-8, 90), (-12, 108)], 0, 0),):
+            pass
+        s.append(blob(ellipse_pts(100, 52, 20, 11, 10), "#e98a86", .5) + blob(ellipse_pts(10, 60, 24, 12, 10), "#e98a86", .45))
+        s.append(line([(24, 76), (14, 92), (18, 108)], 2.2, C["SKIN_SH2"], seed=398, op=.8) + line([(108, 70), (118, 84)], 2.2, C["SKIN_SH2"], seed=399, op=.8))
     s.append(eyes(expr, F_EYE_N, F_EYE_F, bags=False))
+    if style == "granny":      # очки: тонкие круглые оправы без заливки
+        for (cx_, cy_, r_, sd_) in ((18, -22, 56, 410), (90, -20, 44, 411)):
+            s.append(f'<path d="{ink_closed(ellipse_pts(cx_, cy_, r_, r_ * .96, 18), 3.6 * lib.INK_K[0], seed=sd_)}" fill="#5a4a5e"/>')
+        s.append(line([(64, -26), (48, -24)], 3.4, "#5a4a5e", seed=412))
+        s.append(line([(-34, -30), (-100, -26)], 3.0, "#5a4a5e", seed=413))
     br = expr.get("brows", "up")
     B = {"up": ([(-26, -104), (8, -122), (48, -114)], [(70, -114), (98, -124), (122, -108)]),
          "calm": ([(-26, -90), (8, -98), (48, -90)], [(70, -90), (98, -96), (122, -88)]),
          "worry": ([(-26, -90), (10, -100), (48, -112)], [(70, -114), (98, -104), (122, -92)])}[br]
     s.append(line(B[0], 10, C["HAIR_SH"], seed=362, peak=.4) + line(B[1], 8.4, C["HAIR_SH"], seed=363, peak=.55))
+    if style == "granny":
+        G_HAIR = [(112, -58), (104, -98), (76, -126), (30, -140), (-20, -138), (-70, -124), (-112, -92), (-126, -40), (-116, 14), (-98, -14), (-88, -56),
+                  (-60, -84), (-16, -96), (24, -98), (60, -92), (92, -80)]
+        s.append(shape(ellipse_pts(-86, -150, 46, 42, 14), C["HAIR"], blob(ellipse_pts(-70, -142, 22, 20, 10), C["HAIR_HI"], .8), w=5.0, seed=420))
+        s.append(shape(G_HAIR, C["HAIR"], blob([(-120, -140), (-20, -140), (-70, -100), (-110, -50)], C["HAIR_SH"], .7) +
+                       line([(-40, -128), (-70, -100)], 2.6, C["HAIR_SH"], seed=421) + line([(10, -130), (-20, -110)], 2.6, C["HAIR_SH"], seed=422), w=5.2, seed=423))
+        br = {"up": ([(-26, -90), (8, -102), (48, -94)], [(70, -94), (98, -100), (122, -88)])}["up"]
+        s.append(line(br[0], 4.6, "#aeb0c0", seed=424, peak=.4) + line(br[1], 4.2, "#aeb0c0", seed=425, peak=.55))
+        return "".join(s)
     hair = _bounce(F_HAIR, hb)
     inner = blob(_bounce([(-140, -200), (-30, -200), (-40, -130), (-80, -100), (-90, -40), (-140, -20)], hb), C["HAIR_SH"], .95)
     inner += blob(_bounce([(0, -160), (60, -136), (96, -100), (60, -120), (30, -140)], hb), C["HAIR_HI"], .9)
@@ -320,6 +358,9 @@ def friend_head(expr):
                             [(-80, -140), (-100, -116)], [(-50, -110), (-80, -84)]]):
         inner += line(_bounce(st, hb), 3.0, "#7d3514", seed=372 + i, op=.85)
     s.append(shape(hair, C["HAIR"], inner, w=5.4, seed=371))
+    if style == "sport":      # повязка на лбу
+        band_ = [(-104, -96), (-30, -112), (50, -108), (112, -80), (116, -56), (52, -84), (-26, -88), (-100, -66)]
+        s.append(shape(band_, "#f4efe6", line([(-60, -100), (60, -96)], 2.4, "#d8483c", seed=430, taper=.2, wmin=.8), w=4.0, seed=431))
     return "".join(s)
 
 
@@ -373,7 +414,7 @@ def shoe(A, phi, far, seed, who):
         return (A[0] + x * c - y * s_, A[1] + x * s_ + y * c) + ((1,) if len(p) > 2 and p[2] else ())
 
     o = []
-    if who == "friend":          # ботинок: выше, тупой нос, толстая подошва
+    if who in FRIENDLIKE:          # ботинок: выше, тупой нос, толстая подошва
         up = [(-40, -60), (-66, -20), (-70, 34, 1), (156, 34, 1), (170, 18), (162, 0), (124, -10), (70, -18), (34, -50), (4, -64)]
         sole = [(-74, 30, 1), (-76, 58), (-66, 70), (170, 70), (180, 54), (174, 30, 1), (50, 31)]
     else:
@@ -382,7 +423,7 @@ def shoe(A, phi, far, seed, who):
     o.append(shape([tf(p) for p in sole], far_c(C["SOLE"], far),
                    blob([tf(p) for p in [(-72, 54), (176, 54), (176, 72), (-72, 72)]], far_c(C["SOLE_SH"], far), .9), w=4.2, seed=seed))
     inner = blob([tf(p) for p in [(-70, 10), (160, 10), (170, 36), (-70, 36)]], far_c(C["SHOE_SH"], far), .8)
-    if who == "friend":
+    if who in FRIENDLIKE:
         for k in range(3):
             x = 30 + k * 22
             inner += line([tf((x - 4, -46 + k * 9)), tf((x + 14, -38 + k * 9))], 2.6, far_c("#e8d7b8", far), seed=seed + 4 + k)
@@ -405,7 +446,7 @@ def sleeve(S, E, Wr, far, seed, who):
         o = blob([P(np.array(a) - n * 60), P(np.array(b) - n * 50), P(np.array(b) - n * 14), P(np.array(a) - n * 18)], far_c(sh, far), .85)
         c = np.array(b) - d * 30
         o += line([P(c + n * 34), P(c - d * 10), P(c - n * 20)], 2.6, far_c(fold, far), seed=seed + 5, op=.8, peak=.4)
-        if who == "friend":
+        if who in FRIENDLIKE:
             o += line([P(np.array(a) + d * 20 + n * 40), P(np.array(b) - d * 20 + n * 34)], 1.8, far_c(C["STITCH"], far), seed=seed + 6, op=.7)
         return o
 
@@ -422,7 +463,7 @@ def sleeve(S, E, Wr, far, seed, who):
     n = np.array([-d[1], d[0]])
     c0 = Wr - d * 30
     cf = band([P(c0), P(Wr + d * 4)], 100, 96, step=3, cap=False)
-    if who == "friend":      # манжета с пуговицей и строчкой
+    if who in FRIENDLIKE:      # манжета с пуговицей и строчкой
         inner = line([P(c0 + d * 6 + n * 48), P(c0 + d * 6 - n * 48)], 1.8, far_c(C["STITCH"], far), seed=seed + 20, op=.8)
         inner += f'<circle cx="{(c0 + d * 18 - n * 30)[0]:.1f}" cy="{(c0 + d * 18 - n * 30)[1]:.1f}" r="6" fill="{far_c("#c9a96a", far)}"/>'
         s.append(shape(cf, far_c(sh, far), inner, w=4.0, seed=seed + 9))
@@ -603,7 +644,10 @@ def draw(pose, who="dima"):
     tk = pose.get("torso_k", 1.0)
     body += f'<g transform="rotate({deg:.3f}) scale(1 {tk:.4f})">{back}{torso}{strings}</g>'
     hf = dima_head if who == "dima" else friend_head
-    body += f'<g transform="translate({hpos[0]:.2f} {hpos[1]:.2f}) rotate({math.degrees(lean * .5 + ha):.3f})">{hf(pose.get("expr", {}))}</g>'
+    ex_ = dict(pose.get("expr", {}))
+    if who in ("granny", "sport"):
+        ex_["style"] = who
+    body += f'<g transform="translate({hpos[0]:.2f} {hpos[1]:.2f}) rotate({math.degrees(lean * .5 + ha):.3f})">{hf(ex_)}</g>'
     out["body"] = G(body)
     out["arm_n"] = G(arm_svg("n"))
     out["wrist"] = {k: H + v[2] * BS for k, v in arms.items()}

@@ -50,7 +50,7 @@ def text_w(txt_, size):
         import base64
         import re
         from PIL import ImageFont
-        p = "/tmp/a56a/IDB_scene.otf"
+        p = "/tmp/a57a/IDB_scene.otf"
         if not os.path.exists(p):
             m = re.search(r"base64,([A-Za-z0-9+/=]+)", open(os.path.join(HERE, "base.html")).read())
             tmp = p + f".{os.getpid()}"

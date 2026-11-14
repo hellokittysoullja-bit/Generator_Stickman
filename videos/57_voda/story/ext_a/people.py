@@ -195,9 +195,15 @@ def dima_head(expr):
     if fl > 0.01:
         inner.append(blob(ellipse_pts(30, 20, 140, 120, 16), "#e2493c", .5 * fl))
         inner.append(blob(ellipse_pts(70, -60, 80, 40, 12), "#e2493c", .35 * fl))
+    pf = expr.get("puff", 0.0)
+    if pf > 0.02:       # раздутая щека: выступ за контур лица (лицо ложится сверху и прячет лишнее)
+        s.append(shape(ellipse_pts(88, 66, 22 + 30 * pf, 20 + 26 * pf, 16), C["SKIN"], blob(ellipse_pts(100, 80, 18 + 18 * pf, 14 + 14 * pf, 12), C["SKIN_SH"], .8), w=5.0, seed=1530))
     s.append(shape(FACE, C["SKIN"], "".join(inner), w=5.6, seed=153))
     s.append(line([(-66, 70), (-30, 104), (6, 118)], 2.4, C["SKIN_SH2"], seed=159, op=.8))
-    s.append(eyes(expr, EYE_N, EYE_F, bags=True))
+    bg = expr.get("bulge", 0.0)
+    en = (EYE_N[0], EYE_N[1], EYE_N[2] * (1 + .22 * bg), EYE_N[3] * (1 + .2 * bg))
+    ef = (EYE_F[0], EYE_F[1], EYE_F[2] * (1 + .24 * bg), EYE_F[3] * (1 + .2 * bg))
+    s.append(eyes(expr, en, ef, bags=True))
     br = expr.get("brows", "tired")
     if isinstance(br, tuple):      # (имя_a, имя_b, u): плавный переход бровей
         A_, B_, u_ = BROWS[br[0]], BROWS[br[1]], br[2]

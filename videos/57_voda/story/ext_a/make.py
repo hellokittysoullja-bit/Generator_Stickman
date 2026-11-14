@@ -16,7 +16,7 @@ STORY = os.path.dirname(HERE)
 os.makedirs(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "clips"), exist_ok=True)
 SH = json.load(open(os.path.join(STORY, "shots.json")))
 SHOTS = {s["id"]: s for s in SH["shots"]}
-SCENE_MOD = {k: "scene_a" for k in ("s01", "s02", "s04", "s06", "s13")}
+SCENE_MOD = {k: "scene_v" for k in ("s01", "s03", "s07", "s11", "s13", "s14")}
 TMP = os.path.join(os.path.dirname(STORY), ".." , "..", "..")
 
 
@@ -47,7 +47,7 @@ def main():
     sheet = "--sheet" in args
     ids = [a for a in args if a.startswith("s") and a[1:].isdigit()]
     tl = [a for a in args if "," in a or a.replace(".", "").isdigit()]
-    base_tmp = "/tmp/a56a"
+    base_tmp = "/tmp/a57a"
     os.makedirs(base_tmp, exist_ok=True)
     for sid in ids:
         a, n = span(sid)

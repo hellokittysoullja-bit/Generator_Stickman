@@ -153,7 +153,13 @@ def head(st, t):
         s.append(eye(ex, 1072, 34, 38, look, blink, sd, sq))
     s.append(shape([(826 + FX, 1108), (846 + FX, 1108), (836 + FX, 1119)], "#c47a72", w=2.6, seed=262))
     s.append(line([(836 + FX, 1119), (836 + FX, 1124)], 2.4, seed=263))
-    if st.get("smile", 0) > .5:
+    tg = st.get("tongue", 0.0)
+    if tg > .02:      # язык лакает: розовая лопатка вниз из приоткрытого рта
+        L_ = 44 * tg
+        tp = [(824 + FX, 1124, 1), (848 + FX, 1124, 1), (850 + FX, 1124 + L_ * .6), (844 + FX, 1124 + L_), (836 + FX, 1124 + L_ + 4), (828 + FX, 1124 + L_), (822 + FX, 1124 + L_ * .6)]
+        s.append(shape([(818 + FX, 1121), (854 + FX, 1121), (846 + FX, 1131), (826 + FX, 1131)], "#5a2b33", w=2.4, seed=266))
+        s.append(shape(tp, "#e8808c", line([(836 + FX, 1128), (836 + FX, 1124 + L_)], 1.6, "#c4565f", seed=267), w=2.8, seed=268))
+    elif st.get("smile", 0) > .5:
         s.append(line([(818 + FX, 1122), (828 + FX, 1134), (836 + FX, 1126), (844 + FX, 1134), (854 + FX, 1122)], 3.2, seed=265))
     else:
         s.append(line([(822 + FX, 1124), (829 + FX, 1131), (836 + FX, 1124), (843 + FX, 1131), (850 + FX, 1124)], 3, seed=264))
@@ -205,7 +211,7 @@ def draw(x, y, k, st, t):
     sy = br * (1 - .2 * sl)
     sx = 1 + .12 * sl
     o.append(f'<g transform="translate({CX} {CBOT}) scale({sx:.4f} {sy:.4f}) translate({-CX} {-CBOT})">{body()}</g>')
-    hy = -(sy - 1) * (CBOT - NECK[1]) + 34 * sl
+    hy = -(sy - 1) * (CBOT - NECK[1]) + 34 * sl + 70 * st.get("drop", 0.0)
     o.append(f'<g transform="translate({22 * sl:.2f} {hy:.2f}) rotate({tilt:.2f} {NECK[0]} {NECK[1]})">{head(st, t)}</g>')
     return f'<g transform="translate({x:.2f} {y:.2f}) scale({k:.4f}) translate({-CX} {-CBOT})">{"".join(o)}</g>'
 
