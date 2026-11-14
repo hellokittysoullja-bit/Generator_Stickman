@@ -352,26 +352,28 @@ def frame17(t):
     z = 1.0 + .13 * ease_io(u) + .03 * bump(t, T_KOT, .35)
     set_ink(z)
     o = [corridor(-300, 1400)]
-    dd, hpt = door(800, FLOOR, 300, 760, handle_side=-1, tag=1)
+    dd, hpt = door(735, FLOOR, 320, 700, handle_side=-1, tag=1)
     o.append(dd)
     o.append(blob(ellipse_pts(300, FLOOR + 30, 150, 20, 14), "#7a6a50", .45) + blob(ellipse_pts(800, FLOOR + 30, 140, 18, 14), "#7a6a50", .45))
     breath = math.sin(t * 2.6)
-    bs = .78
-    hip = (290, 870 + 2 * breath)
+    bs = .8
+    hip = (300, 806 + 2 * breath)
+    wave = math.sin(t * 7.5) * bump(t, 36.9, 1.2)
     exp = dict(lid=.94, look=(-.55, .08), closed=blink_of(t, (36.75, 38.1)), brows="calm" if t < T_KOT - .15 else "up", mouth="smile", smile=.8 + .2 * bump(t, T_KOT, .6), blush=.25)
-    pocket = (hip[0] + 70 * bs, hip[1] + 120 * bs)
-    d = standing_dima(hip, bs, .03, exp, arms={"n": ("ik", (hip[0] + 110 * bs, hip[1] + 280 * bs), -1), "f": ("ik", (hip[0] - 40 * bs, hip[1] + 300 * bs), -1)},
-                      hands={"n": open_hand(.45, (0.3, 1), .2, .3, flip=-1), "f": open_hand(.35, (0, 1), .15, .3)},
-                      feet={"n": ((hip[0] + 90, FLOOR - 40), 0.0), "f": ((hip[0] - 30, FLOOR - 36), 0.0)}, head_ang=-.02 + .02 * breath)
+    up = ease_io(clamp((t - 36.5) / .5))
+    hand_t = (hip[0] + 150 * bs + 25 * wave, hip[1] - 250 * bs + 120 * bs * (1 - up) - 10 * wave)
+    d = standing_dima(hip, bs, .02, exp, arms={"n": ("ik", hand_t, -1), "f": ("ik", (hip[0] - 40 * bs, hip[1] + 330 * bs), -1)},
+                      hands={"n": open_hand(.15, (0.35 + .2 * wave, -1), .35, .3, flip=-1), "f": open_hand(.35, (0, 1), .15, .3)},
+                      feet={"n": ((hip[0] + 80, FLOOR - 36), 0.0), "f": ((hip[0] - 40, FLOOR - 34), 0.0)}, head_ang=-.02 + .02 * breath)
     o.append(d.get("legs", "") + d["arm_f"] + d["body"] + d["arm_n"])
-    CX_, CY_, CK = 800, FLOOR - 8, 1.18
+    CX_, CY_, CK = 745, FLOOR - 8, 1.45
     up = ease_io(clamp((t - T_NAP) / .3))
     st = cstate(t, look=(-.3, .05), turn=-.12, blink=blink_of(t, (36.9, 38.2)), ear=4 * bump(t, T_KOT, .4), perk=.2 * up, tail=7 * math.sin(t * 2.6),
                 smile=1 if t > T_KOT else 0, flame_e=1.4 + .3 * math.sin(t * 9), tilt=2 * math.sin(t * 1.3) - 3 * bump(t, T_KOT - .2, .6))
     o.append(Cat.draw(CX_, CY_, CK, st, t))
     o.append(sparks(t, CX_ + (995 - 836) * CK, CY_ + (1076 - 1306) * CK - 20, 6, 17))
     cam = lib.cam(540 + 10 * u, 880 - 20 * u, z, -.4 + .5 * u)
-    return f'<g transform="{cam}">{"".join(o)}{write_kot(t, T_KOT - .06, 560, 560, 1.25)}</g>'
+    return f'<g transform="{cam}">{"".join(o)}{write_kot(t, T_KOT - .06, 525, 560, 1.3)}</g>'
 
 
 FRAMES["s17"] = frame17
