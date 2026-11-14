@@ -805,3 +805,345 @@ def sofa_scene(t, mode="day"):
     o.append(rug(2250, FL + 90, 560, 95, mode, seed=7))
     sf = sofa(SOFA[0], SOFA[1], SOFA[2], mode)
     return dict(bg="".join(o), sofa=sf["back"], front=sf["arm_r"])
+
+
+# ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+# РИЛС 71 «два лагеря» (группа C). Все места — в координатах кадра 1080×1920 при своей камере CAM_* (cx, cy, s).
+#
+# КРОВАТЬ КРУПНО — ОДИН ракурс для хука s01 и петли s22:  bed_close(t, mode="morning") -> dict(bg, mattress, pillow(squash, dx), motes, front)
+#     камера низко у матраса, смотрит вдоль кровати на изголовье: стена с полосой утреннего солнца формы окна, деревянное
+#     изголовье, подушка у изголовья, простыня уходит к зрителю до низа кадра. Кокон Димы лежит головой на подушке и тянется к
+#     зрителю (вниз по кадру): лицо ≈ BC_FACE, кокон до низа кадра. Порядок: bg → mattress → pillow(squash) → [кокон] → motes → front.
+#     BC_PILLOW=(540, 880) центр подушки (вмятина), BC_FACE=(540, 860) центр лица на подушке (лицо ~700 px высотой при k≈2.4),
+#     BC_SHEET_Y=700 дальний край матраса, BC_CAT=(930, 1180) где кот стоит лапами на матрасе справа (s22, тычет лапой в кокон).
+#     CAM_BED_CLOSE=(540, 960, 1.0). pillow(squash 0…1 — сплющена ударом, dx — сдвиг вмятины).
+#     motes(t, u) — пылинки в полосе солнца (кружат, мерцают); front — тень края одеяла внизу (пусто, если не нужен).
+#
+# КРОВАТЬ СРЕДНИМ ПЛАНОМ (s03, s06, s08):  bed_mid(t, mode="morning") -> dict(bg, bed, front)
+#     кровать анфас вдоль стены, Дима сидит на ней лицом к нам; слева в глубине окно с широким подоконником (кот на нём),
+#     полоса солнца формы окна на стене справа. Порядок: bg → bed → [кот на подоконнике] → [Дима] → front (передний край матраса,
+#     если ступни свисают — класть ДО ступней; front — пусто, оставлен для общего порядка).
+#     BM_SIT=(560, 1150) таз сидящего Димы (верх матраса), ступни на полу BM_FLOOR=1560 (стоят на y≈1530)
+#     BM_SILL=(250, 772) подоконник: кот сидит лапами на этой линии (k≈.9), BM_WIN=(70, 230, 440, 760)
+#     CAM_BED_MID=(540, 960, 1.0); наезд — к лицу (BM_SIT[0], BM_SIT[1] − 430).
+#
+# КОМНАТА ДНЁМ (s11–s13, s17, s21):  day_room(t) -> dict(bg, desk, stand, bed, front)
+#     широкий мир: слева стол с ЗАКРЫТЫМ ноутбуком (ставит сцена: props.laptop), на полу у центра место носка, справа тумба с
+#     графином и стаканом (ставит сцена: props.jug, props.glass); дальше вправо (x 1500…2600) кровать у стены с окном и чистой
+#     стеной над ней, на стене два флажка-рисунка (жёлтый с молнией, синий с клубком — без букв).
+#     FL=1560 пол, WALL_Y=1440 низ стены.  Дима стоит в полный рост по центру: DR_DIMA=(540, 1560 − 598) таз при scale 1.0
+#     (ступни на FL, голова ≈ 330) — ≥ 60 % высоты кадра на CAM_ROOM.
+#     DR_LAPTOP=(200, 1052) дно ноутбука на столе (k≈.8), DR_SOCK=(790, 1520) носок на полу, DR_JUG=(930, 1180) графин и
+#     DR_GLASS=(1010, 1180) стакан на тумбе (дно), DR_DESK=(20, 380, 1060) стол: x0, x1, верх; DR_STAND=(880, 1060, 1190) тумба.
+#     CAM_ROOM=(540, 960, 1.0) три дела и Дима целиком; CAM_ROOM_NEAR=(540, 900, 1.25) ближе (мим, s12; ступни уходят под кадр).
+#     Кровать справа: DR_BED=(2050, 1560) центр низа ножек, верх матраса DR_BED_TOP=1210 (Дима и кот сидят на нём, s21;
+#     край кровати s17 — камера CAM_BED_EDGE=(1720, 1150, 1.35)); флажки DR_FLAGS=((1820, 470), (2280, 470)) центры;
+#     DR_CLEAN=(1900, 640, 2200, 860) — ЧИСТАЯ стена между флажками и над изголовьем (рукописное «кот» s21): ни предметов, ни теней.
+#     CAM_DR_BED=(2050, 960, 1.0) кровать, флажки и чистая стена.
+#
+# СТОЛ СБОКУ-СЗАДИ В ТРИ ЧЕТВЕРТИ (s16, s19, s20):  desk34_scene(t) = desk_scene(t, "day") рилса 70 (Дима слева от стола
+#     лицом вправо, ноутбук ставить с turn ≥ .55 — экран к Диме, зритель видит крышку сзади-сбоку); камера CAM_DESK34=(760, 860, 1.25)
+#     — за левым плечом Димы. Место меловой стены за спиной Димы (s19) — DESK34_WALL=(−120, 300, 260, 1440) (x0, y0, x1, y1).
+#
+# КУХНЯ ДНЁМ (s09, s10, s18):  kitchen_scene(t, mode="day") -> dict(bg, chairs_back, table, front)
+#     стена с плиткой, окно с деревом (качается), столешница с раковиной и краном, нижние шкафы; посередине стол анфас, по
+#     краям два стула боком: Дима слева (лицом вправо), друг справа (лицом влево). Порядок: bg → chairs_back → [Дима, друг] → table
+#     → [кружки, графин] → front. KS_TABLE=(250, 830, 1160) стол: x0, x1, передняя кромка (верх виден, глубина 90);
+#     KS_SIT_L=(170, 1100) таз Димы, KS_SIT_R=(910, 1100) таз друга (scale 1.0); KS_MUG_L=(380, 1130), KS_MUG_R=(700, 1130) — дно кружек;
+#     KS_JUG=(540, 1110) — графин на столе (s18); KS_FLOOR=1560. CAM_KITCHEN=(540, 960, 1.0), CAM_KITCHEN_NEAR=(540, 880, 1.3).
+# ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+BC_PILLOW = (540.0, 880.0)
+BC_FACE = (540.0, 860.0)
+BC_SHEET_Y = 700.0
+BC_CAT = (930.0, 1180.0)
+CAM_BED_CLOSE = (540.0, 960.0, 1.0)
+
+BM_SIT = (560.0, 1150.0)
+BM_FLOOR = 1560.0
+BM_SILL = (250.0, 772.0)
+BM_WIN = (70.0, 230.0, 440.0, 760.0)
+CAM_BED_MID = (540.0, 960.0, 1.0)
+
+DR_DIMA = (540.0, FL - 598.0)
+DR_LAPTOP = (200.0, 1052.0)
+DR_SOCK = (790.0, 1520.0)
+DR_JUG = (930.0, 1180.0)
+DR_GLASS = (1010.0, 1180.0)
+DR_DESK = (20.0, 380.0, 1060.0)
+DR_STAND = (880.0, 1060.0, 1190.0)
+CAM_ROOM = (540.0, 960.0, 1.0)
+CAM_ROOM_NEAR = (540.0, 900.0, 1.25)
+DR_BED = (2050.0, FL)
+DR_BED_TOP = 1210.0
+CAM_BED_EDGE = (1720.0, 1150.0, 1.35)
+DR_FLAGS = ((1820.0, 470.0), (2280.0, 470.0))
+DR_CLEAN = (1900.0, 640.0, 2200.0, 860.0)
+CAM_DR_BED = (2050.0, 960.0, 1.0)
+
+CAM_DESK34 = (760.0, 860.0, 1.25)
+DESK34_WALL = (-120.0, 300.0, 260.0, 1440.0)
+
+KS_TABLE = (250.0, 830.0, 1160.0)
+KS_SIT_L = (170.0, 1100.0)
+KS_SIT_R = (910.0, 1100.0)
+KS_MUG_L = (380.0, 1130.0)
+KS_MUG_R = (700.0, 1130.0)
+KS_JUG = (540.0, 1110.0)
+KS_FLOOR = 1560.0
+CAM_KITCHEN = (540.0, 960.0, 1.0)
+CAM_KITCHEN_NEAR = (540.0, 880.0, 1.3)
+
+SHEET, SHEET_SH, SHEET_HI = "#eef0f4", "#cdd3dd", "#ffffff"
+SUN_WALL, SUN_WALL_HI = "#f8e3b0", "#fcefcc"
+MORNING = dict(wall="#e9d6bc", wall_hi="#f2e3cc", wall_sh="#d6bf9f", wall_ln="#dcc7a8")
+
+
+def _wall_plain(x0, y0, x1, y1, pal, seed=0):
+    g = lib.lin_grad([(0, pal["wall_sh"], 1), (.4, pal["wall"], 1), (1, pal["wall_hi"], 1)], 0, y0, 0, y1, units="userSpaceOnUse")
+    o = [f'<rect x="{f(x0)}" y="{f(y0)}" width="{f(x1 - x0)}" height="{f(y1 - y0)}" fill="url(#{g})"/>']
+    for i in range(int((x1 - x0) // 150) + 1):
+        x = x0 + 40 + i * 150.0
+        o.append(line([(x, y0), (x + 1.5, y1)], w=1.8, color=pal["wall_ln"], taper=0.0, wmin=1, seed=8800 + seed + i, op=.5))
+    return "".join(o)
+
+
+def motes(t, box=(560.0, 120.0, 1000.0, 820.0), n=14, u=1.0, seed=0):
+    """Пылинки в полосе солнца: кружат по своим орбитам, мерцают (светлые точки с тонкой тушью)."""
+    if u <= .01:
+        return ""
+    x0, y0, x1, y1 = box
+    r = rs(8900 + seed)
+    o = []
+    for i in range(n):
+        bx, by = r.uniform(x0, x1), r.uniform(y0, y1)
+        rad, w0, ph = r.uniform(18, 46), r.uniform(1.2, 2.6) * (1 if i % 2 else -1), r.uniform(0, 6.3)
+        x = bx + rad * math.cos(t * w0 + ph)
+        y = by + rad * .7 * math.sin(t * w0 * 1.3 + ph) - 14 * t
+        y = y0 + (y - y0) % (y1 - y0)
+        a = u * (.55 + .45 * math.sin(t * 5.1 + i * 1.7))
+        rr = r.uniform(3.5, 6.5)
+        o.append(f'<circle cx="{f(x)}" cy="{f(y)}" r="{f(rr)}" fill="#fff6d6" opacity="{a:.3f}"/>')
+    return "".join(o)
+
+
+# ═════════════════════════ кровать крупно (s01, s22) ═════════════════════════
+def bed_close_pillow(squash=0.0, dx=0.0, x=None, y=None):
+    """Большая подушка у изголовья (вид спереди, чуть сверху): squash 0…1 — сплющена (ниже и шире), вмятина под головой."""
+    x = BC_PILLOW[0] if x is None else x
+    y = BC_PILLOW[1] if y is None else y
+    s = clamp01(squash)
+    w, h = 400 * (1 + .1 * s), 150 * (1 - .32 * s)
+    pts = [(x - w, y + h * .5, 1), (x - w * 1.04, y - h * .1), (x - w * .9, y - h * .75), (x - w * .45, y - h * .95), (x, y - h * .9 + 10 * s),
+           (x + w * .45, y - h * .95), (x + w * .9, y - h * .75), (x + w * 1.04, y - h * .1), (x + w, y + h * .5, 1), (x, y + h * .62)]
+    inner = blob([(x - w * 1.1, y + h * .2), (x + w * 1.1, y + h * .2), (x + w * 1.1, y + h), (x - w * 1.1, y + h)], "#d9dde6")
+    inner += blob(ellipse_pts(x + dx, y + h * .05, w * .5, h * (.42 + .25 * s), 22), "#e1e5ec")       # вмятина
+    inner += line([(x - w * .8, y - h * .55), (x - w * .4, y - h * .78), (x - w * .05, y - h * .7)], 5, SHEET_HI, taper=.4, wmin=.4, seed=8951)
+    for i, sx in enumerate((-1, 1)):    # складки от углов
+        inner += line([(x + sx * w * .95, y - h * .6), (x + sx * w * .7, y - h * .3), (x + sx * w * .74, y + h * .1)], 3.0, "#c3c9d4", taper=.5,
+                      wmin=.3, seed=8952 + i)
+    return shape(pts, "#f3f4f7", inner, w=5.0, seed=8950)
+
+
+def bed_close(t, mode="morning"):
+    """Кровать крупно у стены (ракурс хука и петли). dict(bg, mattress, pillow(squash, dx), motes(t, u), front)."""
+    o = [_wall_plain(-600, -600, 1700, 760, MORNING, seed=1)]
+    # полоса утреннего солнца формы окна (четыре стекла, крестовина-тень), чёткие края, на стене и заходит на изголовье
+    o.append(_sun_quad((470, 60), (470, 50), (90, 560), SUN_WALL, SUN_WALL_HI, inset=.05))
+    # изголовье: широкая доска на двух столбиках с шариками
+    hb = lib.rrect(40, 330, 1040, 780, 40)
+    inner = blob(rect_pts(40, 700, 1040, 780), WOOD_SH)
+    for i in range(5):
+        inner += line([(120 + 200 * i, 380), (130 + 200 * i, 700)], 3.0, WOOD_SH, taper=.3, wmin=.4, seed=8960 + i, op=.7)
+    inner += line([(90, 372), (990, 368)], 7, WOOD_HI, taper=.3, wmin=.4, seed=8966)
+    inner += _sun_quad((470, 60), (470, 50), (90, 560), lib.mix(WOOD, "#ffd890", .45), lib.mix(WOOD, "#ffe6b0", .6), inset=.05)
+    o.append(shape(hb, WOOD, inner, w=5.0, seed=8961))
+    for i, px in enumerate((40, 1040)):
+        o.append(shape(rect_pts(px - 34, 300, px + 34, 900), WOOD, blob(rect_pts(px + 10, 300, px + 34, 900), WOOD_SH), w=4.6, seed=8970 + i))
+        o.append(shape(ellipse_pts(px, 290, 44, 40, 18), WOOD_HI, blob(ellipse_pts(px + 12, 298, 30, 30, 14), WOOD), w=4.4, seed=8972 + i))
+    # матрас и простыня: дальний край BC_SHEET_Y, уходит к зрителю до низа кадра (вид вдоль кровати)
+    mt = [(-80, 2100, 1), (-40, BC_SHEET_Y + 40), (40, BC_SHEET_Y, 1), (1040, BC_SHEET_Y, 1), (1120, BC_SHEET_Y + 40), (1160, 2100, 1)]
+    g = lib.lin_grad([(0, "#dfe3ea", 1), (.35, SHEET, 1), (1, "#f7f8fa", 1)], 0, BC_SHEET_Y, 0, 1920, units="userSpaceOnUse")
+    minner = f'<rect x="-200" y="{f(BC_SHEET_Y - 20)}" width="1500" height="1500" fill="url(#{g})"/>'
+    for i, (a, b) in enumerate(((140, -40), (330, 120), (760, 980), (930, 1180))):     # складки простыни, сходятся к изголовью
+        minner += line([(a, BC_SHEET_Y + 60), ((a + b) / 2 + 14, 1300), (b, 1960)], 3.4, SHEET_SH, taper=.6, wmin=.25, seed=8980 + i, op=.8)
+    # полоса солнца на простыне (продолжение окна, косо)
+    minner += _sun_quad((620, 980), (460, 40), (160, 760), "#fbf2d8", "#fff8e8", inset=.05)
+    o_m = shape(mt, SHEET, minner, w=5.0, seed=8985)
+
+    def pillow(squash=0.0, dx=0.0):
+        return bed_close_pillow(squash, dx)
+
+    def mts(tt, u=1.0):
+        return motes(tt, (500.0, 80.0, 1040.0, 900.0), 16, u, seed=1)
+    return dict(bg="".join(o), mattress=o_m, pillow=pillow, motes=mts, front="")
+
+
+# ═════════════════════════ кровать средним планом (s03, s06, s08) ═════════════════════════
+def bed_mid(t, mode="morning"):
+    """Кровать анфас у стены, окно с широким подоконником слева в глубине (кот), полоса солнца справа. dict(bg, bed, front)."""
+    o = [_wall_plain(-600, -600, 1700, 1440, MORNING, seed=2)]
+    o.append(_sun_quad((640, 180), (300, 30), (70, 520), SUN_WALL, SUN_WALL_HI, inset=.05))
+    o.append(window(*BM_WIN, "day", t, seed=4, sway=.8, curtain="#5a8fae", sill=False))
+    # широкий подоконник (кот сидит на нём)
+    x0, y0, x1, y1 = BM_WIN
+    o.append(shape(lib.rrect(x0 - 50, BM_SILL[1], x1 + 50, BM_SILL[1] + 34, 6), "#f1ebdd",
+                   blob(rect_pts(x0 - 54, BM_SILL[1] + 20, x1 + 54, BM_SILL[1] + 38), "#cfc6b2"), w=3.6, seed=9001))
+    # пол и плинтус
+    o.append(shape(rect_pts(-600, 1400, 1700, 1446), "#f4eedf", blob(rect_pts(-600, 1434, 1700, 1446), "#d6ccb4"), w=3.4, seed=9002))
+    gf = lib.lin_grad([(0, "#c8915c", 1), (1, "#b07a48", 1)], 0, 1446, 0, 2100, units="userSpaceOnUse")
+    o.append(f'<rect x="-600" y="1446" width="2300" height="700" fill="url(#{gf})"/>')
+    for k, y in enumerate((1500, 1580, 1690, 1830)):
+        o.append(line([(-600, y), (1700, y)], w=3.0, color="#8a5b34", taper=0.0, wmin=1, seed=9010 + k, op=.55))
+    o.append(_sun_quad((560, 1470), (420, 10), (140, 120), "#d9a66e", "#e2b37c", inset=.08))
+    # кровать: изголовье за Димой, подушка, матрас с одеялом, передняя царга, ножки
+    b = []
+    b.append(shape(lib.rrect(300, 760, 1100, 1120, 30), WOOD, blob(rect_pts(300, 1060, 1100, 1120), WOOD_SH)
+                   + line([(340, 800), (1060, 796)], 6, WOOD_HI, taper=.3, wmin=.4, seed=9021), w=4.6, seed=9020))
+    b.append(shape(lib.rrect(260, 1040, 1180, 1160, 26), SHEET, blob(rect_pts(260, 1120, 1180, 1160), SHEET_SH), w=4.4, seed=9022))
+    b.append(bed_close_pillow(0.0, 0.0, 860, 1050))
+    b.append(shape(rect_pts(250, 1150, 1190, 1290), WOOD, blob(rect_pts(250, 1260, 1190, 1290), WOOD_SH)
+                   + line([(280, 1180), (1160, 1178)], 5, WOOD_HI, taper=.3, wmin=.4, seed=9024), w=4.6, seed=9023))
+    for i, lx in enumerate((280, 1160)):
+        b.append(shape(rect_pts(lx - 22, 1290, lx + 22, 1440), WOOD_SH, "", w=3.6, seed=9025 + i))
+    b.append(blob(ellipse_pts(720, 1446, 520, 18, 20), "#6e4a2c", .25))
+    return dict(bg="".join(o), bed="".join(b), front="")
+
+
+# ═════════════════════════ комната днём (s11–s13, s17, s21) ═════════════════════════
+def _flag_drawing(x, y, col, icon, rot=0.0, seed=0):
+    """Флажок-рисунок на стене: листок на кнопке, на нём флажок на древке со знаком (молния / клубок) — без букв."""
+    o = shape(rect_pts(x - 95, y - 120, x + 95, y + 120), "#fbf8ef", blob(rect_pts(x + 70, y - 120, x + 95, y + 120), "#e9e3d2"), w=3.6, seed=9100 + seed)
+    o += line([(x - 50, y + 95), (x - 46, y - 90)], 7, WOOD_SH, taper=.1, wmin=.8, seed=9101 + seed)
+    fl = [(x - 46, y - 90, 1), (x + 70, y - 60), (x - 46, y - 10, 1)]
+    o += shape(fl, col, "", w=3.6, seed=9102 + seed)
+    if icon == "bolt":
+        o += shape([(x + 2, y - 76, 1), (x - 16, y - 48, 1), (x - 2, y - 48, 1), (x - 12, y - 24, 1), (x + 14, y - 56, 1), (x, y - 56, 1)], "#ffffff", "", w=2.4,
+                   seed=9103 + seed)
+    else:
+        o += shape(ellipse_pts(x - 4, y - 50, 18, 18, 14), "#ffffff", line([(x - 18, y - 56), (x + 8, y - 40)], 2.4, INK, seed=9104 + seed)
+                   + line([(x - 14, y - 64), (x + 12, y - 48)], 2.4, INK, seed=9105 + seed), w=2.4, seed=9106 + seed)
+        o += line([(x + 12, y - 40), (x + 30, y - 22), (x + 22, y - 6)], 3.0, "#ffffff", taper=.3, wmin=.4, seed=9107 + seed)
+    o += shape(ellipse_pts(x, y - 108, 9, 9, 10), "#d9534a", "", w=2.2, seed=9108 + seed)
+    return f'<g transform="rotate({rot} {f(x)} {f(y)})">{o}</g>'
+
+
+def day_room(t):
+    """Комната днём: три дела слева-справа от центра, кровать у стены дальше вправо. dict(bg, desk, stand, bed, front).
+    Порядок: bg → desk → stand → bed → [предметы, Дима, кот] → front."""
+    o = [wall_floor("day")]
+    o.append(window(-560, 200, -120, 900, "day", t, seed=6, sway=.7, curtain="#5a8fae"))
+    o.append(_sun_quad((-80, 300), (300, 30), (70, 640), "#f6e7bf", "#fbf0d2", inset=.05))
+    o.append(shelf(460, 760, 560, "day", seed=4, t=t))
+    o.append(rug(600, FL + 60, 420, 80, "day", seed=5))
+    # окно над кроватью справа, чистая стена DR_CLEAN между флажками
+    o.append(window(2420, 160, 2760, 560, "day", t, seed=7, sway=.6, curtain="#e0b04a"))
+    for (fx, fy), col, ic, rot, sd in ((DR_FLAGS[0], "#e8b93a", "bolt", -4, 0), (DR_FLAGS[1], "#4f78b5", "yarn", 3, 20)):
+        o.append(_flag_drawing(fx, fy, col, ic, rot, sd))
+    # стол слева
+    x0, x1, ty = DR_DESK
+    d = [shape([(x0, ty, 1), (x0 + 24, ty - 90, 1), (x1 - 24, ty - 90, 1), (x1, ty, 1)], DESKW, blob(rect_pts(x0, ty - 10, x1, ty), DESKW_SH, .5),
+               w=3.8, seed=9200)]
+    d.append(shape(rect_pts(x0, ty, x1, ty + 34), DESKW_SH, "", w=3.6, seed=9201))
+    for i, lx in enumerate((x0 + 30, x1 - 30)):
+        d.append(shape([(lx - 13, ty + 34, 1), (lx + 13, ty + 34, 1), (lx + 10, FL, 1), (lx - 10, FL, 1)], DESKW, "", w=3.2, seed=9202 + i))
+    d.append(blob(ellipse_pts((x0 + x1) / 2, FL + 4, (x1 - x0) / 2 + 20, 12, 18), "#6e4a2c", .3))
+    # тумба справа
+    sx0, sx1, sy = DR_STAND
+    s = [shape([(sx0, sy, 1), (sx0 + 14, sy - 50, 1), (sx1 - 14, sy - 50, 1), (sx1, sy, 1)], WOOD_HI, "", w=3.6, seed=9210)]
+    s.append(shape(rect_pts(sx0, sy, sx1, FL - 20), WOOD, blob(rect_pts(sx1 - 22, sy, sx1, FL - 20), WOOD_SH)
+                   + line([(sx0 + 14, sy + 160), (sx1 - 14, sy + 160)], 3.0, WOOD_SH, taper=0, wmin=1, seed=9212)
+                   + shape(lib.rrect((sx0 + sx1) / 2 - 24, sy + 70, (sx0 + sx1) / 2 + 24, sy + 84, 6), "#3a3d46", "", w=2.0, seed=9213), w=3.8, seed=9211))
+    s.append(blob(ellipse_pts((sx0 + sx1) / 2, FL - 14, (sx1 - sx0) / 2 + 14, 9, 14), "#6e4a2c", .3))
+    # кровать у стены справа (анфас, изголовье у стены)
+    bx, by = DR_BED
+    bt = DR_BED_TOP
+    b = [shape(lib.rrect(bx - 520, bt - 330, bx + 520, bt + 40, 30), WOOD, line([(bx - 480, bt - 296), (bx + 480, bt - 300)], 6, WOOD_HI, taper=.3,
+                                                                                    wmin=.4, seed=9221), w=4.6, seed=9220)]
+    b.append(bed_close_pillow(0.0, 0.0, bx - 230, bt - 40))
+    b.append(shape(lib.rrect(bx - 560, bt - 40, bx + 560, bt + 60, 24), "#e8634a", blob(rect_pts(bx - 560, bt + 30, bx + 560, bt + 60), "#b84a36")
+                   + "".join(line([(bx - 480 + 160 * i, bt - 30), (bx - 470 + 160 * i, bt + 50)], 6, "#f6c06a", taper=.1, wmin=.8, seed=9230 + i)
+                             for i in range(7)), w=4.4, seed=9222))
+    b.append(shape(rect_pts(bx - 570, bt + 60, bx + 570, bt + 190), WOOD, blob(rect_pts(bx - 570, bt + 160, bx + 570, bt + 190), WOOD_SH), w=4.6, seed=9223))
+    for i, lx in enumerate((bx - 540, bx + 540)):
+        b.append(shape(rect_pts(lx - 22, bt + 190, lx + 22, by), WOOD_SH, "", w=3.6, seed=9224 + i))
+    b.append(blob(ellipse_pts(bx, by + 4, 600, 16, 20), "#6e4a2c", .25))
+    return dict(bg="".join(o), desk="".join(d), stand="".join(s), bed="".join(b), front="")
+
+
+# ═════════════════════════ стол в три четверти (s16, s19, s20) ═════════════════════════
+def desk34_scene(t):
+    """Тот же стол, что у рилса 70 днём (Дима слева лицом вправо, ноутбук экраном к нему). Слои — как desk_scene."""
+    return desk_scene(t, "day")
+
+
+# ═════════════════════════ кухня днём (s09, s10, s18) ═════════════════════════
+KS_PAL = dict(wall="#efe2c6", wall_sh="#ddcca8", wall_hi="#f6ecd6", wall_ln="#e2d4b6", tile="#f6f1e4", tile_ln="#d8cdb4", cab="#6fa3a0",
+              cab_sh="#55827f", cab_hi="#8fc0bc")
+
+
+def _side_chair(x, sy, k=1.0, face=1, seed=0):
+    """Стул боком: спинка за тазом (face=1 — сидящий смотрит вправо, спинка слева). dict(back, seat)."""
+    seat = sy + 24 * k
+    bx = x - face * 120 * k
+    back = shape([(bx - 12 * k, seat, 1), (bx + 12 * k, seat, 1), (bx + 6 * k * face, seat - 380 * k, 1), (bx - 18 * k * face, seat - 376 * k, 1)], WOOD,
+                 "", w=3.4, seed=9300 + seed)
+    back += shape(lib.rrect(bx - 26 * k, seat - 370 * k, bx + 26 * k, seat - 240 * k, 10 * k), WOOD_HI, "", w=3.2, seed=9301 + seed)
+    xa, xb = sorted((bx, x + face * 170 * k))
+    fr = [shape(lib.rrect(xa - 20 * k, seat - 6 * k, xb + 20 * k, seat + 26 * k, 8 * k), WOOD, blob(rect_pts(xa - 20 * k, seat + 16 * k, xb + 20 * k, seat + 26 * k),
+                                                                                                    WOOD_SH), w=3.4, seed=9302 + seed)]
+    for i, lx in enumerate((bx, x + face * 150 * k)):
+        fr.append(shape([(lx - 10 * k, seat + 26 * k, 1), (lx + 10 * k, seat + 26 * k, 1), (lx + 8 * k, KS_FLOOR, 1), (lx - 8 * k, KS_FLOOR, 1)], WOOD,
+                        "", w=3.0, seed=9303 + seed + i))
+    return dict(back=back, seat="".join(fr))
+
+
+def _sink(x, y, t=0.0):
+    """Раковина в столешнице (вид спереди-сверху) и кран — без надписей."""
+    o = shape(ellipse_pts(x, y + 8, 120, 20, 22), "#9aa4ae", blob(ellipse_pts(x, y + 12, 104, 13, 20), "#6f7a85"), w=3.2, seed=9320)
+    o += line([(x + 70, y), (x + 70, y - 110), (x + 30, y - 132), (x - 4, y - 118)], 12, "#b8c0c8", taper=0, wmin=1, seed=9321)
+    o += line([(x + 70, y), (x + 70, y - 110), (x + 30, y - 132), (x - 4, y - 118)], 4, "#e6eaee", taper=0, wmin=1, seed=9322)
+    o += shape(lib.rrect(x + 56, y - 40, x + 84, y - 26, 5), "#8a939c", "", w=2.2, seed=9323)
+    return o
+
+
+def kitchen_scene(t, mode="day"):
+    """Кухня днём: стена, плитка, окно с деревом, столешница с раковиной; стол анфас и два стула боком. dict(bg, chairs_back, table, front)."""
+    m = KS_PAL
+    o = [_wall_plain(-600, -600, 1700, 1440, m, seed=3)]
+    # фартук из плитки за столешницей справа
+    o.append(f'<rect x="560" y="640" width="1200" height="{f(940 - 640)}" fill="{m["tile"]}"/>')
+    for k in range(0, 16):
+        o.append(line([(560 + k * 76, 640), (560 + k * 76, 940)], 2.2, m["tile_ln"], taper=.02, wmin=.95, seed=9330 + k, op=.9))
+    for k in range(1, 4):
+        o.append(line([(560, 640 + k * 75), (1760, 640 + k * 75)], 2.2, m["tile_ln"], taper=.02, wmin=.95, seed=9350 + k, op=.9))
+    o.append(window(70, 200, 470, 720, "day", t, seed=8, sway=1.0, curtain="#e9b96a"))
+    o.append(_sun_quad((520, 230), (260, 30), (60, 380), SUN_WALL, SUN_WALL_HI, inset=.05))
+    # верхние шкафы справа
+    for i, (x0, x1) in enumerate(((620, 860), (870, 1110), (1120, 1360))):
+        o.append(shape(rect_pts(x0, 160, x1, 560), m["cab"], blob(rect_pts(x1 - 24, 160, x1, 560), m["cab_sh"]) + blob(rect_pts(x0 + 16, 176, x0 + 26, 544),
+                                                                                                                       m["cab_hi"]), w=4.0, seed=9360 + i))
+        o.append(shape(lib.rrect(x0 + 24, 470, x0 + 38, 530, 6), "#c4ccd4", "", w=2.4, seed=9365 + i))
+    # столешница с раковиной и нижние шкафы (за столом, справа)
+    cy = 940.0
+    for i, (x0, x1) in enumerate(((560, 820), (830, 1090), (1100, 1360))):
+        o.append(shape(rect_pts(x0, cy + 30, x1, 1400), m["cab"], blob(rect_pts(x1 - 24, cy + 30, x1, 1400), m["cab_sh"]), w=4.0, seed=9370 + i))
+        o.append(shape(lib.rrect(x0 + 100, cy + 70, x0 + 160, cy + 84, 6), "#c4ccd4", "", w=2.4, seed=9375 + i))
+    o.append(shape(rect_pts(540, cy - 6, 1700, cy + 30), "#d8b07c", blob(rect_pts(540, cy + 16, 1700, cy + 30), "#b48a58"), w=3.8, seed=9380))
+    o.append(_sink(900, cy, t))
+    # пол
+    o.append(shape(rect_pts(-600, 1400, 1700, 1446), "#f4eedf", blob(rect_pts(-600, 1434, 1700, 1446), "#d6ccb4"), w=3.4, seed=9390))
+    gf = lib.lin_grad([(0, "#c8915c", 1), (1, "#b07a48", 1)], 0, 1446, 0, 2100, units="userSpaceOnUse")
+    o.append(f'<rect x="-600" y="1446" width="2300" height="700" fill="url(#{gf})"/>')
+    for k, y in enumerate((1500, 1580, 1690, 1830)):
+        o.append(line([(-600, y), (1700, y)], w=3.0, color="#8a5b34", taper=0.0, wmin=1, seed=9391 + k, op=.55))
+    cl = _side_chair(KS_SIT_L[0], KS_SIT_L[1], 1.0, 1, seed=0)
+    cr = _side_chair(KS_SIT_R[0], KS_SIT_R[1], 1.0, -1, seed=10)
+    # стол анфас между ними
+    x0, x1, ty = KS_TABLE
+    tb = [shape([(x0, ty, 1), (x0 + 20, ty - 90, 1), (x1 - 20, ty - 90, 1), (x1, ty, 1)], "#d8b07c", blob(rect_pts(x0, ty - 12, x1, ty), "#c79e6a", .6)
+                + line([(x0 + 60, ty - 50), (x0 + 300, ty - 52)], 2.6, "#ecc995", taper=.4, wmin=.3, seed=9401), w=4.0, seed=9400)]
+    tb.append(shape(rect_pts(x0, ty, x1, ty + 32), "#b48a58", "", w=3.8, seed=9402))
+    for i, lx in enumerate((x0 + 36, x1 - 36)):
+        tb.append(shape([(lx - 14, ty + 32, 1), (lx + 14, ty + 32, 1), (lx + 10, KS_FLOOR, 1), (lx - 10, KS_FLOOR, 1)], "#b48a58", "", w=3.2, seed=9403 + i))
+    tb.append(blob(ellipse_pts((x0 + x1) / 2, KS_FLOOR + 4, (x1 - x0) / 2 + 30, 12, 18), "#6e4a2c", .3))
+    return dict(bg="".join(o), chairs_back=cl["back"] + cr["back"], chair_seats=cl["seat"] + cr["seat"], table="".join(tb), front="")
