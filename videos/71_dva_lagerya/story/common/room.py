@@ -946,7 +946,7 @@ def bed_close_pillow(squash=0.0, dx=0.0, x=None, y=None):
 
 def bed_close(t, mode="morning"):
     """Кровать крупно у стены (ракурс хука и петли). dict(bg, mattress, pillow(squash, dx), motes(t, u), front)."""
-    o = [_wall_plain(-600, -600, 1700, 760, MORNING, seed=1)]
+    o = ['<rect x="-2600" y="-1600" width="6000" height="6000" fill="#b9845a"/>', _wall_plain(-1400, -900, 2500, 760, MORNING, seed=1)]
     # полоса утреннего солнца формы окна (четыре стекла, крестовина-тень), чёткие края, на стене и заходит на изголовье
     o.append(_sun_quad((470, 60), (470, 50), (90, 560), SUN_WALL, SUN_WALL_HI, inset=.05))
     # изголовье: широкая доска на двух столбиках с шариками
@@ -961,10 +961,10 @@ def bed_close(t, mode="morning"):
         o.append(shape(rect_pts(px - 34, 300, px + 34, 900), WOOD, blob(rect_pts(px + 10, 300, px + 34, 900), WOOD_SH), w=4.6, seed=8970 + i))
         o.append(shape(ellipse_pts(px, 290, 44, 40, 18), WOOD_HI, blob(ellipse_pts(px + 12, 298, 30, 30, 14), WOOD), w=4.4, seed=8972 + i))
     # матрас и простыня: дальний край BC_SHEET_Y, уходит к зрителю до низа кадра (вид вдоль кровати)
-    mt = [(-80, 2100, 1), (-40, BC_SHEET_Y + 40), (40, BC_SHEET_Y, 1), (1040, BC_SHEET_Y, 1), (1120, BC_SHEET_Y + 40), (1160, 2100, 1)]
+    mt = [(-700, 2500, 1), (-60, BC_SHEET_Y + 60), (40, BC_SHEET_Y, 1), (1040, BC_SHEET_Y, 1), (1140, BC_SHEET_Y + 60), (1780, 2500, 1)]
     g = lib.lin_grad([(0, "#dfe3ea", 1), (.35, SHEET, 1), (1, "#f7f8fa", 1)], 0, BC_SHEET_Y, 0, 1920, units="userSpaceOnUse")
-    minner = f'<rect x="-200" y="{f(BC_SHEET_Y - 20)}" width="1500" height="1500" fill="url(#{g})"/>'
-    for i, (a, b) in enumerate(((140, -40), (330, 120), (760, 980), (930, 1180))):     # складки простыни, сходятся к изголовью
+    minner = f'<rect x="-800" y="{f(BC_SHEET_Y - 20)}" width="2700" height="1900" fill="url(#{g})"/>'
+    for i, (a, b) in enumerate(((140, -300), (330, 60), (760, 1040), (930, 1400))):     # складки простыни, сходятся к изголовью
         minner += line([(a, BC_SHEET_Y + 60), ((a + b) / 2 + 14, 1300), (b, 1960)], 3.4, SHEET_SH, taper=.6, wmin=.25, seed=8980 + i, op=.8)
     # полоса солнца на простыне (продолжение окна, косо)
     minner += _sun_quad((620, 980), (460, 40), (160, 760), "#fbf2d8", "#fff8e8", inset=.05)

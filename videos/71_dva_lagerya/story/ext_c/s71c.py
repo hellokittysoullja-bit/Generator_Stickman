@@ -117,3 +117,116 @@ def whip_in(t, t0, dur=.18):
     u = clamp((t - t0) / dur)
     e = 1 - ease_out(u, 3)
     return -160 * e, -2.0 * e
+
+
+# ═════════════════════════ кокон: people.dima_cocoon, положенный по диагонали к камере ═════════════════════════
+CO_HX, CO_HY = -410.0, -171.6        # центр головы в своих единицах кокона (people.dima_cocoon, лёжа)
+
+
+def cocoon_lying(face, k, ang, roll=0.0, squash=0.0, wriggle=0.0, expr=None, t=0.0, head_up=0.0, feet=1.0, mask=None):
+    """Лежащий кокон людей из people.py, повёрнутый на ang° (голова вверху-слева, ступни к камере вниз-вправо) так, что центр
+    головы стоит в face. head_up — поворот головы в кадре (0 — прямо к зрителю). mask: None | "head" | "body" — для замера доли кадра."""
+    sx, sy = 1 + .18 * squash, 1 - .35 * squash
+    lx, ly = CO_HX * sx * k, CO_HY * sy * k
+    a = math.radians(ang)
+    wx = lx * math.cos(a) - ly * math.sin(a)
+    wy = lx * math.sin(a) + ly * math.cos(a)
+    x, y = face[0] - wx, face[1] - wy
+    r = people.dima_cocoon(0.0, 0.0, k, roll=roll, squash=squash, wriggle=wriggle, expr=expr, t=t, head_rot=-ang + head_up, feet=feet)
+    svg = r["svg"]
+    if mask:
+        svg = mask_svg(svg, mask)
+    return f'<g transform="translate({x:.2f} {y:.2f}) rotate({ang:.3f})">{svg}</g>'
+
+
+def mask_svg(svg, kind):
+    """Силуэт для замера: всё, что нарисовано, — сплошным цветом (head — красный, body — синий)."""
+    col = "1 0 0" if kind == "head" else "0 0 1"
+    fid = f"mk{kind}"
+    if not any(f'id="{fid}"' in d for d in lib.DEFS):
+        r, g, b = col.split()
+        lib.DEFS.append(f'<filter id="{fid}"><feColorMatrix type="matrix" values="0 0 0 0 {r} 0 0 0 0 {g} 0 0 0 0 {b} 0 0 0 9 0"/></filter>')
+    return f'<g filter="url(#{fid})">{svg}</g>'
+
+
+# ═════════════════════════ s01: хук ═════════════════════════
+T_LU = .30                     # ударный слог «Лю-ди»: плюх на подушку
+T_SD = wt("сдвг")              # 0.72
+T_SD_HIT = .95                 # ударный слог «СДВ-Г»: второй удар камерой
+T_OB = wt("объясните")         # 1.24
+T_HOP = .12                    # второй подскок кокона до удара (не плавное ожидание)
+
+
+def s01_state(t):
+    """Кокон с кадра 0 уже катится к камере (из глубины справа), подскок, плюх лицом к зрителю, гусеницей на камеру."""
+    fx, fy = R.BC_FACE
+    u = clamp(t / T_LU)
+    e = ease_out(u, 1.5)
+    x = lerp(fx + 300, fx, e)
+    y = lerp(fy - 70, fy, e) - 80 * math.sin(math.pi * clamp(t / T_HOP)) - 60 * bump(t, T_HOP, T_LU - T_HOP) - 40 * bump(t, T_SD - .02, .3)
+    k = lerp(1.6, 2.2, e)
+    ang = lerp(28.0, 58.0, e) + damp(t, T_LU, -5.0, 2.2, 5.5) + 2.6 * math.sin(2 * math.pi * 2.1 * t) * sm(t, .2, .5) + 4 * bump(t, T_SD, .3)
+    roll = 720 * (t - .6 * t * t) if t < T_LU else 720 * (T_LU - .6 * T_LU ** 2) + damp(t, T_LU, 40, 2.6, 6) + 140 * (t - T_LU)
+    head_up = lerp(-55.0, 0.0, e) + 18 * math.sin(t * 22) * (1 - e) + damp(t, T_LU, 9, 2.4, 5)
+    squash = max(0.0, damp(t, T_LU, .55, 2.8, 6.5)) + .35 * bump(t, T_HOP - .02, .1) + .08 * (1 + math.sin(2 * math.pi * 3.0 * t)) * sm(t, .35, .6) - .2 * bump(t, T_SD, .3)
+    inch = 0.0
+    wr = 0.0
+    for a in (T_OB, T_OB + .27):
+        p = clamp((t - a) / .27)
+        inch += ease_io(p)
+        wr += math.sin(math.pi * p)
+    k *= 1 + .06 * inch
+    y += 40 * inch
+    x -= 10 * inch
+    squash += .22 * wr
+    return dict(x=x, y=y, k=k, ang=ang, roll=roll, head_up=head_up, squash=squash, wriggle=.4 + .8 * wr, inch=inch)
+
+
+def s01_expr(t):
+    if t < T_SD - .04:
+        e = ex("surprise_day", brows="worry", mouth="o", open=.25 + .25 * bump(t, T_LU, .3), lid=.95, look=(0, 0))
+    elif t < T_OB:
+        e = ex("surprise_day", mouth="o", open=.35 + .15 * bump(t, T_SD, .4), lid=1.0, look=(0, 0), scale_n=1.14, scale_f=1.14)
+        e["brows"] = ("worry", "up", sm(t, T_SD - .04, T_SD + .08))
+    else:
+        e = ex("surprise_day", brows="worry", mouth="o", open=.55 + .15 * math.sin(t * 9), lid=.98, look=(0, 0))
+    e["hair"] = 10 * math.sin(t * 13) * (1 - sm(t, .5, 1.0)) + 6 * bump(t, T_LU, .25) + 4 * math.sin(t * 7)
+    return e
+
+
+def s01(t):
+    lib.dyn_begin()
+    bc = R.bed_close(t)
+    st = s01_state(t)
+    pil_sq = max(0.0, damp(t, T_LU, .9, 2.4, 5.5)) + .15 * bump(t, T_HOP - .02, .14)
+    mk = os.environ.get("MASK")
+    co = cocoon_lying((st["x"], st["y"]), st["k"], st["ang"], st["roll"], st["squash"], st["wriggle"], s01_expr(t), t, st["head_up"])
+    world = [bc["bg"], bc["mattress"], bc["pillow"](pil_sq, st["x"] - R.BC_PILLOW[0]), co, bc["motes"](t)]
+    if mk:      # замер доли кадра: голова — красным, кокон — синим, остальное белое
+        hd = cocoon_lying((st["x"], st["y"]), st["k"], st["ang"], st["roll"], st["squash"], st["wriggle"], s01_expr(t), t, st["head_up"], mask="body")
+        world = ['<rect x="-3000" y="-3000" width="8000" height="8000" fill="#fff"/>', hd]
+        world.append(head_mask((st["x"], st["y"]), st["k"], st["ang"], st["squash"], st["head_up"], s01_expr(t)))
+    cx0, cy0, s0 = R.CAM_BED_CLOSE
+    if os.environ.get("NOCAM"):
+        set_ink(s0)
+        return lib.svg(f'<g transform="{lib.cam(cx0, cy0, s0)}">{"".join(world)}</g>')
+    k, rc, side = hook_cam(t, T_LU, T_SD_HIT)
+    sx1, sy1 = shake2(t, T_LU + .01, 14)
+    cx = cx0 + side - sx1 + 10 * math.sin(t * 2.3)
+    cy = cy0 - sy1 + 30 * st["inch"]
+    s = s0 * k * (1 + .04 * sm(t, .4, 1.9))
+    set_ink(s)
+    return lib.svg(f'<g transform="{lib.cam(cx, cy, s, rc)}">{"".join(world)}</g>')
+
+
+def head_mask(face, k, ang, squash, head_up, expr):
+    """Только голова (как её рисует people.dima_cocoon: dima_head ×1.15 в повороте) — красным, для замера."""
+    people.C = people.PAL["dima"]
+    sx, sy = 1 + .18 * squash, 1 - .35 * squash
+    del sx, sy
+    h = people.dima_head(expr)
+    return mask_svg(f'<g transform="translate({face[0]:.1f} {face[1]:.1f}) rotate({head_up:.2f}) scale({1.15 * k:.4f})">{h}</g>', "head")
+
+
+def frame(sid, t):
+    return {"s01": s01}[sid](t)
