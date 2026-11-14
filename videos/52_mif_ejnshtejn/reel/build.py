@@ -265,7 +265,7 @@ passport = dict(
          "motion": "кот вздрагивает за партой с кадра 0, лампочка качается, мигает и вспыхивает; камера влетает (правило 28)"},
   rehook=1),
  coverage=C, matrix=matrix, inventory=inventory)
-spec = dict(voice="female2", title=f"Кот и мифы · серия 52: «{HOOK['text'].replace('*', '')}» (стандарт 28, фиолетовый маркер)",
+spec = dict(voice="female3", title=f"Кот и мифы · серия 52: «{HOOK['text'].replace('*', '')}» (стандарт 28, фиолетовый маркер)",
             rate=1.15, lead_in=0.0, tail=0.8, whoosh_variety=True,
             sources={"f1": {"frame": "gen/g1_dunce_genius.png"}, "f2": {"frame": "gen/g2_newspaper.png"},
                      "f3": {"frame": "gen/g3_ten_minutes.png"}, "f4": {"frame": "lib/classroom.png"},

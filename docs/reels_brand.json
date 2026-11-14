@@ -40,5 +40,7 @@
  "voice_template_female2": "01a1d6b5-7f80-7306-88d5-d5cf0a36e3cd",
  "voice_template_female2_note": "Natalia — Warm, Lively Narrator (ElevenLabs sh62zStknvpIVpRnlOGE), второй женский голос, рилсы 65–69 (владелец 13.11: «другим милым голосом девушки»); в reel.json \"voice\": \"female2\"",
  "voice_template_male2": "01a1d6e0-baea-73c6-93c9-f1592d594029",
- "voice_template_male2_note": "Evgeniy Rybakov — Expressive (ElevenLabs ws3YyKFd5whKb21yaXES), молодой парень, рилсы 70–74 (владелец 13.11: «молодым голосом парня новым»); в reel.json \"voice\": \"male2\""
+ "voice_template_male2_note": "Evgeniy Rybakov — Expressive (ElevenLabs ws3YyKFd5whKb21yaXES), молодой парень, рилсы 70–74 (владелец 13.11: «молодым голосом парня новым»); в reel.json \"voice\": \"male2\"",
+ "voice_template_female3": "01a1d96b-09f3-72b7-bcd0-8e18a641407c",
+ "voice_template_female3_note": "Ekaterina — Soft, Silky and Tender (ElevenLabs GN4wbsbejSnGSa1AzjH5), выбор владельца 14.11 из пяти образцов («милый голос девушки», вместо Натальи): рилсы 52 и 65–69; в reel.json \"voice\": \"female3\""
 }
