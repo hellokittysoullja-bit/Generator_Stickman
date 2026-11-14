@@ -401,7 +401,295 @@ def s03(t):
     return compose("".join(w) + sign, cam, "#d6e0e3", vcol="#0a1020", vig=.28)
 
 
-SHOTS = {"s10": s10, "s02": s02, "s03": s03}
+
+# ═════════════════════════ s13: календарь и ящик ═════════════════════════
+T_CHAS13, T_BEZ, T_TEL = wi(63), wi(64), wi(65)     # 21.80, 21.97, 22.19
+CAL = (190, 120, 890, 880)                           # лист календаря
+SUN = (6, 2)                                         # колонка, ряд воскресенья
+DESK_Y = 960
+
+
+def mini_clock(x, y, r, ang, k=1.0):
+    o = shape(ellipse_pts(0, 0, r, r, 22), "#fdf8ea", "", w=6, seed=1700)
+    o += shape(ellipse_pts(0, 0, r * 1.08, r * 1.08, 22), "none", "", w=1, seed=1701, ink=False) if False else ""
+    for j in range(12):
+        a = math.radians(j * 30)
+        o += line([(r * .78 * math.sin(a), -r * .78 * math.cos(a)), (r * .92 * math.sin(a), -r * .92 * math.cos(a))], 5, INK, taper=.05, wmin=.9, seed=1710 + j)
+    a = math.radians(ang)
+    o += line([(0, 0), (r * .72 * math.sin(a), -r * .72 * math.cos(a))], 9, INK, taper=.1, wmin=.8, seed=1730)
+    a2 = math.radians(ang / 12)
+    o += line([(0, 0), (r * .46 * math.sin(a2), -r * .46 * math.cos(a2))], 11, INK, taper=.1, wmin=.8, seed=1731)
+    o += blob(ellipse_pts(0, 0, 9, 9, 8), "#c44f3a")
+    return f'<g transform="translate({x} {y}) scale({k:.3f})">{o}</g>'
+
+
+def calendar_sheet(t):
+    x0, y0, x1, y1 = CAL
+    o = [blob(rect_pts(x0 + 14, y0 + 20, x1 + 14, y1 + 20), "#000000", .16, blur(8))]
+    o.append(shape(rect_pts(x0, y0, x1, y1, 6), "#fffaf0", "", w=7, seed=1740))
+    o.append(shape(rect_pts(x0, y0, x1, y0 + 120, 6), "#d6503f", blob(rect_pts(x0, y0 + 90, x1, y0 + 120), "#b83e2e"), w=7, seed=1741))
+    o.append(text((x0 + x1) / 2, y0 + 86, "ОКТЯБРЬ", 80, "#fffaf0"))
+    for j in range(5):
+        xx = x0 + 110 + j * 130
+        o.append(shape(ellipse_pts(xx, y0 - 8, 16, 16, 10), "#8a8a96", "", w=4, seed=1745 + j))
+    cw = (x1 - x0 - 40) / 7
+    names = ["ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ", "ВС"]
+    for c in range(7):
+        o.append(text(x0 + 20 + cw * (c + .5), y0 + 176, names[c], 38, "#d6503f" if c == 6 else "#4a4a5a"))
+    ch = 108
+    n = 0
+    for r in range(5):
+        for c in range(7):
+            n += 1
+            if n > 31:
+                break
+            o.append(text(x0 + 20 + cw * (c + .5), y0 + 262 + r * ch, n, 52, "#d6503f" if c == 6 else INK))
+    for r in range(6):
+        o.append(line([(x0 + 14, y0 + 205 + r * ch), (x1 - 14, y0 + 205 + r * ch)], 2.4, "#d8cfb8", taper=.05, wmin=.9, seed=1750 + r))
+    return "".join(o), (x0 + 20 + cw * (SUN[0] + .5), y0 + 245 + SUN[1] * ch, cw, ch)
+
+
+def drawer(o_, t):
+    """Тумба: o_ — выдвинут ящик (0 закрыт, 1 открыт). Возвращает (низ, интерьер, фасад-ящика) по слоям."""
+    x0, x1 = 150, 930
+    top = DESK_Y
+    out = []
+    out.append(shape(rect_pts(x0 - 40, top, x1 + 40, top + 46, 8), "#c98f5a", blob(rect_pts(x0 - 40, top + 28, x1 + 40, top + 46, 8), "#a8723f"), w=6, seed=1760))
+    out.append(shape(rect_pts(x0, top + 46, x1, top + 400), "#b98050", blob(rect_pts(x0, top + 46, x1, top + 100), "#8a5a30"), w=6, seed=1761))
+    out.append(shape(rect_pts(x0 + 30, top + 250, x1 - 30, top + 380, 10), "#c98f5a", shape(rect_pts(480, top + 300, 600, top + 322, 8), "#6a4a2a", "", w=3, seed=1762), w=5, seed=1763))
+    return "".join(out)
+
+
+def s13(t):
+    e1 = t - T_CHAS13
+    cal, (sx, sy, cw, ch) = calendar_sheet(t)
+    w = [wall_stripes("#cfe6dd", "#c4dfd4", w=140), cal]
+    # круг красным маркером вокруг воскресенья рисуется
+    pr = clamp((t - 20.8) / .5)
+    if pr > 0:
+        pts = []
+        n = 22
+        for j in range(int(n * pr) + 1):
+            a = -math.pi / 2 + j * 2 * math.pi * 1.06 / n
+            rr = 1 + .06 * math.sin(j * 1.7)
+            pts.append((sx + (cw * .5 + 8) * rr * math.cos(a), sy - 12 + (ch * .5 + 6) * rr * math.sin(a)))
+        if len(pts) > 3:
+            w.append(line(pts, 11, "#e0453a", taper=.2, wmin=.6, seed=1770))
+    # значок часов вылетает из круга на «час»
+    if e1 > -0.01:
+        k = back_out(clamp(e1 / .35), 2.2)
+        px = sx + (720 - sx) * ease_out(clamp(e1 / .4))
+        py = sy + (735 - sy) * ease_out(clamp(e1 / .4))
+        bob = 10 * osc(t, 1.6) * smooth(0, .6, e1)
+        w.append(mini_clock(px, py + bob, 88, 330 + 30 * ease_out(clamp(e1 / .5)), k * 1.0))
+        w.append(speed_streaks(px, py, 110, 160, e1, 10, INK, 1780, 8))
+    # тумба и ящик
+    ef = t - T_BEZ
+    close = ease_in(clamp((t - T_BEZ) / (T_TEL - T_BEZ)), 2)
+    opn = 1 - close
+    gap = 150 * opn
+    desk = drawer(0, t)
+    w.append(desk)
+    x0, x1, top = 150, 930, DESK_Y
+    # выдвинутый ящик: тёмный проём сверху фасада, фасад смещён вниз и вперёд
+    if opn > 0.01:
+        w.append(shape(rect_pts(x0 + 40, top + 40, x1 - 40, top + 40 + gap + 40), "#3a2a1c", "", w=5, seed=1790))
+        w.append(shape(rect_pts(x0 + 30, top + 40 + gap, x1 - 30, top + 40 + gap + 130, 8), "#d3a06a",
+                       shape(rect_pts(470, top + 70 + gap, 610, top + 96 + gap, 10), "#6a4a2a", "", w=3, seed=1791), w=6, seed=1792))
+    else:
+        w.append(shape(rect_pts(x0 + 30, top + 40, x1 - 30, top + 170, 8), "#d3a06a",
+                       shape(rect_pts(470, top + 70, 610, top + 96, 10), "#6a4a2a", "", w=3, seed=1791), w=6, seed=1792))
+    # телефон ложится в ящик: падает сверху, поворачиваясь, на «час» уже в воздухе
+    pu = clamp((t - 21.3) / (T_BEZ - 21.3 + .05))
+    if t > 21.3 and t < T_TEL + .005:
+        yy = -200 + (top + 90 + 200) * ease_in(pu, 1.7)
+        rr = 90 * (1 - ease_out(pu, 2)) + 78
+        xx = 540 + 6 * math.sin(pu * 8)
+        w.append(phone(xx, yy, .9, rr, inner=battery_icon(0, 0, 1.1, 1) if pu < .5 else ""))
+    # закрытие: пыль, штрихи, фасад «хлопает»
+    er = t - T_TEL
+    if er >= 0:
+        w.append(speed_streaks(540, top + 100, 300, 360, er, 12, INK, 1800, 9, .15))
+        for j in range(5):
+            a = math.radians(200 + 28 * j)
+            q = ease_out(clamp(er / .5))
+            if er < .5:
+                rr = 12 * (1 - q) + 4
+                w.append(blob(ellipse_pts(540 + (330 + 80 * q) * math.cos(a) * (1 if j % 2 else -1) * .8, top + 190 - 30 * q - 20 * j % 17, rr, rr, 8), "#a49c8e"))
+    # галочка/сердечко после закрытия — плавно
+    if er > .15:
+        k = back_out(clamp((er - .15) / .35), 2)
+        w.append(f'<g transform="translate(790 {top + 30}) rotate(-8) scale({k:.3f})">{shape(ellipse_pts(0, 0, 60, 60, 16), "#7fc47a", line([(-26, 2), (-8, 22), (28, -22)], 16, INK, taper=.1, wmin=.8, seed=1810), w=6, seed=1811)}</g>')
+    hit = max(bump(t, T_CHAS13, .25), bump(t, T_TEL, .25))
+    cu = clamp((t - 20.5) / 2.9)
+    ww = whip(t, 20.5, .22)
+    kick = decay(t, T_TEL, 8, 5) * 20 * (t > T_TEL)
+    cam = (540 - 330 * ww, 640 + 120 * cu + kick, 1.02 + .2 * ease_io(cu) + .05 * hit, 1.6 * ww + .7 * osc(t, .4))
+    return compose("".join(w), cam, "#c4dfd4", vcol="#0a2018", vig=.26)
+
+
+
+# ═════════════════════════ s07: проводной телефон ═════════════════════════
+T_CHUZH = wi(30)        # «чужого» 9.92
+BS7 = .62
+TAB_Y = 1230
+BASE_C = (670, 1175)
+RED, RED_SH = "#d65a4a", "#a8392c"
+
+
+def rotv(v, deg):
+    a = math.radians(deg)
+    return np.array([v[0] * math.cos(a) - v[1] * math.sin(a), v[0] * math.sin(a) + v[1] * math.cos(a)])
+
+
+def dial_base(t, ang, finger_hole=None):
+    """Дисковый аппарат: корпус, диск с десятью отверстиями (ang — поворот диска), рычаги пустой трубки."""
+    cx, cy = BASE_C
+    o = [blob(ellipse_pts(cx + 10, TAB_Y + 6, 190, 18, 16), "#000000", .2, blur(6))]
+    body = [(cx - 200, TAB_Y - 8, 1), (cx - 170, cy - 76), (cx - 90, cy - 118), (cx + 90, cy - 118), (cx + 170, cy - 76), (cx + 200, TAB_Y - 8, 1)]
+    o.append(shape(body, RED, blob([(cx + 60, cy - 118), (cx + 170, cy - 76), (cx + 200, TAB_Y - 8), (cx + 40, TAB_Y - 8)], RED_SH), w=6, seed=1900))
+    # вилка для трубки сверху
+    for sx in (-1, 1):
+        o.append(shape(rect_pts(cx + sx * 120 - 18, cy - 156, cx + sx * 120 + 18, cy - 112, 8), "#2a2a32", "", w=4, seed=1901 + sx))
+    o.append(shape(ellipse_pts(cx, cy + 6, 96, 96, 24), "#f4efe6", blob(ellipse_pts(cx + 12, cy + 18, 84, 82, 20), "#d6cfc0"), w=6, seed=1910))
+    holes = []
+    for j in range(10):
+        a = math.radians(40 + j * 27)       # дуга, как на диске
+        holes.append((cx + 66 * math.cos(a + math.radians(ang)), cy + 6 + 66 * math.sin(a + math.radians(ang))))
+    for j, (hx, hy) in enumerate(holes):
+        o.append(shape(ellipse_pts(hx, hy, 15, 15, 10), "#2a2a32", "", w=3, seed=1920 + j, ink=False))
+    o.append(shape(ellipse_pts(cx, cy + 6, 34, 34, 14), "#d6cfc0", text(0, 0, "", 1) if False else "", w=4, seed=1940))
+    # ограничитель пальца
+    o.append(shape([(cx - 70, cy + 84), (cx - 50, cy + 70), (cx - 36, cy + 90), (cx - 60, cy + 102)], "#8a8a96", "", w=3, seed=1941))
+    return "".join(o), holes
+
+
+def coil(p0, p1, sag, loops=26, r=14, seed=1950, w=6):
+    """Витой шнур: путь p0→p1 с провисом, по нему мелкие петли."""
+    pts = []
+    n = loops * 9
+    a, b = np.array(p0, float), np.array(p1, float)
+    for i in range(n + 1):
+        u = i / n
+        base = a + (b - a) * u + np.array([0, sag * 4 * u * (1 - u)])
+        d = (b - a) / (np.linalg.norm(b - a) + 1e-9)
+        nn = np.array([-d[1], d[0]])
+        ph = 2 * math.pi * loops * u
+        q = base + d * r * 1.3 * math.cos(ph) + nn * r * math.sin(ph)
+        pts.append((q[0], q[1]))
+    return line(pts, w, "#2a2a32", taper=.05, wmin=.9, seed=seed)
+
+
+def brick_phone(x, y, k, rot=0.0):
+    """Чужой телефон-кирпич (кнопочный, толстый) на столе: x, y — низ-центр."""
+    o = []
+    o.append(blob(ellipse_pts(x + 8, y + 2, 78 * k, 10 * k, 12), "#000000", .2, blur(4)))
+    o.append(f'<g transform="translate({lib.f(x)} {lib.f(y)}) rotate({lib.f(rot)}) scale({k:.3f})">')
+    o.append(line([(-30, -260), (-30, -340)], 12, "#2a2a32", taper=.1, wmin=.9, seed=1960))
+    o.append(shape(rect_pts(-62, -260, 62, 0, 18), "#6b7a6a", blob(rect_pts(20, -260, 62, 0, 18), "#4f5c4e"), w=6, seed=1961))
+    o.append(shape(rect_pts(-44, -236, 44, -160, 8), "#b8d6a0", blob(rect_pts(-44, -236, 44, -204, 8), "#d4e8bd"), w=4, seed=1962))
+    for r in range(4):
+        for c in range(3):
+            o.append(shape(ellipse_pts(-30 + c * 30, -134 + r * 30, 11, 9, 8), "#e9e4d4", "", w=3, seed=1970 + r * 3 + c))
+    o.append("</g>")
+    return "".join(o)
+
+
+def s07(t):
+    # номер набирается тремя поворотами диска: 9.05–9.35, 9.45–9.75, 9.85–10.15
+    ang = 0.0
+    hole_i = 0
+    for k, a0 in enumerate((9.0, 9.38, 9.76, 10.14)):
+        u = (t - a0) / .36
+        if 0 <= u < 1:
+            hole_i = 3 + 2 * k
+            ang = (95 - 12 * k) * (ease_out(u * 2.0) if u < .5 else 1 - ease_io((u - .5) * 2))
+    base_svg, holes = dial_base(t, ang)
+    kw = kw_hand()
+    exv = dict(lid=.55, look=(.75, .65), brows="det", mouth="flat", closed=blink_at(t, 9.6) if False else clamp(1 - abs(t - 9.7) / .08) if abs(t - 9.7) < .08 else 0.0)
+    talking = talk(t, 10.3, 10.85, 7.0)
+    if talking > 0:
+        exv.update(mouth="talk", open=.3 * talking + .05, smile=.2)
+    lean = .05 + .01 * osc(t, .7)
+    ha = .1 + .03 * osc(t, 1.0) + .05 * bump(t, T_CHUZH, .5)
+    hip = (390 + 4 * osc(t, .5), 1330)
+    feet = {"n": ((hip[0] + 16, hip[1] + 376), 0.0), "f": ((hip[0] - 4, hip[1] + 372), 0.0)}
+    # проход 1: положение головы (не зависит от рук)
+    base_pose = dict(hip=hip, scale=BS7, lean=lean, feet=feet, head_ang=ha, expr=exv, hood=0.0,
+                     strings=(3 * osc(t, 1.3), 2 * osc(t, 1.1, 1)))
+    d0 = people.draw(dict(base_pose, arms={"n": ("ang", .3, .5), "f": ("ang", .2, .5)}, hands={}), "dima")
+    ang_h = lean * .5 + ha
+
+    def hw(x, y):       # точка в координатах головы (L) -> мир
+        return d0["head"] + BS7 * people.rot(np.array([x, y], float), ang_h)
+
+    cup = hw(-132, -4)
+    mouth = hw(2, 168)
+    hs_d = (mouth - cup) / np.linalg.norm(mouth - cup)
+    hs_n = np.array([-hs_d[1], hs_d[0]])
+    grip = cup + (mouth - cup) * .5 + hs_n * 14
+    wr_n = grip + np.array([8, 58])           # запястье ближней руки — снизу-справа под ручкой
+    # дальняя рука: палец в отверстии диска
+    hx, hy = holes[hole_i]
+    dirf = np.array([.62, .78])
+    dirf /= np.linalg.norm(dirf)
+    wr_f = np.array([hx, hy]) - dirf * 88
+    arms = {"n": ("ik", tuple(wr_n), -1), "f": ("ik", tuple(wr_f), -1)}
+    hands = {"n": dict(kind="open", curl=(.9, .95, .95, .9), spread=.05, thumb=.5, bend=.1), "f": dict(kind="none")}
+    d = people.draw(dict(base_pose, arms=arms, hands=hands), "dima")
+    # трубка: ручка-«кость» с чашками на концах
+    hp = [tuple(cup + hs_n * 0), tuple(mouth)]
+    handle = shape(band([tuple(cup), tuple((cup + mouth) / 2 + hs_n * 8), tuple(mouth)], 40, 34, step=4, cap=False), RED, "", w=5, seed=1980)
+    earc = shape(ellipse_pts(cup[0], cup[1], 44, 34, 14, rot=math.degrees(math.atan2(hs_d[1], hs_d[0])) + 90), RED_SH, "", w=5, seed=1981)
+    mouthc = shape(ellipse_pts(mouth[0], mouth[1], 40, 30, 14, rot=math.degrees(math.atan2(hs_d[1], hs_d[0])) + 90), RED_SH, "", w=5, seed=1982)
+    ctr = (cup + mouth) / 2
+    hand_n = Hand.hand(wr_n + np.array([0, 4]), -hs_d * .2 + np.array([-.55, -.8]), flip=1, k=BS7 * 1.05, curl=(.9, .95, .95, .9), spread=.05, thumb=.4,
+                       bend=.1, seed=1990, **kw)
+    # шнур от нижнего конца трубки к аппарату, провисает до стола
+    cord = coil(tuple(mouth + np.array([0, 20])), (BASE_C[0] - 190, TAB_Y - 60), 150, 20, 11, 1995)
+    cord2 = coil((BASE_C[0] - 190, TAB_Y - 60), (BASE_C[0] - 150, BASE_C[1] - 40), 0, 3, 9, 1996, 5)
+    # стол
+    tab = shape(rect_pts(430, TAB_Y, 1100, TAB_Y + 50, 6), "#c98f5a", blob(rect_pts(430, TAB_Y + 30, 1100, TAB_Y + 50, 6), "#a8723f"), w=6, seed=1930)
+    tab += shape(rect_pts(450, TAB_Y + 50, 490, 1700), "#a8723f", "", w=5, seed=1931) + shape(rect_pts(1040, TAB_Y + 50, 1080, 1700), "#a8723f", "", w=5, seed=1932)
+    # чужой телефон падает на стол на «чужого»
+    ee = t - T_CHUZH
+    brick = ""
+    if ee > -0.01:
+        yy = TAB_Y - 6 - 400 * (1 - ease_in(clamp(ee / .16), 2)) * (ee < .16)
+        bounce = -26 * abs(math.sin(math.pi * clamp((ee - .16) / .3))) * (ee > .16) * math.exp(-(ee - .16) * 6)
+        brick = brick_phone(880, yy + bounce, .6, 8 * math.exp(-ee * 5) * math.sin(ee * 40))
+        brick += speed_streaks(880, TAB_Y - 90, 130, 190, ee - .16, 9, INK, 2000, 8) if ee > .16 else ""
+        q = back_out(clamp((ee - .2) / .3), 2.2)
+        brick += f'<g transform="translate(900 {TAB_Y - 300}) rotate(8) scale({q:.3f})">{text(0, 0, "?", 110, "#e0453a", stroke=INK, sw=7)}</g>'
+    wall = wall_stripes("#e3d3b0", "#dcc9a2", w=150)
+    flo = blob(rect_pts(-400, 1700, 1500, 2300), "#9a6a3e")
+    w = [wall, flo, tab, base_svg, cord2, d.get("legs", ""), d["arm_f"], d["body"], hand_n and "", ]
+    # порядок: тело, трубка, рука на трубке, дальняя рука уже в arm_f (под телом) — поэтому палец рисуем поверх отдельно
+    w = [wall, flo, tab, base_svg, cord2, d.get("legs", ""), d["arm_f"], d["body"], cord, handle, earc, mouthc, d["arm_n"], brick]
+    # палец дальней руки поверх диска: рисуем кисть отдельно над аппаратом
+    wrf = d["wrist"]["f"]
+    vec = np.array([hx, hy]) - wrf
+    dv = vec / np.linalg.norm(vec)
+    hand_f = Hand.hand(wrf, dv, flip=1, k=BS7, curl=(0, .95, .95, .9), spread=.04, thumb=.85, bend=.04, seed=2010, **kw)
+    w.insert(-1, hand_f)
+    cu = clamp((t - 8.8) / 2.1)
+    cam = (640 + 10 * cu, 1030 - 20 * cu, 1.32 + .24 * ease_io(cu) + .04 * bump(t, T_CHUZH, .3), .8 - 1.2 * cu)
+    cam = (cam[0] + 8 * decay(t, T_CHUZH, 9, 5) * (t > T_CHUZH), cam[1] + 12 * decay(t, T_CHUZH, 9, 4) * (t > T_CHUZH), cam[2], cam[3])
+    return compose("".join(w), cam, "#dcc9a2", vcol="#2a1408", vig=.3)
+
+
+def blink_at(t, tb, dur=.16):
+    return clamp(1 - abs(t - tb) / (dur / 2)) if abs(t - tb) < dur / 2 else 0.0
+
+
+def talk(t, t0, t1, rate=7.0):
+    if t < t0 or t > t1:
+        return 0.0
+    v = .5 + .5 * math.sin(2 * math.pi * rate * (t - t0)) * (.7 + .3 * math.sin(t * 3.1))
+    return clamp(v * smooth(t0, t0 + .08, t) * (1 - smooth(t1 - .08, t1, t)))
+
+
+SHOTS = {"s10": s10, "s02": s02, "s03": s03, "s13": s13, "s07": s07}
 
 
 def frame(sid, t):
