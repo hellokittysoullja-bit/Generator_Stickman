@@ -1,4 +1,6 @@
-"""Люди рилса 61 «стол» (основа — common/people.py рилса 60). Новое в 61: участники эксперимента who="bob" (каре, круглые очки,
+"""Люди рилса 63 «кофе» (копия common/people.py рилса 62 + раздел «РИЛС 63» в конце: мимика EXPR, рот «puff», мешки по
+выбору expr["bags"], стойка и шаг stand_kw/walk_kw, жонглирование juggle_arc, хват кружки за ручку handle_grip).
+Прежняя шапка: Люди рилса 61 «стол» (основа — common/people.py рилса 60). Новое в 61: участники эксперимента who="bob" (каре, круглые очки,
 вишнёвый свитер) и who="beard" (кепка задом наперёд, густая борода, клетчатая рубашка); мимика мамы brows="skeptic" (одна бровь
 вверх) и mouth="pursed" (поджатые губы); готовые позы POSE и мимика EXPR; кот шагает и прыгает (cat_walk / cat_jump).
 Из 60: who="kid" — маленький Дима: круглая голова, пижама.
@@ -272,7 +274,7 @@ def dima_head(expr):
         inner.append(blob(ellipse_pts(70, -60, 80, 40, 12), "#e2493c", .35 * fl))
     s.append(shape(FACE, C["SKIN"], "".join(inner), w=5.6, seed=153))
     s.append(line([(-66, 70), (-30, 104), (6, 118)], 2.4, C["SKIN_SH2"], seed=159, op=.8))
-    s.append(eyes(expr, EYE_N, EYE_F, bags=True))
+    s.append(eyes(expr, EYE_N, EYE_F, bags=expr.get("bags", True)))
     br = expr.get("brows", "tired")
     if isinstance(br, tuple):      # (имя_a, имя_b, u): плавный переход бровей
         A_, B_, u_ = BROWS[br[0]], BROWS[br[1]], br[2]
@@ -325,6 +327,13 @@ def dima_mouth(expr):
             o += shape([(44, cy + 4), (50, cy + 6), (49, cy + 10 + dl), (45, cy + 14 + dl), (41, cy + 10 + dl)], "#cfeaf6",
                        blob([(45, cy + 6 + dl), (47, cy + 8 + dl), (45, cy + 11 + dl)], "#ffffff"), w=2.2, seed=178)
         o += line([(40, cy - 6), (44, cy + 2)], 2.2, C["SKIN_SH2"], seed=179, op=.8) + line([(88, cy - 6), (84, cy + 2)], 2.2, C["SKIN_SH2"], seed=173, op=.8)
+        return o
+    if m == "puff":        # надутые щёки (пьёт через силу): губы сжаты бантиком, щёки округлены тенью и складкой
+        pf = expr.get("puff", 1.0)
+        o = blob(ellipse_pts(100, 52, 20 + 6 * pf, 22 + 6 * pf, 12), "#e98a86", .35 * pf) + blob(ellipse_pts(0, 58, 34 + 8 * pf, 26 + 6 * pf, 12), "#e98a86", .3 * pf)
+        o += line([(-40, 30), (-48, 62), (-34, 92)], 2.6, C["SKIN_SH2"], seed=184, op=.8 * pf)
+        o += line([(104, 72), (112, 54)], 2.4, C["SKIN_SH2"], seed=185, op=.8 * pf)
+        o += shape(ellipse_pts(64, 92, 13, 8, 10), "#c86b6b", line([(54, 92), (74, 92)], 2.4, "#5a2b33", seed=186), w=3.8, seed=187)
         return o
     if m == "wobble":      # расстроен: уголки вниз, нижняя губа дрожит (trem — фаза)
         tr = expr.get("trem", 0.0)
@@ -495,6 +504,13 @@ def _mouth_gen(expr, lip, seed=391, cx=60, cy=92, wide=1.15):
                 + line([(cx - 8, cy + 16), (cx + 10, cy + 16)], 2.0, C["SKIN_SH2"], seed=seed + 4, op=.6)
                 + line([(cx - 6, cy - 10), (cx - 2, cy - 6)], 1.6, C["SKIN_SH2"], seed=seed + 5, op=.6)
                 + line([(cx + 8, cy - 10), (cx + 6, cy - 6)], 1.6, C["SKIN_SH2"], seed=seed + 6, op=.6))
+    if m == "puff":        # надутые щёки (пьёт через силу): губы сжаты бантиком, щёки округлены тенью и складкой
+        pf = expr.get("puff", 1.0)
+        o = blob(ellipse_pts(100, 52, 20 + 6 * pf, 22 + 6 * pf, 12), "#e98a86", .35 * pf) + blob(ellipse_pts(0, 58, 34 + 8 * pf, 26 + 6 * pf, 12), "#e98a86", .3 * pf)
+        o += line([(-40, 30), (-48, 62), (-34, 92)], 2.6, C["SKIN_SH2"], seed=184, op=.8 * pf)
+        o += line([(104, 72), (112, 54)], 2.4, C["SKIN_SH2"], seed=185, op=.8 * pf)
+        o += shape(ellipse_pts(64, 92, 13, 8, 10), "#c86b6b", line([(54, 92), (74, 92)], 2.4, "#5a2b33", seed=186), w=3.8, seed=187)
+        return o
     if m == "wobble":      # губы дрожат, вот-вот заплачет (радость или обида)
         return line([(cx - 28, cy - 2), (cx - 14, cy + 6), (cx, cy - 2), (cx + 14, cy + 6), (cx + 30, cy - 4)], 4.6, lip, seed=seed)
     return (line([(cx - 32, cy - 8 * k), (cx - 14, cy + 4 * k), (cx + 14, cy + 4 * k), (cx + 34, cy - 10 * k)], 5.0, lip, seed=seed, peak=.5)
@@ -1604,3 +1620,75 @@ def mobilnik(cx, cy, k=1.0, rot=0.0, seed=950):
     """Мобильник-силуэт: тёмный скруглённый корпус без экрана, кнопок и букв (в руке друга)."""
     pts = lib.T(lib.rrect(-34, -62, 34, 62, 12), cx, cy, k, rot)
     return shape(pts, "#2b2e36", blob(lib.T(lib.rrect(-30, -58, -6, 58, 8), cx, cy, k, rot), "#3c414c", .9), w=4.0, seed=seed)
+
+
+# ═════════════════════════════ РИЛС 63 «КОФЕ»: мимика, стойка, шаг, жонглирование, хват за ручку ═════════════════════════════
+# Мимика: EXPR["dima"][имя]; у каждого плана своя. bags=False — мешков почти нет (бодрое утро s13).
+EXPR["dima"].update({
+    "scared": {"brows": "up", "mouth": "o", "open": .45, "lid": 1.0, "look": (.7, .45), "scale_n": 1.12, "scale_f": 1.12},     # испуг (s01)
+    "wince": {"brows": "pinch", "mouth": "puff", "puff": 1.0, "squeeze": 1.0},                                                 # морщится, щёки надуты (s03)
+    "relief": {"brows": "calm", "mouth": "smile", "smile": .75, "lid": .5, "look": (.2, .1)},                                  # облегчение
+    "doubt": {"brows": "one_up", "mouth": "flat", "lid": .55, "look": (.65, .15)},                                            # недоверие
+    "surprise": {"brows": "up", "mouth": "o", "open": .35, "lid": 1.0, "look": (.3, -.1)},                                    # удивление
+    "smug": {"brows": "calm", "mouth": "side", "lid": .6, "look": (.35, 0)},                                                  # довольная полуулыбка
+    "dull": {"brows": "tired", "mouth": "tired", "lid": .22, "look": (.25, .45)},                                             # тусклый взгляд (ночь)
+    "saucer": {"brows": "up", "mouth": "o", "open": .25, "lid": 1.0, "look": (0, 0), "scale_n": 1.38, "scale_f": 1.38},       # глаза-блюдца
+    "zombie": {"brows": "tired", "mouth": "o", "open": .12, "lid": .1, "look": (0, .6)},                                      # зомби (серое утро)
+    "cheerful": {"brows": "up", "mouth": "smile", "smile": 1.0, "lid": .8, "look": (.4, 0), "bags": False},                   # бодрая улыбка
+    "laugh": {"brows": "up", "mouth": "laugh", "open": .9, "laugh": 1.0, "hair": 4},                                          # смех
+    "grimace_ok": {"brows": "worry", "mouth": "grin", "open": .4, "lid": .7, "look": (.4, -.2)},                              # облегчённая гримаса (поймал)
+    "shrug": {"brows": "up", "mouth": "side", "lid": .7, "look": (-.2, 0)},                                                   # «ну и что», пожал плечами
+})
+
+LEG_LEN = THIGH + SHIN          # длина ноги от тазобедренного до щиколотки в L-единицах
+
+
+def stand_kw(x, y, scale, who="dima", spread=60.0):
+    """Стоит: щиколотки под тазом. Таз (x, y); вернёт dict(feet=...) для figure()."""
+    sc = scale * HEIGHT.get(who, 1.0)
+    ay = y + (LEG_LEN - 12) * sc
+    return {"feet": {"n": ((x + spread * .55 * sc, ay), 0.0), "f": ((x - spread * .45 * sc, ay + 6 * sc), 0.0)}}
+
+
+def walk_kw(x, y, scale, phase, who="dima", stride=230.0, lift=60.0):
+    """Шаг с перекатом стопы (профиль вправо): phase — фаза цикла (1 = два шага). Возвращает dict(feet=..., hip=(x, y'), bob):
+    таз (hip) ниже на опоре двумя ногами и выше на одной; стопа опорной ноги перекатывается пяткой → носком (phi)."""
+    sc = scale * HEIGHT.get(who, 1.0)
+    out = {}
+    bob = -abs(math.cos(2 * math.pi * phase)) * 14 * sc + 7 * sc       # выше всего, когда ноги вместе
+    hy = y + bob
+    ground = y + (LEG_LEN - 12) * sc
+    for side, off in (("n", 0.0), ("f", .5)):
+        u = (phase + off) % 1.0
+        if u < .5:      # опора: стопа идёт назад по земле, перекат пятка → носок
+            v = u / .5
+            ax = x + (stride * .5 - stride * v) * sc
+            ay = ground
+            phi = .32 * (1 - v) * 0 - .45 * max(0.0, v - .6) / .4 + .25 * max(0.0, .25 - v) / .25
+        else:           # перенос: стопа по дуге вперёд, носок вверх
+            v = (u - .5) / .5
+            ax = x + (-stride * .5 + stride * v) * sc
+            ay = ground - lift * math.sin(math.pi * v) * sc
+            phi = -.35 * math.sin(math.pi * v * .8) + .25 * max(0.0, v - .7) / .3
+        out[side] = ((ax, ay), phi)
+    return {"feet": out, "hip": (x, hy), "bob": bob}
+
+
+def juggle_arc(p0, p1, u, height):
+    """Точка и угол предмета в полёте по параболе из p0 в p1 (u 0..1). Возвращает (x, y, rot_deg)."""
+    x = p0[0] + (p1[0] - p0[0]) * u
+    y = p0[1] + (p1[1] - p0[1]) * u - 4 * height * u * (1 - u)
+    return x, y, 360.0 * u * (1 if p1[0] >= p0[0] else -1)
+
+
+def handle_grip(who, hc, k=1.0, side=1, far=False, seed=960, hh=None):
+    """Хват кружки за ручку: hc — центр ручки в мире, side +1 — ручка справа от кружки (кисть справа, пальцы влево сквозь ручку),
+    k — масштаб кисти (≈ scale фигуры). Возвращает (back, front): back рисовать ДО кружки (ладонь и большой палец за ручкой),
+    front — ПОСЛЕ кружки (пальцы поверх ручки)."""
+    global C
+    C = PAL[who]
+    kw = hand_kw()
+    kw.pop("nail", None)
+    if far:
+        kw.update(skin=far_c(C["SKIN"], True), skin_sh=far_c(C["SKIN_SH"], True))
+    return Hand.grip(hc, 9 * k / .5 * .5, side, k=k * 1.15, seed=seed, h=(hh if hh is not None else 62), **kw)
