@@ -589,7 +589,7 @@ def s11(t):
 # ═════════════════════════ s12, s13: кот на спинке дивана, прыгает на «кот», садится на лицо ═════════════════════════
 CAT_K = .46
 CAT_BACK = np.array([434.0, 852.0])         # кот на спинке дивана (точка между задних лап)
-CAT_FACE = np.array([480.0, 1006.0])        # кот сидит на лице
+CAT_FACE = np.array([468.0, 1030.0])        # кот сидит на лице
 
 
 def cat_state(t, **kw):
@@ -633,9 +633,9 @@ def s12(t):
                   front=c if landed else "", over_head="")
     if not landed:
         w = w + c
-    s = 1.55 + .1 * clamp((t - 14.56) / 1.9) + punch(t, T_KOT + .36, .05, .05, .3)
+    s = 1.95 + .12 * clamp((t - 14.56) / 1.9) + punch(t, T_KOT + .36, .05, .05, .3)
     sh = shake_at(t, T_KOT + .36, 6, .3)
-    return compose(w, focus_cam(470, 930, s, screen_y=820), sh)
+    return compose(w, focus_cam(420, 940, s, screen_y=820), sh)
 
 
 def s13(t):
@@ -645,7 +645,7 @@ def s13(t):
     if awake < .5:
         e = sleep_expr(t, brows="calm", mouth="flat")
     else:
-        e = dict(lid=1.0, look=(.55, -.85), brows="up", mouth="flat", hair=6 * bump(t, T_LICO, .3))
+        e = dict(lid=1.0, look=(.25, -.35), brows="up", mouth="flat", hair=6 * bump(t, T_LICO, .3))
     jitter = 3 * osc(t, 9) * awake
     hr = HEAD_ROT + jitter
     head = head_svg(e, HEAD, hr)
@@ -655,11 +655,11 @@ def s13(t):
     arms = ""
     if t > T_LICO - .04:
         a = clamp((t - T_LICO + .04) / .12)
-        for j, (S, base, f, ph) in enumerate([((540.0, 1066.0), (430.0, 880.0), 6.5, 0.0), ((600.0, 1050.0), (700.0, 860.0), 5.7, 1.7)]):
-            tgt = np.array(base) + np.array([40 * osc(t, f, ph), 36 * osc(t, f * 1.3, ph + 1)])
+        for j, (S, base, f, ph) in enumerate([((520.0, 1062.0), (590.0, 830.0), 6.5, 0.0), ((580.0, 1056.0), (760.0, 870.0), 5.7, 1.7)]):
+            tgt = np.array(base) + np.array([46 * osc(t, f, ph), 30 * osc(t, f * 1.3, ph + 1)])
             tgt = lerp2(REST, tgt, a)
             dd = tgt - np.array(S)
-            arm_s, _, _ = arm_svg(S, tgt, dict(dir=(dd[0], dd[1]), curl=(.1, .1, .15, .2), spread=.35, thumb=.1), side=(1 if j == 0 else -1),
+            arm_s, _, _ = arm_svg(S, tgt, dict(dir=(dd[0], dd[1]), curl=(.1, .1, .15, .2), spread=.35, thumb=.1), side=1,
                                   seed=20 * j)
             arms += arm_s
     else:
@@ -669,9 +669,9 @@ def s13(t):
         hp = head_pt((40, -40), HEAD, hr)
         lines = click_star(hp[0] - 20, hp[1] - 30, ((t - T_LICO) * 2.2) % 1.0, k=1.1, col="#ffffff")
     w = bed_world(t, head=head, plaid=plaid_svg(legs=-10 * awake * abs(osc(t, 4))), stand=alarm_on_stand(t, 0.0), arm_back=arms, front=c + lines)
-    s = 1.75 + .08 * clamp((t - 16.08) / 1.5) + punch(t, T_LICO, .12, .05, .4)
+    s = 2.2 + .1 * clamp((t - 16.08) / 1.5) + punch(t, T_LICO, .12, .05, .4)
     sh = shake_at(t, T_LICO, 16, .45)
-    return compose(w, focus_cam(480, 940, s, screen_y=820), sh)
+    return compose(w, focus_cam(450, 960, s, screen_y=840), sh)
 
 
 SHOTS = {"s02": s02, "s07": s07, "s08": s08, "s10": s10, "s11": s11, "s12": s12, "s13": s13}

@@ -25,9 +25,9 @@ NS = (52.0, 230.0, 1046.0)            # тумбочка: x0, x1, верх
 ALARM = (196.0, 48.0)                  # будильник на тумбочке: cx, size
 SOFA_X0, SOFA_X1 = 236.0, 1196.0
 MAT_T, MAT_F = 1112.0, 1150.0          # сиденье: задний край, передний край верхней плоскости
-SOFA, SOFA_SH, SOFA_HI, SOFA_DK = "#6f8f8a", "#557570", "#88aaa4", "#3f5854"
+SOFA, SOFA_SH, SOFA_HI, SOFA_DK = "#8f7aa6", "#6f5b86", "#a894bd", "#463653"   # как край дивана в сцене clock
 SHEET, SHEET_SH = "#e9eef2", "#c6d0d9"
-WOOD, WOOD_SH, WOOD_HI = "#9a6238", "#74462a", "#b97c4d"
+WOOD, WOOD_SH, WOOD_HI = "#b5794a", "#8e5a34", "#d39a68"            # тумбочка — как в сцене clock
 WALL_SIDE, WALL_SIDE_SH = "#7d95a2", "#6b8390"
 
 
@@ -143,14 +143,21 @@ def pillow(cx, cy, k=1.0, dent=0.0, lift=0.0, sq=1.0):
     return (blob([(p[0] + 8, p[1] + 10) for p in pts], "#2a1c18", .18) + shape(pts, "#f4f1ea", inner, w=4.4, seed=8080))
 
 
+PLAID, PLAID_D, PLAID_L, PLAID_R = "#4f7d55", "#35583c", "#8fb08a", "#c9473a"   # плед — цвета сцены clock (scene_clock.py)
+
+
 def plaid_defs():
     pid = "plaid37"
+    sz = 110
     lib.DEFS.append(
-        f'<pattern id="{pid}" width="96" height="96" patternUnits="userSpaceOnUse" patternTransform="rotate(-6)">'
-        f'<rect width="96" height="96" fill="#c4553f"/>'
-        f'<rect x="0" y="34" width="96" height="28" fill="#a5432f" opacity=".9"/><rect x="34" y="0" width="28" height="96" fill="#a5432f" opacity=".9"/>'
-        f'<rect x="0" y="44" width="96" height="8" fill="#e8b85a"/><rect x="44" y="0" width="8" height="96" fill="#e8b85a"/>'
-        f'<rect x="0" y="6" width="96" height="3" fill="#f2e3c4" opacity=".8"/><rect x="6" y="0" width="3" height="96" fill="#f2e3c4" opacity=".8"/>'
+        f'<pattern id="{pid}" width="{sz}" height="{sz}" patternUnits="userSpaceOnUse" patternTransform="rotate(-6)">'
+        f'<rect width="{sz}" height="{sz}" fill="{PLAID}"/>'
+        f'<rect x="0" y="{sz * .35}" width="{sz}" height="{sz * .3}" fill="{PLAID_D}" opacity=".55"/>'
+        f'<rect x="{sz * .35}" y="0" width="{sz * .3}" height="{sz}" fill="{PLAID_D}" opacity=".55"/>'
+        f'<rect x="0" y="{sz * .86}" width="{sz}" height="{sz * .04}" fill="{PLAID_R}"/>'
+        f'<rect x="{sz * .86}" y="0" width="{sz * .04}" height="{sz}" fill="{PLAID_R}"/>'
+        f'<rect x="0" y="{sz * .12}" width="{sz}" height="{sz * .03}" fill="{PLAID_L}" opacity=".8"/>'
+        f'<rect x="{sz * .12}" y="0" width="{sz * .03}" height="{sz}" fill="{PLAID_L}" opacity=".8"/>'
         f'</pattern>')
     return pid
 
@@ -159,11 +166,11 @@ def plaid(pts, folds=(), seed=8090, shade_y=None):
     pid = plaid_defs()
     inner = f'<rect x="-900" y="-900" width="4000" height="4000" fill="url(#{pid})"/>'
     if shade_y is not None:
-        inner += blob([(-900, shade_y), (4000, shade_y), (4000, 3000), (-900, 3000)], "#3a1410", .28)
+        inner += blob([(-900, shade_y), (4000, shade_y), (4000, 3000), (-900, 3000)], "#13241a", .3)
     inner += blob([(-900, -900), (4000, -900), (4000, 3000)], "#ffffff", 0)
     for k, f_ in enumerate(folds):
-        inner += line(f_, 3, "#5a1e16", seed=seed + 10 + k, op=.7)
-    return shape(pts, "#c4553f", inner, w=4.8, seed=seed)
+        inner += line(f_, 3, "#22382a", seed=seed + 10 + k, op=.7)
+    return shape(pts, PLAID, inner, w=4.8, seed=seed)
 
 
 def light():
