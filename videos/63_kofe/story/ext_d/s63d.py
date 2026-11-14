@@ -63,70 +63,13 @@ def G(inner, x, y, sx=1.0, sy=None, rot=0.0):
     return f'<g transform="translate({x:.2f} {y:.2f}) rotate({rot:.3f}) scale({sx:.4f} {sy:.4f})">{inner}</g>'
 
 
-# ═════════════════════════════ кофейник (пока нет в common/props.py) ═════════════════════════════
-def coffeepot(x, y, k=1.0, rot=0.0, seed=0):
-    """Кофейник без надписей: (x, y) — центр дна, носик слева, ручка справа. Возвращает (svg, носик_в_мире)."""
-    if hasattr(props, "coffeepot"):
-        r = props.coffeepot(x, y, k=k, rot=rot)
-        if isinstance(r, tuple):
-            return r
-    sd = 9300 + seed
-    o = []
-    body = [(-62, 0, 1), (-70, -40), (-60, -120), (-44, -168, 1), (44, -168, 1), (60, -120), (70, -40), (62, 0, 1)]
-    inner = blob([(28, -170), (80, -170), (80, 4), (36, 4)], "#7d828c")
-    inner += line([(-40, -150), (-52, -50)], 8, "#e6e9ee", taper=.5, wmin=.3, seed=sd + 1)
-    inner += blob([(-80, -100), (80, -100), (80, -86), (-80, -86)], "#7d828c", .8)
-    o.append(line([(60, -140), (112, -130), (118, -70), (66, -40)], 22, INK, taper=0, wmin=1, seed=sd + 2))
-    o.append(line([(60, -140), (110, -130), (115, -70), (66, -40)], 13, "#2e2a2e", taper=0, wmin=1, seed=sd + 3))
-    spout = [(-56, -110), (-92, -150), (-118, -186, 1), (-104, -190, 1), (-74, -160), (-48, -138)]
-    o.append(shape(spout, "#aeb3bc", "", w=4.0, seed=sd + 4))
-    o.append(shape(body, "#b8bdc6", inner, w=4.6, seed=sd + 5))
-    o.append(shape(ellipse_pts(0, -168, 46, 11, 16), "#9aa0aa", "", w=3.6, seed=sd + 6))
-    o.append(shape(rrect_pts(-30, -200, 30, -172, 10), "#2e2a2e", "", w=3.4, seed=sd + 7))
-    o.append(shape(ellipse_pts(0, -206, 11, 9, 10), "#2e2a2e", "", w=3.0, seed=sd + 8))
-    a = math.radians(rot)
-    sx_, sy_ = -112 * k, -190 * k
-    tip = (x + sx_ * math.cos(a) - sy_ * math.sin(a), y + sx_ * math.sin(a) + sy_ * math.cos(a))
-    return G("".join(o), x, y, k, k, rot), tip
-
-
-def rrect_pts(x0, y0, x1, y1, r):
-    return lib.rrect(x0, y0, x1, y1, r)
-
-
-def stream(p0, p1, t, w=16.0, sag=0.25, seed=0):
-    """Струя кофе дугой от p0 (носик) к p1, бесконечная: по ней бегут блики."""
-    x0, y0 = p0
-    x1, y1 = p1
-    pts = []
-    for i in range(17):
-        u = i / 16
-        x = lerp(x0, x1, u) + 18 * math.sin(u * math.pi) * (-1)
-        y = lerp(y0, y1, u * u) - (y1 - y0) * sag * math.sin(u * math.pi) * .0
-        pts.append((x, y))
-    o = [line(pts, w + 8, INK, taper=.15, wmin=.7, seed=seed), line(pts, w, "#5a3a26", taper=.15, wmin=.7, seed=seed + 1)]
-    for j in range(3):
-        ph = ((t * 2.6 + j / 3) % 1)
-        i0 = int(ph * 13)
-        seg = pts[i0:i0 + 3]
-        if len(seg) >= 2:
-            o.append(line([(p[0] - 3, p[1]) for p in seg], 4, "#a67652", taper=.6, wmin=.2, seed=seed + 5 + j))
-    # всплеск у кружки
-    for j in range(4):
-        ph = ((t * 3.1 + j / 4) % 1)
-        a = -2.2 + j * .45
-        r = 12 + 46 * ph
-        cx, cy = x1 + math.cos(a) * r, y1 - 10 + math.sin(a) * r * .7 + 60 * ph * ph
-        rr = 7 * (1 - ph) + 2
-        o.append(shape(ellipse_pts(cx, cy, rr, rr * 1.15, 8), "#5a3a26", "", w=2.4, seed=seed + 20 + j))
-    return "".join(o)
-
-
 def mug(x, y, k, rot=0.0, col="red", t=0.0, steam=0.6, seed=0, handle=1):
-    return props.mug(x, y, k=k, rot=rot, col=col, coffee=True, steam=steam, t=t, handle=handle, seed=seed)
+    """Кружка кофе горы: k — в масштабе старой кружки 66×78 (common props.coffee_mug 110×130)."""
+    inner = props.coffee_mug(0, 0, k=k * .6, rot=0, col=col, fill=1.0, steam=steam, t=t, seed=seed)
+    return G(inner, x, y, handle, 1, rot)
 
 
-MUGC = ("red", "blue", "green", "red", "blue", "green")
+MUGC = ("red", "white", "blue", "yellow", "green", "white")
 
 
 def night_paper(seed=3):
@@ -163,7 +106,7 @@ def pile_slots():
     h = 78 * MK - 6            # кружка на кружке
     rows = [
         (TABLE_Y - h, [180, 320, 460, 620, 760, 900], "c"),
-        (TABLE_Y - 2 * h, [250, 400, 540, 690, 840], "c"),
+        (TABLE_Y - 2 * h, [250, 400, 690, 840], "c"),
         (TABLE_Y - 3 * h, [140, 280], "l"), (TABLE_Y - 3 * h, [900, 1030], "r"),
         (TABLE_Y - 4 * h, [210], "l"), (TABLE_Y - 4 * h, [960], "r"),
         (TABLE_Y - 5 * h, [160], "l"), (TABLE_Y - 5 * h, [920], "r"),
@@ -250,9 +193,8 @@ def frame10(t):
     pot_u = ease_out(clamp((t - (T_LITR - .12)) / .3), 3)
     pot_x, pot_y = lerp(1300, 790, pot_u), lerp(-150, 360, pot_u) + 6 * math.sin(t * 7)
     pot_rot = lerp(-10, -48, pot_u) + 2 * math.sin(t * 5)
-    pot_svg, tip = coffeepot(pot_x, pot_y, 1.2, pot_rot)
-    pot_svg = f'<g transform="translate({2 * pot_x:.2f} 0) scale(-1 1)">{pot_svg}</g>'          # носиком вправо, к башне
-    tip = (2 * pot_x - tip[0], tip[1])
+    pot_svg = props.coffee_pot(pot_x, pot_y, 1.15, -pot_rot, t)
+    tip = props.pot_spout(pot_x, pot_y, 1.15, -pot_rot)
     # Дима: тусклый → глаза-блюдца
     wide = smooth(T_LITR - .02, T_LITR + .14, t)
     jolt = props.squash(t, T_LITR, amp=.35, freq=3.4, damp=7)[1] if t >= T_LITR else 1.0
@@ -317,7 +259,7 @@ def frame10(t):
         rx, ry = tx - 960, ty - 78 * MK - TABLE_Y
         tx2 = 960 + rx * math.cos(ang) - ry * math.sin(ang)
         ty2 = TABLE_Y + rx * math.sin(ang) + ry * math.cos(ang)
-        o.append(stream(tip, (tx2, ty2 + 8), t, w=18, seed=9700))
+        o.append(props.pour_stream(tip[0], tip[1], tx2, ty2 + 8, t, w=18, seed=97, bend=.15))
     body = "".join(o)
     return f'<g transform="{lib.cam(cx, cy, z, roll)}">{body}</g>'
 
