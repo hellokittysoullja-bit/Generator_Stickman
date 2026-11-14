@@ -111,7 +111,7 @@ def s07(t):
     a_rest = people.ik_ang("dima", hx, hy, s, lean, (hx + 150 * sc, hy - 110 * sc), -1)
     a_chest = people.ik_ang("dima", hx, hy, s, lean, (hx + 55 * sc, hy - 255 * sc), -1)
     arm_n = people.mix_ang(a_rest, a_chest, hu)
-    hand_n = {"dir": (-.25 * hu + .2 * (1 - hu), -1 * hu + 1 * (1 - hu)), "curl": (.1 + .3 * (1 - hu), .1 + .3 * (1 - hu), .15 + .3 * (1 - hu), .2 + .3 * (1 - hu)),
+    hand_n = {"dir": (-.6 * hu + .2 * (1 - hu), -.8 * hu + 1 * (1 - hu)), "curl": (.1 + .3 * (1 - hu), .1 + .3 * (1 - hu), .15 + .3 * (1 - hu), .2 + .3 * (1 - hu)),
               "spread": .12, "thumb": .15 + .2 * (1 - hu)}
     ha = .05 * breath * .3 + .08 * smooth(T7_VSLUH + .3, T7_RAD, t) + .05 * bump(t, T7_GOV, .3)
     fig = people.figure("dima", hx, hy, s, ex, lean=lean, head_ang=ha, arms={"f": ("ik", (hx + 40 * sc, hy - 120 * sc), -1), "n": arm_n},
@@ -126,12 +126,12 @@ def s07(t):
         grow = max(0.0, lib.back_out(clamp((t - T7_GOV - .02) / .34)))
         shrink = ease_in(clamp((t - T7_VSLUH) / .38), 2)
         u = grow * (1 - shrink)
-        c0 = (mouth[0] + 260, mouth[1] - 300)
+        c0 = (mouth[0] + 175, mouth[1] - 290)
         c = lerp2(c0, (mouth[0] + 30, mouth[1] + 10), shrink)
         wob = 1 + .06 * math.sin((t - T7_VSLUH) * 40) * shrink * (1 - shrink) * 4
         if u > .02:
             bub = (f'<g transform="translate({c[0]:.1f} {c[1]:.1f}) scale({wob:.4f} {2 - wob:.4f}) translate({-c[0]:.1f} {-c[1]:.1f})">'
-                   + PR.speech_bubble(c[0], c[1], 330, 230, u, seed=7, tail=(-150, 90)) + "</g>")
+                   + PR.speech_bubble(c[0], c[1], 270, 190, u, seed=7, tail=(-110, 80)) + "</g>")
         # штрихи «сдувания» у краёв
         if 0 < shrink < .9:
             for i in range(4):
@@ -155,13 +155,14 @@ def s07(t):
                 glow += PR.mote(chest[0] + (i - 1.5) * 14, chest[1] - 70 - rise, 5 + 2 * (1 - v), (1 - v) * .9)
     world = [paper_bg(), fig["svg"], near["svg"], glow, bub]
     # камера: наезд на лицо, затем вниз к огоньку
-    z = lerp(1.45, 1.62, ease_io(smooth(15.76, 17.3, t))) - .12 * ease_io(smooth(17.4, 18.3, t))
-    cx = lerp(head[0] + 20, hx + 60 * sc, ease_io(smooth(17.4, 18.4, t)))
-    cy = lerp(head[1] + 10, hy - 330 * sc, ease_io(smooth(17.4, 18.4, t)))
+    uc = ease_io(smooth(17.4, 18.4, t))
+    z = lerp(1.78, 1.92, ease_io(smooth(15.76, 17.3, t))) * (1 - uc) + 2.4 * uc
+    cx = lerp(head[0] + 30, hx + 70 * sc, uc)
+    cy = lerp(head[1] + (960 - 640) / z, hy - 240 * sc + (960 - 1180) / z, uc)
     cy -= 40 * bump(t, T7_GOV, .5)
     rot = .6 * math.sin(t * 1.1) - 1.0 * bump(t, T7_VSLUH, .4)
     set_ink(1.0)
-    return lib.svg(f'<rect width="1080" height="1920" fill="#f4efe4"/><g transform="{lib.cam(cx, cy + 120, z, rot)}">{"".join(world)}</g>')
+    return lib.svg(f'<rect width="1080" height="1920" fill="#f4efe4"/><g transform="{lib.cam(cx, cy, z, rot)}">{"".join(world)}</g>')
 
 
 # ═════════════════════════════ s08: кабинет психолога ═════════════════════════════

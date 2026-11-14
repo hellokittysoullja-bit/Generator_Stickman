@@ -225,9 +225,9 @@ def s09(t):
     a = sm(t, 21.6, 22.9)
     b = sm(t, 23.15, 24.25)
     L = info["curly"]["letter"]
-    cx = lerp(lerp(800, 600, a), L[0] - 40, b)
-    cy = lerp(lerp(720, 1470, a), L[1] - 120, b)
-    s = lerp(lerp(1.5, .9, ease_out(a, 1.6)), 1.55, ease_in(b, 1.3))
+    cx = lerp(lerp(800, 600, a), L[0] - 70, b)
+    cy = lerp(lerp(760, 1500, a), L[1] - 60, b)
+    s = lerp(lerp(1.45, .88, ease_out(a, 1.6)), 1.75, ease_in(b, 1.3))
     rot = lerp(-1.2, .6, a) + lerp(0, -.8, b)
     set_ink(s)
     return cam_wrap("".join(o), cx, cy, s, rot, bg="#F3EBDC")

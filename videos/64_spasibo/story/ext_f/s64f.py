@@ -167,6 +167,48 @@ def s16(t):
 FRAMES = {"s16": s16}
 
 
+# ═════════════════════════ s17: призыв, рукописное «кот» ═════════════════════════
+T_A17 = 41.24
+CAT17 = (R.ARM_TOP[0] - 6, R.ARM_TOP[1] + 4)
+K17 = .82
+KOT_T0, KOT_DUR = T_KOT - .02, .32          # дописано к 42.28 (звук «слово дописано»)
+KOT_SIZE = 1.6
+KOT_XY = (CAT17[0] - 215.0, 615.0)          # над котом, чистая стена CLEAN_WALL (2420…3000 × 260…680)
+
+
+def s17(t):
+    nod = .07 * bump(t, T_ESLI + .02, .42) + .04 * bump(t, T_ESLI + .45, .38)
+    breath = math.sin(2 * math.pi * (t - T_A17) / 2.4)
+    e = ex("warm", look=(-.35, .02), closed=blinks(t, (41.7, 43.1)), smile=1.0)
+    # письмо в обеих руках у груди, чуть покачивается; на кивке руки приподнимаются
+    lift = 10 * bump(t, T_ESLI, .5) + 5 * breath
+    Wf = (HX + 205 * SC, HY - 300 * SC - lift)
+    Wn = (HX + 290 * SC, HY - 296 * SC - lift)
+    full, parts = dima_sofa(e, "letter", arms={"f": ("ik", Wf, -1), "n": ("ik", Wn, -1)}, lean_add=-.04 + .01 * breath, head_add=-nod - .04)
+    wf, wn = full["wrist"]["f"], full["wrist"]["n"]
+    lt = PR.letter((wf[0] + wn[0]) / 2 + 40, (wf[1] + wn[1]) / 2 - 70, .62, -6 + 2 * math.sin(t * 1.3), write=1.0, seed=17)
+    # кот на подлокотнике: смотрит на Диму, на «Напиши» поворачивает морду к зрителю через три четверти
+    tu = sm(t, T_NAP + .06, T_NAP + .46)
+    st = dict(turn=-.8 * (1 - tu) + .05 * bump(t, T_NAP + .46, .3), look=(-.85 * (1 - tu), -.25 * (1 - tu)), blink=blinks(t, (41.9, 43.25)),
+              tail=7 * math.sin(t * 2.1), ear=2 * math.sin(t * 3.3) + 6 * bump(t, T_KOT + .05, .3),
+              tilt=-6 * (1 - tu) + 2.5 * math.sin(t * 1.2) + 5 * bump(t, T_KOT + .15, .5), perk=.6 * bump(t, T_KOT, .55),
+              flame_e=1.1 + .7 * bump(t, T_KOT + .1, .5), smile=1.0 if t > T_KOT + .3 else 0.0)
+    sc = R.sofa_scene(t, "day")
+    shadow = blob(ellipse_pts(CAT17[0] + 8, CAT17[1] - 2, 105 * K17 / .82, 12, 14), "#2c4470", .5)
+    world = [sc["bg"], sc["sofa"], parts["legs"], parts["pelvis"], parts["arm_f"], parts["body"], lt, parts["arm_n"], sc["front"], shadow,
+             CAT.draw(CAT17[0], CAT17[1], K17, st, t), hand_kot.kot(t, KOT_T0, KOT_DUR, KOT_XY[0], KOT_XY[1], KOT_SIZE)]
+    u = sm(t, T_A17 - .1, 43.64)
+    z = 1.13 + .1 * u + .025 * bump(t, KOT_T0 + KOT_DUR, .35)
+    cx = 2455 + 10 * u
+    cy = 980 - 30 * u
+    set_ink(z)
+    g = f'<g transform="{lib.cam(cx, cy, z, .6 - .9 * u)}">{"".join(world)}</g>'
+    return whip(g, t, T_A17, side=1), "#e6dcc0"
+
+
+FRAMES["s17"] = s17
+
+
 def frame(sid, t):
     lib.dyn_begin()
     lib.INK_K[0] = 1.0

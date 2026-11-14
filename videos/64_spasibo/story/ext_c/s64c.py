@@ -219,5 +219,105 @@ def s01(t):
     return lib.svg(f'<rect width="1080" height="1920" fill="#2a2440"/>{body}')
 
 
+# ═════════════════════════ s03: сомнение и открытка в ящик ═════════════════════════
+DRAWER_C = ((R.DRAWER[0] + R.DRAWER[1]) / 2, (R.DRAWER[2] + R.DRAWER[3]) / 2)
+T_PEN_DOWN, T_TAKE, T_IN = T_NIK + .2, T_NIK + .3, T_NUZH - .14
+
+
+def s03(t):
+    lib.dyn_begin()
+    # ящик приоткрыт с начала (открытку из него и доставали), на «нужно» захлопывается
+    close = sm(t, T_IN, T_NUZH)
+    drawer = .62 * (1 - close)
+    swing = damp(t, T_NUZH, 11.0, 2.0, 2.6)
+    sc = R.desk_scene(t, "evening", drawer=drawer, lamp_swing=swing)
+    # ближняя кисть: ручка вверх → замирает → чешет затылок → вниз, бросает ручку → берёт открытку → в ящик → толкает ящик
+    scr = sm(t, T_STR, T_STR + .3) * (1 - sm(t, T_NIK - .1, T_NIK + .15))
+    Wpen = (SX + 300 * SC, R.DESK_TOP - 250)
+    Wscr = (SX - 30 * SC + 14 * math.sin(t * 26) * scr, SY - 650 * SC + 10 * math.cos(t * 26) * scr)
+    Wcard = (SX + 330 * SC, SY - 300 * SC)
+    Wdrw = (DRAWER_C[0] - 70, R.DRAWER[2] - 30)
+    Wpush = (DRAWER_C[0] - 80, DRAWER_C[1] + 30)
+    ks = [(4.2, (SX + 260 * SC, SY - 320 * SC)), (T_KAZ, (SX + 270 * SC, SY - 330 * SC)), (T_KAZ + .3, Wpen), (T_STR, (Wpen[0] + 4, Wpen[1] - 6)),
+          (T_STR + .3, Wscr), (T_NIK - .1, Wscr), (T_PEN_DOWN, (SX + 340 * SC, R.DESK_TOP - 130)), (T_TAKE, Wcard), (T_IN - .02, Wdrw),
+          (T_NUZH, Wpush), (7.7, (Wpush[0] - 20, Wpush[1] - 10))]
+    Wn = keys(t, ks)
+    if T_KAZ + .3 < t < T_STR:     # замер с ручкой: мелкая дрожь
+        Wn = (Wn[0] + 2 * math.sin(t * 15), Wn[1] + 2 * math.cos(t * 13))
+    up = scr > .3
+    pen_in_hand = t < T_PEN_DOWN
+    card_in_near = t >= T_TAKE
+    # дальняя кисть держит раскрытую открытку перед собой; на «никому» поникает, на передаче опускается на стол
+    droop = sm(t, T_NIK, T_NIK + .3)
+    Wf = keys(t, [(4.2, (SX + 215 * SC, SY - 285 * SC)), (T_NIK, (SX + 215 * SC, SY - 285 * SC)), (T_NIK + .3, (SX + 230 * SC, SY - 245 * SC)),
+                  (T_TAKE, (SX + 250 * SC, SY - 265 * SC)), (T_TAKE + .25, (SX + 205 * SC, R.DESK_TOP - 80))])
+    Wf = (Wf[0] + 3 * math.sin(t * 2.1), Wf[1] + 3 * math.cos(t * 1.7))
+    # мимика
+    if t < T_STR:
+        e = ex("unsure", look=(.55, .45))
+        e["closed"] = blinkv(t, [4.9])
+    elif t < T_NIK:
+        e = ex("awkward")
+        e["closed"] = blinkv(t, [6.2])
+    else:
+        e = ex("glum", look=(.6, .75) if t < T_NUZH + .1 else (.35, .5))
+        e["closed"] = blinkv(t, [7.35])
+    shrug = sm(t, T_STR, T_STR + .25) * (1 - sm(t, T_NIK + .05, T_NIK + .4))
+    lean_add = .02 * math.sin(t * 2) + .08 * sm(t, T_TAKE, T_IN) - .05 * sm(t, T_NUZH, T_NUZH + .4)
+    head_add = -.04 * shrug + .08 * droop + .04 * damp(t, T_NUZH, 1.0, 3, 5)
+    hn = {"curl": (.78, .8, .82, .85), "thumb": .65, "dir": (.85, .35)} if pen_in_hand else {"curl": (.55, .55, .6, .62), "thumb": .55, "dir": (.8, .55)}
+    if up:
+        hn = dict(hn, dir=(.2, -1))
+    if t >= T_IN - .02:
+        hn = {"curl": (.12, .12, .16, .2), "thumb": .2, "spread": .1, "dir": (.95, .25)}     # ладонь толкает ящик
+    hands = {"f": {"curl": (.55, .6, .62, .65), "thumb": .55, "dir": (.75, -.65)} if t < T_TAKE + .1 else {"curl": (.35, .35, .4, .45), "thumb": .35, "dir": (1, .3)},
+             "n": hn}
+    full, parts = dima_parts(e, "card", hands=hands, arms={"f": ("ik", Wf, -1), "n": ("ik", Wn, 1 if up else -1)}, shrug=shrug, lean_add=lean_add,
+                             head_add=head_add)
+    wf, wn = full["wrist"]["f"], full["wrist"]["n"]
+    items = []
+    # открытка
+    op = 1 - sm(t, T_TAKE - .15, T_TAKE + .1)
+    if not card_in_near:
+        cpos = (wf[0] + 140, wf[1] - 60 + 24 * droop)
+        items.append(PR.card(cpos[0], cpos[1], CARD_K * .9, -6 + 10 * droop, op, "blank", seed=1, droop=droop))
+        items.append(people.hand_svg("dima", wf, (.75, -.65), k=SC, far=True, curl=(.55, .6, .62, .65), thumb=.55, seed=720))
+    elif t < T_NUZH:
+        cpos = (wn[0] + 70, wn[1] + 30)
+        crd = PR.card(cpos[0], cpos[1], CARD_K * .9, -14 + 10 * sm(t, T_TAKE, T_IN), 0.0, "blank", seed=1, droop=.6 * (1 - sm(t, T_TAKE, T_IN)))
+        ins = sc["inside"]
+        if t > T_TAKE + .15 and ins is not None:     # в ящик: ниже края передней панели не видно
+            cid = lib.clip_rect(-2000, -2000, 6000, ins[3] + 2000)
+            crd = f'<g clip-path="url(#{cid})">{crd}</g>' + sc["drawer_front"]
+        items.append(crd)
+    # ручка: в руке, потом брошена на стол
+    if pen_in_hand:
+        prot = keys(t, [(4.2, 150.0), (T_KAZ + .3, 25.0), (T_STR, 25.0), (T_STR + .3, 185.0), (T_NIK - .1, 185.0), (T_PEN_DOWN, 100.0)])
+        pn, pc = held_pen(wn, hands["n"]["dir"], prot, 0.0)
+    else:
+        u = clamp((t - T_PEN_DOWN) / .16)
+        pn = PR.pen(lerp(wn[0] + 60, SX + 470, u) if u < 1 else SX + 470, R.DESK_TOP - 36 - 10 * bump(t, T_PEN_DOWN + .16, .2), PEN_K, 96 + 10 * (1 - u), 0.0, seed=3)
+        pn = pn
+    items_mid = "".join(items) + pn
+    # хлопок: пыль-штрихи у щели ящика
+    hit = ""
+    v = (t - T_NUZH) / .3
+    if 0 < v < 1:
+        for i, dx in enumerate((-150, -60, 60, 150)):
+            x0 = DRAWER_C[0] + dx
+            hit += line([(x0, R.DRAWER[2] - 4), (x0 + dx * .25 * v, R.DRAWER[2] - 30 - 40 * v)], 6 * (1 - v) + 1, INK, taper=.5, wmin=.2, seed=6300 + i)
+    world = room_layers(t, sc, parts, items_mid, hit)
+    # камера: хлёст на входе, дрейф влево, тряска на хлопке
+    wx, wr = whip_in(t, 4.4)
+    sx1, sy1 = shake2(t, T_NUZH + .01, 16)
+    cx0, cy0, s0 = R.CAM_DESK_MID
+    cx = cx0 + 60 - 110 * sm(t, 4.2, 7.6) + wx - sx1
+    cy = cy0 - 20 * sm(t, 4.2, 7.6) - sy1
+    s = s0 * (1 + .05 * sm(t, 4.4, 7.6))
+    set_ink(s)
+    body = f'<g transform="{lib.cam(cx, cy, s, wr + .6 * math.sin(t * .9))}">{"".join(world)}</g>'
+    return lib.svg(f'<rect width="1080" height="1920" fill="#2a2440"/>{body}')
+
+
 def frame(sid, t):
-    return {"s01": s01}[sid](t)
+    return {"s01": s01, "s03": s03}[sid](t)

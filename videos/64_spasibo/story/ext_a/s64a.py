@@ -202,7 +202,9 @@ def s12(t):
         e = ease_in(clamp((t - T_FLIP) / .5), 2.2)
         fy -= 260 * e
         s *= 1 + .25 * e
-        rot = -6 * e
+        rot = -6 * e + 2.5 * ease_io(clamp((t - T_FLIP - .5) / 1.2))
+        s *= 1 + .08 * ease_io(clamp((t - T_FLIP - .4) / 1.3))
+        fx += 50 * ease_io(clamp((t - T_FLIP - .4) / 1.3))
     dx, dy = P.shake(t, T_M + .35, 8, .3, 3)
     return frame_svg("".join(o), fx - dx, fy - dy, s, rot, P.C_PAGE)
 
@@ -234,24 +236,24 @@ def bub_inner(i, t):
     """Картинка внутри пузыря i (локально: (0, 0) — центр). Люди и кот — из common/people.py, cat.py."""
     import people as PP
     if i == 0:   # учительница с листом (молодая, как в s02)
-        r = PP.teacher("young", 0, 150, .2, "praise", "letter", layers=("arm_f", "body", "pelvis"))
+        r = PP.teacher("young", 0, 190, .33, "praise", "letter", layers=("arm_f", "body", "pelvis"))
         w = r["wrist"]
-        lt = P.letter((w["n"][0] + w["f"][0]) / 2 + 6, (w["n"][1] + w["f"][1]) / 2 - 18, .28, -6, write=1.0, seed=11)
-        r2 = PP.teacher("young", 0, 150, .2, "praise", "letter", layers=("arm_n",))
+        lt = P.letter((w["n"][0] + w["f"][0]) / 2 + 8, (w["n"][1] + w["f"][1]) / 2 - 28, .42, -6, write=1.0, seed=11)
+        r2 = PP.teacher("young", 0, 190, .33, "praise", "letter", layers=("arm_n",))
         return r["svg"] + lt + r2["svg"]
     if i == 1:   # друг протягивает руку для пожатия
         sw = 4 * math.sin(t * 6)
-        r = PP.person("friend", -20, 150, .2, "", None, arms={"n": ("ik", (90 + sw, 20), -1)},
+        r = PP.person("friend", -50, 200, .33, "", None, arms={"n": ("ik", (110 + sw, 30), -1)},
                       hands={"n": {"dir": (1, -.15), "curl": (.15, .15, .2, .25), "spread": .1, "thumb": .45}})
         return r["svg"]
     if i == 2:   # мама с пирогом
-        r = PP.person("mama", -40, 160, .2, "", None, arms={"f": ("ik", (20, 40), -1), "n": ("ik", (75, 46), -1)},
+        r = PP.person("mama", -60, 200, .33, "", None, arms={"f": ("ik", (10, 62), -1), "n": ("ik", (100, 70), -1)},
                       hands={"f": {"curl": (.5, .5, .55, .6), "thumb": .5, "dir": (1, .2)}, "n": {"curl": (.5, .5, .55, .6), "thumb": .5, "dir": (-.2, 1)}},
                       layers=("arm_f", "body", "pelvis"))
-        r2 = PP.person("mama", -40, 160, .2, "", None, arms={"f": ("ik", (20, 40), -1), "n": ("ik", (75, 46), -1)},
+        r2 = PP.person("mama", -60, 200, .33, "", None, arms={"f": ("ik", (10, 62), -1), "n": ("ik", (100, 70), -1)},
                        hands={"f": {"curl": (.5, .5, .55, .6), "thumb": .5, "dir": (1, .2)}, "n": {"curl": (.5, .5, .55, .6), "thumb": .5, "dir": (-.2, 1)}},
                        layers=("arm_n",))
-        return r["svg"] + pie(55, 40, .55) + r2["svg"]
+        return r["svg"] + pie(60, 60, .8) + r2["svg"]
     # кот на подоконнике: окно днём, подоконник, кот сидит и щурится
     o = P.window(0, 40, 230, 220, "day", t, seed=21, curtain=False)
     o += lib.shape(rect_pts(-150, 36, 150, 56), P.C_WOOD, blob(rect_pts(-150, 48, 150, 58), P.C_WOOD_SH), w=3.2, seed=6120)
@@ -276,8 +278,8 @@ def s06(t):
     kw = PP.lotus_kw("sit", x, y, sc)
     base = PP.figure("dima", x, y, sc, PP.EXPR["dima"]["thoughtful"], **kw)
     hx, hy = base["head"]
-    kw["arms"]["n"] = ("ik", (hx + 46 * sc, hy + 200 * sc), -1)
-    kw["hands"]["n"] = {"dir": (.15, -1), "curl": (.35, .4, .45, .5), "thumb": .3}
+    kw["arms"]["n"] = ("ik", (hx + 70 * sc, hy + 300 * sc), -1)
+    kw["hands"]["n"] = {"dir": (-.05, -1), "curl": (.45, .5, .55, .6), "thumb": .35}
     kw["hands"]["f"] = {"dir": (.2, 1), "curl": (.35, .4, .45, .5), "thumb": .45}
     kw["head_ang"] = .16 + .03 * math.sin(t * 1.3)
     kw["lean"] = kw["lean"] + sway

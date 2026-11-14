@@ -421,7 +421,7 @@ def dima14(t):
     rx, ry = hx * math.cos(ar) - hy * math.sin(ar), hx * math.sin(ar) + hy * math.cos(ar)
     tx, ty = S14_HEAD[0] - rx, S14_HEAD[1] - ry + 3 * br
     mt = R.B_SIDE_BED[1] - 118 * R.B_SIDE_BED[2]
-    cl = lib.clip_of([(-2000, -2000), (400, -2000), (396, mt - 168), (447, mt - 243), (582, mt - 258), (630, mt - 194), (730, mt - 224), (840, mt - 180), (940, mt - 194), (1000, mt - 125), (3000, mt - 125), (3000, 4000), (-2000, 4000)])
+    cl = lib.clip_of([(-2000, -2000), (400, -2000), (370, mt - 140), (436, mt - 236), (582, mt - 258), (630, mt - 194), (730, mt - 224), (840, mt - 180), (940, mt - 194), (1000, mt - 125), (3000, mt - 125), (3000, 4000), (-2000, 4000)])
     # выше линии одеяла правее его края тела не видно (капюшон не торчит)
     svg = f'<g clip-path="url(#{cl})"><g transform="translate({tx:.2f} {ty:.2f}) rotate({a})">{fg["svg"]}</g></g>'
     arm = f'<g transform="translate({tx:.2f} {ty:.2f}) rotate({a})">{arm}</g>'
@@ -454,7 +454,8 @@ def frame14(t):
     # перевёрнутая пустая кружка на тумбочке
     sx, sy = R.B_SIDE_STAND
     top = sy - 260
-    mug = PR.coffee_mug(sx - 92, top, .85, fill=0.0, upside=True, seed=41, col="blue")
+    mug = PR.coffee_mug(sx + 66, top, .85, fill=0.0, upside=True, seed=41, col="blue")
+    mug = f'<g transform="translate({2 * (sx + 66):.1f} 0) scale(-1 1)">{mug}</g>'      # ручкой влево — не прячется за головой
     # Z из-за головы на «спит»
     hx, hy = S14_HEAD
     z = PR.zzz(hx + 60, hy - 170, 1.15, t - T_SPIT, u=clamp((t - T_SPIT) / .25)) if t > T_SPIT else ""
@@ -472,9 +473,9 @@ def frame14(t):
     # камера: от лица медленный откат и мягкий дрейф; влёт хлёстом
     wi = whip_in(t, 28.3, .3)
     pb = sm(t, 28.1, 30.35)
-    cx = lerp(380, 470, pb) - 300 * wi
-    cy = lerp(1170, 1050, pb)
-    sc_cam = lerp(2.05, 1.45, pb) + .1 * wi
+    cx = lerp(330, 470, pb) - 300 * wi
+    cy = lerp(1180, 1110, pb)
+    sc_cam = lerp(2.1, 1.6, pb) + .1 * wi
     rr = -4 * wi + .5 * math.sin(t * .9)
     set_ink(sc_cam)
     return lib.svg(cam_wrap(world, cx, cy, sc_cam, rr))
