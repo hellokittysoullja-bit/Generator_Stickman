@@ -1422,23 +1422,31 @@ def _lerp(a, b, u):
 
 
 def sock(A, dirv, far, seed, up=0.0):
-    """Ступня в носке (лотос): A — щиколотка, dirv — куда смотрят пальцы, up — подошва к зрителю (0..1)."""
+    """Босая ступня (лотос): A — щиколотка, dirv — куда смотрят пальцы, up — подошва к зрителю (0..1: розоватая подошва)."""
     d = np.array(dirv, float)
     d /= np.linalg.norm(d) + 1e-9
     n = np.array([-d[1], d[0]])
     if n[1] > 0:
         n = -n          # n — вверх
+
     def tf(x, y):
         return P(A + d * x + n * y)
-    pts = [tf(-34, 30), tf(10, 40), tf(70, 36), tf(118, 26), tf(140, 6), tf(132, -18), tf(96, -30), tf(30, -40), tf(-28, -36), tf(-46, -4)]
-    col = "#e7e1d6"
-    inner = blob([tf(-40, -40), tf(140, -30), tf(140, -6), tf(-40, -8)], far_c("#c9c1b2", far), .9)
-    inner += blob([tf(-46, 40), tf(4, 40), tf(4, -40), tf(-46, -40)], far_c(C["LEGS_SH"], far), .0)
-    if up > .3:        # подошва к зрителю: серая пятка и подушечка
-        inner += blob(ellipse_pts(*tf(4, 0), 26, 22, 10), far_c("#b9b0a2", far), .8)
-        inner += blob(ellipse_pts(*tf(104, 2), 26, 24, 10), far_c("#b9b0a2", far), .8)
-    inner += line([tf(-30, 34), tf(-36, -32)], 2.2, far_c("#b3aa9a", far), seed=seed + 3, op=.8)
-    return shape(pts, far_c(col, far), inner, w=4.4, seed=seed)
+    sk, sh, sh2 = far_c(C["SKIN"], far), far_c(C["SKIN_SH"], far), C["SKIN_SH2"]
+    o = []
+    # пальцы — бугорки на конце, большой палец сверху
+    for i, (x, y, r) in enumerate(((104, 22, 15), (112, 4, 12), (114, -12, 11), (110, -26, 10))):
+        o.append(shape(ellipse_pts(*tf(x, y), r * 1.15, r, 10), sk, "", w=3.0, seed=seed + 10 + i))
+    pts = [tf(-40, 26), tf(0, 34), tf(60, 32), tf(100, 30), tf(108, 8), tf(104, -22), tf(80, -34), tf(30, -36), tf(-24, -34), tf(-48, -6)]
+    inner = blob([tf(-48, -36), tf(108, -30), tf(108, -12), tf(-48, -14)], sh, .8)
+    if up > .3:        # подошва: розоватая пятка и подушечка
+        inner += blob(ellipse_pts(*tf(-6, 2), 24, 18, 10), "#e7a796", .55)
+        inner += blob(ellipse_pts(*tf(76, 2), 20, 18, 10), "#e7a796", .5)
+    inner += line([tf(-20, 22), tf(30, 16), tf(70, 20)], 2.0, sh2, seed=seed + 3, op=.6)
+    o.insert(0, "")
+    o.append(shape(pts, sk, inner, w=4.2, seed=seed))
+    # щель между пальцами поверх ступни
+    o.append(line([tf(96, 12), tf(106, 12)], 1.8, sh2, seed=seed + 20, op=.8))
+    return "".join(o)
 
 
 def lotus_legs(lot, lean=0.0):
@@ -1488,28 +1496,38 @@ def lotus_knees(x, y, scale, spread=1.0, sag=0.0, who="dima"):
 
 
 def mudra(Wr, d, k=1.0, flip=1, far=False, seed=0):
-    """Кисть на колене, «колечко»: большой и указательный сомкнуты кольцом (в кольце — просвет), три пальца расслаблены."""
+    """Кисть на колене, «колечко»: кончики большого и указательного сомкнуты кольцом (в кольце — просвет бумаги),
+    средний, безымянный и мизинец расслаблены и чуть согнуты."""
     kw = hand_kw()
     if far:
         kw.update(skin=far_c(C["SKIN"], True), skin_sh=far_c(C["SKIN_SH"], True))
     Wr = np.array(Wr, float)
     d = np.array(d, float) / (np.linalg.norm(d) + 1e-9)
     n = np.array([-d[1], d[0]]) * flip
-    o = [Hand.hand(Wr, d, flip=flip, k=k, curl=(1.0, .42, .48, .55), spread=.12, thumb=1.0, bend=.12, seed=seed, nails=not far,
+    skin, sh2 = kw["skin"], kw["skin_sh2"]
+    o = [Hand.hand(Wr, d, flip=flip, k=k, curl=(1.0, .38, .44, .5), spread=.1, thumb=1.0, bend=.12, seed=seed, nails=not far,
                    show_thumb=False, **kw)]
-    c = Wr + d * 78 * k - n * 40 * k
-    R, wf = 21 * k, 19 * k
-    skin = kw["skin"]
-    # большой палец от основания ладони к кольцу
-    base = Wr + d * 18 * k - n * 30 * k
-    th = band([P(base), P(_lerp(base, c, .55) - n * 6 * k), P(c - n * R * .2 + d * R * .2)], 26 * k, 18 * k, step=2.5, cap=True)
-    o.append(shape(th, skin, "", w=3.0, seed=seed + 51))
+    # кольцо у корня указательного: центр чуть впереди ладони, на стороне большого пальца
+    c = Wr + d * 92 * k - n * 22 * k
+    R = 18 * k
+    wf = 12 * k
+    ang = np.linspace(0, 2 * np.pi, 40)
+    ringp = [P(c + (math.cos(a) * d + math.sin(a) * n) * R) for a in ang]
     ink_w = 3.0 * lib.INK_K[0]
-    o.append(f'<circle cx="{c[0]:.1f}" cy="{c[1]:.1f}" r="{R:.1f}" fill="none" stroke="{INK}" stroke-width="{wf + 2 * ink_w:.1f}"/>'
-             f'<circle cx="{c[0]:.1f}" cy="{c[1]:.1f}" r="{R:.1f}" fill="none" stroke="{skin}" stroke-width="{wf:.1f}"/>')
-    # стык пальцев: короткая складка
-    q = c + d * R * .9
-    o.append(line([P(q - n * wf * .4), P(q + n * wf * .4)], 1.8, kw["skin_sh2"], seed=seed + 52, op=.9))
+    path = "M" + " L".join(f"{x:.1f} {y:.1f}" for x, y in ringp) + "Z"
+    # большой палец от основания ладони вдоль края к кольцу (под кольцом)
+    base = Wr + d * 14 * k - n * 30 * k
+    th = band([P(base), P(_lerp(base, c, .5) - n * 6 * k), P(c - d * R * .6 - n * R * .5)], 26 * k, 17 * k, step=2.5, cap=False)
+    o.append(shape(th, skin, "", w=3.0, seed=seed + 51))
+    o.append(f'<path d="{path}" fill="none" stroke="{INK}" stroke-width="{wf + 2 * ink_w:.1f}"/>'
+             f'<path d="{path}" fill="none" stroke="{skin}" stroke-width="{wf:.1f}"/>')
+    # тень на нижней дуге кольца и стык подушечек
+    o.append(line([P(c + (math.cos(a) * d + math.sin(a) * n) * R) for a in np.linspace(.4, 2.2, 8)], wf * .35, kw["skin_sh"], seed=seed + 53, op=.8,
+                  taper=.2, wmin=.6))
+    q = c - n * R
+    o.append(line([P(q - d * wf * .45), P(q + d * wf * .45)], 2.0, INK, seed=seed + 52, op=.9))
+    if not far:
+        o.append(line([P(c + n * R - d * 4 * k), P(c + n * R + d * 8 * k)], 1.6, sh2, seed=seed + 54, op=.8))
     return "".join(o)
 
 
