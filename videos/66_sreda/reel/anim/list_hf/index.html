@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1664, height=2496" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1664px; height: 2496px; overflow: hidden; background: #f7f3ea; }
+      #root { position: relative; width: 1664px; height: 2496px; overflow: hidden; }
+      .layer { position: absolute; left: 0; top: 0; width: 1664px; height: 2496px; }
+      .abs { position: absolute; display: block; }
+    </style>
+  </head>
+  <body>
+    <!-- Хук рилса 66 «Весь план, а в среду ноль?»: мир — рисунок g1_monday_list ×2 целиком, в половинном размере
+         (координаты композиции = координаты исходника 1664×2496). Слои — anim/kit_list.py, положение подставляет
+         list_hf.py из kit.json. С кадра 0 всё уже в движении: кот гордо подпрыгивает рывками (список едет с лапой),
+         список сам качается и полощется вокруг лапы; на «ноль» (data-vars.hit) список срывается и летит вниз,
+         кот вздрагивает и сжимается пружиной. Камеру, тряску, субтитры и звук даёт сборщик. -->
+    <div id="root" data-composition-id="main" data-start="0" data-duration="2.0" data-width="1664" data-height="2496"
+         data-vars='{"hit": 1.42}' data-motion-blur="on" data-layout-allow-overflow data-layout-allow-overlap>
+      <img id="bg" class="abs clip" src="assets/bg.png" style="left:0;top:0" data-start="0" data-duration="2.0" />
+      <div id="hopL" class="layer clip" data-start="0" data-duration="2.0">
+        <div id="listL" class="layer">
+          <div id="listF" class="layer">
+            <img id="list" class="abs" src="assets/list.png" style="left:0px;top:0px" />
+          </div>
+        </div>
+        <div id="catL" class="layer">
+          <img id="cat" class="abs" src="assets/cat.png" style="left:0px;top:0px" />
+        </div>
+      </div>
+    </div>
+    <script>
+      const root = document.getElementById("root");
+      const V = JSON.parse(root.dataset.vars), H = V.hit, K = V.kit;
+      const tl = gsap.timeline({ paused: true });
+      const px = (p) => `${p[0]}px ${p[1]}px`;
+      gsap.set("#hopL", { transformOrigin: px(K.feet) });
+      gsap.set("#catL", { transformOrigin: px(K.feet) });
+      gsap.set(["#listL", "#listF"], { transformOrigin: px(K.grip) });
+      const J = 2 / 15;   // полупериод 2 кадра: крайние положения на границах кадров, ни один кадр не стоит
+      // кот и список вместе: гордые подскоки с кадра 0 (в кадре 0 уже на ходу)
+      tl.fromTo("#hopL", { y: -34, x: -10, rotation: -2.4, scaleY: 1.03 }, { y: 6, x: 10, rotation: 2.0, scaleY: 0.985, duration: J / 2, ease: "none" }, 0);
+      let t = J / 2, i = 0;
+      while (t < H - 0.08) {
+        const up = i % 2 === 0;
+        tl.to("#hopL", { y: up ? -30 - 10 * (i % 3) : 6, x: up ? -12 + 4 * (i % 2) : 10, rotation: up ? -2.4 : 2.0,
+                         scaleY: up ? 1.03 : 0.985, duration: J / 2, ease: "none" }, t);
+        t += J / 2; i++;
+      }
+      // список сам полощется вокруг лапы: качание и сдвиг низа (skew), в противофазе к подскокам
+      tl.fromTo("#listF", { rotation: 3.2, skewX: -3 }, { rotation: -2.6, skewX: 3, duration: 0.1, ease: "none" }, 0);
+      for (let k = 1; 0.1 * k < H; k++) {
+        tl.to("#listF", { rotation: k % 2 ? 3.2 : -2.6, skewX: k % 2 ? -3 : 3, duration: 0.1, ease: "none" }, 0.1 * k);
+      }
+      // «ноль»: кот вздрагивает — сжался и откачнулся, пружиной назад
+      tl.to("#hopL", { y: 0, x: 0, rotation: 0, scaleY: 1, duration: 0.05, ease: "power2.in" }, H - 0.05);
+      tl.to("#catL", { scaleY: 0.9, scaleX: 1.06, rotation: -4, x: -30, duration: 0.08, ease: "power3.out" }, H);
+      tl.to("#catL", { scaleY: 1, scaleX: 1, rotation: 0, x: 0, duration: 0.8, ease: "elastic.out(1, 0.35)" }, H + 0.08);
+      // список срывается из лапы и падает вниз с поворотом
+      tl.to("#listL", { y: 1400, x: 120, rotation: 14, duration: 0.42, ease: "power2.in" }, H);
+      function DURATION() { return 2.0; }
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
