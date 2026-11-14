@@ -26,8 +26,8 @@ def P(pts):
     return [(int(x * K), int(y * K)) for x, y in pts]
 
 
-CAT_REG = P([(0, 560), (1000, 560), (1000, 1040), (1080, 1040), (1080, 1235), (1135, 1235), (1135, 1345),
-             (990, 1400), (960, 1700), (960, 2180), (0, 2180)])
+CAT_REG = P([(8, 560), (1000, 560), (1000, 1040), (1160, 1040), (1160, 1500), (990, 1520), (960, 1700), (960, 2180),
+             (8, 2180)])
 DOOR_REG = P([(1446, 280), (1655, 280), (1655, 2330), (1446, 2330)])
 FACE = P([(978, 538), (1452, 318), (1452, 2296), (956, 2118)])     # передняя стенка: закрытая дверца
 FEET = P([(560, 2150)])[0]
@@ -75,10 +75,8 @@ def main():
     H, Wd = g.shape
     left = np.zeros((H, Wd), np.uint8); left[:, :int(EDGE_X * K)] = 1
     reg = poly_mask(A.shape, CAT_REG)
-    edge = np.zeros_like(left); edge[:, int(EDGE_X * K):int(1000 * K)] = 1
-    edge[int(1235 * K):int(1345 * K)] = 0                        # где лапа переходит край — кот
-    reg &= ~edge.astype(bool)
-    non = (((g < 205) | (sat > 45)) & (left > 0)) | ((g < 110) & (left == 0))
+    head = np.zeros_like(left); head[int(850 * K):int(1500 * K), int(EDGE_X * K):int(1160 * K)] = 1   # глаз, щека, усы, лапа над полкой
+    non = (((g < 205) | (sat > 45)) & (left > 0)) | ((g < 110) & (left == 0)) | (((g < 160) | (sat > 80)) & (head > 0))
     ink = cv2.morphologyEx((non & (reg > 0)).astype(np.uint8), cv2.MORPH_CLOSE, np.ones((11, 11), np.uint8)) & reg
     cat = (fill_holes(anim.keep_attached(ink)) & reg).astype(np.uint8)
     cat |= ((g < 150) & (reg > 0) & ~cv2.dilate(cat, np.ones((3, 3), np.uint8)).astype(bool)).astype(np.uint8)  # усы
@@ -93,6 +91,20 @@ def main():
         hole = cv2.dilate(part.astype(np.uint8), np.ones((17, 17), np.uint8)) > 0
         if hole.any():
             bg = anim.inpaint_bg(bg, hole, cache_dir=CACHE)
+    # LaMa на таком большом проёме оставляла тёмные пятна меха у края холодильника и обрывок огонька: у стены за
+    # котом — ровная бумага, внутри холодильника (где лапа и усы) — Telea по самому рисунку, без LaMa
+    hole = cv2.dilate(cat, np.ones((25, 25), np.uint8)) > 0
+    xx = np.arange(Wd)[None, :]; yy = np.arange(H)[:, None]
+    wall = (hole | ((xx < int(14 * K)) & (yy > int(1300 * K)))) & (xx < int(EDGE_X * K)) & (yy < int(2075 * K))
+    paper = np.median(A[int(150 * K):int(450 * K), int(100 * K):int(600 * K)].reshape(-1, 3), axis=0)
+    a = cv2.GaussianBlur(wall.astype(np.float32), (0, 0), 5)[..., None]
+    bg = bg * (1 - a) + paper * a
+    inside = (hole & (xx >= int(EDGE_X * K))).astype(np.uint8)
+    y0, y1 = int(820 * K), int(1520 * K); x0, x1 = int(880 * K), int(1260 * K)
+    tel = cv2.inpaint(np.ascontiguousarray(A[y0:y1, x0:x1].astype(np.uint8)), hole[y0:y1, x0:x1].astype(np.uint8), 12,
+                      cv2.INPAINT_TELEA)                     # известны только пиксели вне кота: тянет из холодильника
+    m = inside[y0:y1, x0:x1, None].astype(np.float32)
+    bg[y0:y1, x0:x1] = bg[y0:y1, x0:x1] * (1 - m) + tel.astype(np.float32) * m
     Ap, bg = anim.paper_like(A), anim.paper_like(bg)
     face, fm = door_face(Ap)
     layers = {}
