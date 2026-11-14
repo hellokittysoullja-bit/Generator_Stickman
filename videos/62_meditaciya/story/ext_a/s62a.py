@@ -408,13 +408,13 @@ def frame16(t):
     o.append(props.cushion(DX16 + 10, DY16 + 205, 1.12, .85))
     # мысли-кроты за Димой и перед ним
     o.append(mole(t, 26.38, (935, 800), (1330, 770), 26.62, (1, -.15), seed=1, w=260, h=185, inner=props.plate_soup(0, 56, .62, 1, t)))
-    o.append(mole(t, 26.80, (135, 650), (-260, 680), 27.18, (-1, -.1), seed=2, w=250, h=175, inner=props.iron(0, 48, .66, 0, .7, t)))
-    o.append(mole(t, 26.96, (660, 430), (660, -180), 27.18, (.25, -1), seed=3, w=230, h=170, inner=props.mobilnik(0, 0, .8, 12)))
+    o.append(mole(t, 26.80, (130, 605), (-260, 640), 27.18, (-1, -.1), seed=2, w=250, h=175, inner=props.iron(0, 48, .66, 0, .7, t)))
+    o.append(mole(t, 26.96, (665, 375), (665, -200), 27.18, (.25, -1), seed=3, w=230, h=170, inner=props.mobilnik(8, -26, .72, 12)))
     r = s16_dima(t)
     o.append(r["svg"])
     o.append(runaway(t))
     # штрихи «шлёп» на толчках
-    for tp, (px, py) in ((26.62, (820, 760)), (27.18, (150, 600)), (27.18, (650, 420))):
+    for tp, (px, py) in ((26.62, (820, 760)), (27.18, (150, 560)), (27.18, (655, 380))):
         o.append(props.clink(px, py, 1.3, clamp((t - tp) / .3), int(px), "#FFFFFF"))
     body = "".join(o)
     # камера подёргивается к каждой мысли, затем откат
