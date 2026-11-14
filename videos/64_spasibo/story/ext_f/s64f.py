@@ -217,9 +217,9 @@ T_A18 = 43.44
 CARD_POS = (C1.SX + 225 * C1.SC + 150, R.DESK_TOP - 40 - 115 * C1.CARD_K * .9)   # открытка лежит там же, где легла в s01
 CARD_YB = CARD_POS[1] + 115 * C1.CARD_K * .9
 LET_IN = (CARD_POS[0] + 80, CARD_POS[1] + 34)          # письмо ложится на правую страницу раскрытой открытки
-CAT18_K = .5
-CAT18_FLOOR = (1290.0, R.FL - 6)
-CAT18_DESK = (1215.0, R.DESK_TOP - 34)
+CAT18_K = .62
+CAT18_FLOOR = (1040.0, R.FL - 6)
+CAT18_DESK = (950.0, R.DESK_TOP - 34)
 T_JUMP0, T_JUMP1 = T_SPAS - .3, T_SPAS + .42
 
 
@@ -229,15 +229,15 @@ def s18(t):
     rel = sm(t, T_HOCH + .4, T_HOCH + .75)
     dn = np.array((.85, .5)) / np.linalg.norm((.85, .5))
     W_hold = (C1.SX + 270 * C1.SC + 6 * math.sin(t * 2.4), C1.SY - 330 * C1.SC + 5 * math.cos(t * 2.0))
-    W_put = (LET_IN[0] - dn[0] * 58 * C1.SC - 20, LET_IN[1] - dn[1] * 58 * C1.SC - 10)
-    W_rest = (C1.SX + 330 * C1.SC, R.DESK_TOP - 110)
+    W_put = (LET_IN[0] - dn[0] * 125 * C1.SC, LET_IN[1] - dn[1] * 125 * C1.SC)
+    W_rest = (C1.SX + 195 * C1.SC, C1.SY - 385 * C1.SC)
     Wn = lerp2(lerp2(W_hold, W_put, put), W_rest, rel)
     Wn = (Wn[0], Wn[1] - 8 * bump(t, T_HOCH + .3, .2))
     Wf = (C1.SX + 225 * C1.SC + 3 * math.sin(t * 1.3), R.DESK_TOP - 120)
     grip = 1 - rel
     hands = {"f": {"curl": (.55, .6, .62, .65), "thumb": .55, "dir": (.75, -.65)},
              "n": {"curl": tuple(lerp(a, b, grip) for a, b in zip((.25, .25, .3, .35), (.72, .76, .8, .82))), "thumb": lerp(.3, .6, grip),
-                   "dir": (lerp(.9, .85, grip), lerp(.25, .5, grip))}}
+                   "dir": (lerp(.45, .85, grip), lerp(-.55, .5, grip))}}
     # взгляд: на открытку → «кому-то» на зрителя; «спасибо» — тёплая улыбка
     up = sm(t, T_KOMU - .04, T_KOMU + .22)
     sml = sm(t, T_SPAS - .05, T_SPAS + .3)
@@ -253,12 +253,14 @@ def s18(t):
     card = f'<g transform="translate(0 {CARD_YB:.2f}) scale(1 {q:.4f}) translate(0 {-CARD_YB:.2f})">{card}</g>'
     fthumb = people.hand_svg("dima", wf, (.75, -.65), k=C1.SC, far=True, curl=(.55, .6, .62, .65), thumb=.55, seed=720)
     # сложенное письмо: в кулаке → на странице открытки (в наклоне стола, как открытка)
-    held = np.array(wn) + dn * 58 * C1.SC
+    held = np.array(wn) + dn * 125 * C1.SC
     lp = lerp2((float(held[0]), float(held[1])), LET_IN, sm(t, T_HOCH + .3, T_HOCH + .42)) if put > .97 else (float(held[0]), float(held[1]))
     lay = sm(t, T_HOCH + .1, T_HOCH + .4)
-    let = PR.letter(lp[0], lp[1], .44, lerp(-18 + 3 * math.sin(t * 2), -8, lay), write=1.0, fold=1.0, seed=17, sy=lerp(1.0, .6, lay))
-    if rel < .5:          # пока держит: пальцы поверх края письма (хват)
-        let += people.hand_svg("dima", wn, hands["n"]["dir"], k=C1.SC, curl=hands["n"]["curl"], thumb=hands["n"]["thumb"], seed=721)
+    let = PR.letter(lp[0], lp[1], .7, lerp(-18 + 3 * math.sin(t * 2), -8, lay), write=1.0, fold=1.0, seed=17, sy=lerp(1.0, .6, lay))
+    held_svg = ""
+    if rel < .5:          # пока держит: письмо над рукавом, пальцы поверх края письма (хват)
+        held_svg = let + people.hand_svg("dima", wn, hands["n"]["dir"], k=C1.SC, curl=hands["n"]["curl"], thumb=hands["n"]["thumb"], seed=721)
+        let = ""
     items_mid = card + fthumb + let
     # кот: подходит справа по полу, присед, толчок, на «спасибо» запрыгивает на стол рядом с открыткой
     cat = ""
@@ -267,12 +269,12 @@ def s18(t):
                smile=1.0 if t > T_JUMP1 else 0.0, flame_e=1.1 + .5 * bump(t, T_JUMP1, .5))
     if t < T_JUMP0:
         wu = sm(t, 43.6, T_JUMP0 - .05)
-        x = lerp(CAT18_FLOOR[0] + 260, CAT18_FLOOR[0], wu)
+        x = lerp(CAT18_FLOOR[0] + 300, CAT18_FLOOR[0], wu)
         cat = people.cat_walk(x, CAT18_FLOOR[1], CAT18_K, t, dict(cst, rot=0.0), period=.45) if wu < .999 else CAT.draw(*CAT18_FLOOR, CAT18_K, cst, t)
     else:
         cat = people.cat_jump(CAT18_FLOOR, CAT18_DESK, CAT18_K, ju, t, cst)
     sc = R.desk_scene(t, "day", drawer=0.0)
-    world = C1.room_layers(t, sc, parts, items_mid, cat)
+    world = C1.room_layers(t, sc, parts, items_mid, "", arm_n_extra=held_svg) + [cat]     # кот на столе — перед лампой
     # камера: ровный откат от крупного плана к общему, как кадр 0 хука (s01 начинается с этого плана и влетает)
     cx0, cy0, s0 = R.CAM_DESK_CLOSE
     u = sm(t, T_A18 - .2, 45.3)
