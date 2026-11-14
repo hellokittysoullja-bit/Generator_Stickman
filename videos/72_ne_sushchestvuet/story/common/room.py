@@ -1407,7 +1407,6 @@ def fire_close(t, u=1.0):
     o.append(blob(_jag(-60, KC_TABLE_Y + 120, 760 * (.8 + .2 * u), 120, t, 3, amp=.05), NIGHT["lit"][1] if u > .2 else NIGHT["ground2"]))
     # широкий пень вместо стола: круглый срез (кольца, трещина), кора по краю; кот сидит на срезе; свет огня слева
     cx, cy, rx, ry = 560.0, KC_TABLE_Y + 330, 820.0, 330.0
-    bark = [(cx - rx, cy, 1)] + [(cx + rx * math.cos(a_), cy + ry * math.sin(a_) + 700) for a_ in [math.pi * i / 16 for i in range(17)]][::-1] + [(cx + rx, cy, 1)]
     bark = [(cx - rx, cy, 1), (cx - rx, cy + 900, 1), (cx + rx, cy + 900, 1), (cx + rx, cy, 1)]
     binner = blob(rect_pts(cx - rx - 20, cy, cx - rx * .3, cy + 900), lib.mix("#4a3324", "#b8743e", .55 * u * fl), .9)
     for i in range(9):
@@ -1422,7 +1421,7 @@ def fire_close(t, u=1.0):
         inner += f'<path d="{lib.ink_closed(ellipse_pts(cx + 20 * q, cy + 10 * q, rx * q, ry * q, 36), 2.4, seed=9980 + i)}" fill="#4a3020" opacity=".55"/>'
     inner += line([(cx + 60, cy - ry * .9), (cx + 30, cy - ry * .4), (cx + 70, cy + ry * .1)], 4, "#3a2416", taper=.5, wmin=.3, seed=9989)
     table += shape(top, "#6a4a30", inner, w=5.2, seed=9995)
-    fire = campfire(-120, 1830, 2.2, u, t, seed=4) + _sparks(-80, 1700, t, u, 16, 900, seed=2, k=1.6)
+    fire = campfire(-60, 1760, 1.9, u, t, seed=4, stones=True) + _sparks(-40, 1560, t, u, 16, 900, seed=2, k=1.6)
 
     def mts(tt, uu=1.0):
         return _sparks(-60, 1600, tt, uu * u, 10, 1400, seed=6, k=1.2)

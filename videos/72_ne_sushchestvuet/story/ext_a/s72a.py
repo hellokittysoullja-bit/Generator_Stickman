@@ -84,7 +84,7 @@ def motion_lines(x, y, u, ang, n=3, L=120.0, gap=40.0, seed=0, w=6.0):
 T2_POP = 1.70                   # ударный «сту» в «существует» (1.43–2.16)
 T2_IN = 1.40                    # лапа начинает входить
 BAL = (540.0, 640.0)
-BAL_K = 2.3
+BAL_K = 2.7
 
 
 def s02(t):
@@ -94,18 +94,18 @@ def s02(t):
     sway = 26 * math.sin(t * 3.1 + .6) + 10 * math.sin(t * 5.3)
     bob = 14 * math.sin(t * 4.2)
     bx, by = BAL[0] + sway, BAL[1] + bob
-    pop = clamp((t - T2_POP) / .55)
+    pop = clamp((t - T2_POP) / .85)
     # лапа: из-за правого края, к шарику; на ударе — тычок и отдёргивание
     k = 1.8
     if t < T2_POP:
         u = ease_out((t - T2_IN) / (T2_POP - T2_IN), 2)
-        tip = (lerp(1300, bx + 205, u), lerp(1000, by + 70, u))
+        tip = (lerp(1300, bx + 235, u), lerp(1000, by + 80, u))
         claw = clamp((t - T2_POP + .14) / .1)
     else:
         v = t - T2_POP
         back = ease_out(clamp((v - .06) / .35), 2)
-        tip = (bx + 205 - 50 * math.sin(math.pi * clamp(v / .1)) + 120 * back + 600 * ease_in(clamp((v - .45) / .4), 2),
-               by + 70 + 60 * back + 380 * ease_in(clamp((v - .45) / .4), 2))
+        tip = (bx + 235 - 50 * math.sin(math.pi * clamp(v / .1)) + 120 * back + 600 * ease_in(clamp((v - .45) / .4), 2),
+               by + 80 + 60 * back + 380 * ease_in(clamp((v - .45) / .4), 2))
         claw = 1 - clamp((v - .3) / .2)
     tip = (tip[0], tip[1])
     base = (tip[0] + 520, tip[1] + 330)
@@ -113,8 +113,8 @@ def s02(t):
     if pop <= 0:
         o.append(blob(ellipse_pts(bx + 30, 1250, 150, 20, 14), "#000000", .08))
     o.append(P.brain_balloon(bx, by, BAL_K, t, pop, string=200))
-    if 0 < pop < .4:
-        o.append(P.sparkles(bx, by, 3.0, 1 - pop / .4, t, seed=5, n=5, r=230))
+    if 0 < pop < .3:
+        o.append(P.sparkles(bx, by, 3.0, 1 - pop / .3, t, seed=5, n=5, r=230))
     o.append(people.cat_forearm(base, tip, k, claw, seed=3))
     if T2_IN < t < T2_POP:
         o.append(motion_lines(tip[0] + 80, tip[1] + 80, clamp((t - T2_IN) / .15) * (1 - clamp((t - T2_POP + .05) / .1)), 30, n=3, L=160, seed=2050))
@@ -131,9 +131,9 @@ T12_A = wt("хватает")      # 15.24
 T12_B = wt("сил")          # 15.76
 T12_C = wt("начать")       # 16.08
 GROUND12 = 1250.0
-ENG = (820.0, GROUND12)
+ENG = (660.0, GROUND12)
 ENG_K = 1.25
-D12 = (300.0, GROUND12 - (people.LEG_LEN - 12) * .7)
+D12 = (240.0, GROUND12 - (people.LEG_LEN - 12) * .7)
 S12 = .7
 
 
@@ -154,13 +154,13 @@ def _grass(x0, x1, y, t, seed=0):
 def _cord_u(t):
     """Сколько вытянут тросик (0.15 — рука у шкива)."""
     if t < T12_A - .05:
-        return .18 + .04 * math.sin(t * 6)          # примеряется, чуть подёргивает
+        return .42 + .05 * math.sin(t * 6)          # примеряется, чуть подёргивает
     if t < T12_A + .14:
-        return lerp(.2, .95, ease_out((t - T12_A + .05) / .19, 3))
+        return lerp(.44, .95, ease_out((t - T12_A + .05) / .19, 3))
     if t < T12_B - .1:
-        return lerp(.95, .22, ease_io((t - T12_A - .14) / (T12_B - .1 - T12_A - .14)))
+        return lerp(.95, .44, ease_io((t - T12_A - .14) / (T12_B - .1 - T12_A - .14)))
     if t < T12_B + .12:
-        return lerp(.22, 1.08, ease_out((t - T12_B + .1) / .22, 3))
+        return lerp(.44, 1.08, ease_out((t - T12_B + .1) / .22, 3))
     return 1.08
 
 
@@ -182,9 +182,9 @@ def s12(t):
         cough = ((t - T12_B - .05) / .16) % 1
     o.append(P.blob(ellipse_pts(ENG[0], ENG[1] + 4, 200, 18, 14), "#000000", .12) if hasattr(P, "blob") else "")
     # Дима: стойка → откидывается при рывке → плюхается на траву
-    lean_pull = -.18 * clamp((cord - .3) / .7)
+    lean_pull = .32 - .5 * clamp((cord - .44) / .56)
     hip0 = D12
-    hipx = hip0[0] - 40 * clamp((cord - .3) / .7) - 90 * plop
+    hipx = hip0[0] - 40 * clamp((cord - .44) / .56) - 90 * plop
     hipy = lerp(hip0[1], GROUND12 - 40, plop)
     stand = people.stand_kw(hipx, hipy, S12)["feet"]
     sitf = people.plop_kw(hipx, hipy, S12)["feet"]
@@ -252,9 +252,9 @@ def s12(t):
     sh = P.shake(t, T12_A + .05, 12, .3, seed=4)
     sh2 = P.shake(t, T12_B + .05, 18, .45, seed=6)
     sh3 = P.shake(t, T12_C + .3, 14, .3, seed=8)
-    cy = 860 + 70 * ease_io(clamp((t - T12_C) / .5))
-    s = 1.02 + .05 * ease_io(clamp((t - 14.5) / 1.4)) + .04 * ease_out(clamp((t - T12_B) / .2)) * (1 - plop)
-    return frame_svg("".join(o), 560 + wx + sh[0] + sh2[0] + sh3[0], cy + sh[1] + sh2[1] + sh3[1], s, wr + .6 * math.sin(t * 1.1), P.C_PAGE)
+    cy = 900 + 90 * ease_io(clamp((t - T12_C) / .5))
+    s = 1.12 + .05 * ease_io(clamp((t - 14.5) / 1.4)) + .04 * ease_out(clamp((t - T12_B) / .2)) * (1 - plop)
+    return frame_svg("".join(o), 470 + wx + sh[0] + sh2[0] + sh3[0], cy + sh[1] + sh2[1] + sh3[1], s, wr + .6 * math.sin(t * 1.1), P.C_PAGE)
 
 
 # ═══════════════════════════════ s13: мозг выглядывает ═══════════════════════════════

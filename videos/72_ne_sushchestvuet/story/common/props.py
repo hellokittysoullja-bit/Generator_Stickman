@@ -3475,7 +3475,7 @@ def brain_balloon(x, y, k=1.0, t=0.0, pop=0.0, string=200.0, seed=0):
         a = 2 * math.pi * j / 9 + rs.uniform(-.3, .3)
         d = 40 + 210 * lib.ease_out(u, 2)
         cx, cy = math.cos(a) * d, math.sin(a) * d + 260 * u * u
-        s = (1 - .55 * u) * rs.uniform(.7, 1.1)
+        s = (1.35 - .6 * u) * rs.uniform(.7, 1.1)
         if s < .08:
             continue
         sh = [(-22, -8, 1), (-6, -16), (16, -12, 1), (24, 2), (8, 14, 1), (-12, 10)]
@@ -3489,7 +3489,7 @@ def brain_balloon(x, y, k=1.0, t=0.0, pop=0.0, string=200.0, seed=0):
             r0, r1 = 70 + 120 * v, 110 + 170 * v
             o.append(line([(math.cos(a) * r0, math.sin(a) * r0), (math.cos(a) * r1, math.sin(a) * r1)], 7 * (1 - v), lib.INK, taper=.7, wmin=.1,
                           seed=sd + 50 + j))
-    fy = 90 + 520 * u * u
+    fy = 90 + 330 * u * u
     pts = [(10 * math.sin(i * 1.4 + u * 6) * (1 - i / 8), fy + i * (string / 8) * (1 - .5 * u)) for i in range(9)]
     o.append(line(pts, 3.4, lib.INK, taper=.2, wmin=.6, seed=sd))
     o.append(shape([(-8 + pts[0][0], fy + 2, 1), (pts[0][0], fy - 12), (8 + pts[0][0], fy + 2, 1)], C_BRAIN_SH, "", w=2.6, seed=sd + 1))

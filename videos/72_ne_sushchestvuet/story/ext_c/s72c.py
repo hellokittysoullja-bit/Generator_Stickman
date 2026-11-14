@@ -293,5 +293,75 @@ def s06(t):
     return lib.svg(body)
 
 
+# ═════════════════════════ s22: петля — ракурс s01 ночью у костра, кубик на место телефона, тёплый кивок ═════════════════════════
+T_PR = wt("пришлю", 29.5)       # 30.28: кладёт кубик перед камерой
+T_LI = wt("лично", 29.5)        # 30.70: тёплый медленный кивок
+T_DROP = T_PR + .02             # кубик отпущен
+CUBE_K = 2.3
+
+
+def s22_cat(t):
+    st = dict(_t=t)
+    # с кадра 0: голова уже опускается к пню (несёт кубик), на T_PR — у пня, отпускает; потом выпрямляется; T_LI — тёплый кивок
+    lower = keys(t, [(29.8, .45), (T_PR, 1.0), (T_PR + .3, 0.0)])
+    nod = 0.0
+    if t > T_LI:
+        u = clamp((t - T_LI) / .6)
+        nod = .42 * math.sin(math.pi * u) ** 1.4
+    st["drop"] = .5 * lower + nod
+    st["tilt"] = -6 * lower + 3 * math.sin(t * 2.2) * (1 - lower)
+    st["rot"] = -2.5 * lower
+    st["turn"] = .08 * math.sin(t * 1.7)
+    st["look"] = keys(t, [(29.8, (0.1, .7)), (T_PR, (0.0, .9)), (T_PR + .25, (0.0, 0.0))])
+    bl = 0.0
+    for a in (T_PR + .32,):
+        bl = max(bl, bump(t, a, .16))
+    st["blink"] = max(bl, .35 * nod / .42 if nod > 0 else 0.0)     # добрые полуприкрытые на кивке
+    st["smile"] = 1.0 if t > T_PR + .15 else 0.0
+    st["ear"] = 6 * math.sin(t * 3.1) + damp(t, T_DROP, 10, 4, 6)
+    st["perk"] = .25 * bump(t, T_PR + .1, .4)
+    st["tail"] = 9 * math.sin(2 * math.pi * .9 * t)
+    st["flame_e"] = 1.0 + 1.4 * bump(t, T_LI + .1, .6) + .2 * math.sin(t * 9)
+    if t < T_DROP:
+        st["mouth_item"] = PR.ice_cube(836, 1136, .5, rot=-4 + 4 * math.sin(t * 6))
+    return st
+
+
+def s22_cube(t, x, y, k, st):
+    """Кубик после того, как кот его отпустил: короткий спуск с отскоком к KC_PHONE."""
+    if t < T_DROP:
+        return ""
+    m0 = (x + (836 - CAT.CX) * k, y + (1136 - CAT.CBOT) * k + 70 * .5 * k)
+    px, py = R.KC_PHONE
+    u = clamp((t - T_DROP) / .16)
+    cx = lerp(m0[0], px, ease_out(u, 2))
+    cy = lerp(m0[1], py, u * u) - 26 * bump(t, T_DROP + .16, .18)
+    kk = lerp(.5 * k, CUBE_K, ease_out(u, 2))
+    rot = lerp(-6, 0, u) + damp(t, T_DROP + .16, 5, 3, 6)
+    sh = blob(ellipse_pts(px + 10, py + 50 * CUBE_K / 2.3, 70 * kk / CUBE_K, 16, 14), "#1a120c", .45 * u)
+    glint = ""
+    if u >= 1:      # тёплый блик огня бегает по грани
+        a = .55 + .45 * math.sin(t * 8.3)
+        glint = line([(cx - 30 * kk / 2.3, cy - 20), (cx - 30 * kk / 2.3, cy + 40)], 6, "#ffd08a", taper=.5, wmin=.3, seed=7310, op=a)
+    return sh + PR.ice_cube(cx, cy, kk, rot=rot) + glint
+
+
+def s22(t):
+    lib.dyn_begin()
+    fc = R.fire_close(t, 1.0)
+    x, y = R.KC_CAT
+    k = R.KC_CAT_K
+    st = s22_cat(t)
+    cat = R.fire_tint(CAT.draw(x, y, k, st, t), t, 1.0, .3)
+    cube = R.fire_tint(s22_cube(t, x, y, k, st), t, 1.0, .2)
+    world = [fc["bg"], fc["table"], cat, cube, fc["fire"], fc["motes"](t, 1.0)]
+    cx0, cy0, s0 = R.CAM_KC
+    push = .05 * sm(t, T_LI - .1, T_LI + .6)
+    sx1, sy1 = shake2(t, T_DROP + .16, 5)
+    s = s0 * (1 + .015 * (t - 29.8) / 1.7 + push)
+    set_ink(s)
+    return lib.svg(f'<g transform="{lib.cam(cx0 - sx1, cy0 - sy1 - 60 * push, s)}">{"".join(world)}</g>')
+
+
 def frame(sid, t):
-    return {"s01": s01, "s06": s06}[sid](t)
+    return {"s01": s01, "s06": s06, "s22": s22}[sid](t)
