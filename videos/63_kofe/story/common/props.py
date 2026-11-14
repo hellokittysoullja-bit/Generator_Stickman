@@ -16,9 +16,9 @@
   pot_spout(x, y, k, rot)                                    → (sx, sy) кончик носика кофейника в мире (для струи)
   pour_stream(x0, y0, x1, y1, t, w, col, seed, bend)         струя кофе дугой от носика до точки, бесконечно бежит (блики едут)
   jug(x, y, k, fill, seed)                                   кувшин воды 150×230·k
-  scales(x, y, k, tilt, left, right, seed)                   рычажные весы без делений: (x, y) — центр основания; tilt° (+ — правая
+  scales(x, y, k, tilt, left, right, seed, post=330, hang=220)                 рычажные весы без делений: (x, y) — центр основания; tilt° (+ — правая
                                 чаша ниже); left/right — SVG на чаше (локальные координаты: (0, 0) — центр дна груза на чаше)
-  scale_pans(x, y, k, tilt)                                  → ((lx, ly), (rx, ry)) — где в мире стоят грузы на чашах
+  scale_pans(x, y, k, tilt, post, hang)                                  → ((lx, ly), (rx, ry)) — где в мире стоят грузы на чашах
   settle(t, t0, a0, a1, freq, damp)                          затухающий переход a0 → a1 с отскоком (для чаш, кадров, всего)
   red_marker(x, y, k, rot, cap)                              красный маркер (ЦЕНТР), длина 130·k, наконечник вправо (rot — куда)
   cross_stroke(p0, p1, q0, q1, u, w, seed, col)              живой крест маркером: штрих p0→p1 на u 0…0.5, q0→q1 на 0.5…1;
@@ -1632,23 +1632,26 @@ def jug(x, y, k=1.0, fill=0.8, seed=0):
     return _tf("".join(o), x, y, k)
 
 
-def scale_pans(x, y, k=1.0, tilt=0.0):
+HANG = 220   # длина подвеса чаши
+
+
+def scale_pans(x, y, k=1.0, tilt=0.0, post=330.0, hang=HANG):
     a = math.radians(tilt)
-    py = -330
+    py = -post
     L = 230
     lx, ly = -L * math.cos(a), py - L * math.sin(a)
     rx, ry = L * math.cos(a), py + L * math.sin(a)
-    return (x + k * lx, y + k * (ly + 150)), (x + k * rx, y + k * (ry + 150))
+    return (x + k * lx, y + k * (ly + hang)), (x + k * rx, y + k * (ry + hang))
 
 
-def scales(x, y, k=1.0, tilt=0.0, left="", right="", seed=0):
-    """Рычажные весы БЕЗ делений: стойка 330, коромысло 460, чаши на подвесах висят отвесно. tilt° — правая чаша ниже при +."""
+def scales(x, y, k=1.0, tilt=0.0, left="", right="", seed=0, post=330.0, hang=HANG):
+    """Рычажные весы БЕЗ делений: стойка 330, коромысло 460, чаши на подвесах 220 висят отвесно. tilt° — правая чаша ниже при +."""
     sd = 14800 + seed
     o = []
     o.append(shape([(-120, 0, 1), (-100, -34), (100, -34), (120, 0, 1)], C_WOOD, blob(rect_pts(-130, -14, 130, 4), C_WOOD_SH), w=4.4, seed=sd))
-    o.append(shape([(-12, -34), (-9, -320), (9, -320), (12, -34)], "#C9A54A", blob(rect_pts(2, -330, 16, -30), "#A08332"), w=4.0, seed=sd + 1))
+    o.append(shape([(-12, -34), (-9, 10 - post), (9, 10 - post), (12, -34)], "#C9A54A", blob(rect_pts(2, -post, 16, -30), "#A08332"), w=4.0, seed=sd + 1))
     a = math.radians(tilt)
-    py = -330
+    py = -post
     L = 230
     ca, sa = math.cos(a), math.sin(a)
     beam = [(-L - 10, -8), (L + 10, -8), (L + 10, 8), (-L - 10, 8)]
@@ -1658,7 +1661,7 @@ def scales(x, y, k=1.0, tilt=0.0, left="", right="", seed=0):
     o.append(shape([(-10, py - 14, 1), (0, py - 44, 1), (10, py - 14, 1)], "#C9A54A", "", w=3.2, seed=sd + 4))
     for side, sg in ((left, -1), (right, 1)):
         hx, hy = sg * L * ca, py + sg * L * sa
-        by = hy + 150
+        by = hy + hang
         o.append(line([(hx, hy), (hx - 70, by - 4)], 3.4, "#6E6A60", taper=0, wmin=1, seed=sd + 10 + sg))
         o.append(line([(hx, hy), (hx + 70, by - 4)], 3.4, "#6E6A60", taper=0, wmin=1, seed=sd + 20 + sg))
         o.append(shape(ellipse_pts(hx, hy, 7, 7, 8), "#A08332", "", w=2.6, seed=sd + 30 + sg))

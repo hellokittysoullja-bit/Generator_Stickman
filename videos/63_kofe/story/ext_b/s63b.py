@@ -1,7 +1,7 @@
 """Рилс 63 «кофе», группа B — Дима с кружками: s04 (идёт в полный рост с кофе и водой, спотыкается, жонглирует, ловит),
 s06 (кухня днём, одна обычная кружка, «Дима-изюм» лопается), s08 (диван, кофе и чай в ладонях как весы, чокается).
 frame(sid, t) -> SVG 1080×1920, t — общее время ролика. Люди и кот — ../common/people.py, cat.py; предметы — props.py (группа A),
-комната — room.py (группа C); пока их нет — свои временные (`_mug`, фоны) в этом файле. Печатных букв и цифр нет."""
+комната — room.py (группа C); коридор s04 — свой (hallway). Печатных букв и цифр нет."""
 import json
 import math
 import os
@@ -17,15 +17,10 @@ import lib  # noqa: E402
 import people  # noqa: E402
 from lib import (INK, blob, clamp, ease_in, ease_io, ease_out, ellipse_pts, line, shape, smooth, spring)  # noqa: E402,F401
 
-try:
-    import props as PR  # noqa: E402
-except ImportError:      # pragma: no cover
-    PR = None
+import props as PR  # noqa: E402
+import room as R  # noqa: E402
 
 E = people.EXPR
-C_COFFEE = "#4a2c1c"
-C_WATER, C_WATER_SH, C_GLASS = "#7fc2ea", "#5aa6d6", "#e4f2f8"
-C_TEA = "#c98a2e"
 
 
 def bump(t, t0, dur=.35):
@@ -58,8 +53,10 @@ def blink_of(t, times, dur=.14):
     return 0.0
 
 
-# ═════════════════════════════ кружка (временная, до props.py группы A) ═════════════════════════════
-HANDLE = (44.0, -42.0)          # центр ручки в единицах кружки при handle=+1 (дно по центру, высота 78)
+# ═════════════════════════════ кружки из props.py (группа A) и хват ═════════════════════════════
+MUG_HANDLE = (88.0, -70.0)       # центр ручки PR.coffee_mug (ручка справа, дно в (0, 0), высота 130)
+TEA_HANDLE = (80.0, -60.0)       # центр ручки чашки PR.tea_cup
+GLASS_MID = -70.0                # середина стакана PR.glass по высоте (хват обхватом)
 
 
 def _rot(p, deg):
@@ -67,60 +64,29 @@ def _rot(p, deg):
     return (p[0] * math.cos(a) - p[1] * math.sin(a), p[0] * math.sin(a) + p[1] * math.cos(a))
 
 
-def handle_world(x, y, k, rot, hs):
-    hx, hy = _rot((HANDLE[0] * hs, HANDLE[1]), rot)
-    return x + hx * k, y + hy * k
+def base_from_point(P, local, k, rot, hs):
+    """Где дно предмета, если его точка local (при ручке справа) стоит в мире в P; hs=−1 — предмет отражён (ручка слева)."""
+    hx, hy = _rot((local[0] * hs, local[1]), rot)
+    return P[0] - hx * k, P[1] - hy * k
 
 
-def mug_at_handle(H, k, rot, hs):
-    """Где дно кружки, если её ручка в точке H."""
-    hx, hy = _rot((HANDLE[0] * hs, HANDLE[1]), rot)
-    return H[0] - hx * k, H[1] - hy * k
+def _mirror(svg, x, hs):
+    return svg if hs > 0 else f'<g transform="translate({2 * x:.2f} 0) scale(-1 1)">{svg}</g>'
 
 
-def _mug(x, y, k=1.0, rot=0.0, kind="coffee", handle=1, steam=0.0, t=0.0, slosh=0.0, seed=0):
-    """Кружка, (x, y) — центр дна, 66×78, ручка справа (handle=1) или слева (−1). kind: coffee — белая кружка с тёмным кофе
-    и паром; water — прозрачная кружка-стакан с голубой водой; tea — белая чашка с янтарным чаем и ниточкой пакетика."""
-    sd = 8800 + seed
-    hs = handle
-    o = []
-    glass = kind == "water"
-    body_c = C_GLASS if glass else ("#f3efe6" if kind == "tea" else "#eae4d6")
-    sh_c = "#c9e2ee" if glass else "#cfc6b4"
-    o.append(line([(hs * 30, -62), (hs * 54, -60), (hs * 58, -38), (hs * 30, -20)], 12, INK, taper=.0, wmin=1, seed=sd + 1))
-    o.append(line([(hs * 30, -62), (hs * 52, -60), (hs * 55, -38), (hs * 30, -20)], 6.5, body_c, taper=.0, wmin=1, seed=sd + 2))
-    body = [(-33, -76, 1), (-32, -30), (-30, -4), (-24, 0, 1), (24, 0, 1), (30, -4), (32, -30), (33, -76, 1)]
-    inner = ""
-    if glass:
-        lvl = -60 + 8 * slosh
-        inner += blob([(-40, lvl - 6 * slosh), (40, lvl + 6 * slosh), (40, 4), (-40, 4)], C_WATER)
-        inner += blob([(-40, lvl + 10), (-16, lvl + 10), (-14, 4), (-40, 4)], C_WATER_SH)
-        inner += line([(-36, lvl - 6 * slosh), (36, lvl + 6 * slosh)], 3.2, "#cfeefc", taper=.3, wmin=.4, seed=sd + 5)
-        inner += line([(18 * hs, -68), (19 * hs, -14)], 5, "#ffffff", taper=.4, wmin=.3, seed=sd + 3)
-    else:
-        inner += blob([(18, -80), (40, -80), (40, 4), (14, 4)] if hs > 0 else [(-40, -80), (-18, -80), (-14, 4), (-40, 4)], sh_c)
-        inner += line([(-20 * hs, -66), (-21 * hs, -20)], 5, "#ffffff", taper=.4, wmin=.3, seed=sd + 3)
-    o.append(shape(body, body_c, inner, w=3.8, seed=sd))
-    if not glass:
-        o.append(shape(ellipse_pts(0, -76, 33, 9, 16), sh_c, "", w=3.2, seed=sd + 4))
-        o.append(blob(ellipse_pts(0, -74.5, 27, 6.5, 14), C_COFFEE if kind == "coffee" else C_TEA))
-        o.append(blob(ellipse_pts(-8, -76, 8, 2, 8), "#7A563C" if kind == "coffee" else "#e3ad55"))
-        if kind == "tea":      # ниточка пакетика через край и ярлычок без букв
-            o.append(line([(10, -76), (34 * -hs, -70), (36 * -hs, -48)], 2.2, "#efe9dc", taper=0, wmin=1, seed=sd + 7))
-            o.append(shape(lib.rrect(36 * -hs - 9, -50, 36 * -hs + 9, -32, 3), "#e9d8a6", "", w=2.6, seed=sd + 8))
-    else:
-        o.append(line([(-33, -76), (0, -82), (33, -76)], 3.4, INK, taper=.3, wmin=.4, seed=sd + 6))
-    if steam > 0.01:
-        for j in range(3):
-            ph = t * 2.6 + j * 2.1
-            xs = -14 + 14 * j
-            pts = [(xs + 8 * math.sin(ph + i * .9), -92 - 16 * i) for i in range(5)]
-            o.append(line(pts, 4.0 * steam, "#a8acb4", taper=.8, wmin=.1, seed=sd + 10 + j))
-    return f'<g transform="translate({x:.2f} {y:.2f}) rotate({rot:.2f}) scale({k:.4f})">{"".join(o)}</g>'
+def cmug(x, y, k, rot=0.0, hs=1, **kw):
+    """Кружка кофе PR.coffee_mug; hs=−1 — ручка слева (зеркально)."""
+    return _mirror(PR.coffee_mug(x, y, k, rot * hs, **kw), x, hs)
 
 
-def mug(x, y, k=1.0, rot=0.0, kind="coffee", handle=1, steam=0.0, t=0.0, slosh=0.0, seed=0):
-    return _mug(x, y, k, rot, kind, handle, steam, t, slosh, seed)
+def tcup(x, y, k, rot=0.0, hs=1, saucer=False, **kw):
+    """Чашка чая PR.tea_cup; saucer=False — без блюдца (чашка в руке, блюдце срезано клипом по контуру чашки)."""
+    svg = PR.tea_cup(0, 0, 1.0, 0, **kw)
+    if not saucer:
+        cid = lib.clip_of([(-70, -150), (100, -150), (100, -28), (54, -28), (46, -14), (28, -9), (-28, -9), (-46, -14), (-62, -44), (-70, -60)])
+        svg = f'<g clip-path="url(#{cid})">{svg}</g>'
+    svg = f'<g transform="translate({x:.2f} {y:.2f}) rotate({rot * hs:.2f}) scale({k:.4f})">{svg}</g>'
+    return _mirror(svg, x, hs)
 
 
 def drops(cx, cy, t, t0, n, col, seed, spread=160.0, up=260.0, life=.55, r=9.0):
@@ -187,9 +153,10 @@ def s04(t):
     hip = (wk["hip"][0] + 30 * trip, wk["hip"][1] + 22 * trip)
     # ── кружки: держит, бросает, ловит
     hn, hf = _hold4(t, x)
-    kmug = 1.75 * s
-    cc = dict(kind="coffee", handle=-1, steam=1.0)
-    ww = dict(kind="water", handle=-1)
+    kmug = 1.05 * s
+    kgl = .95 * s
+    cc = "coffee"
+    ww = "water"
     mugs = []          # (svg, draw_after) — после тела
     hands = {}
     grip_n = grip_f = None
@@ -200,12 +167,25 @@ def s04(t):
     catch_c = (_x4(T4_CATCH_C) + 440 * s, HIP4 - 540 * s)       # кофе ловит дальняя рука повыше
     catch_w = (_x4(T4_CATCH_W) + 470 * s, HIP4 - 470 * s)       # воду — ближняя
     HO = 46 * s * 1.15        # от запястья до центра ручки
+    GR = 40 * kgl             # полуширина стакана
+    GO = GR + 50 * s          # от запястья до центра стакана
 
-    def mug_held(W, kind_kw, slosh=0.0, far=False, sd=0, rot=0.0):
-        H = (W[0] + HO, W[1] - 4 * s)
-        mx, my = mug_at_handle(H, kmug, rot, -1)
-        back, front = people.handle_grip("dima", H, k=s, side=-1, far=far, seed=960 + sd)
-        return back + mug(mx, my, kmug, rot, t=t, slosh=slosh, seed=sd, **kind_kw) + front
+    def obj(kind, P, rot, slosh=0.0, sd=0, steam=1.0):
+        """Предмет по точке хвата P (кофе — центр ручки, вода — середина стакана)."""
+        if kind == "coffee":
+            bx, by = base_from_point(P, MUG_HANDLE, kmug, rot, -1)
+            return cmug(bx, by, kmug, rot, -1, steam=steam, t=t, seed=sd)
+        bx, by = base_from_point(P, (0.0, GLASS_MID), kgl, rot, 1)
+        return PR.glass(bx, by, kgl, rot, fill=.85, t=t, splash=slosh, seed=sd)
+
+    def mug_held(W, kind, slosh=0.0, far=False, sd=0, rot=0.0):
+        if kind == "coffee":
+            H = (W[0] + HO, W[1] - 4 * s)
+            back, front = people.handle_grip("dima", H, k=s, side=-1, far=far, seed=960 + sd)
+        else:
+            H = (W[0] + GO, W[1] - 4 * s)
+            back, front = people.grip_svg("dima", H, GR, -1, k=s * 1.1, seed=980 + sd)
+        return back + obj(kind, H, rot, slosh, sd) + front
 
     # кофе
     if t < T4_REL_C:
@@ -218,8 +198,7 @@ def s04(t):
         p0 = (hn_rel[0] + HO, hn_rel[1])
         p1 = (catch_c[0] + HO, catch_c[1])
         hx, hy, rr = people.juggle_arc(p0, p1, u, 330)
-        mx, my = mug_at_handle((hx, hy), kmug, rr, -1)
-        mugs.append(("air", mug(mx, my, kmug, rr, t=t, seed=1, **dict(cc, steam=.5))))
+        mugs.append(("air", obj(cc, (hx, hy), rr, sd=1, steam=.4)))
     else:
         W = catch_c if t < T4_CATCH_C + .05 else None
         mugs.append(("f", None))
@@ -230,11 +209,10 @@ def s04(t):
         hands["f"] = {"kind": "none"}
     elif t < T4_CATCH_W:
         u = (t - T4_REL_W) / (T4_CATCH_W - T4_REL_W)
-        p0 = (hf_rel[0] + HO, hf_rel[1])
-        p1 = (catch_w[0] + HO, catch_w[1])
+        p0 = (hf_rel[0] + GO, hf_rel[1])
+        p1 = (catch_w[0] + GO, catch_w[1])
         hx, hy, rr = people.juggle_arc(p0, p1, u, 420)
-        mx, my = mug_at_handle((hx, hy), kmug, -rr, -1)
-        mugs.append(("air", mug(mx, my, kmug, -rr, t=t, slosh=math.sin(u * 9), seed=2, **ww)))
+        mugs.append(("air", obj(ww, (hx, hy), -rr * .5, sd=2)))
     # ── руки: держат / тянутся к кружкам в полёте / ловят и опускают к груди
     tg = {}
     # ближняя (кофе → потом вода)
@@ -297,13 +275,13 @@ def s04(t):
     if t < T4_REL_C:
         near_mug = mug_held(W_n, cc, sd=1)
     if t < T4_REL_W:
-        far_mug = mug_held(W_f, ww, slosh=.6 * trip, sd=2)
+        far_mug = mug_held(W_f, ww, slosh=.5 * trip, sd=2)
     if grip_f:
         far_mug = mug_held(W_f, cc, sd=1, rot=-6 * decay(t, T4_CATCH_C, 6, 2))
     if grip_n:
-        near_mug = mug_held(W_n, ww, slosh=1.2 * decay(t, T4_CATCH_W, 4, 2.2), sd=2, rot=8 * decay(t, T4_CATCH_W, 6, 2))
-    splash = drops(W_n[0] + HO + 40 * s, W_n[1] - 70 * s, t, T4_CATCH_W, 9, C_WATER, 4100, spread=150, up=300)
-    splash += drops(W_f[0] + HO + 40 * s, W_f[1] - 70 * s, t, T4_CATCH_C, 4, C_COFFEE, 4200, spread=90, up=200, r=7)
+        near_mug = mug_held(W_n, ww, slosh=clamp((t - T4_CATCH_W) / .45) if t < T4_CATCH_W + .45 else 0.0, sd=2, rot=8 * decay(t, T4_CATCH_W, 6, 2))
+    splash = drops(W_n[0] + GO, W_n[1] - 80 * s, t, T4_CATCH_W, 7, PR.C_WATER, 4100, spread=150, up=300)
+    splash += drops(W_f[0] + HO + 40 * s, W_f[1] - 70 * s, t, T4_CATCH_C, 4, PR.C_COFFEE_DARK, 4200, spread=90, up=200, r=7)
     # хлопки ловли: короткие штрихи
     pops = ""
     for tc, W in ((T4_CATCH_C, W_f), (T4_CATCH_W, W_n)):
