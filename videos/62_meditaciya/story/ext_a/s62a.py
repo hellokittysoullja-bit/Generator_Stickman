@@ -404,7 +404,7 @@ def frame16(t):
         rise = clamp(lib.spring(a, 1.6, 6), 0, 1.2)
         cy = 1392 - 20 * math.sin(math.pi * clamp(a / .3))
         st = {"turn": .9, "look": (.8, -.1), "blink": .35 + .1 * math.sin(t * 2), "perk": .3, "tilt": -10 * rise + 4, "tail": 3 * math.sin(t * 2)}
-        o.append(people.cat_svg(lerp(600, 740, rise), cy, .74, st, t))
+        o.append(people.cat_svg(lerp(520, 740, rise), cy, .74, st, t))
     o.append(props.cushion(DX16 + 10, DY16 + 205, 1.12, .85))
     # мысли-кроты за Димой и перед ним
     o.append(mole(t, 26.38, (935, 800), (1330, 770), 26.62, (1, -.15), seed=1, w=260, h=185, inner=props.plate_soup(0, 56, .62, 1, t)))
