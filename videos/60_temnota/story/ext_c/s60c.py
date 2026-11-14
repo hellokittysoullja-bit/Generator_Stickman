@@ -192,6 +192,22 @@ def check_pts(cx, cy, s, u1, u2):
     return out
 
 
+def torn_half(hl, th, seed):
+    """Половина штриха в своих координатах: наружный конец скруглён (x = +hl/2), у разрыва (x = -hl/2) рваные зубцы."""
+    rs = np.random.RandomState(seed)
+    r = th / 2
+    pts = [(-hl / 2, -r, 1)]
+    for k in range(9):
+        a = -math.pi / 2 + k / 8 * math.pi
+        pts.append((hl / 2 - r + math.cos(a) * r, math.sin(a) * r))
+    pts.append((-hl / 2, r, 1))
+    n = 5
+    for k in range(1, n):
+        y = r - 2 * r * k / n
+        pts.append((-hl / 2 + (rs.uniform(18, 34) if k % 2 else rs.uniform(-6, 4)), y, 1))
+    return pts
+
+
 def seg_bar(p, q, th, col, seed):
     cx, cy = (p[0] + q[0]) / 2, (p[1] + q[1]) / 2
     L = math.hypot(q[0] - p[0], q[1] - p[1])
@@ -208,7 +224,7 @@ T_ISP, T_ZR = wt(5), wt(6)        # 1.98, 2.52
 
 def frame02(t):
     a = 1.3
-    z = 1.0 + .32 * ease_io(clamp((t - a) / 2.1)) + .06 * ease_out(clamp((t - a) / .4))
+    z = 1.0 + .2 * ease_io(clamp((t - a) / 2.1)) + .05 * ease_out(clamp((t - a) / .4))
     set_ink(z)
     shk = 20 * decay(t, T_ISP, 7, 21) + 26 * decay(t, T_ZR, 6.5, 19)
     o = []
@@ -230,8 +246,8 @@ def frame02(t):
     ic0 = (cx + look[0] * 560 * .13, cy + look[1] * 520 * .12 - 10)
     inner = ""
     if uc > 0:
-        cl = ellipse_pts(ic0[0], ic0[1], 40 + 190 * uc, 40 + 190 * uc, n=11, jitter=.16, seed=4)
-        inner += blob(cl, "#8f95a6") + blob(ellipse_pts(ic0[0] + 20, ic0[1] + 10, (30 + 120 * uc), (30 + 120 * uc), n=9, jitter=.18, seed=8), "#6a7086")
+        cl = ellipse_pts(ic0[0], ic0[1], 40 + 112 * uc, 40 + 112 * uc, n=11, jitter=.08, seed=4)
+        inner += blob(cl, "#8f95a6") + blob(ellipse_pts(ic0[0] + 14, ic0[1] + 8, (24 + 62 * uc), (24 + 62 * uc), n=9, jitter=.1, seed=8), "#6a7086")
     if uk > 0:
         main = zigzag((cx - 40, cy - 250), (cx + 90, cy + 260), 9, 62, 21, uk)
         br1 = zigzag((cx + 10, cy - 60), (cx + 330, cy - 120), 5, 38, 5, clamp(uk * 1.6 - .5))
@@ -239,20 +255,20 @@ def frame02(t):
         for k, (pp, w_) in enumerate(((main, 13), (br1, 8), (br2, 8))):
             if len(pp) > 2:
                 inner += line(pp, w_, "#14101c", taper=.4, wmin=.3, peak=.4, seed=60 + k)
-    ey, ic, pts, up, lo, clip = eye(cx, cy, 800, 520, o_lid, look, 0, ir=135, pr=.42, cols=("#3b78b5", "#79b4e6", "#1c3f72"), vein=0.0, seed=7,
+    ey, ic, pts, up, lo, clip = eye(cx, cy, 860, 540, o_lid, look, 0, ir=135, pr=.42, cols=("#3b78b5", "#79b4e6", "#1c3f72"), vein=0.0, seed=7,
                                     sclera="#eaf0fa", shade="#b4c2dd", inner=inner, w_ink=10)
     # дрожь глаза при ударах
     o.append(f'<g transform="translate({shk * .5:.1f} {shk * .3:.1f})">{ey}</g>')
     # тьма смыкается: сплошные тёмные языки по краям + виньетка
     cl_ = ease_in(clamp((t - a) / (T_ISP - a + .35)), 1.6)
-    vg = rad_grad([(0, "#000000", 0), (.45, "#000000", 0), (1, "#000000", .96)], 540, 780, 1100 - 480 * cl_, 1250 - 540 * cl_)
+    vg = rad_grad([(0, "#000000", 0), (.45, "#000000", 0), (1, "#000000", .96)], 540, 780, 1100 - 300 * cl_, 1250 - 330 * cl_)
     o.append(f'<rect x="-700" y="-700" width="2500" height="3400" fill="url(#{vg})"/>')
     rs = np.random.RandomState(5)
     for k in range(9):
         ang = k / 9 * 2 * math.pi + .3
-        r0 = 1000 - 520 * cl_ + 40 * math.sin(t * 3 + k)
+        r0 = 1080 - 330 * cl_ + 30 * math.sin(t * 3 + k)
         p = (540 + math.cos(ang) * r0 * 1.0, 780 + math.sin(ang) * r0 * 1.15)
-        rr = 220 + 60 * rs.uniform(0, 1)
+        rr = 190 + 50 * rs.uniform(0, 1)
         o.append(blob(ellipse_pts(p[0], p[1], rr, rr * 1.1, n=9, jitter=.2, seed=k), "#04050c"))
     # красный крест
     uX = (t - T_ZR) / .2
@@ -269,23 +285,23 @@ def frame02(t):
     uG = (t - T_ZR - .1) / .45
     if uG > 0:
         sg = back_out(clamp(uG), 2.0)
-        gx, gy = 540, 1160 + 20 * math.sin((t - T_ZR) * 6) * math.exp(-3 * (t - T_ZR))
+        gx, gy = 540, 1100 + 20 * math.sin((t - T_ZR) * 6) * math.exp(-3 * (t - T_ZR))
         rot = -12 * (1 - sg) + 3 * decay(t, T_ZR + .3, 5, 10)
         gg = []
         for sgn in (-1, 1):
-            lens = ellipse_pts(gx + sgn * 185, gy, 150, 140, n=14, jitter=.01, seed=sgn + 5)
+            lens = ellipse_pts(gx + sgn * 160, gy, 125, 115, n=14, jitter=.01, seed=sgn + 5)
             gg.append(shape(lens, "#bfe0ee", w=15, seed=10 + sgn))
         gg.append(line([(gx - 40, gy - 20), (gx, gy - 45), (gx + 40, gy - 20)], 15, INK, taper=0, wmin=1, seed=4))
-        gg.append(line([(gx - 335, gy - 10), (gx - 430, gy - 70)], 14, INK, taper=.3, wmin=.5, seed=5))
-        gg.append(line([(gx + 335, gy - 10), (gx + 430, gy - 70)], 14, INK, taper=.3, wmin=.5, seed=6))
+        gg.append(line([(gx - 285, gy - 10), (gx - 370, gy - 60)], 14, INK, taper=.3, wmin=.5, seed=5))
+        gg.append(line([(gx + 285, gy - 10), (gx + 370, gy - 60)], 14, INK, taper=.3, wmin=.5, seed=6))
         cr = ease_out(clamp((t - T_ZR - .25) / .22))
-        for k, (pp, w_) in enumerate(((zigzag((gx + 270, gy - 130), (gx + 140, gy + 120), 6, 26, 3, cr), 9),
-                                      (zigzag((gx + 205, gy - 20), (gx + 345, gy + 30), 3, 18, 6, cr), 6),
-                                      (zigzag((gx + 190, gy + 10), (gx + 90, gy - 60), 3, 18, 8, cr), 6))):
+        for k, (pp, w_) in enumerate(((zigzag((gx + 225, gy - 100), (gx + 115, gy + 100), 6, 22, 3, cr), 9),
+                                      (zigzag((gx + 172, gy - 15), (gx + 268, gy + 22), 3, 15, 6, cr), 6),
+                                      (zigzag((gx + 160, gy + 8), (gx + 75, gy - 50), 3, 15, 8, cr), 6))):
             if len(pp) > 2:
                 gg.append(line(pp, w_, INK, taper=.3, wmin=.4, seed=80 + k))
         o.append(f'<g transform="translate({gx} {gy}) rotate({rot:.2f}) scale({sg:.3f}) translate({-gx} {-gy})">{"".join(gg)}</g>')
-    cam = lib.cam(540 + shk, 800 + shk * .6, z, 1.2 * decay(t, T_ISP, 6, 15) + 1.6 * decay(t, T_ZR, 5, 13))
+    cam = lib.cam(540 + shk, 880 + shk * .6, z, 1.2 * decay(t, T_ISP, 6, 15) + 1.6 * decay(t, T_ZR, 5, 13))
     return f'<g transform="{cam}">{"".join(o)}</g>'
 
 
@@ -350,18 +366,15 @@ def frame06(t):
         o.append(stroke_bar(cx + ox, cy + oy + bobk * .3, L, 80, -45, red, seed=33))
     else:
         u = t - T_NE
-        # штрих разорван посередине: две половины улетают, вращаясь
-        crack = ease_out(clamp(u / .12))
+        # штрих разорван посередине: две половины с рваным краем разлетаются вдоль себя и падают
         for sgn in (-1, 1):
-            hl = L / 2 - 15
-            vx, vy = sgn * 420, -220
-            px = cx + sgn * (hl / 2) * math.cos(math.radians(45)) + vx * u * .55 + ox
-            py = cy - sgn * (hl / 2) * math.sin(math.radians(45)) + vy * u * .55 + 900 * u * u
-            rot = -45 + sgn * (130 * u + 20) * (-1) * 1
-            if py < 1900:
-                pts = rrect(px - hl / 2, py - 40, px + hl / 2, py + 40, r=32)
-                # рваный конец у разрыва
-                o.append(shape(T(pts, 0, 0, 1, rot, px, py), red, w=7, seed=40 + sgn))
+            hl = L / 2 - 20
+            d = hl / 2 + 14 + 300 * u + 900 * u * u
+            px = cx + sgn * d * math.cos(math.radians(45)) + ox
+            py = cy - sgn * d * math.sin(math.radians(45)) - 120 * u + 1500 * u * u + oy
+            rot = (-45 if sgn > 0 else 135) + sgn * 70 * u
+            if py < 1700:
+                o.append(shape(T(torn_half(hl, 80, 70 + sgn), px, py, 1, rot), red, w=7, seed=40 + sgn))
         # вспышка разрыва: острые штрихи из центра
         if u < .3:
             for k in range(8):
@@ -457,21 +470,21 @@ def frame08(t):
         uf = clamp((ut - .3) / .62)
         if uf > 0:
             fall = ease_in(uf, 1.7)
-            ty = yl + 20 + 330 * fall
+            ty = yl + 60 + 190 * fall
             tx = xs0 + 25 * math.sin(uf * 2.2)
-            sz = (.55 + .45 * clamp(uf * 4)) * (1 - .25 * uf)
+            sz = 1.6 * (.6 + .4 * clamp(uf * 4)) * (1 - .15 * uf)
             drop = [(tx, ty - 80 * sz, 1), (tx + 44 * sz, ty - 4 * sz), (tx + 36 * sz, ty + 46 * sz), (tx, ty + 66 * sz), (tx - 36 * sz, ty + 46 * sz), (tx - 44 * sz, ty - 4 * sz)]
             # мокрая дорожка за каплей
             if fall > .02:
-                o.append(line([(xs0 + 2, yl + 14), (tx - 4, (yl + ty) / 2), (tx, ty - 30 * sz)], 16 * (1 - .5 * uf), "#9cd6f3", taper=.4, wmin=.5, peak=.9, seed=2))
+                o.append(line([(xs0 + 2, yl + 10), (xs0 + (tx - xs0) * .5 + 6, (yl + ty) / 2), (tx, ty - 40 * sz)], 30, "#9cd6f3", taper=.2, wmin=.55, peak=.9, seed=2))
             o.append(shape(drop, "#6fbfec", w=7, seed=15))
             o.append(blob(ellipse_pts(tx - 14 * sz, ty - 4 * sz, 9 * sz, 15 * sz, n=8), "#ffffff"))
         # блеск мокрого глаза
     # боль: колючие штрихи вокруг глаза
     ub = t - T_BOL
     if ub > 0:
-        spots = [(cx - 560, cy - 330, 1.0, -.3), (cx - 360, cy - 520, .8, .2), (cx + 20, cy - 560, 1.1, .9), (cx + 380, cy - 500, .9, 1.6), (cx + 590, cy - 300, 1.0, 2.2),
-                 (cx + 570, cy + 250, .9, 3.0), (cx - 600, cy + 280, .85, 3.7), (cx - 240, cy + 520, .7, 4.4), (cx + 250, cy + 540, .75, 5.2)]
+        spots = [(cx - 330, cy - 330, 1.0, -.3), (cx - 120, cy - 400, .8, .2), (cx + 130, cy - 380, 1.1, .9), (cx + 340, cy - 320, .9, 1.6),
+                 (cx + 360, cy + 300, .9, 3.0), (cx - 360, cy + 320, .85, 3.7), (cx + 120, cy + 380, .7, 4.4)]
         for k, (sx, sy, ss, rot) in enumerate(spots):
             uu = clamp((ub - .025 * k) / .22)
             if uu <= 0:
@@ -484,9 +497,9 @@ def frame08(t):
         # красные «ножи» от уголков глаза
         for k, sgn in enumerate((-1, 1)):
             uu = ease_out(clamp(ub / .2))
-            pts2 = zigzag((cx + sgn * (w / 2 - 80), cy + 10), (cx + sgn * (w / 2 + 60), cy - 160), 3, 30, 5 + k, uu)
+            pts2 = zigzag((cx + sgn * 300, cy - 150), (cx + sgn * 430, cy - 300), 3, 26, 5 + k, uu)
             if len(pts2) > 2:
-                o.append(line(pts2, 12, "#c2262e", taper=.4, wmin=.3, seed=20 + k))
+                o.append(line(pts2, 14, "#c2262e", taper=.4, wmin=.3, seed=20 + k))
     cam = lib.cam(cx + shk, cy + 140 * ui + shk * .6, z, 1.5 * decay(t, T_BOL, 6, 17) * 1.0)
     return f'<g transform="{cam}">{"".join(o)}</g>'
 

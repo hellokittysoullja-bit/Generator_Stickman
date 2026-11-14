@@ -57,7 +57,7 @@ def main():
             os.makedirs(outd, exist_ok=True)
             pngs = [os.path.join(outd, f"{sid}_{t:.2f}.png") for t in times]
             open(os.path.join(tmp, "list.txt"), "w").write("\n".join(f"{s}\t{p}" for s, p in zip(svgs, pngs)))
-            subprocess.check_call(["node", os.path.join(HERE, "render.js"), os.path.join(tmp, "list.txt"), "png", str(min(2, len(times))), "x"])
+            subprocess.check_call(["node", os.path.join(HERE, "render.js"), os.path.join(tmp, "list.txt"), "png", "1", "x"])
             print(sid, "sheet", " ".join(pngs))
         else:
             times = [a + k / 30 for k in range(n)]
