@@ -191,7 +191,7 @@ SW11 = (560.0, 1360.0, 1.3)
 PER11 = 2.0
 SC11 = .6
 POST11 = (250.0, 1360.0, 1080.0)    # столбик: x, низ, верх
-TK11 = .62
+TK11 = .8
 
 
 def amp11(t):
@@ -247,8 +247,13 @@ def s11(t):
     body = people.dima(hx, hy, SC11, e, "swing", layers=("legs", "pelvis", "arm_f", "body"), **kw)
     hand = people.dima(hx, hy, SC11, e, "swing", layers=("arm_n",), **kw)
     rot = f'rotate({sdg:.3f} {sx:.1f} {sy:.1f})'
+    (rt, rb), = P.swing_rope_pts(x0, gy, k, a)
+    d = (sy - hand["wrist"]["n"][1] + 20) / (P.SWING_ROPE * k)
+    rm = (rb[0] + (rt[0] - rb[0]) * d, rb[1] + (rt[1] - rb[1]) * d)
+    o.append(line([rt, rm], 7.5 * k, "#8A6A48", taper=.05, wmin=.9, seed=11210))     # верёвка выше кистей — за головой
     o.append(f'<g transform="{rot}">{body["svg"]}</g>')
-    o.append(P.swing(x0, gy, k, a, t, seed=11, layer="rope"))
+    o.append(line([rm, rb], 7.5 * k, "#8A6A48", taper=.05, wmin=.9, seed=11211))
+    o.append(lib.blob(lib.ellipse_pts(rt[0], rt[1], 10 * k, 10 * k, 8), INK))
     o.append(f'<g transform="{rot}">{hand["svg"]}</g>')
     # таймер на столбике: ручки тянутся и толкают сиденье на «помогает»
     tcx, tcy = px, pt - 16 - P.TOMATO_RY * TK11

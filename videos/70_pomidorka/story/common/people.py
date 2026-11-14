@@ -2219,8 +2219,8 @@ POSE.update({
               {"f": {"curl": (.4, .4, .45, .5), "thumb": .4}, "n": {"dir": (-.1, -1), "curl": (0, .55, .7, .75), "spread": .05, "thumb": .5}}),
     "head_arms": (0.66, 0.95, {"f": ("ik", (300, -222), -1), "n": ("ik", (225, -228), -1)},
                   {"f": {"dir": (-1, .1), "curl": (.5, .5, .55, .6), "thumb": .4}, "n": {"dir": (1, -.05), "curl": (.45, .45, .5, .55), "thumb": .4}}),
-    "swing": (-0.08, -0.06, {"f": ("ik", (60, -560), 1), "n": ("ik", (80, -575), 1)},
-              {"f": {"dir": (0, -1), "curl": (.75, .75, .8, .8), "thumb": .7}, "n": {"dir": (0, -1), "curl": (.75, .78, .8, .8), "thumb": .7}}),
+    "swing": (-0.08, -0.06, {"f": ("ik", (60, -330), -1), "n": ("ik", (80, -370), -1)},
+              {"f": {"dir": (.15, -1), "curl": (.75, .75, .8, .8), "thumb": .7}, "n": {"dir": (.15, -1), "curl": (.75, .78, .8, .8), "thumb": .7}}),
     "door": (0.02, 0.05, {"f": ("ang", 0.16, 0.2), "n": ("ik", (300, -40), -1)},
              {"n": {"dir": (1, .1), "curl": (.65, .7, .72, .75), "thumb": .6}}),
     "mug": (0.0, 0.05, {"f": ("ang", 0.18, 0.22), "n": ("ik", (250, -250), -1)},
@@ -2252,7 +2252,8 @@ def swing_kw(x, y, scale, kick=0.5, who="dima"):
 
 
 def swing_arms(x, y, scale, rope_top, rope_bot, lean=0.0, who="dima"):
-    """Руки держат верёвку: кисти на верёвке выше плеча (ближняя чуть выше)."""
+    """Руки держат верёвку: кисти на верёвке на уровне груди (ближняя чуть выше), лицо открыто. Верёвку выше кистей рисовать ДО
+    тела (за головой), ниже кистей — после тела."""
     sc = scale * HEIGHT.get(who, 1.0)
     t_, b_ = np.array(rope_top, float), np.array(rope_bot, float)
     sh_y = y - TORSO * sc
@@ -2260,7 +2261,7 @@ def swing_arms(x, y, scale, rope_top, rope_bot, lean=0.0, who="dima"):
     def on_rope(yy):
         u = lib.clamp((yy - t_[1]) / (b_[1] - t_[1] + 1e-6))
         return tuple(t_ + (b_ - t_) * u)
-    return {"f": ("ik", on_rope(sh_y - 40 * sc), 1), "n": ("ik", on_rope(sh_y - 90 * sc), 1)}
+    return {"f": ("ik", on_rope(sh_y + 215 * sc), -1), "n": ("ik", on_rope(sh_y + 175 * sc), -1)}
 
 
 def dima_back(x, y, scale, tilt=0.0, look_up=0.0, shrug=0.0, hair=0.0, t=0.0, who="dima"):
