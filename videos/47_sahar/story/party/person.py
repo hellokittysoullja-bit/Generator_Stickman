@@ -92,6 +92,10 @@ def face(spec, pose, sd):
     if spec.get("stubble"):
         inner += blob([(-hx + 10, 30), (fc * 20 - 30, 64), (fc * 20 + 30, 64), (hx - 10, 30), (hx, 90), (-hx, 90)], "#8a7a80", .28)
     s.append(shape(fp, skin, inner, w=4.6, seed=sd + 6))
+    if spec.get("cream"):
+        cx_ = fc * 30 + 34
+        s.append(blob([(cx_ - 14, 40), (cx_ + 2, 30), (cx_ + 18, 36), (cx_ + 22, 50), (cx_ + 8, 58), (cx_ - 8, 54)], "#fff4e0"))
+        s.append(blob([(cx_ - 6, 44), (cx_ + 8, 38), (cx_ + 14, 48), (cx_ + 4, 52)], "#f6a8b8", .9))
     # глаза
     ex_ = [-24 + fc * 22, 24 + fc * 22]
     lx, ly = pose.get("look", (0.0, 0.0))
@@ -133,6 +137,12 @@ def face(spec, pose, sd):
         s.append(line([(mx - 16, 42), (mx, 50), (mx + 16, 42)], 3.6, seed=sd + 18))
     elif m == "o":
         s.append(shape(ellipse_pts(mx, 46, 6, 8, 10), "#5a2a2a", w=2.6, seed=sd + 18))
+    elif m == "laugh":
+        s.append(shape([(mx - 24, 36), (mx, 40), (mx + 24, 36), (mx + 20, 58), (mx, 70), (mx - 20, 58)], "#5a2a2a",
+                       blob([(mx - 14, 58), (mx, 52), (mx + 14, 58), (mx, 68)], "#d46a6a") + blob([(mx - 22, 36), (mx + 22, 36), (mx + 20, 44), (mx - 20, 44)], "#f6efe4"),
+                       w=3.2, seed=sd + 18))
+    elif m == "yell":
+        s.append(shape(ellipse_pts(mx, 52, 15, 19, 12), "#5a2a2a", blob(ellipse_pts(mx, 62, 10, 6, 8), "#d46a6a") + blob([(mx - 13, 36), (mx + 13, 36), (mx + 11, 43), (mx - 11, 43)], "#f6efe4"), w=3.2, seed=sd + 18))
     elif m == "frown":
         s.append(line([(mx - 14, 50), (mx, 44), (mx + 14, 50)], 3.4, seed=sd + 18))
     elif m == "wavy":
@@ -142,6 +152,16 @@ def face(spec, pose, sd):
     if spec.get("mustache"):
         s.append(shape([(mx - 22, 36), (mx, 30), (mx + 22, 36), (mx + 14, 40), (mx, 36), (mx - 14, 40)], spec["hair_c"], w=2.6, seed=sd + 19))
     # волосы сверху
+    sp = spec.get("spiky", 0.0)
+    if sp > 0.02:
+        for k in range(9):
+            a = math.radians(-160 + k * 17.5)
+            r0 = hy + 4
+            ln = (34 + 20 * (k % 3)) * sp + 6
+            bx, by = hx * 1.06 * math.cos(a), -2 + r0 * math.sin(a)
+            tx, ty = (hx * 1.06 + ln) * math.cos(a) * 1.02, -2 + (r0 + ln) * math.sin(a)
+            nx_, ny_ = -math.sin(a) * 15, math.cos(a) * 15
+            s.append(shape([(bx - nx_, by - ny_), (tx, ty, 1), (bx + nx_, by + ny_)], hc, w=3.6, seed=sd + 40 + k))
     if hair in ("short", "bob", "ponytail", "bun") and not (spec.get("cap") and hair == "short"):
         top = [(-hx - 6, -4), (-hx - 4, -50), (-40, -hy - 22), (10, -hy - 30), (hx - 2, -hy - 6), (hx + 6, -40), (hx + 4, -6),
                (hx - 10, -36), (fc * 20 + 20, -54), (fc * 20 - 10, -46), (-hx + 14, -30)]
@@ -210,8 +230,9 @@ def person(spec, pose, sd=0):
         sw = math.sin(walk)
         bob = -8 * abs(math.cos(walk))
         dr = 1 if fc >= 0 else -1
-        legs = {"L": (24 * sw, max(0, -38 * math.sin(walk - 1.2))), "R": (-24 * sw, max(0, 38 * math.sin(walk - 1.2)))}
-        arms = {"L": (-16 * sw * dr, 16 * dr), "R": (16 * sw * dr, 16 * dr)}
+        am = pose.get("amp", 1.0)
+        legs = {"L": (24 * am * sw, max(0, -38 * am * math.sin(walk - 1.2))), "R": (-24 * am * sw, max(0, 38 * am * math.sin(walk - 1.2)))}
+        arms = {"L": (-16 * am * sw * dr, 16 * dr), "R": (16 * am * sw * dr, 16 * dr)}
     else:
         legs = pose.get("legs", {"L": (3, 0), "R": (-3, 0)})
         arms = {"L": (8, -6), "R": (-8, 6)}
@@ -290,7 +311,8 @@ def person(spec, pose, sd=0):
         a_near = ""
     # голова
     tilt = pose.get("head_tilt", 0.0)
-    s.append(f'<g transform="translate({fc * 6:.1f} {f(shY - 104 + bob)}) rotate({tilt:.2f})">{face(spec, pose, sd + 40)}</g>')
+    hk = spec.get("head_k", 1.0)
+    s.append(f'<g transform="translate({fc * 6:.1f} {f(shY - 104 + bob + 46 * (hk - 1))}) rotate({tilt:.2f}) scale({hk:.3f})">{face(spec, pose, sd + 40)}</g>')
     # корзина в руке (до ближней руки, если в дальней)
     bk = pose.get("basket")
     if bk:
@@ -298,6 +320,9 @@ def person(spec, pose, sd=0):
         b = basket(hx, hy, pose.get("basket_items", 0), sd + 60, pose.get("basket_c", "#d23a32"))
         s.append(b)
         s.append(hand(hands[bk], 17, skin, sd + 70))
+    hold = pose.get("hold")
+    if hold:
+        s.append(hold[1](*hands[hold[0]]))
     s.append(a_near)
     item = pose.get("item")
     if item:

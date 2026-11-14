@@ -249,7 +249,7 @@ def static_parts():
     return _ST
 
 
-def draw(x, y, s, t, look=(0, 0), blink=0.0, tilt=0.0, tail=0.0, flick=0.0, paw=None, press=0.0, breath=None, shadow=True):
+def draw(x, y, s, t, look=(0, 0), blink=0.0, tilt=0.0, tail=0.0, flick=0.0, paw=None, press=0.0, breath=None, shadow=True, extra="", squash=0.0):
     """Кот в мире: низ лап (836, 1306) → (x, y), масштаб s. paw — точка лапы во внутренних координатах (None — стоит)."""
     st = static_parts()
     br = (0.5 + 0.5 * math.sin(t * 2 * math.pi / 2.6)) if breath is None else breath
@@ -258,12 +258,12 @@ def draw(x, y, s, t, look=(0, 0), blink=0.0, tilt=0.0, tail=0.0, flick=0.0, paw=
         o.append(blob(ellipse_pts(860, 1306, 150, 18, 16), "#1a0e05", .35, lib.blur(8)))
     tw = f"rotate({tail:.2f} {TAIL_PIVOT[0]} {TAIL_PIVOT[1]})"
     o.append(f'<g transform="{tw}">{st["tail"]}</g>')
-    sy = 1 + 0.012 * br
+    sy = 1 + 0.012 * br + squash
     o.append(f'<g transform="translate(0 {CBOT}) scale(1 {sy:.4f}) translate(0 {-CBOT})">{st["body"]}</g>')
     P = PAW_REST if paw is None else paw
     o.append(leg_left(P, press))
     hy = -(sy - 1) * (CBOT - 1150)
-    hg = st["head"] + ears(flick) + st["face"] + eyes(look, blink) + whiskers(t)
+    hg = st["head"] + ears(flick) + st["face"] + eyes(look, blink) + whiskers(t) + extra
     o.append(f'<g transform="translate(0 {hy:.2f}) rotate({tilt:.2f} {NECK[0]} {NECK[1]})">{hg}</g>')
     o.append(f'<g transform="{tw}">{flame(t)}</g>')
     return f'<g transform="translate({x - CX * s:.2f} {y - CBOT * s:.2f}) scale({s:.4f})">{"".join(o)}</g>'
