@@ -42,7 +42,7 @@ T_KOT = wt("кот", 41.5)            # 41.98 пишется «кот»
 T_ESLI = wt("если")                # 42.30 Дима кивает
 T_HOCH = wt("хочешь")              # 43.44 кладёт письмо в открытку
 T_KOMU = wt("кому-то")             # 43.89 глаза на зрителя
-T_SPAS = wt("спасибо")             # 44.61 улыбка, кот на столе
+T_SPAS = wt("спасибо", 44.0)           # 44.61 улыбка, кот на столе
 
 
 def lerp(a, b, u):
@@ -207,6 +207,84 @@ def s17(t):
 
 
 FRAMES["s17"] = s17
+
+
+# ═════════════════════════ s18: петля к кадру хука s01 (тот же стол и ракурс, днём) ═════════════════════════
+sys.path.insert(0, os.path.join(STORY, "ext_c"))
+import s64c as C1  # noqa: E402  (только чтение: та же раскладка Димы за столом и порядок слоёв, что у s01)
+
+T_A18 = 43.44
+CARD_POS = (C1.SX + 225 * C1.SC + 150, R.DESK_TOP - 40 - 115 * C1.CARD_K * .9)   # открытка лежит там же, где легла в s01
+CARD_YB = CARD_POS[1] + 115 * C1.CARD_K * .9
+LET_IN = (CARD_POS[0] + 80, CARD_POS[1] + 34)          # письмо ложится на правую страницу раскрытой открытки
+CAT18_K = .5
+CAT18_FLOOR = (1290.0, R.FL - 6)
+CAT18_DESK = (1215.0, R.DESK_TOP - 34)
+T_JUMP0, T_JUMP1 = T_SPAS - .3, T_SPAS + .42
+
+
+def s18(t):
+    # ближняя кисть: держит сложенное письмо над открыткой → «хочешь» опускает его на страницу → отпускает → к груди
+    put = sm(t, T_HOCH - .02, T_HOCH + .36)
+    rel = sm(t, T_HOCH + .4, T_HOCH + .75)
+    dn = np.array((.85, .5)) / np.linalg.norm((.85, .5))
+    W_hold = (C1.SX + 270 * C1.SC + 6 * math.sin(t * 2.4), C1.SY - 330 * C1.SC + 5 * math.cos(t * 2.0))
+    W_put = (LET_IN[0] - dn[0] * 58 * C1.SC - 20, LET_IN[1] - dn[1] * 58 * C1.SC - 10)
+    W_rest = (C1.SX + 330 * C1.SC, R.DESK_TOP - 110)
+    Wn = lerp2(lerp2(W_hold, W_put, put), W_rest, rel)
+    Wn = (Wn[0], Wn[1] - 8 * bump(t, T_HOCH + .3, .2))
+    Wf = (C1.SX + 225 * C1.SC + 3 * math.sin(t * 1.3), R.DESK_TOP - 120)
+    grip = 1 - rel
+    hands = {"f": {"curl": (.55, .6, .62, .65), "thumb": .55, "dir": (.75, -.65)},
+             "n": {"curl": tuple(lerp(a, b, grip) for a, b in zip((.25, .25, .3, .35), (.72, .76, .8, .82))), "thumb": lerp(.3, .6, grip),
+                   "dir": (lerp(.9, .85, grip), lerp(.25, .5, grip))}}
+    # взгляд: на открытку → «кому-то» на зрителя; «спасибо» — тёплая улыбка
+    up = sm(t, T_KOMU - .04, T_KOMU + .22)
+    sml = sm(t, T_SPAS - .05, T_SPAS + .3)
+    e = ex("warm", look=(lerp(.6, -.35, up), lerp(.7, 0, up)), lid=lerp(.55, .7, up) + .15 * bump(t, T_SPAS, .4), smile=lerp(.35, 1.0, sml),
+           closed=blinks(t, (43.75, 44.95)))
+    lean_add = .03 * math.sin(t * 2.1) + .05 * put * (1 - rel) - .03 * up
+    head_add = -.06 + .06 * (1 - up) - .03 * bump(t, T_SPAS, .45)
+    full, parts = C1.dima_parts(e, "card", hands=hands, arms={"f": ("ik", Wf, -1), "n": ("ik", Wn, -1)}, lean_add=lean_add, head_add=head_add)
+    wf, wn = full["wrist"]["f"], full["wrist"]["n"]
+    # раскрытая открытка лежит наклонно (как в конце s01)
+    card = PR.card(CARD_POS[0], CARD_POS[1], C1.CARD_K * .9, -6, 1.0, "blank", seed=1)
+    q = .55
+    card = f'<g transform="translate(0 {CARD_YB:.2f}) scale(1 {q:.4f}) translate(0 {-CARD_YB:.2f})">{card}</g>'
+    fthumb = people.hand_svg("dima", wf, (.75, -.65), k=C1.SC, far=True, curl=(.55, .6, .62, .65), thumb=.55, seed=720)
+    # сложенное письмо: в кулаке → на странице открытки (в наклоне стола, как открытка)
+    held = np.array(wn) + dn * 58 * C1.SC
+    lp = lerp2((float(held[0]), float(held[1])), LET_IN, sm(t, T_HOCH + .3, T_HOCH + .42)) if put > .97 else (float(held[0]), float(held[1]))
+    lay = sm(t, T_HOCH + .1, T_HOCH + .4)
+    let = PR.letter(lp[0], lp[1], .44, lerp(-18 + 3 * math.sin(t * 2), -8, lay), write=1.0, fold=1.0, seed=17, sy=lerp(1.0, .6, lay))
+    if rel < .5:          # пока держит: пальцы поверх края письма (хват)
+        let += people.hand_svg("dima", wn, hands["n"]["dir"], k=C1.SC, curl=hands["n"]["curl"], thumb=hands["n"]["thumb"], seed=721)
+    items_mid = card + fthumb + let
+    # кот: подходит справа по полу, присед, толчок, на «спасибо» запрыгивает на стол рядом с открыткой
+    cat = ""
+    ju = clamp((t - T_JUMP0) / (T_JUMP1 - T_JUMP0))
+    cst = dict(look=(-.4, -.2), blink=blinks(t, (44.25,)), tail=8 * math.sin(t * 2.3), ear=2 * math.sin(t * 3.1), turn=-.3 + .3 * sm(t, T_JUMP1, T_JUMP1 + .3),
+               smile=1.0 if t > T_JUMP1 else 0.0, flame_e=1.1 + .5 * bump(t, T_JUMP1, .5))
+    if t < T_JUMP0:
+        wu = sm(t, 43.6, T_JUMP0 - .05)
+        x = lerp(CAT18_FLOOR[0] + 260, CAT18_FLOOR[0], wu)
+        cat = people.cat_walk(x, CAT18_FLOOR[1], CAT18_K, t, dict(cst, rot=0.0), period=.45) if wu < .999 else CAT.draw(*CAT18_FLOOR, CAT18_K, cst, t)
+    else:
+        cat = people.cat_jump(CAT18_FLOOR, CAT18_DESK, CAT18_K, ju, t, cst)
+    sc = R.desk_scene(t, "day", drawer=0.0)
+    world = C1.room_layers(t, sc, parts, items_mid, cat)
+    # камера: ровный откат от крупного плана к общему, как кадр 0 хука (s01 начинается с этого плана и влетает)
+    cx0, cy0, s0 = R.CAM_DESK_CLOSE
+    u = sm(t, T_A18 - .2, 45.3)
+    s = lerp(s0 * 1.04, s0 / 1.4, u)
+    cx = lerp(cx0 + 30, cx0 + 50, u) + 4 * math.sin(t * 1.7)
+    cy = lerp(cy0 + 30, cy0 + 60, u)
+    set_ink(s)
+    g = f'<g transform="{lib.cam(cx, cy, s, 0.0)}">{"".join(world)}</g>'
+    return g, "#e6dcc0"
+
+
+FRAMES["s18"] = s18
 
 
 def frame(sid, t):

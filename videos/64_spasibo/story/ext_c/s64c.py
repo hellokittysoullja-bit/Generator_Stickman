@@ -319,5 +319,137 @@ def s03(t):
     return lib.svg(f'<rect width="1080" height="1920" fill="#2a2440"/>{body}')
 
 
+# ═════════════════════════ s04: ракурс ниже, кот достаёт открытку ═════════════════════════
+CAT_K = .8
+T_LAND = T_JUMP + .32
+T_REACH, T_OPEN, T_PULL, T_OUT = 8.62, 8.82, 9.0, 9.2
+CAT_START, CAT_TAKEOFF = (1430.0, R.FL - 6), (1085.0, R.FL - 6)
+CAT_TOP = (835.0, R.DESK_TOP - 12)
+HANDLE = ((R.DRAWER[0] + R.DRAWER[1]) / 2, (R.DRAWER[2] + R.DRAWER[3]) / 2 - 4)
+
+
+def cat_paw_down(base, tip, k, seed=4600):
+    """Передняя лапа кота вниз через край стола к ручке ящика (мир), подушечки к зрителю, когти зацепили."""
+    from ink import band
+    mid = ((base[0] + tip[0]) / 2 + 14 * k, (base[1] + tip[1]) / 2)
+    arm = band([base, mid, tip], 60 * k, 50 * k, step=4, cap=False)
+    import cat as C
+    o = [shape(arm, C.CAT, blob([(base[0] + 8 * k, base[1]), (base[0] + 22 * k, base[1]), (tip[0] + 16 * k, tip[1]), (tip[0] + 4 * k, tip[1])],
+                                 C.CAT_SH, .6), w=4.6 * k / .62, seed=seed)]
+    pp = ellipse_pts(tip[0], tip[1] + 6 * k, 27 * k, 22 * k, 12)
+    o.append(shape(pp, C.CAT, "", w=4.4 * k / .62, seed=seed + 1))
+    for kk in (-10, 0, 10):     # когти поддели ручку
+        o.append(line([(tip[0] + kk * k, tip[1] + 16 * k), (tip[0] + (kk - 2) * k, tip[1] + 28 * k)], 2.4, seed=seed + 5 + kk))
+    return "".join(o)
+
+
+def s04(t):
+    lib.dyn_begin()
+    drawer = .58 * sm(t, T_OPEN, T_PULL + .05)
+    sc = R.desk_scene(t, "evening", drawer=drawer, lamp_swing=damp(t, T_LAND, 3.0, 2.0, 3.0), chair_tilt=-2.5)
+    # Дима откинулся, руки за головой, смотрит в сторону (влево); к концу косится на кота
+    look = (-.7, -.15) if t < 9.5 else (lerp(-.7, .55, sm(t, 9.5, 9.8)), lerp(-.15, .2, sm(t, 9.5, 9.8)))
+    e = ex("thoughtful", look=look) if "thoughtful" in people.EXPR["dima"] else ex("unsure", look=look)
+    e["closed"] = blinkv(t, [7.9, 9.45])
+    lean_add = .015 * math.sin(t * 1.9)
+    head_add = .02 * math.sin(t * 1.3 + .5) + .05 * sm(t, 9.5, 9.8)
+    kw = dict(feet=FEET, lean_add=lean_add, head_add=head_add)
+    parts = {k: people.dima(SX, SY, BS, e, "behind", layers=(k,), **kw)["svg"] for k in ("legs", "pelvis", "arm_f", "arm_n", "body")}
+    # кот
+    st = {"look": (-.3, .2), "turn": -.55, "tail": 8 * math.sin(t * 2.6), "blink": blinkv(t, [8.7])}
+    if t < 7.8:                                                   # шагает по полу влево, лапы по очереди
+        u = clamp((t - 7.2) / .6)
+        x = lerp(CAT_START[0], CAT_TAKEOFF[0], u if t >= 7.2 else 0)
+        x = CAT_START[0] - (CAT_START[0] - CAT_TAKEOFF[0]) * clamp((t - 7.0) / .8)
+        cx_, cy_ = x, CAT_START[1]
+        st.update(walk=(CAT_START[0] - x) / 110.0, rot=1.5 * math.sin((CAT_START[0] - x) / 110 * 2 * math.pi), turn=-.6, look=(-.4, .1))
+    elif t < T_JUMP:                                              # присел, смотрит на стол
+        c = sm(t, 7.8, T_JUMP)
+        cx_, cy_ = CAT_TAKEOFF
+        st.update(sy=1 - .18 * c, sx=1 + .1 * c, look=(-.3, -.5), turn=-.4, tail=8 + 12 * c)
+    elif t < T_LAND:                                              # прыжок: толчок задних, дуга
+        u = (t - T_JUMP) / (T_LAND - T_JUMP)
+        cx_ = lerp(CAT_TAKEOFF[0], CAT_TOP[0], u)
+        cy_ = lerp(CAT_TAKEOFF[1], CAT_TOP[1], u) - 210 * 4 * u * (1 - u)
+        st.update(legs=1.0 if u > .08 else u / .08, sy=1.12 - .1 * u, sx=.93 + .05 * u, rot=-10 * math.sin(math.pi * u), look=(-.3, -.2), turn=-.4,
+                  tail=-18 * math.sin(math.pi * u))
+    else:
+        cx_, cy_ = CAT_TOP
+        q = math.exp(-14 * (t - T_LAND))
+        st.update(sy=1 - .16 * q, sx=1 + .1 * q, legs=.6 * q)
+        if t < T_ZNA:
+            st.update(turn=-.5, look=(-.35, .75), tilt=-7 * sm(t, T_LAND, T_REACH))
+        else:                                                     # «Знаешь»: морда к зрителю через три четверти
+            v = sm(t, T_ZNA, T_ZNA + .32)
+            st.update(turn=lerp(-.5, 0.0, v), look=(lerp(-.35, 0.0, v), lerp(.75, 0.0, v)), tilt=lerp(-7, 0, v))
+            if t > T_POCH:                                        # «почему»: наклон головы, ухо дёрнулось
+                st["tilt"] = 9 * sm(t, T_POCH, T_POCH + .18) + damp(t, T_POCH + .18, 2.0, 3.0, 6.0)
+                st["ear"] = damp(t, T_POCH + .05, 16.0, 6.0, 7.0)
+                st["perk"] = .4 * sm(t, T_POCH, T_POCH + .2)
+    catsvg = people.cat_svg(cx_, cy_, CAT_K, st, t)
+    # лапа вниз к ящику: тянет ручку, потом достаёт открытку
+    paw = ""
+    reach = sm(t, T_REACH - .12, T_REACH) * (1 - sm(t, T_OUT + .05, T_OUT + .3))
+    chest = (cx_ + 30 * CAT_K, cy_ - 80 * CAT_K)
+    pull = sm(t, T_OPEN, T_PULL)
+    ins = sc["inside"]
+    tip_card = None
+    if reach > .01:
+        tgt = (HANDLE[0] - 40, HANDLE[1] + 30 * pull)
+        if t > T_PULL and ins is not None:                        # лапа в ящике, подцепила открытку и тянет вверх
+            dip = sm(t, T_PULL, T_PULL + .1)
+            up = sm(t, T_PULL + .1, T_OUT)
+            tgt = (lerp(tgt[0], HANDLE[0] - 20, dip), lerp(lerp(tgt[1], ins[3] - 30, dip), R.DESK_TOP - 70, up))
+            tip_card = tgt
+        tip = lerp2((chest[0] + 10, chest[1] + 20), tgt, reach)
+        paw = cat_paw_down(chest, tip, CAT_K)
+    # открытка: в ящике → лапа тянет вверх → ложится на стол у кота
+    card = ""
+    if t > T_PULL and ins is not None:
+        if tip_card is not None and t < T_OUT + .05:
+            cpos = (tip_card[0] - 10, tip_card[1] + 70)
+            rot = -8 + 14 * sm(t, T_PULL, T_OUT)
+        else:
+            v = sm(t, T_OUT + .05, T_OUT + .3)
+            cpos = lerp2((HANDLE[0] - 30, R.DESK_TOP - 70 + 70), (HANDLE[0] - 120, R.DESK_TOP - 70), v)
+            rot = 6 - 14 * v
+        crd = PR.card(cpos[0], cpos[1], CARD_K * .8, rot, 0.0, "blank", seed=1)
+        if t < T_OUT + .3:
+            cid = lib.clip_rect(-2000, -2000, 6000, ins[3] + 2000 - 0)
+            crd = f'<g clip-path="url(#{cid})">{crd}</g>'
+            if cpos[1] + 90 > R.DRAWER[2]:
+                crd += sc["drawer_front"]
+        card = crd
+    # пыль при приземлении
+    dust = ""
+    v = (t - T_LAND) / .3
+    if 0 < v < 1:
+        for i, dx in enumerate((-90, -40, 40, 90)):
+            x0 = CAT_TOP[0] + dx * CAT_K * 1.3
+            dust += line([(x0, CAT_TOP[1] + 4), (x0 + dx * .3 * v, CAT_TOP[1] - 14 - 26 * v)], 5 * (1 - v) + 1, INK, taper=.5, wmin=.2, seed=6400 + i)
+    on_floor = t < T_JUMP + .12
+    world = [sc["bg"], sc["chair_back"], sc["desk_top"], sc["pool"], parts["legs"], sc["desk_legs"], sc["chair_seat"], parts["pelvis"],
+             parts["arm_f"], parts["arm_n"], parts["body"]]
+    if on_floor:
+        world += [card, catsvg, sc["lamp"]]
+    else:
+        world += [sc["lamp"], card, paw, catsvg, dust]
+    # камера: откат и дрейф; мини-тряска на прыжке; к концу наезд на морду кота
+    sx1, sy1 = shake2(t, T_LAND, 7)
+    cx0, cy0, s0 = R.CAM_DESK_LOW
+    u = sm(t, 7.2, 8.4)
+    cx = lerp(cx0 - 120, cx0 - 165, u) + 6 * math.sin(t * 1.3)
+    cy = lerp(cy0 + 30, cy0 - 10, u)
+    s = s0 * lerp(1.06, 1.0, u)
+    hx, hy = CAT_TOP[0], CAT_TOP[1] - 170 * CAT_K
+    z = sm(t, 9.2, 10.5)
+    cx, cy, s = lerp(cx, hx - 40, .7 * z), lerp(cy, hy + 120, .7 * z), s * (1 + .38 * z)
+    cx -= sx1
+    cy -= sy1
+    set_ink(s)
+    body = f'<g transform="{lib.cam(cx, cy, s, .5 * math.sin(t * .8))}">{"".join(world)}</g>'
+    return lib.svg(f'<rect width="1080" height="1920" fill="#2a2440"/>{body}')
+
+
 def frame(sid, t):
-    return {"s01": s01, "s03": s03}[sid](t)
+    return {"s01": s01, "s03": s03, "s04": s04}[sid](t)
