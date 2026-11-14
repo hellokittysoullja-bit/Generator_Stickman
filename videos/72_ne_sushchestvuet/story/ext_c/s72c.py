@@ -116,27 +116,6 @@ def head_tf(x, y, k, st):
             f'translate({22 * sl:.2f} {hy:.2f}) rotate({tilt:.2f} {CAT.NECK[0]} {CAT.NECK[1]})')
 
 
-def smug_brow(x, y, k, st, u, lift=0.0):
-    """Надменная бровка-складка над правым (от зрителя) глазом и тяжёлое верхнее веко левого — мимика, а не новый облик."""
-    if u <= .01:
-        return ""
-    turn = st.get("turn", 0.0)
-    ex = CAT.CX + 44 - 4 * turn + 22 * turn
-    by = 1020 - 10 * lift
-    br = line([(ex - 34, by + 8), (ex - 4, by - 6 - 6 * lift), (ex + 30, by + 2)], 5.4, INK, taper=.5, wmin=.3, seed=7201, op=u)
-    br += line([(ex - 24, by - 12 - 4 * lift), (ex + 4, by - 20 - 8 * lift)], 2.6, CAT.CAT_EDGE, taper=.5, wmin=.3, seed=7202, op=.8 * u)
-    return f'<g transform="{head_tf(x, y, k, st)}">{br}</g>'
-
-
-def smirk(x, y, k, st, u):
-    """Ухмылка: уголок рта приподнят на одну сторону (поверх рта кота, тем же пером)."""
-    if u <= .01:
-        return ""
-    FX = 22 * st.get("turn", 0.0)
-    m = line([(838 + FX, 1124), (852 + FX, 1128), (866 + FX, 1118 - 6 * u)], 3.2, INK, taper=.4, wmin=.4, seed=7203, op=u)
-    return f'<g transform="{head_tf(x, y, k, st)}">{m}</g>'
-
-
 def face_mask(x, y, k, st, t):
     """Морда кота целиком (голова с ушами, как её рисует cat.head) — красным, для замера."""
     return mask_svg(f'<g transform="{head_tf(x, y, k, st)}">{CAT.head(st, t)}</g>', "face")
@@ -219,10 +198,9 @@ def s01(t):
     shadow_ph = blob(ellipse_pts(ph_x + 40, R.KC_PHONE[1] + 30, 120 * (1 - .2 * (R.KC_PHONE[1] - ph_y) / 80), 40, 18), "#b08657", .55)
     cat_sh = blob([(x - 160, y - 10), (x + 230, y - 30), (x + 470, y + 60), (x + 40, y + 70)], "#c09468", .65)    # жёсткая тень от окна вправо-вниз
     phone = PR.phone_flat(ph_x, ph_y, phk, rot=0.0, spin=spin, face_down=True)
-    st["smile"] = 0.0
+    st["smug"] = 1.0       # cat.py (группа B): тяжёлые веки, брови вразлёт, ухмылка краем рта
     cat = CAT.draw(x, y, k, st, t)
-    smug = sm(t, 0, .1) * (1 - .0 * t)
-    over = smug_brow(x, y, k, st, smug, lift=bump(t, T_GE - .05, .45)) + smirk(x, y, k, st, .7 + .3 * bump(t, T_GE, .5))
+    over = ""
     # пылинки в луче + искорки-мелочь от удара телефона
     world = [kc["bg"], kc["table"], cat_sh, shadow_ph, phone, cat, over, kc["motes"](t, 1.0)]
     mk = os.environ.get("MASK")
@@ -245,5 +223,75 @@ def s01(t):
     return lib.svg(f'<g transform="{lib.cam(cx, cy, s, rc)}">{"".join(world)}</g>')
 
 
+# ═════════════════════════ s06: поворот — белый сбой, темнота с искрой, вспышка костра ═════════════════════════
+T_CUT = 6.42                # свет гаснет (вместе с глитчем riser)
+T_FIRE = 7.35               # костёр вспыхивает
+
+
+def _glitch_day(t):
+    """Дневная комната с креслом-мешком (хвост s05) — до сбоя."""
+    br = R.bag_room(t)
+    return br["bg"] + PR.bean_bag(R.BB[0], R.BB[1], 1.0, sag=.6)
+
+
+def s06(t):
+    lib.dyn_begin()
+    fx, fy = R.FIRE
+    if t < T_CUT + 2 / 30:      # день и белый сбой-всполох (2 кадра): срезы кадра сдвинуты, белое заливает
+        set_ink(1.0)
+        day = f'<g transform="{lib.cam(*R.CAM_BB)}">{_glitch_day(t)}</g>'
+        if t < T_CUT:
+            return lib.svg(day)
+        g = (t - T_CUT) * 30          # 0…2
+        cid = []
+        out = []
+        for i, (y0, h, dx) in enumerate(((120, 160, 70), (520, 90, -110), (900, 210, 140), (1380, 120, -60))):
+            c = lib.clip_rect(0, y0, 1080, h)
+            out.append(f'<g clip-path="url(#{c})"><g transform="translate({dx * (1 + g):.1f} 0)">{day}</g></g>')
+            cid.append(c)
+        wh = .75 + .2 * g
+        return lib.svg(day + "".join(out) + f'<rect width="1080" height="1920" fill="#ffffff" opacity="{wh:.2f}"/>'
+                       + f'<rect y="{700 + 300 * g:.0f}" width="1080" height="26" fill="#0b0f1e" opacity=".7"/>')
+    # огонь: искра → вспышка с перелётом → ровное пламя
+    if t < T_FIRE:
+        u = .05
+    else:
+        q = t - T_FIRE
+        u = .05 + .95 * clamp(q / .22) ** .6 + .12 * math.exp(-5 * q) * math.sin(2 * math.pi * 2.0 * q) * clamp(q / .1)
+        u = clamp(u, 0, 1.12)
+    uf = clamp(u)
+    fs = R.fire_scene(t, uf, "wide")
+    world = [fs["sky"], fs["bg"], fs["ground"], fs["stones_back"], fs["fire"], fs["stones_front"], fs["log"]]
+    # темнота: почти чёрная вуаль, проём вокруг искры; на вспышке вуаль уходит за 0.3 с
+    dk = .93 * (1 - ease_out(clamp((t - T_FIRE) / .32), 2))
+    ember = ""
+    if dk > .01:
+        hole = PR.circle_d(fx + 4, fy - 40, 60 + 10 * math.sin(t * 7))
+        world.append(PR.darkness(dk, "#020409", holes=[(hole, .9)], blur_sd=18, box=(-1500, -1500, 2700, 3000)))
+        # тонкая струйка дыма над искрой (видна в темноте светлой линией) и сама искра поверх вуали
+        e = .5 + .5 * math.sin(t * 7)
+        ember += blob(ellipse_pts(fx + 4, fy - 40, 11 + 3 * e, 8 + 2 * e, 10), lib.mix("#c2491e", "#ffd24a", e), dk)
+        ember += blob(ellipse_pts(fx + 4, fy - 40, 4.5, 3.5, 8), "#fff2c0", dk)
+        pts = [(fx + 6 + 14 * math.sin(t * 2.6 + q * 5) * q, fy - 52 - 330 * q) for q in [i / 16 for i in range(17)]]
+        ember += line(pts, 7, "#8b93a6", taper=.7, wmin=.15, seed=7301, op=.75 * dk)
+        pts2 = [(fx - 2 + 18 * math.sin(t * 2.1 + 1.7 + q * 4) * q, fy - 50 - 240 * q) for q in [i / 14 for i in range(15)]]
+        ember += line(pts2, 5, "#6f7787", taper=.7, wmin=.15, seed=7302, op=.55 * dk)
+    world.append(ember)
+    # тёплый толчок света на вспышке: короткая оранжевая вуаль по всему кадру (screen), гаснет за 0.4 с
+    warm = .16 * math.exp(-6 * max(0.0, t - T_FIRE)) * (1 if t >= T_FIRE else 0)
+    # камера: в темноте близко к искре с микродрейфом; на вспышке — лёгкий отъезд и толчок
+    q = clamp((t - T_FIRE) / .5)
+    e = ease_out(q, 3)
+    cx = lerp(fx + 10, 560.0, e) + 6 * math.sin(t * 1.7)
+    cy = lerp(fy - 110, 1150.0, e) + 5 * math.sin(t * 1.3 + 1)
+    s = lerp(1.9, 1.32, e) * (1 + .03 * (t - T_CUT)) * (1 + .05 * bump(t, T_FIRE, .3)) - .04 * sm(t, T_FIRE + .5, 8.2)
+    s = max(s, 1.0)
+    set_ink(s)
+    body = f'<g transform="{lib.cam(cx, cy, s, -.4 * bump(t, T_FIRE, .4))}">{"".join(world)}</g>'
+    if warm > .01:
+        body += f'<rect width="1080" height="1920" fill="#ffb054" opacity="{warm:.3f}" style="mix-blend-mode:screen"/>'
+    return lib.svg(body)
+
+
 def frame(sid, t):
-    return {"s01": s01}[sid](t)
+    return {"s01": s01, "s06": s06}[sid](t)
