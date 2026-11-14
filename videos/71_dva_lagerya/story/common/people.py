@@ -2324,3 +2324,250 @@ def dima_back(x, y, scale, tilt=0.0, look_up=0.0, shrug=0.0, hair=0.0, t=0.0, wh
     body = "".join(o[:2])
     svg = (f'<g transform="translate({x:.2f} {y:.2f}) scale({s:.5f})">' + body + o[2] + head_svg + "</g>")
     return dict(svg=svg, head=(x, y + (hy - 10) * s), shoulders=((x - 300 * s, y + 80 * s), (x + 300 * s, y + 80 * s)))
+
+
+# ═════════════════════════════ РИЛС 71 «ДВА ЛАГЕРЯ» (автор — группа B) ═════════════════════════════
+# Дима — горчичное худи (who="dima"), друг — who="friend" (рыжий, джинсовая куртка), один и тот же во всех группах.
+# Позы — POSE (как всегда: person(who, x, y, scale, expr, pose, ...), друг смотрит влево — flip=True). Мимика — EXPR.
+#   Дима: "ask_palms" разводит ладонями (вопрос), "mime_wall" / "mime_wall_hi" / "mime_wall_lo" ладони плашмя в невидимую стену
+#         (пальцы вверх, локти согнуты; ведёт по стене — u_pose между ними), "nose_wall" нос в стену, руки у груди,
+#         "chin_fist" подбородок на кулаке (сидит на полу), "pinch" щепоть на уровне плеча, "sneak" крадётся пригнувшись
+#         (ноги — tiptoe_kw), "lid_finger" открывает крышку ноутбука одним пальцем, "sock_pull" натягивает носок (сидя на краю
+#         кровати; ноги — sock_feet_kw), "jug_pour" наклоняет графин (ближняя рука за ручку, дальняя держит стакан),
+#         "glass_drink" стакан у губ, "type" печатает, "point_a" / "point_b" показывает на левый / правый флажок,
+#         "hooray" руки вверх (выпрыгнул из кокона).
+#   Друг: "shrug" пожимает плечами (+ shrug=1), "temple" стучит пальцем по виску, "mug_hold" кружка у груди, "mug_drink" кружка
+#         у губ, "hooray" (тост из кровати), "rest".
+#   Ладони и кружка: хват кружки — handle_grip (рилс 63) или grip_svg; графин — props.jug.
+#   tiptoe_kw(x, y, scale, phase) — ноги на цыпочках, шаг крадучись; sock_feet_kw(x, y, scale, lift) — сидит на краю кровати,
+#         ближняя ступня поднята к рукам (lift 0…1).
+#   dima_cocoon(x, y, k, roll, squash, wriggle, sag, expr, hood, t, head_rot, feet, seed, col)
+#         Дима в одеяле-коконе, РУК НЕТ. hood=False — лежит на боку: (x, y) — центр низа кокона, длина ~900·k, лицо слева
+#         (head_rot — наклон головы, по умолчанию −70°: макушка влево-вверх), ступни справа (feet 0…1 — высунулись, шевелятся по t);
+#         roll — угол прокатки (градусы: складки-спираль бегут, кокон чуть переваливается), squash — сплющивание (удар о подушку),
+#         wriggle 0…1 — гусеница (волна вдоль тела по t). hood=True — сидит, одеяло капюшоном: (x, y) — центр дна, высота ~980·k;
+#         sag 0…1 — одеяло сползает (0 — капюшон до бровей, .5 — с головы на плечи, 1 — до пояса, видно худи);
+#         cover 0…1 (через expr["cover"]) — край капюшона съезжает на глаза. Возвращает dict(svg, head=(x, y) центр лица в мире).
+#   cocoon_blanket(x, y, k, u, t, seed, col)  одеяло, распахнутое и взлетающее (u 0…1: раскрылось → улетает вверх, вращаясь)
+C_COCOON = ("#C8553D", "#9A3B2B", "#E27A5C", "#F0C987")      # то же стёганое одеяло, что props.blanket("quilt")
+
+EXPR["dima"].update({
+    "plea": {"brows": "worry", "mouth": "o", "open": .35, "lid": .95, "look": (.4, -.35), "bags": False},       # недоумённая мольба
+    "saucer": {"brows": "up", "mouth": "o", "open": .55, "lid": 1.0, "look": (.5, 0), "scale_n": 1.25, "scale_f": 1.2, "bags": False},  # глаза-блюдца
+    "puzzled": {"brows": "worry", "mouth": "side", "lid": .8, "look": (.55, -.1), "bags": False},              # непонимание, брови домиком
+    "relief71": {"brows": "calm", "mouth": "smile", "smile": .8, "lid": .45, "look": (.1, .2), "bags": False},  # облегчение
+    "gape": {"brows": "up", "mouth": "o", "open": 1.0, "lid": 1.0, "look": (-.6, 0), "bags": False},            # открытый рот
+    "sly": {"brows": "one_up", "mouth": "side", "smile": .6, "lid": .38, "look": (.6, .1), "bags": False},     # хитрый прищур
+    "silent_laugh": {"brows": "up", "mouth": "laugh", "open": .8, "laugh": 1.0, "bags": False},                 # беззвучный смех
+    "focus_smile": {"brows": "calm", "mouth": "smile", "smile": .5, "lid": .55, "look": (.6, .45), "bags": False},   # сосредоточенная улыбка
+    "sleepy": {"brows": "tired", "mouth": "flat", "lid": .3, "look": (.3, .1)},                                 # сонный в коконе
+    "squish": {"brows": "pinch", "mouth": "wince", "lid": .4, "closed": .6, "bags": False},                    # нос сплющен о стену
+    "bliss": {"brows": "calm", "mouth": "smile", "smile": .7, "closed": 1.0, "bags": False},                   # глоток, глаза закрыты
+})
+EXPR["friend"] = {
+    "sleep": {"brows": "calm", "mouth": "smile", "smile": .3, "closed": 1.0},
+    "beam": {"brows": "up", "mouth": "grin", "open": .7, "lid": 1.0, "look": (.4, -.2)},
+    "simple": {"brows": "up", "mouth": "smile", "smile": 1.0, "lid": .75, "look": (.4, 0)},
+    "shrug": {"brows": "up", "mouth": "smile", "smile": .7, "lid": .7, "look": (.3, 0)},
+    "chill": {"brows": "calm", "mouth": "smile", "smile": .6, "lid": .6, "look": (.2, .2)},
+    "sip": {"brows": "calm", "mouth": "flat", "lid": .45, "look": (.3, .3)},
+}
+
+POSE.update({
+    "ask_palms": (0.18, 0.06, {"f": ("ik", (230, -255), -1), "n": ("ik", (340, -245), -1)},
+                  {"f": {"dir": (.5, -1), "spread": .4, "curl": (0, .05, .1, .15), "thumb": .05},
+                   "n": {"dir": (.7, -1), "spread": .45, "curl": (0, .05, .1, .15), "thumb": .05}}),
+    "mime_wall": (0.06, 0.0, {"f": ("ik", (330, -400), -1), "n": ("ik", (360, -380), -1)},
+                  {"f": {"dir": (0, -1), "spread": .28, "curl": (0, 0, .03, .05), "thumb": .0},
+                   "n": {"dir": (0, -1), "spread": .3, "curl": (0, 0, .03, .05), "thumb": .0}}),
+    "mime_wall_hi": (0.04, -0.12, {"f": ("ik", (320, -520), -1), "n": ("ik", (350, -480), -1)},
+                     {"f": {"dir": (0, -1), "spread": .28, "curl": (0, 0, .03, .05), "thumb": .0},
+                      "n": {"dir": (0, -1), "spread": .3, "curl": (0, 0, .03, .05), "thumb": .0}}),
+    "mime_wall_lo": (0.1, 0.1, {"f": ("ik", (330, -300), -1), "n": ("ik", (355, -280), -1)},
+                     {"f": {"dir": (0, -1), "spread": .28, "curl": (0, 0, .03, .05), "thumb": .0},
+                      "n": {"dir": (0, -1), "spread": .3, "curl": (0, 0, .03, .05), "thumb": .0}}),
+    "nose_wall": (0.12, 0.05, {"f": ("ik", (200, -300), -1), "n": ("ik", (250, -290), -1)},
+                  {"f": {"curl": (.5, .5, .55, .6), "thumb": .4, "dir": (.3, -1)}, "n": {"curl": (.5, .5, .55, .6), "thumb": .4, "dir": (.3, -1)}}),
+    "chin_fist": (0.28, 0.2, {"f": ("ik", (200, -170), -1), "n": ("ik", (200, -378), -1)},
+                  {"f": {"curl": (.5, .5, .55, .6), "thumb": .4}, "n": {"dir": (0, -1), "curl": (.8, .85, .9, .9), "thumb": .7}}),
+    "pinch": (0.08, 0.04, {"f": ("ang", 0.2, 0.25), "n": ("ik", (320, -420), -1)},
+              {"n": {"dir": (.6, -1), "curl": (.35, .7, .95, .95), "spread": .0, "thumb": .85}}),
+    "sneak": (0.42, 0.25, {"f": ("ik", (120, -150), -1), "n": ("ik", (230, -210), -1)},
+              {"f": {"dir": (.6, .6), "curl": (.4, .45, .5, .55), "thumb": .3}, "n": {"dir": (.8, .4), "curl": (.4, .45, .5, .55), "thumb": .3}}),
+    "lid_finger": (0.16, 0.12, {"f": ("ik", (200, -195), -1), "n": ("ik", (330, -215), -1)},
+                   {"f": {"curl": (.4, .4, .45, .5), "thumb": .4}, "n": {"dir": (1, -.35), "curl": (0, .8, .85, .85), "spread": .05, "thumb": .6}}),
+    "sock_pull": (0.55, 0.3, {"f": ("ik", (310, 130), -1), "n": ("ik", (360, 150), -1)},
+                  {"f": {"dir": (.4, 1), "curl": (.55, .6, .65, .7), "thumb": .6}, "n": {"dir": (.5, 1), "curl": (.55, .6, .65, .7), "thumb": .6}}),
+    "jug_pour": (0.12, 0.12, {"f": ("ik", (250, -250), -1), "n": ("ik", (330, -330), -1)},
+                 {"f": {"dir": (.3, -1), "curl": (.55, .6, .65, .7), "thumb": .6}, "n": {"dir": (1, .2), "curl": (.65, .7, .75, .75), "thumb": .7}}),
+    "glass_drink": (-0.04, -0.14, {"f": ("ang", 0.2, 0.25), "n": ("ik", (150, -420), -1)},
+                    {"n": {"dir": (.3, -1), "curl": (.55, .6, .65, .7), "thumb": .6}}),
+    "type": (0.12, 0.1, {"f": ("ik", (200, -200), -1), "n": ("ik", (275, -205), -1)},
+             {"f": {"dir": (1, .25), "curl": (.25, .3, .35, .4), "thumb": .25}, "n": {"dir": (1, .25), "curl": (.25, .3, .35, .4), "thumb": .25}}),
+    "point_a": (0.0, -0.18, {"f": ("ang", 0.2, 0.25), "n": ("ik", (300, -600), -1)},
+                {"n": {"dir": (.8, -1), "curl": (0, .85, .9, .9), "spread": .05, "thumb": .7}}),
+    "point_b": (0.0, -0.1, {"f": ("ang", 0.2, 0.25), "n": ("ik", (360, -470), -1)},
+                {"n": {"dir": (1, -.4), "curl": (0, .85, .9, .9), "spread": .05, "thumb": .7}}),
+    "hooray": (-0.04, -0.15, {"f": ("ik", (-120, -820), 1), "n": ("ik", (200, -830), -1)},
+               {"f": {"dir": (-.2, -1), "spread": .45, "curl": (0, .05, .1, .1), "thumb": .1}, "n": {"dir": (.2, -1), "spread": .45, "curl": (0, .05, .1, .1), "thumb": .1}}),
+    "shrug": (0.0, 0.12, {"f": ("ik", (60, -230), 1), "n": ("ik", (230, -250), -1)},
+              {"f": {"dir": (-.5, -1), "spread": .35, "curl": (0, .05, .1, .15), "thumb": .1}, "n": {"dir": (.6, -1), "spread": .35, "curl": (0, .05, .1, .15), "thumb": .1}}),
+    "temple": (0.0, 0.08, {"f": ("ang", 0.2, 0.25), "n": ("ik", (55, -530), 1)},
+               {"n": {"dir": (.15, -1), "curl": (0, .85, .9, .9), "spread": .05, "thumb": .7}}),
+    "mug_hold": (0.04, 0.04, {"f": ("ik", (190, -230), -1), "n": ("ik", (260, -300), -1)},
+                 {"f": {"curl": (.4, .4, .45, .5), "thumb": .4}, "n": {"kind": "none"}}),
+    "mug_drink": (-0.06, -0.18, {"f": ("ik", (190, -230), -1), "n": ("ik", (165, -430), -1)},
+                  {"f": {"curl": (.4, .4, .45, .5), "thumb": .4}, "n": {"kind": "none"}}),
+})
+
+
+def tiptoe_kw(x, y, scale, phase=0.0, who="dima"):
+    """Ноги крадучись на цыпочках: колени согнуты, пятки подняты (phi < 0), шаг маленький. (x, y) — таз."""
+    sc = scale * HEIGHT.get(who, 1.0)
+    s = math.sin(2 * math.pi * phase)
+    lift = max(0.0, s) * 40 * sc
+    lift2 = max(0.0, -s) * 40 * sc
+    return {"feet": {"n": ((x + (90 + 60 * s) * sc, y + 520 * sc - lift), -.7), "f": ((x + (-20 - 60 * s) * sc, y + 525 * sc - lift2), -.7)}}
+
+
+def sock_feet_kw(x, y, scale, lift=1.0, who="dima"):
+    """Сидит на краю кровати: дальняя нога на полу, ближняя поднята коленом к груди (lift 0…1) — ступня к рукам (поза sock_pull)."""
+    sc = scale * HEIGHT.get(who, 1.0)
+    u = lib.clamp(lift)
+    n = ((x + (300 - 30 * u) * sc, y + (300 - 150 * u) * sc), .15 * u)
+    return {"feet": {"n": n, "f": ((x + 250 * sc, y + 306 * sc), 0.0)}}
+
+
+def _cocoon_quilt(L, Hh, roll, seed, col):
+    c, csh, chi, st = col
+    o = []
+    # спиральные складки бегут при прокатке
+    ph = (roll / 360.0) % 1.0
+    for j in range(7):
+        q = (j / 7 + ph) % 1.0
+        xx = -L / 2 + 120 + (L - 240) * q
+        o.append(line([(xx - 30, -Hh + 20), (xx + 10, -Hh * .5), (xx - 20, -10)], 5.0, csh, taper=.3, wmin=.5, seed=seed + j, op=.85))
+        o.append(line([(xx + 26, -Hh + 30), (xx + 40, -Hh * .45)], 7.0, st, taper=.3, wmin=.6, seed=seed + 20 + j, op=.9))
+    o.append(blob([(-L / 2, -12), (L / 2, -12), (L / 2, 10), (-L / 2, 10)], csh))
+    o.append(blob([(-L * .4, -Hh * .85), (L * .3, -Hh * .92), (L * .3, -Hh * .72), (-L * .4, -Hh * .66)], chi, .8))
+    return "".join(o)
+
+
+def cocoon_feet(x, y, k, t, u=1.0, seed=0):
+    """Две босые ступни, высунутые из конца кокона (x, y) — центр конца, пальцы вправо; шевелятся по t."""
+    global C
+    C = PAL["dima"]
+    o = []
+    for j, dy in enumerate((-40, 40)):
+        wig = 10 * math.sin(t * 11 + j * 1.9)
+        ax, ay = x - 20 * k, y + dy * k
+        tip = (x + (70 + 60 * u) * k, y + dy * k - 10 * k + wig * k)
+        foot = [(ax, ay - 34 * k), (tip[0] - 20 * k, tip[1] - 36 * k), (tip[0] + 10 * k, tip[1] - 18 * k), (tip[0] + 14 * k, tip[1] + 14 * k),
+                (tip[0] - 26 * k, ay + 34 * k), (ax, ay + 30 * k)]
+        inner = blob([(ax, ay + 10 * k), (tip[0], tip[1] + 6 * k), (tip[0], tip[1] + 30 * k), (ax, ay + 40 * k)], C["SKIN_SH"], .8)
+        o.append(shape(foot, C["SKIN"], inner, w=4.0 * k / .9, seed=7700 + seed + j))
+        for q in range(3):
+            tx = tip[0] + 6 * k
+            ty = tip[1] - 12 * k + q * 13 * k
+            o.append(line([(tx - 10 * k, ty), (tx + 4 * k, ty + 2 * k)], 2.6, INK, taper=.5, wmin=.3, seed=7710 + seed + 3 * j + q, op=.8))
+    return "".join(o)
+
+
+def dima_cocoon(x, y, k=1.0, roll=0.0, squash=0.0, wriggle=0.0, sag=0.0, expr=None, hood=False, t=0.0, head_rot=None, feet=1.0, seed=0, col=C_COCOON):
+    global C
+    ex = EXPR["dima"].get(expr, {}) if isinstance(expr, str) else dict(expr or EXPR["dima"]["sleepy"])
+    c, csh, chi, st = col
+    sd = 7600 + seed
+    if not hood:
+        L, Hh = 900.0, 330.0
+        sy = 1 - .35 * squash
+        sx = 1 + .18 * squash
+        # контур с волной гусеницы
+        top = []
+        n = 14
+        for i in range(n + 1):
+            q = i / n
+            xx = -L / 2 + L * q
+            wv = wriggle * 40 * math.sin(2 * math.pi * (q * 1.4 - t * 2.2))
+            hh = Hh * (math.sin(math.pi * min(1, max(0, (q * 1.05)))) ** .35) + wv
+            top.append((xx, -hh))
+        pts = [(-L / 2, -10, 1)] + top[1:-1] + [(L / 2, -10, 1), (L * .3, 6), (-L * .3, 6)]
+        body = _cocoon_quilt(L, Hh, roll, sd, col)
+        o = [blob(lib.ellipse_pts(0, 8, L * .52, 26, 18), "#3a2a20", .2)]
+        o.append(f'<g transform="scale({sx:.4f} {sy:.4f})">')
+        # ступни справа (под краем одеяла)
+        o.append(cocoon_feet(L / 2 - 30, -Hh * .38, 1.0, t, feet, seed))
+        o.append(shape(pts, c, body, w=6.0, seed=sd))
+        # голова слева: торчит из «рукава» одеяла
+        hr = -70.0 if head_rot is None else head_rot
+        hx, hy = -L / 2 - 20, -Hh * .5
+        C = PAL["dima"]
+        head = f'<g transform="translate({hx:.1f} {hy:.1f}) rotate({hr + 4 * math.sin(t * 3.1) * wriggle:.2f}) scale(1.15)">{dima_head(ex)}</g>'
+        o.append(head)
+        # край одеяла вокруг шеи — поверх головы снизу
+        rim = [(-L / 2 + 140, -Hh * .98), (-L / 2 + 185, -Hh * .5), (-L / 2 + 150, -6), (-L / 2 + 230, -10), (-L / 2 + 270, -Hh * .5),
+               (-L / 2 + 230, -Hh * 1.02)]
+        o.append(shape(rim, chi, blob([(-L / 2 + 190, -Hh), (-L / 2 + 260, -Hh), (-L / 2 + 260, 0), (-L / 2 + 190, 0)], c, .9), w=5.0, seed=sd + 40))
+        o.append("</g>")
+        rr = 4 * math.sin(math.radians(roll)) + 0
+        svg = f'<g transform="translate({x:.2f} {y:.2f}) rotate({rr:.2f}) scale({k:.5f})">{"".join(o)}</g>'
+        hxw = x + (hx * sx) * k
+        hyw = y + (hy * sy) * k
+        return dict(svg=svg, head=(hxw, hyw))
+    # ── сидит, одеяло капюшоном ──
+    s_ = lib.clamp(sag)
+    fig = person("dima", 0, 0, 1.0, ex, "rest", layers=("pelvis", "body"), shrug=.25 * (1 - s_))
+    hx, hy = fig["head"]
+    sq = 1 - .25 * squash
+    o = [blob(lib.ellipse_pts(0, 6, 420, 30, 18), "#3a2a20", .2)]
+    hyW = hy - 380
+    e1 = lib.ease_io(min(1.0, s_ * 2))
+    e2 = lib.ease_io(max(0.0, s_ * 2 - 1))
+    top = hyW - 215 + (-690 - (hyW - 215)) * e1 + 250 * e2       # верх одеяла: над макушкой → плечи → пояс
+    wid = 235 + 120 * e1
+    # задняя часть одеяла (купол за головой)
+    back = [(-400, 0, 1), (-420, -300), (-wid - 60, top + 330), (-wid, top + 120), (-150, top + 10), (0, top - 12), (150, top + 10), (wid, top + 120),
+            (wid + 60, top + 330), (420, -300), (400, 0, 1)]
+    o.append(shape(back, csh, line([(-wid * .6, top + 80), (-wid * .7, top + 300)], 4, mul(csh, .85), seed=sd + 50), w=6.0, seed=sd + 51))
+    o.append(f'<g transform="translate(0 {-380:.1f})">{fig["svg"]}</g>')
+    o.append(cocoon_feet(150, -40, 1.0, t, feet, seed))
+    # передняя часть: обнимает тело от груди (или ниже) до пола, ступни торчат
+    fy = min(-330.0, max(top + 300, -740) + 330 * e2)
+    front = [(-390, 0, 1), (-420, -280), (-wid - 40, fy + 70), (-170, fy), (0, fy + 22), (170, fy), (wid + 40, fy + 70), (420, -280), (390, 0, 1)]
+    f_in = _cocoon_quilt(820, 600, roll, sd + 60, col)
+    o.append(shape(front, c, f_in, w=6.0, seed=sd + 61))
+    o.append(line([(-6, fy + 24), (-24, -300), (6, -20)], 5, csh, taper=.3, wmin=.5, seed=sd + 62))
+    # край капюшона над лбом (пока одеяло на голове)
+    cover = ex.get("cover", 0.0)
+    if e1 < .5:
+        dy = 260 * e1 + 95 * cover
+        hhx = hx
+        rim = [(hhx - wid - 10, top + 140 + dy), (hhx - 150, top + 20 + dy), (hhx + 10, top - 6 + dy), (hhx + 170, top + 20 + dy), (hhx + wid + 10, top + 140 + dy),
+               (hhx + 150, top + 80 + dy), (hhx + 10, top + 62 + dy + 30 * cover), (hhx - 140, top + 80 + dy)]
+        o.append(shape(rim, c, blob([(hhx - 300, top + 40 + dy), (hhx + 300, top + 40 + dy), (hhx + 300, top + 70 + dy), (hhx - 300, top + 70 + dy)],
+                                    chi, .9), w=5.4, seed=sd + 70))
+    svg = f'<g transform="translate({x:.2f} {y:.2f}) scale({k:.5f} {k * sq:.5f})">{"".join(o)}</g>'
+    return dict(svg=svg, head=(x + hx * k, y + (hy - 380) * k * sq))
+
+
+def mul(h, kk):
+    return lib.mul(h, (kk, kk, kk))
+
+
+def cocoon_blanket(x, y, k=1.0, u=0.0, t=0.0, seed=0, col=C_COCOON):
+    """Одеяло распахнулось и улетает вверх, вращаясь (u 0…1). (x, y) — центр."""
+    if u >= 1:
+        return ""
+    c, csh, chi, st = col
+    sd = 7800 + seed
+    op = lib.ease_out(lib.clamp(u / .35))
+    fl = lib.clamp((u - .3) / .7)
+    w, h = 520 + 420 * op, 360 + 120 * op
+    pts = [(-w / 2, -h / 2, 1), (-w * .1, -h / 2 - 40 * math.sin(t * 9)), (w / 2, -h / 2, 1), (w / 2 + 30 * math.sin(t * 8), 0), (w / 2, h / 2, 1),
+           (0, h / 2 + 40 * math.sin(t * 10)), (-w / 2, h / 2, 1), (-w / 2 - 30, 0)]
+    inner = "".join(line([(-w / 2 + w * q, -h / 2), (-w / 2 + w * q + 20, h / 2)], 7, st, taper=.2, wmin=.6, seed=sd + i, op=.9)
+                    for i, q in enumerate((.2, .4, .6, .8)))
+    inner += blob([(-w / 2, h * .2), (w / 2, h * .2), (w / 2, h / 2), (-w / 2, h / 2)], csh)
+    yy = y - 900 * fl * fl
+    rr = 25 * fl + 6 * math.sin(t * 6)
+    return f'<g transform="translate({x:.1f} {yy:.1f}) rotate({rr:.2f}) scale({k * (1 - .3 * fl):.4f})">{shape(pts, c, inner, w=5.6, seed=sd)}</g>'
