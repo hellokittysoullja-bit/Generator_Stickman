@@ -200,16 +200,16 @@ def plaid_cape(hip, lean, ph, wake):
     pid = "plaid37"
     lib.DEFS.append(
         f'<pattern id="{pid}" width="96" height="96" patternUnits="userSpaceOnUse" patternTransform="rotate({-6 + math.degrees(lean):.2f})">'
-        f'<rect width="96" height="96" fill="#c4553f"/>'
-        f'<rect x="0" y="34" width="96" height="28" fill="#a5432f" opacity=".9"/><rect x="34" y="0" width="28" height="96" fill="#a5432f" opacity=".9"/>'
-        f'<rect x="0" y="44" width="96" height="8" fill="#e8b85a"/><rect x="44" y="0" width="8" height="96" fill="#e8b85a"/>'
+        f'<rect width="96" height="96" fill="#4f7d55"/>'
+        f'<rect x="0" y="34" width="96" height="28" fill="#35583c" opacity=".9"/><rect x="34" y="0" width="28" height="96" fill="#35583c" opacity=".9"/>'
+        f'<rect x="0" y="44" width="96" height="8" fill="#c9473a"/><rect x="44" y="0" width="8" height="96" fill="#c9473a"/>'
         f'<rect x="0" y="6" width="96" height="3" fill="#f2e3c4" opacity=".8"/><rect x="6" y="0" width="3" height="96" fill="#f2e3c4" opacity=".8"/>'
         f'</pattern>')
     inner = f'<rect x="{hip[0] - 600:.0f}" y="{hip[1] - 900:.0f}" width="1200" height="1600" fill="url(#{pid})"/>'
-    inner += blob([p(hip, 200, -260), p(hip, 200, -60), p(hip, -200, -70), p(hip, -200, -260)], "#3a1410", .22)
+    inner += blob([p(hip, 200, -260), p(hip, 200, -60), p(hip, -200, -70), p(hip, -200, -260)], "#1a2a1e", .22)
     for k, f_ in enumerate(folds):
-        inner += line(f_, 3, "#5a1e16", seed=4500 + k, op=.7)
-    return shape(pts, "#c4553f", inner, w=4.8, seed=4510)
+        inner += line(f_, 3, "#22382a", seed=4500 + k, op=.7)
+    return shape(pts, "#4f7d55", inner, w=4.8, seed=4510)
 
 
 _ = (mix, ease_out)

@@ -159,12 +159,12 @@ def sofa():
     s.append(shape([(x0 + 128, -236, 1), (x0 + 150, -260), (x0 + 172, -240), (x0 + 196, -250), (x0 + 186, -214), (x0 + 130, -220)], "#5a3826",
                    "", w=3.2, seed=747))
     pid = "plaid15"
-    lib.DEFS.append(f'<pattern id="{pid}" width="48" height="48" patternUnits="userSpaceOnUse"><rect width="48" height="48" fill="#c4553f"/>'
-                    '<rect y="17" width="48" height="14" fill="#a5432f"/><rect x="17" width="14" height="48" fill="#a5432f"/>'
-                    '<rect y="22" width="48" height="4" fill="#e8b85a"/><rect x="22" width="4" height="48" fill="#e8b85a"/></pattern>')
+    lib.DEFS.append(f'<pattern id="{pid}" width="48" height="48" patternUnits="userSpaceOnUse"><rect width="48" height="48" fill="#4f7d55"/>'
+                    '<rect y="17" width="48" height="14" fill="#35583c"/><rect x="17" width="14" height="48" fill="#35583c"/>'
+                    '<rect y="22" width="48" height="4" fill="#c9473a"/><rect x="22" width="4" height="48" fill="#c9473a"/></pattern>')
     pl = [(x0 + 170, -200), (x0 + 260, -232), (x0 + 360, -214), (x1 - 40, -200), (x1 - 10, -150), (x1 - 30, -110, 1), (x0 + 150, -110, 1),
           (x0 + 140, -160)]
-    s.append(shape(pl, "#c4553f", f'<rect x="{x0}" y="-300" width="{x1 - x0}" height="200" fill="url(#{pid})"/>', w=4, seed=748))
+    s.append(shape(pl, "#4f7d55", f'<rect x="{x0}" y="-300" width="{x1 - x0}" height="200" fill="url(#{pid})"/>', w=4, seed=748))
     return "".join(s)
 
 
