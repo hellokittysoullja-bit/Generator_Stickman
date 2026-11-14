@@ -346,3 +346,34 @@ def window(x, y, w=520.0, h=640.0, mode="night", t=0.0, seed=0, far=False, curta
             out.append(shape(pts, cc, line([(cx + sgn * 30, y0), (cx + sgn * 40, y1)], 5, lib.mul(cc, (.78, .78, .78)), taper=.4, wmin=.3, seed=sd + 8 + int(sgn + 1))
                              + line([(cx + sgn * 56, y0), (cx + sgn * 60, y1)], 4, lib.mul(cc, (1.2, 1.2, 1.2)), taper=.4, wmin=.3, seed=sd + 11 + int(sgn + 1)), w=3.4, seed=sd + 9 + int(sgn + 1)))
     return "".join(out)
+
+
+# ───────────────────────────── ночь: затемнение с «дырами» света ─────────────────────────────
+
+def cone_d(x, y, ang=0.0, length=700.0, spread=18.0, r0=20.0):
+    """Контур конуса света (строка d пути): из точки (x, y), ось ang°, полный угол spread°, у линзы полуширина r0."""
+    R = r0 + math.tan(math.radians(spread / 2)) * length
+    a = math.radians(ang)
+    ca, sa = math.cos(a), math.sin(a)
+    pts = [(0, -r0), (length, -R), (length, R), (0, r0)]
+    q = [(x + px * ca - py * sa, y + px * sa + py * ca) for px, py in pts]
+    return "M" + "L".join(f"{f(px)} {f(py)}" for px, py in q) + "Z"
+
+
+def circle_d(x, y, r, ry=None):
+    ry = r if ry is None else ry
+    return f"M{f(x - r)} {f(y)}a{f(r)} {f(ry)} 0 1 0 {f(2 * r)} 0a{f(r)} {f(ry)} 0 1 0 {f(-2 * r)} 0Z"
+
+
+def darkness(op=0.62, color="#0A0E26", holes=(), blur_sd=14.0, box=(0, 0, 1080, 1920)):
+    """Ночное затемнение поверх ВСЕЙ нарисованной сцены: тёмная вуаль op с мягкими вырезами света (holes — список (d, сила 0…1) или d).
+    Освещённое видно в своих цветах с тушью (вуаль, а не screen: тушь не выцветает). Поверх кладут beam()/glow() тёплым цветом."""
+    x0, y0, x1, y1 = box
+    mid = lib.uid("mk")
+    cut = ""
+    for h in holes:
+        d, a = (h if isinstance(h, tuple) else (h, 1.0))
+        cut += f'<path d="{d}" fill="#000" opacity="{a:.3f}" {blur(blur_sd)}/>'
+    lib.DEFS.append(f'<mask id="{mid}" maskUnits="userSpaceOnUse" x="{x0}" y="{y0}" width="{x1 - x0}" height="{y1 - y0}">'
+                    f'<rect x="{x0}" y="{y0}" width="{x1 - x0}" height="{y1 - y0}" fill="#fff"/>{cut}</mask>')
+    return f'<rect x="{x0}" y="{y0}" width="{x1 - x0}" height="{y1 - y0}" fill="{color}" opacity="{op:.3f}" mask="url(#{mid})"/>'
