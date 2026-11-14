@@ -63,7 +63,7 @@ beats = [
       fx=[dict(kind="sfx", name="fast_whoosh", at=0, align="start", why="влёт камеры в первый кадр"),
           dict(kind="sfx", name="riser", at=0, dt=0.0, align="start", why="riser с нуля к раскрытию"),
           dict(kind="sfx", name="shock", at=3, dt=0.05, why="«кОсмоса»: кот отшатывается от бинокля"),
-          dict(kind="mark", anchor=True, text=HOOK["anchor"], at=0, speed=2.0, x=430, y=1400, size=96, marker=VIOLET)]),
+          dict(kind="mark", anchor=True, text=HOOK["anchor"], at=0, speed=2.0, x=490, y=930, size=100, marker=VIOLET)]),
  dict(text=T1, after_sfx="riser",
       shots=[sh(0, "f1", "face", zoom_in=0.15, why="«ты сто раз это слышал»: морда в шлеме, капля пота"),
              sh(ix(T1, "это"), "f1", "binoc", why="«это слышал»: бинокль крупно, кот вглядывается"),
