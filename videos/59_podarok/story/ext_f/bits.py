@@ -1,5 +1,4 @@
-"""Предметы и кухня группы F рилса 59: букет, пирог (целый / с вырезанным куском / кусок), банка с цветами, кухня, стол, звёзды.
-Пока нет common/props.py и common/kitchen.py — свои, в тех же цветах брифа (корка #C98A4B, крафт #C9A877, плетёное #B98A50)."""
+"""Мелочи группы F рилса 59: кусок пирога в зубах кота (цвета как common/props.py), крошки, искры, передняя стойка."""
 import math
 
 import numpy as np
@@ -7,8 +6,8 @@ import numpy as np
 import lib
 from lib import blob, ellipse_pts, line, rrect, shape
 
-CRUST, CRUST_SH, CRUST_HI = "#C98A4B", "#a86d33", "#e0a964"
-FILL, FILL_SH = "#d9a441", "#b9822a"
+CRUST, CRUST_SH, CRUST_HI = "#C98A4B", "#A8692F", "#E0A867"
+FILL, FILL_SH = "#B8453C", "#8F2F2C"
 KRAFT, KRAFT_SH = "#C9A877", "#a98a58"
 TIN, TIN_SH = "#b6babd", "#8f9498"
 GREEN, GREEN_SH = "#5f9a52", "#437a3c"
@@ -18,127 +17,13 @@ def _rs(seed):
     return np.random.RandomState(seed)
 
 
-# ═══════════════════════ цветы ═══════════════════════
-def daisy(x, y, k, rot=0.0, seed=0):
-    o = []
-    for i in range(9):
-        a = rot + i * 40.0
-        c, s_ = math.cos(math.radians(a)), math.sin(math.radians(a))
-        px, py = x + c * 24 * k, y + s_ * 24 * k
-        o.append(shape(ellipse_pts(px, py, 17 * k, 8.5 * k, 10, rot=a), "#fbf7ee", "", w=2.6, seed=seed + i, var=.2))
-    o.append(shape(ellipse_pts(x, y, 13 * k, 13 * k, 12), "#f2b632", blob(ellipse_pts(x + 3 * k, y + 4 * k, 8 * k, 7 * k, 8), "#d98f1f", .8), w=3, seed=seed + 20))
-    return "".join(o)
-
-
-def tulip(x, y, k, rot=0.0, col="#e2574c", col_sh="#bb3a33", seed=0):
-    pts = [(-22, -34), (-8, -22, 1), (0, -46), (8, -22, 1), (22, -34), (26, 0), (14, 26), (-14, 26), (-26, 0)]
-    pts = [(p[0] * k, p[1] * k) + ((1,) if len(p) > 2 else ()) for p in pts]
-    c, s_ = math.cos(math.radians(rot)), math.sin(math.radians(rot))
-    pts = [(x + p[0] * c - p[1] * s_, y + p[0] * s_ + p[1] * c) + ((1,) if len(p) > 2 else ()) for p in pts]
-    inner = blob([(x + (p[0] * c - p[1] * s_) * 1, y + (p[0] * s_ + p[1] * c)) for p in [(6 * k, -30 * k), (28 * k, -30 * k), (28 * k, 28 * k), (8 * k, 28 * k)]], col_sh, .85)
-    return shape(pts, col, inner, w=3.2, seed=seed)
-
-
-def bouquet(x, y, k=1.0, rot=0.0, sway=0.0):
-    """Букет в крафте; (x, y) — место хвата рукой (низ обёртки), вверх — цветы. Высота ≈ 330 k, ширина цветов ≈ 230 k."""
-    o = []
-    seeds = [(-70, -250, 0), (-10, -300, 1), (62, -262, 2), (-38, -205, 3), (36, -208, 4)]
-    stems = ""
-    for i, (fx, fy, kind) in enumerate(seeds):
-        stems += line([(0, -70), (fx * .35, (fy - 20) * .5), (fx, fy + 10)], 5.5, GREEN_SH, taper=.1, wmin=.9, seed=10 + i)
-    o.append(stems)
-    for (lx, ly, ang) in ((-60, -170, -35), (58, -160, 40)):
-        o.append(shape(ellipse_pts(lx, ly, 38, 15, 12, rot=ang), GREEN, line([(lx - 26, ly + 8), (lx + 26, ly - 8)], 2, GREEN_SH, seed=40), w=3.2, seed=41 + int(lx)))
-    for i, (fx, fy, kind) in enumerate(seeds):
-        r_ = (i * 23) % 40 + sway * 6
-        if kind in (0, 2):
-            o.append(tulip(fx, fy, 1.15, rot=-10 + 20 * (kind == 2) + sway * 4, col=("#e2574c" if kind == 0 else "#ef8fa1"), col_sh=("#bb3a33" if kind == 0 else "#cc6a80"), seed=100 + i))
-        else:
-            o.append(daisy(fx, fy, 1.0 if kind == 1 else .9, rot=r_, seed=100 + i * 30))
-    cone = [(-74, -150), (-20, -164), (30, -158), (78, -146), (36, 6), (-30, 6)]
-    inner = blob([(8, -160), (86, -150), (44, 8), (4, 8)], KRAFT_SH, .85)
-    inner += line([(-50, -146), (-16, -4)], 2.2, KRAFT_SH, seed=50, op=.9) + line([(30, -150), (20, -20)], 2.2, KRAFT_SH, seed=51, op=.9)
-    o.append(shape(cone, KRAFT, inner, w=4.4, seed=52))
-    o.append(shape([(-46, -92), (44, -90), (46, -74), (-44, -76)], "#8d6a3e", "", w=2.6, seed=53))
-    o.append(shape([(-8, -94), (-34, -118, 1), (-16, -84), (6, -92), (30, -118, 1), (12, -80)], "#8d6a3e", "", w=2.4, seed=54))
-    return f'<g transform="translate({x:.1f} {y:.1f}) rotate({rot:.2f}) scale({k:.4f})">{"".join(o)}</g>'
-
-
-def jar(x, y, k=1.0, sway=0.0, seed=0):
-    """Банка с цветами; (x, y) — центр дна."""
-    o = []
-    fl = [(-30, -250, 0), (4, -290, 1), (38, -246, 2), (-4, -226, 1)]
-    for i, (fx, fy, kind) in enumerate(fl):
-        sx = fx + sway * 14 * (fy / -250)
-        o.append(line([(fx * .3, -70), ((fx * .3 + sx) / 2, fy * .5), (sx, fy + 10)], 5, GREEN_SH, taper=.1, wmin=.9, seed=60 + i))
-    for i, (fx, fy, kind) in enumerate(fl):
-        sx = fx + sway * 14 * (fy / -250)
-        o.append(daisy(sx, fy, .8, rot=i * 17 + sway * 8, seed=200 + i * 30) if kind != 2 else tulip(sx, fy, 1.0, rot=sway * 6, seed=300))
-    body = [(-52, -150), (52, -150), (60, -130), (62, -20), (50, 0), (-50, 0), (-62, -20), (-60, -130)]
-    inner = blob([(-48, -90), (50, -90), (50, 0), (-48, 0)], "#a9d8f2", .55) + blob([(20, -140), (56, -130), (58, -10), (24, -4)], "#8fc4e0", .55)
-    inner += line([(-42, -130), (-44, -30)], 3, "#f4fbff", seed=70, op=.95)
-    o.append(shape(body, "#d3ebf7", inner, w=3.8, seed=71))
-    o.append(shape([(-56, -154), (56, -154), (54, -140), (-54, -140)], "#bcd9ea", "", w=3, seed=72))
-    return f'<g transform="translate({x:.1f} {y:.1f}) scale({k:.4f})">{"".join(o)}</g>'
-
-
-# ═══════════════════════ пирог ═══════════════════════
-RX, RY, TH = 150.0, 46.0, 44.0
-
-
-def _pt(a, rx=RX, ry=RY):
-    return (rx * math.cos(a), ry * math.sin(a))
-
-
-def pie(x, y, k=1.0, cut=None, sag=1.0, wob=0.0):
-    """Кривой осевший пирог; (x, y) — центр верхней корки. cut=(a0, a1) градусов (0 — вправо, 90 — к зрителю) — вырезанный кусок; None — целый."""
-    o = []
-    # жестяная форма
-    side = [_pt(math.radians(a)) for a in np.linspace(0, 180, 22)]
-    tinp = [(p[0] * 1.06, p[1] * 1.06 + 8) for p in side] + [(p[0] * 1.06, p[1] * 1.06 + 8 + TH) for p in side[::-1]]
-    o.append(shape(tinp, TIN, blob([(0, 0), (RX * 1.1, 0), (RX * 1.1, TH + 80), (0, TH + 80)], TIN_SH, .8), w=4.2, seed=80))
-    full = [math.radians(a) for a in np.linspace(0, 360, 60, endpoint=False)]
-    rs = _rs(7)
-
-    def crust_pt(a, dz=0.0):
-        px, py = _pt(a, RX * .97, RY * .97)
-        sg = sag * 16 * (.5 + .5 * math.cos(a - .25)) + wob
-        return (px, py - 18 + sg + dz + rs.uniform(-1.5, 1.5) * 0)
-    if cut:
-        a0, a1 = math.radians(cut[0]), math.radians(cut[1])
-        # внутренность формы под вырезом и торцы разреза
-        floor_ = [(0, 8)] + [(_pt(a)[0] * .97, _pt(a)[1] * .97 + 10) for a in np.linspace(a0, a1, 10)]
-        o.append(blob(floor_, "#d8b47c"))
-        for a in (a0, a1):
-            P = crust_pt(a)
-            C0 = (0, -18 + sag * 8)
-            face = [C0, P, (P[0], P[1] + 36), (0, C0[1] + 36)]
-            o.append(shape(face, FILL, blob([C0, P, (P[0], P[1] + 10), (0, C0[1] + 10)], CRUST_SH, .95) +
-                           "".join(line([(C0[0] + (P[0] - C0[0]) * u, C0[1] + (P[1] - C0[1]) * u + 14), (C0[0] + (P[0] - C0[0]) * u + 6, C0[1] + (P[1] - C0[1]) * u + 26)], 2.6, FILL_SH, seed=90 + int(u * 10)) for u in (.2, .45, .7, .9)), w=3.4, seed=81 + int(a * 7)))
-        arc = [a for a in full if not (a0 <= a % (2 * math.pi) <= a1)]
-        arc = sorted(arc, key=lambda a: (a - a1) % (2 * math.pi))
-        top = [crust_pt(a) for a in arc] + [(0, -18 + sag * 8)]
-    else:
-        top = [crust_pt(a) for a in full]
-    inner = blob([(-RX * .2, -RY * .2 - 14), (RX, -RY * .2 - 14), (RX, RY), (-RX * .2, RY)], CRUST_SH, .55)
-    inner += blob(ellipse_pts(-40, -34, 70, 18, 10), CRUST_HI, .8)
-    for a in np.linspace(0, 6.28, 16, endpoint=False):     # защипы по краю
-        if cut and cut[0] - 8 <= math.degrees(a) <= cut[1] + 8:
-            continue
-        p = crust_pt(a)
-        q = (p[0] * .88, p[1] * .88 - 2)
-        inner += line([p, q], 3.2, CRUST_SH, seed=100 + int(a * 10), op=.9, taper=.3, wmin=.4)
-    o.append(shape(top, CRUST, inner, w=4.6, seed=82))
-    for i, (sx, sy, sl) in enumerate(((-50, -26, 50), (6, -18, 56), (-14, 4, 46))):        # прорези и начинка выглянула
-        o.append(line([(sx, sy), (sx + sl * .6, sy + 8)], 4, "#6b3f1c", seed=120 + i, taper=.4, wmin=.5))
-        o.append(line([(sx + 4, sy + 4), (sx + sl * .5, sy + 11)], 2.4, FILL, seed=125 + i))
-    return f'<g transform="translate({x:.1f} {y:.1f}) scale({k:.4f})">{"".join(o)}</g>'
+RX, RY = 150.0, 46.0
 
 
 def piece(x, y, k=1.0, rot=0.0, flip=1):
     """Кусок пирога (клин, 40°): (x, y) — центр верхней грани, rot — поворот. Корка, торец с начинкой."""
     a0, a1 = math.radians(-20), math.radians(22)
-    arc = [(RX * .94 * math.cos(a), RY * .94 * math.sin(a) * 1.6) for a in np.linspace(a0, a1, 8)]
+    arc = [(141.0 * 1.0 * math.cos(a), 43.0 * math.sin(a) * 1.6) for a in np.linspace(a0, a1, 8)]
     tip = (-RX * .08, 0)
     top = [tip] + arc
     o = []
@@ -229,3 +114,12 @@ def table(x0, x1, ytop=1010, depth=120, sag=0, legs=True):
     o.append(line([(x0 + 8, ytop + depth * .5), (x1 - 8, ytop + depth * .5)], 3, "#e2a08a", taper=0, wmin=1, seed=541, op=.75))
     o.append(shape(rrect(x0 + 10, ytop + depth, x1 - 10, ytop + depth + 74, 6), "#b98a50", blob(rrect(x0 + 10, ytop + depth + 44, x1 - 10, ytop + depth + 74, 4), "#9a6f3a", .9), w=4.4, seed=531))
     return "".join(o)
+
+
+def counter_front(x0, x1, y):
+    """Передняя стойка кухни (цвета common/kitchen.py): закрывает таз мамы на крупном плане."""
+    o = shape(rrect(x0, y, x1, 2300, 0), "#F8F2E6", blob(rrect(x0, y + 40, x1, y + 62, 0), "#E6DCC8", .9), w=4.6, seed=560)
+    for i, xx in enumerate(range(int(x0) + 150, int(x1), 300)):
+        o += line([(xx, y + 14), (xx, 1900)], 3, "#C9BFA6", taper=0, wmin=1, seed=565 + i, op=.9)
+    o += shape(rrect(x0 - 10, y - 34, x1 + 10, y + 8, 6), "#C88A58", blob(rrect(x0, y - 10, x1, y + 8, 4), "#A56F3E", .9), w=4.6, seed=561)
+    return o
