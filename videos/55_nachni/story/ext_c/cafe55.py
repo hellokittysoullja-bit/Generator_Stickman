@@ -37,13 +37,13 @@ def cloud_shape(circles, fill, ow=5.0):
 
 
 # ════════════════════════ интерьер ════════════════════════
-def interior(t):
+def interior(t, fl=1214):
     o = [f'<rect x="-900" y="-600" width="2900" height="1830" fill="{WALL}"/>']
     for x in range(-900, 2000, 90):                      # полосатые обои
         o.append(f'<rect x="{x}" y="-600" width="30" height="1400" fill="{WALL_SH}"/>')
-    o.append(f'<rect x="-900" y="800" width="2900" height="420" fill="#8a5c38"/>')   # панели
+    o.append(f'<rect x="-900" y="800" width="2900" height="{fl - 800}" fill="#8a5c38"/>')   # панели
     for x in range(-900, 2000, 150):
-        o.append(f'<rect x="{x + 10}" y="850" width="130" height="330" fill="#9a6c42" stroke="{INK}" stroke-width="4"/>')
+        o.append(f'<rect x="{x + 10}" y="850" width="130" height="{fl - 884}" fill="#9a6c42" stroke="{INK}" stroke-width="4"/>')
     o.append(shape([(-900, 790, 1), (2000, 790, 1), (2000, 850, 1), (-900, 850, 1)], "#b68350", "", w=4.4, seed=11))
     # окна
     for k, x0 in enumerate((120, 700)):
@@ -73,15 +73,16 @@ def interior(t):
         o.append(shape(ellipse_pts(gx, 492, 28, 28, 14), "#fff4c0", "", w=3.6, seed=54 + k))
     # пол: шахматная плитка в перспективе
     vx, vy = 540.0, 560.0
-    rows = [1220, 1262, 1314, 1376, 1450, 1540, 1650, 1790, 1960, 2200]
+    d = fl - 1214
+    rows = [1220 + d, 1262 + d, 1314 + d, 1376 + d, 1450 + d, 1540 + d, 1650 + d, 1790 + d, 1960 + d, 2400 + d]
     for r in range(len(rows) - 1):
         ya, yb = rows[r], rows[r + 1]
         for c in range(-14, 16):
             def xp(c_, y):
-                return vx + c_ * 90 * (y - vy) / (1220 - vy) * 1.0
+                return vx + c_ * 90 * (y - d - vy) / (1220 - vy)
             pts = [(xp(c, ya), ya), (xp(c + 1, ya), ya), (xp(c + 1, yb), yb), (xp(c, yb), yb)]
             o.append(f'<path d="M{" L".join(f"{p[0]:.1f},{p[1]:.1f}" for p in pts)}Z" fill="{"#e3cfa4" if (r + c) % 2 == 0 else "#8e6a46"}"/>')
-    o.append(f'<rect x="-900" y="1214" width="2900" height="10" fill="{INK}"/>')
+    o.append(f'<rect x="-900" y="{fl}" width="2900" height="10" fill="{INK}"/>')
     return "".join(o)
 
 
@@ -151,7 +152,7 @@ def hand_xy(spec, pose, sc, x, y, side="R"):
 
 
 def seated(spec, pose, x, yt, sc, sd, flip=False):
-    return person.draw(spec, pose, x, yt + 376 * sc, sc, sd, flip)
+    return person.draw(spec, pose, x, yt + 312 * sc, sc, sd, flip)
 
 
 def pencil(x, y, ang=-40, s=1.0):
@@ -236,60 +237,61 @@ def waiter_fig(x, y, sc, fc, pose, flip=False):
 # ════════════════════════ s08: психолог ════════════════════════
 def frame_s08(t):
     u = clamp((t - 17.7) / 2.7)
-    sc = 1.25
-    x, yt = 470.0, 1190.0
+    sc = 1.7
+    x, yt = 470.0, 1010.0
     look_up = smooth(18.3, 18.5, t) * (1 - smooth(19.0, 19.25, t))
     write = 1 - look_up
     under_u = smooth(19.06, 19.5, t)
     # рука с карандашом: письмо — небольшие движения предплечья; на «заметила» — взмах подчёркивания
     wob = math.sin(t * 17) * 5 * write * (1 - smooth(18.95, 19.06, t))
-    arms = {"R": (14 + 3 * write * math.sin(t * 13), 66 + wob + 12 * under_u * math.sin((t - 19.06) * 14) * (1 - smooth(19.5, 19.7, t))),
+    arms = {"R": (-4 + 2 * write * math.sin(t * 13), 78 + wob * .8 + 8 * under_u * math.sin((t - 19.06) * 14) * (1 - smooth(19.5, 19.7, t))),
             "L": (-8, -40)}
     spec = woman_spec(.55 - .25 * look_up)
     pose = dict(arms=arms, look=(.85 * look_up + (1 - look_up) * .15, .55 * (1 - look_up) + -.1 * look_up), blink=0.9 * bump(t, 17.95, .18) + .9 * bump(t, 19.4, .2),
                 mouth="flat" if look_up < .5 else "o", brow=.4 * look_up, head_tilt=-4 * look_up + 8 * write)
     o = [interior(t)]
     # дальний план: второй столик и официант идёт с подносом
-    wx = 900 - 200 * (t - 17.7) / 2.7
+    wx = 930 - 180 * (t - 17.7) / 2.7
     o.append(chair_back(x, yt, sc))
     top, sk = table(x, yt, sc)
     o.append(top)
-    o.append(notebook(x + 150 * sc, yt - 14, 1.15 * sc, lines_u=clamp(.5 + .5 * (t - 17.7) / 1.4), under_u=under_u))
+    hx0, hy0 = hand_xy(spec, pose, sc, x, yt + 312 * sc, "R")
+    o.append(notebook(hx0 - 20 * sc, yt - 16, 1.15 * sc, lines_u=clamp(.5 + .5 * (t - 17.7) / 1.4), under_u=under_u))
     # фон: официанты (маленькие) за её спиной, к ним она обращает взгляд
     wp = dict(walk=(t * 6.0) % (2 * math.pi), arms={"L": (10, 80), "R": (-30, 120)}, look=(-.5, 0), mouth="smile")
-    o.append(waiter_fig(wx, 1190, .62, -.4, wp))
+    o.append(waiter_fig(wx, 1214, .8, -.4, wp))
     o.append(seated(spec, pose, x, yt, sc, 600))
-    hx, hy = hand_xy(spec, pose, sc, x, yt + 376 * sc, "R")
+    hx, hy = hand_xy(spec, pose, sc, x, yt + 312 * sc, "R")
     o.append(pencil(hx, hy + 2, -35 - 18 * look_up, 1.0 * sc))
     o.append(sk)
     o.append(cup(x - 120 * sc, yt - 6, .9 * sc, steam_t=t))
-    cam = lib.cam(490 + 30 * u, 1040 + 20 * u, 1.0 + .14 * ease_io(u), -.5 + .9 * u)
+    cam = lib.cam(520 + 30 * u, 1060 + 20 * u, 1.0 + .12 * ease_io(u), -.5 + .9 * u)
     return f'<g transform="{cam}">{"".join(o)}</g>'
 
 
 # ════════════════════════ s09: заказы ════════════════════════
 def frame_s09(t):
     u = clamp((t - 19.9) / 3.5)
-    yt, sc = 1050.0, .56
-    tx = {"A": 210.0, "B": 540.0, "C": 880.0}
+    yt, sc = 900.0, 1.0
+    tx = {"A": 180.0, "B": 520.0, "C": 890.0}
     T_PAY = 21.55
     cust = {
         "A": dict(spec=dict(skin="#e8bd98", hair="short", hair_c="#3a2a22", top="#6a5a4a", low="#4a4030", shoes="#2a2020", face=-.4, cap="#7a6a50", collar="#f2e6c8", sleeve="#6a5a4a"), x=tx["A"], gone=T_PAY + .1),
         "B": dict(spec=dict(skin="#efc7a4", hair="bun", hair_c="#7a4a2a", top="#5a7a58", low="#3a3a30", shoes="#2a2020", face=.3, collar="#f2e6c8", sleeve="#5a7a58"), x=tx["B"], gone=T_PAY + .28),
-        "C1": dict(spec=dict(skin="#e3b894", hair="bald", hair_c="#8a7a6a", top="#8a6a4a", low="#3a3a30", shoes="#2a2020", face=.2, mustache=True, collar="#f2e6c8", sleeve="#8a6a4a"), x=tx["C"] - 78, gone=99),
-        "C2": dict(spec=dict(skin="#eac3a0", hair="bob", hair_c="#2a2020", top="#7a4a58", low="#4d3b45", shoes="#2a2020", face=-.4, cloche="#506a60", collar="#f2e6c8", sleeve="#7a4a58", bw=.9), x=tx["C"] + 84, gone=99),
+        "C1": dict(spec=dict(skin="#e3b894", hair="bald", hair_c="#8a7a6a", top="#8a6a4a", low="#3a3a30", shoes="#2a2020", face=.2, mustache=True, collar="#f2e6c8", sleeve="#8a6a4a"), x=tx["C"] - 90, gone=99),
+        "C2": dict(spec=dict(skin="#eac3a0", hair="bob", hair_c="#2a2020", top="#7a4a58", low="#4d3b45", shoes="#2a2020", face=-.4, cloche="#506a60", collar="#f2e6c8", sleeve="#7a4a58", bw=.9), x=tx["C"] + 92, gone=99),
     }
-    o = [interior(t)]
+    o = [interior(t, 1120)]
     layers_top, layers_skirt = [], []
     for k, (tk, xx) in enumerate(tx.items()):
-        tp, sk_ = table(xx, yt, sc, rx=(250 if tk == "C" else 215) * sc)
+        tp, sk_ = table(xx, yt, sc, rx=(180 if tk == "C" else 150))
         layers_top.append(tp)
         layers_skirt.append(sk_)
     o.append("".join(chair_back(c["x"], yt, sc, 1 if c["spec"]["face"] >= 0 else -1) for c in cust.values()))
     o.append("".join(layers_top))
     # пара чашек на столах
     for tk, xx in tx.items():
-        o.append(cup(xx + (20 if tk != "C" else -2), yt - 6, .62, steam_t=t))
+        o.append(cup(xx + (30 if tk != "C" else -2), yt - 8, .7, steam_t=t))
     # посетители
     poofs = ""
     slips = ""
@@ -299,7 +301,7 @@ def frame_s09(t):
         if not gone:
             sway = math.sin(t * 2.2 + len(nm)) * 1.5
             sp = c["spec"]
-            pose = dict(arms={"R": (12, 70), "L": (-12, -60)}, look=(.4 if sp["face"] > 0 else -.4, .1), blink=0.9 * bump(t, 20.6 + len(nm) * .4, .18),
+            pose = dict(arms={"R": (-4, 80), "L": (-12, -60)}, look=(.4 if sp["face"] > 0 else -.4, .1), blink=0.9 * bump(t, 20.6 + len(nm) * .4, .18),
                         mouth="smile" if nm in ("A", "B") and t > 20.6 else "flat", head_tilt=sway)
             o.append(seated(sp, pose, c["x"], yt, sc, 700 + len(nm), flip=False))
         pf = (t - c["gone"] + .12) / .5
@@ -313,20 +315,21 @@ def frame_s09(t):
             o.append(coin(tx[tk] - 30, yt - 8 - 30 * (1 - ex), .9))
     # официант: стоит у A (лицом влево), потом у B, потом у C
     if t < 20.78:
-        wx, fc, flipw, walk = 380.0, -.5, True, None
-    elif t < 21.05:
-        wx, fc, flipw, walk = 380.0, .5, False, None
-    elif t < 21.4:
-        v = ease_io(clamp((t - 21.05) / .32))
-        wx, fc, flipw, walk = 380 + 340 * v, .5, False, (t * 11) % (2 * math.pi)
+        wx, fc, flipw, walk = 300.0, -.5, True, None
+    elif t < 21.0:
+        v = ease_io(clamp((t - 20.78) / .22))
+        wx, fc, flipw, walk = 300 + 90 * v, .5, False, None
+    elif t < 21.45:
+        v = ease_io(clamp((t - 21.05) / .38))
+        wx, fc, flipw, walk = 390 + 360 * v, .5, False, (t * 11) % (2 * math.pi)
     else:
-        wx, fc, flipw, walk = 720.0, .5, False, None
-    wy = 1420
+        wx, fc, flipw, walk = 750.0, .5, False, None
+    wy = 1480
     writing = bump(t, 20.0, 99) if False else 1.0
     pw = dict(arms={"L": (30, 100 + 8 * math.sin(t * 15)), "R": (22, 108)}, look=(-.5 if flipw else .5, .2), mouth="smile", head_tilt=3 * math.sin(t * 4))
     if walk is not None:
         pw["walk"] = walk
-    fig_w = waiter_fig(wx, wy, .72, -.5 if flipw else .5, pw, flip=False)
+    fig_w = waiter_fig(wx, wy, .9, -.5 if flipw else .5, pw, flip=False)
     o.append(fig_w)
     # значки заказов
     for nm, c in cust.items():
@@ -338,14 +341,14 @@ def frame_s09(t):
                 k = 0
         if nm in ("C1", "C2"):
             k *= 1 - smooth(22.0, 22.22, t)
-        slips += ticket(c["x"] - 6, yt - 330 * 1.0, .7, k, t + len(nm))
+        slips += ticket(c["x"] - 6, yt - 300 * sc - 40, .8, k, t + len(nm))
     o.append(slips)
     o.append(poofs)
     # облако с блюдами над C
     cu = smooth(22.0, 22.3, t)
     if cu > 0:
         pul = 1 + .07 * math.sin(2 * math.pi * 2.3 * (t - 22.06)) * smooth(22.1, 22.4, t) + .22 * bump(t, 22.06, .3)
-        cx_, cy_ = tx["C"], 600.0
+        cx_, cy_ = tx["C"] - 90, 360.0
         sc_c = cu * pul
         circ = [(-190, 20, 80), (-90, -50, 100), (30, -80, 110), (140, -40, 100), (210, 30, 76), (60, 50, 90), (-60, 56, 84)]
         base = cloud_shape([(x, y, r) for x, y, r in circ], "#fbf4e0", 6)
@@ -361,7 +364,7 @@ def frame_s09(t):
                        for i, r in ((0, 24), (1, 15)))
         o.append(f'<g transform="translate({cx_} {cy_}) scale({sc_c:.4f}) translate({-cx_} {-cy_})">{tail}'
                  f'<g transform="translate({cx_} {cy_})">{base}{dish}</g></g>')
-    cam = lib.cam(560 + 140 * ease_io(u), 1010 + 20 * u, 1.0 + .22 * ease_io(u) + .05 * bump(t, 22.06, .3), -.8 + 1.6 * u)
+    cam = lib.cam(540 + 90 * ease_io(u), 900 + 30 * u, 1.0 + .16 * ease_io(u) + .04 * bump(t, 22.06, .3), -.8 + 1.6 * u)
     return f'<g transform="{cam}">{"".join(o)}</g>'
 
 
