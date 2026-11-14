@@ -162,6 +162,115 @@ def s08(t):
 FRAMES = {"s08": s08}
 
 
+# ═════════════════════════ s17: призыв — рукописное «кот» на чистой стене ═════════════════════════
+T_A17 = 31.70
+T_NAP, T_KOT = wt(95), wt(96)                     # 31.72 кот просыпается, 32.48 пишется «кот»
+LAP17 = (R.LAPTOP[0] - 110, R.LAPTOP[1])           # тот же стол, что s16
+CAT17 = (1050.0, R.DESK_TOP - 28)
+CAT17_K = .86
+KOT_T0, KOT_DUR = T_KOT - .02, .45                 # дописано к ~32.93 (звук «слово дописано» 32.95)
+KOT_XY, KOT_SIZE = (730.0, 560.0), 1.75             # чистая стена над котом (room.CLEAN_WALL)
+
+
+def s17(t):
+    sc = R.desk_scene(t, "day")
+    lap = PR.laptop(LAP17[0], LAP17[1], .72, 1.0, "lines", lines=.95, t=t, seed=1, turn=.55)
+    # кот: спит клубком (как в s16) → «Напиши» просыпается, садится и поворачивает морду к зрителю через три четверти
+    wake = sm(t, T_NAP + .02, T_NAP + .5)
+    tu = sm(t, T_NAP + .3, T_NAP + .7)
+    cx, cy = CAT17
+    st = dict(sleep=1 - wake, blink=1.0 - sm(t, T_NAP + .1, T_NAP + .3) + blinks(t, (32.75,)), turn=lerp(-.7, 0.0, tu) + .06 * bump(t, T_NAP + .7, .3),
+              look=(lerp(-.6, 0.0, tu), lerp(.2, 0.0, tu)), tail=7 * math.sin(t * 2.1), ear=6 * bump(t, T_KOT + .05, .3) + 2 * math.sin(t * 3.3),
+              tilt=lerp(-6, 0, tu) + 5 * bump(t, T_KOT + .2, .5), perk=.6 * bump(t, T_KOT, .55), flame_e=1.0 + .6 * wake + .5 * bump(t, T_KOT + .3, .5),
+              smile=1.0 if t > T_KOT + .3 else 0.0)
+    cat = CAT.draw(cx, cy, CAT17_K, st, t)
+    TK = .42
+    timer = PR.tomato_timer(cx - 230 * CAT17_K, table_y(TK, 30), TK, -6, wedge=.012, shake=.5, leaf_swing=5 * math.sin(t * 2.4), t=t, seed=3)
+    # Дима: откинулся от ноутбука, улыбается в камеру; ближняя рука лежит на столе, дальняя на клавишах
+    nod = .05 * bump(t, wt(97), .42)
+    e = ex("smile_cam", closed=blinks(t, (32.2,)), look=(lerp(.3, -.35, sm(t, T_A17 - .1, T_A17 + .25)), 0))
+    kc = PR.laptop_pts(LAP17[0], LAP17[1], .72, 1.0, turn=.55)["keys"]
+    arms = {"f": ("ik", (kc[0] - 150, kc[1] - 26), -1), "n": ("ik", (SX + 320 * SC, R.DESK_TOP - 40 + 3 * math.sin(t * 2)), -1)}
+    hands = {"f": {"dir": (1, .35), "curl": (.3, .35, .4, .45), "thumb": .3}, "n": {"dir": (1, .25), "curl": (.25, .3, .35, .4), "thumb": .3}}
+    full, parts = dima_parts(e, "sit_desk", arms=arms, hands=hands, lean_add=-.02 + .01 * math.sin(t * 2.3), head_add=-.06 - nod)
+    kot = hand_kot.kot(t, KOT_T0, KOT_DUR, KOT_XY[0], KOT_XY[1], KOT_SIZE)
+    world = [sc["bg"], sc["chair_back"], sc["desk_top"], sc["pool"], lap, parts["legs"], sc["desk_legs"], sc["chair_seat"], parts["pelvis"],
+             parts["arm_f"], parts["body"], parts["arm_n"], sc["lamp"], cat, timer, kot]
+    # камера: хлёст, лёгкий наезд; мини-удар, когда слово дописано
+    u = sm(t, T_A17 - .1, 33.2)
+    z = lerp(1.06, 1.15, u) + .025 * bump(t, KOT_T0 + KOT_DUR, .35)
+    ccx = lerp(765, 785, u)
+    ccy = lerp(930, 880, u)
+    set_ink(z)
+    g = f'<g transform="{lib.cam(ccx, ccy, z, lerp(.6, -.3, u))}">{"".join(world)}</g>'
+    return whip(g, t, T_A17, side=1), "#e6dcc0"
+
+
+FRAMES["s17"] = s17
+
+
+# ═════════════════════════ s18: петля к кадру хука s01 (тот же стол и ракурс, утро) ═════════════════════════
+sys.path.insert(0, os.path.join(STORY, "ext_c"))
+import s70c as C1  # noqa: E402  (только чтение: та же раскладка Димы за столом и место таймера, что у s01)
+
+T_A18 = 33.00
+T_POM18, T_TEB, T_TOZH, T_NEP = wt(98), wt(99), wt(100), wt(101)      # 33.0 лапа крутит, 33.49–33.92 клин сжимается, 33.95 взгляд
+TK18 = C1.TK
+TIM18 = (R.HOLD[0] - 10, C1.table_y(TK18))
+PAW_CLICKS = [33.05, 33.3, 33.52, 33.72, 33.9]
+
+
+def s18(t):
+    sc = R.desk_scene(t, "day")
+    # лапа кота входит справа, цепляет бок таймера и толкает вниз — таймер проворачивается щелчками, клин тает до ломтика
+    n_done = sum(1 for a in PAW_CLICKS if t >= a)
+    ph = 0.0
+    for a in PAW_CLICKS:
+        ph += ease_out(clamp((t - a) / .12), 2)
+    w0 = PR.WEDGE_25 * .5
+    wedge = lerp(w0, PR.WEDGE_2, ph / len(PAW_CLICKS))
+    rot = -8 * sum(bump(t, a, .2) for a in PAW_CLICKS) + 2 * math.sin(t * 3)
+    click = max(bump(t, a, .1) for a in PAW_CLICKS)
+    T = (TIM18[0], TIM18[1] - 5 * click)
+    leaf = 12 * math.sin(2 * math.pi * 2.1 * t) + 10 * click + 16 * decay(t, PAW_CLICKS[-1] + .1, 4, 2.5)
+    timer = PR.tomato_timer(T[0], T[1], TK18, rot, wedge=wedge, shake=1.0, leaf_swing=leaf, t=t, seed=1)
+    tp = PR.tomato_pts(T[0], T[1], TK18, rot)
+    paw_in = sm(t, T_A18 - .25, T_A18 + .05) * (1 - sm(t, 34.2, 34.55))
+    paw_svg = ""
+    if paw_in > .01:
+        # кончик лапы ходит по правому боку: сверху вниз на каждом щелчке
+        cyc = 0.0
+        for a in PAW_CLICKS:
+            cyc = max(cyc, bump(t, a + .05, .22))
+        rx, ry = tp["right"]
+        tip = (rx + 10 + 60 * (1 - paw_in), ry - 60 + 70 * cyc)
+        base = (rx + 260, ry - 20 + 30 * cyc)
+        paw_svg = cat_paw(base, tip, .95, seed=4700)
+    # Дима: смотрит на таймер с улыбкой → «не помогает» переводит взгляд на зрителя
+    up = sm(t, T_NEP - .02, T_NEP + .25)
+    e = ex("relief_day", look=(lerp(.7, -.35, up), lerp(.45, 0.0, up)), smile=lerp(.6, 1.0, up), lid=lerp(.5, .72, up),
+           closed=blinks(t, (33.4, 34.75)))
+    wn = (T[0] - 150, R.DESK_TOP - 46)
+    hands = {"f": {"kind": "none"}, "n": {"curl": (.3, .35, .4, .45), "thumb": .4, "dir": (1, .3)}}
+    full, parts = C1.dima_layers(e, {"f": ("ang", 0.25, 0.2), "n": ("ik", wn, -1)}, hands,
+                                 lean_add=.1 + .02 * math.sin(t * 2.6) - .04 * up, head_add=.08 - .08 * up + .02 * math.sin(t * 2.0))
+    lap = PR.laptop(R.LAPTOP[0], R.LAPTOP[1], .72, 1.0, "lines", lines=.95, t=t, seed=1, turn=.55)
+    world = [sc["bg"], sc["chair_back"], sc["desk_top"], sc["pool"], lap, parts["legs"], sc["desk_legs"], sc["chair_seat"], parts["pelvis"],
+             parts["arm_f"], parts["body"], timer, parts["arm_n"], sc["lamp"], paw_svg]
+    # камера: «стол крупно» s01, ровный откат к кадру 0 хука (1/1.4 и занос), чтобы петля сошлась
+    cx0, cy0, s0 = R.CAM_DESK_CLOSE
+    u = sm(t, T_A18 - .2, 35.1)
+    s = s0 * lerp(1.04, 1 / 1.4, u)
+    cx = cx0 + 50 * u + 3 * math.sin(t * 1.7)
+    cy = cy0 + 2 * math.sin(t * 1.3)
+    set_ink(s)
+    g = f'<g transform="{lib.cam(cx, cy, s, 2.0 * u)}">{"".join(world)}</g>'
+    return g, "#e6dcc0"
+
+
+FRAMES["s18"] = s18
+
+
 def frame(sid, t):
     lib.dyn_begin()
     lib.INK_K[0] = 1.0
