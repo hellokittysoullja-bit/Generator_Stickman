@@ -81,9 +81,9 @@ def held_mug(who, W, s, rot=0.0, seed=0, steam=0.0, t=0.0, fill=.7, col="blue"):
 
 
 # ─── кухня ───
-DX, DY = R.KS_SIT_L          # таз Димы (смотрит вправо)
-FX, FY = R.KS_SIT_R          # таз друга (смотрит влево — рисуется неотражённым и зеркалится вокруг FX)
-BS = 1.0
+DX, DY = R.KS_SIT_L[0] - 70, R.KS_SIT_L[1]          # таз Димы (смотрит вправо); стулья сцены рисуем сами — шире
+FX, FY = R.KS_SIT_R[0] + 70, R.KS_SIT_R[1]          # таз друга (смотрит влево — рисуется неотражённым и зеркалится вокруг FX)
+BS = .9
 FEET_D = {"n": ((DX + 300 * BS, R.KS_FLOOR - 52), 0.0), "f": ((DX + 250 * BS, R.KS_FLOOR - 50), 0.0)}
 SCF = BS * people.HEIGHT["friend"]
 FEET_F = {"n": ((FX + 290 * SCF, R.KS_FLOOR - 52), 0.0), "f": ((FX + 245 * SCF, R.KS_FLOOR - 50), 0.0)}
@@ -170,12 +170,15 @@ def s09(t):
         ef = dict(people.EXPR["friend"]["shrug" if t > T9_I else "simple"], look=(.5, 0))
         ef = talk(t, [T9_I, T9_CH, T9_SK], ef, .45)
         ef = blink(t, ef, [15.45])
-        upose = ("shrug", ease_io(clamp((t - T9_I) / .2)))
+        upose = ("mug_hold", 0.0)
         hd = .16 * (1 - ease_out(clamp((t - TURN9) / .14), 2)) - .08 * sh
     hop = -26 * math.sin(math.pi * clamp((t - TURN9) / .16))
-    fp = friend_parts(ef, "mug_hold", u_pose=upose, shrug=.9 * sh, head_add=hd, hands={"n": {"kind": "none"}})
+    lift = 40 * sh
+    fp = friend_parts(ef, "mug_hold", u_pose=upose, shrug=sh, head_add=hd, hands={"n": {"kind": "none"}},
+                      arms={"f": ("ang", 0.2, 0.25 + .5 * sh)} if not away else {"f": ("ang", 0.2, 0.25)})
     Wn = fp["_f"]["wrist"]["n"]
     mug_f = held_mug("friend", Wn, SCF, rot=(-14 if away else 0) + 4 * math.sin(t * 4), seed=2, steam=.5, t=t, col="blue")
+    del lift
     friend_upper = f'<g transform="translate(0 {hop:.1f})">' + mirror(fp["arm_f"] + fp["body"] + mug_f + fp["arm_n"], FX) + "</g>"
     f_legs = mirror(fp["legs"], FX)
     f_pel = mirror(fp["pelvis"], FX)
@@ -188,7 +191,9 @@ def s09(t):
             r = 230 + 20 * j
             turn_fx += line([(FX + r * math.cos(a0 + .3), 560 + r * .5 * math.sin(a0 + .3)), (FX + r * math.cos(a0), 560 + r * .5 * math.sin(a0)),
                              (FX + r * math.cos(a0 - .3), 560 + r * .5 * math.sin(a0 - .3))], 6 * (1 - u) + 1, INK, taper=.6, wmin=.2, seed=9100 + j)
-    body = (sc["bg"] + sc["chairs_back"] + dp["legs"] + f_legs + sc["chair_seats"] + dp["pelvis"] + f_pel + sc["table"] + mug_d
+    cl = R._side_chair(DX, DY, 1.0, 1, seed=0)
+    cr = R._side_chair(FX, FY, 1.0, -1, seed=10)
+    body = (sc["bg"] + cl["back"] + cr["back"] + dp["legs"] + f_legs + cl["seat"] + cr["seat"] + dp["pelvis"] + f_pel + sc["table"] + mug_d
             + dp["arm_f"] + dp["body"] + dp["arm_n"] + friend_upper + turn_fx)
     # камера: от Димы к другу, лёгкий наезд
     a = ease_io(clamp((t - (T9_DRU - .45)) / .6))
@@ -232,7 +237,7 @@ def friend_chair(t, spin_t0):
 def s10(t):
     lib.dyn_begin()
     sc = R.kitchen_scene(t, "day")
-    cl = R._side_chair(R.KS_SIT_L[0], R.KS_SIT_L[1], 1.0, 1, seed=0)
+    cl = R._side_chair(DX, DY, 1.0, 1, seed=0)
     # Дима: застыл, рот открывается на «просто встаёт», провожает глазами
     gap = ease_out(clamp((t - T10_PR) / .25), 2)
     ed = dict(people.EXPR["dima"]["puzzled"])
@@ -264,7 +269,7 @@ def s10(t):
             mug_tbl = P.coffee_mug(R.KS_MUG_R[0], R.KS_MUG_R[1], KM, col="blue", fill=.7, steam=.5, t=t, seed=2)
             upper = mirror(fp["arm_f"] + fp["body"] + fp["arm_n"], FX)
         else:
-            fp = friend_parts(ef, "mug_hold", u_pose=("mug_drink", drink), hands={"n": {"kind": "none"}})
+            fp = friend_parts(ef, "mug_hold", u_pose=("mug_drink", drink), hands={"n": {"kind": "none"}}, arms={"f": ("ang", 0.2, 0.25)})
             Wn = fp["_f"]["wrist"]["n"]
             items = held_mug("friend", Wn, SCF, rot=-28 * drink, seed=2, steam=.4, t=t, col="blue", fill=.7)
             mug_tbl = ""
