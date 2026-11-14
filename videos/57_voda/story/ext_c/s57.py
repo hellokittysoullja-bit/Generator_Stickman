@@ -537,7 +537,7 @@ def frame09(t):
         bp = clamp((t - (14.6 + .08 * i)) / .25)
         if bp > 0:
             o.append(shape(ellipse_pts(bx, by + 3 * math.sin(t * 3 + i), br_ * back_out(bp, 1.6), br_ * back_out(bp, 1.6), 12), "#fbfaf4", "", w=4.0, seed=7620 + i))
-    cam = lib.cam(600 - 30 * ease_io(u), 640 + 70 * ease_io(u), z, 1.2 * math.sin(t * 2.2) + 2.0 * math.exp(-(t - 14.5) * 6) - 1.5 * wob)
+    cam = lib.cam(540 - 20 * ease_io(u), 640 + 70 * ease_io(u), z, 1.2 * math.sin(t * 2.2) + 2.0 * math.exp(-(t - 14.5) * 6) - 1.5 * wob)
     return f'<g transform="{cam}">{"".join(o)}</g>'
 
 
@@ -614,7 +614,7 @@ def frame10(t):
     set_ink(z)
     scn = []
     # дальние слои с параллаксом
-    scn.append(sun(760 + cx * .5 - 540 * .5 + 0 - 40 + 0 * cx, 300, t, 130) if cx < 1800 else "")
+    scn.append(sun(720, 300, t, 130) if cx < 1900 else "")
     scn.append(hill_layer(cx, .35, 1010, "#a7d29a", 1.0, 120))
     scn.append(hill_layer(cx, .6, 1130, "#86bf78", 2.3, 80))
     for xx in range(-200, 4400, 560):
@@ -629,7 +629,7 @@ def frame10(t):
     jog_u = clamp((t - 16.95) / .45)
     dx_ = 420 + (t > 17.0) * 1500 * ease_in(clamp((t - 17.0) / 1.6), 1.25) * .0
     runx = 520 + 780 * ease_in(clamp((t - 16.9) / .5), 1.5) * .0
-    x_d = 430 + max(0.0, t - 16.95) * 640 * ease_in(clamp((t - 16.95) / .4), 1.0) if t > 16.95 else 430
+    x_d = 430 + max(0.0, t - 16.95) * 480 * ease_in(clamp((t - 16.95) / .4), 1.0) if t > 16.95 else 430
     bs = .62
     ph = 2 * math.pi * 2.6 * (t - 17.0)
     if t < 17.0:
@@ -653,8 +653,8 @@ def frame10(t):
             ax = hip[0] + 170 * bs * math.sin(p_) * 1.0
             lift = max(0.0, math.cos(p_)) * 190 * bs
             feet[sd] = ((ax, GY - 4 - lift), -.2 * max(0.0, math.cos(p_)))
-        arms = {"n": ("ik", (hip[0] + 90 * bs + 150 * bs * math.sin(ph + math.pi), hip[1] - 250 * bs - 50 * bs * math.cos(ph)), 1),
-                "f": ("ik", (hip[0] + 90 * bs + 150 * bs * math.sin(ph), hip[1] - 250 * bs + 50 * bs * math.cos(ph)), -1)}
+        arms = {"n": ("ik", (hip[0] + 110 * bs + 230 * bs * math.sin(ph + math.pi), hip[1] - 230 * bs - 70 * bs * math.cos(ph)), -1),
+                "f": ("ik", (hip[0] + 110 * bs + 230 * bs * math.sin(ph), hip[1] - 230 * bs + 70 * bs * math.cos(ph)), -1)}
         hands = {"n": open_hand(.7, (1, -.1), .05, .7), "f": open_hand(.7, (1, -.1), .05, .7)}
         exp = dict(lid=.65, look=(.5, .05), closed=0, brows="det", mouth="flat", flush=.35, blush=0)
         dd = dima(hip, bs, .2, arms, hands, exp, feet=feet, head_ang=.02, who="dima")

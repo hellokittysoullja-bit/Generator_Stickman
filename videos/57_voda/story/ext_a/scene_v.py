@@ -288,7 +288,7 @@ def frame03(t):
     ha = -.34 * drink * (1 - pre * .55) + (.3 * math.exp(-(t - T_SILU) * 6) * (t >= T_SILU)) + .03 * gulp
     shake = (7 * math.sin(t * 58) * math.exp(-(t - T_SILU) * 5) * cough_on, 6 * math.sin(t * 49 + 1) * math.exp(-(t - T_SILU) * 5) * cough_on)
     ex = expr_of(lid=1.0, look=(.2, -.7 * drink), brows="worry", mouth="flat" if not cough_on else "talk", open=.9 * (1 - cough * .3), smile=0, flush=.2 + .7 * drink,
-                 puff=puffk, bulge=.35 + .65 * (pre + (1 - cough) * cough_on), closed=0.0 if not cough_on else .4 * math.sin(t * 30) ** 2)
+                 puff=puffk, bulge=.2 + .35 * (pre + (1 - cough) * cough_on * .5), closed=0.0 if not cough_on else .4 * math.sin(t * 30) ** 2)
     # первый проход, чтобы узнать, где рот; руки пересчитаются во втором
     def build(n_t, f_t):
         return stand(t, Dx, lean=lean, ha=ha, expr=ex, n_t=n_t, f_t=f_t, hands={"n": hand_spec(.78, (.2, -1)), "f": hand_spec(.7, (.3, -1))},
@@ -327,11 +327,11 @@ def frame03(t):
         u = (t - T_SILU)
         for i in range(26):
             a = math.radians(-50 + 100 * rnd(i + 3) + 10)
-            v = 380 * (.5 + .8 * rnd(i + 8))
+            v = 700 * (.4 + .9 * rnd(i + 8))
             px = mp2[0] + 30 + v * math.cos(a) * u
             py = mp2[1] + v * math.sin(a) * u * .5 + 620 * u * u
             if u < .7:
-                o.append(props.droplet(px, py, 1.15 - .7 * u + .3 * rnd(i), rot=math.degrees(a) + 90, seed=i))
+                o.append(props.droplet(px, py, .8 - .4 * u + .25 * rnd(i), rot=math.degrees(a) + 90, seed=i))
     cx_ = 690 + shake[0]
     cam = (cx_, 880 + shake[1], 1.95 + .12 * ease_io(clamp(tt / 1.8)) + .05 * math.exp(-(t - T_SILU) * 6) * cough_on, 1.0 * math.sin(t * 7) * cough_on * math.exp(-(t - T_SILU) * 4))
     D.set_ink(cam[2])
@@ -641,7 +641,7 @@ def frame13(t):
         # предчувствие: тень от лампы дрожит на столе, пылинки в луче
         pass
     o.append(S.sun_motes(t, box=(700, 520, 1250, 1130)))
-    cam = (lerp(720, 700, u), lerp(1040, 1030, u), 1.9 + .35 * ease_io(u), 1.4 * (1 - u) - .6 * u)
+    cam = (lerp(800, 780, u), lerp(1040, 1030, u), 1.9 + .35 * ease_io(u), 1.4 * (1 - u) - .6 * u)
     D.set_ink(cam[2])
     return f'<g transform="{lib.cam(*cam)}">{"".join(o)}</g>'
 
@@ -723,7 +723,7 @@ def frame14(t):
         gp = abs(math.sin((t - T_P) * 2 * math.pi * 2.0)) ** 2
         for j in range(2):
             o.append(line([(hp[0] + 30 + 12 * j, hp[1] + 82 + 16 * j), (hp[0] + 40 + 12 * j, hp[1] + 78 + 14 * j - 10 * gp)], 6, props.C_WATER, taper=.5, wmin=.3, seed=9997 + j))
-    cam = (lerp(560, 600, u), lerp(1040, 1020, u), 1.5 + .05 * ease_io(u) + .04 * math.exp(-(t - T_P) * 8) * (t >= T_P), -.8 + 1.0 * u + 1.2 * math.sin(t * 40) * math.exp(-(t - T_P) * 12) * (t >= T_P))
+    cam = (lerp(500, 540, u), lerp(1040, 1020, u), 1.5 + .05 * ease_io(u) + .04 * math.exp(-(t - T_P) * 8) * (t >= T_P), -.8 + 1.0 * u + 1.2 * math.sin(t * 40) * math.exp(-(t - T_P) * 12) * (t >= T_P))
     D.set_ink(cam[2])
     return f'<g transform="{lib.cam(*cam)}">{"".join(o)}{S.sun_motes(t, box=(600, 520, 1250, 1130))}</g>'
 
