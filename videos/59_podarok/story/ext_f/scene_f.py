@@ -318,7 +318,7 @@ def frame13(t):
         for i in range(3):
             yy = c["y"] - 40 - 55 * i
             scn.append(line([(c["x"] - 130 - 40 * i, yy), (c["x"] - 260 - 60 * i, yy + 4)], 8, "#ffffff", taper=.7, wmin=.2, seed=980 + i))
-    cam = lib.cam(cx, 1200, z, .5 * math.sin(t * 1.5) + 1.5 * bump(t, T_RUN, .3))
+    cam = lib.cam(cx, 1010, z, .5 * math.sin(t * 1.5) + 1.5 * bump(t, T_RUN, .3))
     return f'<g transform="{cam}">{"".join(scn)}</g>'
 
 
