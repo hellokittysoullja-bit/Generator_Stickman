@@ -105,7 +105,7 @@ def seated(t, *, book_c, book_rot, flip, expr, head_ang=0.0, lean=-.04, book_mod
 
 def room_bg(t, lamp_on=1.0, flick=0.0, par=0.0, with_clock=True, clock=None):
     lamp = R.floor_lamp(lamp_on, flick)
-    o = [R.wall_floor(), R.window(t, par), R.side_table(t)]
+    o = ['<rect x="-600" y="1800" width="2300" height="900" fill="#a16f49"/>', R.wall_floor(), R.window(t, par), R.side_table(t)]
     if with_clock:
         cx, cy, r = R.CLOCK
         md, hd = clock or (60.0, 300.0)
@@ -118,13 +118,13 @@ def room_bg(t, lamp_on=1.0, flick=0.0, par=0.0, with_clock=True, clock=None):
 def frame13(t):
     a = 20.8
     u = clamp((t - a) / 2.4)
-    s = 1.0 + .1 * ease_io(u)
-    cx = 420 - 30 * ease_io(u) + 6 * math.sin(t * 1.3)
-    cy = 990 - 40 * ease_io(u) + 5 * math.sin(t * 1.1 + 1)
+    s = 1.17 + .11 * ease_io(u)
+    cx = 455 - 20 * ease_io(u) + 6 * math.sin(t * 1.3)
+    cy = 985 - 30 * ease_io(u) + 5 * math.sin(t * 1.1 + 1)
     rot = -.6 + .8 * ease_io(u)
     set_ink(s)
     glow_k = .7 + .3 * smooth(T_LAMPE - .05, T_LAMPE + .25, t)
-    bg, lamp = room_bg(t, glow_k, flick=.5 + .5 * math.sin(t * 7))
+    bg, lamp = room_bg(t, glow_k, flick=.5 + .5 * math.sin(t * 7), with_clock=False)
     flip = clamp((t - (T_CHITAET - .05)) / .5)
     flip = ease_io(flip)
     brk = math.sin(t * 2.4) * 3
@@ -137,11 +137,83 @@ def frame13(t):
     book_c = (570, 1022 + brk)
     fig, head = seated(t, book_c=book_c, book_rot=-16 + 2 * math.sin(t * 1.4), flip=flip, expr=expr, head_ang=head_ang)
     body = [bg, lamp["lamp"], fig, lamp["cone"]]
-    body.append(R.bloom(clamp((t - T_LAMPE) / .55) * 1.0 if t > T_LAMPE else 0.0))
+    body.append(R.bloom(clamp((t - T_LAMPE) / .55) if t > T_LAMPE else 0.0, cx=book_c[0] - 40, cy=book_c[1] - 120, R=380))
     return f'<g transform="{lib.cam(cx, cy, s, rot)}">{"".join(body)}</g>'
+
+
+# ═══════════════════════════════ s14: полчаса — взгляд в окно ═══════════════════════════════
+def frame14(t):
+    a = 22.6
+    back = sm(t, T_SMOTRIT - .1, T_OKNO + .45)
+    s = lerp(1.5, 1.16, back) - .05 * ease_out(clamp((t - a) / .35))
+    cx = lerp(470, 625, back) + 4 * math.sin(t * 1.2)
+    cy = lerp(560, 875, back) + 4 * math.sin(t * 1.5)
+    rot = lerp(1.2, -.5, back)
+    set_ink(s)
+    # стрелки: минутная полоборота на «полчаса» рывками-тиками, часовая на 15°
+    sw = clamp((t - T_POLCHASA) / .5)
+    ticks = 6
+    st = (math.floor(sw * ticks) + ease_out(clamp((sw * ticks) % 1 * 2.5), 3)) / ticks if sw < 1 else 1.0
+    md = 60 + 180 * st
+    hd = 300 + 15 * st
+    bg, lamp = room_bg(t, 1.0, flick=.5 + .5 * math.sin(t * 7), with_clock=False)
+    low = sm(t, a, a + .6)
+    book_c = (lerp(570, 600, low), lerp(1022, 1102, low))
+    turn = sm(t, T_SMOTRIT - .05, T_SMOTRIT + .35)
+    look = (lerp(.6, 1.0, turn), lerp(.55, -.25, turn))
+    if t < T_POLCHASA + .7 and t > T_POLCHASA - .15:
+        k = sm(t, T_POLCHASA - .15, T_POLCHASA + .1)
+        look = (lerp(.6, .1, k), lerp(.55, -.9, k))       # глянул на часы
+    expr = dict(lid=lerp(.5, .85, turn), look=look, closed=blink(t, (22.75, 24.75)), brows="calm" if turn < .5 else "up",
+                mouth="smile", smile=.2 + .5 * smooth(T_OKNO, T_OKNO + .3, t))
+    head_ang = lerp(.12, -.13, turn) - .06 * bump(t, T_POLCHASA, .7)
+    fig, head = seated(t, book_c=book_c, book_rot=lerp(-16, -6, low), flip=1.0, expr=expr, head_ang=head_ang, lean=lerp(-.04, .03, turn))
+    body = [bg, lamp["lamp"], fig, lamp["cone"]]
+    # часы: на «полчаса» выпрыгивают крупнее
+    ccx, ccy, cr = R.CLOCK
+    pop = 1 + .55 * spring(t - (T_POLCHASA - .08), 2.2, 4.0) * (1 - sm(t, T_SMOTRIT + .1, T_OKNO + .2)) if t > T_POLCHASA - .08 else 1.0
+    shake = 4 * bump(t, T_POLCHASA, .3) * math.sin(t * 60)
+    clk = R.wall_clock(0, 0, cr, md, hd, shake=0)
+    body.insert(1, f'<g transform="translate({ccx:.2f} {ccy:.2f}) rotate({shake:.2f}) scale({pop:.4f})">{clk}</g>')
+    # взгляд в окно: пунктир от глаз к дали
+    if t > T_OKNO - .1:
+        eye = (head[0] + 60, head[1] - 10)
+        u = clamp((t - (T_OKNO - .1)) / .55)
+        body.append(R.gaze_dots(eye, (R.WIN[0] + 280, R.HORIZON - 14), ease_out(u, 2), t, curve=-40, n=12, r0=9))
+    return f'<g transform="{lib.cam(cx, cy, s, rot)}">{"".join(body)}</g>'
+
+
+# ═══════════════════════════════ s12: окно и даль ═══════════════════════════════
+def frame12(t):
+    a = 19.2
+    u = clamp((t - a) / 2.0)
+    e = ease_in(u, 1.6) * .6 + ease_io(u) * .4
+    s = lerp(1.55, 2.55, e)
+    cx = lerp(805, 818, e) + 3 * math.sin(t * 1.4)
+    cy = lerp(800, 790, e) + 3 * math.sin(t * 1.1)
+    rot = lerp(-1.0, .4, e)
+    set_ink(s)
+    o = ['<rect x="-600" y="1800" width="2300" height="900" fill="#a16f49"/>', R.wall_floor()]
+    o.append(R.window(t, par=.9 * e))
+    o.append(R.side_table(t))
+    # пунктир взгляда: из комнаты через стекло к дому на горизонте
+    tgt = (R.WIN[0] + 285, R.HORIZON - 16)
+    if t > T_INOGDA - .05:
+        g = clamp((t - (T_INOGDA - .05)) / (T_VDAL - T_INOGDA + .05))
+        o.append(R.gaze_dots((R.WIN[0] + 190, R.WIN[3] - 20), tgt, ease_io(g), t, curve=30, n=16, r0=7))
+    if t > T_VDAL:
+        k = clamp((t - T_VDAL) / .5)
+        rr = 10 + 60 * ease_out(k)
+        o.append(f'<circle cx="{tgt[0]}" cy="{tgt[1]}" r="{rr:.1f}" fill="none" stroke="#fff2b4" stroke-width="{5 * (1 - k) + .3:.2f}" opacity="{1 - k:.2f}"/>')
+        for i in range(8):
+            ang = i * math.pi / 4
+            r0, r1 = 14 + 30 * ease_out(k), 24 + 50 * ease_out(k)
+            o.append(line([(tgt[0] + r0 * math.cos(ang), tgt[1] + r0 * math.sin(ang)), (tgt[0] + r1 * math.cos(ang), tgt[1] + r1 * math.sin(ang))],
+                          w=4.0, color="#fff2b4", taper=.5, seed=700 + i, op=1 - k))
+    return f'<g transform="{lib.cam(cx, cy, s, rot)}">{"".join(o)}</g>'
 
 
 def frame(sid, t):
     lib.dyn_begin()
-    body = {"s13": frame13}[sid](t)
+    body = {"s12": frame12, "s13": frame13, "s14": frame14}[sid](t)
     return lib.svg(f'<rect width="1080" height="1920" fill="#2e2740"/>{body}')
