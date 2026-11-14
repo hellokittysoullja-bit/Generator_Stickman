@@ -248,15 +248,15 @@ def s17(t):
     # Дима: стоит → присаживается на корточки, ладонь вниз к земле перед собой (ладонью вверх) → подносит к лицу → прыскает
     cr = sm(t, T_A17 - .1, 22.75)
     st_f = people.stand_kw(DX16, HIP16_Y, 1.0, spread=150)["feet"]
-    cr_hip = GROUND16 - 140
+    cr_hip = GROUND16 - 180
     hip = (lerp(DX16, DX17, cr), lerp(HIP16_Y, cr_hip, cr))
-    cf = people.crouch_kw(hip[0], hip[1], 1.0)["feet"]
+    cf = {"n": ((DX17 + 200, GROUND16), 0.0), "f": ((DX17 + 140, GROUND16 + 6), 0.0)}      # корточки: стопы плоско на земле
     feet = {k_: (lerp2(st_f[k_][0], cf[k_][0], cr), lerp(st_f[k_][1], cf[k_][1], cr)) for k_ in ("n", "f")}
     lift = sm(t, 23.22, 23.48)
     laugh = sm(t, T_SME - .04, T_SME + .1)
     shake_l = laugh * math.sin(2 * math.pi * (t - T_SME) / .16)
     W_rest = (hip[0] + 140, hip[1] - 120)
-    W_palm = (PALM17[0] - 60, PALM17[1] + 6)
+    W_palm = (hip[0] + 250, hip[1] + 120)
     W_up = (hip[0] + 280, hip[1] - 300)
     reach = sm(t, 22.45, 22.85)
     Wn = lerp2(lerp2(W_rest, W_palm, reach), W_up, lift)
@@ -277,7 +277,7 @@ def s17(t):
     wu = clamp((t - (T_A17 - .1)) / (22.62 - (T_A17 - .1)))
     pull = sm(t, T_MAL - .25, T_MAL) * (1 - sm(t, 23.2, 23.4))
     sq = sm(t, T_SME, T_SME + .3)
-    st = dict(turn=-.3 + .2 * sq, look=(-.7, .5 - .5 * sq), paw_l=.5 * pull, paw_l_dx=130, blink=.55 * sq, smile=1.0 if sq > .4 else 0.0,
+    st = dict(turn=-.3 + .2 * sq, look=(-.7, .5 - .5 * sq), paw_l=.75 * pull, paw_l_dx=110, blink=.55 * sq, smile=1.0 if sq > .4 else 0.0,
               tail=6 * math.sin(t * 2.2), flame_e=1.0 + .4 * sq, ear=4 * bump(t, T_MAL, .3))
     if wu < 1:
         cx, cy = lerp2(CAT17_A, CAT17_B, lib.ease_io(wu))
@@ -289,19 +289,20 @@ def s17(t):
     # клочок: из основания башни → по земле под лапой на ладонь → поднят с ладонью
     pop = sm(t, T_MAL - .02, T_MAL + .1)
     slide = sm(t, 22.92, 23.18)
+    palm = people.hand_pos(full, "n", 45)
+    palm = (palm[0], palm[1] - 18)
     if lift > 0:
-        sp = people.hand_pos(full, "n", 45)
-        sp = (sp[0], sp[1] - 18)
+        sp = palm
     else:
-        sp = lerp2(SCRAP0, PALM17, slide)
+        sp = lerp2(SCRAP0, palm, slide)
         sp = (sp[0], sp[1] - 26 * math.sin(math.pi * slide))
-    scrap = PR.scrap(sp[0], sp[1], 1.1 * (.3 + .7 * pop), -12 + 30 * slide, seed=7) if pop > 0 else ""
+    scrap = PR.scrap(sp[0], sp[1], 1.5 * (.3 + .7 * pop), -12 + 30 * slide, seed=7) if pop > 0 else ""
     flick = ""
     if 0 < slide < 1:
         flick = blob(ellipse_pts(sp[0] + 30, sp[1] + 14, 20, 5, 8), "#FFD24A", .5)
     cshadow = blob(ellipse_pts(cx + 10, cy + 4, 140 * CAT17_K, 14, 14), "#000000", .25)
     dshadow = blob(ellipse_pts(hip[0] + 60, GROUND16 + 6, 170, 18, 14), "#000000", .25)
-    world = [back, sc["fire"], sc["stones_front"], sc["log"], tower, dshadow, cshadow, cat, scrap, flick, dima]
+    world = [back, sc["fire"], sc["stones_front"], sc["log"], tower, dshadow, cshadow, cat, dima, scrap, flick]
     # камера: наезд на ладонь с клочком (средний план), потом отъезд на смех
     zin = sm(t, 22.6, 23.2)
     zout = sm(t, T_SME, 24.1)
@@ -329,7 +330,7 @@ def s18(t):
     feet = people.knees_kw(hx, hy, 1.0, tight=.35)["feet"]
     op = lib.ease_out(clamp((t - (T_OTK - .02)) / (T_FIL - .06 - (T_OTK - .02))), 1.8)
     on = sm(t, T_FIL - .02, T_FIL + .14)
-    LAP = (hx + 150, hy - 70)
+    LAP = (hx + 160, hy - 52)
     lp = H.laptop_side(LAP[0], LAP[1], .78, op, on=on, t=t, seed=2)
     lt = lp["lid_top"]
     rel = sm(t, T_FIL + .05, T_FIL + .3)
@@ -357,7 +358,7 @@ def s18(t):
     body = warm("".join(parts[k_] for k_ in ("legs", "pelvis", "arm_f", "body")), t)
     arm_n = warm(parts["arm_n"], t)
     hd = full["head"]
-    light = PR.glow(hd[0] + 70, hd[1] + 20, 170, .75 * on, "#DDE8FF", ry=190) + PR.glow(lp["screen"][0] - 30, lp["screen"][1], 120, .5 * on, "#DDE8FF")
+    light = PR.glow(hd[0] + 80, hd[1] + 30, 105, .55 * on, "#DDE8FF", ry=125) + PR.glow(lp["screen"][0] - 30, lp["screen"][1], 80, .4 * on, "#DDE8FF")
     # кот сидит у ног, на «файл» ухо и взгляд на экран
     st = dict(turn=-.35, look=(-.6, -.3), ear=6 * bump(t, T_FIL, .3) + 2 * math.sin(t * 3), tail=5 * math.sin(t * 2.1), blink=blinks(t, (24.4,)),
               perk=.6 * bump(t, T_FIL, .5), flame_e=1.0 + .3 * on)
