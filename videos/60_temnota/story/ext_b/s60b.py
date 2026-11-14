@@ -196,6 +196,121 @@ def frame03(t):
     cam = lib.cam(cx, cy, z, -.8 + 1.2 * pan + .8 * decay(t, T_ODEY + .18, 7, 14))
     return f'<g transform="{cam}">{"".join(o)}</g>'
 
+# ═════════════════════════════ s05: мама в проёме грозит пальцем ═════════════════════════════
+T_MAMA, T_VSEG, T_RUG = wt(16), wt(17), wt(18)        # 5.82, 6.126, 6.44
+S05_FLOOR = 1490
+DOOR = (130, 430, 520, S05_FLOOR)                      # проём: x0, y0, x1, y1
+
+
+def zigzag(x, y, ang, L, n=4, amp=16):
+    d = np.array([math.cos(ang), math.sin(ang)])
+    nn = np.array([-d[1], d[0]])
+    pts = []
+    for i in range(n + 1):
+        p = np.array([x, y]) + d * L * i / n + nn * (amp if i % 2 else -amp) * (0 if i in (0, n) else 1)
+        pts.append((float(p[0]), float(p[1])))
+    return pts
+
+
+def frame05(t):
+    a = 6.2
+    push = ease_io(clamp((t - a) / 1.9))
+    z = 1.1 + .22 * push
+    set_ink(z)
+    x0, y0, x1, y1 = DOOR
+    o = []
+    # стена комнаты (ночь), пол
+    g = lin([(0, "#6c7bb2", 1), (1, "#8796c8", 1)])
+    o.append(f'<rect x="-500" y="-600" width="2200" height="{S05_FLOOR + 600}" fill="url(#{g})"/>')
+    for j in range(9):
+        for i in range(15):
+            x = -460 + i * 150 + (75 if j % 2 else 0)
+            y = -520 + j * 190
+            if y < S05_FLOOR - 60 and not (x0 - 30 < x < x1 + 30 and y > y0 - 40):
+                o.append(blob([(x, y - 11), (x + 7, y), (x, y + 11), (x - 7, y)], "#9aa8d6", .8))
+    o.append(blob(rect_pts(-500, S05_FLOOR, 1700, 2700), FLOOR))
+    for k in range(6):
+        o.append(line([(-500, S05_FLOOR + 40 + k * 70), (1700, S05_FLOOR + 46 + k * 70)], 2.4, "#6e5240", taper=0, wmin=1, seed=60 + k, op=.7))
+    o.append(shape(rect_pts(x1 + 20, S05_FLOOR - 26, 1700, S05_FLOOR + 4), "#e9e1d0", "", w=3.6, seed=61))
+    o.append(shape(rect_pts(-500, S05_FLOOR - 26, x0 - 20, S05_FLOOR + 4), "#e9e1d0", "", w=3.6, seed=62))
+    # коридор за проёмом: тёплый свет
+    cg = lin([(0, "#ffe9b0", 1), (1, "#f2c070", 1)])
+    o.append(shape(rect_pts(x0, y0, x1, y1), f"url(#{cg})", blob(rect_pts(x0, y1 - 220, x1, y1), "#e2ad5e", .9) +
+                   line([(x0, y1 - 220), (x1, y1 - 224)], 3, "#b8843e", taper=0, wmin=1, seed=63) +
+                   shape(rrect(x0 + 40, y0 + 120, x0 + 150, y0 + 300, 8), "#f7dca0", "", w=3, seed=64), w=4, seed=65))
+    # наличник
+    for (xa, xb) in ((x0 - 26, x0), (x1, x1 + 26)):
+        o.append(shape(rect_pts(xa, y0 - 26, xb, y1), "#efe7d6", "", w=3.6, seed=66 + int(xa)))
+    o.append(shape(rect_pts(x0 - 26, y0 - 26, x1 + 26, y0), "#efe7d6", "", w=3.6, seed=67))
+    # полоса света на полу комнаты (через проём вправо-вперёд) и тень мамы в ней
+    strip = [(x0 + 10, y1), (x1, y1), (1250, 2300), (420, 2300)]
+    o.append(f'<path d="M{f(strip[0][0])} {f(strip[0][1])}L{f(strip[1][0])} {f(strip[1][1])}L{f(strip[2][0])} {f(strip[2][1])}L{f(strip[3][0])} {f(strip[3][1])}Z" '
+             f'fill="#ffd98a" opacity=".55" {lib.blur(6)}/>')
+    # мама
+    s = .78
+    sc = s * people.HEIGHT["mama"]
+    fx = 300
+    hip = (fx, S05_FLOOR - 8 - 625 * sc)
+    o.append(blob(ellipse_pts(fx + 40, S05_FLOOR + 6, 150, 18, 14), "#2a1f18", .35))
+    sh_pts = [(fx - 30, S05_FLOOR), (fx + 60, S05_FLOOR), (fx + 330, 2250), (fx + 120, 2250)]
+    o.append(blob(sh_pts, "#3a2a20", .45))
+    wag = clamp((t - (T_RUG - .12)) / .18)
+    wag_e = ease_out(wag)
+    ph = (t - T_RUG) * 2 * math.pi * 4.2
+    w_osc = math.sin(ph) if t > T_RUG else 0.0
+    lean = .05 + .06 * wag_e
+    feet = {"n": ((fx + 55 * sc, S05_FLOOR - 8), 0.0), "f": ((fx - 60 * sc, S05_FLOOR - 8), 0.0)}
+    hipL = (fx + 92 * sc, hip[1] - 30 * sc)
+    hipR = (fx - 70 * sc, hip[1] - 40 * sc)
+    up_w = (fx + 400 * sc + 24 * w_osc * wag_e, hip[1] - 780 * sc - 10 * abs(w_osc) * wag_e)
+    wf = (hipR[0] + (up_w[0] - hipR[0]) * wag_e, hipR[1] + (up_w[1] - hipR[1]) * wag_e)
+    arms = {"n": ("ik", hipL, 1), "f": ("ik", wf, 1 if wag_e < .3 else -1)}
+    hands = {"n": fist((-.2, 1), flip=1, k=sc),
+             "f": point_hand((.1 + .45 * w_osc, -1), flip=-1, k=sc) if wag_e > .3 else fist((.3, 1), flip=-1, k=sc)}
+    talk = t > T_MAMA - .05
+    expr = dict(lid=.62 - .1 * wag_e, brows="frown", mouth="talk" if talk else "flat",
+                open=(.2 + .55 * abs(math.sin((t - T_MAMA) * 13))) if talk else .1, smile=-.9, look=(.8, .35), closed=blink_of(t, (6.05, 7.55)))
+    m = person("mama", hip, s, expr, arms, hands, lean=lean, head_ang=.05 * wag_e + .03 * math.sin(t * 6) * wag_e, feet=feet)
+    o.append(m["legs"] + m["arm_f"] + m["body"] + m["arm_n"])
+    hx, hy = m["head"]
+    # кровать справа-спереди: бугор с лучом из-под края
+    bxk = 1.25
+    bxx, bfy = 770, S05_FLOOR + 150
+    o.append(PR.bed(bxx, bfy, bxk))
+    my = bfy - 118 * bxk
+    o.append(PR.pillow(bxx - 250, my + 4, 1.0, -6, seed=2))
+    breath = 1 + .03 * math.sin(t * 5)
+    tremble = 1 if t < T_RUG else 1 - .08 * ease_out(clamp((t - T_RUG) / .2))
+    o.append(PR.blanket(bxx - 10, my + 12, 1.0, 600, 300 * breath * tremble, seed=4, col="quilt"))
+    # ночь: вуаль с вырезами (проём, полоса пола, щель одеяла)
+    holes = [(lib_rect_d(x0 - 30, y0 - 30, x1 + 30, y1 + 4), 1.0), ("M{0} {1}L{2} {1}L1250 2300L420 2300Z".format(x0, y1, x1), .7),
+             (PR.circle_d(bxx + 160, my - 10, 200, 80), .8), (PR.circle_d(hx, hy + 260, 260, 520), .6)]
+    o.append(PR.darkness(op=.6, holes=holes, box=(-600, -700, 1800, 2700)))
+    o.append(PR.glow((x0 + x1) / 2, y0 + 400, 520, .35))
+    flk = 1 + .12 * math.sin(t * 17) + .08 * math.sin(t * 29)
+    o.append(PR.glow(bxx + 160, my - 6, 220, .65 * flk, ry=60))
+    o.append(PR.beam(bxx + 170, my - 4, 8, 260, 24, .5 * flk, 1.1, core=False))
+    # молнии и восклицательный знак над мамой
+    if t > T_RUG - .04:
+        for i, (ang, L, col) in enumerate(((-2.6, 110, "#e8463a"), (-2.1, 140, "#f2b632"), (-1.6, 120, "#e8463a"), (-3.05, 100, "#f2b632"))):
+            tt = T_RUG - .04 + .05 * i
+            u = back_out(clamp((t - tt) / .2), 2.0)
+            if u <= 0:
+                continue
+            ang2 = ang + .06 * math.sin(t * 14 + i)
+            r0 = 190 * sc / .7
+            sx, sy = hx + 20 + r0 * math.cos(ang2), hy - 30 + r0 * math.sin(ang2)
+            o.append(line(zigzag(sx, sy, ang2, L * u, 4, 14 * u), 9, col, taper=.35, wmin=.4, seed=80 + i, peak=.3))
+        eu = back_out(clamp((t - (T_RUG + .08)) / .22), 2.4)
+        if eu > 0:
+            ex, ey = hx + 330, hy - 170 + 6 * math.sin(t * 9)
+            k = eu
+            o.append(shape([(ex - 20 * k, ey - 90 * k), (ex + 20 * k, ey - 90 * k), (ex + 8 * k, ey + 10 * k), (ex - 8 * k, ey + 10 * k)], "#e8463a", "", w=4, seed=90))
+            o.append(shape(ellipse_pts(ex, ey + 40 * k, 14 * k, 14 * k, 10), "#e8463a", "", w=4, seed=91))
+    shake = 10 * decay(t, T_RUG, 7, 18)
+    cam = lib.cam(560 - 120 * push + shake, 1080 - 160 * push + .5 * shake, z, .9 - .9 * push + .8 * decay(t, T_RUG, 6, 12))
+    return f'<g transform="{cam}">{"".join(o)}</g>'
+
 
 def lib_rect_d(x0, y0, x1, y1):
     return f"M{f(x0)} {f(y0)}H{f(x1)}V{f(y1)}H{f(x0)}Z"
@@ -203,5 +318,5 @@ def lib_rect_d(x0, y0, x1, y1):
 
 def frame(sid, t):
     lib.dyn_begin()
-    fn = {"s03": frame03}[sid]
+    fn = {"s03": frame03, "s05": frame05}[sid]
     return lib.svg(fn(t))
