@@ -420,7 +420,9 @@ def dima14(t):
     ar = math.radians(a)
     rx, ry = hx * math.cos(ar) - hy * math.sin(ar), hx * math.sin(ar) + hy * math.cos(ar)
     tx, ty = S14_HEAD[0] - rx, S14_HEAD[1] - ry + 3 * br
-    cl = lib.clip_rect(-2000, -2000, 2000 + 470, 6000)          # правее края одеяла тело под одеялом (капюшон не торчит)
+    mt = R.B_SIDE_BED[1] - 118 * R.B_SIDE_BED[2]
+    cl = lib.clip_of([(-2000, -2000), (400, -2000), (396, mt - 168), (447, mt - 243), (582, mt - 258), (630, mt - 194), (730, mt - 224), (840, mt - 180), (940, mt - 194), (1000, mt - 125), (3000, mt - 125), (3000, 4000), (-2000, 4000)])
+    # выше линии одеяла правее его края тела не видно (капюшон не торчит)
     svg = f'<g clip-path="url(#{cl})"><g transform="translate({tx:.2f} {ty:.2f}) rotate({a})">{fg["svg"]}</g></g>'
     arm = f'<g transform="translate({tx:.2f} {ty:.2f}) rotate({a})">{arm}</g>'
     return svg, arm, (tx, ty), br
