@@ -130,7 +130,7 @@ T_POT, T_TEP, T_STAV, T_TAIM = wt(69), wt(70), wt(72), wt(73)    # 22.53 вхо�
 HIP13_Y = R.FL - 52 - (people.LEG_LEN - 12) * SC
 X13_IN, X13_STOP = -60.0, 420.0
 T_WALK1 = 23.20
-MUG13 = (985.0, R.DESK_TOP - 92)          # где встанет кружка (дно)
+MUG13 = (745.0, R.DESK_TOP - 98)          # где встанет кружка (дно)
 MUG_K = .62
 TIM13 = (R.TIMER_DESK[0], table_y(.5))    # таймер на столе
 TK13 = .5
@@ -216,8 +216,8 @@ def s13(t):
     # камера: хлёст, дрейф влево, лёгкий наезд на руки с таймером
     u = sm(t, T_A13 - .2, 24.9)
     z = sm(t, T_STAV, 24.9)
-    s = lerp(1.0, 1.08, u) + .22 * z
-    ccx = lerp(300, 250, u) + 260 * z
+    s = lerp(.96, 1.04, u) + .26 * z
+    ccx = lerp(350, 300, u) + 220 * z
     ccy = lerp(930, 900, u) - 170 * z
     set_ink(s)
     g = f'<g transform="{lib.cam(ccx, ccy, s, lerp(-.6, .4, u))}">{"".join(world)}</g>'
