@@ -305,12 +305,14 @@ def seated_student(x, floor, k, col, hair, seed, face=1, tone=.3, t=0.0, lean=0.
     sw = 2.5 * math.sin(t * 1.1 + seed)
     o = []
     top = floor - 190 * k
-    tor = [(-48, top + 24, 1), (48, top + 24, 1), (54, top - 90), (38, top - 156, 1), (-38, top - 156, 1), (-54, top - 90)]
-    o.append(shape([(p[0] * k + x + sw + lean * (top - p[1]), p[1]) + ((1,) if len(p) > 2 else ()) for p in [(q[0], q[1]) for q in tor]], c(col), "", w=4.2 * k, seed=seed * 5))
-    hx, hy = x + face * 6 * k + sw + lean * 150, top - 222 * k
+    tor = [(-50, 24, 1), (50, 24, 1), (58, -70), (46, -140), (20, -160, 1), (-20, -160, 1), (-46, -140), (-58, -70)]
+    o.append(shape([(x + sw + p[0] * k, top + p[1] * k) + ((1,) if len(p) > 2 else ()) for p in tor], c(col), blob([(x + sw + 20 * k, top - 160 * k), (x + sw + 58 * k, top - 70 * k), (x + sw + 50 * k, top + 24 * k),
+                                                                                                                   (x + sw + 20 * k, top + 24 * k)], mix(c(col), "#000000", .15)), w=4.2 * k, seed=seed * 5))
+    o.append(shape(rect_pts(x + sw - 11 * k, top - 190 * k, x + sw + 11 * k, top - 150 * k, 3), c(skin), "", w=3.4 * k, seed=seed * 5 + 6))
+    hx, hy = x + face * 6 * k + sw, top - 218 * k
     o.append(shape(ellipse_pts(hx, hy, 40 * k, 46 * k, 14), c(skin), "", w=4 * k, seed=seed * 5 + 1))
-    o.append(shape([(hx - 40 * k, hy - 4 * k, 1), (hx - 34 * k, hy - 44 * k), (hx + 4 * k, hy - 54 * k), (hx + 40 * k, hy - 40 * k), (hx + 40 * k, hy - 4 * k, 1), (hx + 24 * k, hy - 26 * k),
-                    (hx - 8 * k, hy - 30 * k), (hx - 34 * k, hy - 22 * k)], c(hair), "", w=3.8 * k, seed=seed * 5 + 2))
+    o.append(shape([(hx - 41 * k, hy - 8 * k, 1), (hx - 36 * k, hy - 40 * k), (hx + 2 * k, hy - 54 * k), (hx + 38 * k, hy - 40 * k), (hx + 41 * k, hy - 12 * k, 1), (hx + 24 * k, hy - 32 * k),
+                    (hx - 4 * k, hy - 34 * k), (hx - 30 * k, hy - 26 * k)], c(hair), "", w=3.6 * k, seed=seed * 5 + 2))
     o.append(blob(ellipse_pts(hx + face * 22 * k, hy + 2 * k, 3.6 * k, 4.4 * k, 6), INK))
     # парта перед ним
     dw = desk_w * k
@@ -325,10 +327,10 @@ def hall_back(t):
     o = []
     row3 = ((90, "#B35D4A", "#2E2A2A"), (330, "#6F8FB5", "#6A4A2E"), (570, "#7FA070", "#3A2A20"), (810, "#C99A4A", "#1E1E26"), (1060, "#9A7AAE", "#7A5A38"), (1290, "#5C8A8F", "#2E2A2A"))
     for i, (x, col, hair) in enumerate(row3):
-        o.append(seated_student(x, 1290, .55, col, hair, 20 + i, 1 if i % 2 == 0 else -1, tone=.42, t=t, desk_w=250))
+        o.append(seated_student(x, 1290, .55, col, hair, 20 + i, 1 if i % 2 == 0 else -1, tone=.22, t=t, desk_w=250))
     row2 = ((190, "#D98F4A", "#3A2A20"), (480, "#4E78A0", "#2A2A32"), (760, "#A8584A", "#8A5A2A"), (1040, "#6F9A78", "#2E2A2A"), (1320, "#8D7DB0", "#5A3A2A"))
     for i, (x, col, hair) in enumerate(row2):
-        o.append(seated_student(x, 1380, .72, col, hair, 40 + i, 1 if i % 2 == 1 else -1, tone=.28, t=t, desk_w=250))
+        o.append(seated_student(x, 1380, .72, col, hair, 40 + i, 1 if i % 2 == 1 else -1, tone=.14, t=t, desk_w=250))
     return "".join(o)
 
 
@@ -341,7 +343,7 @@ def frame03(t):
     conf = smooth(T_K - .1, T_K + .3, t)
     bob = 2.2 * math.sin(t * 5.5)
     ex = expr_of(lid=.78 + .1 * conf, look=(.78, .42 - .3 * conf), brows="calm" if conf < .5 else "up", mouth="smile", smile=.25 + .6 * conf, blush=.3 * conf)
-    dx, dy = Dx + 340, 1176
+    dx, dy = Dx + 300, 1176
     # ближняя рука лежит на билете, дальняя на краю парты
     n_t = (dx + 20 + 6 * math.sin(t * 2.1), dy - 2 + 3 * math.sin(t * 2.7))
     f_t = (dx - 40, dy - 6)
@@ -349,15 +351,15 @@ def frame03(t):
             hands={"n": hand_spec(.45, (1, .25), .3), "f": hand_spec(.35, (1, .3), .25)}, bob=bob)
     lg, af, bd, an = S.dima_layers(d)
     hp = S.head_w(d)
-    desk_cx = Dx + 230 + 300
+    desk_cx = Dx + 190 + 310
     o = [_ST["hall"], hall_back(t), ROOM.chair(Dx, 1266, 1, 2300)]
     o.append(props.desk(desk_cx, 1196, 1.0, 620, legs_to=1468, depth=34))
-    o.append(ticket_flat(dx + 120, 1170))
+    o.append(ticket_flat(dx + 110, 1176))
     o += [lg, af, bd, an]
     o.append(bulb(hp[0] + 40, hp[1] - 220, 1.1, clamp((t - T_K) / .28), t))
     if t > T_K + .08:
         o.append(answer_card(hp[0] + 250, hp[1] - 240, 1.25 * back_out(clamp((t - T_K - .08) / .3), 1.6), t, T_K + .35, 4))
-    cam = (lerp(520, 560, u), lerp(1020, 1000, u), 1.18 + .16 * ease_io(u), -.5 + 1.0 * u)
+    cam = (lerp(500, 540, u), lerp(1000, 980, u), 1.42 + .14 * ease_io(u), -.5 + 1.0 * u)
     return cam_group("".join(o), cam)
 
 
@@ -423,14 +425,14 @@ def frame06(t):
     turn = ease_io(flip_ph) if turning else 0.0
     frown = smooth(T_A - .1, T_A + .4, t)
     ex = expr_of(lid=.72 - .1 * frown, look=(.6, .55), brows=("worry", "det", frown), mouth="flat", sweat=0, flush=.1 * frown)
-    nx, ny, nk = 640, 1138, 1.1
+    nx, ny, nk = 540, 1138, .82
     # конспект: до «вспомнить» — страницы со строками, потом пустеют
     emp = smooth(T_V, T_V + .55, t)
     left = 1 - emp
     right = 1 - emp
     # ближняя рука держит край переворачиваемой страницы
-    n_t = (nx + 40 - 100 * turn, ny - 6 - 26 * math.sin(math.pi * turn) * turning)
-    f_t = (nx - 120, ny + 4)
+    n_t = (nx + 36 - 80 * turn, ny - 6 - 26 * math.sin(math.pi * turn) * turning)
+    f_t = (nx - 70, ny + 4)
     hnd = {"n": hand_spec(.5, (1, .2), .35), "f": hand_spec(.4, (1, .3), .3)}
     d = D.dima(.11 + .01 * math.sin(t * 2), {"n": ("ik", n_t), "f": ("ik", f_t)}, hnd, ex, head_ang=.04 * frown + .02 * math.sin(t * 3), head_off=(0, 3 * frown),
                hip_off=(1.5 * math.sin(t * 90) * sh, 1.5 * math.sin(t * 77) * sh))
@@ -447,7 +449,7 @@ def frame06(t):
             if tt < 0 or tt > .9:
                 continue
             ph = tt / .9
-            sx0 = nx - 140 + (j % 6) * 52 + (j // 6) * 8
+            sx0 = nx - 110 + (j % 6) * 40 + (j // 6) * 8
             sy0 = ny - 4 + (j // 6) * 10
             vx = (-70 + 28 * (j % 5)) + 22 * math.sin(j * 1.7)
             vy = -420 - 40 * (j % 3)
@@ -460,19 +462,19 @@ def frame06(t):
     # облако над головой
     if cl > .01:
         cs = back_out(cl, 1.5)
-        cxh, cyh = hp[0] + 20, hp[1] - 240
+        cxh, cyh = hp[0] + 70, hp[1] - 215
         o.append(props.anx_cloud(cxh, cyh, 2.4 * cs, 1, t, seed=3))
         o.append(props.anx_cloud(cxh - 150, cyh + 60, 1.3 * clamp(cl * 1.3 - .2), 0, t + .3, seed=5))
         o.append(props.anx_cloud(cxh + 160, cyh + 70, 1.1 * clamp(cl * 1.3 - .3), 0, t + .6, seed=7))
     shx, shy = 3.5 * math.sin(t * 83) * sh, 3 * math.sin(t * 71) * sh
-    cam = (lerp(520, 560, u) + shx, lerp(1050, 990, u) + shy, 1.22 + .16 * ease_io(u), -.6 + 1.0 * u)
+    cam = (lerp(410, 450, u) + shx, lerp(960, 930, u) + shy, 1.5 + .14 * ease_io(u), -.6 + 1.0 * u)
     return cam_group("".join(o), cam)
 
 
 # ═════════════════════════ s13 ═════════════════════════
 def pose_blend(t, u, *, expr, n_t, f_t, hands, ha=0.0, head_off=(0, 0), seatx=250):
     """Дима между стоя (u=0) и сидя (u=1) на стуле: бёдра опускаются, стопы уезжают вперёд."""
-    hy = lerp(1112, 1262, u)
+    hy = lerp(1102, 1262, u)
     lean = lerp(.04, .1, u)
     fn = ((seatx + lerp(18, 215, u), 1468), 0.0)
     ff = ((seatx + lerp(-22, 190, u), 1463), 0.0)
@@ -499,128 +501,111 @@ def sheet_flat(x, y, w=150, h=52, fill=0.0, seed=0):
 
 
 def frame13(t):
-    T_S = 27.3                      # листок вынут
-    pu = smooth(28.0, 28.85, t)     # присел
-    st_ = kf(t, [(26.4, 0.0), (28.0, 0.0), (28.9, 1.0)])[0]
+    st_ = kf(t, [(27.9, 0.0), (28.95, 1.0)])[0]
     u = clamp((t - 26.4) / 2.7)
     pack = (468, 1124, .78)
-    mouth = (pack[0] + 6, pack[1] - 150 * pack[2])
-    # руки: ближняя тянется в рюкзак, достаёт листок (26.9–27.5), потом ручку (27.6–28.0)
-    rea = smooth(26.5, 27.0, t)
-    pull = smooth(27.0, 27.55, t)
-    n_pos = (lerp(380, mouth[0] + 10, rea), lerp(1000, mouth[1] + 6, rea))
-    pen_take = smooth(27.6, 28.0, t)
-    desk_y = 1128
-    # листок: вынут → кладётся на стол
-    put = smooth(28.0, 28.5, t)
-    # цели рук по фазам
-    if t < 27.55:
-        wr = (n_pos[0] + 4 * pull, n_pos[1] - 80 * pull)
-    elif t < 28.0:
-        wr = (lerp(mouth[0] + 14, mouth[0] - 6, pen_take), lerp(mouth[1] - 74, mouth[1] + 4, ease_in(clamp((t - 27.55) / .2))) - 28 * pen_take * (t > 27.8))
-    else:
-        wr = (lerp(mouth[0] - 6, 640, put), lerp(mouth[1] - 20, 1080, put))
-    if t >= 28.0:
-        wr = (lerp(468, 640, put), lerp(1000, 1090, put))
-    f_pos = (lerp(420, 560, smooth(27.6, 28.6, t)), lerp(1020, 1118, smooth(27.6, 28.6, t)))
+    mouth = (pack[0] + 8, pack[1] - 150 * pack[2])
+    desk_pt = (640, 1096)                      # куда ложится листок: запястье
+    # ключи запястья ближней руки (мир): к рюкзаку → тянет листок → кладёт на стол → к рюкзаку за ручкой → несёт ручку над листком
+    wr = kf(t, [(26.4, 360, 1010), (26.95, mouth[0] + 4, mouth[1] + 22), (27.4, mouth[0] + 10, mouth[1] - 68), (27.85, desk_pt[0], desk_pt[1]),
+                (28.08, desk_pt[0] - 40, desk_pt[1] - 10), (28.22, mouth[0] + 22, mouth[1] + 30), (28.55, mouth[0] + 22, mouth[1] - 40), (29.0, 590, 1090), (29.3, 590, 1090)])
+    n_t = (wr[0], wr[1])
+    f_k = smooth(27.6, 28.6, t)
+    f_pos = (lerp(410, 540, f_k), lerp(1030, 1110, f_k))
     conf = smooth(28.3, 28.9, t)
     ex = expr_of(lid=.88, look=(.8, .25), brows="calm" if t < 28.4 else "up", mouth="smile", smile=.15 + .5 * conf, blush=.25 * conf)
-    hands = {"n": dict(hand_spec(.62, (-.3, -1), .45, k=.95), flip=-1), "f": hand_spec(.35, (1, .3), .25)}
-    d = pose_blend(t, st_, expr=ex, n_t=wr, f_t=f_pos, hands=hands, ha=.03 * conf)
+    penning = t >= 28.0
+    hands = {"n": dict(hand_spec(.84, (1, .15), .8, k=.95), flip=1) if penning else dict(hand_spec(.62, (-.3, -1), .45, k=.95), flip=-1), "f": hand_spec(.35, (1, .3), .25)}
+    d = pose_blend(t, st_, expr=ex, n_t=n_t, f_t=f_pos, hands=hands, ha=.03 * conf)
     lg, af, bd, an = S.dima_layers(d)
     w_n = S.wrist_w(d, "n", 0)
     o = [_ST["room_day"], ROOM.chair(250, 1266, 1, 2300), _ST["desk_legs"], lg, af, bd, _ST["desk_top"]]
-    # рюкзак на столе, раскрытый
-    o.append(ROOM.backpack(pack[0], pack[1], pack[2], open_=1.0, zip_u=0.0))
-    # листок: выходит из рюкзака на wr
+    # листок и ручка прячутся за рюкзаком, пока лежат в нём
     sheet = ""
-    if t < 28.0:
-        if t >= 27.0:
-            sc = 2.2
-            sy = lerp(mouth[1] + 20, w_n[1] - 52, pull) if pull < 1 else w_n[1] - 52
-            clipy = pack[1] - 150 * pack[2]
-            sheet = props.paper_sheet(w_n[0] + 8, sy, sc, 0.0, rot=-4 + 2 * math.sin(t * 6), seed=4)
-            if pull < .95 and False:
-                pass
+    pull = smooth(26.95, 27.4, t)
+    lay = smooth(27.55, 27.88, t)
+    if t < 27.88:
+        in_x, in_y = pack[0] + 2, mouth[1] + 40
+        hx, hy = w_n[0] + 10, w_n[1] - 50
+        sx_, sy_ = lerp(in_x, hx, pull), lerp(in_y, hy, pull)
+        sx_, sy_ = lerp(sx_, desk_pt[0] + 10, lay), lerp(sy_, desk_pt[1] + 30, lay)
+        sc = 2.3
+        sh = props.paper_sheet(sx_, sy_, sc, 0.0, rot=-4 * (1 - lay) + 2 * math.sin(t * 7) * (1 - lay), seed=4)
+        sheet = f'<g transform="translate({f(sx_)} {f(sy_)}) scale(1 {1 - .62 * lay:.3f}) translate({f(-sx_)} {f(-sy_)})">{sh}</g>'
     else:
-        sheet = sheet_flat(640, 1136, 180, 56, 0.0)
-    if sheet:
-        o.append(sheet)
-    # ручка: берётся в ближнюю руку
-    pen_on = t >= 27.62
-    if pen_on:
-        if t < 28.0:
-            px, py = w_n[0] + 18, w_n[1] - 34
-            o.append(props.pen(px + 12, py + 36, 2.0, rot=26))
-        else:
-            o.append(props.pen(w_n[0] + 16, w_n[1] - 4, 2.0, rot=34 - 8 * put))
+        sheet = sheet_flat(desk_pt[0] + 14, desk_pt[1] + 36, 200, 62, 0.0)
+    pen_in = t < 28.2
+    if pen_in:
+        o.append(props.pen(pack[0] + 30, mouth[1] + 70, 2.0, rot=-12))
+    o.append(ROOM.backpack(pack[0], pack[1], pack[2], open_=1.0, zip_u=0.0))
+    if t < 27.0:
+        pass
+    o.append(sheet)
+    if not pen_in:
+        o.append(props.pen(w_n[0] + 34, w_n[1] + 36, 2.0, rot=-28))
     o.append(an)
-    # кот на подоконнике
     cst = dict(look=(-.9, .25), turn=-.8, blink=D.Cat_blink(t, [(27.5, .2, .3), (28.6, .2, .3)]), tail=6 * D.osc(t, .45) + 2 * D.osc(t, 1.3), ear=3 * D.bump(t, 27.2, .4),
                tilt=-2 * smooth(27.6, 28.4, t), smile=0)
-    cat_svg = Cat.draw(930, 820, .56, cst, t)
-    o.insert(1, f'<g>{cat_svg}</g>')
-    cam = (lerp(560, 560, u), lerp(1020, 1090, ease_io(u)), 1.12 + .7 * ease_in(u, 2.2), -1.0 * (1 - u) + .3 * u)
-    out = cam_group("".join(o), cam)
-    return whip(out, t, 26.61, 260)
+    o.insert(1, f'<g>{Cat.draw(840, 820, .56, cst, t)}</g>')
+    cam = (lerp(560, 520, ease_io(u)), lerp(1010, 1050, ease_io(u)), 1.12 + .5 * ease_in(u, 2.0), -1.0 * (1 - u) + .3 * u)
+    return whip(cam_group("".join(o), cam), t, 26.61, 260)
 
 
 # ═════════════════════════ s15 ═════════════════════════
 def frame15(t):
     T_P, T_H = T[74], T[75]          # «карман» 32.22, «голова» 32.80
     u = clamp((t - 31.4) / 2.5)
-    fold1 = smooth(31.62, 32.0, t)
-    fold2 = smooth(31.95, 32.2, t)
-    ins = smooth(T_P - .05, T_P + .3, t)
+    fold1 = smooth(31.62, 31.98, t)
+    fold2 = smooth(31.95, 32.15, t)
     bright = smooth(T_H - .05, T_H + .5, t)
     x0 = 480
     ex = expr_of(lid=.8 + .1 * bright, look=(.6, .35 * (1 - bright)), brows=("worry", "calm", bright), mouth="smile" if bright > .3 else "flat", smile=.7 * bright, blush=.4 * bright)
-    pocket_in = (x0 + 52, 1052)
-    sheet_c = (x0 + 150, 940)
-    # ближняя рука: держит сложенный листок у груди, потом ведёт в карман
-    k1 = smooth(T_P - .15, T_P + .12, t)
-    wr = (lerp(sheet_c[0] + 28, pocket_in[0] + 16, k1), lerp(sheet_c[1] + 30, pocket_in[1] - 6, k1))
-    wr = (wr[0] + 2.5 * math.sin(t * 40) * (1 - k1), wr[1])
-    out_down = smooth(T_P + .3, T_P + .8, t)
-    wr = (lerp(wr[0], x0 + 120, out_down), lerp(wr[1], 1090, out_down))
-    f_t = (sheet_c[0] - 26, sheet_c[1] + 34 + 40 * out_down)
-    lean = lerp(.05, .018, bright)
+    hip_y = 1108
+    mouth_p = (x0 + 24, 1004)                     # верхний край кармана-кенгуру в мире (x0 — бёдра)
+    sheet_chest = (x0 + 150, 940)
+    sheet_hover = (mouth_p[0] + 6, mouth_p[1] - 36)
+    sheet_in = (mouth_p[0] + 6, mouth_p[1] + 8)
+    go = smooth(T_P - .22, T_P + .02, t)      # к карману
+    sl = smooth(T_P + .02, T_P + .32, t)      # в карман
+    out = smooth(T_P + .38, T_P + .85, t)
+    cx_ = lerp(lerp(sheet_chest[0], sheet_hover[0], go), sheet_in[0], sl)
+    cy_ = lerp(lerp(sheet_chest[1], sheet_hover[1], go), sheet_in[1], sl)
+    cy_ += 3 * math.sin(t * 9) * (1 - go)
+    wr = (cx_ + 24, cy_ + 44)
+    wr = (lerp(wr[0], x0 + 110, out), lerp(wr[1], 1086, out))
+    f_t = (lerp(cx_ - 26, x0 + 70, out), lerp(cy_ + 36, 1070, out))
+    lean = lerp(.05, .02, bright)
     hands = {"n": dict(hand_spec(.6, (-.3, -1), .5, k=.95), flip=-1), "f": dict(hand_spec(.5, (.4, -1), .4, k=.95), flip=1)}
-    if out_down > .1:
-        hands = {"n": hand_spec(.3, (.5, 1), .2), "f": hand_spec(.3, (.5, 1), .2)}
-    d = S.stand(t, x0, lean=lean, ha=.05 * (1 - bright) - .02 * bright, expr=ex, n_t=wr, f_t=f_t, hands=hands, sn=-1, sf=-1, hip_dy=-40 * 0 + 6 * bright,
+    if out > .05:
+        hands = {"n": hand_spec(.72, (.15, 1), .5), "f": hand_spec(.72, (.15, 1), .5)}
+    d = S.stand(t, x0, lean=lean, ha=.05 * (1 - bright) - .02 * bright, expr=ex, n_t=wr, f_t=f_t, hands=hands, sn=-1, sf=-1, hip_dy=5 * bright,
                 head_off=(0, 4 * bright))
     d_lg, d_af, d_bd, d_an = S.dima_layers(d)
     hp = S.head_w(d)
-    o = [_ST["room_day"], ROOM.chair(150, 1266, 1, 2300), d_lg, d_af]
-    o.append(d_bd)
-    # листок сложен вдвое ×2, едет к карману; вход скрыт срезом по верхнему краю кармана
-    if t < T_P + .5:
-        wnx = S.wrist_w(d, "n", 0)
-        cxs, cys = wnx[0] + 6, wnx[1] - 40 * (1 - k1) - 10 * k1 - 24 * ins * 0
-        slide = ins * 78
-        shy = cys + slide
-        sh = props.paper_sheet(cxs, shy, 2.2, 1.0, rot=-3 + 4 * ins, seed=6)
-        # складывание: уменьшаем по высоте
-        sy = lerp(1.0, .5, fold1) * lerp(1.0, .6, fold2)
-        sh = f'<g transform="translate({f(cxs)} {f(shy)}) scale(1 {sy:.3f}) translate({f(-cxs)} {f(-shy)})">{sh}</g>'
-        cut_y = 1038 - 10
+    o = [_ST["room_day"], ROOM.chair(150, 1266, 1, 2300), d_lg, d_af, d_bd]
+    # лист: складывается вдвое дважды, едет к карману, входит (срез по верхнему краю кармана)
+    sy = lerp(1.0, .5, fold1) * lerp(1.0, .6, fold2)
+    sheet = props.paper_sheet(cx_, cy_, 2.5, 1.0, rot=-3 + 5 * go - 5 * sl, seed=6)
+    sheet = f'<g transform="translate({f(cx_)} {f(cy_)}) scale(1 {sy:.3f}) translate({f(-cx_)} {f(-cy_)})">{sheet}</g>'
+    if t < T_P + .4:
         cid = lib.uid()
-        lib.DEFS.append(f'<clipPath id="{cid}"><rect x="-1000" y="-2000" width="4000" height="{f(2000 + cut_y)}"/></clipPath>')
-        o.append(f'<g clip-path="url(#{cid})">{sh}</g>' if ins > .02 else sh)
+        lib.DEFS.append(f'<clipPath id="{cid}"><rect x="-1000" y="-2000" width="4000" height="{f(2000 + mouth_p[1] + 2)}"/></clipPath>')
+        o.append(f'<g clip-path="url(#{cid})">{sheet}</g>' if sl > .02 else sheet)
+    elif t < T_P + .4:
+        pass
     o.append(d_an)
-    # облачка уходят над головой на «голова»
-    for j, (dx, dy, sc) in enumerate(((-30, -240, 1.7), (60, -300, 1.3), (-110, -300, 1.0))):
-        v = clamp((t - T_H - .06 * j) / .75)
-        vis = 1 - v
-        if t < T_H - .55:
-            continue
-        pre = smooth(T_H - .55, T_H - .15, t)
+    # облачка уходят над головой на «голова»: до слова висят, потом улетают вверх и тают (уменьшаются)
+    for j, (dx, dy, sc) in enumerate(((20, -200, 2.1), (150, -240, 1.4), (-110, -250, 1.2))):
+        v = clamp((t - T_H - .07 * j) / .8)
+        pre = smooth(T_H - .5, T_H - .1, t)
         if pre <= 0 or v >= 1:
             continue
-        rise = ease_in(v, 1.6) * 260
-        o.append(props.anx_cloud(hp[0] + dx + 26 * math.sin(v * 4 + j), hp[1] + dy - rise, sc * (1.0 + 0.2) * (1 - ease_in(v, 2.0)) * pre + .001, j % 2, t + j, seed=j))
-    cam = (lerp(600, 560, u), lerp(1080, 1030, u), 1.52 - .26 * ease_out(clamp((t - 31.56) / .8)) + .1 * ease_io(clamp((t - 32.3) / 1.4)), -.6 + 1.0 * u)
+        rise = ease_in(v, 1.7) * 280
+        k_ = sc * pre * (1 - ease_in(v, 1.8))
+        if k_ < .05:
+            continue
+        o.append(props.anx_cloud(hp[0] + dx + 24 * math.sin(v * 4 + j), hp[1] + dy - rise, k_, j % 2, t + j, seed=j))
+    cam = (lerp(620, 560, u), lerp(1080, 1030, u), 1.52 - .24 * ease_out(clamp((t - 31.56) / .8)) + .1 * ease_io(clamp((t - 32.3) / 1.4)), -.6 + 1.0 * u)
     return cam_group("".join(o), cam)
 
 
@@ -643,7 +628,7 @@ def frame18(t):
     # кот рядом, сидит спокойно, смотрит на зрителя
     cst = dict(look=(.1, .05), turn=-.05, blink=D.Cat_blink(t, [(39.4, .2, .3)]), tail=5 * D.osc(t, .4) + 2 * D.osc(t, 1.1), ear=2 * D.bump(t, 38.9, .4), smile=1 if t > 39.5 else 0,
                tilt=2 * math.sin(t * .7))
-    o.append(f'<g>{blob(ellipse_pts(560 + 12, 1452 + 4, 150 * .62 * 1.25, 12, 16), "#2a1408", .22)}{Cat.draw(560, 1452, .62, cst, t)}</g>')
+    o.append(f'<g>{blob(ellipse_pts(500 + 12, 1452 + 4, 150 * .62 * 1.25, 12, 16), "#2a1408", .22)}{Cat.draw(500, 1452, .62, cst, t)}</g>')
     o += [lg, af, bk, bd, an]
     if env > .08:
         o.append(tremor_marks(bx + 8, by + 40, t, .8 * env, 2))

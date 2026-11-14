@@ -59,7 +59,7 @@ def desk_panel(x, edge_y, sc, w=440):
     return o
 
 
-def student(key, x, edge_y, sc, mood="calm", t=0.0, ph=0.0, arms=None, face=None, write=0.0, blink_t=(), tilt=0.0, up=0.0, w=440, flip=False, extra_mood=None):
+def student(key, x, edge_y, sc, mood="calm", t=0.0, ph=0.0, arms=None, face=None, write=0.0, blink_t=(), tilt=0.0, up=0.0, w=440, flip=False, extra_mood=None, shrug=0.0):
     """Студент за партой: (x, edge_y) — середина передней кромки парты, sc — масштаб (1 ≈ Дима ростом 750 px)."""
     sp = spec(key, face)
     m = dict(MOODS[mood])
@@ -73,7 +73,7 @@ def student(key, x, edge_y, sc, mood="calm", t=0.0, ph=0.0, arms=None, face=None
     sway = math.sin(t * 1.7 + ph)
     # руки на парте: плечо-локоть-кисть вперёд-к центру; на «письме» правая рука водит туда-сюда
     wr = math.sin(t * 13 + ph) * write
-    ar = arms or {"R": (34 + 5 * up, -118 + 4 * up + 9 * wr), "L": (-34 - 5 * up, 118 - 4 * up)}
+    ar = arms or {"R": (34 + 5 * up + 10 * shrug, -118 + 4 * up + 6 * shrug + 9 * wr), "L": (-34 - 5 * up - 10 * shrug, 118 - 4 * up - 6 * shrug)}
     pose = dict(arms=ar, look=m["look"], blink=bl, mouth=m["mouth"], brow=m["brow"], head_tilt=tilt + 1.4 * sway - 1.2 * write)
     origin_y = edge_y + 300 * sc * sp.get("h", 1.0)
     o = [desk_surface(x, edge_y, sc, w)]

@@ -10,10 +10,13 @@ import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+sys.path.insert(0, os.path.join(os.path.dirname(HERE), "common"))
 import cat as Cat  # noqa: E402
 import hand as Hand  # noqa: E402
 import lib  # noqa: E402
 import people  # noqa: E402
+import props as PR  # noqa: E402
+import students as ST  # noqa: E402
 from lib import (INK, back_out, blob, blur, clamp, ease_in, ease_io, ease_out, ellipse_pts, f, line, mix, rad_grad, rrect, shape,  # noqa: E402,F401
                  smooth, spring)
 
@@ -377,3 +380,223 @@ def frame17(t):
 
 
 FRAMES["s17"] = frame17
+
+
+# ═════════════════════════════ аудитория Чикаго: зал, окна с высотками ═════════════════════════════
+def skyline(x0, y0, x1, y1, seed=0):
+    """Силуэты высоток за стеклом (без надписей, без флагов): башни с антеннами, светлые окна-полосы."""
+    rs = np.random.RandomState(seed)
+    o = ""
+    x = x0 - 10
+    cols = ["#7d93ad", "#6a819c", "#8da3bb", "#5f7690"]
+    while x < x1:
+        w = rs.uniform(46, 96)
+        h = rs.uniform(.25, .85) * (y1 - y0)
+        c = cols[rs.randint(4)]
+        o += blob(rect_pts_(x, y1 - h, x + w, y1), c)
+        if rs.rand() < .5:
+            o += blob(rect_pts_(x + w * .3, y1 - h - 30, x + w * .7, y1 - h), c)
+            o += line([(x + w * .5, y1 - h - 30), (x + w * .5, y1 - h - 80 - rs.uniform(0, 40))], 4, "#56697f", taper=.3, wmin=.5, seed=int(x))
+        for j in range(int(h // 34)):
+            o += blob(rect_pts_(x + 8, y1 - h + 14 + j * 34, x + w - 8, y1 - h + 20 + j * 34), mix(c, "#ffffff", .22))
+        x += w + rs.uniform(-8, 6)
+    return o
+
+
+def rect_pts_(x0, y0, x1, y1):
+    return [(x0, y0, 1), (x1, y0, 1), (x1, y1, 1), (x0, y1, 1)]
+
+
+def hall(x0, x1, tint=0.0):
+    """Зал: стена с высокими окнами, паркетный пол, перегородка-доска; tint>0 — холоднее (для «ждавших»)."""
+    wall = mix("#efe6d0", "#cfd4de", tint)
+    floor = mix("#cfa06a", "#a99e92", tint)
+    o = blob(rrect(x0, -300, x1, 1000, 0), wall) + blob(rrect(x0, 1000, x1, 2300, 0), floor)
+    o += blob(rrect(x0, 940, x1, 1000, 0), mix("#a87b47", "#7c7a86", tint)) + line([(x0, 1000), (x1, 1000)], 5, "#6f5230", taper=0, wmin=1, seed=4201)
+    for i, yy in enumerate((1100, 1250, 1450, 1700)):
+        o += line([(x0, yy), (x1, yy + 6)], 3, mix("#a97542", "#6d6a74", tint), taper=0, wmin=1, seed=4210 + i, op=.8)
+    wx = int(x0 // 460) * 460
+    while wx < x1:
+        a, b = wx + 40, wx + 400
+        o += shape(rrect(a - 16, 120, b + 16, 920, 6), "#fdf8ec", "", w=5, seed=4300 + wx % 97)
+        sky = lib.lin_grad([(0, "#9fd0ee", 1), (1, "#e2f2fa", 1)], 0, 0, 0, 1)
+        o += f'<rect x="{a}" y="136" width="{b - a}" height="768" fill="url(#{sky})"/>'
+        cid = lib.clip_rect(a, 136, b - a, 768)
+        o += f'<g clip-path="url(#{cid})">' + skyline(a, 136, b, 904, seed=wx % 13 + 3) + "</g>"
+        o += line([((a + b) / 2, 136), ((a + b) / 2, 904)], 8, "#fdf8ec", taper=0, wmin=1, seed=4310 + wx % 53) + line([(a, 420), (b, 420)], 8, "#fdf8ec", taper=0, wmin=1, seed=4320 + wx % 41)
+        o += shape(rrect(a, 136, b, 904, 2), "none", "", w=4, seed=4330 + wx % 29)
+        o += blob([(a - 30, 1000), (b + 30, 1000), (b + 150, 1700), (a + 40, 1700)], "#ffffff", .0)
+        wx += 460
+    return o
+
+
+def papers_on(t, xs, edge_y, sc, t0, ph=0.0):
+    o = ""
+    for i, x in enumerate(xs):
+        u = clamp((t - t0 - .07 * i) / .3)
+        if u <= 0:
+            continue
+        k = sc * 1.5 * (back_out(u, 2.2))
+        o += PR.ticket(x, edge_y - 18 * sc - 26 * (1 - u), k, rot=-4 + 3 * i % 7, seed=i, lines=4)
+    return o
+
+
+T_CHI, T_TEST = wt(36), wt(40)          # 16.24, 17.82
+G1F = [("a", 200), ("b", 600), ("c", 1000)]
+G1B = [("d", 400), ("e", 800)]
+G2F = [("f", 1560), ("g", 1960), ("h", 2360)]
+G2B = [("i", 1760), ("j", 2160)]
+
+
+def frame09(t):
+    A = 15.2
+    u = clamp((t - A) / 3.1)
+    pan = ease_io(u)
+    z = 1.0 + .10 * pan + .03 * bump(t, T_CHI, .4)
+    set_ink(z)
+    o = [hall(-300, 3000)]
+    for rowset, edge, sc, back in ((G1B + G2B, 1040, .7, True), (G1F + G2F, 1400, .98, False)):
+        for key, x in rowset:
+            grp2 = x > 1200
+            mood = "tense" if grp2 else "calm"
+            if t > T_TEST + .2 and not grp2:
+                mood = "write"
+            sw = 3 * math.sin(t * 1.3 + x)
+            o.append(ST.student(key, x, edge + 0 * sw, sc, mood, t=t, ph=x * .01, blink_t=(15.9 + (x % 7) * .3, 17.1 + (x % 5) * .3), w=400, up=(1 if t > T_TEST else 0),
+                                write=1.0 if (t > T_TEST + .3 and not grp2 and not back) else 0.0, tilt=-2 * (1 if grp2 else 0)))
+        xs = [x for k_, x in rowset]
+        o.append(papers_on(t, xs, edge, sc, T_TEST))
+    cx = 540 + 1280 * pan
+    cam = lib.cam(cx, 960 + 20 * pan, z, -.5 + 1.0 * pan + 1.0 * bump(t, T_CHI, .35))
+    return f'<g transform="{cam}">{"".join(o)}</g>'
+
+
+FRAMES["s09"] = frame09
+
+
+def plainwall(x0, x1, tint=0.0, floor_y=1000):
+    """Светлая стена класса с панелью, окном с мягким светом и пробковой доской без надписей (цветные листки-пятна)."""
+    wall = mix("#f1e4c8", "#c9ced9", tint)
+    o = blob(rrect(x0, -300, x1, floor_y, 0), wall)
+    o += blob(rrect(x0, floor_y - 360, x1, floor_y, 0), mix("#9db7a2", "#8a93a0", tint))
+    o += blob(rrect(x0, floor_y - 360, x1, floor_y - 316, 0), mix("#86a58f", "#76808e", tint))
+    o += line([(x0, floor_y - 360), (x1, floor_y - 360)], 5, mix("#506f5a", "#4a5262", tint), taper=0, wmin=1, seed=4401)
+    o += blob(rrect(x0, floor_y, x1, 2400, 0), mix("#cfa06a", "#a39a90", tint))
+    o += line([(x0, floor_y), (x1, floor_y)], 6, "#6f5230", taper=0, wmin=1, seed=4402)
+    for i, yy in enumerate((floor_y + 130, floor_y + 300, floor_y + 520)):
+        o += line([(x0, yy), (x1, yy + 6)], 3, mix("#a97542", "#6d6a74", tint), taper=0, wmin=1, seed=4410 + i, op=.8)
+    for k in range(int(x0 // 900) - 1, int(x1 // 900) + 2):
+        bx = k * 900 + 280
+        o += shape(rrect(bx, 250, bx + 300, 560, 6), "#fdf8ec", "", w=5, seed=4420 + k % 9)
+        o += blob(rrect(bx + 12, 262, bx + 288, 548, 2), "#c89a5e")
+        for j, (cx_, cy_, w_, h_, c_) in enumerate(((30, 30, 70, 90, "#f6d36a"), (130, 50, 80, 70, "#8fc5a2"), (210, 40, 62, 100, "#e8847a"), (50, 150, 90, 80, "#9db8e0"),
+                                                      (170, 160, 100, 70, "#f6efe0"))):
+            o += shape(rrect(bx + cx_, 262 + cy_, bx + cx_ + w_, 262 + cy_ + h_, 3), c_, "", w=3.2, seed=4430 + j + k % 5)
+            o += line([(bx + cx_ + 8, 262 + cy_ + 20), (bx + cx_ + w_ - 12, 262 + cy_ + 20)], 3, "#2a2d30", taper=.3, wmin=.6, seed=4440 + j, op=.0)
+    return o
+
+
+def sheet_on(x, edge_y, sc, rot=0.0, fill=1.0, t=0.0, writing=False, seed=0):
+    return PR.paper_sheet(x, edge_y - 30 * sc, sc * 1.7, fill=fill, rot=rot, t=t, writing=writing, lines=6, seed=seed)
+
+
+def puff(x, y, u, s=1.0, col="#6E6A8C"):
+    """Хлопок-рассыпание облачка: круглые клочки разлетаются и мельчают (без прозрачности)."""
+    if u <= 0 or u >= 1:
+        return ""
+    o = ""
+    for i in range(11):
+        a = i * 2 * math.pi / 11 + .3
+        r = (30 + 110 * ease_out(u)) * s * (1 + .2 * math.sin(i * 2.1))
+        rad = max(.5, (16 - 14 * u) * s * (1 + .3 * math.sin(i * 1.3)))
+        o += f'<circle cx="{x + r * math.cos(a):.1f}" cy="{y + r * math.sin(a) * .8:.1f}" r="{rad:.1f}" fill="{col}" stroke="{INK}" stroke-width="{max(.6, 3 * (1 - u)):.1f}"/>'
+    return o
+
+
+T_VYP = wt(50)          # 21.89
+
+
+def frame11(t):
+    A = 20.9
+    u = clamp((t - A) / 3.0)
+    z = 1.0 + .17 * ease_io(u)
+    set_ink(z)
+    o = [plainwall(-300, 1500)]
+    rel = smooth(T_VYP + .05, T_VYP + .6, t)           # расслабление после «выписал»
+    # дальний ряд
+    for key, x, sc_, mood in (("d", 230, .8, "write"), ("e", 850, .84, "write")):
+        o.append(ST.student(key, x, 960, sc_, "calm" if rel > .5 else mood, t=t, ph=x * .02, blink_t=(21.3, 22.6), w=330, write=(1 - rel) * .8, shrug=1 - rel))
+    cast = (("a", 165, "write"), ("b", 540, "write"), ("c", 915, "write"))
+    for key, x, m0 in cast:
+        mood = "calm" if rel > .5 else "write"
+        o.append(ST.student(key, x, 1370, 1.3, mood, t=t, ph=x * .01, blink_t=(21.45 + x % 3 * .2, 22.9), w=250, write=(1 - rel) * 1.0, shrug=1 - rel,
+                            tilt=-3 * rel * math.sin((t - T_VYP) * 3) * 0 + 2 * rel))
+        o.append(sheet_on(x + 10, 1370, 1.3, rot=-3 + 6 * (x > 600), fill=1.0, t=t, writing=(rel < .3), seed=int(x) % 7))
+    # облачко: вылетает из листа центрального студента, поднимается дугой, растёт, затем рассыпается
+    c0 = clamp((t - T_VYP) / 1.15)
+    if 0 < c0 < 1:
+        sx_, sy_ = 550, 1340
+        px = sx_ + 190 * ease_out(c0) + 24 * math.sin(c0 * 11) * (1 - c0)
+        py = sy_ - 880 * ease_out(c0, 1.8) - 20 * math.sin(c0 * 9)
+        sc = .55 + 2.3 * ease_out(clamp(c0 * 1.2), 2.2)
+        if c0 < .82:
+            o.append(PR.anx_cloud(px, py, sc, 1, t))
+        else:
+            o.append(puff(px, py, (c0 - .82) / .18, 1.4))
+    cam = lib.cam(540 + 10 * math.sin(t * .8) - 25 * u, 900 - 90 * ease_io(u) + 20 * math.sin(t * 1.1), z, .6 - 1.0 * u + 1.2 * bump(t, T_VYP, .3))
+    return f'<g transform="{cam}">{"".join(o)}</g>'
+
+
+FRAMES["s11"] = frame11
+
+
+# ═════════════════════════════ s12 23.56–26.81: две группы рядом ═════════════════════════════
+T_SDALI, T_PROSTO = wt(54), wt(59)      # 23.76, 25.66
+
+
+def tick(x, y, u, s=1.0, col="#3f9a5e"):
+    """Галочка-штрих пером: рисуется за u 0…1, плотная линия с нажимом, после — упругий хлопок."""
+    if u <= 0:
+        return ""
+    P = lib.sample([(-120, -10), (-82, 36), (-44, 84), (-6, 20), (70, -90), (150, -170)], False, 3.0)
+    P = np.array(P, float)
+    n = max(2, int(len(P) * min(1, u)))
+    Q = P[:n] * s + np.array([x, y])
+    Wd = np.interp(np.linspace(0, 1, n), [0, .1, .45, .55, 1], [8, 30, 34, 26, 12]) * s * 1.0
+    pop = 1 + .12 * math.exp(-max(0, u - 1) * 9) * math.sin(min(max(0, u - 1) * 14, math.pi))
+    return f'<g transform="translate({x:.1f} {y:.1f}) scale({pop:.3f}) translate({-x:.1f} {-y:.1f})"><path d="{_band_path(Q, Wd)}" fill="{col}"/></g>'
+
+
+def frame12(t):
+    A = 23.56
+    pan = ease_io(clamp((t - 24.55) / 1.45))
+    z = 1.0 + .08 * ease_io(clamp((t - A) / 3.2)) + .03 * bump(t, T_PROSTO, .35)
+    set_ink(z)
+    o = [f'<g>{plainwall(-300, 1180, 0.0)}</g>']
+    cid = lib.clip_rect(1180, -400, 2200, 3000)
+    o.append(f'<g clip-path="url(#{cid})">{plainwall(1180, 3000, .55)}</g>')
+    o.append(line([(1180, -300), (1180, 2400)], 5, "#7c7a86", taper=0, wmin=1, seed=4590, op=.0))
+    glad = smooth(T_SDALI - .1, T_SDALI + .25, t)
+    for key, x in (("a", 200), ("b", 580), ("c", 960)):
+        o.append(ST.student(key, x, 1370, 1.32, "glad", t=t, ph=x * .01, blink_t=(23.9 + x % 3 * .25, 25.3), w=250, up=0, tilt=2 * math.sin(t * 2 + x), extra_mood=dict(look=(0, .0))))
+        o.append(sheet_on(x + 10, 1370, 1.32, rot=-3 + 5 * (x > 500), fill=1.0, t=t, seed=int(x) % 7))
+    for key, x in (("f", 1480), ("g", 1860), ("h", 2240)):
+        dr = 1 + .02 * math.sin(t * 5 + x)
+        o.append(ST.student(key, x, 1370, 1.32, "grim" if key != "g" else "tense", t=t, ph=x * .01, blink_t=(24.3 + x % 3 * .3, 25.9), w=250, shrug=1.0, tilt=-3 + 2 * math.sin(t * 1.5 + x)))
+    # галочка над выписавшими
+    o.append(tick(580, 575, (t - T_SDALI) / .38 if t < T_SDALI + .38 else 1 + (t - T_SDALI - .38), 1.25))
+    # серое облако над ждавшими
+    cu = (t - T_PROSTO) / .5
+    if cu > 0:
+        cs = 3.4 * back_out(cu, 1.9)
+        o.append(PR.anx_cloud(1860, 640 + 12 * math.sin(t * 2.4), cs, 1, t))
+        for i in range(3):
+            tt_ = (t * .9 + i / 3) % 1
+            if cu > 1:
+                o.append(line([(1800 + 60 * i, 790 + 120 * tt_), (1796 + 60 * i, 850 + 120 * tt_)], 6, "#58547A", taper=.5, wmin=.4, seed=4600 + i, op=1 - tt_))
+    cx = 540 + 1260 * pan + 12 * math.sin(t * .9)
+    cam = lib.cam(cx, 940 - 20 * pan, z, -.6 + 1.2 * pan + .9 * bump(t, T_PROSTO, .3))
+    return f'<g transform="{cam}">{"".join(o)}</g>'
+
+
+FRAMES["s12"] = frame12
