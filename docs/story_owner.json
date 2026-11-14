@@ -4,24 +4,6 @@
  "note": "session — ведущая (диспетчер); worker — отдельная облачная сессия, которая сейчас делает один рилс",
  "workers": [
   {
-   "reel": 49,
-   "session": "session_01XV6HF7PBmfMwmvFniQWXh8",
-   "started": "2026-11-14T08:46:10Z",
-   "model": "sonnet"
-  },
-  {
-   "reel": 50,
-   "session": "session_01XV6HF8eCh1u79Gy2U6tkSZ",
-   "started": "2026-11-14T08:46:10Z",
-   "model": "sonnet"
-  },
-  {
-   "reel": 51,
-   "session": "session_01XV6HF883jAMmsKM7f1XY7T",
-   "started": "2026-11-14T08:46:10Z",
-   "model": "sonnet"
-  },
-  {
    "reel": 53,
    "session": "session_01XV6HF9w4yTGDdQRXg9hcsC",
    "started": "2026-11-14T08:47:21Z",
