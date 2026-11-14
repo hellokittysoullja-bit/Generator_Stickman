@@ -3,8 +3,13 @@ s05 (6.7–8.9) часы без цифр крупно, на «полчаса» (
 import math
 
 import dima
+import os
+import sys
+
 import fxprops as fp
 import lib
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'common'))
+import props
 from lib import INK, W, H, back_out, blob, blur, cam, clamp, ease_in, ease_io, ease_out, ellipse_pts, f, line, lin_grad, mix, rad_grad, rect_pts, shape, smooth, spring, svg
 
 SEED = 7000
@@ -14,6 +19,10 @@ HIT_HALF = 7.02
 
 def lerp(a, b, u):
     return a + (b - a) * u
+
+
+def rnd(i):
+    return abs(math.sin(i * 12.9898) * 43758.5453) % 1.0
 
 
 # ═════════════════════════ общие куски: стена, пол, дверь ═════════════════════════
@@ -164,6 +173,13 @@ def dima_svg4(t):
                 expr={"lid": 1.0, "look": (0.95, 0.25), "brows": "strain", "mouth": "pant", "hair": 5 * math.sin(t * 9)})
     dima.BS = BS4
     dima.LWK = 1.2
+    kL = 1.0 / 0.6
+
+    def held(Wr, d):
+        sl = 9 * math.sin(t * 34) + 4 * math.sin(t * 21)
+        return props.glass(Wr[0] + d[0] * 64 + 6, Wr[1] + d[1] * 64 + 52, kL, 0.5 - 0.2 * clamp((t - 5.0) / 1.0), tilt=-8 + 5 * math.sin(t * 17), slosh=sl, seed=4)
+
+    pose["held"] = ("front", held)
     g, _ = dima.draw(pose)
     return g, hip
 
@@ -189,6 +205,23 @@ def s04_frame(t):
     s.append(fp.shadow(hip[0] + 30, FLOOR4 + 18, 210, 24, .3, 10) if t < 5.7 else "")
     s.append(f'<g clip-path="url(#{cid})"><g transform="translate({f(hip[0])} {FLOOR4 - 10}) scale({k:.4f}) translate({f(-hip[0])} {-(FLOOR4 - 10)})">{g}</g></g>')
     s.append(frame)
+    # брызги из стакана: капли летят назад и вниз
+    for i in range(0, 60):
+        tb = 4.9 + i * 0.04
+        e = t - tb
+        if not 0 < e < 0.7 or tb > T_ARR:
+            continue
+        hb, _, _, thb = dima_run4(tb)
+        ksb = BS4 / 0.44
+        gx, gy = hb[0] + 40 + 150 * ksb * math.sin(thb) + 14, hb[1] - 70 + 60 * ksb * math.cos(thb) - 70
+        vx, vy = -430 - 220 * rnd(i), -330 + 260 * rnd(i + 7) - 120 * math.sin(i)
+        px, py = gx + vx * e, gy + vy * e + 1500 * e * e
+        if py < FLOOR4 + 30:
+            s.append(props.droplet(px, py, 1.0 + .5 * rnd(i + 3), rot=math.degrees(math.atan2(vy + 3000 * e, vx)) + 90, seed=i))
+    # лужица у двери после хлопка
+    if t > T_SLAM - 0.1:
+        pu = clamp((t - T_SLAM) / 0.8)
+        s.append(shape(ellipse_pts(DCX - 40, FLOOR4 + 40, 40 + 140 * ease_out(pu), 12 + 30 * ease_out(pu), 18), props.C_WATER_TOP, "", w=3.4, seed=SEED + 900))
     # створка: распахивается внутрь (ребром), хлопает на «туалет»
     if t < T_OPEN:
         c = 1.0
