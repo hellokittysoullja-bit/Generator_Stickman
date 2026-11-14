@@ -30,7 +30,7 @@ for sid, (c0, c1) in CAM_DEFAULT.items():
     start = max(0.0, sh['t0'] - PAD)
     end = sh['t1'] + PAD          # s18 — до 38.7 (контракт брифа 40), не до end
     n = int(round((end - start) * FPS))
-    S = round(min(2.6, max(1.15, 1.06 * 1920 / min(c0[2], c1[2]))), 3)
+    S = round(min(3.3, max(1.15, 1.06 * 1920 / min(c0[2], c1[2]))), 3)
     xs, ys = [], []
     for cx, cy, h in (c0, c1):
         w = h * 1080 / 1920
