@@ -172,7 +172,7 @@ def head(st, t):
     return "".join(s)
 
 
-def body(walk=None, legs=0.0, paw=0.0, paw_dx=40.0):
+def body(walk=None, legs=0.0, paw=0.0, paw_dx=70.0):
     """walk — фаза шага (передние лапы по очереди поднимаются, задние в противофазе); legs 0..1 — задние лапы вытянуты (толчок/полёт)."""
     s = []
     bd = [(760, 1296), (744, 1240), (756, 1180), (790, 1142), (880, 1142), (916, 1180), (928, 1240), (912, 1296)]
@@ -207,7 +207,7 @@ def body(walk=None, legs=0.0, paw=0.0, paw_dx=40.0):
         dx = 0.0
         if sx > 0 and paw > .02:    # рилс 64: правая (от зрителя) передняя лапа тянется вперёд-вверх (тянет ящик, трогает)
             from ink import band as _band
-            tip = (fx + paw_dx * paw * 1.6, 1306 - 110 * paw)
+            tip = (fx + paw_dx * paw * 1.6, 1306 - 150 * paw)
             arm = _band([(fx, 1236), (fx + paw_dx * paw * .8, 1270 - 70 * paw), tip], 40, 34, step=4, cap=False)
             s.append(shape(arm, CAT, blob([(fx + 6, 1230), (fx + 30, 1230), (tip[0] + 20, tip[1]), (tip[0], tip[1])], CAT_SH, .6), w=4.6, seed=sd))
             pp = ellipse_pts(tip[0] + 4, tip[1], 24, 21, 12, rot=-30 * paw)
@@ -236,7 +236,7 @@ def draw(x, y, k, st, t):
     o.append(f'<g transform="rotate({tail_a:.2f} {TAIL_PIVOT[0]} {TAIL_PIVOT[1]})">{tail_art()}{flame(t, 1.3 - .45 * sl, st.get("flame_e", 1.0))}</g>')
     sy = br * (1 - .2 * sl) * st.get("sy", 1.0)
     sx = (1 + .12 * sl) * st.get("sx", 1.0)
-    o.append(f'<g transform="translate({CX} {CBOT}) scale({sx:.4f} {sy:.4f}) translate({-CX} {-CBOT})">{body(st.get("walk"), st.get("legs", 0.0), st.get("paw", 0.0), st.get("paw_dx", 40.0))}</g>')
+    o.append(f'<g transform="translate({CX} {CBOT}) scale({sx:.4f} {sy:.4f}) translate({-CX} {-CBOT})">{body(st.get("walk"), st.get("legs", 0.0), st.get("paw", 0.0), st.get("paw_dx", 70.0))}</g>')
     hy = -(sy - 1) * (CBOT - NECK[1]) + 34 * sl + 70 * st.get("drop", 0.0)
     o.append(f'<g transform="translate({22 * sl:.2f} {hy:.2f}) rotate({tilt:.2f} {NECK[0]} {NECK[1]})">{head(st, t)}</g>')
     return f'<g transform="translate({x:.2f} {y:.2f}) rotate({st.get("rot", 0.0):.2f}) scale({k:.4f}) translate({-CX} {-CBOT})">{"".join(o)}</g>'
