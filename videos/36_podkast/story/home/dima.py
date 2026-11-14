@@ -1,4 +1,7 @@
-"""Дима в полный рост для сцены stairs рилса 24: тот же герой, что в рилсе 23 (голова, волосы, лицо, мешки, щетина —
+"""Рилс 36 (сцена home): копия dima.py рилса 32 (park) + крюк over_torso (сумка, наушники поверх худи под ближней
+рукой), глаза-зажмур (shut), румянец (flush), рот strain (стиснутые зубы), палитра куртки (set_palette).
+
+Исходно: Дима в полный рост для сцены stairs рилса 24: тот же герой, что в рилсе 23 (голова, волосы, лицо, мешки, щетина —
 перенесены из 23_vybor/story/room/chars_src/heroes23.py), тело — худи горчичного цвета, джинсы, кеды.
 
 Скелет считается в мировых координатах (pose()), рисунок — в «единицах головы» (L: голова ~300, как в 23) и
@@ -20,6 +23,16 @@ HOOD, HOOD_SH, HOOD_SH2, FOLD = "#d4a23e", "#a97b25", "#8c6219", "#6b4a12"
 JEANS, JEANS_SH, JEANS_SEAM = "#454b5c", "#30343f", "#666d80"
 SHOE, SHOE_SH, SOLE, SOLE_SH = "#f7f5f0", "#d6d1c7", "#ebe6db", "#bfb8aa"
 FAR = (0.80, 0.80, 0.88)
+
+HOODIE = (HOOD, HOOD_SH, HOOD_SH2, FOLD)
+JACKET = ("#5f7048", "#46553a", "#36422c", "#2c3624")     # оливковая куртка с капюшоном
+
+
+def set_palette(p):
+    """Цвета верха: dima.set_palette(dima.JACKET) или dima.HOODIE (рукава и туловище читают их при рисовании)."""
+    global HOOD, HOOD_SH, HOOD_SH2, FOLD
+    HOOD, HOOD_SH, HOOD_SH2, FOLD = p
+
 
 # длины (L-единицы)
 THIGH, SHIN, AH = 310.0, 300.0, 62.0          # бедро, голень, высота лодыжки над подошвой
@@ -106,6 +119,11 @@ def head(expr):
             continue
         inner.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{rs.uniform(1.2, 2.2):.1f}" fill="#5c4446" opacity=".55"/>')
     inner.append(blob(ellipse_pts(54, -10, 100, 62, 14), "#d9a08f", .3))
+    fl = expr.get("flush", 0.0)
+    if fl > 0.01:
+        inner.append(blob([(-120, -140), (130, -140), (130, 140), (-120, 140)], "#e0524a", .38 * fl))
+        inner.append(blob(ellipse_pts(-10, 40, 40, 22, 12), "#d8393a", .45 * fl))
+        inner.append(blob(ellipse_pts(100, 44, 18, 16, 10), "#d8393a", .45 * fl))
     s.append(shape(FACE, SKIN, "".join(inner), w=5.6, seed=153))
     s.append(line([(-66, 70), (-30, 104), (6, 118)], 2.4, SKIN_SH2, seed=159, op=.8))
     s.append(line([(30, 112), (44, 116), (56, 112)], 2.6, seed=167, op=.75))
@@ -116,7 +134,16 @@ def head(expr):
         if sd == 154:
             s.append(line([(cx - rx * .5, cy + ry * 1.27), (cx + rx * .05, cy + ry * 1.62), (cx + rx * .5, cy + ry * 1.32)], 2.2,
                           seed=sd + 5, op=.75))
+    shut = expr.get("shut", 0.0)
     for nm, (cx, cy, rx, ry), sd in [("F", EYE_F, 160), ("N", EYE_N, 161)]:
+        if shut > 0.5:          # зажмурился: глаз — стиснутая дуга, морщинки у внешнего края
+            s.append(line([(cx - rx * .95, cy - 2), (cx - rx * .3, cy + 8), (cx + rx * .4, cy + 7), (cx + rx * .95, cy - 4)], 6.4, seed=sd,
+                          taper=.35, wmin=.35))
+            ox = cx + rx * (1.05 if nm == "F" else -1.05)
+            sg = 1 if nm == "F" else -1
+            for j, dy in enumerate((-12, 0, 12)):
+                s.append(line([(ox, cy + dy * .6), (ox + sg * 16, cy + dy * 1.3 - 2)], 2.8, seed=sd + 30 + j, op=.85))
+            continue
         ep = ellipse_pts(cx, cy, rx, ry, 14)
         cid = lib.clip_of(ep)
         s.append(f'<g><path d="{fill_d(ep)}" fill="#f6f2ea"/><g clip-path="url(#{cid})">')
@@ -170,6 +197,12 @@ def head(expr):
                        blob([(46, 106), (64, 100), (84, 104), (70, 116), (52, 116)], "#c86b6b"), w=4.2, seed=181))
         s.append(line([(22, 76), (30, 82)], 2.6, seed=174, op=.8))
         s.append(line([(98, 70), (104, 76)], 2.6, seed=175, op=.8))
+    elif m == "strain":      # стиснутые зубы от натуги
+        s.append(shape([(30, 84), (60, 80), (92, 82), (100, 92), (92, 104), (60, 108), (32, 102)], "#f4ede0",
+                       line([(34, 93), (96, 93)], 2.6, "#8b7d70", seed=183) +
+                       "".join(line([(44 + k * 13, 82), (44 + k * 13, 106)], 2, "#8b7d70", seed=184 + k, op=.8) for k in range(4)),
+                       w=4.4, seed=182))
+        s.append(line([(22, 80), (30, 88)], 2.6, seed=174, op=.8))
     elif m == "gape":        # растерянное «о»
         s.append(shape(ellipse_pts(64, 96, 12, 14, 12), "#5a2b33", blob(ellipse_pts(64, 103, 8, 4, 8), "#c86b6b"), w=3.8, seed=172))
         s.append(blob([(52, 114), (76, 114), (72, 118), (56, 118)], SKIN_SH, .8))
@@ -466,6 +499,9 @@ def draw(pose):
                      w=4.4, seed=890))
     deg = math.degrees(lean)
     out.append(f'<g transform="rotate({deg:.3f})">{hood_s}{hoodie}{strings}</g>')
+    ot = pose.get("over_torso")
+    if ot:
+        out.append(ot(dict(S=S, neck=neck, up=up, fw=fw, lean=lean, hpos=hpos, arms=arms)))
     out.append(f'<g transform="translate({hpos[0]:.2f} {hpos[1]:.2f}) rotate({math.degrees(lean * .5 + ha):.3f})">{head(pose.get("expr", {}))}</g>')
     out.append(arm_svg("n"))
     g = f'<g transform="translate({H[0]:.3f} {H[1]:.3f}) scale({BS})">{"".join(out)}</g>'
