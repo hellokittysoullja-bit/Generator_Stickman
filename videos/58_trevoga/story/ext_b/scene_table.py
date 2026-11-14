@@ -190,9 +190,9 @@ def frame(sid, t):
                           6, "#2a2d30", taper=.5, wmin=.3, seed=SEED + 300 + j, op=.4 + .5 * jam))
     # камера: сверху вниз, наезд к листку
     u = clamp((t - 12.2) / 3.2)
-    sc = lerp(0.9, 1.7, ease_io(u) ** 1.2)
-    cyy = lerp(700, 980, ease_io(clamp(u * 1.1)))
-    cxx = lerp(540, 650, ease_io(u))
+    sc = 1.05 + 0.2 * ease_io(clamp((t - 12.2) / 2.2)) + 0.5 * ease_io(clamp((t - 14.4) / 1.0))
+    cyy = lerp(760, 940, ease_io(clamp((t - 12.2) / 2.2))) + 70 * ease_io(clamp((t - 14.4) / 1.0))
+    cxx = 520 + 140 * smooth(14.3, 15.3, t)
     rot = lerp(-1.0, 1.2, u)
     kk = math.exp(-(t - T_SAG) * 7) if t > T_SAG else 0
     cyy += 16 * kk * math.sin((t - T_SAG) * 40) if t > T_SAG else 0
