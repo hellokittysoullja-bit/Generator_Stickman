@@ -1,4 +1,6 @@
-"""Кухонный таймер-яйцо рилса 29.
+"""Кухонный таймер-яйцо рилса 50 (s15, 29.88–31.92): рука заводит шкалу на 60 минут (1:00) на «час» (30.40), цифры «1:00» на табло
+тикают вниз, на «успевает» (31.00) звонок и зелёная галочка. Тексты рилса 29 ниже (CLICK=«щелчок»).
+Старое:
 s15 (24.2–26.52): крупно таймер на столешнице; рука в горчичном рукаве (кисть как в кухне рилса 28) заходит справа,
 берёт жёлтый верх и в два поворота заводит шкалу; на «десять» (25.76) против указателя встаёт 10 — щелчок, цифра
 вспыхивает крупно, рука уходит."""
@@ -17,7 +19,9 @@ EC = (540, 760)          # центр яйца
 ERX, ETOP, EBOT = 250, 400, 1110
 SEAM = 820               # шов: выше — жёлтый верх со шкалой, ниже — белое основание
 TOP = 1080               # дальний край столешницы
-CLICK = 25.76
+CLICK = 30.40
+T0 = 29.68
+RING = 31.00
 
 
 def egg_pts():
@@ -152,11 +156,11 @@ def egg(setv, ridge, glow10):
             continue
         x = cx + (rb - 14) * math.sin(ph)
         y = yb - 52
-        g = glow10 if m == 10 else 0.0
+        g = glow10 if m == 0 else 0.0
         fs = 52 * (1 + 0.45 * g)
         col = mix("#1c1622", "#e8461e", min(1, g * 1.4)) if g > 0 else INK
         inner += (f'<text transform="translate({f(x)} {f(y)}) scale({c:.3f} 1)" text-anchor="middle" font-family="IDB" '
-                  f'font-weight="900" font-size="{f(fs)}" fill="{col}">{m}</text>')
+                  f'font-weight="900" font-size="{f(fs)}" fill="{col}">{m if m else 60}</text>')
     # шов
     w = half_w(SEAM)
     inner += line([(cx - w - 4, SEAM - 2), (cx, SEAM + 8), (cx + w + 4, SEAM - 2)], 5, INK, taper=.05, wmin=.9, seed=860)
@@ -169,14 +173,56 @@ def egg(setv, ridge, glow10):
 
 
 def setv_at(t):
-    """Поворот верха: два хода руки, щелчок на 10."""
-    a = ease_io(clamp((t - 24.62) / 0.5)) * 5.6
-    b = ease_io(clamp((t - 25.3) / (CLICK - 25.3))) * 4.4
+    """Поворот верха: два хода руки до 60 (щелчок на «час»), потом шкала тикает назад к нулю, на звонке дрожит."""
+    a = ease_io(clamp((t - 29.9) / 0.26)) * 35
+    b = ease_io(clamp((t - 30.2) / (CLICK - 30.2))) * 25
     v = a + b
     e = t - CLICK
     if e >= 0:
-        v = 10 + 0.5 * math.exp(-e * 12) * math.sin(e * 60)
+        v = 60 + 0.8 * math.exp(-e * 12) * math.sin(e * 60)
+        d = clamp((t - 30.62) / (RING - 30.62))
+        v = 60 - 59 * (d ** 1.6) + (0 if d < 1 else 0)
+        if t >= RING:
+            v = 1 - 1 * clamp((t - RING) / 0.1) + 0.7 * math.sin((t - RING) * 70) * math.exp(-(t - RING) * 5)
     return v
+
+
+def lcd(t):
+    """Табло над яйцом: «1:00» после щелчка, потом тикает к «0:00», на звонке мигает зелёным."""
+    cx, cy = EC[0], 215
+    if t < CLICK:
+        return ""
+    d = clamp((t - 30.62) / (RING - 30.62))
+    mins = 60 - int(60 * (d ** 1.6)) if t < RING else 0
+    txt = f"{mins // 60}:{mins % 60:02d}"
+    ring = t >= RING
+    on = 1.0
+    pop = 1 + 0.1 * math.exp(-(t - CLICK) * 10) * math.cos((t - CLICK) * 30)
+    col = "#58ff9a" if not ring else ("#ffe45a" if int((t - RING) * 14) % 2 == 0 else "#58ff9a")
+    s = shape(rect_pts(cx - 230, cy - 90, cx + 230, cy + 90, 26), "#26242e", blob(rect_pts(cx - 230, cy + 40, cx + 230, cy + 90, 24), "#17151c"),
+              w=6, seed=870)
+    s += shape(rect_pts(cx - 205, cy - 66, cx + 205, cy + 66, 14), "#1a2a22", "", w=3, seed=871)
+    s += f'<text x="{f(cx)}" y="{f(cy + 38)}" text-anchor="middle" font-family="IDB" font-weight="900" font-size="120" fill="{col}">{txt}</text>'
+    return f'<g transform="translate({f(cx)} {f(cy)}) scale({pop:.3f}) translate({f(-cx)} {f(-cy)})">{s}</g>'
+
+
+def check(t):
+    """Зелёная галочка в круге справа от табло на звонке."""
+    e = t - RING
+    if e < 0:
+        return ""
+    cx, cy = EC[0] + 330, 520
+    sc = ease_out(clamp(e / 0.16)) * (1 + 0.15 * math.exp(-e * 8) * math.cos(e * 24))
+    s = shape(ellipse_pts(0, 0, 110, 110, 30), "#3fbf5f", blob(ellipse_pts(14, 18, 96, 92, 24), "#2b9a47"), w=6, seed=890)
+    q = clamp((e - 0.1) / 0.18)
+    p0, p1, p2 = (-52, 4), (-14, 44), (56, -40)
+    if q < .5:
+        pts = [p0, (p0[0] + (p1[0] - p0[0]) * q * 2, p0[1] + (p1[1] - p0[1]) * q * 2)]
+    else:
+        r = (q - .5) * 2
+        pts = [p0, p1, (p1[0] + (p2[0] - p1[0]) * r, p1[1] + (p2[1] - p1[1]) * r)]
+    s += line(pts, 22, "#ffffff", taper=.1, wmin=.8, seed=891)
+    return f'<g transform="translate({f(cx)} {f(cy)}) scale({max(sc, .01):.3f})">{s}</g>'
 
 
 def frame(sid, t):
@@ -187,33 +233,36 @@ def frame(sid, t):
     v = setv_at(t)
     e = t - CLICK
     glow = 0.0
-    if e >= 0:
+    if CLICK <= t < RING - 0.3:
         glow = min(1.0, e / 0.08) * (0.75 + 0.25 * math.exp(-e * 5))
     s = [_ST["bg"]]
-    # свечение вокруг «10»
+    # дрожь яйца на звонке
+    er = t - RING
+    shake = 0.0
+    if er >= 0:
+        shake = 5 * math.exp(-er * 2.2) * math.sin(er * 75)
     if glow > 0:
         gx, gy = EC[0], SEAM - 80
         g = rad_grad([(0, "#fff1a0", 1.0 * glow), (.5, "#ffd36a", .7 * glow), (1, "#ffd36a", 0)], gx, gy, 190, 120)
         s.append(f'<rect x="{gx - 200}" y="{gy - 140}" width="400" height="280" fill="url(#{g})"/>')
+    s.append(f'<g transform="rotate({f(shake)} {EC[0]} {EBOT})">')
     s.append(egg(v, v * 6, glow))
-    if glow > 0:
-        gx, gy = EC[0], SEAM - 80
-        g = rad_grad([(0, "#fff0b0", .55 * glow), (1, "#fff0b0", 0)], gx, gy, 130, 80)
-        s.append(f'<rect x="{gx - 160}" y="{gy - 110}" width="320" height="220" fill="url(#{g})" style="mix-blend-mode:screen"/>')
-    # рука: заходит справа, два хода, уходит после щелчка
-    k_in = ease_out(clamp((t - 24.12) / 0.42), 3)
-    k_out = ease_in(clamp((t - (CLICK + 0.22)) / 0.45), 2)
-    tw1 = ease_io(clamp((t - 24.62) / 0.5))
-    rg = ease_io(clamp((t - 25.12) / 0.18))           # перехват назад
-    tw2 = ease_io(clamp((t - 25.3) / (CLICK - 25.3)))
+    s.append("</g>")
+    s.append(lcd(t))
+    # рука: заходит справа (с кадра хлёстом), два хода до щелчка, уходит
+    k_in = ease_out(clamp((t - T0) / 0.22), 3)
+    k_out = ease_in(clamp((t - (CLICK + 0.1)) / 0.35), 2)
+    tw1 = ease_io(clamp((t - 29.9) / 0.26))
+    rg = ease_io(clamp((t - 30.14) / 0.08))
+    tw2 = ease_io(clamp((t - 30.2) / (CLICK - 30.2)))
     twist = tw1 * (1 - rg) + tw2
     hx = EC[0] + 100 + 700 * (1 - k_in) + 500 * k_out - 40 * twist
     hy = ETOP + 150 - 30 * (1 - k_in) - 140 * k_out + 10 * twist
     rot = -92 + 18 * twist - 20 * k_out
-    curl = 0.6 if 24.55 < t < CLICK + 0.2 else 0.0
-    if t > 24.0:
+    curl = 0.6 if 29.8 < t < CLICK + 0.1 else 0.0
+    if k_out < 1:
         s.append(lay_hand(hx, hy, 1.05, rot, fsq=0.55, curl=curl))
-    # щелчок
+    # щелчок и звон: штрихи
     if 0 <= e < 0.35:
         a = 1 - e / 0.35
         for k in range(7):
@@ -223,23 +272,35 @@ def frame(sid, t):
             s.append(line([(cx0 + r0 * 1.5 * math.cos(ang), cy0 + r0 * math.sin(ang)),
                            (cx0 + (r0 + 60 * a) * 1.5 * math.cos(ang), cy0 + (r0 + 60 * a) * math.sin(ang))], 9 * a + 1, INK, taper=.5,
                           seed=880 + k))
-    # хлёст в начале и наезд
-    u = clamp((t - 24.0) / 0.2)
+    if 0 <= er < 0.7:
+        a = 1 - er / 0.7
+        for k in range(10):
+            ang = math.radians(-160 + k * 16 + (k % 2) * 6)
+            r0 = 300 + 60 * ease_out(er / .7)
+            cx0, cy0 = EC[0], 760
+            s.append(line([(cx0 + r0 * math.cos(ang), cy0 + r0 * 1.05 * math.sin(ang)),
+                           (cx0 + (r0 + 80 * a) * math.cos(ang), cy0 + (r0 + 80 * a) * 1.05 * math.sin(ang))], 10 * a + 1.5, INK, taper=.5,
+                          seed=900 + k))
+    s.append(check(t))
+    u = clamp((t - T0) / 0.2)
     k = ease_out(u, 3)
     ccx = 560 + 560 * (1 - k)
-    ccy = 760
-    vv = clamp((t - 24.0) / 2.72)
-    scc = 1.3 + 0.12 * ease_io(vv)
+    ccy = 700
+    vv = clamp((t - T0) / 2.44)
+    scc = 1.2 + 0.1 * ease_io(vv)
     rot_c = 3 * (1 - k) + 0.4 * math.sin(t * 1.4)
-    if e >= 0:
+    if e >= 0 and er < 0:
         kk = math.exp(-e * 7)
-        scc *= 1 + 0.05 * kk * math.sin(min(e * 14, math.pi))
-        ccy += 8 * kk * math.sin(e * 45)
+        scc *= 1 + 0.04 * kk * math.sin(min(e * 14, math.pi))
+    if er >= 0:
+        kk = math.exp(-er * 7)
+        scc *= 1 + 0.05 * kk
+        ccy += 9 * kk * math.sin(er * 45)
     body = "".join(s)
     if u < 1:
         for j in range(7):
             yy = 300 + j * 150
             ln = 520 * (1 - k)
             x0 = 1100 - (j % 3) * 60
-            body += line([(x0, yy), (x0 - ln, yy + 6)], 10 * (1 - k) + 2, INK, taper=.6, seed=890 + j)
-    return svg(f'<rect width="{W}" height="{H}" fill="#efd9ae"/><g transform="{cam(ccx, ccy - 0, scc, rot_c)}">{body}</g>')
+            body += line([(x0, yy), (x0 - ln, yy + 6)], 10 * (1 - k) + 2, INK, taper=.6, seed=910 + j)
+    return svg(f'<rect width="{W}" height="{H}" fill="#efd9ae"/><g transform="{cam(ccx, ccy, scc, rot_c)}">{body}</g>')

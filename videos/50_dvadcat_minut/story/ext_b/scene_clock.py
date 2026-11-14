@@ -1,4 +1,6 @@
-"""Настенные часы рилса 29.
+"""Большие часы рилса 50 (s05, 7.08–8.4): стрелки бешено крутятся 14:00 -> 17:00 на «три часа» (7.40–8.0), за часами темнеет.
+(Заготовки night_bg/tiles/clock — из рилса 29.)
+Старые тексты рилса 29:
 s09 (12.36–14.4): ночь, тёмно-синяя плитка кухни, тёплый отсвет лампы. Стрелки бегут и щёлкают на 1:00 на «час» (12.52),
 наезд-удар; потом минутная делает круг, часовая доходит до 2.
 s14 (22.76–24.2): утро, светлая плитка, солнечный луч. Часы показывают 9:40; на «опоздал» (22.88) минутная дёргается,
@@ -52,6 +54,18 @@ def night_bg():
     s.append(shape(rect_pts(-900, 1260, 2000, 1300), "#7a4f2c", "", w=5, seed=603))
     s.append(shape(rect_pts(-900, 1300, 2000, 2800), "#2a2440", blob(rect_pts(-900, 1300, 2000, 1340), "#1a1630"), w=5, seed=604))
     return "".join(s)
+
+
+def day_bg():
+    """Дневная кухня: светлая плитка и тёплый луч окна (без пола) — под часами 14:00."""
+    s = [tiles(False)]
+    beam = [(-600, -200), (60, -400), (900, 1500), (240, 1700)]
+    s.append(f'<path d="M{beam[0][0]} {beam[0][1]} L{beam[1][0]} {beam[1][1]} L{beam[2][0]} {beam[2][1]} L{beam[3][0]} {beam[3][1]}Z" '
+             f'fill="#fff6d0" opacity=".55" {blur(30)}/>')
+    s.append(shape(rect_pts(-900, 1260, 2000, 1300), "#c99059", "", w=5, seed=605))
+    s.append(shape(rect_pts(-900, 1300, 2000, 2800), "#e0c9a0", blob(rect_pts(-900, 1300, 2000, 1340), "#c9b088"), w=5, seed=606))
+    return "".join(s)
+
 
 
 def morning_bg():
@@ -168,149 +182,100 @@ def speed_lines(u, k, y0=300, n=7, sd=690):
     return "".join(s)
 
 
-def frame9(t):
-    s = [_ST["night"]]
-    # стрелки: до удара бегут с 12:41 и щёлкают на 1:00 с перелётом
-    if t < HIT9:
-        m = 41 + 19 * ease_in(clamp((t - 12.16) / (HIT9 - 12.16)), 1.6)
-        min_a = m * 6
-        hour_a = (12 + m / 60) * 30
+
+T0 = 6.88           # начало клипа
+HIT = 7.40          # «три»
+SPIN0, SPIN1 = 7.34, 8.22
+
+
+def spin_angles(t):
+    """(hour_a, min_a, k) — стрелки 14:00 -> 17:00: минутная делает 3 круга, часовая идёт с 2 до 5. Перед рывком — замах назад."""
+    if t < SPIN0:
+        m = 0.0
+        w = clamp((t - (SPIN0 - 0.2)) / 0.2)       # замах назад на 0.2 с
+        m = -14 * math.sin(w * math.pi / 2) * (1 if w < 1 else 1)
+        k = 0.0
     else:
-        e = t - HIT9
-        over = 9 * math.exp(-e * 9) * math.cos(e * 40)
-        run = 360 * ease_io(clamp((t - 12.95) / (14.6 - 12.95))) * 0.98
-        min_a = 360 + over + run
-        hour_a = 30 + run / 12 + over * 0.15
-    sec_a = (t * 6 * 60 * 0.25) % 360 if t < HIT9 else (t * 360 * 1.3) % 360
-    # часы чуть качнутся от щелчка
-    sw = 0.0
-    e = t - HIT9
+        u = clamp((t - SPIN0) / (SPIN1 - SPIN0))
+        k = ease_io(u) * 0.55 + (1 - (1 - u) ** 2.2) * 0.45
+        m = -14 * (1 - clamp((t - SPIN0) / 0.12))
+        m += 1080 * k + 0.0
+        # дошла до 17:00 с перелётом и успокоением
+        e = t - SPIN1
+        if e >= 0:
+            m += 7 * math.exp(-e * 8) * math.cos(e * 30)
+    min_a = m
+    hour_a = 60 + (m / 360.0) * 30
+    return hour_a, min_a, (clamp((t - SPIN0) / (SPIN1 - SPIN0)) if t >= SPIN0 else 0.0)
+
+
+def frame5(t):
+    hour_a, min_a, k = spin_angles(t)
+    # темнеет: ночной фон проступает поверх дневного (плитка, лампа), с 7.5 до 8.35
+    dk = smooth(7.5, 8.35, t)
+    s = [_ST["day"]]
+    if dk > 0:
+        s.append(f'<g opacity="{dk:.3f}">{_ST["night"]}</g>')
+    sec_a = (t * 360 * (0.6 + 6 * k)) % 360
+    sw = 0.5 * math.sin(t * 2.3)
+    e = t - HIT
     if e >= 0:
-        sw = 2.2 * math.exp(-e * 5) * math.sin(e * 24)
-    sw += 0.4 * math.sin(t * 2.3)
+        sw += 3.0 * math.exp(-e * 5) * math.sin(e * 28)
+    # во время рывка часы дрожат
+    if 0 < k < 1:
+        sw += 1.6 * math.sin(t * 90) * math.sin(math.pi * k)
     s.append(shadow(26, 30))
     s.append(f'<g transform="rotate({f(sw)} {CC[0]} {CC[1] - R - 30})">')
     s.append(line([(CC[0], CC[1] - R - 40), (CC[0], CC[1] - R + 4)], 8, INK, seed=670))
-    s.append(clock(t, hour_a, min_a, sec_a, True))
-    s.append("</g>")
-    # штрихи щелчка
-    if 0 <= e < 0.35:
-        a = 1 - e / 0.35
-        for k in range(8):
-            ang = math.radians(k * 45 + 22)
-            r0 = R + 30 + 80 * ease_out(e / .35)
-            s.append(line([(CC[0] + r0 * math.cos(ang), CC[1] + r0 * math.sin(ang)),
-                           (CC[0] + (r0 + 70 * a) * math.cos(ang), CC[1] + (r0 + 70 * a) * math.sin(ang))], 9 * a + 1, "#ffd27a",
-                          taper=.5, seed=680 + k))
-    # хлёст: камера влетает слева
-    u = clamp((t - 12.16) / 0.2)
-    k = ease_out(u, 3)
-    ccx = 520 - 560 * (1 - k)
-    ccy = 770
-    scc = 1.28 + 0.06 * clamp((t - 12.16) / 2.4)
-    rot = -4 * (1 - k)
-    if e >= 0:
-        kk = math.exp(-e * 6)
-        scc += 0.2 * ease_out(min(1, e / 0.08)) * (0.55 + 0.45 * kk)
-        ccy += 10 * math.exp(-e * 9) * math.sin(e * 45)
-        ccy -= 40 * ease_out(min(1, e / 0.1))
-    body = "".join(s)
-    if u < 1:
-        body += speed_lines(u, k)
-    return body, cam(ccx, ccy, scc, rot)
-
-
-def frame14(t):
-    s = [_ST["morning"]]
-    e = t - HIT14
-    # дверь: приоткрыта, на ударе хлопает (с отскоком)
-    if e < 0:
-        oa = 1.0 - 0.15 * smooth(22.6, 22.88, t)
-    else:
-        oa = max(0.0, 0.85 * (1 - ease_in(min(1, e / 0.08), 2)))
-        if e > 0.08:
-            oa = 0.05 * abs(math.exp(-(e - .08) * 8) * math.sin((e - .08) * 30))
-    s.append(door(oa, t))
-    # тень и часы
-    jump = 0.0
-    sw = 0.3 * math.sin(t * 2.0)
-    if e >= 0:
-        jump = -50 * math.exp(-e * 6) * abs(math.sin(e * 14))
-        sw += 6 * math.exp(-e * 4) * math.sin(e * 18)
-    s.append(shadow(30, 34, col="#8a6a30", op=.35))
-    s.append(f'<g transform="translate(0 {f(jump)}) rotate({f(sw)} {CC[0]} {CC[1] - R - 30})">')
-    s.append(line([(CC[0], CC[1] - R - 40), (CC[0], CC[1] - R + 4)], 8, INK, seed=670))
-    m = 40.0
-    if e >= 0:
-        m = 41 + (-1 + 0) * 0
-        m += 0.6 * math.exp(-e * 8) * math.sin(e * 50)
-    min_a = m * 6
-    hour_a = (9 + m / 60) * 30
-    sec_a = (t * 360 / 60 * 6) % 360 + 120
     s.append(clock(t, hour_a, min_a, sec_a, False))
     s.append("</g>")
-    s.append(f'<g>{line([(CC[0], CC[1] - R - 40), (CC[0] + 4, CC[1] - R - 52)], 10, INK, seed=671)}</g>')   # гвоздь
-    # штрихи удара у двери
-    if 0 <= e < 0.4:
-        a = 1 - e / 0.4
-        for k, yy in enumerate((-120, -10, 100, 880, 950)):
-            x0 = DOOR_X - 60 - 40 * ease_out(e / .4)
-            s.append(line([(x0, yy), (x0 - 100 * a, yy + (k - 2) * 16 * a)], 10 * a + 1, INK, taper=.5, seed=690 + k))
-        for k in range(5):
-            ang = math.radians(-60 + k * 30)
-            r0 = R + 30 + 60 * ease_out(e / .4)
-            s.append(line([(CC[0] + r0 * math.cos(ang - math.pi / 2), CC[1] + r0 * math.sin(ang - math.pi / 2)),
-                           (CC[0] + (r0 + 60 * a) * math.cos(ang - math.pi / 2), CC[1] + (r0 + 60 * a) * math.sin(ang - math.pi / 2))],
-                          8 * a + 1, INK, taper=.5, seed=700 + k))
-    # клубок пыли катится от двери влево
+    # штрихи вращения вокруг ободка: короткие дуги, бегущие по кругу (сплошные, не прозрачные)
+    if 0.04 < k < 0.97:
+        a = math.sin(math.pi * k)
+        for j in range(10):
+            base = math.radians(j * 36 + min_a * 0.9)
+            for sub in (0.0, 0.12):
+                r0 = R + 34 + 22 * (j % 3)
+                p = [(CC[0] + r0 * math.cos(base - sub - q * 0.22), CC[1] + r0 * math.sin(base - sub - q * 0.22)) for q in (0, 0.5, 1)]
+                if sub == 0.0:
+                    s.append(line(p, 8 * a + 1.2, INK, taper=.7, wmin=.2, seed=730 + j))
+    # круглая надпись-вспышка времени «17:00» после остановки
+    if t >= SPIN1:
+        ee = t - SPIN1
+        pop = 1 + 0.12 * math.exp(-ee * 9) * math.cos(ee * 26)
+        sc = ease_out(clamp(ee / 0.14)) * pop
+        px, py = CC[0], CC[1] + R + 150
+        s.append(f'<g transform="translate({f(px)} {f(py)}) scale({sc:.3f}) translate({f(-px)} {f(-py)})">'
+                 + shape(rect_pts(px - 200, py - 70, px + 200, py + 66, 34), "#fbf3de", blob(rect_pts(px - 200, py + 30, px + 200, py + 66, 30), "#e3d4b0"),
+                         w=5, seed=740)
+                 + f'<text x="{f(px)}" y="{f(py + 28)}" text-anchor="middle" font-family="IDB" font-weight="900" font-size="104" fill="#d8382e">17:00</text></g>')
+    # камера: хлёст слева (6.88–7.08), наезд, удар на «три», дрожь рывка
+    u = clamp((t - T0) / 0.2)
+    kk = ease_out(u, 3)
+    ccx = 500 - 560 * (1 - kk) + 6 * math.sin(t * 40) * math.sin(math.pi * k) * (k > 0)
+    ccy = 700
+    scc = 1.18 + 0.1 * clamp((t - T0) / 1.5)
+    rot = -4 * (1 - kk)
     if e >= 0:
-        k = ease_out(min(1, e / 1.4), 2)
-        dxp = DOOR_X + 30 - 560 * k
-        rr = 60
-        rot = -k * 620 / rr * 57.3
-        bounce = -abs(math.sin(e * 9)) * 22 * math.exp(-e * 2)
-        cyp = FLOOR + 40 - rr + bounce
-        s.append(blob(ellipse_pts(dxp, FLOOR + 44, rr * 1.1, 10, 14), "#7a5a30", .5, blur(4)))
-        pts = lib.ellipse_pts(0, 0, rr, rr * .92, 18, jitter=.18, seed=5)
-        from ink import fur
-        fp = fur(pts, 7, 4, seed=7)
-        inner = blob(T(ellipse_pts(14, 14, rr * .8, rr * .7, 12), 0, 0), "#8e8a92")
-        for j in range(5):
-            aa = j * 1.3
-            inner += line([(math.cos(aa) * 20, math.sin(aa) * 20), (math.cos(aa + 1) * 34, math.sin(aa + 1) * 30)], 2.4, "#5d5964", seed=720 + j)
-        s.append(f'<g transform="translate({f(dxp)} {f(cyp)}) rotate({f(rot)})">{shape(fp, "#b4b0b8", inner, w=3.4, seed=710)}</g>')
-        # пылинки за клубком
-        for j in range(5):
-            ee = e - j * 0.12
-            if 0 < ee < 0.6:
-                sz = 9 * (1 - ee / 0.6)
-                s.append(blob(ellipse_pts(dxp + 60 + j * 26, FLOOR + 10 - 40 * ee - j * 6, sz, sz, 8), "#b4b0b8"))
-    # камера: медленный наезд, удар на «опоздал»
-    v = clamp((t - 22.56) / 1.84)
-    ccx, ccy = 650 + 10 * v, 720 - 10 * v
-    scc = 1.13 + 0.05 * v
-    rot = 0.4 * math.sin(t * 1.3)
-    if e >= 0:
-        kk = math.exp(-e * 7)
-        scc *= 1 + 0.07 * ease_out(min(1, e / .06)) * (0.4 + 0.6 * kk)
-        ccx += 12 * kk * math.sin(e * 47)
-        ccy += 14 * kk * math.sin(e * 39)
-        rot += 1.5 * kk * math.sin(e * 30)
-    return "".join(s), cam(ccx, ccy, scc, rot)
+        q = math.exp(-e * 6)
+        scc += 0.16 * ease_out(min(1, e / 0.08)) * (0.5 + 0.5 * q)
+        ccy += 8 * math.exp(-e * 9) * math.sin(e * 45)
+        rot += 1.8 * math.exp(-e * 8) * math.sin(e * 35)
+    body = "".join(s)
+    if u < 1:
+        body += speed_lines(u, kk)
+    return body, cam(ccx, ccy, scc, rot)
 
 
 def frame(sid, t):
     global CC
-    CC = (500, 700) if sid == "s09" else (470, 520)
+    CC = (500, 640)
     if not _ST:
-        if sid == "s09":
-            _ST["night"] = night_bg()
-            _ST["clock_n"] = clock_static(True)
-        else:
-            _ST["morning"] = morning_bg()
-            _ST["clock_d"] = clock_static(False)
+        _ST["night"] = night_bg()
+        _ST["day"] = day_bg()
+        _ST["clock_d"] = clock_static(False)
         lib.static_done()
     lib.dyn_begin()
-    art, cm = frame9(t) if sid == "s09" else frame14(t)
-    bg = "#1a2240" if sid == "s09" else "#efe2c4"
+    art, cm = frame5(t)
+    bg = mix("#efe2c4", "#1a2240", smooth(7.5, 8.35, t))
     return svg(f'<rect width="{W}" height="{H}" fill="{bg}"/><g transform="{cm}">{art}</g>')
