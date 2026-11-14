@@ -15,6 +15,7 @@ import lib
 from lib import INK, band, blob, ellipse_pts, fill_d, ink_closed
 
 LWK = 1.0
+SLIPPERS = [False]      # рилс 37: тапки вместо кед у Димы (s16 — по коридору в тапках)
 C = {}
 PAL = {
     "dima": dict(SKIN="#ecc4a2", SKIN_SH="#d39f83", SKIN_SH2="#bf8a74", HAIR="#5a3826", HAIR_SH="#3d2418", HAIR_HI="#7a5038",
@@ -365,6 +366,17 @@ def shoe(A, phi, far, seed, who):
         return (A[0] + x * c - y * s_, A[1] + x * s_ + y * c) + ((1,) if len(p) > 2 and p[2] else ())
 
     o = []
+    if who == "dima" and SLIPPERS[0]:   # тапок рилса 37 (как у дивана в bed/): синий, мягкий верх на носке, пятка в носке
+        sole = [(-70, 40, 1), (-72, 56), (-62, 66), (166, 66), (178, 54), (172, 40, 1)]
+        o.append(shape([tf(p) for p in sole], far_c("#465390", far), "", w=4.2, seed=seed))
+        sock = [(-36, -34), (-62, -4), (-66, 40, 1), (40, 40, 1), (40, -20), (4, -40)]
+        o.append(shape([tf(p) for p in sock], far_c("#e9e3d8", far), blob([tf(p) for p in [(-66, 20), (40, 20), (40, 40), (-66, 40)]],
+                                                                           far_c("#cfc6b6", far), .9), w=4.0, seed=seed + 1))
+        up = [(10, 42, 1), (6, 0), (30, -26), (90, -30), (150, -12), (176, 18), (172, 42, 1)]
+        inner = blob([tf(p) for p in [(10, 22), (176, 22), (176, 44), (10, 44)]], far_c("#465390", far), .9)
+        inner += blob([tf(p) for p in [(40, -24), (110, -28), (140, -14), (60, -8)]], far_c("#7d8cc2", far), .9)
+        o.append(shape([tf(p) for p in up], far_c("#5f6fa8", far), inner, w=4.4, seed=seed + 2))
+        return "".join(o)
     if who == "friend":          # ботинок: выше, тупой нос, толстая подошва
         up = [(-40, -60), (-66, -20), (-70, 34, 1), (156, 34, 1), (170, 18), (162, 0), (124, -10), (70, -18), (34, -50), (4, -64)]
         sole = [(-74, 30, 1), (-76, 58), (-66, 70), (170, 70), (180, 54), (174, 30, 1), (50, 31)]
