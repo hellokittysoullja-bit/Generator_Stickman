@@ -249,9 +249,9 @@ def frame17(t):
 T_KOT18, T_BARD = wt("кот", 1), wt("бардак")
 S18_T0 = 44.1
 T_WHIP = T_BARD - .14           # хлёст к кадру хука: пик размытия чуть раньше «бардак»
-CAT18 = (310.0, 940.0)
-K18 = .62
-DIMA18 = (660.0, room.seat_y(1.0))
+CAT18 = (190.0, 942.0)
+K18 = .72
+DIMA18 = (620.0, room.seat_y(1.0))
 
 
 def hook_world(t):
@@ -289,13 +289,16 @@ def dima18(t):
     ex = dict(people.EXPR["dima"]["calm_smile"], look=(-.15 + .1 * bump(t, T_KOT18 - .1, .5), -.05 + .2 * bump(t, T_KOT18 - .1, .5)),
               closed=blinks(t, (45.35, 46.3)))
     # цели рук в неотражённой системе: x' = 2x − мир
-    arms = {"n": ("ik", (2 * x - 330, room.DESK_TOP - 46 + 4 * math.sin(t * 2)), -1), "f": ("ik", (2 * x - 410, room.DESK_TOP - 70), -1)}
+    arms = {"n": ("ik", (2 * x - 372, room.DESK_TOP - 40 + 4 * math.sin(t * 2)), -1), "f": ("ik", (2 * x - 352, room.DESK_TOP - 76), -1)}
     hands = {"n": dict(kind="open", flip=1, dir=(1, .3), curl=(.4, .4, .45, .5), thumb=.4, spread=.08),
              "f": dict(kind="open", flip=1, dir=(1, .35), curl=(.45, .45, .5, .5), thumb=.35)}
     feet = {"n": ((x + 250, room.FL - 50), 0.0), "f": ((x + 200, room.FL - 48), 0.0)}
-    fig = people.figure("dima", x, y + 2 * math.sin(t * 2.2), 1.0, ex, lean=.06 + .02 * math.sin(t * 1.7), head_ang=-.12 + .06 * nod,
-                        arms=arms, hands=hands, feet=feet, flip=True)
-    return fig["svg"]
+    kw = dict(lean=.06 + .02 * math.sin(t * 1.7), head_ang=-.12 + .06 * nod, arms=arms, hands=hands, feet=feet, flip=True)
+    yy = y + 2 * math.sin(t * 2.2)
+    ch = room.swivel_chair(x + 20, y + 24, 1.0, 0.0, side=1)
+    legs = people.figure("dima", x, yy, 1.0, ex, layers=("legs",), **kw)["svg"]
+    rest = people.figure("dima", x, yy, 1.0, ex, layers=("pelvis", "arm_f", "body", "arm_n"), **kw)["svg"]
+    return ch["back"] + ch["base"] + legs + ch["seat"] + rest
 
 
 def frame18(t):
@@ -330,8 +333,8 @@ def frame18(t):
     o.append(catf.draw_f(CAT18[0], CAT18[1], K18, st, t))
     set_ink(z)
     # единственная надпись рилса: пером «кот» над котом, дописано к звуку 44.94
-    o.append(hand_kot.kot(t, T_KOT18 - .06, .36, CAT18[0] - 150, 560, 1.75))
-    cx = 440 + (390 - 440) * u + 8 * math.sin(t * .9)
+    o.append(hand_kot.kot(t, T_KOT18 - .06, .36, CAT18[0] - 110, 545, 1.75))
+    cx = 420 + (360 - 420) * u + 8 * math.sin(t * .9)
     cy = 900 + (820 - 900) * u
     rot = -.6 + .8 * u
     # хлёст на входе плана и уход в хлёст к хуку
