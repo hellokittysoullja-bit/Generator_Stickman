@@ -469,8 +469,8 @@ def s08(t):
     # падение сверху с приземлением ровно на land
     fall_dur = land - t0
     u = clamp((t - t0) / fall_dur)
-    y_final = 700
-    y = -420 + (y_final + 420) * ease_in(u, 2.1)
+    y_final = 780
+    y = -120 + (y_final + 120) * ease_in(u, 2.1)
     sx = sy = 1.0
     if t >= land:
         e = t - land
@@ -490,26 +490,26 @@ def s08(t):
     blink = 1.0 if (t % 2.2) < .1 and t > land + .3 else 0.0
     s = []
     # полка/пятно под мозгом
-    s.append(blob(ellipse_pts(540, 1030, 340, 40, 20), "#c7bbd8"))
-    s.append(brain(540, y, .96 * (1 + .06 * pk), t, look=lk, blink=blink, mood=mood if t > land else "neutral", sx=sx, sy=sy,
+    s.append(blob(ellipse_pts(540, 1130, 380, 44, 20), "#c7bbd8"))
+    s.append(brain(540, y, 1.1 * (1 + .06 * pk), t, look=lk, blink=blink, mood=mood if t > land else "neutral", sx=sx, sy=sy,
                    rot=2.5 * osc(t, 1.4) * (1 if t < t_rem else 0) - 3 * pk, glow=pk if t >= t_rem else 0))
     # «…» мысли до вспомнить
     if land + .15 < t < t_rem + .05:
         for j in range(3):
             on = (t * 3 + j * .7) % 3 < 2.2
             r = 17 + 5 * bump(t, land + .3 + j * .35, .4)
-            s.append(shape(ellipse_pts(780 + j * 52, 420 - j * 40, r, r, 10), "#ffffff", "", w=4.4, seed=5500 + j))
+            s.append(shape(ellipse_pts(800 + j * 52, 400 - j * 40, r, r, 10), "#ffffff", "", w=4.4, seed=5500 + j))
         s.append(txt(942, 330, "?", 120, "#8d6fc9", rot=10, stroke="#ffffff", sw=10))
     # пульс-линия в экране под мозгом
     if t > land:
-        s.append(shape(rect_pts(150, 1100, 930, 1250, 18), "#16202a", "", w=6, seed=5600))
-        s.append(f'<g clip-path="url(#{lib.clip_rect(160, 1108, 760, 134, 12)})">' + ekg(170, 920, 1180, t, beats if t >= t_rem else [99], 56, sd=5601) + "</g>")
+        s.append(shape(rect_pts(150, 1150, 930, 1280, 18), "#16202a", "", w=6, seed=5600))
+        s.append(f'<g clip-path="url(#{lib.clip_rect(160, 1158, 760, 114, 12)})">' + ekg(170, 920, 1215, t, beats if t >= t_rem else [99], 56, sd=5601) + "</g>")
     # звёздочки/волны пульса
     for b in beats:
         e = t - b
         if 0 <= e < .5:
             r = 330 + 260 * ease_out(e / .5)
-            s.append(ring(540, 700, r, 12 * (1 - e / .5) + 2, "#ffd84a", seed=5700 + int(b * 10)))
+            s.append(ring(540, 780, r, 12 * (1 - e / .5) + 2, "#ffd84a", seed=5700 + int(b * 10)))
     cam_ = camera("s08", t, 1.0, 1.1, (540, 960), (540, 840), hits=(land, t_rem), hk=.04)
     return compose("s08", t, "".join(s), cam_, tint="#f1e9f6", rule="#dccfe6")
 
@@ -518,8 +518,8 @@ def s08(t):
 def s09(t):
     t_gap = wt("перерывами")                           # 15.6
     flashes = [14.66, 15.06, 15.42]
-    LX = [210, 540, 870]
-    ly = 720
+    LX = [170, 540, 910]
+    ly = 820
     s = []
     off = (t * 120) % 120
     # лента времени: линия со стрелкой и бегущими делениями
@@ -532,11 +532,11 @@ def s09(t):
     # промежутки подсвечиваются
     gp = smooth(t_gap, t_gap + .3, t)
     for j in range(2):
-        x0 = LX[j] + 100
-        x1 = LX[j + 1] - 100
+        x0 = LX[j] + 125
+        x1 = LX[j + 1] - 125
         if gp > 0:
             wob = 1 + .06 * math.sin(t * 8 + j)
-            hgt = 330 * gp
+            hgt = 380 * gp
             s.append(shape(rect_pts(x0, ly + 160 - hgt, x1, ly + 160, 22), "#cfe8fb" if j == 0 else "#d8f0cf", "", w=5, seed=5900 + j))
             # песочные часы внутри
             hx, hy = (x0 + x1) / 2, ly + 160 - hgt / 2
@@ -545,18 +545,18 @@ def s09(t):
                 top = [(hx - 42, hy - 66), (hx + 42, hy - 66), (hx + 6, hy - 4, 1), (hx + 6, hy + 4, 1), (hx + 42, hy + 66), (hx - 42, hy + 66), (hx - 6, hy + 4, 1), (hx - 6, hy - 4, 1)]
                 s.append(shape(top, "#ffffff", blob([(hx - 30, hy + 60), (hx + 30, hy + 60), (hx + 8, hy + 20 + 20 * (1 - k)), (hx - 8, hy + 20 + 20 * (1 - k))], "#f0b84a"),
                                w=4.4, seed=5910 + j))
-                s.append(txt(hx, hy + 120, "ПЕРЕРЫВ", 38, "#4a4458", rot=-2 * wob))
+                s.append(txt((x0 + x1) / 2, ly + 262, "ПЕРЕРЫВ", 40, "#4a4458", rot=-2 * wob))
     # три мини-мозга со вспышками
     for i, (fx, ft) in enumerate(zip(LX, flashes)):
         e = t - ft
         pk = bump(t, ft, .3)
         awake = e >= 0
-        bsc = .27 + .05 * pk
+        bsc = .36 + .05 * pk
         s.append(brain(fx, ly - 40, bsc, t, look=(.3 * osc(t, .8, i), -.2), blink=1.0 if (t * 1.0 + i * .5) % 1.7 < .1 else 0.0,
                        mood="wow" if 0 <= e < .45 else ("proud" if awake else "sleepy"), rot=4 * pk * (1 if i % 2 else -1), sd=i * 40))
         s.append(shape(ellipse_pts(fx, ly + 130, 56, 12, 12), "#d9cfbc", "", w=0, ink=False))
         # номер повтора
-        nb = (f'<g transform="translate({fx} {ly - 270 + 2 * osc(t, 1.2, i)}) scale({1 + .2 * pk})">'
+        nb = (f'<g transform="translate({fx} {ly - 300 + 2 * osc(t, 1.2, i)}) scale({1 + .2 * pk})">'
               + shape(ellipse_pts(0, 0, 50, 50, 14), "#ffd84a" if awake else "#ece5d3", "", w=5.2, seed=6000 + i)
               + txt(0, 24, str(i + 1), 72, INK if awake else "#a79c98") + "</g>")
         s.append(nb)
@@ -569,8 +569,7 @@ def s09(t):
                 a_ = math.radians(ang)
                 s.append(line([(fx + r0 * math.cos(a_), ly - 40 + r0 * math.sin(a_)), (fx + r1 * math.cos(a_), ly - 40 + r1 * math.sin(a_))], 11 * (1 - u) + 3,
                               "#ffb81f", taper=.5, wmin=.3, seed=6050 + k + i * 20))
-    s.append(txt(540, 330, "ПОВТОР", 120, INK, stroke="#ffffff", sw=14, rot=-2))
-    s.append(txt(540, 440, "ПАУЗА   ПОВТОР   ПАУЗА", 44, "#6b6280"))
+    s.append(txt(540, 340, "ПОВТОР", 150, INK, stroke="#ffffff", sw=14, rot=-2))
     cam_ = camera("s09", t, 1.04, 1.04, (540, 960), (540, 960), hits=(flashes[0], flashes[1], flashes[2], t_gap), hk=.03)
     return compose("s09", t, "".join(s), cam_, tint="#f4f0e4", rule="#ddd6c2")
 
@@ -585,8 +584,8 @@ def s10(t):
     ux = clamp((t - t0) / (land - t0))
     lk = (-.6 + 1.1 * ux, -.6 + .3 * ux)
     pk = bump(t, land, .4)
-    s.append(blob(ellipse_pts(540, 1010, 340, 40, 20), "#c7bbd8"))
-    s.append(brain(540, 700, .96 * (1 - .05 * pk), t, look=lk if t < land else (0, 0), blink=1.0 if (t % 2.4) < .1 else 0.0, mood=mood,
+    s.append(blob(ellipse_pts(540, 1170, 380, 44, 20), "#c7bbd8"))
+    s.append(brain(540, 820, 1.15 * (1 - .05 * pk), t, look=lk if t < land else (0, 0), blink=1.0 if (t % 2.4) < .1 else 0.0, mood=mood,
                    sx=1 + .08 * pk, sy=1 - .1 * pk, rot=-4 * pk + 2 * osc(t, .9)))
     # три галочки-повтора слева сверху (из прошлых повторов)
     for i in range(3):
@@ -596,7 +595,7 @@ def s10(t):
                  + check(0, 0, .8, "#2f9e4f", 12, 6210 + i, pr) + "</g>")
     # наклейка прилетает по дуге и шлёпается на лоб/лобную долю мозга
     sx0, sy0 = 1260, 120
-    tx_, ty_ = 640, 520                              # точка посадки
+    tx_, ty_ = 640, 530                              # точка посадки
     u = clamp((t - t0) / (land - t0))
     e_ = ease_in(u, 1.6) * .6 + ease_out(u, 2.2) * .4
     px = sx0 + (tx_ - sx0) * e_ + 0
@@ -618,15 +617,17 @@ def s10(t):
         u2 = e / .55
         for k in range(12):
             ang = math.radians(k * 30 + 8)
-            r0 = 150 + 190 * ease_out(u2)
+            if math.sin(ang) > .3:
+                continue
+            r0 = 260 + 190 * ease_out(u2)
             s.append(line([(tx_ + r0 * math.cos(ang), ty_ + r0 * math.sin(ang)), (tx_ + (r0 + 80 * (1 - u2)) * math.cos(ang), ty_ + (r0 + 80 * (1 - u2)) * math.sin(ang))],
                           12 * (1 - u2) + 3, "#d8382e", taper=.5, wmin=.3, seed=6400 + k))
-        s.append(ring(tx_, ty_, 240 * ease_out(u2), 12 * (1 - u2) + 2, "#ffd84a", seed=6420))
+        s.append(ring(tx_, ty_, 300 * ease_out(u2), 12 * (1 - u2) + 2, "#ffd84a", seed=6420))
     if t >= land + .1:
         for j, (sx_, sy_, r) in enumerate([(300, 460, 38), (820, 920, 30), (240, 860, 26)]):
             k = bump(t, land + .1 + j * .08, .6)
             s.append(star(sx_, sy_, r * (.6 + k * .6), t * 1.2 + j, 4, "#ffd84a", 6430 + j, inner=.35))
-    s.append(txt(540, 1160, "ЗНАЧИТ, ВАЖНО", 64, "#6b6280") if t > land + .35 else "")
+    s.append(txt(540, 1290, "ЗНАЧИТ, ВАЖНО", 64, "#6b6280") if t > land + .35 else "")
     cam_ = camera("s10", t, 1.0, 1.09, (540, 960), (580, 800), hits=(land,), hk=.05)
     return compose("s10", t, "".join(s), cam_, tint="#f1e9f6", rule="#dccfe6")
 
@@ -725,7 +726,7 @@ def graph_base(t, sid):
     s.append(line([(GX0, GY0), (GX1 + 20, GY0)], 8, INK, taper=.1, wmin=.8, seed=8021))
     s.append(arrowhead((GX0, GY1 + 20), (GX0, GY1 - 38), 34, INK, 8022))
     s.append(arrowhead((GX1 - 20, GY0), (GX1 + 40, GY0), 34, INK, 8023))
-    s.append(txt(GX0 + 4, GY1 - 52, "ПОМНЮ", 44, "#4a4458", anchor="start"))
+    s.append(txt(GX0 + 50, GY1 - 36, "ПОМНЮ", 44, "#4a4458", anchor="start"))
     s.append(txt(GX1 + 40, GY0 + 52, "ВРЕМЯ", 44, "#4a4458", anchor="end"))
     for v, lb in ((1, "100%"), (.5, "50%"), (0, "0")):
         s.append(txt(GX0 - 16, gy(v) + 14, lb, 32, "#6b6280", anchor="end"))
@@ -768,9 +769,9 @@ def s12(t):
         e = t - t_hold
         s.append(hit_ring(gx(1), gy(green_v(1)), e, "#2f9e4f", 8500, 130))
         bk = back_out(clamp(e / .3), 2.2)
-        s.append(f'<g transform="translate({gx(.80)} {gy(green_v(1)) - 120}) rotate(-4) scale({f(bk)})">' + shape(rect_pts(-210, -54, 210, 54, 28), "#ffd84a", "", w=6, seed=8510)
+        s.append(f'<g transform="translate({gx(.74)} {gy(.58)}) rotate(-4) scale({f(bk)})">' + shape(rect_pts(-210, -54, 210, 54, 28), "#ffd84a", "", w=6, seed=8510)
                  + txt(0, 22, "ДЕРЖИТСЯ!", 70, INK) + "</g>")
-    cam_ = camera("s12", t, 1.0, 1.12, (540, 960), (620, 740), hits=(t_hold,), hk=.04)
+    cam_ = camera("s12", t, 1.0, 1.1, (540, 880), (580, 800), hits=(t_hold,), hk=.04)
     return compose("s12", t, "".join(s), cam_, tint="#eef4ea", rule="#d6e0cf")
 
 
@@ -810,7 +811,7 @@ def s13(t):
     s.append(f'<g transform="translate({gx(.52)} {GY1 - 120}) scale({f(pk)})">' + shape(rect_pts(-230, -48, 230, 48, 30), "#2f9e4f", "", w=6, seed=8400)
              + txt(0, 20, "С ПЕРЕРЫВАМИ", 56, "#ffffff") + "</g>")
     pk2 = back_out(clamp((t - (t0 + .5)) / .3), 2)
-    s.append(f'<g transform="translate({gx(.24)} {gy(.58)}) rotate(-5) scale({f(pk2)})">' + shape(rect_pts(-250, -48, 250, 48, 30), "#d8382e", "", w=6, seed=8610)
+    s.append(f'<g transform="translate({gx(.66)} {gy(.26)}) rotate(-4) scale({f(pk2)})">' + shape(rect_pts(-250, -48, 250, 48, 30), "#d8382e", "", w=6, seed=8610)
              + txt(0, 20, "ЗА ОДНУ НОЧЬ", 56, "#ffffff") + "</g>")
     # обвал: тряска, «!»
     if t >= t_cliff:
@@ -818,16 +819,16 @@ def s13(t):
         s.append(hit_ring(gx(.14), gy(red_v(.14)), e, "#d8382e", 8700, 140))
         if e < .6:
             bk = back_out(clamp(e / .25), 2.4)
-            s.append(f'<g transform="translate({gx(.30)} {gy(.22)}) rotate(8) scale({f(bk)})">' + txt(0, 0, "ОБВАЛ!", 100, "#d8382e", stroke="#ffffff", sw=14) + "</g>")
+            s.append(f'<g transform="translate({gx(.30)} {gy(.46)}) rotate(8) scale({f(bk)})">' + txt(0, 0, "ОБВАЛ!", 100, "#d8382e", stroke="#ffffff", sw=14) + "</g>")
     if t >= t_cliff + .8:
         e = t - t_cliff - .8
         bk = back_out(clamp(e / .35), 2.2)
-        pxm = gx(.75)
-        a, b = gy(green_v(.75)) + 12, gy(red_v(.75)) - 12
+        pxm = gx(.9)
+        a, b = gy(green_v(.9)) + 12, gy(red_v(.9)) - 12
         s.append(f'<g opacity="{clamp(e / .2):.2f}">' + line([(pxm, a), (pxm, b)], 8, INK, taper=.1, wmin=.8, seed=8710) + arrowhead((pxm, b - 40), (pxm, a), 30, INK, 8711)
                  + arrowhead((pxm, a + 40), (pxm, b), 30, INK, 8712) + "</g>")
-        s.append(f'<g transform="translate({pxm - 190} {(a + b) / 2 + 14}) scale({f(bk)})">' + txt(0, 0, "РАЗНИЦА", 54, "#6b6280") + "</g>")
-    cam_ = camera("s13", t, 1.06, 1.0, (620, 760), (540, 800), hits=(t_cliff,), hk=.05)
+        s.append(f'<g transform="translate({pxm - 140} {(a + b) / 2 + 14}) scale({f(bk)})">' + txt(0, 0, "РАЗНИЦА", 54, "#6b6280") + "</g>")
+    cam_ = camera("s13", t, 1.08, 1.0, (580, 800), (540, 880), hits=(t_cliff,), hk=.05)
     return compose("s13", t, "".join(s), cam_, tint="#f6ece6", rule="#e6d6cb")
 
 

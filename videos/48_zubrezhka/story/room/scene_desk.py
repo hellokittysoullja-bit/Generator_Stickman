@@ -161,7 +161,7 @@ def stack(x, y, n, seed, wob=0.0, wmax=170, h=34, t=0.0):
 
 
 def bookcase(mode):
-    x0, x1, y0, y1 = 930, 1370, 520, 1260
+    x0, x1, y0, y1 = 930, 1370, 580, 1260
     o = shape(rect_pts(x0, y0, x1, y1, 6), "#8f5f3a", blob(rect_pts(x0 + 14, y0 + 14, x1 - 14, y1 - 14), "#5b3a22"), w=5, seed=3300)
     rs = np.random.RandomState(48)
     for r_, ys in enumerate([y0 + 170, y0 + 360, y0 + 550]):
@@ -177,10 +177,10 @@ def bookcase(mode):
 
 
 def window_night(mode, t):
-    return f'<g transform="translate(760 -230) scale(1.0)">{Wd.window(mode, t)}</g>'
+    return f'<g transform="translate(760 -310) scale(1.0)">{Wd.window(mode if mode == "night" else "morning", t)}</g>'
 
 
-def clock_face(h, m, sec, mode, x=880, y=380, k=1.2):
+def clock_face(h, m, sec, mode, x=815, y=690, k=.95):
     o = Wd.clock_wall(h, m, mode, k=k, x=x, y=y)
     # секундная стрелка
     r = 92 * k
@@ -375,7 +375,7 @@ def s01(t):
     z, r = hook_zoom(t, 0.0, .45, .22, -4.0)
     k = ease_io(clamp(t / 1.7))
     hit = bump(t, T_UCHIL, .3) + bump(t, T_NOCH, .3)
-    cam = (740 + 20 * k, 1010 - 10 * k, 1.38 * z * (1 + .06 * k + .05 * hit), r + .5 * osc(t, .5))
+    cam = (730 + 20 * k, 1090 - 10 * k, 1.6 * z * (1 + .06 * k + .05 * hit), r + .5 * osc(t, .5))
     tip, prog = write_tip(t, rate=1.3)
     wr, d = writing_arm(tip)
     arms = {"n": ("ik", wr, -1), "f": ("ik", (700, 1276), -1)}
@@ -425,22 +425,24 @@ def stamp_five(cx, cy, sc, rot, a=1.0):
 
 def s02(t):
     u = clamp((t - 1.3) / 2.1)
-    st_in = clamp((t - 2.2) / .3)          # штамп опускается 2.20→2.48, поднимается после
-    st_y = 1110 - 880 * (1 - ease_in(st_in, 2)) * (1 if t < T_SDAL else 0) if t < T_SDAL else 1250 - 160 * ease_out(clamp((t - T_SDAL - .06) / .35)) - 500 * ease_in(clamp((t - T_SDAL - .35) / .4), 2)
+    if t < T_SDAL:
+        st_y = 1245 - 700 * (1 - ease_in(clamp((t - 2.0) / (T_SDAL - 2.0)), 2.2))
+    else:
+        st_y = 1245 - 900 * ease_in(clamp((t - T_SDAL - .12) / .45), 2)
     hit = bump(t, T_SDAL, .35)
-    cam = (770 - 10 * u + 10 * hit * osc(t, 17), 1130 - 40 * u + 8 * hit * osc(t, 21), 2.0 + .55 * ease_io(u) + .13 * hit, .7 - 1.2 * u + 1.2 * hit * osc(t, 11))
+    cam = (650 + 40 * u + 10 * hit * osc(t, 17), 1060 + 20 * u + 8 * hit * osc(t, 21), 1.7 + .35 * ease_io(u) + .1 * hit, .7 - 1.2 * u + 1.2 * hit * osc(t, 11))
     after = clamp((t - T_SDAL) / .55)
     # пишет ответы до штампа, потом отпускает ручку и вскидывает кулак
     pw = 1 - smooth(T_SDAL - .12, T_SDAL + .1, t)
     tip, prog = write_tip(t, row_v=.5, rate=2.2)
     wr, d = writing_arm(tip)
     fist = ease_out(clamp((t - T_SDAL - .05) / .22)) * (1 - 0 * after)
-    up = (610 + 40 * fist, 1130 - 380 * fist)
+    up = (600 + 50 * fist, 1130 - 230 * fist)
     wr2 = (wr[0] * (1 - fist) + up[0] * fist, wr[1] * (1 - fist) + up[1] * fist)
     pump = 1.0 + 0.25 * after * math.sin(10 * (t - T_SDAL))
     arms = {"n": ("ik", wr2, -1), "f": ("ik", (700, 1276), -1)}
     hands = {"n": dict(kind="open", flip=-1, dir=(d[0] * (1 - fist) + .1 * fist, d[1] * (1 - fist) - 1.0 * fist),
-                       curl=(.55 + .45 * fist, .75 + .25 * fist, .85 + .15 * fist, .9 + .1 * fist), spread=.04, thumb=.35 - .3 * fist, bend=.05),
+                       curl=(.55 + .45 * fist, .75 + .25 * fist, .85 + .15 * fist, .9 + .1 * fist), spread=.04 * (1 - fist), thumb=.35 + .6 * fist, bend=.05),
              "f": dict(kind="open", flip=-1, dir=(.95, .25), curl=(.15, .2, .25, .3), spread=.1, thumb=.3)}
     ex = dict(lid=.5 + .45 * after, look=(.55, .85 - 1.2 * after), brows="up" if after > .3 else "calm",
               mouth="grin" if after > .3 else "flat", closed=blink_at(t, 1.8, .18) * (1 - after), red=1.0 - .8 * after,
@@ -461,18 +463,18 @@ def s02(t):
     if t >= T_SDAL:
         e = t - T_SDAL
         sc = 1.0 + .7 * math.exp(-e * 24) + 0.04 * math.sin(e * 20) * math.exp(-e * 8)
-        sheet += stamp_five(*_pp(.62, .55), .78 * sc, -12, a=min(1.0, e * 14))
+        sheet += stamp_five(*_pp(.5, .55), .78 * sc, -12, a=min(1.0, e * 14))
     sheet += "</g>"
     bg = room_bg(t) + clock_face(3, 52, (t * 6) % 60, "night")
-    st_x, st_y2 = _pp(.62, .55)[0], st_y
-    stamp = stamp_obj(st_x, st_y2) if st_y2 < 1250 or t < T_SDAL + .8 else ""
+    st_x, st_y2 = _pp(.5, .55)[0], st_y
+    stamp = stamp_obj(st_x, st_y2) if t > 2.0 and st_y2 > 250 else ""
     layers = (chair() + dm["legs"] + cat_sleep(t) + desk("night") + desk_back(t) + sheet + cone + lamp_svg + dm["arm_f"] + dm["body"] + dm["arm_n"] +
               (pen(tip, -50) if pw > .5 else "") + stamp)
     # ударная вспышка и штрихи
     fx = ""
     if T_SDAL <= t < T_SDAL + .5:
         e = (t - T_SDAL) / .5
-        cx, cy = _pp(.62, .55)
+        cx, cy = _pp(.5, .55)
         for j in range(12):
             a = j * math.pi / 6 + .2
             r0, r1 = 90 + 150 * ease_out(e), 130 + 210 * ease_out(e)
@@ -519,7 +521,7 @@ def thought_bubble(cx, cy, u, t):
     s = ease_out(u, 3) * (1 + .12 * math.sin(u * 9) * (1 - u)) if u < 1 else 1.0
     s = max(.01, ease_out(clamp(u * 1.4), 3) + .08 * math.sin(clamp(u * 1.4) * 6) * (1 - clamp(u * 1.4))) * (1 + .02 * osc(t, 1.4))
     o = f'<g transform="translate({cx:.1f} {cy:.1f}) scale({s:.4f})">'
-    cloud = ellipse_pts(0, 0, 190, 120, 22)
+    cloud = ellipse_pts(0, 0, 170, 105, 22)
     o += shape(cloud, "#fbf6ea", blob(ellipse_pts(30, 36, 170, 90, 18), "#e9e1cf", .7), w=5, seed=5300)
     for j, (dx, dy, r) in enumerate([(-130, 160, 34), (-170, 226, 22), (-196, 270, 13)]):
         o += shape(ellipse_pts(dx, dy, r, r, 10), "#fbf6ea", "", w=4, seed=5310 + j)
@@ -545,12 +547,12 @@ def s06(t):
     sw = sweat(520, 880, 1.0, clamp((t - 8.0) / .8)) if False else ""
     hx, hy = dm["head"]
     sw = sweat(hx + 120, hy - 70, 1.3, clamp((t - 7.95) / .9)) + sweat(hx - 60, hy - 90, 1.0, clamp((t - 8.7) / .9))
-    bub = thought_bubble(hx + 60, hy - 330 - 20 * a, clamp((t - T_NICHEGO) / .5), t)
+    bub = thought_bubble(hx + 130, hy - 290 - 10 * a, clamp((t - T_NICHEGO) / .5), t)
     chair_ = chair()
     layers = chair_ + dm["legs"] + exam_desk() + sheet + dm["arm_f"] + dm["body"] + dm["arm_n"] + pen((700 + 4 * tap, 1198), -40) + sw + bub
     u = clamp((t - 7.7) / 1.9)
     hit = bump(t, T_NICHEGO, .3)
-    cam = (hx + 130 + 12 * hit * osc(t, 15), hy + 90 + 8 * hit * osc(t, 19), 1.9 + .35 * ease_io(u) + .15 * hit, -1.0 + 1.5 * u)
+    cam = (hx + 190 + 12 * hit * osc(t, 15), hy + 40 + 8 * hit * osc(t, 19), 1.45 + .3 * ease_io(u) + .12 * hit, -1.0 + 1.5 * u)
     g = lib.rad_grad([(0, "#fff0c8", .3), (1, "#fff0c8", 0)], 1000, 500, 1300, 1100)
     glow = f'<rect x="-1400" y="-1400" width="4200" height="4400" fill="url(#{g})" style="mix-blend-mode:screen"/>'
     return compose(classroom(t) + layers, cam, "day", glow=glow)
@@ -582,13 +584,22 @@ def s14(t):
     place = ease_io(clamp((t - 25.8) / .25))
     tick = ease_out(clamp((t - T_POVTOR) / .35))
     mug_rest = (840, 1262)
-    mouth_pt = (600, 1010)
+    mouth_pt = (610, 1062)
     mx = mug_rest[0] + (mouth_pt[0] - mug_rest[0] + 0) * sip
     my = mug_rest[1] + (mouth_pt[1] + 128 * .6 - mug_rest[1]) * sip
     mk = .62
     # рука с чашкой (до 25.95), потом рука с ручкой на галочке
     pen_tip = _pp(.07 + .0, .55)
-    tp = _pp(.1 + .16 * tick, .5 + .0 * tick)
+    cb = _pp(.1, .78)
+    q0, q1, q2 = (cb[0] - 12, cb[1] - 2), (cb[0] - 3, cb[1] + 8), (cb[0] + 18, cb[1] - 20)
+    if tick < .5:
+        f_ = tick / .5
+        tp = (q0[0] + (q1[0] - q0[0]) * f_, q0[1] + (q1[1] - q0[1]) * f_)
+    else:
+        f_ = (tick - .5) / .5
+        tp = (q1[0] + (q2[0] - q1[0]) * f_, q1[1] + (q2[1] - q1[1]) * f_)
+    if t < T_POVTOR:
+        tp = (q0[0] - 40 * (1 - clamp((t - 25.9) / .25)), q0[1] - 30 * (1 - clamp((t - 25.9) / .25)))
     carry = 1.0 - place
     wr_cup = (mx + 50 * mk + 62 * BS, my - 64 * mk + 4)
     wr_pen, d_pen = writing_arm(tp)
@@ -620,12 +631,12 @@ def s14(t):
               dm["arm_n"] + (pen(tp, -50) if carry <= .5 else ""))
     plant = ""
     k = ease_io(u)
-    cam = (760 + 20 * k + 260 * wh, 1120 - 10 * k, 1.25 + .28 * k, -.5 + .5 * k + 2.0 * wh)
+    cam = (720 + 20 * k + 260 * wh, 1110 - 10 * k, 1.55 + .25 * k, -.5 + .5 * k + 2.0 * wh)
     cat = cat_sleep(t, z=False) if False else ""
     sparks = ""
     if t > T_POVTOR:
         e = t - T_POVTOR
-        cx, cy = _pp(.1 + .16, .5)
+        cx, cy = _pp(.1, .78)
         for j in range(6):
             a = j * math.pi / 3 + .3
             r0, r1 = 30 + 40 * ease_out(e * 2), 55 + 60 * ease_out(e * 2)
