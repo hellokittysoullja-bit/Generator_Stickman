@@ -238,7 +238,7 @@ def waiter_fig(x, y, sc, fc, pose, flip=False):
 def frame_s08(t):
     u = clamp((t - 17.7) / 2.7)
     sc = 1.7
-    x, yt = 470.0, 1010.0
+    x, yt = 470.0, 1060.0
     look_up = smooth(18.3, 18.5, t) * (1 - smooth(19.0, 19.25, t))
     write = 1 - look_up
     under_u = smooth(19.06, 19.5, t)
@@ -252,20 +252,20 @@ def frame_s08(t):
     o = [interior(t)]
     # дальний план: второй столик и официант идёт с подносом
     wx = 930 - 180 * (t - 17.7) / 2.7
+    wp = dict(walk=(t * 6.0) % (2 * math.pi), arms={"L": (10, 80), "R": (10, 70)}, look=(-.5, 0), mouth="smile")
+    o.append(waiter_fig(wx, 1214, .8, -.4, wp))
     o.append(chair_back(x, yt, sc))
     top, sk = table(x, yt, sc)
     o.append(top)
     hx0, hy0 = hand_xy(spec, pose, sc, x, yt + 312 * sc, "R")
-    o.append(notebook(hx0 - 20 * sc, yt - 16, 1.15 * sc, lines_u=clamp(.5 + .5 * (t - 17.7) / 1.4), under_u=under_u))
+    o.append(notebook(hx0 - 95, yt - 20, .85, lines_u=clamp(.5 + .5 * (t - 17.7) / 1.4), under_u=under_u))
     # фон: официанты (маленькие) за её спиной, к ним она обращает взгляд
-    wp = dict(walk=(t * 6.0) % (2 * math.pi), arms={"L": (10, 80), "R": (-30, 120)}, look=(-.5, 0), mouth="smile")
-    o.append(waiter_fig(wx, 1214, .8, -.4, wp))
     o.append(seated(spec, pose, x, yt, sc, 600))
     hx, hy = hand_xy(spec, pose, sc, x, yt + 312 * sc, "R")
-    o.append(pencil(hx, hy + 2, -35 - 18 * look_up, 1.0 * sc))
+    o.append(pencil(hx, hy + 2, -35 - 18 * look_up, .62))
     o.append(sk)
     o.append(cup(x - 120 * sc, yt - 6, .9 * sc, steam_t=t))
-    cam = lib.cam(520 + 30 * u, 1060 + 20 * u, 1.0 + .12 * ease_io(u), -.5 + .9 * u)
+    cam = lib.cam(520 + 30 * u, 1090 + 20 * u, 1.0 + .12 * ease_io(u), -.5 + .9 * u)
     return f'<g transform="{cam}">{"".join(o)}</g>'
 
 
@@ -341,7 +341,7 @@ def frame_s09(t):
                 k = 0
         if nm in ("C1", "C2"):
             k *= 1 - smooth(22.0, 22.22, t)
-        slips += ticket(c["x"] - 6, yt - 300 * sc - 40, .8, k, t + len(nm))
+        slips += ticket(c["x"] - 6, yt - 520, .8, k, t + len(nm))
     o.append(slips)
     o.append(poofs)
     # облако с блюдами над C
