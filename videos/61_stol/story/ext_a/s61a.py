@@ -324,6 +324,96 @@ def frame02(t):
     return frame_svg(body, cx + dx, cy + dy, s, .4 * math.sin(t * .9))
 
 
+# ───────────────────────── s04: Дима сбоку, лампочка гаснет, кот запрыгивает ─────────────────────────
+BS4 = 1.05
+SX4, SY4 = 300.0, R.seat_y(BS4)
+DX4, DY4 = 980.0, R.DESK_TOP
+CAT_K = .72
+CAT_LAND = (900.0, DY4 - 40)
+JUMP_T0, JUMP_T1 = 8.32, 9.02      # u=.85 (касание) ≈ 8.92
+
+
+def cat04(t):
+    """Кот: шагает по полу справа налево из-за ножки стола, прыгает с толчком на стол (касание ≈ 8.9), на «Знаешь» поворачивает морду."""
+    floor = R.FL - 6
+    if t < JUMP_T0:
+        u = clamp((t - 7.0) / (JUMP_T0 - 7.0))
+        x = lerp(1340, 820, ease_io(u) * .3 + u * .7)
+        st = {"turn": -.7, "look": (-.6, 0), "tail": 6 * math.sin(t * 6)}
+        return people.cat_walk(x, floor, CAT_K, t, st, period=.42), None
+    u = clamp((t - JUMP_T0) / (JUMP_T1 - JUMP_T0))
+    look_u = ease_io(clamp((t - 9.72) / .2))
+    st = {"turn": lerp(-.6, .55, look_u), "look": (lerp(-.5, 0, look_u), lerp(-.3, 0, look_u)), "tail": 4 * math.sin(t * 3)}
+    if t > 9.72:
+        st["tilt"] = 5 * look_u
+    if u >= 1:
+        st["blink"] = 1.0 if 9.4 < t < 9.48 else 0.0
+        return people.cat_svg(CAT_LAND[0], CAT_LAND[1], CAT_K, st, t), u
+    return people.cat_jump((820, floor), CAT_LAND, CAT_K, u, t, st, height=170), u
+
+
+def frame04(t):
+    lib.dyn_begin()
+    o = [R.wall_floor()]
+    o.append(props.wall_sketch(760, 330, 1.3, 5, 12, "spiral") + props.sticky(980, 440, 1.3, -7, "green", 13, "star"))
+    ch = R.swivel_chair(SX4 - 20, SY4 + 24, BS4, 0.0, side=-1)
+    o.append(ch["back"])
+    o.append(props.desk(DX4, DY4, 900, 1.0, 110, True, "wood", seed=5, leg_h=R.FL - DY4 - 20))
+    o.append(props.coffee_ring(800, DY4 - 40, 1.0, 0, 6, .35))
+    o.append(props.mug(1270, DY4 - 50, 1.1, 0, "green", seed=6, handle=-1))
+    # Дима: сидит, потом сползает (7.6–8.4), щека на ладони
+    sl = ease_io(clamp((t - 7.62) / .7))
+    lean = lerp(.06, .36, sl) + .02 * math.sin(t * 1.8)
+    sy = SY4 + 40 * sl
+    probe = people.draw(dict(hip=(SX4, sy), scale=BS4 * people.HEIGHT["dima"], lean=lean, feet=None, arms={"n": ("ang", 0, 0), "f": ("ang", 0, 0)},
+                             hands={}, head_ang=lerp(0, .18, sl), expr={}, torso_k=1.0, hood=0.0, head_off=(0, 0)), "dima")
+    hx, hy = probe["head"]
+    cheek = (hx + 40 * BS4, hy + 150 * BS4)
+    tgt_n = (lerp(800, cheek[0], sl), lerp(DY4 - 70, cheek[1], sl))
+    if t < 7.55:
+        ex = {"brows": "up", "mouth": "smile", "smile": .6, "lid": 1.0, "look": (.3, -.9)}
+    elif t < 7.95:
+        ex = {"brows": "worry", "mouth": "flat", "lid": .9, "look": (.3, -.9)}
+    elif t < 9.0:
+        ex = dict(people.EXPR["dima"]["gloom"], look=(.6, .5))
+    else:
+        ex = dict(people.EXPR["dima"]["gloom"], look=(.9, .2), lid=.5)
+    hands = {"n": dict(kind="open", flip=1, dir=(lerp(1, .25, sl), lerp(.2, -1, sl)), curl=(.3, .3, .35, .4), thumb=.2, spread=.15),
+             "f": dict(kind="open", flip=1, dir=(1, .35), curl=(.4, .4, .45, .5), thumb=.3)}
+    arms = {"n": ("ik", tgt_n, -1), "f": ("ik", (860, DY4 - 60), -1)}
+    feet = {"n": ((SX4 + 320 + 40 * sl, R.FL - 52), 0.0), "f": ((SX4 + 270 + 40 * sl, R.FL - 50), 0.0)}
+    full = people.draw(dict(hip=(SX4, sy), scale=BS4 * people.HEIGHT["dima"], lean=lean, feet=feet, arms=arms, hands=hands,
+                            head_ang=lerp(0, .18, sl), expr=ex, torso_k=1.0, hood=0.0, head_off=(0, 0)), "dima")
+    hx, hy = full["head"]
+    catsvg, cu = cat04(t)
+    # кот за ножкой стола до прыжка — рисуем раньше стола? ножка тонкая: кот идёт ПЕРЕД столом (ближе к зрителю)
+    o += [ch["base"], full["legs"], ch["seat"], full["arm_f"], full.get("pelvis", ""), full["body"], full["arm_n"]]
+    # гора бумаг на столе (кот приземляется в неё) и лист, который взлетает
+    o.append(props.paper_pile(1060, DY4 - 6, 1.1, 14, sy=.42, n=9))
+    o.append(catsvg)
+    if t > 8.9:
+        u = clamp((t - 8.9) / .9)
+        o.append(props.flying_sheet(960 + 120 * u, DY4 - 80 - 380 * math.sin(math.pi * u * .9), 1.05, 40 * u, 17, "sketch", flap=t * 7))
+        o.append(props.flying_sheet(860 - 90 * u, DY4 - 70 - 260 * math.sin(math.pi * u * .8), .9, -50 * u, 18, "lines", flap=t * 6 + 1))
+    # лампочка-идея над головой: горит, мигает с 7.55, гаснет
+    on = props.flicker(t, 7.55, 7.95, 3)
+    bob = 8 * math.sin(t * 4)
+    bx, by = hx + 30, hy - 260 * BS4 + bob + 60 * sl
+    o.append(props.idea_bulb(bx, by, 1.15, on, t, 2))
+    if on < .05 and t < 8.6:   # дымок от погасшей лампочки
+        u = clamp((t - 7.95) / .6)
+        o.append(line([(bx + 8 * math.sin(u * 9 + j), by - 60 - 90 * u - 12 * j) for j in range(5)], 5 * (1 - u), "#8E929A", taper=.8, wmin=.1, seed=77))
+    body = "".join(o)
+    # камера: хлёст на входе, откат и дрейф, мини-тряска на прыжке
+    u = ease_io(clamp((t - 7.0) / 2.9))
+    cx = lerp(600, 680, u)
+    cy = lerp(880, 960, u)
+    s = lerp(1.32, 1.1, u)
+    wx, bl = whip_in(t, 6.9)
+    dx, dy = props.shake(t, 8.92, 9, .35, 5)
+    return frame_svg(body, cx - wx / s + dx, cy + dy, s, -.6 * math.sin(t * .8), blur_x=bl)
+
+
 def frame(sid, t):
     lib.DEFS.clear()
     lib.INK_K[0] = 1.0
@@ -331,4 +421,6 @@ def frame(sid, t):
         return frame01(t)
     if sid == "s02":
         return frame02(t)
+    if sid == "s04":
+        return frame04(t)
     raise KeyError(sid)
