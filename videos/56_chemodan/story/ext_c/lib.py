@@ -178,3 +178,16 @@ def svg(body):
 def words():
     import json
     return json.load(open(os.path.join(os.path.dirname(HERE), "voice", "words.json")))
+
+
+def rrect(x0, y0, x1, y1, r=0, n=7):
+    """Скруглённый прямоугольник плотными точками дуг (без «рогов» у углов)."""
+    if r <= 0:
+        return [(x0, y0, 1), (x1, y0, 1), (x1, y1, 1), (x0, y1, 1)]
+    r = min(r, (x1 - x0) / 2 - .5, (y1 - y0) / 2 - .5)
+    out = []
+    for (cx, cy, a0) in ((x1 - r, y0 + r, -90), (x1 - r, y1 - r, 0), (x0 + r, y1 - r, 90), (x0 + r, y0 + r, 180)):
+        for k in range(n + 1):
+            a = math.radians(a0 + 90 * k / n)
+            out.append((cx + r * math.cos(a), cy + r * math.sin(a)) + ((1,) if k in (0, n) else ()))
+    return out

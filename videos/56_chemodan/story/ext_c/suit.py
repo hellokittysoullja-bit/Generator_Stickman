@@ -6,7 +6,7 @@ import math
 import numpy as np
 
 import lib
-from lib import INK, blob, clamp, ellipse_pts, line, rect_pts, shape
+from lib import INK, blob, clamp, ellipse_pts, line, rrect, shape
 
 BODY, BODY_SH, BODY_HI, BODY_DK = "#3f8f94", "#2d6d73", "#74bcbb", "#245c62"
 LID, LID_SH = "#47999a", "#33777c"
@@ -33,7 +33,7 @@ class Suit:
         return math.sin(s.e - math.radians(s.th)) > 0.02
 
     # ───────── нутро ─────────
-    def interior(s, inset=22.0):
+    def interior(s, inset=22.0, floor=None):
         W, D, Hb = s.W / 2, s.D, s.Hb
         quad = [s.P(-W + inset, inset, Hb) + (1,), s.P(W - inset, inset, Hb) + (1,), s.P(W - inset, D - inset, Hb) + (1,), s.P(-W + inset, D - inset, Hb) + (1,)]
         rim = [s.P(-W, 0, Hb) + (1,), s.P(W, 0, Hb) + (1,), s.P(W, D, Hb) + (1,), s.P(-W, D, Hb) + (1,)]
@@ -48,7 +48,7 @@ class Suit:
                 cid_items.append(blob(ellipse_pts(px, py, rx, ry, 14), col) +
                                  line([(px - rx * .5, py - ry * .2), (px, py - ry * .5), (px + rx * .5, py - ry * .2)], 3, lib.mul(col, (.7, .7, .75)), seed=3010 + i, op=.9))
             inner = "".join(cid_items)
-        o += shape(quad, DARK, inner, w=4.2, seed=3002)
+        o += shape(quad, floor or DARK, inner, w=4.2, seed=3002)
         return o
 
     # ───────── крышка ─────────
@@ -90,7 +90,7 @@ class Suit:
             ridges += line([(x, y0 + 36), (x, y1 - 26)], 7, BODY_SH, seed=3210 + k, op=.9, taper=.3, wmin=.7)
             ridges += line([(x + 8, y0 + 40), (x + 8, y1 - 30)], 3, BODY_HI, seed=3220 + k, op=.7, taper=.3, wmin=.7)
         shade = blob([(x0, y1 - 60), (x1, y1 - 60), (x1, y1), (x0, y1)], BODY_SH, .55)
-        o += shape(rect_pts(x0, y0, x1, y1, r), BODY, ridges + shade, w=5.6, seed=3230)
+        o += shape(rrect(x0, y0, x1, y1, r), BODY, ridges + shade, w=5.6, seed=3230)
         # молния по ободу: зубчики
         zy = y0 + 14
         teeth = line([(x0 + 22, zy), (x1 - 22, zy)], 9, "#1b4348", seed=3240, taper=0.1, wmin=.9)
@@ -100,11 +100,11 @@ class Suit:
         o += teeth
         # бегунок и замок
         px = x0 + 90 + zip_pull
-        o += shape(rect_pts(px - 18, zy - 14, px + 18, zy + 26, 6), METAL, blob([(px - 18, zy + 8), (px + 18, zy + 8), (px + 18, zy + 26), (px - 18, zy + 26)], METAL_SH, .8),
+        o += shape(rrect(px - 18, zy - 14, px + 18, zy + 26, 6), METAL, blob([(px - 18, zy + 8), (px + 18, zy + 8), (px + 18, zy + 26), (px - 18, zy + 26)], METAL_SH, .8),
                    w=3.6, seed=3260)
         o += shape(ellipse_pts(px, zy + 46, 11, 14, 10), METAL, "", w=3.2, seed=3261)
         lx = s.cx
-        o += shape(rect_pts(lx - 34, zy - 18, lx + 34, zy + 40, 10), "#d7a23a", blob([(lx - 34, zy + 18), (lx + 34, zy + 18), (lx + 34, zy + 40), (lx - 34, zy + 40)], "#a9771f", .7),
+        o += shape(rrect(lx - 34, zy - 18, lx + 34, zy + 40, 10), "#d7a23a", blob([(lx - 34, zy + 18), (lx + 34, zy + 18), (lx + 34, zy + 40), (lx - 34, zy + 40)], "#a9771f", .7),
                    w=4, seed=3262)
         o += shape(ellipse_pts(lx, zy + 12, 8, 8, 8), "#6e4a12", "", w=2.4, seed=3263)
         # углы-накладки
