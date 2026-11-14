@@ -355,8 +355,9 @@ def locker_door(open_k, sd=5700):
     c = math.cos(math.pi * 0.9 * open_k)        # проекция ширины
     wx = LW * c
     persp = 26 * math.sin(math.pi * 0.9 * open_k)
-    if abs(wx) < 4:
-        wx = 4 if wx >= 0 else -4
+    if abs(wx) < 16:          # дверца ребром — тонкая полоса, не линия на всю высоту
+        wx = 16 if wx >= 0 else -16
+        persp = 6
     xe = x0 + wx
     pts = [(x0, y0, 1), (xe, y0 - persp, 1), (xe, y1 + persp, 1), (x0, y1, 1)]
     face_front = wx > 0
@@ -369,7 +370,7 @@ def locker_door(open_k, sd=5700):
         inner += blob([(x0 + wx * .62, y0), (xe, y0 - persp), (xe, y1 + persp), (x0 + wx * .62, y1)], "#5c93b3", .85)
     s = shape(pts, col, inner, w=4.6, seed=sd + 6)
     hasp = (x0 + wx * 0.86, (y0 + y1) / 2 + 10)
-    if face_front:
+    if face_front and wx > 60:
         s += shape(rect_pts(hasp[0] - 10 * c, hasp[1] - 40, hasp[0] + 6 * c, hasp[1] + 40, 5), STEEL, "", w=2.6, seed=sd + 7)
         s += shape(ellipse_pts(hasp[0] + 24, hasp[1] - 18, 9, 9, 10), STEEL, blob(ellipse_pts(hasp[0] + 24, hasp[1] - 18, 4, 4, 8), "#3a4660"), w=2.4, seed=sd + 8)
     return s, (hasp[0] + 24, hasp[1] - 18)
