@@ -15,7 +15,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 STORY = os.path.dirname(HERE)
 SH = json.load(open(os.path.join(STORY, "shots.json")))
 SHOTS = {s["id"]: s for s in SH["shots"]}
-SCENE_MOD = {"s03": "scene_sub", "s04": "scene_sub", "s09": "scene_clock", "s14": "scene_clock", "s15": "scene_timer"}
+SCENE_MOD = {"s03": "scene_sub", "s04": "scene_sub"}
 TMP = os.path.join(os.path.dirname(STORY), ".." , "..", "..")
 
 

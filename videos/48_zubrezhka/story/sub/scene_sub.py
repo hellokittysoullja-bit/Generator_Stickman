@@ -221,7 +221,17 @@ def cat_pose(t):
     return X, Y, sc, P, press, look, blink, tilt
 
 
+def warp(t):
+    """Время рилса 48 → время исходной анимации рилса 29 (там «Подпишись» 2.64, «Диму» 5.36; здесь 3.2 и 5.64)."""
+    if t < 3.2:
+        return 2.44 + (t - 3.0)
+    if t < 5.64:
+        return 2.64 + (t - 3.2) * (5.36 - 2.64) / (5.64 - 3.2)
+    return 5.36 + (t - 5.64)
+
+
 def frame(sid, t):
+    t = warp(t)
     if not _ST:
         _ST["bg"] = background()
         _ST["card"] = card_static()
