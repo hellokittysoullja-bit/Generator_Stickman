@@ -1405,17 +1405,23 @@ def fire_close(t, u=1.0):
     # земля за пнём
     o.append(blob(rect_pts(-1400, KC_TABLE_Y - 20, 2500, 2400), NIGHT["ground"]))
     o.append(blob(_jag(-60, KC_TABLE_Y + 120, 760 * (.8 + .2 * u), 120, t, 3, amp=.05), NIGHT["lit"][1] if u > .2 else NIGHT["ground2"]))
-    # широкий пень вместо стола: верх на линии стола (срез с кольцами), свет огня слева
-    top = [(-1400, 2200, 1), (-1400, KC_TABLE_Y, 1), (2500, KC_TABLE_Y, 1), (2500, 2200, 1)]
-    g = lib.lin_grad([(0, lib.mix("#6b4a30", "#c98a52", .55 * u * fl), 1), (.55, "#5a3d27", 1), (1, "#3e2a1c", 1)], 0, 0, 1, 0)
-    inner = f'<rect x="-800" y="{f(KC_TABLE_Y - 20)}" width="2700" height="1300" fill="url(#{g})"/>'
-    for i in range(6):          # кольца среза
-        cy = 1720 + i * 0
-        inner += line([(540 - 300 - 110 * i, KC_TABLE_Y + 30 + 40 * i), (540, KC_TABLE_Y + 70 + 120 * i), (540 + 300 + 110 * i, KC_TABLE_Y + 30 + 40 * i)],
-                      2.4, "#3a2618", taper=.5, wmin=.3, seed=9990 + i, op=.6)
-        del cy
-    inner += blob(_jag(120, 1300, 520 * (.7 + .3 * u), 260, t, 5, amp=.05), lib.mix("#5a3d27", "#d0915a", .5 * u * fl), .55)
-    table = shape(top, "#5a3d27", inner, w=5.2, seed=9995)
+    # широкий пень вместо стола: круглый срез (кольца, трещина), кора по краю; кот сидит на срезе; свет огня слева
+    cx, cy, rx, ry = 560.0, KC_TABLE_Y + 330, 820.0, 330.0
+    bark = [(cx - rx, cy, 1)] + [(cx + rx * math.cos(a_), cy + ry * math.sin(a_) + 700) for a_ in [math.pi * i / 16 for i in range(17)]][::-1] + [(cx + rx, cy, 1)]
+    bark = [(cx - rx, cy, 1), (cx - rx, cy + 900, 1), (cx + rx, cy + 900, 1), (cx + rx, cy, 1)]
+    binner = blob(rect_pts(cx - rx - 20, cy, cx - rx * .3, cy + 900), lib.mix("#4a3324", "#b8743e", .55 * u * fl), .9)
+    for i in range(9):
+        bx = cx - rx + 40 + i * 190
+        binner += line([(bx, cy + 60), (bx + 14, cy + 300), (bx - 6, cy + 700)], 5, "#22160e", taper=.5, wmin=.3, seed=9990 + i, op=.8)
+    table = shape(bark, "#3e2a1c", binner, w=5.2, seed=9994)
+    top = ellipse_pts(cx, cy, rx, ry, 40)
+    g = lib.lin_grad([(0, lib.mix("#7a5636", "#d9995c", .6 * u * fl), 1), (.6, "#6a4a30", 1), (1, "#4e3622", 1)], 0, 0, 1, 0)
+    inner = f'<rect x="{f(cx - rx - 10)}" y="{f(cy - ry - 10)}" width="{f(2 * rx + 20)}" height="{f(2 * ry + 20)}" fill="url(#{g})"/>'
+    for i in range(1, 6):
+        q = i / 6
+        inner += f'<path d="{lib.ink_closed(ellipse_pts(cx + 20 * q, cy + 10 * q, rx * q, ry * q, 36), 2.4, seed=9980 + i)}" fill="#4a3020" opacity=".55"/>'
+    inner += line([(cx + 60, cy - ry * .9), (cx + 30, cy - ry * .4), (cx + 70, cy + ry * .1)], 4, "#3a2416", taper=.5, wmin=.3, seed=9989)
+    table += shape(top, "#6a4a30", inner, w=5.2, seed=9995)
     fire = campfire(-120, 1830, 2.2, u, t, seed=4) + _sparks(-80, 1700, t, u, 16, 900, seed=2, k=1.6)
 
     def mts(tt, uu=1.0):

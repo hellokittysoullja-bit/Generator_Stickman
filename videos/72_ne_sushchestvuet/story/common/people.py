@@ -2599,6 +2599,7 @@ def cocoon_blanket(x, y, k=1.0, u=0.0, t=0.0, seed=0, col=C_COCOON):
 # Кот (cat.py, новые ключи st): paw_l (левая передняя лапа тянется, как paw у правой), paw_l_dx; smug 0…1 (тяжёлые веки, бровь-штрих
 #   вверх, ухмылка краем рта); mouth_item — SVG в точке рта (локально (836, 1130) кота, до масштаба: кубик в зубах).
 #   cat_paw_tip(x, y, k, st, side="r"|"l") → кончик лапы в мире (без rot/sx), cat_nod(t, t0, dur, amp) → st["drop"] кивка.
+#   cat_forearm(base, tip, k, claw) — лапа кота до локтя без кота (лопает шарик s02).
 #   CAT_ST[имя] — готовые состояния: smug, spread (разводит лапами), point (показывает лапой вправо), warm (тёплый, глаза щёлочками),
 #   reach (тянет лапу к зрителю), split (обе лапы вниз на лёд).
 EXPR["dima"].update({
@@ -2882,3 +2883,35 @@ def cat_paw_tip(x, y, k, st, side="r"):
         lx = fx - dx * paw * 1.6
     ly = 1306 - 150 * paw
     return x + (lx - cat.CX) * k, y + (ly - cat.CBOT) * k
+
+
+def cat_forearm(base, tip, k=1.0, claw=0.0, seed=0):
+    """Лапа кота до локтя (средний план, без самого кота): из base (локоть, обычно за краем кадра) к tip (подушечка).
+    k — масштаб как у кота (cat k), claw 0…1 — коготь выпущен. Шерсть, подушечки, коготь — как у cat.py."""
+    import cat
+    from ink import band as _band
+    bx, by = base
+    tx, ty = tip
+    dx, dy = tx - bx, ty - by
+    L = math.hypot(dx, dy) + 1e-6
+    ux, uy = dx / L, dy / L
+    nx, ny = -uy, ux
+    mid = (bx + dx * .5 + nx * 14 * k, by + dy * .5 + ny * 14 * k)
+    arm = _band([base, mid, (tx - ux * 10 * k, ty - uy * 10 * k)], 66 * k, 54 * k, step=4, cap=False)
+    sh = [(bx + nx * 30 * k, by + ny * 30 * k), (tx + nx * 26 * k, ty + ny * 26 * k), (tx, ty), (bx, by)]
+    o = shape(arm, cat.CAT, blob(sh, cat.CAT_SH, .7) + "".join(
+        line([(bx + dx * q - nx * 10 * k, by + dy * q - ny * 10 * k), (bx + dx * q + ux * 16 * k, by + dy * q + uy * 16 * k)], 2.4 * k, cat.CAT_EDGE, seed=seed + 7400 + i, op=.8)
+        for i, q in enumerate((.2, .4, .6, .75))), w=4.8 * k, seed=seed + 7410)
+    ang = math.degrees(math.atan2(uy, ux))
+    pp = ellipse_pts(tx, ty, 40 * k, 34 * k, 14, rot=ang)
+    o += shape(pp, cat.CAT, blob(ellipse_pts(tx + nx * 8 * k, ty + ny * 8 * k, 30 * k, 22 * k, 10, rot=ang), cat.CAT_SH, .5), w=4.6 * k, seed=seed + 7411)
+    o += blob(ellipse_pts(tx + ux * 6 * k - nx * 6 * k, ty + uy * 6 * k - ny * 6 * k, 15 * k, 12 * k, 10, rot=ang), "#e8823a")
+    for j in (-1, 0, 1):
+        cx = tx + ux * 26 * k + nx * j * 16 * k
+        cy = ty + uy * 26 * k + ny * j * 16 * k
+        o += blob(ellipse_pts(cx, cy, 6.5 * k, 5.5 * k, 8), "#e8823a")
+    if claw > .02:
+        cx, cy = tx + ux * 36 * k, ty + uy * 36 * k
+        L2 = 30 * k * claw
+        o += shape([(cx - nx * 6 * k, cy - ny * 6 * k, 1), (cx + ux * L2, cy + uy * L2, 1), (cx + nx * 6 * k, cy + ny * 6 * k, 1)], "#F4F1EA", "", w=2.6 * k, seed=seed + 7412)
+    return o

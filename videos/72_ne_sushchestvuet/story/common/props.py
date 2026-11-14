@@ -3347,11 +3347,13 @@ def speed_arcs(x, y, k=1.0, u=1.0, t=0.0, seed=0, n=3, ang=180.0):
 #   paper_tower(x, y, k, lean, flutter, t, pull, n, seed)   башня чистых листов с красной лентой крест-накрест; ширина 340·k,
 #                     высота ≈ 11·n·k (n=60 → 660); lean — наклон (градусы, + вправо), башня гнётся дугой; flutter 0…1 — верхние
 #                     листы шуршат краями; pull 0…1 — клочок с горошину выезжает из основания вправо.
-#                     paper_tower_top(x, y, k, lean, n) → верх башни в мире; scrap_pos(x, y, k, pull) → клочок в мире
+#                     taper 0…0.6 — ракурс снизу (верх уже). paper_tower_top(x, y, k, lean, n) → верх башни в мире;
+#                     scrap_pos(x, y, k, pull) → клочок в мире
 #   scrap(x, y, k, rot, seed)                клочок бумаги с горошину (ЦЕНТР), 34×26·k
 #   pull_engine(x, y, k, cough, shake, cord, t, seed)   садовый моторчик на раме 300×230·k: бак, цилиндр с рёбрами, выхлоп;
 #                     cough 0…1 — клуб дыма из выхлопа (фаза), shake 0…1 — тряска корпуса; cord 0…1 — тросик вытянут (ручка
-#                     уходит влево-вверх). engine_handle(x, y, k, cord) → ручка тросика в мире (кисть Димы)
+#                     уходит влево-вверх); handle=(x, y) мира — ручку держит рука (тросик тянется к ней), hand_ang — угол ручки.
+#                     engine_handle(x, y, k, cord) → ручка тросика в мире (кисть Димы)
 #   puff_cloud(x, y, k, u, seed, col)        клуб дыма/пыли (ЦЕНТР): u 0…1 растёт и тает (рвётся на клочки), сплошной с тушью
 #   brain_kid(x, y, k, expr, hop, t, look, seed)   мозг-малыш (ЦЕНТР ДНА, ножки на земле), 260×300·k: розовый, мягкие извилины,
 #                     глаза-блюдца, ножки с ботиночками. expr: "calm" | "peek" | "wide" (глаза шире, зрачки-точки, извилины дыбом) |
@@ -3471,8 +3473,8 @@ def brain_balloon(x, y, k=1.0, t=0.0, pop=0.0, string=200.0, seed=0):
     rs = _rs(sd + 9)
     for j in range(9):
         a = 2 * math.pi * j / 9 + rs.uniform(-.3, .3)
-        d = 40 + 260 * lib.ease_out(u, 2)
-        cx, cy = math.cos(a) * d, math.sin(a) * d + 380 * u * u
+        d = 40 + 210 * lib.ease_out(u, 2)
+        cx, cy = math.cos(a) * d, math.sin(a) * d + 260 * u * u
         s = (1 - .55 * u) * rs.uniform(.7, 1.1)
         if s < .08:
             continue
@@ -3530,7 +3532,7 @@ def scrap(x, y, k=1.0, rot=0.0, seed=0):
     return _tf(shape(pts, "#FFFFFF", inn, w=2.8, seed=sd), x, y, k, rot)
 
 
-def paper_tower(x, y, k=1.0, lean=0.0, flutter=0.0, t=0.0, pull=0.0, n=60, seed=0, ribbon=True):
+def paper_tower(x, y, k=1.0, lean=0.0, flutter=0.0, t=0.0, pull=0.0, n=60, seed=0, ribbon=True, taper=0.0):
     sd = 72200 + seed
     rs = _rs(sd)
     W2 = 170.0
@@ -3580,6 +3582,19 @@ def paper_tower(x, y, k=1.0, lean=0.0, flutter=0.0, t=0.0, pull=0.0, n=60, seed=
                            blob([(bx, by), (bx + sx * 40, by + 10), (bx + sx * 40, by + 26)], C_RIBBON_SH, .7), w=3.2, seed=sd + 98 + sx))
         o.append(shape(ellipse_pts(bx, by, 15, 14, 10), C_RIBBON_SH, "", w=3.0, seed=sd + 101))
     g = "".join(o)
+    if taper > 0.001:     # ракурс снизу: верх уже низа (перспектива), сжатие по x растёт с высотой — кусочно по полосам
+        H_ = n * SHEET_T + 40
+        bands = []
+        nb = 12
+        for b in range(nb):
+            y0_, y1_ = -H_ * (b + 1) / nb - 2, -H_ * b / nb + 2
+            q = (b + .5) / nb
+            sxk = 1 - taper * q
+            cx_ = curve[min(n - 1, int(q * (n - 1)))][0]
+            cid = lib.clip_rect(-2000, y0_, 4000, y1_ - y0_)
+            bands.append(f'<g clip-path="url(#{cid})"><g transform="translate({f(cx_)} 0) scale({sxk:.4f} 1) translate({f(-cx_)} 0)">{g}</g></g>')
+        bot = lib.clip_rect(-2000, -2, 4000, 400)
+        g = "".join(bands) + f'<g clip-path="url(#{bot})">{g}</g>'
     if pull > 0:
         sx_, sy_ = scrap_pos(0, 0, 1.0, pull)
         g += scrap(sx_, sy_, 1.4, -20 * pull, seed)
@@ -3614,7 +3629,7 @@ def puff_cloud(x, y, k=1.0, u=1.0, seed=0, col="#D3D7DE"):
     return _tf("".join(o), x, y, k)
 
 
-def pull_engine(x, y, k=1.0, cough=0.0, shake=0.0, cord=0.0, t=0.0, seed=0):
+def pull_engine(x, y, k=1.0, cough=0.0, shake=0.0, cord=0.0, t=0.0, seed=0, handle=None, hand_ang=None):
     sd = 72500 + seed
     jx = shake * 7 * math.sin(t * 61)
     jy = shake * 5 * math.cos(t * 47)
@@ -3643,9 +3658,11 @@ def pull_engine(x, y, k=1.0, cough=0.0, shake=0.0, cord=0.0, t=0.0, seed=0):
     o.append(f'<g transform="translate({f(jx)} {f(jy)})">{"".join(g)}</g>')
     # тросик: от шкива к ручке
     hx, hy = engine_handle(0, 0, 1.0, cord)
+    if handle is not None:      # ручку держит рука: мировая точка → локальные координаты моторчика
+        hx, hy = (handle[0] - x) / k, (handle[1] - y) / k
     sag = 14 * (1 - clamp(cord))
     o.append(line([(-104 + jx, -118 + jy), ((-104 + hx) / 2, (-118 + hy) / 2 + sag), (hx, hy)], 3.6, "#2B2E35", taper=.1, wmin=.7, seed=sd + 20))
-    a = math.radians(-148 if cord > .02 else -100)
+    a = math.radians(hand_ang if hand_ang is not None else (-148 if cord > .02 else -100))
     ca, sa = math.cos(a), math.sin(a)
     hp = [(hx - sa * 30, hy + ca * 30), (hx + sa * 30, hy - ca * 30)]
     o.append(line(hp, 18, lib.INK, taper=.05, wmin=.9, seed=sd + 21))

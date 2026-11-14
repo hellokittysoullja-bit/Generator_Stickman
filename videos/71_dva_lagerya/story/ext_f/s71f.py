@@ -23,7 +23,7 @@ import lib  # noqa: E402
 import people  # noqa: E402
 import props as PR  # noqa: E402
 import room as R  # noqa: E402
-from h71 import bare_feet, blinks, bump, decay, lerp, lerp2, set_ink, shake, sm, whip, wt  # noqa: E402
+from h71 import bare_feet, blinks, laptop_side, bump, decay, lerp, lerp2, set_ink, shake, sm, whip, wt  # noqa: E402
 from lib import INK, blob, clamp, ease_out, ellipse_pts, line  # noqa: E402
 
 BG = "#e6dcc0"
@@ -47,13 +47,6 @@ def flame_world(x, y, k, tail_deg, sleep=0.0):
     return x + (rx - CAT.CX) * k, y + (ry - CAT.CBOT) * k
 
 
-def laptop_to_dima(x, y, k, open_, t, lines=0.0, glow=0.0):
-    """Ноутбук экраном к Диме (Дима слева): {svg, keys}. ВРЕМЕННО — до общего ноутбука в props."""
-    lp = PR.laptop_pts(x, y, k, open_, turn=.55)
-    svg = PR.laptop(x, y, k, open_, "lines" if lines > 0 else "dark", lines=lines, t=t, seed=1, turn=.55, glow=glow)
-    return dict(svg=svg, keys=lp["keys"])
-
-
 def frame(sid, t):
     lib.dyn_begin()
     lib.INK_K[0] = 1.0
@@ -64,12 +57,12 @@ def frame(sid, t):
 # ═════════════════════════ s20: кот на столе одобряет ═════════════════════════
 T_A20 = 32.74
 T_I20, T_KOT20, T_SMOT, T_ODOB = wt(98), wt(99), wt(100), wt(101)      # 32.68, 32.80, 33.08, 33.47
-CAT20 = (985.0, R.DESK_TOP + 6)          # кот на ближнем крае стола, ближе к камере (крупнее мира)
+CAT20 = (1005.0, R.DESK_TOP + 6)          # кот на ближнем крае стола, ближе к камере (крупнее мира)
 CAT20_K = 1.75
 SX20, SY20 = R.SIT
 FEET20 = {"n": ((SX20 + 300, R.FL - 52), 0.0), "f": ((SX20 + 250, R.FL - 50), 0.0)}
-LAP20 = (640.0, R.DESK_TOP - 46)
-LAP20_K = .7
+LAP20 = (565.0, R.DESK_TOP - 66)
+LAP20_K = .74
 
 
 def type_hand(t, base, phase):
@@ -81,14 +74,15 @@ def type_hand(t, base, phase):
 
 def s20(t):
     sc = R.desk_scene(t, "day")
-    lp = laptop_to_dima(LAP20[0], LAP20[1], LAP20_K, 1.0, t, lines=clamp(.6 + (t - 32.5) * .15))
+    lp = laptop_side(LAP20[0], LAP20[1], LAP20_K, 1.0, on=1.0, lines=clamp(.6 + (t - 32.5) * .15), t=t, seed=1)
     kc = lp["keys"]
-    Wf, hf = type_hand(t, (kc[0] - 120, kc[1] - 18), 0.0)
-    Wn, hn = type_hand(t, (kc[0] - 70, kc[1] - 8), 1.9)
+    Wf, hf = type_hand(t, (kc[0] - 70, kc[1] + 2), 0.0)
+    Wn, hn = type_hand(t, (kc[0] - 20, kc[1] + 10), 1.9)
     e = ex("focus_smile" if "focus_smile" in people.EXPR["dima"] else "focus", look=(.6, .45), lid=.62, closed=blinks(t, (33.2, 34.3)))
     kw = dict(feet=FEET20, arms={"f": ("ik", Wf, -1), "n": ("ik", Wn, -1)}, hands={"f": hf, "n": hn},
               lean_add=.12 + .015 * math.sin(t * 2.3), head_add=.04 + .02 * math.sin(t * 1.9))
-    parts = {k: people.dima(SX20, SY20, 1.0, e, "sit_desk", layers=(k,), **kw)["svg"] for k in ("legs", "pelvis", "arm_f", "body", "arm_n")}
+    with bare_feet("sock", "sock"):
+        parts = {k: people.dima(SX20, SY20, 1.0, e, "type", layers=(k,), **kw)["svg"] for k in ("legs", "pelvis", "arm_f", "body", "arm_n")}
     # кот: смотрит в камеру → «кот» поворачивает морду к Диме (через три четверти) → «смотрит» медленно щурится → «одобрительно» кивок,
     # огонёк вспыхивает и снова горит мягко
     tu = sm(t, T_KOT20 - .04, T_KOT20 + .3)
@@ -104,8 +98,8 @@ def s20(t):
     fx, fy = flame_world(cx, cy, CAT20_K, tail)
     fl = PR.glow(fx, fy - 50, 70 + 50 * flare, .45 + .5 * flare, "#ffb347") + PR.sparkles(fx, fy - 70, .9, flare, t, seed=7, n=4, r=70)
     shadow = blob(ellipse_pts(cx, cy + 2, 180, 14, 16), "#7a5236", .25)
-    world = [sc["bg"], sc["chair_back"], sc["desk_top"], lp["svg"], parts["legs"], sc["desk_legs"], sc["chair_seat"], parts["pelvis"],
-             parts["arm_f"], parts["body"], parts["arm_n"], shadow, cat, fl]
+    world = [sc["bg"], sc["chair_back"], sc["desk_top"], parts["legs"], sc["desk_legs"], sc["chair_seat"], parts["pelvis"],
+             parts["arm_f"], parts["body"], lp["svg"], parts["arm_n"], shadow, cat, fl]
     # камера: лёгкий наезд на кота, мини-подскок на кивке
     u = sm(t, T_A20 - .2, 34.68)
     s = lerp(1.02, 1.13, u) + .01 * math.sin(t * 2)

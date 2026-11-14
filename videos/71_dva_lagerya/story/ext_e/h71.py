@@ -115,10 +115,10 @@ def laptop_side(x, y, k=1.0, open_=1.0, on=0.0, lines=0.0, t=0.0, seed=0):
     zx, zy = .3 * Wz, -.16 * Wz           # смещение «вглубь» (дальний бок ноутбука)
 
     def P(px, py):
-        return (x + px * k, y + py * k)
+        return (x + px * k, y + py * k, 1)
 
     def Z(p, u=1.0):
-        return (p[0] + zx * k * u, p[1] + zy * k * u)
+        return (p[0] + zx * k * u, p[1] + zy * k * u, 1)
     o = []
     # корпус: верхняя грань (параллелограмм) и передний торец
     a, b = P(0, -TH), P(D, -TH)
@@ -128,8 +128,8 @@ def laptop_side(x, y, k=1.0, open_=1.0, on=0.0, lines=0.0, t=0.0, seed=0):
         u0, u1 = .14 + r_ * .19, .14 + r_ * .19 + .13
         for c_ in range(6):
             v0, v1 = .12 + c_ * .13, .12 + c_ * .13 + .1
-            q = [(a[0] + (b[0] - a[0]) * v0 + zx * k * u0, a[1] + zy * k * u0), (a[0] + (b[0] - a[0]) * v1 + zx * k * u0, a[1] + zy * k * u0),
-                 (a[0] + (b[0] - a[0]) * v1 + zx * k * u1, a[1] + zy * k * u1), (a[0] + (b[0] - a[0]) * v0 + zx * k * u1, a[1] + zy * k * u1)]
+            q = [(a[0] + (b[0] - a[0]) * v0 + zx * k * u0, a[1] + zy * k * u0, 1), (a[0] + (b[0] - a[0]) * v1 + zx * k * u0, a[1] + zy * k * u0, 1),
+                 (a[0] + (b[0] - a[0]) * v1 + zx * k * u1, a[1] + zy * k * u1, 1), (a[0] + (b[0] - a[0]) * v0 + zx * k * u1, a[1] + zy * k * u1, 1)]
             keys_in += _blob(q, "#3A3F49")
     o.append(_shape(top, "#C9CDD5", keys_in, w=3.8, seed=7600 + seed))
     o.append(_shape([P(0, -TH), P(D, -TH), P(D, 0), P(0, 0)], "#9FA4AE", "", w=3.6, seed=7601 + seed))
@@ -137,7 +137,7 @@ def laptop_side(x, y, k=1.0, open_=1.0, on=0.0, lines=0.0, t=0.0, seed=0):
     th = math.radians(108 * max(0.0, min(1.0, open_)))
     dv = (-math.cos(th), -math.sin(th))
     h0 = P(D, -TH)
-    h1 = (h0[0] + dv[0] * L * k, h0[1] + dv[1] * L * k - TH * k * .6)
+    h1 = (h0[0] + dv[0] * L * k, h0[1] + dv[1] * L * k - TH * k * .6, 1)
     lid = [h0, h1, Z(h1), Z(h0)]
     screen_c = ((h0[0] + h1[0]) / 2 + zx * k * .5, (h0[1] + h1[1]) / 2 + zy * k * .5)
     if th < math.radians(62):      # видна внешняя сторона крышки
@@ -149,7 +149,7 @@ def laptop_side(x, y, k=1.0, open_=1.0, on=0.0, lines=0.0, t=0.0, seed=0):
         def Lp(u, v):          # u — вдоль крышки (0 шарнир, 1 верх), v — поперёк (0 ближний, 1 дальний)
             px = h0[0] + (h1[0] - h0[0]) * u + zx * k * v
             py = h0[1] + (h1[1] - h0[1]) * u + zy * k * v
-            return (px, py)
+            return (px, py, 1)
         scr = [Lp(.06, ins), Lp(.94, ins), Lp(.94, 1 - ins), Lp(.06, 1 - ins)]
         col = lib.mix("#141821", "#F4F7FF", max(0.0, min(1.0, on)))
         inner = ""
@@ -164,4 +164,4 @@ def laptop_side(x, y, k=1.0, open_=1.0, on=0.0, lines=0.0, t=0.0, seed=0):
                 pts = [(p[0] + 1.5 * math.sin(i * 2.1 + j), p[1]) for i, p in enumerate(pts)]
                 inner += _line(pts, 2.6 * k, "#5B6170", taper=.2, wmin=.6, seed=7610 + seed + j)
         o.append(_shape(scr, col, inner, w=2.4, seed=7604 + seed))
-    return dict(svg="".join(o), lid_top=h1, screen=screen_c, keys=((a[0] + b[0]) / 2 + zx * k * .4, a[1] + zy * k * .4), hinge=h0)
+    return dict(svg="".join(o), lid_top=h1[:2], screen=screen_c, keys=((a[0] + b[0]) / 2 + zx * k * .4, a[1] + zy * k * .4), hinge=h0[:2])
