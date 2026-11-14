@@ -266,7 +266,116 @@ def steam(t, x, y, k=1.0):
     return "".join(o)
 
 
+# ───────────────────────── s14: Дима и кот, рукописное «кот» ─────────────────────────
+T_KOT, T_NAP = T[66], T[65]       # 27.04, 26.32
+K_KEYS = [(14, -104), (11, -70), (7, -30), (6, -2), (10, -30), (22, -60), (42, -80), (32, -52), (20, -34), (30, -20), (46, -4), (56, -26),
+          (66, -58), (86, -78), (110, -66), (116, -34), (98, -6), (74, -12), (68, -40), (82, -66), (104, -70), (120, -62),
+          (130, -66), (134, -80), (160, -84), (208, -88), (190, -84), (170, -78), (172, -40), (168, -4), (180, 3), (204, -10), (230, -28)]
+_HW = {}
+
+
+def _cr(pts, step=2.4):
+    P = np.array(pts, float)
+    P = np.vstack([P[0] * 2 - P[1], P, P[-1] * 2 - P[-2]])
+    out = []
+    for i in range(1, len(P) - 2):
+        p0, p1, p2, p3 = P[i - 1], P[i], P[i + 1], P[i + 2]
+        n = max(3, int(np.linalg.norm(p2 - p1) / step))
+        for s_ in np.linspace(0, 1, n, endpoint=False):
+            out.append(.5 * (2 * p1 + (-p0 + p2) * s_ + (2 * p0 - 5 * p1 + 4 * p2 - p3) * s_ * s_ + (-p0 + 3 * p1 - 3 * p2 + p3) * s_ ** 3))
+    out.append(P[-2])
+    return np.array(out)
+
+
+def kot_path():
+    """Слитное «кот» одной линией: наклон вправо, буквы разной высоты, строка сползает; нажим: толсто вниз, тонко на связках."""
+    if "p" in _HW:
+        return _HW["p"]
+    rs = np.random.RandomState(14)
+    pts = [(x - y * .42 + rs.normal(0, 1.2), y * (1.0 + .08 * math.sin(x / 40)) + .05 * x + rs.normal(0, 1.2)) for x, y in K_KEYS]
+    P = _cr(pts)
+    d = np.gradient(P, axis=0)
+    down = d[:, 1] / (np.linalg.norm(d, axis=1) + 1e-9)            # +1 — вниз (толсто), −1 — вверх (тонко)
+    w = 5 + 24 * np.clip(.4 + .8 * down, 0, 1) ** 1.5
+    k = np.convolve(np.random.RandomState(7).normal(0, 1, len(P) + 8), np.ones(9) / 9, "valid")[:len(P)]
+    w = w * (1 + .3 * k)
+    w = np.convolve(w, np.ones(5) / 5, "same")
+    w[:6] *= np.linspace(.5, 1, 6)
+    w[-10:] *= np.linspace(1, .3, 10)
+    _HW["p"] = (P, w)
+    return _HW["p"]
+
+
+def write_kot(t, t0, dur, x0, y0, size=1.3, col="#1c1622"):
+    if t < t0:
+        return ""
+    P, W = kot_path()
+    u = ease_io(clamp((t - t0) / dur), ) if False else clamp((t - t0) / dur)
+    n = max(3, int(len(P) * u))
+    Q = P[:n] * size + np.array([x0, y0])
+    Wd = W[:n] * size * .8
+    d = np.gradient(Q, axis=0)
+    d /= np.linalg.norm(d, axis=1, keepdims=True) + 1e-9
+    N = np.stack([-d[:, 1], d[:, 0]], 1)
+    L, R = Q + N * (Wd / 2)[:, None], Q - N * (Wd / 2)[:, None]
+    pp = [tuple(p) for p in L] + [tuple(p) for p in R[::-1]]
+    o = [f'<path d="M{"L".join(f"{x:.1f} {y:.1f}" for x, y in pp)}Z" fill="{col}"/>']
+    o.append(f'<circle cx="{Q[0][0]:.1f}" cy="{Q[0][1]:.1f}" r="{Wd[0] / 2:.1f}" fill="{col}"/>')
+    o.append(f'<circle cx="{Q[-1][0]:.1f}" cy="{Q[-1][1]:.1f}" r="{Wd[-1] / 2 + 1:.1f}" fill="{col}"/>')
+    e = t - (t0 + dur)
+    if 0 < e < .45:
+        cx_, cy_ = x0 + 120 * size, y0 - 50 * size
+        for kk in range(9):
+            a_ = kk * .7 + .2
+            rr = ease_out(clamp(e / .4))
+            o.append(f'<circle cx="{cx_ + (150 * size + 30) * math.cos(a_) * (.5 + .5 * rr):.1f}" cy="{cy_ + (80 * size + 30) * math.sin(a_) * (.5 + .5 * rr):.1f}" '
+                     f'r="{max(.5, 8 * (1 - e / .45)):.1f}" fill="#ffd070"/>')
+    if u < 1:      # перо: тонкий маркер за остриём
+        tip = Q[-1]
+        o.append(line([tuple(tip), (tip[0] + 74, tip[1] - 96)], 22, "#3d6f8c", taper=0, wmin=1, seed=4))
+        o.append(line([tuple(tip), (tip[0] + 12, tip[1] - 16)], 12, "#2a2a34", taper=0, wmin=1, seed=5))
+    return "".join(o)
+
+
+def frame14(t):
+    static_world()
+    lib.dyn_begin()
+    S14_T0 = 26.32
+    u = seg(t, 26.12, 28.5)
+    DX = 300
+    kw = ease_out(seg(t, 26.5, 26.9))
+    ex = dict(lid=.88, look=(.9, .05), brows="up" if t > 26.8 else "calm", mouth="smile" if t < 27.0 else "grin", smile=.9, blush=.3, open=.3)
+    ha = -.05 + .05 * math.sin(t * 2.3) - .06 * smooth(27.0, 27.3, t)
+    # ближняя рука показывает на кота, дальняя на поясе
+    nt = (DX + 190 + 60 * kw, 1120 - 20 * kw + 6 * math.sin(t * 3))
+    ft = (DX + 20, 1040)
+    d = dima_pose(DX, lean=.03, ha=ha, expr=ex, n_t=nt, f_t=ft, hands={"n": hand_spec(.15, (1, -.2), thumb=.1), "f": hand_spec(.6, (1, .5))},
+                  bob=3 * math.sin(t * 2.6), sn=-1, sf=1)
+    o = [_ST["kit"], K.light(t)]
+    o.append(group := d.get("legs", "") + d["arm_f"] + d["body"] + flour_on(d, ha, .03, .6, seed=3) + d["arm_n"])
+    CX_, CY_, CK = 690, 1432, .92
+    st = dict(look=(0.0, 0.1), turn=0.0, blink=0.0, ear=4 * math.sin(t * 5) * math.exp(-((t - 27.0) % 1.4)), perk=.2, tail=8 * math.sin(t * 2.1), smile=1,
+              tilt=3 * math.sin(t * 1.4) + 4 * smooth(27.0, 27.5, t), flame_e=1.4 + .3 * math.sin(t * 9))
+    for tb in (26.6, 27.7):
+        uu = (t - tb) / .14
+        if 0 < uu < 1:
+            st["blink"] = math.sin(math.pi * uu)
+    o.append(blob(ellipse_pts(CX_ + 10, CY_ + 8, 132 * CK, 14, 14), "#3a2a1e", .35))
+    o.append(people.cat_svg(CX_, CY_, CK, st, t))
+    # крошки на морде и вокруг
+    mx, my = CX_ + 2 * CK, CY_ - 215 * CK
+    for i in range(8):
+        o.append(blob(ellipse_pts(mx + rnd(i, -46, 46), my + rnd(i + 3, -4, 26), rnd(i + 5, 3.5, 6.5), rnd(i + 7, 2.5, 4.5), 7), "#D9A05E"))
+    for i in range(5):
+        o.append(blob(ellipse_pts(CX_ + rnd(i + 20, -120, 120), CY_ + 8 + rnd(i + 22, -6, 6), rnd(i + 25, 4, 7), 3, 7), "#D9A05E"))
+    o.append(write_kot(t, 26.92, .46, 540, 850, 1.25))
+    z = lerp(1.18, 1.3, ease_io(u))
+    cam = (lerp(470, 520, u), 1050, z, lerp(.8, -.5, u))
+    set_ink(z)
+    return whip(f'<g transform="{lib.cam(*cam)}">{"".join(o)}{K.motes(t, seed=7)}</g>', t, S14_T0)
+
+
 def frame(sid, t):
     lib.dyn_begin()
-    body = {"s11": frame11}[sid](t)
+    body = {"s11": frame11, "s14": frame14}[sid](t)
     return svg(f'<rect width="1080" height="1920" fill="#2a1f2a"/>{body}')
