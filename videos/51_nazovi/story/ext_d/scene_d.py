@@ -47,6 +47,25 @@ DESK_BACK, DESK_FRONT = 1108, 1160
 PHONE_POS = (630, 1134)
 
 
+_FONT = {}
+
+
+def text_w(txt_, size):
+    """Ширина строки шрифтом IDB (Inter Display Black из base.html) — для каретки."""
+    if "f" not in _FONT:
+        import base64
+        import re
+        from PIL import ImageFont
+        p = "/tmp/a51d/IDB_scene.otf"
+        if not os.path.exists(p):
+            m = re.search(r"base64,([A-Za-z0-9+/=]+)", open(os.path.join(HERE, "base.html")).read())
+            tmp = p + f".{os.getpid()}"
+            open(tmp, "wb").write(base64.b64decode(m.group(1)))
+            os.replace(tmp, p)
+        _FONT["f"] = ImageFont.truetype(p, 100)
+    return _FONT["f"].getlength(txt_) * size / 100.0
+
+
 def osc(t, fr, ph=0.0):
     return math.sin(2 * math.pi * fr * t + ph)
 
@@ -444,6 +463,19 @@ def key_svg(x, y, w, h, press, seed, fill="#fbfaf7", icon=None):
     return o
 
 
+def rrect(x0, y0, x1, y1, r=0, n=7):
+    """Скруглённый прямоугольник плотными точками дуг (без «рогов» у углов)."""
+    if r <= 0:
+        return [(x0, y0, 1), (x1, y0, 1), (x1, y1, 1), (x0, y1, 1)]
+    r = min(r, (x1 - x0) / 2 - .5, (y1 - y0) / 2 - .5)
+    out = []
+    for (cx, cy, a0) in ((x1 - r, y0 + r, -90), (x1 - r, y1 - r, 0), (x0 + r, y1 - r, 90), (x0 + r, y0 + r, 180)):
+        for k in range(n + 1):
+            a = math.radians(a0 + 90 * k / n)
+            out.append((cx + r * math.cos(a), cy + r * math.sin(a)) + ((1,) if k in (0, n) else ()))
+    return out
+
+
 def phone_close(t):
     breath = 9 * math.sin(2 * math.pi * (t - 28.9) / 3.6)
     calm = smooth(29.0, 30.2, t)
@@ -453,46 +485,44 @@ def phone_close(t):
     erasing = ERASE_T0 - .05 <= t <= ERASE_T1 + .08
     typing = TYPE_T0 - .05 <= t <= TYPE_T1 + .08
     o = []
-    # ── руки позади телефона: ладони и пальцы торчат по бокам корпуса
+    # ── руки позади телефона: ладони выглядывают по бокам корпуса (пальцы за ним, спереди только большие)
     for sd, sx in ((0, -1), (1, 1)):
         edge = PX0 if sx < 0 else PX1
-        yy = 1300 + 8 * math.sin(t * 2 + sd)
-        for j in range(4):
-            fy = yy - 170 + j * 82
-            fx0 = edge + sx * 22
-            fx1 = edge + sx * (-30 + j * 4)
-            fp = [(fx0 + sx * 92, fy - 38, 1), (fx0 + sx * 30, fy - 40), (fx1 - sx * 0, fy - 36), (fx1, fy + 38), (fx0 + sx * 30, fy + 42), (fx0 + sx * 92, fy + 40, 1)]
-            o.append(shape([(a, b) + ((1,) if len(p) > 2 else ()) for p in [fp[0]] for a, b in [(p[0], p[1])]] + fp[1:] if False else fp,
-                           SKIN, blob([(fx0 + sx * 30, fy + 18), (fx1, fy + 20), (fx1, fy + 38), (fx0 + sx * 30, fy + 42)], SKIN_SH, .85), w=4.4,
-                           seed=6000 + sd * 10 + j))
+        yy = 1330 + 8 * math.sin(t * 2 + sd)
+        xa, xb = edge - sx * 40, edge + sx * 96
+        palm = rrect(min(xa, xb), yy - 330, max(xa, xb), 1760, 56)
+        inner = blob(rrect(min(edge + sx * 60, xb), yy - 320, max(edge + sx * 60, xb), 1750, 40), SKIN_SH, .85)
+        inner += "".join(line([(edge + sx * 6, yy - 200 + k * 90), (edge + sx * 50, yy - 190 + k * 90)], 3, SKIN_SH2, seed=6040 + k + 7 * sd, op=.8)
+                         for k in range(3))
+        o.append(shape(palm, SKIN, inner, w=4.8, seed=6050 + sd))
     # ── корпус
-    body = rect_pts(PX0, PY0, PX1, PY1, 96)
+    body = rrect(PX0, PY0, PX1, PY1, 96)
     o.append(blob(T(body, 14, 18), "#101018", .35))
-    o.append(shape(body, "#2b2e3a", blob(rect_pts(PX0 + 8, PY0 + 8, PX0 + 24, PY1 - 8, 8), "#454a5c", .8), w=5.4, seed=6100))
+    o.append(shape(body, "#2b2e3a", blob(rrect(PX0 + 8, PY0 + 8, PX0 + 24, PY1 - 8, 8), "#454a5c", .8), w=5.4, seed=6100))
     sx0, sx1, sy0, sy1 = PX0 + 22, PX1 - 22, PY0 + 24, PY1 - 24
-    scr_id = lib.clip_of(rect_pts(sx0, sy0, sx1, sy1, 76))
+    scr_id = lib.clip_of(rrect(sx0, sy0, sx1, sy1, 76))
     s = [f'<g clip-path="url(#{scr_id})">', f'<rect x="{sx0}" y="{sy0}" width="{sx1 - sx0}" height="{sy1 - sy0}" fill="#f6f3ec"/>']
     # шапка чата
     s.append(f'<rect x="{sx0}" y="{sy0}" width="{sx1 - sx0}" height="210" fill="#ffffff"/>')
     s.append(f'<rect x="{sx0}" y="{sy0 + 208}" width="{sx1 - sx0}" height="4" fill="#dad6cc"/>')
     s.append(blob(ellipse_pts(280, sy0 + 130, 46, 46, 16), "#9fc5a8"))
     s.append(blob(ellipse_pts(280, sy0 + 116, 14, 14, 10), "#f6f3ec") + blob(ellipse_pts(280, sy0 + 156, 26, 18, 10), "#f6f3ec"))
-    s.append(blob(rect_pts(350, sy0 + 100, 590, sy0 + 124, 12), "#3a3e4c"))
-    s.append(blob(rect_pts(350, sy0 + 136, 500, sy0 + 154, 9), "#b4b0a6"))
+    s.append(blob(rrect(350, sy0 + 100, 590, sy0 + 124, 12), "#3a3e4c"))
+    s.append(blob(rrect(350, sy0 + 136, 500, sy0 + 154, 9), "#b4b0a6"))
     # входящее сообщение: злое слово крупными знаками (заглушка из полос + «!»)
-    bub = rect_pts(220, 360, 760, 560, 40)
-    s.append(shape(bub, "#e4e0d6", blob(rect_pts(220, 520, 760, 560, 30), "#cfcabe", .8), w=3.2, seed=6110))
+    bub = rrect(220, 360, 760, 560, 40)
+    s.append(shape(bub, "#e4e0d6", blob(rrect(220, 520, 760, 560, 30), "#cfcabe", .8), w=3.2, seed=6110))
     for k, wd in enumerate((420, 330, 240)):
-        s.append(blob(rect_pts(256, 396 + k * 46, 256 + wd, 420 + k * 46, 10), "#7a766c"))
-    s.append(blob(rect_pts(720, 450, 740, 500, 6), "#c8463a"))
+        s.append(blob(rrect(256, 396 + k * 46, 256 + wd, 420 + k * 46, 10), "#7a766c"))
+    s.append(blob(rrect(720, 450, 740, 500, 6), "#c8463a"))
     # исходящий предыдущий пузырь, чтобы чат не пустовал
-    s.append(shape(rect_pts(580, 600, 860, 668, 30), "#bfe2c4", "", w=3, seed=6111))
-    s.append(blob(rect_pts(610, 626, 810, 644, 8), "#6a8f72"))
+    s.append(shape(rrect(580, 600, 860, 668, 30), "#bfe2c4", "", w=3, seed=6111))
+    s.append(blob(rrect(610, 626, 810, 644, 8), "#6a8f72"))
     # поле ввода
-    k_ang = 1 - calm
+    k_ang = na / float(len(ANGRY[0]) + len(ANGRY[1]))
     fld_col = mix("#4a86d6", "#c8463a", .0)
     border = mix("#5aa56a", "#d8453a", k_ang)
-    s.append(shape(rect_pts(200, 740, 780, 960, 56), "#ffffff", "", w=4.4, seed=6120, ink_color=border))
+    s.append(shape(rrect(200, 740, 780, 960, 56), "#ffffff", "", w=4.4, seed=6120, ink_color=border))
     ar_col = mix("#4fa563", "#d8453a", k_ang)
     s.append(blob(ellipse_pts(842, 850, 52, 52, 18), ar_col))
     s.append(line([(842, 884), (842, 820)], 9, "#ffffff", taper=.05, wmin=.9, seed=6121))
@@ -505,22 +535,22 @@ def phone_close(t):
     if na > 0:
         for i, ln in enumerate(ta):
             if ln:
-                s.append(txt(228, 826 + i * 70, ln, 56, "#a82a22" if k_ang > .5 else "#7a3a34", extra=f'letter-spacing="0"'))
+                s.append(txt(228, 826 + i * 62, ln, 46, "#a82a22" if k_ang > .5 else "#7a3a34"))
         li = max(0, len([x for x in ta if x]) - 1)
         cxp = 228 + len(ta[li]) * 29.5 if False else None
     else:
         for i, ln in enumerate(tc):
             if ln:
-                s.append(txt(228, 826 + i * 70, ln, 56, "#23402b"))
+                s.append(txt(228, 826 + i * 62, ln, 46, "#23402b"))
     # каретка: ширина по числу знаков (шрифт моно-приблизительно)
     cur = ta if na > 0 else tc
     nz = [i for i, x in enumerate(cur) if x]
     if nz and caret_on:
         li = nz[-1]
-        cx_ = 228 + len(cur[li]) * 29.0 + 4
-        s.append(f'<rect x="{cx_:.1f}" y="{826 + li * 70 - 50}" width="6" height="62" rx="3" fill="#2a2430"/>')
+        cx_ = 228 + text_w(cur[li], 46) + 4
+        s.append(f'<rect x="{cx_:.1f}" y="{826 + li * 62 - 42}" width="6" height="54" rx="3" fill="#2a2430"/>')
     elif not nz and caret_on:
-        s.append(f'<rect x="232" y="776" width="6" height="62" rx="3" fill="#2a2430"/>')
+        s.append(f'<rect x="232" y="784" width="6" height="54" rx="3" fill="#2a2430"/>')
     # клавиатура
     s.append(f'<rect x="{sx0}" y="{KEYS_Y - 12}" width="{sx1 - sx0}" height="{sy1 - KEYS_Y + 12}" fill="#cfd3dc"/>')
     # нажатые клавиши
@@ -540,7 +570,7 @@ def phone_close(t):
     s.append(key_svg(830, 1370, 100, 92, 0, 6304, fill="#4a86d6"))
     s.append("</g>")
     o.append("".join(s))
-    o.append(f'<path d="{lib.ink_closed(rect_pts(sx0, sy0, sx1, sy1, 76), 3.6, seed=6130)}" fill="{INK}"/>')
+    o.append(f'<path d="{lib.ink_closed(rrect(sx0, sy0, sx1, sy1, 76), 3.6, seed=6130)}" fill="{INK}"/>')
     # ── большие пальцы поверх экрана
     # левый: по клавишам слева, правый: на «забое» при стирании, потом по клавишам справа
     if erasing:
@@ -556,8 +586,8 @@ def phone_close(t):
     else:
         ltip = (400 + 10 * math.sin(t * 1.3), 1190 + 12 * math.sin(t * 1.0 + 1))
     rr = 0.0 if not erasing else 1.0
-    o.append(thumb_svg((PX1 + 120, 1790), (rtip[0], rtip[1] + 4 * rr), 98, 80, 6400, side=1))
-    o.append(thumb_svg((PX0 - 120, 1790), ltip, 98, 80, 6410, side=-1))
+    o.append(thumb_svg((PX1 - 20, 1600), (rtip[0], rtip[1] + 4 * rr), 122, 94, 6400, side=1))
+    o.append(thumb_svg((PX0 + 20, 1600), ltip, 122, 94, 6410, side=-1))
     # рукава (горчичные) в нижних углах, поверх оснований пальцев
     for sx, sd in ((-1, 0), (1, 1)):
         xx = PX0 - 120 if sx < 0 else PX1 + 120
