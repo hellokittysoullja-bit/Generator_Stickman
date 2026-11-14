@@ -14,8 +14,8 @@ from skimage.draw import polygon as skpoly
 from skimage.morphology import skeletonize
 from scipy import ndimage
 
-SRC = "/tmp/nap/design/fonts/src/Caveat[wght].ttf"
-LINES = ["в понедельник", "после кофе", "надеваю кроссовки", "ЗАВТРА"]
+SRC = "/home/user/Generator_Stickman/assets/fonts/Caveat-Variable.ttf"
+LINES = ["Вопрос:", "сколько это заняло", "в прошлый раз?"]
 R = 0.25   # пикселей растра на единицу шрифта (upm 1000 -> 250 px)
 
 
