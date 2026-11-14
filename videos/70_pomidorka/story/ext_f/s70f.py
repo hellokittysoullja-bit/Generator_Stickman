@@ -51,17 +51,28 @@ def table_y(k, back=0.0):
 
 
 def cat_paw(base, tip, k, seed=4600):
-    """Левая (от зрителя) передняя лапа кота тянется в сторону: от плеча base к подушечке tip (мир)."""
-    from ink import band
-    mid = ((base[0] + tip[0]) / 2, (base[1] + tip[1]) / 2 - 18 * k)
-    arm = band([base, mid, tip], 58 * k, 46 * k, step=4, cap=False)
-    o = [shape(arm, CAT.CAT, blob([(base[0], base[1] + 10 * k), (tip[0], tip[1] + 8 * k), (tip[0], tip[1] + 16 * k), (base[0], base[1] + 22 * k)],
-                                  CAT.CAT_SH, .6), w=4.6 * k / .62, seed=seed)]
-    pp = ellipse_pts(tip[0], tip[1], 26 * k, 22 * k, 12)
-    o.append(shape(pp, CAT.CAT, "", w=4.4 * k / .62, seed=seed + 1))
-    o.append(blob(ellipse_pts(tip[0] - 6 * k, tip[1] + 4 * k, 10 * k, 8 * k, 8), "#e8823a"))
-    for kk in (-8, 6):
-        o.append(line([(tip[0] + kk * k, tip[1] - 16 * k), (tip[0] + (kk + 3) * k, tip[1] - 5 * k)], 2.2, seed=seed + 5 + kk))
+    """Передняя лапа кота тянется от плеча base к подушечке tip (мир): пушистая шерсть, округлая лапка с пальчиками."""
+    from ink import band, fur
+    d = (tip[0] - base[0], tip[1] - base[1])
+    L = math.hypot(*d) + 1e-6
+    ux, uy = d[0] / L, d[1] / L
+    nx, ny = -uy, ux
+    mid = ((base[0] + tip[0]) / 2 + nx * 16 * k, (base[1] + tip[1]) / 2 + ny * 16 * k)
+    arm = band([base, mid, (tip[0] - ux * 18 * k, tip[1] - uy * 18 * k)], 64 * k, 50 * k, step=6, cap=False)
+    arm = fur(arm, 6 * k, 5, seed=seed)
+    o = [shape(arm, CAT.CAT, blob([(base[0] + nx * 22 * k, base[1] + ny * 22 * k), (tip[0] + nx * 18 * k, tip[1] + ny * 18 * k),
+                                   (tip[0] + nx * 6 * k, tip[1] + ny * 6 * k), (base[0] + nx * 6 * k, base[1] + ny * 6 * k)], CAT.CAT_SH, .7),
+               w=4.6 * k / .62, seed=seed)]
+    # лапка: овал по направлению лапы, три пальчика по краю, светлые прядки
+    ang = math.degrees(math.atan2(uy, ux))
+    pp = ellipse_pts(tip[0], tip[1], 36 * k, 30 * k, 16, rot=math.radians(ang))
+    o.append(shape(pp, CAT.CAT, blob(lib.T(ellipse_pts(tip[0], tip[1], 26 * k, 18 * k, 12), nx * 8 * k, ny * 8 * k), CAT.CAT_SH, .55),
+                   w=4.4 * k / .62, seed=seed + 1))
+    for j in (-1, 0, 1):
+        a0 = (tip[0] + ux * 20 * k + nx * j * 13 * k, tip[1] + uy * 20 * k + ny * j * 13 * k)
+        o.append(line([a0, (a0[0] + ux * 12 * k, a0[1] + uy * 12 * k)], 2.6, seed=seed + 5 + j))
+    o.append(line([(tip[0] - ux * 30 * k + nx * 10 * k, tip[1] - uy * 30 * k + ny * 10 * k), (tip[0] - ux * 50 * k + nx * 14 * k, tip[1] - uy * 50 * k + ny * 14 * k)],
+                  2.0, CAT.CAT_EDGE, seed=seed + 9, op=.8))
     return "".join(o)
 
 
@@ -243,14 +254,14 @@ def s18(t):
         for a in PAW_CLICKS:
             cyc = max(cyc, bump(t, a + .05, .22))
         rx, ry = tp["right"]
-        tip = (rx + 10 + 60 * (1 - paw_in), ry - 60 + 70 * cyc)
-        base = (rx + 260, ry - 20 + 30 * cyc)
-        paw_svg = cat_paw(base, tip, .95, seed=4700)
+        tip = (rx - 30 + 90 * (1 - paw_in), ry - 70 + 70 * cyc)
+        base = (rx + 240, ry - 250 + 30 * cyc)
+        paw_svg = cat_paw(base, tip, 1.05, seed=4700)
     # Дима: смотрит на таймер с улыбкой → «не помогает» переводит взгляд на зрителя
     up = sm(t, T_NEP - .02, T_NEP + .25)
     e = ex("relief_day", look=(lerp(.7, -.35, up), lerp(.45, 0.0, up)), smile=lerp(.6, 1.0, up), lid=lerp(.5, .72, up),
            closed=blinks(t, (33.4, 34.75)))
-    wn = (T[0] - 150, R.DESK_TOP - 46)
+    wn = (T[0] - 250, R.DESK_TOP - 40)
     hands = {"f": {"kind": "none"}, "n": {"curl": (.3, .35, .4, .45), "thumb": .4, "dir": (1, .3)}}
     full, parts = C1.dima_layers(e, {"f": ("ang", 0.25, 0.2), "n": ("ik", wn, -1)}, hands,
                                  lean_add=.1 + .02 * math.sin(t * 2.6) - .04 * up, head_add=.08 - .08 * up + .02 * math.sin(t * 2.0))
