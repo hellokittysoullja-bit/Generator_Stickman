@@ -1,18 +1,22 @@
-"""Рилс 51, s07 (10.8–12.3, клип 10.6–12.5): кот запрыгивает на стол рядом с телефоном Димы, садится, на «Знаешь» (10.96)
+"""Рилс 55 s04 (7.2–10.2, клип 7.0–10.4): кот на столе у ноутбука поворачивается к зрителю на «Знаешь» (7.37), наклон головы; огонёк вспыхивает на «тянет» (9.77); Дима за столом вздыхает. База — рилс 51 s07.
+"""
+_UNUSED = """Рилс 51, s07 (10.8–12.3, клип 10.6–12.5): кот запрыгивает на стол рядом с телефоном Димы, садится, на «Знаешь» (10.96)
 поворачивает голову к зрителю, поднимает бровь, над ним рисуется знак вопроса; камера наезжает на кота."""
 import math
 
 import cat
+import dima
 import lib
 from lib import (INK, W, H, blob, blur, cam, clamp, ease_in, ease_io, ease_out, ellipse_pts, f, line, lin_grad, mix,
                  rad_grad, rect_pts, shape, smooth, spring, svg, T)
 
 _ST = {}
-LAND = 10.84        # приземление на стол
-TURN = 10.96        # «Знаешь»
-BROW = 11.14
-CATX, CATY, CSC = 600, 1210, 2.0
+TURN = 7.37         # «Знаешь»
+BROW = 7.62
+FLARE = 9.77        # «тянет»
+CATX, CATY, CSC = 670, 1210, 1.7
 TOP = 1130          # дальний край столешницы
+CAMX, CAMY = 590, 1000
 
 
 def background():
@@ -53,74 +57,36 @@ def background():
     return "".join(s)
 
 
-def phone(t):
-    """Телефон лежит на столе слева, экран светится злым красным и пульсирует."""
-    P = [(170, 1180), (460, 1158), (508, 1262), (144, 1286)]
-    out = [blob([(150, 1292), (520, 1268), (540, 1300), (130, 1320)], "#1a0e05", .4, blur(10))]
-    pu = 0.75 + 0.25 * math.sin(t * 9)
-    scr = [(188, 1190), (448, 1170), (488, 1250), (164, 1272)]
-    gl = rad_grad([(0, "#ff5a3c", .55 * pu), (1, "#ff5a3c", 0)], 330, 1220, 380, 200)
-    out.append(shape(P, "#1d1b26", "", w=5, seed=520))
-    out.append(shape(scr, "#ff6a48", blob([(188, 1190), (448, 1170), (452, 1190), (188, 1210)], "#ff8a60", .8) +
-                     blob([(164, 1262), (488, 1240), (488, 1250), (164, 1272)], "#d8402a", .8), w=3.5, seed=521))
-    for k, (x0, x1, y) in enumerate([(210, 400, 1206), (220, 360, 1226), (210, 420, 1245)]):
-        out.append(line([(x0, y + k * 2), (x1, y - 6)], 10, "#fff3e8", seed=522 + k, taper=.2, wmin=.8, op=.92))
-    out.append(f'<rect x="-100" y="900" width="700" height="600" fill="url(#{gl})" style="mix-blend-mode:screen"/>')
-    return "".join(out)
+
+def laptop(t):
+    """Ноутбук слева, виден сзади-сбоку: крышка с тусклым лого-пятном, по краю свет экрана, клавиатурная часть."""
+    out = [blob([(110, 1196), (560, 1176), (600, 1214), (80, 1236)], "#1a0e05", .35, blur(10))]
+    base = [(100, 1160), (540, 1150), (600, 1218), (70, 1232)]
+    out.append(shape(base, "#6f7385", blob([(70, 1214), (600, 1200), (600, 1218), (70, 1232)], "#4d5060"), w=5, seed=520))
+    lid = [(120, 930), (530, 920), (548, 1170), (110, 1180)]
+    pu = 0.8 + 0.2 * math.sin(t * 5)
+    out.append(shape(lid, "#8d92a6", blob([(120, 930), (170, 928), (160, 1178), (110, 1180)], "#a9aec0") + blob([(480, 922), (530, 920), (548, 1170), (500, 1172)], "#6a6f82"), w=5.5, seed=521))
+    out.append(shape([(280, 1020), (370, 1018), (372, 1090), (282, 1092)], "#a9aec0", "", w=3, seed=522))
+    gl = rad_grad([(0, "#cfe0ff", .55 * pu), (1, "#cfe0ff", 0)], 330, 1040, 420, 380)
+    out.append(f'<rect x="-200" y="600" width="1000" height="900" fill="url(#{gl})" style="mix-blend-mode:screen"/>')
+    return '<g transform="translate(150 340) scale(.7)">' + "".join(out) + "</g>"
 
 
-def question(t):
-    """Знак вопроса рисуется штрихами кодом: дуга, ножка, точка; потом покачивается."""
-    e = t - (BROW + 0.04)
-    if e < 0:
-        return ""
-    cx, cy = CATX + 20, 400
-    bob = 10 * math.sin(e * 5.0) if e > 0.7 else 0
-    sc = 1.0 + 0.06 * math.exp(-max(0, e - 0.7) * 6) * math.sin(e * 22) if e > 0.7 else 1.0
-    # центральная линия «?»: дуга (угол от 200° до -80° по часовой), потом S-изгиб к ножке
-    arc = []
-    for k in range(0, 15):
-        a = math.radians(165 + k * 16.5)
-        arc.append((cx + 78 * math.cos(a), cy - 70 + 78 * math.sin(a) * 0.95))
-    stem = [(cx + 34, cy - 4), (cx + 6, cy + 20), (cx, cy + 40), (cx, cy + 66)]
-    path = arc + stem
-    # длины
-    L = [0.0]
-    for p, q in zip(path, path[1:]):
-        L.append(L[-1] + math.hypot(q[0] - p[0], q[1] - p[1]))
-    prog = ease_out(clamp(e / 0.42), 2) * L[-1]
-    pts = [path[0]]
-    for i in range(1, len(path)):
-        if L[i] <= prog:
-            pts.append(path[i])
-        else:
-            u = (prog - L[i - 1]) / (L[i] - L[i - 1])
-            pts.append((path[i - 1][0] + (path[i][0] - path[i - 1][0]) * u, path[i - 1][1] + (path[i][1] - path[i - 1][1]) * u))
-            break
-    s = []
-    if len(pts) > 2:
-        s.append(line(pts, 56, INK, taper=0.0, wmin=1.0, seed=530))
-        s.append(line(pts, 40, "#ffe9a8", taper=0.0, wmin=1.0, seed=531))
-    ed = ease_out(clamp((e - 0.42) / 0.16), 3)
-    if ed > 0.02:
-        dot = back_out_dot(ed)
-        dx, dy = cx, cy + 116
-        s.append(blob(ellipse_pts(dx, dy, 34 * dot, 34 * dot, 14), INK))
-        s.append(blob(ellipse_pts(dx, dy, 24 * dot, 24 * dot, 14), "#ffe9a8"))
-    # штрихи-«вспышка» вокруг в момент завершения
-    if 0.45 < e < 0.9:
-        k = (e - 0.45) / 0.45
-        for j in range(5):
-            a = math.radians(-150 + j * 38)
-            r0, r1 = 150 + 30 * k, 190 + 70 * k
-            s.append(line([(cx + r0 * math.cos(a), cy + 10 + r0 * math.sin(a)), (cx + r1 * math.cos(a), cy + 10 + r1 * math.sin(a))],
-                          9 * (1 - k) + 1.5, "#ffe9a8", seed=540 + j, taper=.6))
-    return f'<g transform="translate(0 {bob:.2f}) translate({cx} {cy}) scale({sc:.4f}) rotate({6 * math.sin(e * 3) if e > .7 else 0:.2f}) translate({-cx} {-cy})">{"".join(s)}</g>'
-
-
-def back_out_dot(u):
-    u = clamp(u) - 1
-    return 1 + 2.6 * u ** 3 + 1.6 * u ** 2
+def dima_bg(t):
+    """Дима за столом, вид по грудь, сутулится, вздыхает (вдох 8.0–8.6, выдох 8.6–9.4)."""
+    inh = smooth(7.9, 8.6, t) - smooth(8.6, 9.5, t)
+    sag = smooth(8.6, 9.5, t)
+    lean = math.radians(7 - 3 * inh + 4 * sag + 1.2 * math.sin(t * 1.9))
+    pose = {"hip": (0.0, 0.0), "lean": lean, "head_ang": math.radians(5 + 6 * sag - 3 * inh + 2 * math.sin(t * 2.2)),
+            "feet": {"n": ((40, 260), 0.0), "f": ((-20, 260), 0.0)},
+            "arms": {"n": ("ik", (150, 40), -1), "f": ("ik", (110, 30), -1)}, "hands": {"n": "none", "f": "none"},
+            "expr": {"lid": 0.3 + 0.2 * inh - 0.15 * sag, "look": (0.5, 0.25), "brows": "worry", "mouth": "tired", "hair": 2 * math.sin(t * 4)},
+            "hood": 0.0, "strings": (3 * math.sin(t * 3.1), 0)}
+    g, _ = dima.draw(pose)
+    K = 1.75
+    cid = lib.clip_rect(-400, -400, 2400, 400 + TOP + 4)
+    br = 1 + 0.01 * math.sin(t * 2.4) + 0.012 * inh
+    return f'<g clip-path="url(#{cid})"><g transform="translate(250 1170) scale({K} {K * br:.4f})">{g}</g></g>'
 
 
 def cat_draw(X, Y, sc, t, look, blink, tilt, turn, brow, sqx, sqy, tail, flick):
@@ -156,85 +122,64 @@ def cat_draw(X, Y, sc, t, look, blink, tilt, turn, brow, sqx, sqy, tail, flick):
             f'translate({cat.CX} {cat.CBOT}) scale({sqx:.4f} {sqy:.4f}) translate({-cat.CX} {-cat.CBOT})">{"".join(o)}</g>')
 
 
-def dust(t):
-    """Штрихи удара о стол в момент приземления (тушь, без полупрозрачных пятен)."""
-    e = t - LAND
-    if not 0 <= e < 0.3:
-        return ""
-    k = e / 0.3
-    s = []
-    for j in range(5):
-        for side in (-1, 1):
-            a = math.radians(-8 - j * 14)
-            r0, r1 = 150 + 40 * k + j * 6, 190 + 100 * k + j * 6
-            x0, y0 = CATX + side * r0 * math.cos(a), CATY + 14 + r0 * math.sin(a) * .5
-            x1, y1 = CATX + side * r1 * math.cos(a), CATY + 14 + r1 * math.sin(a) * .5
-            s.append(line([(x0, y0), (x1, y1)], 9 * (1 - k) + 1.5, INK, taper=.6, seed=570 + j + (side > 0) * 9))
-    return "".join(s)
-
 
 def frame(sid, t):
     if not _ST:
         _ST["bg"] = background()
         cat.static_parts()
+        dima.LWK = 1.0
         lib.static_done()
     lib.dyn_begin()
-    e = t - LAND
-    # прыжок: из-за правого нижнего края дугой на стол
     X, Y = CATX, CATY
-    sqx = sqy = 1.0
-    if t < LAND:
-        u = clamp((t - 10.52) / (LAND - 10.52))
-        X = CATX + 520 * (1 - u) ** 1.4
-        Y = CATY + 520 * (1 - u) * (1 - u) * 0.9 - 760 * math.sin(math.pi * u) * (1 - 0.3 * u)
-        Y = CATY - 760 * math.sin(math.pi * u) + 420 * (1 - u) ** 2
-        sqx, sqy = 0.94 + 0.0, 1.07 - 0.02 * u            # вытянут в прыжке
-    else:
-        k = math.exp(-e * 9) * math.cos(e * 30)
-        sqx, sqy = 1 + 0.10 * k, 1 - 0.10 * k
-    # голова: смотрит на телефон, на «Знаешь» поворачивается к зрителю
-    turn = -1.0 + 1.0 * ease_out(clamp((t - TURN + 0.05) / 0.2), 3)
-    if t < LAND:
-        turn = -1.0
+    e0 = t - TURN
+    # лёгкий присед-встряска на повороте и на вспышке огонька
+    k = math.exp(-max(e0, 0) * 9) * math.cos(max(e0, 0) * 30) if e0 > 0 else 0
+    ef = t - FLARE
+    kf = math.exp(-ef * 8) * math.cos(ef * 26) if ef > 0 else 0
+    sqx, sqy = 1 + 0.05 * k + 0.05 * kf, 1 - 0.05 * k - 0.05 * kf
+    turn = -1.0 + 1.0 * ease_out(clamp((t - TURN + 0.05) / 0.22), 3)
     over = spring(t - TURN, 3.5, 7.0) - 1 if t > TURN else 0
     turn = min(0.0, turn) + 0.18 * over
-    look = (-1.0 * (1 - smooth(TURN - 0.05, TURN + 0.08, t)), 0.35 * (1 - smooth(TURN - 0.05, TURN + 0.08, t)))
-    brow = ease_out(clamp((t - BROW) / 0.14), 2) * (1 + 0.15 * math.exp(-(t - BROW) * 8) * math.sin((t - BROW) * 30)) if t > BROW else 0.0
-    tilt = 4 * (1 - smooth(TURN - 0.05, TURN + 0.1, t)) - 5 * smooth(BROW, BROW + 0.2, t)
+    sw = 1 - smooth(TURN - 0.05, TURN + 0.08, t)
+    look = (-1.0 * sw, 0.2 * sw)
+    brow = ease_out(clamp((t - BROW) / 0.14), 2) if t > BROW else 0.0
+    tilt = 5 * math.sin(t * 2.0) * sw + 5 * (1 - sw) * (1 - 0.6 * smooth(BROW, BROW + .3, t)) - 6 * smooth(BROW, BROW + 0.25, t) + 3 * math.sin(t * 1.5) * (1 - sw)
     blink = 0.0
-    for c, half in ((10.78, 0.05), (11.9, 0.07)):
+    for c, half in ((7.15, 0.05), (8.4, 0.06), (9.3, 0.06)):
         if c - half <= t <= c + half:
             blink = 1 - abs(t - c) / half
     flick = 0.0
-    for c in (TURN + 0.1, 11.7):
+    for c in (7.05, TURN + 0.1, 8.9):
         ee = t - c
         if 0 <= ee < 0.5:
             flick += -14 * math.exp(-ee * 9) * math.sin(ee * 34)
-    tail = 8 * math.sin(t * 3.1) + 4 * math.sin(t * 5.3 + 1)
-    s = [_ST["bg"], phone(t)]
-    air = clamp((CATY - Y) / 700)
-    sh = 1 - 0.7 * air
-    s.append(blob(ellipse_pts(CATX + 20, CATY + 4, 300 * sh, 30 * sh, 18), "#1a0e05", .4 * (1 - .5 * air), blur(10)))
+    tail = 10 * math.sin(t * 3.1) + 5 * math.sin(t * 5.3 + 1) + (16 * math.exp(-ef * 6) * math.sin(ef * 20) if ef > 0 else 0)
+    s = [_ST["bg"], dima_bg(t), laptop(t)]
+    s.append(blob(ellipse_pts(CATX + 20, CATY + 4, 300, 30, 18), "#1a0e05", .4, blur(10)))
     s.append(cat_draw(X, Y, CSC, t, look, blink, tilt, turn, brow, sqx, sqy, tail, flick))
-    s.append(dust(t))
-    # огонёк кота подсвечивает стену
     fx, fy = cat.flame_world(X, Y, CSC, tail)
     fl = 0.85 + 0.15 * math.sin(t * 13) * math.sin(t * 7.3)
-    g = rad_grad([(0, "#ffb050", .35 * fl), (1, "#ffb050", 0)], fx, fy, 300, 300)
-    s.append(f'<rect x="{f(fx - 320)}" y="{f(fy - 320)}" width="640" height="640" fill="url(#{g})" style="mix-blend-mode:screen"/>')
-    s.append(question(t))
-    # камера: наезд на кота, удар на приземлении и на «Знаешь»
-    v = clamp((t - 10.6) / 1.9)
-    ccx, ccy = 560 + 30 * v, 900 - 90 * v
-    scc = 1.0 + 0.22 * ease_io(v)
-    if t > LAND:
-        kk = math.exp(-e * 8)
-        scc *= 1 + 0.05 * kk
-        ccy += 14 * kk * math.sin(e * 38)
-    et = t - TURN
-    if et > 0:
-        kk = math.exp(-et * 7)
+    boost = 1 + 2.2 * math.exp(-max(ef, 0) * 3.5) * smooth(-0.04, 0.03, ef) if ef > -0.04 else 1.0
+    g = rad_grad([(0, "#ffb050", min(.9, .35 * fl * boost)), (1, "#ffb050", 0)], fx, fy, 300 * boost ** .6, 300 * boost ** .6)
+    s.append(f'<rect x="{f(fx - 900)}" y="{f(fy - 900)}" width="1800" height="1800" fill="url(#{g})" style="mix-blend-mode:screen"/>')
+    if 0 < ef < 0.55:   # искры огонька
+        kk = ef / 0.55
+        for j in range(9):
+            a = math.radians(-160 + j * 20)
+            r0, r1 = 70 + 60 * kk, 120 + 150 * kk
+            s.append(line([(fx + r0 * math.cos(a), fy + r0 * math.sin(a) - 30), (fx + r1 * math.cos(a), fy + r1 * math.sin(a) - 30)],
+                          9 * (1 - kk) + 1.5, "#ffd27a", seed=540 + j, taper=.6))
+    # камера: дрейф с первого кадра, толчок на «Знаешь» и на вспышке
+    v = clamp((t - 7.0) / 3.4)
+    ccx, ccy = CAMX - 60 * v, CAMY - 20 * v
+    scc = 0.92 + 0.28 * ease_io(v) + 0.06 * (1 - ease_out(clamp((t - 7.0) / .5)))
+    if e0 > 0:
+        kk = math.exp(-e0 * 7)
         scc *= 1 + 0.06 * kk
-        ccx += 8 * kk * math.sin(et * 43)
-    crot = 0.8 * math.sin(t * 1.3) + (3.0 * math.exp(-max(0, et) * 6) if et > 0 else 2.0 * (1 - v))
+        ccx += 8 * kk * math.sin(e0 * 43)
+    if ef > 0:
+        kk = math.exp(-ef * 8)
+        scc *= 1 + 0.05 * kk
+        ccy += 12 * kk * math.sin(ef * 40)
+    crot = 0.9 * math.sin(t * 1.3) + 2.0 * (1 - clamp((t - 7.0) / 0.6)) + (2.5 * math.exp(-max(e0, 0) * 6) if e0 > 0 else 0)
     return svg(f'<rect width="{W}" height="{H}" fill="#2d2a47"/><g transform="{cam(ccx, ccy, scc, crot)}">{"".join(s)}</g>')
