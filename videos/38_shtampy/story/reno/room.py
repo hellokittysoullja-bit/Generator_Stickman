@@ -16,9 +16,9 @@ WIN = (900.0, 330.0, 1130.0, 860.0)            # окно на задней ст
 HOOK = (250.0, 190.0)                          # крючок лампы-переноски
 OUTLET = (700.0, 1330.0)
 
-PAPER_Y, PAPER_Y2, PAPER_ST, PAPER_FL = "#e8cf7c", "#d9bd66", "#efd98e", "#c9a250"
-MINT, MINT_SH, MINT_HI, MINT_WET = "#9fdcc6", "#82c6ae", "#bdebd9", "#8fd3bb"
-PLASTER, PLASTER_SH = "#cfc8bb", "#b5ad9f"
+PAPER_Y, PAPER_Y2, PAPER_ST, PAPER_FL = "#ecd27e", "#d6b862", "#f2dc94", "#c49d45"
+MINT, MINT_SH, MINT_HI, MINT_WET = "#a9dcc4", "#86c2a7", "#c6eadb", "#97d3b8"
+PLASTER, PLASTER_SH = "#cfc6b4", "#b9af9b"
 CEIL = "#ece6d8"
 FLOORC, FLOOR_SH, FLOOR_LN = "#b88a5c", "#9d724a", "#8a6240"
 
@@ -225,7 +225,7 @@ def window(t):
     c = lib.clip_rect(x0, y0, x1 - x0, y1 - y0)
     o = [f'<g clip-path="url(#{c})">{"".join(inner)}</g>']
     # рама
-    fr = "#f1ece2"
+    fr = "#f1ece1"
     o.append(shape(rect_pts(x0 - 22, y0 - 22, x1 + 22, y0), fr, "", w=4, seed=4620))
     o.append(shape(rect_pts(x0 - 22, y0 - 22, x0, y1), fr, "", w=4, seed=4621))
     o.append(shape(rect_pts(x1, y0 - 22, x1 + 22, y1), fr, "", w=4, seed=4622))

@@ -17,7 +17,7 @@ from lib import INK, band, blob, ellipse_pts, fill_d, ink_closed
 LWK = 1.0
 C = {}
 SPOTS = [False]      # пятна мятной краски на одежде (рилс 38, s01–s03)
-SPOT_C = ("#9fdcc6", "#7fc4ad")
+SPOT_C = ("#a9dcc4", "#86c2a7")
 PAL = {
     "dima": dict(SKIN="#ecc4a2", SKIN_SH="#d39f83", SKIN_SH2="#bf8a74", HAIR="#5a3826", HAIR_SH="#3d2418", HAIR_HI="#7a5038",
                  TOP="#d4a23e", TOP_SH="#a97b25", TOP_SH2="#8c6219", FOLD="#6b4a12",

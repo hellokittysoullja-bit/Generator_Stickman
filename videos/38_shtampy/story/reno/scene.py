@@ -149,7 +149,7 @@ def roller(W, Cc, t, wet=1.0, spin=0.0):
         xx = x0 + 6 + (j * 37) % int(2 * ROLL_HL - 12)
         back.append("")
         inner += line([(xx, yy), (xx + 7, yy + 3)], 2.2, "#6fb59e", seed=6010 + j, op=.8)
-    back.append(shape(rect_pts(x0, y0, x1, y1, 16), "#9fdcc6" if wet else "#e9e4d8", inner, w=3.8, seed=6003))
+    back.append(shape(rect_pts(x0, y0, x1, y1, 16), "#a9dcc4" if wet else "#e9e4d8", inner, w=3.8, seed=6003))
     # ручка (оранжевый пластик) — под пальцами
     h = lib.band([tuple(a), tuple(b)], 26, 24, step=6, cap=True)
     hi = blob(lib.band([tuple(a + n * 5), tuple(b + n * 5)], 7, 6, step=6, cap=False), "#f6a660", .9)
@@ -310,7 +310,7 @@ def s02(t):
     u1 = clamp((t - 1.25) / (T_KONCA - 1.25))
     e = .28 * ease_in(u1, 1.6) if t < T_KONCA else .28 + .72 * ease_out(clamp((t - T_KONCA) / .95), 2.2)
     pv = punch(t, T_VIDNO, .14, .06, .5)
-    s = 1.3 * (.72 / 1.3) ** e * (1 + pv)
+    s = 1.3 * (.72 / 1.3) ** e * (1 + pv) * (1 - .05 * clamp(t - 3.0))
     sh = bump(t, T_VIDNO, .3)
     cam = (560 - 40 * e - 900 * pv + 4 * sh * osc(t, 13), 700 + 230 * e - 400 * pv + 3 * sh * osc(t, 17), s, .6 - .6 * e + 1.0 * sh * osc(t, 9))
     gape = smooth(T_VIDNO - .04, T_VIDNO + .1, t)
@@ -510,7 +510,7 @@ def s13(t):
     if 0 < uw < 1:
         front += squeak(tip, t)
     w += layers(d, msvg, front)
-    k = ease_io(clamp((t - 23.9) / 2.9))
+    k = .5 * clamp((t - 23.9) / 2.9) + .5 * ease_io(clamp((t - 23.9) / 2.9))
     s = 1.32 * (1 + .07 * k) * (1 + punch(t, T_ZAPIS, .03, .05, .3))
     cam = (610 + 50 * k, 1030 - 20 * k + 6 * nod, s, .8 - 1.2 * k)
     return compose(w, cam, "day", lp, 0.0, t)
@@ -631,7 +631,7 @@ def s15(t):
     up = 1.0
     arms = {"n": ("ik", tuple(hip + np.array([60 + 120 * up, -60 - 300 * up + 20 * jump])), -1),
             "f": ("ik", tuple(hip + np.array([-40.0, -30.0])), 1)}
-    hands = {"n": dict(kind="open", dir=(.15 * up + .3 * (1 - up), -1 * up + .9 * (1 - up)), curl=(.9, .92, .94, .95), spread=.02, thumb=0.0, bend=.05),
+    hands = {"n": dict(kind="open", dir=(1, -.12), curl=(.9, .92, .94, .95), spread=.02, thumb=0.0, bend=.05, flip=1),
              "f": dict(kind="open", dir=(.5, .9), curl=(.85, .88, .9, .92), spread=.02, thumb=.7)}
     ex = dict(lid=.7, look=(.9, -.2 + .3 * smooth(T_RASTET, T_RASTET + .4, t)), brows="up", mouth="grin", closed=blink_at(t, 29.2, .14),
               hair=6 * jump)
