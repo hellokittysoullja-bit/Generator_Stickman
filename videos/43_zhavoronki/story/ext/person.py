@@ -303,7 +303,10 @@ def person(spec, pose, sd=0):
         return a_far + a_near
     if pose.get("no_arms"):
         s = [x for x in s if x is not a_far and x is not a_near]
-    a_near = ""
+    if pose.get("near_front"):       # рилс 43: ближняя рука поверх туловища (кружка перед грудью)
+        s = [x for x in s if x is not a_near]
+    else:
+        a_near = ""
     # туловище
     torso = [(-sh_w, shY + 30 + bob), (-sh_w + 14, shY + 4 + bob), (-30, shY - 8 + bob), (30, shY - 8 + bob), (sh_w - 14, shY + 4 + bob),
              (sh_w, shY + 30 + bob), (sh_w - 10, hipY - 60 + bob), (sh_w - 6, hipY + 26 + bob, 1), (-sh_w + 6, hipY + 26 + bob, 1),

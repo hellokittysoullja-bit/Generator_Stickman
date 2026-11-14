@@ -1,16 +1,18 @@
-"""Спальня Димы рилса 41 (сцена bed, агент A; основа — scene_bed рилса 35): s17 (ночь, Дима спокойно спит под
-одеялом, луна в окне, на тумбочке закрытый ноутбук; на «обычной» (32.64) над Димой «z», кот в ногах укладывается
-клубком, огонёк тлеет; камера дрейфует от Димы к коту) и s18 (крупно кот в ногах: приоткрывает глаза, смотрит в
-камеру, на «кот» (34.32) огонёк вспыхивает и ухо дёргается, медленно моргает — призыв).
+"""Спальня Димы рилса 43 (сцена bed, агент C; основа — scene_bed рилса 41): s05 (ночь, спит, на «неделю» на стене
+семь чёрточек-дней, на «пять» будильник 5:00 звенит — Дима рывком садится с закрытыми глазами, волосы торчком),
+s11 (ночь, Дима тащит себя из кровати за капюшон, второй рукой держится за подушку; «ломать» — рывок, «пять» —
+будильник 5:00 подпрыгивает и звенит), s13 (утро, солнце, выспавшийся Дима потягивается, будильник 8:00 мягко
+звенит на «восемь»). Будильник — clock/alarm.py рилса 37 (копия alarm.py), стоит на подоконнике; цифры — кодом.
 Всё — функция общего времени ролика t."""
+import importlib.util
+import json
 import math
+import os
+
 
 import numpy as np
 
-import cat
-import catcurl
 import lib
-import kitchen
 import people
 import props
 from lib import (INK, W, H, back_out, blob, blur, cam, clamp, ease_in, ease_io, ease_out, ellipse_pts, f, line, lin_grad, mix,
@@ -26,10 +28,6 @@ HEADB = (64, 128)                # изголовье x0..x1
 PILLOW = (330, 1000, 240, 62)    # центр, полуоси
 LAMP = (400, 540)                # бра
 BEAD0 = (440, 770)               # бусина шнурка в покое
-CAT_POS = (1185, 948, 0.5)       # клубок в ногах, на одеяле (s17/s18)
-
-T_OBYCH = 32.64                  # «обычной»
-T_KOT = 34.32                    # «кот»
 
 
 # ───────────────────────── комната
@@ -292,27 +290,6 @@ def blink_at(t, times, dur=0.16):
     return b
 
 
-def nightstand():
-    """Тумбочка слева от изголовья: закрытый ноутбук и пустая кружка."""
-    o = []
-    x0, x1, top = -196, 50, 1150
-    o.append(blob(rect_pts(x0 + 10, FLOOR - 14, x1 + 10, FLOOR + 6, 6), "#3a2412", .25, blur(8)))
-    o.append(shape(rect_pts(x0, top, x1, FLOOR - 4, 6), "#a8693f", blob(rect_pts(x1 - 26, top, x1, FLOOR), "#7f4b2b", .9), w=4.6, seed=3300))
-    o.append(shape(rect_pts(x0 - 12, top - 22, x1 + 12, top + 6, 6), "#c88a58", blob(rect_pts(x0 - 12, top - 4, x1 + 12, top + 6), "#a8693f", .9),
-                   w=4.4, seed=3301))
-    for k, (y0, y1) in enumerate(((top + 30, top + 130), (top + 146, FLOOR - 24))):
-        o.append(shape(rect_pts(x0 + 18, y0, x1 - 18, y1, 4), "#b97a4a", blob(rect_pts(x0 + 18, y1 - 12, x1 - 18, y1), "#8f5a34", .8), w=3.2, seed=3302 + k))
-        o.append(shape(rect_pts((x0 + x1) / 2 - 26, (y0 + y1) / 2 - 6, (x0 + x1) / 2 + 26, (y0 + y1) / 2 + 6, 6), "#e2c58a", "", w=2.4, seed=3305 + k))
-    # закрытый ноутбук: плоская крышка, видна кромка и петля
-    lx0, lx1, ly = x0 + 70, x0 + 238, top - 22
-    o.append(shape([(lx0, ly - 18, 1), (lx1, ly - 18, 1), (lx1 + 4, ly, 1), (lx0 - 4, ly, 1)], "#8e95a5",
-                   line([(lx0 + 6, ly - 7), (lx1 - 6, ly - 7)], 2, "#6d737e", seed=3310, taper=.1, wmin=.8), w=3.8, seed=3311))
-    lid = [(lx0 + 22, ly - 52, 1), (lx1 - 22, ly - 52, 1), (lx1, ly - 18, 1), (lx0, ly - 18, 1)]
-    o.append(shape(lid, "#c9ced8", blob([(lx0 + 120, ly - 52), (lx1 - 22, ly - 52), (lx1, ly - 18), (lx0 + 136, ly - 18)], "#a6adbb", .8) +
-                   blob(ellipse_pts((lx0 + lx1) / 2, ly - 35, 16, 7, 12), "#e6e9f0", .9), w=3.8, seed=3312))
-    # пустая кружка
-    o.append(kitchen.mug(x0 + 34, ly, .42, 0, col="#d8483c"))
-    return "".join(o)
 
 
 def moonbeam(op=1.0):
@@ -322,109 +299,260 @@ def moonbeam(op=1.0):
     return f'<path d="{lib.fill_d(pts)}" fill="url(#{g})" {blur(18)} style="mix-blend-mode:screen"/>'
 
 
-def flame_glow(x, y, k):
-    g = rad_grad([(0, "#ffb050", .4 * k), (1, "#ffb050", 0)], x, y, 170 + 60 * k)
-    return f'<rect x="{x - 260:.1f}" y="{y - 260:.1f}" width="520" height="520" fill="url(#{g})" style="mix-blend-mode:screen"/>'
+# ═════════════════════════ рилс 43: слова, будильник, надписи ═════════════════════════
+HERE = os.path.dirname(os.path.abspath(__file__))
+WORDS = json.load(open(os.path.join(os.path.dirname(HERE), "voice", "words.json")))
 
 
-def sleeper(t):
-    br = 5 * math.sin(t * 2 * math.pi / 3.4)
-    expr = {"closed": 1.0, "mouth": "smile", "smile": .45, "bags": False, "brows": "calm", "hair": 1.5 * math.sin(t * 1.2)}
-    d = dima(t, 1.0, expr, breath=br * .4)
-    before, after = dima_layers(d, False)
-    return d, expr, before, after
+def wt(word, after=0.0):
+    for w in WORDS:
+        if w["word"].strip(".,?!").lower() == word.lower() and w["start"] >= after - 1e-6:
+            return w["start"]
+    raise KeyError(word)
 
 
-def curled(t, smolder=1.0, blink=1.0, look=(0, 0), flame_k=1.0, glow=0.0, head_lift=0.0, flick=0.0, tilt=0.0):
-    x, y, s = CAT_POS
-    return catcurl.draw(x, y, s, t, blink=blink, look=look, flick=flick, smolder=smolder, flame_k=flame_k, glow=glow, head_lift=head_lift,
-                        tilt=tilt)
+T_NEDELYU = wt("неделю")          # 7.04
+T_PYAT1 = wt("пять", 7.5)         # 8.04
+T_LOMAT = wt("ломать")            # 19.80
+T_PYAT2 = wt("пять", 20.5)        # 20.96
+T_VOSEM = wt("восемь")            # 24.60
+
+_sp = importlib.util.spec_from_file_location("alarm43", os.path.join(HERE, "alarm.py"))
+AL = importlib.util.module_from_spec(_sp)
+_sp.loader.exec_module(AL)
+
+SILL_Y = WIN[3] + 22               # верх подоконника
+ALX, ALS = 965.0, 62.0             # будильник на подоконнике: центр по x, радиус корпуса
 
 
-def tip_world():
-    x, y, s = CAT_POS
-    tx, ty = catcurl.static()["tip"]
-    return x + (tx - catcurl.BX) * s, y + (ty - 30 - catcurl.BY) * s
+def bump(t, t0, dur=.35):
+    u = (t - t0) / dur
+    if u <= 0 or u >= 1:
+        return 0.0
+    return math.sin(math.pi * u) ** 2
 
 
-def s17(t):
-    d, expr, before, after = sleeper(t)
-    # кот: голова приподнята, глаза полуоткрыты → на «обычной» опускает голову на лапы и засыпает, огонёк тлеет
-    settle = ease_io(clamp((t - (T_OBYCH - .1)) / .7))
-    lift = .65 * (1 - settle) + .05 * math.sin(t * 1.3) * (1 - settle)
-    blink = .45 + .55 * smooth(T_OBYCH + .1, T_OBYCH + .6, t)
-    if t < T_OBYCH:
-        blink = max(blink, blink_at(t, [31.7], .2))
-    look = (-.6 * (1 - settle), .1)
-    smold = .3 + .7 * settle
-    flick = -14 * math.exp(-(t - 33.3) * 8) * math.sin((t - 33.3) * 34) if 33.3 <= t < 33.8 else 0.0
-    o = [_ST["room_night"], lamp(0, t), nightstand(), _ST["bed_back"], pillow(), before, blanket(1.0, d["head"][0]), head_over(d, 1.0, expr), after]
-    tx, ty = tip_world()
-    o.append(flame_glow(tx, ty, .6 - .3 * settle))
-    o.append(curled(t, smolder=smold, blink=blink, look=look, flame_k=1.0 - .1 * settle, head_lift=lift, flick=flick))
-    o.append(dark(0.58, "#0b1236"))
-    o.append(moonbeam())
-    o.append(zzz(t, d["head"][0] + 30, d["head"][1] - 120, 30.4))
-    o.append(flame_glow(tx, ty, .5 - .2 * settle))
-    u = clamp((t - 31.0) / 3.0)
-    k = ease_io(clamp((t - 31.45) / 1.05))
-    cx = 240 + 30 * u + 815 * k
-    cy = 905
-    sc = 1.36 + 0.34 * k + .06 * u
-    return o, (cx, cy, sc, -0.4 + 0.8 * u)
+def kick(t, t0, dur=.5, freq=2.2, damp=8.0):
+    u = t - t0
+    if u <= 0 or u > dur:
+        return 0.0
+    return math.exp(-u * damp) * math.sin(2 * math.pi * freq * u)
 
 
-def s18(t):
-    # спит → приоткрывает глаза (33.85–34.3), на «кот» — огонёк вспыхивает, ухо дёргается; медленные моргания 35.2, 36.5
-    op = smooth(33.85, 34.3, t)
-    bl = 1 - 0.92 * op
-    for c0, dur in ((35.1, .9), (36.2, .95)):
-        sb = (t - c0) / dur
-        if 0 <= sb <= 1:
-            bl = max(bl, 0.08 + 0.92 * math.sin(math.pi * sb) ** 1.5)
-    ign = back_out(clamp((t - (T_KOT - .04)) / .35), 1.6)
-    flick = 0.0
-    q = t - (T_KOT + .02)
-    if 0 <= q < 0.5:
-        flick = -18 * math.exp(-q * 8) * math.sin(q * 34)
-    d, expr, before, after = sleeper(t)
-    o = [_ST["room_night"], _ST["bed_back"], pillow(), before, blanket(1.0, d["head"][0]), head_over(d, 1.0, expr), after]
-    o.append(dark(0.52, "#0b1236"))
-    o.append(moonbeam(.8))
-    tx, ty = tip_world()
-    o.append(flame_glow(tx, ty, .35 + .55 * ign))
-    o.append(curled(t, smolder=clamp(1 - ign), blink=bl, look=(0.0, 0.12), flame_k=1.0 + 0.3 * ign - .1 * clamp((t - 35) / 2), glow=ign,
-                    head_lift=0.6 * op, flick=flick, tilt=2 * math.sin(t * .9) * op))
-    x, y, s = CAT_POS
-    hx, hy = catcurl.HEAD_C
-    wx = x + (hx - catcurl.BX) * s
-    wy = y + (hy - catcurl.BY) * s
-    u = clamp((t - 33.6) / 3.8)
-    cx, cy = wx + 18 - 10 * u, wy + 10 - 8 * u
-    sc = 4.4 + 0.45 * ease_io(u)
-    e = t - T_KOT
-    if e > 0:
-        sc *= 1 + 0.03 * math.exp(-e * 6) * math.sin(min(e * 10, math.pi))
-    return o, (cx, cy, sc, -0.6 + 0.9 * u)
+def shake(t, t0, amp, dur=.45, fr=17.0):
+    u = t - t0
+    if u < 0 or u > dur:
+        return 0.0, 0.0, 0.0
+    e = math.exp(-u * 7) * amp
+    return e * math.sin(u * fr * 6.28), e * .8 * math.sin(u * fr * 5.1 + 1), e * .06 * math.sin(u * fr * 4.3 + 2)
 
 
+def alarm_on_sill(t, hh, mm, ring=0.0, hop=0.0, uid="a43", x=None):
+    ALX = globals()["ALX"] if x is None else x
+    cy = SILL_Y - 1.27 * ALS
+    o = [AL.shadow(ALX, SILL_Y + 2, ALS, .3)]
+    o.append(AL.alarm(ALX, cy - hop, size=ALS, hh=hh, mm=mm, ring=ring, t=t, squash=1 - .08 * max(0.0, -hop) / 20, uid=uid))
+    if ring > 0.02:
+        o.append(AL.ring_marks(ALX, cy - hop, ALS, t, ring, INK, seed=4400))
+    return "".join(o)
 
-def dbg(t):
-    lie = 1.0 if t < 1 else 0.0
-    expr = {"closed": 1.0, "mouth": "flat", "bags": True, "brows": "calm"}
-    d = dima(t, lie, expr, arms_up=1.0 if t >= 2 else 0.0)
-    before, after = dima_layers(d, lie < .5, arms_back=t >= 2)
-    o = [_ST["room_night"], lamp(0, t), nightstand(), _ST["bed_back"], pillow(), before, blanket(lie, d["head"][0]), head_over(d, lie, expr), after]
-    return o, (600, 950, 0.75, 0)
+
+def label(x, y, txt, sc, rot=-6, fill="#ffd23f", sh="#e0a92a", sd=4500):
+    """Плашка-стикер с цифрами (шрифт IDB) — время кодом."""
+    if sc <= 0.02:
+        return ""
+    w = 40 * len(txt) + 70
+    hgt = 120
+    body = shape(rect_pts(-w / 2, -hgt / 2, w / 2, hgt / 2, 28), fill, blob(rect_pts(-w / 2, hgt / 2 - 22, w / 2, hgt / 2), sh, .9), w=5.5, seed=sd)
+    tx = (f'<text x="0" y="28" text-anchor="middle" font-family="IDB" font-size="84" fill="{INK}" '
+          f'stroke="{INK}" stroke-width="1.6">{txt}</text>')
+    return f'<g transform="translate({f(x)} {f(y)}) rotate({f(rot)}) scale({sc:.4f})">{body}{tx}</g>'
+
+
+def pop(t, t0, dur=.24, amp=1.8):
+    return back_out(clamp((t - t0) / dur), amp)
+
+
+def tally(t, t0, x, y):
+    """Листок на скотче, на «неделю» на нём одна за другой семь чёрточек-дней (пятая — поперёк первых четырёх)."""
+    o = []
+    o.append(blob(rect_pts(x - 118, y - 82, x + 128, y + 96, 6), "#2a2418", .22, blur(6)))
+    sheet = [(x - 120, y - 88, 1), (x + 118, y - 92, 1), (x + 122, y + 86, 1), (x - 116, y + 90, 1)]
+    o.append(shape(sheet, "#fbf6e8", line([(x - 96, y - 46), (x + 98, y - 50)], 2.2, "#cfc6b0", seed=4601, op=.8) +
+                   blob([(x - 120, y + 64), (x + 122, y + 60), (x + 122, y + 90), (x - 116, y + 90)], "#ece3cc", .9), w=4.2, seed=4600))
+    for k, (tx, ty) in enumerate(((x - 30, y - 104), (x + 34, y - 106))):
+        o.append(shape([(tx - 30, ty, 1), (tx + 30, ty - 3, 1), (tx + 31, ty + 22, 1), (tx - 29, ty + 25, 1)], "#e9e2c2", "", w=2.2, seed=4610 + k))
+    strokes = []
+    for k in range(4):
+        sx = x - 80 + k * 30
+        strokes.append([(sx, y - 26), (sx + 2, y + 50)])
+    strokes.append([(x - 100, y + 34), (x + 32, y - 14)])
+    for k in range(2):
+        sx = x + 62 + k * 30
+        strokes.append([(sx, y - 26), (sx + 2, y + 50)])
+    for k, (a, b) in enumerate(strokes):
+        u = clamp((t - (t0 + k * .065)) / .07)
+        if u <= 0:
+            continue
+        e = (a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u)
+        o.append(line([a, ((a[0] + e[0]) / 2 + 1.5, (a[1] + e[1]) / 2), e], 9, "#d23a2c", taper=.25, wmin=.6, seed=4620 + k))
+    return "".join(o)
+
+
+def bed_core(t, d, lie, expr, before, *, room, extra_back="", pil_dx=0.0, front=""):
+    o = [room, lamp(0, t), _ST["bed_back"]]
+    o.append(f'<g transform="translate({pil_dx:.2f} 0)">{pillow()}</g>')
+    o.append(before)
+    o.append(blanket(lie, d["head"][0]))
+    o.append(head_over(d, lie, expr))
+    o.append(front)
+    return o
+
+
+# ═════════════════════════ s05 — неделя в пять: спит → звонок → рывком сел ═════════════════════════
+def s05(t):
+    tr = T_PYAT1
+    up = clamp((t - (tr + .06)) / .17)
+    lie = 1 - back_out(up, 1.4) if up > 0 else 1.0
+    br = 5 * math.sin(t * 2 * math.pi / 3.2)
+    awake = up > 0
+    expr = {"closed": 1.0, "bags": True, "hair": 1.5 * math.sin(t * 1.2)}
+    if not awake:
+        expr.update(mouth="flat", brows="calm")
+    else:
+        expr.update(mouth="gape", open=.5 + .4 * bump(t, tr + .1, .4), brows="up", wild=clamp(up * 1.3),
+                    hair=10 * kick(t, tr + .2, .6, 3.0, 6))
+    d = dima(t, lie, expr, breath=br * .4 * (1 - up))
+    before, _ = dima_layers(d, lie < .5)
+    o = bed_core(t, d, lie, expr, before, room=_ST["room_night"])
+    o.insert(1, tally(t, T_NEDELYU, 560, 330))
+    ring = clamp((t - tr) / .03)
+    hop = 26 * bump(t, tr, .22) + 10 * bump(t, tr + .25, .18)
+    al = alarm_on_sill(t, 4, 59.3 + .7 * clamp((t - 6.44) / (tr - 6.44)), ring=ring, hop=hop)
+    o.insert(2, al)
+    o.append(dark(0.36, "#0b1236"))
+    o.append(moonbeam(.7))
+    if not awake:
+        o.append(zzz(t, d["head"][0] + 30, d["head"][1] - 110, 5.9))
+    # будильник светится поверх ночи (корпус и цифры — читаемы), надпись 5:00 выскакивает на «пять»
+    o.append(f'<g opacity="{.55 * ring:.3f}">{al}</g>' if ring > 0 else "")
+    o.append(label(ALX - 10, SILL_Y - 270, "5:00", 1.05 * pop(t, tr), rot=-7 + 3 * kick(t, tr, .6, 3.0, 5)))
+    # камера: медленный наезд на спящего, на звонке — тряска и рывок вслед за Димой
+    u = clamp((t - 6.44) / 1.6)
+    g = ease_io(clamp((t - (tr + .05)) / .3))
+    sx, sy, sr = shake(t, tr, 16)
+    cx = 660 + 15 * u + 90 * g + sx
+    cy = 905 - 10 * u - 60 * g + sy
+    sc = (1.36 + .05 * u + .08 * g) * (1 + .04 * bump(t, tr, .3))
+    return o, (cx, cy, sc, -.4 + .5 * u + sr)
+
+
+# ═════════════════════════ s11 — тащит себя из кровати за капюшон, держится за подушку ═════════════════════════
+def tug(t, t0, amp):
+    e = t - t0
+    if e <= 0:
+        return 0.0
+    if e < .09:
+        return amp * ease_out(e / .09, 2)
+    return amp * (.25 + .75 * math.exp(-(e - .09) * 5))
+
+
+def s11(t):
+    tg = tug(t, T_LOMAT, .34) + tug(t, T_LOMAT + .55, .14) + tug(t, T_PYAT2, .3)
+    strain = .012 * math.sin(t * 31) * (1 - clamp(tg * 3))
+    lie = .66 - tg + strain
+    lean = -math.pi / 2 * lie - 0.08 * (1 - lie)
+    hip = np.array(HIP)
+    expr = {"closed": 1.0, "bags": True, "red": .6, "brows": "worry", "mouth": "sheep", "smile": -.25 + .2 * clamp(tg * 2),
+            "wild": .35, "hair": 4 * math.sin(t * 9) + 8 * kick(t, T_LOMAT, .6, 3, 6)}
+    probe = people.draw(dict(hip=tuple(hip), scale=SC, lean=lean, feet=None, pelvis=False, expr=expr, head_ang=lean * .22,
+                             arms={"f": ("ik", (500, 600), 1), "n": ("ik", (470, 968), -1)}))
+    head = probe["head"]
+    hood = hip + SC * people.rot(np.array([-60.0, -380.0]), lean)
+    pull = clamp(tg * 2.2)
+    fist = head + np.array([-70.0 - 20 * pull, -175.0 - 45 * pull]) + np.array([5 * math.sin(t * 29), 3 * math.sin(t * 23)]) * (1 - pull)
+    pil_dx = 34 * clamp(tg * 2.5)
+    grab = np.array([455.0 + pil_dx, 985.0])
+    pose = dict(hip=tuple(hip), scale=SC, lean=lean, feet=None, pelvis=False, expr=expr, head_ang=lean * .22,
+                arms={"f": ("ik", tuple(fist + np.array([0, 30])), 1), "n": ("ik", tuple(grab), 1)},
+                hands={"f": dict(kind="open", dir=(0.15, 1.0), flip=1, curl=(.95, .97, .97, .93), spread=0, thumb=.9, bend=0, front=True),
+                       "n": dict(kind="open", dir=(-.3, 1.0), flip=-1, curl=(.75, .8, .82, .85), spread=.05, thumb=.7, bend=.1)})
+    d = people.draw(pose)
+    # капюшон тянется от шеи сзади вверх за голову к кулаку (за головой), кулак — поверх
+    C = people.PAL["dima"]
+    nrm = np.array([-(fist - hood)[1], (fist - hood)[0]])
+    nrm = nrm / np.linalg.norm(nrm)
+    wb = 46
+    a, b = hood + nrm * wb, hood - nrm * wb
+    c1, c2 = fist + nrm * 16 + np.array([0, 18]), fist - nrm * 16 + np.array([0, 18])
+    mid = (hood + fist) / 2
+    pts = [tuple(a) + (1,), tuple(mid + nrm * 26), tuple(c1) + (1,), tuple(c2) + (1,), tuple(mid - nrm * 22), tuple(b) + (1,)]
+    folds = "".join(line([tuple(hood + nrm * k * 14), tuple(fist + np.array([0, 20]) + nrm * k * 5)], 2.4, C["FOLD"], seed=4701 + k, op=.8)
+                    for k in (-1, 1))
+    stretch = shape(pts, C["TOP_SH"], folds, w=4.4, seed=4700)
+    before = d["arm_f"] + stretch + d["body"]
+    front = d.get("hand_f", "") + d["arm_n"]
+    o = bed_core(t, d, lie, expr, before, room=_ST["room_night"], pil_dx=pil_dx, front=front)
+    ring = clamp((t - T_PYAT2) / .03)
+    hop = 30 * bump(t, T_PYAT2, .22) + 12 * bump(t, T_PYAT2 + .25, .18)
+    al = alarm_on_sill(t, 4, 59.4 + .6 * clamp((t - 19.24) / (T_PYAT2 - 19.24)), ring=ring, hop=hop)
+    o.insert(1, al)
+    # рывок — штрихи у кулака
+    e = t - T_LOMAT
+    if 0 < e < .3:
+        u = e / .3
+        for k in range(3):
+            up = np.array([-.3, -1.0]) / 1.044
+            q = fist + people.rot(up, (k - 1) * .6) * (50 + 50 * u)
+            r = fist + people.rot(up, (k - 1) * .6) * (80 + 70 * u)
+            o.append(line([tuple(q), tuple(r)], 7 * (1 - u) + 1.5, INK, taper=.3, wmin=.4, seed=4710 + k))
+    o.append(dark(0.36, "#0b1236"))
+    o.append(moonbeam(.7))
+    o.append(f'<g opacity="{.55 * ring:.3f}">{al}</g>' if ring > 0 else "")
+    o.append(label(ALX - 10, SILL_Y - 270, "5:00", 1.05 * pop(t, T_PYAT2), rot=-7 + 3 * kick(t, T_PYAT2, .6, 3.0, 5)))
+    u = clamp((t - 19.24) / 2.26)
+    sx, sy, sr = shake(t, T_LOMAT, 14)
+    sx2, sy2, sr2 = shake(t, T_PYAT2, 16)
+    cx = 660 + 30 * ease_io(u) + sx + sx2
+    cy = 900 - 15 * u + sy + sy2
+    sc = (1.42 + .06 * u) * (1 + .035 * bump(t, T_LOMAT, .3) + .04 * bump(t, T_PYAT2, .3))
+    return o, (cx, cy, sc, .5 - .7 * u + sr + sr2)
+
+
+# ═════════════════════════ s13 — утро, 8:00: выспался, потягивается и улыбается ═════════════════════════
+def s13(t):
+    tv = T_VOSEM
+    st = clamp((t - 23.24) / .55)
+    arms = .5 + .5 * back_out(st, 1.3) - .1 * smooth(tv + .1, tv + .6, t)
+    arms += .04 * math.sin(t * 5.2) * st
+    eyes_open = smooth(23.85, 24.1, t)
+    look = smooth(tv + .02, tv + .2, t)
+    expr = {"closed": 1.0, "laugh": .8 * eyes_open, "bags": False, "brows": "calm" if look < .5 else "up",
+            "mouth": "grin" if eyes_open > .5 else "smile", "smile": .9, "open": .4 + .5 * bump(t, tv, .45), "hair": 2 * math.sin(t * 3)}
+    lie = -.03 * st + .02 * math.sin(t * 2.6)
+    d = dima(t, lie, expr, arms_up=clamp(arms, .05, 1.1))
+    before, _ = dima_layers(d, True, arms_back=True)
+    o = bed_core(t, d, lie, expr, before, room=_ST["room_night"])
+    ring = .45 * clamp((t - tv) / .03) * (1 - smooth(tv + .55, tv + .75, t))
+    hop = 12 * bump(t, tv, .22)
+    al = alarm_on_sill(t, 7, 59.3 + .7 * clamp((t - 23.24) / (tv - 23.24)), ring=ring, hop=hop, x=1062)
+    o.insert(1, al)
+    o.insert(1, "")
+    o.append(sunbeams(t))
+    o.append(label(1010, SILL_Y - 300, "8:00", 1.05 * pop(t, tv), rot=6 - 3 * kick(t, tv, .6, 3.0, 5), fill="#9fe07a", sh="#6fbf4f"))
+    u = clamp((t - 23.24) / 2.06)
+    k = ease_io(u)
+    pk = bump(t, tv, .3)
+    cx = 770 + 25 * k
+    cy = 860 - 20 * k
+    sc = (1.32 + .12 * (.4 * u + .6 * k)) * (1 + .045 * pk)
+    return o, (cx, cy, sc, -.5 + .8 * u + .4 * pk * math.sin(t * 40))
 
 
 def build_static(sid):
-    if sid == "s18":
-        lib.INK_K[0] = 0.55
-    _ST["room_night"] = wall("night") + frame_art() + window("night", 0.0)
+    tod = {"s05": "night", "s11": "night", "s13": "day"}.get(sid, "night")
+    _ST["room_night"] = wall(tod) + frame_art() + window(tod, 0.0)
     _ST["bed_back"] = bed_back()
-    catcurl.static()
-    cat.static_parts()
     lib.static_done()
 
 
@@ -432,5 +560,5 @@ def frame(sid, t):
     if not _ST:
         build_static(sid)
     lib.dyn_begin()
-    o, (cx, cy, sc, rot) = {"s17": s17, "s18": s18, "dbg": dbg}[sid](t)
+    o, (cx, cy, sc, rot) = {"s05": s05, "s11": s11, "s13": s13}[sid](t)
     return svg(f'<rect width="{W}" height="{H}" fill="#2a2a3a"/><g transform="{cam(cx, cy, sc, rot)}">{"".join(o)}</g>')

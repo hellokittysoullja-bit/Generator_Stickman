@@ -17,7 +17,7 @@ STORY = os.path.dirname(HERE)
 SH = json.load(open(os.path.join(STORY, "shots.json")))
 SHOTS = {s["id"]: s for s in SH["shots"]}
 SCENE_MOD = {"s09": ("brain", "scene_brain43"), "s10": ("brain", "scene_brain43"), "s12": ("walk", "scene_walk43"),
-             "s17": ("cat", "scene_cat17"), "s18": ("cat", "scene_cat18")}
+             "s17": ("cat", "scene_cat17"), "s18": ("cat18", "scene_cat18")}
 NP = int(os.environ.get("NP", "1"))   # 4 ядра на троих агентов
 TMP = os.environ.get("EXT_TMP", "/tmp/claude-0/-home-user-Generator-Stickman/3721440c-9c0e-59b3-8845-f15efa83d004/scratchpad/b")
 

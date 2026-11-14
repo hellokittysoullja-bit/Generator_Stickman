@@ -1,4 +1,4 @@
-"""Кот рилса 28 — тот же сидящий кот, что в комнате рилсов 24–26 (heroes24: голова, уши — ЛЕВОЕ от зрителя загнуто,
+"""(Рилс 39: копия bed/cat.py рилса 35, глаза — моргание каждого глаза отдельно.) Кот рилса 28 — тот же сидящий кот, что в комнате рилсов 24–26 (heroes24: голова, уши — ЛЕВОЕ от зрителя загнуто,
 зелёные глаза, по две оранжевые полоски на щеках, хвост завитком с огоньком), но живой кодом: моргание (в т.ч.
 медленное), взгляд, наклон головы, флик уха, дыхание, хвост качается, огонёк колышется формой, левая (от зрителя)
 передняя лапа вытягивается и ложится на предмет.
@@ -35,13 +35,13 @@ def to_int(p, x, y, s):
 
 
 # ───────────────────────── хвост (статичная форма, качается целиком вокруг корня)
-def tail_art(puff=0.0):
+def tail_art():
     S = sample(TAIL_C, False, 3.0)
     n = len(S)
     Tg = np.gradient(S, axis=0)
     Tg /= np.linalg.norm(Tg, axis=1, keepdims=True)
     N = np.stack([-Tg[:, 1], Tg[:, 0]], 1)
-    Wd = (40 + (14 - 40) * np.linspace(0, 1, n) ** 1.2) * (1 + .3 * puff)
+    Wd = 40 + (14 - 40) * np.linspace(0, 1, n) ** 1.2
     L, R = S + N * Wd[:, None] / 2, S - N * Wd[:, None] / 2
     tip = S[-1] + Tg[-1] * Wd[-1] * .45
     outline = [tuple(p) for p in L] + [tuple(tip)] + [tuple(p) for p in R[::-1]]
@@ -109,10 +109,10 @@ def ears(flick=0.0):
     return "".join(s)
 
 
-def head_static(puff=0.0):
+def head_static():
     s = []
     hd = [(744, 1062), (760, 1012), (800, 990), (870, 990), (914, 1014), (930, 1062), (922, 1112), (884, 1146), (788, 1146), (750, 1112)]
-    hp = fur(hd, 8 + 7 * puff, 6, seed=23)
+    hp = fur(hd, 8, 6, seed=23)
     inner = blob([(884, 990), (940, 1050), (930, 1150), (866, 1150), (902, 1080)], CAT_SH, .85)
     inner += blob([(784, 1004), (836, 994), (880, 1004), (862, 1018), (804, 1020)], CAT_FUR, .6)
     inner += blob([(800, 1106), (836, 1098), (872, 1106), (864, 1142), (808, 1142)], CAT_FUR, .45)
@@ -122,7 +122,7 @@ def head_static(puff=0.0):
     return "".join(s)
 
 
-def face_static(mouth=0.0, smile=0.0):
+def face_static():
     s = []
     for sx in (-1, 1):
         for k, dy in enumerate((0, 14)):
@@ -130,28 +130,20 @@ def face_static(mouth=0.0, smile=0.0):
             s.append(line([(x0, 1100 + dy), (x0 + sx * 30, 1094 + dy + k * 3)], 5.6, "#f0903e", seed=260 + k + sx, taper=.3, wmin=.5))
     s.append(shape([(826, 1108), (846, 1108), (836, 1119)], "#c47a72", w=2.6, seed=262))
     s.append(line([(836, 1119), (836, 1124)], 2.4, seed=263))
-    if mouth > 0.05:
-        s.append(shape(ellipse_pts(836, 1134, 9 + 3 * mouth, 6 + 9 * mouth, 12), "#5a2030", blob(ellipse_pts(836, 1140 + 4 * mouth, 6, 3 + 3 * mouth, 8),
-                                                                                       "#d0707a"), w=2.8, seed=265))
-    else:
-        sm = 4 * smile
-        s.append(line([(820, 1122 - sm), (829, 1131), (836, 1124), (843, 1131), (852, 1122 - sm)], 3, seed=264))
+    s.append(line([(822, 1124), (829, 1131), (836, 1124), (843, 1131), (850, 1124)], 3, seed=264))
     return "".join(s)
 
 
-def eyes(look, blink, lid_c=CAT, scare=0.0, happy=False):
+def eyes(look, blink, lid_c=CAT):
     """Глаза: blink 0 — открыт, 1 — закрыт (верхнее веко опускается до дуги, нижнее чуть поднимается)."""
     lx, ly = look
     s = []
-    bl = blink if isinstance(blink, (tuple, list)) else (blink, blink)
+    bl = blink if isinstance(blink, (tuple, list)) else (blink, blink)   # рилс 39: веко каждого глаза своё (подмигивание)
     for i, (nm, ex, sd) in enumerate([("L", CX - 44, 255), ("R", CX + 44, 256)]):
         blink = bl[i]
-        ep = ellipse_pts(ex, 1072, 34 * (1 + .14 * scare), 38 * (1 + .12 * scare), 16)
-        if blink > 0.74:          # веки сошлись — дуга закрытого глаза (иначе остаётся пустое кольцо)
-            if happy:
-                s.append(line([(ex - 32, 1086), (ex - 14, 1068), (ex + 14, 1068), (ex + 32, 1086)], 6.2, INK, seed=sd + 40, taper=.5, wmin=.3))
-            else:
-                s.append(line([(ex - 32, 1076), (ex - 12, 1086), (ex + 12, 1086), (ex + 32, 1076)], 5.6, INK, seed=sd + 40, taper=.5, wmin=.3))
+        ep = ellipse_pts(ex, 1072, 34, 38, 16)
+        if blink > 0.74:
+            s.append(line([(ex - 32, 1076), (ex - 12, 1086), (ex + 12, 1086), (ex + 32, 1076)], 5.6, INK, seed=sd + 40, taper=.5, wmin=.3))
             continue
         cid = clip_of(ep)
         o = [f'<path d="{fill_d(ep)}" fill="#a9d84a"/><g clip-path="url(#{cid})">']
@@ -159,17 +151,27 @@ def eyes(look, blink, lid_c=CAT, scare=0.0, happy=False):
         o.append(blob(ellipse_pts(ex, 1102, 26, 11, 10), "#d4f27a", .75))
         o.append(blob(ellipse_pts(ex - 18, 1080, 10, 20, 8), "#c8ee6a", .5))
         px, py = ex + lx * 12, 1074 + ly * 10
-        prx, pry = 11.5 * (1 - .45 * scare), 24 * (1 - .68 * scare)
-        o.append(f'<ellipse cx="{px:.1f}" cy="{py:.1f}" rx="{prx:.2f}" ry="{pry:.2f}" fill="#0b0a10"/>')
-        o.append(f'<circle cx="{px - 8 - 4 * scare:.1f}" cy="{py - 16 + 6 * scare:.1f}" r="{7 - 2.5 * scare:.2f}" fill="#f4f8ff"/>')
+        o.append(f'<ellipse cx="{px:.1f}" cy="{py:.1f}" rx="11.5" ry="24" fill="#0b0a10"/>')
+        o.append(f'<circle cx="{px - 8:.1f}" cy="{py - 16:.1f}" r="7" fill="#f4f8ff"/>')
         if blink > 0.01:
             b = blink
             ytop = 1072 - 40 + 84 * b          # край верхнего века
             ybot = 1112 - 22 * b               # край нижнего века
             o.append(f'<path d="M{ex - 44} 1020 L{ex + 44} 1020 L{ex + 44} {ytop - 6:.1f} Q{ex} {ytop + 10:.1f} {ex - 44} {ytop - 6:.1f}Z" fill="{lid_c}"/>')
-            o.append(line([(ex - 36, ytop - 5), (ex, ytop + 3), (ex + 36, ytop - 5)], 5, INK, seed=sd + 30))
+            lid_line = line([(ex - 36, ytop - 5), (ex, ytop + 3), (ex + 36, ytop - 5)], 5, INK, seed=sd + 30)
             o.append(f'<path d="M{ex - 44} 1124 L{ex + 44} 1124 L{ex + 44} {ybot + 4:.1f} Q{ex} {ybot - 6:.1f} {ex - 44} {ybot + 4:.1f}Z" fill="{lid_c}"/>')
-        o.append(f'</g><path d="{ink_closed(ep, 4.4, seed=sd + 3)}" fill="{INK}"/>')
+        outline = f'<path d="{ink_closed(ep, 4.4, seed=sd + 3)}" fill="{INK}"/>'
+        if blink > 0.01:
+            # контур глаза только в щели между веками: иначе под закрытыми веками висит пустой круг
+            def q(a, c, e, n=10):
+                return [((1 - u) ** 2 * a[0] + 2 * (1 - u) * u * c[0] + u * u * e[0],
+                         (1 - u) ** 2 * a[1] + 2 * (1 - u) * u * c[1] + u * u * e[1]) for u in [k / n for k in range(n + 1)]]
+            top = q((ex - 50, ytop - 6), (ex, ytop + 10), (ex + 50, ytop - 6))
+            bot = q((ex + 50, ybot + 4), (ex, ybot - 6), (ex - 50, ybot + 4))
+            slit = clip_of(top + bot)
+            s.append(f'<g clip-path="url(#{slit})">' + "".join(o) + '</g>' + outline + '</g>' + lid_line)
+            continue
+        o.append('</g>' + outline)
         s.append("".join(o))
     return "".join(s)
 
@@ -186,10 +188,10 @@ def whiskers(t):
 
 
 # ───────────────────────── тело, лапы
-def body_static(puff=0.0):
+def body_static():
     s = []
     body = [(760, 1296), (744, 1240), (756, 1180), (790, 1142), (880, 1142), (916, 1180), (928, 1240), (912, 1296)]
-    bp = fur(body, 7 + 11 * puff, 7 - 3 * puff, seed=22)
+    bp = fur(body, 7, 7, seed=22)
     inner = blob([(860, 1140), (930, 1180), (930, 1300), (874, 1300), (888, 1220)], CAT_SH, .9)
     inner += blob([(798, 1170), (836, 1160), (874, 1170), (864, 1244), (836, 1266), (808, 1244)], CAT_FUR, .6)
     for i, st in enumerate([[(816, 1190), (826, 1208)], [(852, 1192), (846, 1212)], [(834, 1214), (836, 1236)], [(806, 1222), (814, 1238)],
@@ -240,20 +242,18 @@ def leg_left(P, press=0.0):
     return "".join(o)
 
 
-def static_parts(puff=0.0, mouth=0.0, smile=0.0):
+def static_parts():
     if not _ST:
-        _ST["tail"] = tail_art(puff)
-        _ST["head"] = head_static(puff)
-        _ST["face"] = face_static(mouth, smile)
-        _ST["body"] = body_static(puff)
+        _ST["tail"] = tail_art()
+        _ST["head"] = head_static()
+        _ST["face"] = face_static()
+        _ST["body"] = body_static()
     return _ST
 
 
-def draw(x, y, s, t, look=(0, 0), blink=0.0, tilt=0.0, tail=0.0, flick=0.0, paw=None, press=0.0, breath=None, shadow=True, nod=0.0,
-         flame_k=1.3, scare=0.0, puff=0.0, mouth=0.0, smile=0.0, flame_fn=None):
+def draw(x, y, s, t, look=(0, 0), blink=0.0, tilt=0.0, tail=0.0, flick=0.0, paw=None, press=0.0, breath=None, shadow=True):
     """Кот в мире: низ лап (836, 1306) → (x, y), масштаб s. paw — точка лапы во внутренних координатах (None — стоит)."""
-    _ST.clear()          # defs кадра сбрасываются — статику (клипы) строим заново
-    st = static_parts(puff, mouth, smile)
+    st = static_parts()
     br = (0.5 + 0.5 * math.sin(t * 2 * math.pi / 2.6)) if breath is None else breath
     o = []
     if shadow:
@@ -262,13 +262,12 @@ def draw(x, y, s, t, look=(0, 0), blink=0.0, tilt=0.0, tail=0.0, flick=0.0, paw=
     o.append(f'<g transform="{tw}">{st["tail"]}</g>')
     sy = 1 + 0.012 * br
     o.append(f'<g transform="translate(0 {CBOT}) scale(1 {sy:.4f}) translate(0 {-CBOT})">{st["body"]}</g>')
-    if not (isinstance(paw, str) and paw == "none"):
-        P = PAW_REST if paw is None else paw
-        o.append(leg_left(P, press))
-    hy = -(sy - 1) * (CBOT - 1150) + nod
-    hg = st["head"] + ears(flick) + st["face"] + eyes(look, blink, scare=scare, happy=smile > .5) + whiskers(t)
+    P = PAW_REST if paw is None else paw
+    o.append(leg_left(P, press))
+    hy = -(sy - 1) * (CBOT - 1150)
+    hg = st["head"] + ears(flick) + st["face"] + eyes(look, blink) + whiskers(t)
     o.append(f'<g transform="translate(0 {hy:.2f}) rotate({tilt:.2f} {NECK[0]} {NECK[1]})">{hg}</g>')
-    o.append(f'<g transform="{tw}">{flame(t, flame_k) if flame_fn is None else flame_fn(t)}</g>')
+    o.append(f'<g transform="{tw}">{flame(t)}</g>')
     return f'<g transform="translate({x - CX * s:.2f} {y - CBOT * s:.2f}) scale({s:.4f})">{"".join(o)}</g>'
 
 

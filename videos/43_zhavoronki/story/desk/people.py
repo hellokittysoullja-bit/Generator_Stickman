@@ -218,6 +218,21 @@ def dima_head(expr):
     s.append(blob(ellipse_pts(64, 69, 8, 3, 8), C["SKIN_SH2"], .7))
     s.append(line([(44, 70), (38, 80), (36, 88)], 2.2, C["SKIN_SH2"], seed=170, op=.75))
     s.append(dima_mouth(expr))
+    wild = expr.get("wild", 0.0)
+    if wild > 0.01:          # волосы торчком (рывком проснулся): острые пряди над шапкой, основание прячет основная шапка
+        tips = [(-150, -150, -40), (-120, -205, -20), (-70, -235, -8), (-15, -250, 4), (40, -235, 14), (88, -195, 30), (118, -140, 48)]
+        pts = [(-130, -60)]
+        for i, (x, y, a) in enumerate(tips):
+            bx = x + (0 if i == 0 else 0)
+            ty = -110 + (y + 110) * wild
+            tx = bx + a * wild
+            pts.append((bx - 22, -120 + 10 * abs(i - 3)))
+            pts.append((tx, ty, 1))
+            pts.append((bx + 22, -120 + 10 * abs(i - 3)))
+        pts.append((100, -60))
+        st = "".join(line([(x * .8, -120), (x + a * wild * .6, -110 + (y + 110) * wild * .7)], 2.6, "#2a170f", seed=190 + i, op=.8)
+                     for i, (x, y, a) in enumerate(tips))
+        s.append(shape(pts, C["HAIR"], blob([(-160, -300), (-40, -300), (-60, -100), (-160, -100)], C["HAIR_SH"], .9) + st, w=5.0, seed=189))
     hair = _bounce(HAIR_PTS, hb)
     inner = blob(_bounce([(-160, -190), (-20, -190), (-30, -130), (-70, -100), (-80, -40), (-160, -20)], hb), C["HAIR_SH"], .95)
     inner += blob(_bounce([(10, -150), (60, -120), (100, -80), (70, -112), (40, -128)], hb), C["HAIR_HI"], .9)
@@ -424,6 +439,9 @@ def shoe(A, phi, far, seed, who):
     return "".join(o)
 
 
+ROLL = {}
+
+
 def sleeve(S, E, Wr, far, seed, who):
     s = []
     top, sh, sh2, fold = C["TOP"], C["TOP_SH"], C["TOP_SH2"], C["FOLD"]
@@ -444,9 +462,23 @@ def sleeve(S, E, Wr, far, seed, who):
         return o
 
     s.append(limb_band(S, E, 132, 112, top, far, seed + 7, up_in))
-    s.append(limb_band(E, Wr, 112, 96, top, far, seed + 8, fa_in))
+    roll = ROLL.get("f" if far else "n", 0.0) if who == "dima" else 0.0
     d = (Wr - E) / np.linalg.norm(Wr - E)
     n = np.array([-d[1], d[0]])
+    if roll > 0.01:          # засученный рукав: голое предплечье от запястья, валик ткани у локтя
+        L = np.linalg.norm(Wr - E)
+        Rr = E + d * L * (1 - .62 * roll)
+        skin = C["SKIN"]
+        arm_in = lambda a, b, dd, nn: blob([P(np.array(a) - nn * 40), P(np.array(b) - nn * 36), P(np.array(b) - nn * 8), P(np.array(a) - nn * 10)],  # noqa: E731
+                                            far_c(C["SKIN_SH"], far), .85)
+        s.append(limb_band(Rr - d * 10, Wr + d * 6, 84, 74, skin, far, seed + 30, arm_in))
+        s.append(limb_band(E, Rr + d * 4, 112, 106, top, far, seed + 8, fa_in))
+        cf = band([P(Rr - d * 24), P(Rr + d * 10)], 124, 120, step=3, cap=False)
+        rib = "".join(line([P(Rr - d * 22 + d * k * 8 + n * 56), P(Rr - d * 22 + d * k * 8 - n * 56)], 1.8, far_c(sh2, far), seed=seed + 40 + k, op=.8)
+                      for k in range(1, 4))
+        s.append(shape(cf, far_c(sh, far), rib, w=4.2, seed=seed + 39))
+        return "".join(s)
+    s.append(limb_band(E, Wr, 112, 96, top, far, seed + 8, fa_in))
     c0 = Wr - d * 30
     cf = band([P(c0), P(Wr + d * 4)], 100, 96, step=3, cap=False)
     if who == "friend":      # манжета с пуговицей и строчкой

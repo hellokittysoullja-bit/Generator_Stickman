@@ -155,6 +155,36 @@ def button(t):
     return "".join(s)
 
 
+STAMP_C = (648, 432)
+STAMP_S = 0.72
+
+
+def stamp(t):
+    """Штамп «МИФ?»: падает на карточку на «верят» с перелётом (1.7 → 1), красная краска с выщербинами, брызги."""
+    e = t - STAMP + 0.07
+    if e < 0:
+        return ""
+    cx, cy = STAMP_C
+    u = clamp(e / 0.09)
+    sc = 1.0 + 0.75 * (1 - ease_in(u, 2)) if u < 1 else 1.0 - 0.06 * math.exp(-(e - 0.09) * 14) * math.cos((e - 0.09) * 30)
+    rot = -14 + 6 * (1 - u)
+    red, red2 = "#d6322b", "#b42520"
+    g = []
+    if u >= 1:     # брызги краски на ударе (остаются)
+        for k, (dx, dy, r) in enumerate([(-246, -60, 8), (-238, 46, 6), (196, -98, 6), (204, 62, 8), (-120, 116, 6),
+                                          (150, -118, 5), (40, 124, 5), (-30, -122, 6)]):
+            g.append(blob(ellipse_pts(dx, dy, r, r * .85, 9, seed=k), red))
+    outer = rect_pts(-226, -104, 226, 104, 26)
+    inner = rect_pts(-202, -80, 202, 80, 16)
+    g.append(f'<path d="{lib.fill_d(outer)}{lib.fill_d(inner)}" fill="{red}" fill-rule="evenodd"/>')
+    g.append(f'<text x="0" y="45" text-anchor="middle" font-family="IDB" font-weight="900" font-size="128" '
+             f'fill="{red}">МИФ?</text>')
+    for k, (x, y, rx, ry) in enumerate([(-170, -92, 22, 5), (120, 94, 30, 5), (-60, 20, 8, 22), (190, -40, 5, 18), (40, -50, 14, 6),
+                                         (-150, 30, 6, 14)]):
+        g.append(blob(ellipse_pts(x, y, rx, ry, 10, rot=20 * k), "#fbf1dc"))
+    return f'<g transform="translate({f(cx)} {f(cy)}) rotate({f(rot)}) scale({sc * STAMP_S:.4f})">{"".join(g)}</g>'
+
+
 HEARTS = [(-420, -760, -18, 1.25), (-250, -900, 8, 1.0), (-80, -980, -6, 1.4), (120, -860, 16, 1.1), (-520, -560, -22, 0.9),
           (200, -700, 20, 1.0), (-330, -1040, 2, 0.8), (40, -1100, 12, 0.85)]
 
@@ -271,6 +301,7 @@ def frame(sid, t):
     grp.append(button(t))
     # лапа кота — поверх карточки (огибает край)
     grp.append(f'<g transform="translate({X - cat.CX * sc:.2f} {Y - cat.CBOT * sc:.2f}) scale({sc:.4f})">{cat.leg_left(P, press)}</g>')
+    grp.append(stamp(t))
     grp.append(hearts(t))
     s.append(f'<g transform="translate({f(dx)} 0) rotate({f(rot)} 540 1300)">{"".join(grp)}</g>')
     # штрихи скорости при влёте

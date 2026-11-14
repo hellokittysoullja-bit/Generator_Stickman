@@ -107,6 +107,60 @@ def window(t, dawn=0.0):
     return "".join(s)
 
 
+def window_day(t):
+    """Дневное окно (рилс 43): голубое небо, высокое солнце с лучами, облака плывут, дома днём."""
+    x0, y0, x1, y1 = WIN
+    sky = lib.lin_grad([(0, "#6fb4e6", 1), (1, "#cfe9f6", 1)], 0, 0, 0, 1)
+    inner = [f'<rect x="{x0 - 20}" y="{y0 - 20}" width="{x1 - x0 + 40}" height="{y1 - y0 + 40}" fill="url(#{sky})"/>']
+    sun = (x0 + 250, y0 + 110)
+    for k in range(10):
+        a = math.radians(k * 36 + t * 25)
+        inner.append(line([(sun[0] + math.cos(a) * 58, sun[1] + math.sin(a) * 58), (sun[0] + math.cos(a) * 86, sun[1] + math.sin(a) * 86)],
+                          6, "#ffc93a", taper=.3, wmin=.5, seed=3260 + k))
+    inner.append(shape(ellipse_pts(sun[0], sun[1], 46, 46, 18), "#ffd84a", blob(ellipse_pts(sun[0] - 12, sun[1] - 12, 20, 16, 10), "#fff3a8"),
+                       w=3.2, seed=3259))
+    for j, (cx, cy, sc) in enumerate([(x0 + 90 + 14 * math.sin(t * .4), y0 + 200, .8), (x0 + 230 - 10 * math.sin(t * .3), y0 + 300, .6)]):
+        pts = []
+        for i in range(14):
+            a = 2 * math.pi * i / 14
+            r = 1 + .25 * math.sin(i * 2.1)
+            pts.append((cx + 80 * sc * r * math.cos(a), cy + 28 * sc * r * math.sin(a)))
+        inner.append(shape(pts, "#ffffff", "", w=2.6, seed=3270 + j))
+    far = [(x0 - 20, y1 - 330), (x0 + 60, y1 - 330), (x0 + 60, y1 - 390), (x0 + 140, y1 - 390), (x0 + 140, y1 - 300), (x0 + 220, y1 - 300),
+           (x0 + 220, y1 - 420), (x0 + 290, y1 - 420), (x0 + 290, y1 - 340), (x1 + 20, y1 - 340), (x1 + 20, y1 + 20), (x0 - 20, y1 + 20)]
+    inner.append(blob(far, "#a9bfd0"))
+    houses = [(x0 - 10, y1 - 250, 120, "#d29a74"), (x0 + 120, y1 - 200, 110, "#c7866a"), (x0 + 240, y1 - 280, 120, "#d6a77e")]
+    for i, (x, y, w, col) in enumerate(houses):
+        inner.append(shape(rect_pts(x, y, x + w, y1 + 30), col, blob(rect_pts(x + w * .72, y, x + w, y1 + 30), "#a86e52", .6), w=3, seed=3210 + i))
+        for r in range(6):
+            for c in range(int(w // 34)):
+                wx, wy = x + 12 + c * 34, y + 18 + r * 46
+                if wy > y1:
+                    continue
+                inner.append(blob(rect_pts(wx, wy, wx + 18, wy + 26), "#9cc4dc"))
+    fr = "#e8dcc6"
+    mx, my = (x0 + x1) / 2, y0 + (y1 - y0) * .45
+    inner.append(blob(rect_pts(mx - 10, y0, mx + 10, y1), fr) + blob(rect_pts(x0, my - 10, x1, my + 10), fr))
+    s = [shape(rect_pts(x0 - 22, y0 - 22, x1 + 22, y1 + 22, 6), fr, blob(rect_pts(x1, y0 - 22, x1 + 22, y1 + 22), "#c8baa2", .9), w=4.6, seed=3230)]
+    s.append(shape(rect_pts(x0, y0, x1, y1, 4), "#8fc6ea", "".join(inner), w=4, seed=3231))
+    for k, (a, b) in enumerate([((x0 + 26, y0 + 130), (x0 + 110, y0 + 40)), ((x0 + 40, y0 + 190), (x0 + 150, y0 + 80))]):
+        s.append(f'<path d="M{a[0]} {a[1]}L{b[0]} {b[1]}" stroke="#ffffff" stroke-opacity=".25" stroke-width="{12 - k * 4}" stroke-linecap="round"/>')
+    s.append(shape(rect_pts(x0 - 44, y1 + 16, x1 + 44, y1 + 46, 4), "#efe4d0", blob(rect_pts(x0 - 44, y1 + 34, x1 + 44, y1 + 46), "#cbbda4", .9),
+                   w=4, seed=3232))
+    s.append(room.pot(x1 - 70, y1 + 16, .9, 3240, leaves=6, col="#5f86a8"))
+    cx0 = x1 + 30
+    cur = [(cx0, y0 - 60), (cx0 + 70, y0 - 60), (cx0 + 82, y0 + 200), (cx0 + 64, y1 + 60), (cx0 + 96, FLOOR_Y - 60, 1), (cx0 + 6, FLOOR_Y - 60, 1),
+           (cx0 + 14, y1)]
+    inn = blob([(cx0 + 40, y0 - 60), (cx0 + 70, y0 - 60), (cx0 + 82, y0 + 200), (cx0 + 64, y1 + 60), (cx0 + 96, FLOOR_Y - 60), (cx0 + 56, FLOOR_Y - 60)],
+               "#7d3b3b", .8)
+    for k in range(3):
+        xx = cx0 + 20 + k * 22
+        inn += line([(xx, y0 - 40), (xx + 4, y0 + 300), (xx + 12, FLOOR_Y - 80)], 2.4, "#5e2b2b", seed=3250 + k, op=.8)
+    s.append(shape(cur, "#a24f48", inn, w=4.2, seed=3249))
+    s.append(shape(rect_pts(x0 - 70, y0 - 78, x1 + 150, y0 - 62, 6), "#3a2a22", "", w=3, seed=3248))
+    return "".join(s)
+
+
 # ═════════════════════════ часы ═════════════════════════
 def clock(hour_a, min_a, jolt=0.0, tilt=0.0):
     """Настенные часы: углы стрелок в градусах от 12 по часовой; jolt — дрожь от щелчка, tilt — качание на гвозде."""

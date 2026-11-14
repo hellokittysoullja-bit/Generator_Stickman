@@ -1,11 +1,10 @@
-"""Стол Димы рилса 41 «всё в последнюю ночь» (агент A): s01 (хук, ночь, печатает), s05 (кофе и рассвет), s06 (лицо у
-экрана, «стыдно»). frame(sid, t) -> SVG 1080×1920, t — общее время ролика; удары — на словах voice/words.json.
-
-Мир — ночная комната рилса 32 (den.py: окно на город, часы, доска, полка, стол с лампой); Дима — people.py (лохматый,
-щетина, мешки, горчичное худи) сидит слева лицом вправо; ноутбук — из рилса 30 (экран в 3/4 к Диме и зрителю), на
-экране — курсовая: строки растут, ошибки подчёркнуты красной волной. Кружки и рука с кружкой — из рилса 32 (s03).
-Окно умеет рассвет (den.window(t, dawn)).
-"""
+"""Стол Димы рилса 43 «успешные встают в 5 утра» (агент C; основа — scene_desk рилса 41): s06 (день, почти полдень,
+клюёт носом над ноутбуком с кружкой, на «спал» голова падает на клавиатуру, Z-Z-Z, кружка кренится), s14 (вечер,
+закат, лампа: на «трудные» на стол падает папка-кирпич, Дима засучивает рукава и раскрывает её), s15 (ночь, луна:
+бодро печатает, на «свежая» над головой зажигается лампочка, листы папки перелетают в стопку «готово»), s16 (список
+дел у ноутбука: галочки на «сделано» и «больше», Дима довольно откидывается на стуле).
+frame(sid, t) -> SVG 1080×1920, t — общее время ролика; удары — на словах voice/words.json.
+Мир — комната рилса 32 (den.py), день — светлые обои и дневное окно (den.window_day)."""
 import json
 import math
 import os
@@ -34,17 +33,13 @@ def wt(word, after=0.0):
     raise KeyError(word)
 
 
-T_DIMA = wt("дима")          # 0.16
-T_MESYAC = wt("месяц")       # 0.64
-T_PISAL = wt("писал")        # 1.12
-T_KURS = wt("курсовую")      # 1.44
-T_KOFE = wt("кофе")          # 6.40
-T_RASSVET = wt("рассвет")    # 6.96
-T_TEKST = wt("текст")        # 7.96
-T_STYDNO = wt("стыдно")      # 8.72
-T_SDAVAT = wt("сдавать")     # 9.12
-T_ZNAESH = wt("знаешь")      # 10.08
-T_POCHEMU = wt("почему")     # 10.40
+T_NEDELYU = wt("неделю")      # 7.04
+T_SPAL = wt("спал")           # 8.96
+T_TRUD = wt("трудные")        # 25.68
+T_DELA = wt("дела")           # 26.08
+T_SVEZH = wt("свежая")        # 28.00
+T_SDEL = wt("сделано")        # 29.04
+T_BOLSHE = wt("больше")       # 29.52
 
 den.DESK_X0 = 420.0           # стол ближе к Диме (таз правее, чем в 32)
 BS = 0.6
@@ -126,7 +121,7 @@ ROWS = [1.0, .93, .97, .58, 1.0, .9, .95, .72, 1.0, .88, .96, .64, .99, .91, .97
 ERR = {1: (.15, .55), 2: (.4, .9), 5: (.05, .4), 6: (.5, .95), 9: (.2, .7), 10: (.55, .9), 13: (.1, .5), 14: (.3, .85), 17: (.4, .8)}
 
 
-def doc_screen(t, chars, errs=1.0, scroll=0.0, glow=1.0):
+def doc_screen(t, chars, errs=1.0, scroll=0.0, glow=1.0, title="ОТЧЁТ", garbage=0.0):
     """Курсовая в редакторе: синяя шапка, белый лист, строки растут (chars — сколько строк набрано, дробное),
     красные волны под ошибками (errs 0..1 — сколько проявилось), лист уезжает вверх на scroll строк."""
     cid = lib.clip_rect(0, 0, SW, SH)
@@ -134,7 +129,7 @@ def doc_screen(t, chars, errs=1.0, scroll=0.0, glow=1.0):
     o.append(f'<rect width="{SW}" height="56" fill="#2f63b8"/>')
     for k in range(3):
         o.append(f'<circle cx="{28 + k * 26}" cy="28" r="8" fill="#e8eefb" opacity=".85"/>')
-    o.append(f'<text x="{SW / 2:.0f}" y="40" text-anchor="middle" font-family="IDB" font-size="28" fill="#ffffff" letter-spacing="2">КУРСОВАЯ</text>')
+    o.append(f'<text x="{SW / 2:.0f}" y="40" text-anchor="middle" font-family="IDB" font-size="28" fill="#ffffff" letter-spacing="2">{title}</text>')
     o.append(f'<rect y="56" width="{SW}" height="34" fill="#eef1f6"/>')
     for k in range(6):
         o.append(f'<rect x="{30 + k * 44}" y="66" width="28" height="14" rx="4" fill="#b9c2d3"/>')
@@ -161,6 +156,15 @@ def doc_screen(t, chars, errs=1.0, scroll=0.0, glow=1.0):
                     o.append(f'<g opacity="{e:.3f}">{red_wave(xa, xb, y + 21)}</g>')
         if 0 < u < 1 and (t * 2.5) % 1 < .6:
             o.append(f'<rect x="{px0 + 37 + full * u:.1f}" y="{y - 6:.1f}" width="4" height="24" fill="{INK}"/>')
+    if garbage > 0:          # голова на клавиатуре: строки одной буквы
+        r0 = int(chars) + 1
+        n = int(garbage)
+        for j in range(n + 1):
+            y = top + 26 + (r0 + j) * 38 + 12
+            cnt = 22 if j < n else int(22 * (garbage - n))
+            if cnt <= 0 or y > SH + 20:
+                continue
+            o.append(f'<text x="{px0 + 35}" y="{y:.1f}" font-family="IDB" font-size="24" fill="#55585f" letter-spacing="1">{"ж" * cnt}</text>')
     o.append(f'<rect width="{SW}" height="{SH}" fill="#c8dcff" opacity="{.06 * glow:.3f}"/>')
     o.append("</g>")
     return "".join(o)
@@ -273,11 +277,17 @@ def grip_mug(mx, my, mk, side=-1):
 
 
 # ═════════════════════════════════════ МИР ═════════════════════════════════════
-def room_back(t, dawn=0.0, clock=(0.0, 0.0)):
-    return "".join([den.wall(t), den.window(t, dawn), den.board(t), den.shelf(t), den.clock(clock[0], clock[1], 0.0, 0.0), den.floor()])
+MODE = ["night"]
+WALLS = {"night": ("#4d6170", "#3f5160", "#56697a"), "eve": ("#6a6478", "#59536a", "#756f84"), "day": ("#d9dcc4", "#c3c7ad", "#e3e5cf")}
 
 
-def world(t, d, *, dawn=0.0, clock=(0.0, 0.0), scr="", on_desk="", front="", desk_jump=0.0, floor_papers=True, lamp_on=1.0):
+def room_back(t, dawn=0.0, clock=(0.0, 0.0), clock_jolt=0.0):
+    den.WALL, den.WALL_SH, den.WALL_ST = WALLS[MODE[0]]
+    win = den.window_day(t) if MODE[0] == "day" else den.window(t, dawn)
+    return "".join([den.wall(t), win, den.board(t), den.shelf(t), den.clock(clock[0], clock[1], clock_jolt, 0.0), den.floor()])
+
+
+def world(t, d, *, dawn=0.0, clock=(0.0, 0.0), scr="", on_desk="", front="", desk_jump=0.0, floor_papers=True, lamp_on=1.0, back_desk=""):
     w = [room_back(t, dawn, clock)]
     w.append(room.chair(HIP[0], HIP[1] + 4, 1, 2300))
     w.append(den.desk_back())
@@ -288,6 +298,7 @@ def world(t, d, *, dawn=0.0, clock=(0.0, 0.0), scr="", on_desk="", front="", des
     dj = f'<g transform="translate(0 {-desk_jump:.2f})">'
     w.append(dj + crumple(1250, 1112, 22, 5104, .2) + crumple(1215, 1140, 18, 5105, 1.0) + "</g>")
     w.append(den.lamp(t, lamp_on))
+    w.append(back_desk)
     w.append(laptop(scr))
     w.append(on_desk)
     w.append(d["arm_f"])
@@ -300,6 +311,13 @@ def world(t, d, *, dawn=0.0, clock=(0.0, 0.0), scr="", on_desk="", front="", des
 
 def compose(wrld, cam, *, lamp_on=1.0, scr_on=1.0, dawn=0.0, blur=0.0, extra_front=""):
     cx, cy, s, r = cam
+    if MODE[0] == "day":
+        g2 = lib.rad_grad([(0, "#000000", 0), (.6, "#000000", 0), (1, "#2a2418", .3)], 700, 1000, 1300, 1300)
+        sun = lib.rad_grad([(0, "#fff4c8", .35), (1, "#fff4c8", 0)], 220, 520, 700, 700)
+        inner = (f'{wrld}<rect x="-600" y="-600" width="2400" height="3400" fill="url(#{sun})" style="mix-blend-mode:screen"/>'
+                 f'<rect x="-600" y="-600" width="2400" height="3400" fill="url(#{g2})"/>')
+        g = f'<g transform="{lib.cam(cam[0], cam[1], cam[2], cam[3])}">{inner}</g>'
+        return lib.svg(f'<rect width="1080" height="1920" fill="#3a3a30"/>{g}{extra_front}')
     inner = f'{wrld}{den.lamp_cone(0, lamp_on)}{den.glow(lamp_on * (1 - .5 * dawn))}{screen_light(scr_on)}'
     if dawn > 0:
         g = lib.rad_grad([(0, "#ffb07a", .38 * dawn), (.6, "#ff9a7a", .16 * dawn), (1, "#ff9a7a", 0)], 210, 520, 900, 900)
@@ -319,202 +337,267 @@ def vignette():
     return f'<rect width="1080" height="1920" fill="url(#{g})"/>'
 
 
-# ═════════════════════════════════════ s01 — хук: ночь, печатает как бешеный ═════════════════════════════════════
-def s01(t):
-    hit = T_PISAL
-    z, rot = hook_cam(t, hit)
-    k = clamp(t / 1.7)
-    s = 1.42 * z * (1 + .03 * k)
-    sh = bump(t, hit, .3)
-    cam = (612 - 30 * (1 - z) + 10 * k + 5 * sh * osc(t, 13), 935 + 40 * (1 - z) - 8 * k + 4 * sh * osc(t, 17, 1), s,
-           rot + .25 * osc(t, .6) + 1.0 * sh * osc(t, 9))
-    set_ink(s)
-    # печатает: очень быстро, на «писал» — удар обеими руками по клавишам (рывок вверх и вниз)
-    slam = bump(t, hit - .14, .14)
-    tn, tf_ = type_targets(t, amp=1.4, rate=1.35)
-    tn = tn + np.array([0, -40 * slam])
-    tf_ = tf_ + np.array([0, -36 * slam])
-    hn = dict(HN, curl=(.3, .35, .4, .45))
-    expr = dict(lid=.62 + .2 * bump(t, hit, .3), look=(.62, .22), brows="worry", mouth="flat" if t < hit else "tired",
-                closed=blink_at(t, .82, .12), hair=5 * osc(t, 6) + 8 * sh * osc(t, 11), red=1.0)
-    lean = .2 + .01 * osc(t, 5.5)
-    d = dima(t, {"n": ("ik", tuple(tn), -1), "f": ("ik", tuple(tf_), -1)}, {"n": hn, "f": HF}, expr, lean=lean,
-             head_ang=.05 + .025 * osc(t, 3.1) - .04 * sh)
-    chars = 2.2 + 3.4 * t + 1.2 * smooth(hit - .05, hit + .1, t)
-    scr = doc_screen(t, chars, errs=clamp(t / 1.2), scroll=max(0.0, chars - 8.5))
-    jump = bump(t, hit, .24)
-    on_desk = mugs(t, jump, 3)
-    on_desk += mug(1040.0, 1150.0, .46, "#e2c04a", fill="coffee", steam_t=t)
-    w = world(t, d, scr=scr, on_desk=on_desk, desk_jump=10 * jump, clock=(3.0 * 30 + 15 * t, (t * 360 * .2) % 360))
-    return compose(w, cam, blur=blur_px(t))
+# ═════════════════════════════════════ общее рилса 43 ═════════════════════════════════════
+def zzz(t, x, y, t0, col="#3d5a9a", k=1.0):
+    o = []
+    for j in range(3):
+        ph = (t - t0) / 1.5 - j / 3
+        if ph < 0:
+            continue
+        ph %= 1
+        sc = back_out(clamp(ph / .25), 2) * (1 - ease_in(clamp((ph - .75) / .25), 2)) * (.7 + .6 * ph) * k
+        if sc < .03:
+            continue
+        cx = x + 80 * ph + 12 * math.sin(ph * 8 + j)
+        cy = y - 190 * ph
+        r = 22 * sc
+        pts = [(cx - r, cy - r), (cx + r, cy - r), (cx - r, cy + r), (cx + r, cy + r)]
+        o.append(line(pts, 9 * sc + 3, col, taper=.1, wmin=.8, seed=5800 + j))
+    return "".join(o)
 
 
-# ═════════════════════════════════════ s05 — «Кофе»: ещё одна кружка; «рассвет»: небо розовеет ═════════════════════════════════════
-NEW_MUG = (648.0, 1148.0, .46, "#d8483c")
-BATTERY = [(1050.0, 1150.0, .44, "#5f8a5a"), (1112.0, 1142.0, .4, "#c48a3a"), (882.0, 1148.0, .42, "#6a6fb0")]
+def jolt(t, t0, amp=1.0, dur=.4, fr=15.0):
+    u = t - t0
+    if u < 0 or u > dur:
+        return 0.0
+    return amp * math.exp(-u * 8) * math.sin(u * fr * 6.28)
 
 
-def mug_path(t, t_land, x, y, x0, y0, dur=.3):
-    u = clamp((t - (t_land - dur)) / dur)
-    return x0 + (x - x0) * ease_out(u, 2), y0 + (y - y0) * ease_in(u, 1.6) - 30 * math.sin(math.pi * u)
+# ═════════════════════════════════════ s06 — полдень: клюёт носом, на «спал» голова падает на клавиатуру ═════════════════════════════════════
+MUG6 = (790.0, 1150.0, .46, "#d8483c")
 
 
-def s05(t):
-    tk = T_KOFE
-    dawn = ease_io(clamp((t - T_RASSVET) / .75))
-    lamp_on = 1 - .7 * dawn
-    x2, y2, k2, c2 = NEW_MUG
-    if t < tk:
-        mx, my = mug_path(t, tk, x2, y2, x2 - 130, y2 - 170, .32)
-    else:
-        mx, my = x2, y2
-    hold = t < tk + .14
-    # рука: несёт кружку → отпускает → назад к клавиатуре
-    tn, tf_ = type_targets(t, amp=.5, rate=.8)
-    if hold:
-        wr = np.array([mx - 50 * k2 - 62 * BS + 8, my - 64 * k2 + 4])
+def s06(t):
+    MODE[0] = "day"
+    ts = T_SPAL
+    drop = clamp((t - (ts - .1)) / .14)
+    dk = ease_in(drop, 2)
+    bnc = jolt(t, ts + .04, .06, .45, 3.2)
+    # клюёт носом: голова медленно оседает и вздёргивается (8.1→8.55), снова оседает к удару
+    nod = .22 * smooth(8.1, 8.5, t) * (1 - smooth(8.5, 8.58, t)) + .26 * smooth(8.6, ts - .1, t)
+    lean = .16 + .1 * nod + (.72 - .26) * dk + bnc
+    head_ang = nod * .8 * (1 - dk) + .48 * dk + bnc * .5
+    x2, y2, k2, c2 = MUG6
+    tn, tf_ = type_targets(t, amp=0, rate=0)
+    held = drop < .5
+    if held:
+        wr = np.array([x2 - 50 * k2 - 62 * BS + 8, y2 - 64 * k2 + 4])
         hn = dict(kind="none")
     else:
-        u = ease_io(clamp((t - tk - .14) / .5))
-        rel = np.array([x2 - 50 * k2 - 62 * BS - 10, y2 - 64 * k2 - 30])
-        wr = rel + (tn - rel) * u
-        hn = dict(HN, curl=(.2 + .15 * u, .25 + .15 * u, .3 + .15 * u, .35 + .15 * u))
-    squint = smooth(T_RASSVET + .2, T_RASSVET + .7, t)
-    expr = dict(lid=.3 - .12 * squint, look=(.6, .25), brows="tired", mouth="tired", closed=blink_at(t, 7.85, .18), red=1.0,
-                hair=2 * osc(t, 1.5))
-    d = dima(t, {"n": ("ik", tuple(wr), -1), "f": ("ik", tuple(tf_), -1)}, {"n": hn, "f": HF}, expr, lean=.26 if hold else .26 - .08 * clamp((t - tk - .14) / .5),
-             head_ang=.04 + .02 * osc(t, .7))
-    jump = bump(t, tk, .22)
-    on_desk = mugs(t, jump, 3) + "".join(mug(x, y - 8 * jump, k, c) for (x, y, k, c) in BATTERY)
-    sq = 1 - .07 * bump(t, tk, .14)
-    m = (f'<g transform="translate({mx:.1f} {my:.1f}) scale(1 {sq:.3f}) translate({-mx:.1f} {-my:.1f})">' +
-         mug(mx, my, k2, c2, fill="coffee", steam_t=t if t > tk - .05 else None) + "</g>")
+        u = ease_out(clamp((t - ts) / .3), 2)
+        wr = np.array([x2 - 50 * k2 - 62 * BS + 8 - 40 * u, y2 - 64 * k2 + 4 + 34 * u])
+        hn = dict(HN, curl=(.3, .35, .4, .45), dir=(.9, .3))
+    lid = .12 - .1 * nod
+    expr = dict(lid=max(.0, lid), look=(.5, .35), brows="tired", mouth="tired" if not held else "flat", closed=clamp(.35 + nod * 2.5) if held else 1.0,
+                red=.5, hair=3 * math.sin(t * 2) + 10 * jolt(t, ts + .02, 1, .5, 4))
+    d = dima(t, {"n": ("ik", tuple(wr), -1), "f": ("ik", tuple(tf_ + np.array([0, 6])), -1)}, {"n": hn, "f": HF}, expr, lean=lean, head_ang=head_ang)
+    # кружка: держит — стоит; отпустил — кренится и качается, пара капель
+    tilt = 0.0
+    if not held:
+        e = t - ts
+        tilt = 16 * (1 - math.exp(-e * 9)) * math.cos(e * 11) * math.exp(-e * 1.5) + 5 * (1 - math.exp(-e * 4))
+    m = mug(x2, y2, k2, c2, fill="coffee") if tilt == 0 else den.mug(x2, y2, k2, c2, fill="coffee", rot=tilt)
     front = ""
-    if hold:
-        gb, gf = grip_mug(mx, my, k2)
+    on_desk = mug(1010.0, 1112.0, .4, "#5f8a5a")
+    if held:
+        gb, gf = grip_mug(x2, y2, k2)
         front = gb + m + gf
     else:
         on_desk += m
-    # удар кружки — штрихи
-    e = clamp((t - tk) / .28)
+        e = t - ts
+        for j in range(3):
+            q = clamp((e - .05 - j * .05) / .35)
+            if 0 < q < 1:
+                px = x2 + 30 + j * 14 + 60 * q
+                py = y2 - 64 * k2 * 2.4 + 120 * q * q - 50 * q
+                front += blob(ellipse_pts(px, py, 7, 9, 8), "#5a3220")
+    gar = 3.2 * clamp((t - ts) / .9)
+    scr = doc_screen(t, 5.2 + .3 * clamp((t - 8.1) / .8), errs=.0, scroll=0.0, title="ОТЧЁТ", garbage=gar)
+    clk = (11 * 30 + (55 + 2 * (t - 8.1)) * .5, (55 + 2 * (t - 8.1)) * 6)
+    w = world(t, d, scr=scr, on_desk=on_desk, front=front, desk_jump=8 * bump(t, ts, .22), clock=clk, lamp_on=0.0, floor_papers=False)
+    hd = d["head"]
+    if t > ts:
+        w += zzz(t, hd[0] + 10, hd[1] - 110, ts + .1)
+    # удар — штрихи у головы
+    e = clamp((t - ts) / .3)
     if 0 < e < 1:
         for q in range(3):
-            r0 = 40 + 30 * e + q * 12
-            front += line([(x2 - r0 - 16, y2 - 12 - q * 20), (x2 - r0 - 40, y2 - 20 - q * 28)], 4.4 * (1 - e) + 1, "#3a2a22", seed=5300 + q, taper=.3, wmin=.4)
-            front += line([(x2 + r0 + 16, y2 - 12 - q * 20), (x2 + r0 + 40, y2 - 20 - q * 28)], 4.4 * (1 - e) + 1, "#3a2a22", seed=5310 + q, taper=.3, wmin=.4)
-    scr = doc_screen(t, 9.3 + .35 * (t - 6.2), errs=1.0, scroll=1.2, glow=1 - .5 * dawn)
-    w = world(t, d, dawn=dawn, scr=scr, on_desk=on_desk, front=front, desk_jump=6 * jump, clock=(5.6 * 30 + 1.0 * dawn * 30, (36 * 6 + 60 * dawn) % 360),
-              lamp_on=lamp_on)
-    u = clamp((t - 6.2) / 2.0)
+            a = math.radians(-120 + q * 30)
+            r0 = 110 + 50 * e
+            w += line([(hd[0] + math.cos(a) * r0, hd[1] + math.sin(a) * r0), (hd[0] + math.cos(a) * (r0 + 40), hd[1] + math.sin(a) * (r0 + 40))],
+                      6 * (1 - e) + 1.5, INK, taper=.3, wmin=.4, seed=5900 + q)
+    u = clamp((t - 8.1) / 2.26)
     k = ease_io(u)
-    pk = bump(t, tk, .3)
-    s = (1.62 + .16 * (.4 * u + .6 * k)) * (1 + .03 * pk)
-    cam = (478 + 40 * k, 890 + 20 * k + 4 * pk * osc(t, 15), s, -.6 + .9 * u + .6 * pk * osc(t, 10))
+    pk = bump(t, ts, .3)
+    s = (1.55 + .2 * (.4 * u + .6 * k)) * (1 + .05 * pk)
+    cam = (530 + 40 * k + 6 * jolt(t, ts, 1, .4, 13), 965 + 20 * k + 8 * jolt(t, ts, 1, .4, 11), s, -.5 + .8 * u + .8 * jolt(t, ts, 1, .4, 9))
     set_ink(s)
-    return compose(w, cam, lamp_on=lamp_on, scr_on=1 - .6 * dawn, dawn=dawn)
+    return compose(w, cam, lamp_on=0.0, scr_on=.4)
 
 
-# ═════════════════════════════════════ s06 — лицо у экрана: «стыдно» — ладонь на лицо, «сдавать» — сквозь пальцы ═════════════════════════════════════
-def s06(t):
-    ts, td = T_STYDNO, T_SDAVAT
-    slap = ease_out(clamp((t - (ts - .14)) / .14), 2)          # рука взлетает к лицу к «стыдно»
-    peek = ease_io(clamp((t - (td - .08)) / .22))                # пальцы раздвигаются к «сдавать»
-    jolt = bump(t, ts, .3)
-    lean = .3 - .06 * slap + .02 * osc(t, .5)
-    head_ang = .06 - .1 * jolt + .03 * osc(t, .45) - .05 * slap
-    if t < ts - .05:
-        read = smooth(7.9, 8.4, t)
-        expr = dict(lid=.45 + .4 * read, look=(.7, .2), brows="worry" if read > .3 else "tired", mouth="flat", red=1.0,
-                    closed=blink_at(t, 8.1, .14), hair=2 * osc(t, 1.4))
+# ═════════════════════════════════════ папка-кирпич ═════════════════════════════════════
+FOLD_W, FOLD_D, FOLD_H = 214.0, .55, 74.0
+F_BLUE, F_BLUE_SH, F_PAGE, F_PAGE_SH = "#3f6fb0", "#2c5288", "#fbf6e8", "#e4dcc6"
+
+
+def folder(O, open_=0.0, sq=1.0, pages_left=1.0, sd=6100, label=True):
+    """Толстая папка на столе (вид 3/4 как у ноутбука): O — передний левый нижний угол; обложка на петлях слева,
+    open_ 0..1 — раскрыта (0 — закрыта, 1 — лежит раскрытой влево); sq — сплющивание при ударе; pages_left — доля стопки."""
+    O = np.array(O, float)
+    Wv = np.array([FOLD_W, -8.0])
+    Dv = -FWD * FOLD_D
+    h = FOLD_H * sq * (.25 + .75 * pages_left)
+    up = np.array([0.0, -h])
+    o = [blob([tuple(O + [-6, 4]), tuple(O + Wv + [10, 4]), tuple(O + Wv + Dv + [10, 2]), tuple(O + Dv + [-6, 2])], "#1a100a", .3, lib.blur(5))]
+    # нижняя корка
+    o.append(shape([tuple(O) + (1,), tuple(O + Wv) + (1,), tuple(O + Wv + [0, -10]) + (1,), tuple(O + [0, -10]) + (1,)], F_BLUE_SH, "", w=3.4, seed=sd))
+    o.append(shape([tuple(O + Wv) + (1,), tuple(O + Wv + Dv) + (1,), tuple(O + Wv + Dv + [0, -10]) + (1,), tuple(O + Wv + [0, -10]) + (1,)], F_BLUE_SH, "",
+                   w=3.0, seed=sd + 1))
+    # стопка листов: передний и правый срез — полосы
+    P0 = O + [6, -10]
+    Pw = Wv - [12, 0]
+    ph = up + [0, 10]
+    stripes = "".join(line([tuple(P0 + ph * (k / 7)), tuple(P0 + Pw + ph * (k / 7))], 1.6, "#c9bfa6", seed=sd + 10 + k, op=.9) for k in range(1, 7))
+    o.append(shape([tuple(P0) + (1,), tuple(P0 + Pw) + (1,), tuple(P0 + Pw + ph) + (1,), tuple(P0 + ph) + (1,)], F_PAGE, stripes, w=3.2, seed=sd + 2))
+    o.append(shape([tuple(P0 + Pw) + (1,), tuple(P0 + Pw + Dv * .92) + (1,), tuple(P0 + Pw + Dv * .92 + ph) + (1,), tuple(P0 + Pw + ph) + (1,)],
+                   F_PAGE_SH, "", w=3.0, seed=sd + 3))
+    top = O + up
+    # верхний лист (видно, когда обложка открыта): строки текста
+    if open_ > 0.02:
+        tl = top + [6, 0]
+        tw = Wv - [12, 0]
+        rows = ""
+        for r in range(6):
+            a = tl + tw * .1 + Dv * (.15 + r * .13)
+            rows += line([tuple(a), tuple(a + tw * (.75 - .2 * (r % 3 == 2)))], 3.0, "#8a8f9c", seed=sd + 20 + r, op=.9, taper=.1, wmin=.7)
+        o.append(shape([tuple(tl) + (1,), tuple(tl + tw) + (1,), tuple(tl + tw + Dv * .92) + (1,), tuple(tl + Dv * .92) + (1,)], F_PAGE, rows, w=3.0,
+                       seed=sd + 4))
+    # обложка: петля по левому краю, поворот вокруг оси глубины
+    th = math.pi * .96 * ease_io(open_)
+    cw = -Wv * math.cos(th) + np.array([0.0, -FOLD_W * .85]) * math.sin(th)
+    c0 = top + Wv + [0, -2]
+    cov = [tuple(c0) + (1,), tuple(c0 + cw) + (1,), tuple(c0 + cw + Dv) + (1,), tuple(c0 + Dv) + (1,)]
+    inner = ""
+    if open_ < .5:
+        if label:
+            lc = c0 + cw * .32 + Dv * .3
+            inner += shape([tuple(lc) + (1,), tuple(lc + cw * .4) + (1,), tuple(lc + cw * .4 + Dv * .4) + (1,), tuple(lc + Dv * .4) + (1,)], "#fbf3df", "",
+                           w=2.4, seed=sd + 6)
+        inner += line([tuple(c0 + cw * .06 + Dv * .1), tuple(c0 + cw * .06 + Dv * .9)], 3, F_BLUE_SH, seed=sd + 7, op=.9)
+        col = F_BLUE
     else:
-        expr = dict(lid=.25 + .6 * peek, look=(.75, .25), brows="worry", mouth="sheep", smile=-.2, red=1.0, closed=(1 - peek) * .97,
-                    hair=6 * jolt * osc(t, 10))
-    tn, tf_ = type_targets(t, amp=.2, rate=.5)
-    probe = dima(t, {"n": ("ik", tuple(tn), -1), "f": ("ik", tuple(tf_), -1)}, {"n": HN, "f": HF}, expr, lean=lean, head_ang=head_ang)
-    ang = lean * .5 + head_ang
-    hc = probe["head"]
+        col = "#6f95cf"
+        inner += blob([tuple(c0 + cw * .5), tuple(c0 + cw), tuple(c0 + cw + Dv), tuple(c0 + cw * .5 + Dv)], "#5b82bd", .8)
+    cov_svg = shape(cov, col, inner, w=4.2, seed=sd + 8)
+    o.append(cov_svg)
+    return "".join(o)
 
-    def hp(x, y):
-        return hc + people.rot(np.array([x, y]), ang) * BS
 
-    # ладонь: запястье у подбородка, пальцы вверх по лицу; на «сдавать» кисть чуть ниже и пальцы веером
-    wr_face = hp(60 - 6 * peek, 128 + 6 * peek)
-    fdir = people.rot(np.array([-.12, -1.0]), ang)
-    if slap < 1:
-        wr = tn + (wr_face - tn) * slap
-        dd = np.array(HN["dir"]) * (1 - slap) + fdir * slap
+def impact_lines(x, y, e, sd, n=7, r0=90, L=60, w=7.0, col=INK):
+    if e <= 0 or e >= 1:
+        return ""
+    o = []
+    for k in range(n):
+        a = math.pi + k * math.pi / (n - 1)
+        r = r0 + 80 * ease_out(e)
+        Lk = L * (1 - e)
+        o.append(line([(x + math.cos(a) * r, y + math.sin(a) * r * .7), (x + math.cos(a) * (r + Lk), y + math.sin(a) * (r + Lk) * .7)],
+                      w * (1 - e) + 1.5, col, taper=.4, wmin=.3, seed=sd + k))
+    return "".join(o)
+
+
+def dust(x, y, e, sd):
+    """Пыль от удара: плотные клубки разлетаются в стороны и тают размером (без прозрачности)."""
+    if e <= 0 or e >= 1:
+        return ""
+    o = []
+    for k in range(6):
+        side = -1 if k % 2 else 1
+        r = (10 + 4 * (k % 3)) * (1 - e) ** .8 * (1 + .6 * min(1, e * 4))
+        if r < 1.5:
+            continue
+        cx = x + side * (120 + 90 * ease_out(e) * (1 + .4 * (k // 2)))
+        cy = y - 8 - 50 * ease_out(e) * (k // 2 + .5)
+        o.append(shape(ellipse_pts(cx, cy, r * 1.25, r, 10), "#efe6d2", "", w=2.2, seed=sd + k))
+    return "".join(o)
+
+
+# ═════════════════════════════════════ s14 — вечер: папка-кирпич на «трудные», засучил рукава, раскрыл ═════════════════════════════════════
+FO14 = np.array([468.0, 1150.0])
+
+
+def s14(t):
+    MODE[0] = "eve"
+    tt = T_TRUD
+    fall = clamp((t - (tt - .32)) / .32)
+    fy = -760 * (1 - fall ** 2)
+    land = t >= tt
+    sq = 1 - .22 * bump(t, tt, .16)
+    opn = ease_io(clamp((t - (T_DELA + .1)) / .55))
+    # рукава: засучивает до удара (24.9→25.55), руки перед грудью
+    roll_f = ease_io(clamp((t - 24.97) / .28))
+    roll_n = ease_io(clamp((t - 25.27) / .28))
+    people.ROLL.update(n=roll_n, f=roll_f)
+    sh = np.array(HIP) + np.array([140.0, -250.0])
+    if t < tt:
+        # одна рука тянет рукав другой: кисть ползёт по предплечью от запястья к локтю
+        ph1 = ease_io(clamp((t - 24.95) / .3))
+        ph2 = ease_io(clamp((t - 25.25) / .3))
+        fw = sh + np.array([215.0, 40.0 - 50 * ph2])
+        nw = sh + np.array([225.0, -40.0 + 30 * ph2])
+        pf = dima(t, {"n": ("ik", tuple(nw), -1), "f": ("ik", tuple(fw), -1)}, {}, {}, lean=.12)
+        if t < 25.25:
+            tf_ = fw
+            tn = pf["wrist"]["f"] + (pf["elbow"]["f"] - pf["wrist"]["f"]) * (.15 + .5 * ph1) + np.array([0, -18])
+        else:
+            tn = nw
+            tf_ = pf["wrist"]["n"] + (pf["elbow"]["n"] - pf["wrist"]["n"]) * (.15 + .5 * ph2) + np.array([0, -18])
+        hn = dict(kind="open", flip=1, dir=(-.6, .8) if t < 25.25 else (.9, -.3), curl=(.6, .65, .7, .7), spread=.05, thumb=.6, bend=.1)
+        hf = dict(kind="open", flip=1, dir=(.9, -.3) if t < 25.25 else (-.6, .8), curl=(.6, .65, .7, .7), spread=.05, thumb=.6, bend=.1)
+        expr = dict(lid=.6, look=(.7, .3), brows="det", mouth="flat", red=0.0, hair=2 * math.sin(t * 2), bags=True)
+        lean = .12
     else:
-        wr = wr_face + np.array([0, 3 * math.sin(t * 9) * (1 - peek)])
-        dd = fdir
-    face = slap > .55
-    hn = dict(kind="open", flip=-1, dir=tuple(dd), curl=(.05, .04, .06, .1), spread=.06 + .42 * peek, thumb=.55, bend=.06, front=face, nails=True)
-    d = dima(t, {"n": ("ik", tuple(wr), -1), "f": ("ik", tuple(tf_), -1)}, {"n": hn if slap > 0 else HN, "f": HF}, expr, lean=lean, head_ang=head_ang)
-    errs = clamp((t - T_TEKST) / .5)
-    scr = doc_screen(t, 12.6 + .05 * (t - 7.8), errs=.3 + .7 * errs, scroll=4.2)
-    w = world(t, d, dawn=1.0, scr=scr, on_desk=mugs(t, 0.0, 3) + "".join(mug(x, y, k, c) for (x, y, k, c) in BATTERY), lamp_on=.3)
-    u = clamp((t - 7.8) / 2.4)
+        # после удара: дальняя рука ложится на папку, ближняя берёт край обложки и откидывает её
+        top = FO14 + np.array([0, -FOLD_H])
+        Wv = np.array([FOLD_W, -8.0])
+        th = math.pi * .96 * min(opn, .55) / 1.0
+        edge = top + Wv - Wv * math.cos(th) + np.array([0.0, -FOLD_W * .85]) * math.sin(th) + (-FWD * FOLD_D) * .4
+        reach = ease_out(clamp((t - (tt + .12)) / .3), 2)
+        back = ease_io(clamp((opn - .5) / .4))
+        rest = sh + np.array([150.0, 20.0])
+        page = top + Wv * .3 + (-FWD * FOLD_D) * .5 + np.array([0, -4])
+        tn = rest + (edge + np.array([-6, 4]) - rest) * reach
+        tn = tn + (page - tn) * back
+        tf_ = sh + np.array([150.0, -10.0]) + (top + Wv * .55 + np.array([0, 2]) - sh - np.array([150.0, -10.0])) * ease_out(clamp((t - tt) / .3), 2)
+        hn = dict(kind="open", flip=1, dir=(.9, -.1 - .8 * min(opn, .5) * (1 - back)), curl=(.45, .5, .55, .55), spread=.05, thumb=.5, bend=.12)
+        hf = dict(HF, curl=(.15, .2, .25, .3))
+        expr = dict(lid=.75, look=(.65, .5), brows="det", mouth="flat", red=0.0, hair=8 * jolt(t, tt, 1, .5, 4), bags=True)
+        lean = .12 + .14 * reach
+    expr["closed"] = blink_at(t, 25.05, .14)
+    d = dima(t, {"n": ("ik", tuple(tn), -1), "f": ("ik", tuple(tf_), -1)}, {"n": hn, "f": hf}, expr, lean=lean, head_ang=.04 * math.sin(t * 1.3))
+    people.ROLL.clear()
+    fo = folder(FO14 + np.array([0, fy]), open_=opn, sq=sq)
+    if t < tt:
+        fo = f'<g transform="rotate({-8 * (1 - fall):.2f} {FO14[0] + 100:.1f} {FO14[1] + fy - 40:.1f})">{fo}</g>'
+        if fall > 0:
+            for k in range(3):
+                x = FO14[0] + 40 + k * 70
+                fo += line([(x, FO14[1] + fy - 140), (x, FO14[1] + fy - 140 - 120 * fall)], 5, INK, taper=.7, seed=6200 + k, op=.7)
+    e = (t - tt) / .3
+    fx = impact_lines(FO14[0] + 107, FO14[1] - 30, e, 6210)
+    on_desk = mug(1010.0, 1112.0 - 14 * bump(t, tt, .2), .4, "#5f8a5a")
+    scr = doc_screen(t, 3.0, errs=0, title="ОТЧЁТ")
+    w = world(t, d, dawn=1.0, scr=scr, on_desk=on_desk, front=fo + fx, desk_jump=0, clock=(19 * 30 + 15, 30 * 6), lamp_on=1.0, floor_papers=False)
+    u = clamp((t - 24.9) / 2.14)
     k = ease_io(u)
-    s = (2.85 + .25 * k) * (1 + .04 * jolt)
-    cam = (458 - 12 * k + 3 * jolt * osc(t, 14), 958 - 8 * k, s, .5 - .9 * u + .8 * jolt * osc(t, 9))
+    pk = bump(t, tt, .3)
+    s = (1.62 + .1 * k) * (1 + .05 * pk)
+    cam = (515 + 20 * k + 6 * jolt(t, tt, 1, .4, 13), 990 + 12 * jolt(t, tt, 1, .4, 11), s, .5 - .7 * u + 1.0 * jolt(t, tt, 1, .4, 9))
     set_ink(s)
-    return compose(w, cam, lamp_on=.3, scr_on=1.0, dawn=1.0)
+    return compose(w, cam, lamp_on=1.0, scr_on=.6, dawn=.85)
 
 
-# ═════════════════════════════════════ s07 — кот на столе у ноутбука, рассвет; «почему» — наклон головы ═════════════════════════════════════
-CAT7 = (972.0, 1128.0, .6)
-
-
-def s07(t):
-    x, y, sc = CAT7
-    old_lamp = den.LAMP_B
-    den.LAMP_B = (1235.0, 1084.0)
-    tn, tf_ = type_targets(t, amp=0, rate=0)
-    d = dima(t, {"n": ("ik", tuple(tn), -1), "f": ("ik", tuple(tf_), -1)}, {"n": HN, "f": HF}, {"red": 1.0}, lean=.2)
-    scr = doc_screen(t, 12.6, errs=1.0, scroll=4.2)
-    u = clamp((t - 9.8) / 2.4)
-    k = ease_io(u)
-    e = t - T_POCHEMU
-    s = 4.0 + .3 * (.4 * u + .6 * k)
-    if e > 0:
-        s *= 1 + .035 * math.exp(-e * 6) * math.sin(min(e * 10, math.pi))
-    hc = Cat.to_world((836, 1100), x, y, sc)
-    cam = (hc[0] - 6 + 12 * k, hc[1] + 30 - 10 * k, s, 1.0 - 1.6 * u)
-    set_ink(s)
-    # рассветный луч из окна на стене за котом
-    beam = lib.lin_grad([(0, "#ffc890", .5), (1, "#ffb080", .0)], 0, 0, 1, 0)
-    pts = [(820, 760), (1010, 700), (1130, 1060), (900, 1080)]
-    beam_svg = f'<path d="{lib.fill_d([p + (1,) for p in pts])}" fill="url(#{beam})" style="mix-blend-mode:screen" {lib.blur(16)}/>'
-    w_no_cat = world(t, d, dawn=1.0, scr=scr, on_desk=beam_svg, lamp_on=.25, floor_papers=False)
-    den.LAMP_B = old_lamp
-    # кот: смотрит в камеру; «Знаешь» — ухо и взгляд; «почему» — наклон головы с пружиной
-    tilt = -1.5 + 1.0 * math.sin(t * 1.4)
-    if e > -0.08:
-        q = e + 0.08
-        tilt += 11 * (1 - math.exp(-q * 7) * math.cos(q * 13)) * (1 - smooth(11.3, 11.8, t) * .35)
-    look = (0.06 * math.sin(t * .8), -0.05 + 0.08 * smooth(T_POCHEMU, T_POCHEMU + .3, t))
-    blink = 0.0
-    for c, half, hold in ((9.95, 0.06, 0.0), (11.45, 0.1, 0.04)):
-        a = c - half
-        if a <= t <= c + hold + half:
-            blink = ease_io((t - a) / half) if t < c else (1.0 if t < c + hold else 1 - ease_io((t - c - hold) / half))
-    flick = 0.0
-    for c in (T_ZNAESH + .02, T_POCHEMU + .06):
-        q = t - c
-        if 0 <= q < 0.5:
-            flick += -14 * math.exp(-q * 9) * math.sin(q * 34)
-    tail = 6 * math.sin(t * 2.1) + 3 * math.sin(t * 3.7 + 1)
-    fx, fy = Cat.flame_world(x, y, sc, tail)
-    fl = 0.85 + 0.15 * math.sin(t * 13) * math.sin(t * 7.3)
-    g = lib.rad_grad([(0, "#ffb050", .34 * fl), (1, "#ffb050", 0)], fx, fy, 200, 200)
-    glow = f'<rect x="{fx - 220:.1f}" y="{fy - 220:.1f}" width="440" height="440" fill="url(#{g})" style="mix-blend-mode:screen"/>'
-    old = lib.INK_K[0]
-    lib.INK_K[0] = 1.0
-    catsvg = Cat.draw(x, y, sc, t, look=look, blink=blink, tilt=tilt, tail=tail, flick=flick)
-    lib.INK_K[0] = old
-    return compose(w_no_cat + glow + catsvg, cam, lamp_on=.25, scr_on=.8, dawn=1.0)
-
-
-SCENES = {"s01": s01, "s05": s05, "s06": s06, "s07": s07}
+SCENES = {"s06": s06, "s14": s14}
 _INIT = []
 
 
