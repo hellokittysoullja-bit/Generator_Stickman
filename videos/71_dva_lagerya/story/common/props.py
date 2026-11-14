@@ -3098,8 +3098,8 @@ def swarm_pos(cx, cy, t, n=9, r=260.0, split=0.0, spread=300.0, seed=0):
     rs = _rs(72500 + seed)
     out = []
     for i in range(n):
-        ph = rs.uniform(0, 2 * math.pi)
-        sp = rs.uniform(.9, 1.5) * (1 if i % 3 else -1)
+        ph = 2 * math.pi * i / n + rs.uniform(-.25, .25)
+        sp = rs.uniform(1.0, 1.25)
         rr = r * rs.uniform(.45, 1.0)
         a = ph + sp * t
         s = clamp(split)

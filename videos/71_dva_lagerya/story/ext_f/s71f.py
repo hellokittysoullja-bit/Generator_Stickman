@@ -23,7 +23,7 @@ import lib  # noqa: E402
 import people  # noqa: E402
 import props as PR  # noqa: E402
 import room as R  # noqa: E402
-from h71 import blinks, bump, decay, lerp, lerp2, set_ink, shake, sm, whip, wt  # noqa: E402
+from h71 import bare_feet, blinks, bump, decay, lerp, lerp2, set_ink, shake, sm, whip, wt  # noqa: E402
 from lib import INK, blob, clamp, ease_out, ellipse_pts, line  # noqa: E402
 
 BG = "#e6dcc0"
@@ -152,8 +152,9 @@ def s21(t):
     e = ex("smile_cam", look=look, closed=blinks(t, (34.9, 36.25)))
     arms = {"f": ("ik", (hx + 200, hy - 30), -1), "n": ("ik", Wn, -1)}
     hands = {"f": {"dir": (1, .3), "curl": (.3, .35, .4, .45), "thumb": .35}, "n": hn}
-    dima = people.dima(hx, hy, 1.0, e, None, feet=FEET21, arms=arms, hands=hands, lean_add=-.03 + .015 * math.sin(t * 2.1) - .04 * pt,
-                       head_add=-.05 - .1 * pt + .02 * math.sin(t * 1.7))["svg"]
+    with bare_feet("sock", "sock"):         # оба носка уже надеты (s17, s19)
+        dima = people.dima(hx, hy, 1.0, e, None, feet=FEET21, arms=arms, hands=hands, lean_add=-.03 + .015 * math.sin(t * 2.1) - .04 * pt,
+                           head_add=-.05 - .1 * pt + .02 * math.sin(t * 1.7))["svg"]
     # кот: смотрит на Диму → «Напиши» поворачивает морду к зрителю, ухо, хвост; когда слово дописано — щурится
     tu = sm(t, T_NAP21 - .02, T_NAP21 + .3)
     done = sm(t, KOT_T0 + KOT_DUR, KOT_T0 + KOT_DUR + .25)
