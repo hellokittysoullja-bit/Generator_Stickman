@@ -10,6 +10,7 @@ STORY = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(STORY, "common"))
 import catf  # noqa: E402
+import props  # noqa: E402
 import lib  # noqa: E402
 from lib import INK, blob, clamp, ease_in, ease_io, ease_out, ellipse_pts, line, rrect, shape  # noqa: E402,F401
 
@@ -48,89 +49,6 @@ def blinks(t, times, dur=.16):
 
 
 PAGE, PAGE_SH, PAGE_LN = "#fbf3dc", "#e2d4b2", "#8f8670"
-
-
-# ───────────────────────────── бумаги ─────────────────────────────
-def sheet_pts(cx, cy, w, h, rot, persp=.42):
-    """Лист, лежащий на столе: прямоугольник w×h, повёрнутый в плоскости стола на rot°, сжатый по вертикали (вид под углом)."""
-    c, s = math.cos(math.radians(rot)), math.sin(math.radians(rot))
-    out = []
-    for (x, y) in ((-w / 2, -h / 2), (w / 2, -h / 2), (w / 2, h / 2), (-w / 2, h / 2)):
-        X, Y = x * c - y * s, x * s + y * c
-        out.append((cx + X, cy + Y * persp, 1))
-    return out
-
-
-def sheet(cx, cy, w, h, rot, seed, persp=.42, col=PAGE, marks=True):
-    """Лист бумаги со штрихами (без букв): строки-штрихи и маленький набросок."""
-    P = sheet_pts(cx, cy, w, h, rot, persp)
-    inner = ""
-    if marks:
-        c, s = math.cos(math.radians(rot)), math.sin(math.radians(rot))
-
-        def q(x, y):
-            return (cx + x * c - y * s, cy + (x * s + y * c) * persp)
-        rs = np.random.RandomState(seed)
-        for j in range(4):
-            yy = -h * .3 + j * h * .16
-            x1 = w * (.25 + .15 * rs.rand())
-            inner += line([q(-w * .36, yy), q(-w * .1, yy + 2), q(x1, yy - 1)], 3, PAGE_LN, seed=seed * 7 + j, taper=.3, wmin=.5, op=.9)
-        kind = seed % 3
-        if kind == 0:     # спираль
-            pp = [q(w * .22 + 22 * (1 - a / 12) * math.cos(a), h * .3 + 22 * (1 - a / 12) * math.sin(a)) for a in np.linspace(0, 11, 30)]
-            inner += line(pp, 3, "#c0553f", seed=seed + 90, taper=.3, wmin=.5)
-        elif kind == 1:   # стрелка и кружок
-            inner += line([q(-w * .3, h * .3), q(w * .05, h * .28)], 3, "#3f6fb0", seed=seed + 91, taper=.2, wmin=.6)
-            inner += line([q(-w * .02, h * .2), q(w * .05, h * .28), q(-w * .02, h * .36)], 3, "#3f6fb0", seed=seed + 92, taper=.2, wmin=.6)
-            inner += line([q(w * .2 + 18 * math.cos(a), h * .28 + 18 * math.sin(a)) for a in np.linspace(0, 6.4, 18)], 3, "#3f6fb0", seed=seed + 93,
-                          taper=.1, wmin=.7)
-        else:             # звёздочка-набросок
-            for a in range(4):
-                r = math.radians(a * 45)
-                inner += line([q(w * .22 - 20 * math.cos(r), h * .28 - 20 * math.sin(r)), q(w * .22 + 20 * math.cos(r), h * .28 + 20 * math.sin(r))],
-                              3, "#5c9a78", seed=seed + 94 + a, taper=.3, wmin=.5)
-    return shape(P, col, inner, w=3.4, seed=seed)
-
-
-def pile(cx, base_y, w, n_layers, seed, top_y):
-    """Куча бумаг спереди: слои-края листов со сдвигами, от base_y до top_y; сверху — несколько листов вразброс (лицом вверх)."""
-    o = []
-    rs = np.random.RandomState(seed)
-    hgt = base_y - top_y
-    for j in range(n_layers):          # края стопки снизу вверх
-        y = base_y - hgt * (j + .5) / n_layers
-        dx = rs.uniform(-34, 34)
-        ww = w * rs.uniform(.86, 1.02)
-        th = hgt / n_layers + 8
-        rot = rs.uniform(-3, 3)
-        pts = [(cx + dx - ww / 2, y - th / 2 + rot * 2, 1), (cx + dx + ww / 2, y - th / 2 - rot * 2, 1), (cx + dx + ww / 2 + 6, y + th / 2 - rot * 2, 1),
-               (cx + dx - ww / 2 - 6, y + th / 2 + rot * 2, 1)]
-        col = PAGE if j % 3 else "#f4e7c6"
-        if j == 2:
-            col = "#cfe0f0"
-        if j == 5:
-            col = "#f6d9a6"
-        o.append(shape(pts, col, blob([(cx - w, y + th * .1), (cx + w, y + th * .1), (cx + w, y + th), (cx - w, y + th)], PAGE_SH, .8),
-                       w=3.2, seed=seed + 11 * j))
-    return "".join(o)
-
-
-def qmark(t, t0, x, y, s=1.0, dur=.34, col=INK, seed=900):
-    """Знак вопроса штрихами (значок): крючок рисуется пером, затем точка; после — лёгкий подскок."""
-    if t < t0:
-        return ""
-    P = [(-30, -6), (-26, -44), (0, -64), (32, -56), (42, -26), (24, 4), (4, 22), (0, 52)]
-    from ink import sample
-    S = sample(P, False, 2.0)
-    u = clamp((t - t0) / dur)
-    n = max(2, int(len(S) * ease_out(u, 2)))
-    hop = -10 * math.exp(-6 * max(0, t - t0 - dur)) * math.sin(2 * math.pi * 2.2 * max(0, t - t0 - dur))
-    rot = 6 * math.sin(t * 2.1)
-    o = line([tuple(p) for p in S[:n]], 16, col, taper=.35, wmin=.45, seed=seed)
-    if t > t0 + dur * .8:
-        du = clamp((t - t0 - dur * .8) / .12)
-        o += blob(ellipse_pts(0, 84, 11 * ease_out(du), 11 * ease_out(du), 12), col)
-    return f'<g transform="translate({x:.1f} {y + hop:.1f}) rotate({rot:.2f}) scale({s:.3f})">{o}</g>'
 
 
 # ───────────────────────────── s05: кот крупно на куче бумаг ─────────────────────────────
@@ -174,22 +92,6 @@ def lamp_glow_small(x, y, r, u):
     """Небольшой круг тёплого света на столе с чёткой границей (от абажура)."""
     g = lib.rad_grad([(0, "#fff1c8", .85 * u), (.8, "#ffe3a0", .55 * u), (1, "#ffe3a0", 0)], x, y, r, r * .32)
     return f'<ellipse cx="{x}" cy="{y}" rx="{r}" ry="{r * .32:.1f}" fill="url(#{g})"/>'
-
-
-def mug(x, y, k=1.0, seed=0, col="#3f6fb0"):
-    """Кружка (временная, до props.py группы A): цилиндр, ручка, кольцо кофе внутри."""
-    o = []
-    o.append(shape(ellipse_pts(x + 6, y + 4, 70 * k, 12 * k, 14), "#000000", "", ink=False))
-    o[-1] = blob(ellipse_pts(x + 6, y + 4, 70 * k, 12 * k, 14), "#5a3d22", .35)
-    hand = [(x + 46 * k, y - 110 * k), (x + 86 * k, y - 104 * k, 1), (x + 92 * k, y - 66 * k), (x + 50 * k, y - 40 * k, 1),
-            (x + 48 * k, y - 56 * k), (x + 74 * k, y - 70 * k), (x + 72 * k, y - 94 * k), (x + 46 * k, y - 96 * k)]
-    o.append(shape(hand, col, "", w=4, seed=seed + 1))
-    body = [(x - 50 * k, y - 128 * k, 1), (x + 50 * k, y - 128 * k, 1), (x + 46 * k, y - 4 * k), (x, y + 6 * k), (x - 46 * k, y - 4 * k)]
-    o.append(shape(body, col, blob([(x + 14 * k, y - 130 * k), (x + 52 * k, y - 130 * k), (x + 48 * k, y), (x + 18 * k, y)], lib.mix(col, "#000000", .3), .8),
-                   w=4.6, seed=seed + 2))
-    o.append(shape(ellipse_pts(x, y - 128 * k, 50 * k, 12 * k, 16), "#4a2c1a", blob(ellipse_pts(x - 6 * k, y - 126 * k, 34 * k, 6 * k, 12), "#6b4228", .8),
-                   w=3.6, seed=seed + 3))
-    return "".join(o)
 
 
 def frame05(t):
@@ -240,25 +142,26 @@ def frame05(t):
     set_ink(z)
     o = [wall_desk(t)]
     o.append(lamp_glow_small(110, 1400, 210, 1.0))
-    o.append(mug(890, 1470, 1.05, seed=700))
-    o.append(pile(500, 1430, 660, 11, 40, 1236))
-    # листы свисают с кучи и торчат вразброс
-    o.append(sheet(190, 1330, 180, 230, 28, 36, .95))
-    o.append(sheet(820, 1360, 170, 220, -22, 37, .9))
-    # верхние листы кучи лицом вверх
-    o.append(sheet(300, 1246, 240, 300, -18, 31))
-    o.append(sheet(520, 1236, 250, 300, 6, 32))
-    o.append(sheet(640, 1262, 200, 240, 24, 35))
+    o.append(props.mug(900, 1500, 1.8, col="blue", steam=1.0, t=t, seed=700))
+    o.append(props.paper_pile(500, 1440, 2.2, seed=61, sy=.5, n=13))
+    # верхние листы кучи лицом вверх (на них сидит кот)
+    o.append(props.paper(330, 1262, 1.7, -18, 140, 170, 31, "sketch", .45))
+    o.append(props.paper(520, 1248, 1.8, 6, 140, 170, 32, "lines", .45))
+    o.append(props.paper(660, 1272, 1.6, 24, 130, 160, 35, "grid", .45))
     if t < T_BES + .16:
-        o.append(sheet(s_x, s_y, 200, 260, s_rot, 34, s_pers, col="#f6d9a6"))
+        o.append(props.paper(s_x, s_y, 1.6, s_rot, 125, 160, 34, "sketch", s_pers, col="#f6d9a6"))
     set_ink(z * CK)
     o.append(blob(ellipse_pts(CXW + 10, CYW + 6, 190, 22, 14), "#7a5a3a", .35))
     o.append(catf.draw_f(CXW, CYW, CK, st, t))
     set_ink(z)
     if t >= T_BES + .16:
-        o.append(sheet(s_x, s_y, 200, 260, s_rot, 34, s_pers, col="#f6d9a6"))
+        o.append(props.paper(s_x, s_y, 1.6, s_rot, 125, 160, 34, "sketch", s_pers, col="#f6d9a6"))
     # знак вопроса штрихами справа от головы
-    o.append(qmark(t, T_POM + .02, 175, 540, 1.7, col="#1c1622", seed=905))
+    if t > T_POM:
+        qu = clamp((t - T_POM - .02) / .34)
+        hop = -12 * math.exp(-6 * max(0, t - T_POM - .36)) * abs(math.sin(2 * math.pi * 2.2 * max(0, t - T_POM - .36)))
+        o.append(f'<g transform="translate(175 {560 + hop:.1f}) rotate({6 * math.sin(t * 2.1):.2f})">'
+                 f'{props.question_mark(0, 0, 1.9, qu, w=10)}</g>')
     cam = lib.cam(cx, cy, z, rot)
     return f'<g transform="{cam}">{"".join(o)}</g>'
 
