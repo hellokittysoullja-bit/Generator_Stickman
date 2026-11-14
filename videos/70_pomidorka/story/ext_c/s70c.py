@@ -149,7 +149,7 @@ def timer_grips(T, k, rot, seed=0, sides=(-1, 1)):
         b, f_ = people.grip_svg("dima", (cx, cy), 52 * k, side, k=k * 1.05, h=64, seed=930 + seed + side)
         back.append(b)
         front.append(f_)
-        wr["n" if side > 0 else "f"] = (cx + side * 150 * k, cy + 18 * k)
+        wr["f" if side > 0 else "n"] = (cx + side * (112 if side < 0 else 70) * k, cy + (40 if side < 0 else 70) * k)
     return "".join(back), "".join(front), wr
 
 
@@ -179,9 +179,10 @@ def s01(t):
     # клин: щелчки с кадра 0 (мелкими шагами), на «двадцать пять минут» раскрывается почти на полкруга
     wedge = .02 + clicks(t, S01_CLICKS, .012) + clicks(t, S01_TURN, (PR.WEDGE_25 - .02 - .012 * len(S01_CLICKS)) / len(S01_TURN))
     # таймер в руках: вертится (поворот туда-обратно на каждом щелчке), потом опускается на стол
-    tw = 7 * math.sin(2 * math.pi * 3.1 * t + .6) * (1 - sm(t, T_PUT - .1, T_PUT + .1))
-    hold = (R.HOLD[0] + 8 * math.sin(t * 5.3), R.HOLD[1] + 6 * math.cos(t * 4.1) - 10 * bump(t, T_HIT1 - .06, .2))
+    tw = 10 * math.sin(2 * math.pi * 3.4 * t + 1.1) * (1 - sm(t, T_PUT - .1, T_PUT + .1))
+    hold = (R.HOLD[0] + 14 * math.sin(t * 7.3 + .8), R.HOLD[1] + 10 * math.cos(t * 6.1) - 16 * bump(t, T_HIT1 - .06, .2))
     down = (R.HOLD[0] - 10, table_y(TK))
+    hold = (hold[0], hold[1] - 40 * (1 - sm(t, T_DV, T_PUT)))
     u = sm(t, T_PUT, T_LAND)
     T = (lerp(hold[0], down[0], u), lerp(hold[1], down[1], u ** 1.6))
     rot = -6 + tw
@@ -190,21 +191,20 @@ def s01(t):
     if t > T_LAND:
         shake = 2.2 + 5 * math.exp(-10 * (t - T_LAND))
         T = (T[0], T[1] - 9 * bump(t, T_LAND, .14))
-    leaf = 14 * math.sin(2 * math.pi * 2.3 * t) + damp(t, T_LAND, 22, 3.5, 5)
+    leaf = 20 * math.sin(2 * math.pi * 2.6 * t + .9) + damp(t, T_LAND, 22, 3.5, 5)
     timer = PR.tomato_timer(T[0], T[1], TK, rot, wedge=wedge, shake=shake, leaf_swing=leaf, t=t, seed=1)
-    gb, gf, wr = timer_grips(T, TK, rot, seed=0)
+    gb, gf, wr = timer_grips(T, TK, rot, seed=0, sides=(-1,))
     # руки: держат → после посадки отпускают и отходят к краю стола
     rel = sm(t, T_LAND - .02, T_LAND + .2)
-    wn = lerp2(wr["n"], (wr["n"][0] + 40, R.DESK_TOP - 70), rel)
-    wf = lerp2(wr["f"], (wr["f"][0] - 50, R.DESK_TOP - 60), rel)
+    wn = lerp2(wr["n"], (T[0] - 200, R.DESK_TOP - 46), rel)
     hands = {"f": {"kind": "none"}, "n": {"kind": "none"}}
     if rel > .5:
-        hands = {"f": {"curl": (.3, .3, .35, .4), "thumb": .35, "dir": (1, .25)}, "n": {"curl": (.3, .35, .4, .45), "thumb": .4, "dir": (1, .3)}}
+        hands = {"f": {"kind": "none"}, "n": {"curl": (.3, .35, .4, .45), "thumb": .4, "dir": (1, .3)}}
         gb = gf = ""
-    e = ex("unsure", brows="up", mouth="smile", smile=.45 + .25 * sm(t, T_DV, T_MIN), lid=.86, look=(.62, .5 - .25 * u))
+    e = ex("unsure", brows="up", mouth="smile", smile=.45 + .25 * sm(t, T_DV, T_MIN), lid=.86, look=(.78, .3 + .3 * u))
     e["closed"] = blinkv(t, [1.48])
-    full, parts = dima_layers(e, {"f": ("ik", wf, -1), "n": ("ik", wn, -1)}, hands,
-                              lean_add=.06 + .02 * math.sin(t * 3.1) + .04 * u, head_add=.03 * math.sin(t * 2.2 + .4) + .05 * u)
+    full, parts = dima_layers(e, {"f": ("ang", 0.25, 0.2), "n": ("ik", wn, -1)}, hands,
+                              lean_add=.06 + .035 * math.sin(t * 4.3 + .5) + .04 * u, head_add=.05 * math.sin(t * 3.6 + .4) + .05 * u)
     lap = PR.laptop(R.LAPTOP[0], R.LAPTOP[1], .72, 1.0, "dark", t=t, seed=1, turn=.55)
     # тиканье: короткие штрихи-тики у таймера на столе
     ticks = ""
@@ -219,11 +219,15 @@ def s01(t):
                                (T[0] + 90 * TK + math.cos(a) * r1 * .5, T[1] - 60 * TK + math.sin(a) * r1 * .4)], 5 * (1 - q) + 1.5, INK,
                               taper=.5, wmin=.2, seed=5100 + i)
     world = [sc["bg"], sc["chair_back"], sc["desk_top"], sc["pool"], lap, parts["legs"], sc["desk_legs"], sc["chair_seat"], parts["pelvis"],
-             parts["arm_f"], parts["body"], parts["arm_n"], gb, timer, gf, ticks, sc["lamp"]]
+             parts["arm_f"], parts["body"], gb, timer, gf, parts["arm_n"], ticks, sc["lamp"]]
     # камера: влёт к таймеру и лицу, второй удар на «двадцать», мини-тряска на посадке таймера
     k, rc, side = hook_cam(t, T_DV)
     sx1, sy1 = shake2(t, T_LAND, 9)
     cx0, cy0, s0 = R.CAM_DESK_CLOSE
+    if os.environ.get("NOCAM"):          # замер движения рисунка без камеры (правила 25–26)
+        body = f'<g transform="{lib.cam(cx0, cy0, s0)}">{"".join(world)}</g>'
+        set_ink(s0)
+        return lib.svg(f'<rect width="1080" height="1920" fill="#2a2440"/>{body}')
     cx = cx0 + side - sx1 + 14 * math.sin(t * 2.1)
     cy = cy0 - sy1 + 18 * sm(t, T_PUT, T_LAND)
     s = s0 * k * (1 + .035 * sm(t, .3, 1.6))
@@ -232,5 +236,75 @@ def s01(t):
     return lib.svg(f'<rect width="1080" height="1920" fill="#2a2440"/>{body}')
 
 
+# ═════════════════════════ s04: средний план сбоку — завёл и поставил ═════════════════════════
+T_DIMA, T_POST, T_TAIM = wt("дима"), wt("поставил"), wt("таймер")          # 5.11 5.33 5.74
+TK4 = .72
+T4_DESK0 = (R.TIMER_DESK[0] - 10, table_y(TK4))
+T4_DESK1 = (R.TIMER_DESK[0] + 30, table_y(TK4))
+T4_UP = (R.TIMER_DESK[0] + 60, 745.0)
+
+
+def s04(t):
+    lib.dyn_begin()
+    sc = R.desk_scene(t, "night")
+    # таймер: лежит → «Дима» поднимает → «поставил» резкий завод поворотом (клин рывками до полкруга) → «таймер» ставит, подскок
+    pick = sm(t, T_DIMA - .05, T_POST - .02)
+    put = sm(t, T_TAIM - .2, T_TAIM)
+    T = lerp2(lerp2(T4_DESK0, T4_UP, pick), T4_DESK1, put)
+    T = (T[0], T[1] - 50 * math.sin(math.pi * pick) * (1 - pick) * 0)
+    twist = sm(t, T_POST, T_POST + .12) - .35 * sm(t, T_POST + .12, T_POST + .3)        # рывок поворота с возвратом руки
+    rot = -4 - 26 * twist * (1 - put) + 4 * math.sin(t * 9) * (1 - put) * pick
+    wedge = PR.WEDGE_25 * (sm(t, T_POST, T_POST + .1) * .55 + sm(t, T_POST + .14, T_POST + .24) * .3 + sm(t, T_POST + .28, T_POST + .36) * .15)
+    shake = 0.0
+    if t > T_TAIM:
+        shake = 2.0 + 6 * math.exp(-9 * (t - T_TAIM))
+        T = (T[0], T[1] - 26 * bump(t, T_TAIM + .02, .2) - 8 * bump(t, T_TAIM + .22, .12))
+    leaf = 12 * math.sin(2 * math.pi * 1.9 * t) + damp(t, T_TAIM, 26, 3.5, 4.5) + damp(t, T_POST, -18, 3, 5)
+    timer = PR.tomato_timer(T[0], T[1], TK4, rot, wedge=wedge, shake=shake, leaf_swing=leaf, t=t, seed=1)
+    holding = pick > .02 and t < T_TAIM + .04
+    gb = gf = ""
+    if holding:
+        gb, gf, wr = timer_grips(T, TK4, rot, seed=0, sides=(-1,))
+        wn = wr["n"]
+        hands = {"f": {"kind": "none"}, "n": {"kind": "none"}}
+    else:
+        if t < T_DIMA:      # тянется к таймеру с кадра 0
+            wn = lerp2((SX + 250, SY - 330), (T[0] - 150, T[1] + 10), sm(t, 4.9, T_DIMA))
+        else:               # отпустил — ладонь отходит, ложится на стол
+            wn = lerp2((T[0] - 150, T[1] + 10), (T[0] - 210, R.DESK_TOP - 46), sm(t, T_TAIM + .04, T_TAIM + .3))
+        hands = {"f": {"kind": "none"}, "n": {"curl": (.35, .4, .45, .5), "thumb": .45, "dir": (1, .25)}}
+    e = ex("unsure", brows="up", mouth="pressed", lid=1.0, look=(.7, .55 - .3 * pick + .3 * put))
+    if t > T_TAIM + .1:
+        e = dict(e, mouth="smile", smile=.5)
+    e["closed"] = blinkv(t, [6.15])
+    lean = .08 + .06 * pick - .04 * put + .025 * math.sin(t * 3.7) + .05 * bump(t, T_POST + .05, .25)
+    full, parts = dima_layers(e, {"f": ("ang", 0.25, 0.2), "n": ("ik", wn, -1)}, hands, lean_add=lean,
+                              head_add=.04 * math.sin(t * 2.9) + .06 * bump(t, T_TAIM, .3), shrug=.25 * bump(t, T_POST + .05, .3))
+    lap = PR.laptop(R.LAPTOP[0] + 40, R.LAPTOP[1], .72, 1.0, "dark", t=t, seed=1, turn=.55)
+    # щелчок: короткие штрихи у таймера
+    hit = ""
+    v = (t - T_TAIM) / .3
+    if 0 < v < 1:
+        for i, ang in enumerate((-150, -120, -60, -30)):
+            a = math.radians(ang)
+            r0 = 110 * TK4 + 40 * v
+            hit += line([(T[0] + math.cos(a) * r0, T[1] + math.sin(a) * r0), (T[0] + math.cos(a) * (r0 + 46 * (1 - v * .5)), T[1] + math.sin(a) * (r0 + 46 * (1 - v * .5)))],
+                        6 * (1 - v) + 1.5, INK, taper=.5, wmin=.2, seed=5400 + i)
+    world = [sc["bg"], sc["chair_back"], sc["desk_top"], sc["pool"], lap, parts["legs"], sc["desk_legs"], sc["chair_seat"], parts["pelvis"],
+             parts["arm_f"], parts["body"], gb, timer, gf, parts["arm_n"], hit, sc["lamp"]]
+    sx1, sy1 = shake2(t, T_TAIM + .01, 12)
+    cx0, cy0, s0 = R.CAM_SIDE_MID
+    cx = cx0 - 50 + 110 * sm(t, 4.9, 6.6) - sx1
+    cy = cy0 - 20 * sm(t, 4.9, 6.6) - sy1
+    s = s0 * (1 + .05 * sm(t, 4.9, 6.6) + .03 * bump(t, T_POST + .02, .3))
+    set_ink(s)
+    body = f'<g transform="{lib.cam(cx, cy, s, .6 * math.sin(t * .9))}">{"".join(world)}</g>'
+    return lib.svg(f'<rect width="1080" height="1920" fill="#2a2440"/>{body}')
+
+
+def s05(t):
+    raise NotImplementedError
+
+
 def frame(sid, t):
-    return {"s01": s01}[sid](t)
+    return {"s01": s01, "s04": s04, "s05": s05}[sid](t)
