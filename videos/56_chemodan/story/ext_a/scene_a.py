@@ -182,7 +182,7 @@ def wardrobe(variant="mess"):
     return "".join(o)
 
 
-def calendar(cx, cy, s=1.0, t=0.0, mark_u=1.0):
+def calendar(cx, cy, s=1.0, t=0.0, mark_u=1.0, plane_u=1.0):
     """Настенный календарь без цифр: шапка, сетка клеток штрихами, один день обведён, самолётик (штрихи)."""
     o = []
     W_, H_ = 250, 290
@@ -205,8 +205,9 @@ def calendar(cx, cy, s=1.0, t=0.0, mark_u=1.0):
     if mark_u > .05:
         o.append(line(ring, 6, "#d6322c", taper=.1, wmin=.8, seed=8503))
     # самолётик (штрихи) над обведённым днём
-    if mark_u > .9:
-        px, py = ox + 6, oy - 52 - 6 * math.sin(t * 3)
+    if plane_u > .02:
+        e_ = ease_out(plane_u, 2.5)
+        px, py = ox + 6 - 260 * (1 - e_), oy - 52 - 6 * math.sin(t * 3) + 90 * (1 - e_) ** 2
         o.append(line([(px - 26, py + 10), (px + 28, py - 8)], 5, "#2f6bd6", taper=.15, wmin=.7, seed=8504))
         o.append(line([(px + 28, py - 8), (px - 6, py + 24), (px - 8, py + 8)], 5, "#2f6bd6", taper=.15, wmin=.7, seed=8505))
         o.append(line([(px - 26, py + 10), (px - 40, py - 6)], 4, "#2f6bd6", taper=.15, wmin=.7, seed=8506))
@@ -227,9 +228,9 @@ def room56(variant="mess"):
 
 def window_sun(t, k=1.0):
     """Мягкий дневной луч из окна на пол (смешение screen)."""
-    pts = [(700, 520), (1120, 520), (1560, 1480), (900, 1480)]
-    g = lib.lin_grad([(0, "#fff3c4", .0), (.3, "#fff3c4", .35 * k), (1, "#fff3c4", .06 * k)], 0, 0, 0, 1)
-    return f'<path d="{lib.fill_d(pts)}" fill="url(#{g})" style="mix-blend-mode:screen"/>'
+    pts = [(700, 520, 1), (1120, 520, 1), (1560, 1480, 1), (900, 1480, 1)]
+    g = lib.lin_grad([(0, "#fff3c4", .0), (.3, "#fff3c4", .2 * k), (1, "#fff3c4", .05 * k)], 0, 0, 0, 1)
+    return f'<path d="M700 520 L1120 520 L1560 1480 L900 1480 Z" fill="url(#{g})" style="mix-blend-mode:screen"/>'
 
 
 def sun_motes(t, n=22, box=(700, 560, 1250, 1380)):
@@ -572,19 +573,26 @@ def frame02(t):
     expr = dict(lid=.55 + .45 * gr, look=(.2, .3), brows="worry" if gr > .3 else "tired", mouth="talk" if gr > .2 else "tired", open=.8 * gr, smile=0, flush=.5 * gr,
                 hair=4 * math.sin(t * 40) * ring, closed=.0)
     hhx = dx0
-    p = dict(hip=(dx0, 1760), scale=BS * sc, lean=lean, torso_k=1.0, feet=None, arms={"n": ("ik", (hhx - 40 + 10 * math.sin(t * 50) * gr, lerp(1600, 1215, gr)), 1),
-                                                                                     "f": ("ik", (hhx - 120, lerp(1640, 1180, gr)), 1)},
-             hands={"n": hand_spec(.9, (.1, -1), k=1.55), "f": hand_spec(.9, (.3, -1), k=1.55)}, expr=expr, head_ang=.04 * math.sin(t * 30) * ring, head_off=(0, 0), hood=0, strings=(0, 0))
-    d = people.draw(p, "dima")
-    o.append(d["arm_f"] + d["body"] + d["arm_n"])
-    # чемодан влетает сверху слева (его сгребли со шкафа) на «выхода»
+    # чемодан: падает слева (его сгребли со шкафа), ближняя рука Димы тянется к ручке и тянет к себе
     sw_ = smooth(T_VYHODA - .05, T_VYHODA + .35, t)
-    if t > T_VYHODA - .05:
-        sx_ = lerp(-300, 190, ease_out(sw_, 2.2))
-        sy_ = lerp(-200, 1250, ease_out(sw_, 1.8))
-        rot_ = lerp(-80, -6, ease_out(sw_, 2.0)) + 6 * math.sin((t - T_VYHODA) * 25) * math.exp(-(t - T_VYHODA) * 4)
-        o.append(G(suitcase(0, 0, 1.25, lid=0, fill=0, t=t), sx_, sy_, 1.0, rot_))
-        # рука Димы тянет за ручку
+    pull = smooth(T_VYHODA + .35, T_VYHODA + 1.2, t)
+    land = math.exp(-(t - T_VYHODA - .3) * 9) * math.sin((t - T_VYHODA - .3) * 30) if t > T_VYHODA + .3 else 0.0
+    suit_x = lerp(-300, 330, ease_out(sw_, 2.2)) + 130 * pull
+    suit_y = lerp(-200, 1265, ease_out(sw_, 1.8)) - 22 * abs(land)
+    suit_r = lerp(-80, -6, ease_out(sw_, 2.0)) + 6 * math.sin((t - T_VYHODA) * 25) * math.exp(-(t - T_VYHODA) * 4) - 3 * pull
+    reach = smooth(T_VYHODA + .05, T_VYHODA + .5, t) * (t >= T_VYHODA)
+    n_hang = (hhx - 10, 1500)
+    n_head = (hhx - 40 + 10 * math.sin(t * 50) * gr, lerp(1600, 1215, gr))
+    n_handle = (suit_x - 90, suit_y - 175)
+    n_t = (lerp(n_head[0], n_handle[0], reach), lerp(n_head[1], n_handle[1], reach))
+    n_t = (lerp(n_hang[0], n_t[0], smooth(1.3, 1.6, t)), lerp(n_hang[1], n_t[1], smooth(1.3, 1.6, t)))
+    p = dict(hip=(dx0, 1760 + 14 * math.sin(t * 9) * ring), scale=BS * sc, lean=lean + .03 * pull, torso_k=1.0, feet=None,
+             arms={"n": ("ik", n_t, 1), "f": ("ik", (hhx - 120, lerp(1640, 1180, gr)), 1)},
+             hands={"n": hand_spec(.9 - .1 * reach, (.1, -1) if reach < .5 else (-.6, .8), k=1.0), "f": hand_spec(.9, (.3, -1), k=1.0)}, expr=expr,
+             head_ang=.04 * math.sin(t * 30) * ring, head_off=(0, 0), hood=0, strings=(0, 0))
+    d = people.draw(p, "dima")
+    suit_svg = G(suitcase(0, 0, 1.25, lid=0, fill=0, t=t), suit_x, suit_y, 1.0, suit_r) if t > T_VYHODA - .05 else ""
+    o.append(d["arm_f"] + d["body"] + suit_svg + d["arm_n"])
     o.append(dust(t, T_VYHODA + .3, 250, 1210, 6, .5))
     return f'<g transform="{cam}">{"".join(o)}</g>'
 
@@ -726,12 +734,13 @@ def frame06(t):
     shrug = smooth(T_NET + .2, T_NET + .5, t)
     u_s = 1 - shrug
     lean = .09 + .03 * math.sin(t * 2.4)
-    ha = .05 + .04 * scratch * u_s
+    ha = .05 + .04 * scratch * u_s + .1 * math.sin((t - T_NET) * 2 * math.pi * 1.6) * (1 - u_s) * math.exp(-max(0, t - T_NET) * .8)
     hpn = (x + 110, 740)
     # дальняя рука чешет затылок (запястье у затылка, колеблется), ближняя висит; после лопания — оба плеча вверх
     ex_ = (hpn[0] - 140 + 22 * scratch, hpn[1] - 40 + 12 * abs(scratch))
-    n_t = (x + 80 + shrug * 80, 960 - shrug * 150)
-    f_t = (ex_[0] * u_s + (x - 190) * shrug, ex_[1] * u_s + (770) * shrug)
+    sh_w = math.sin((t - T_NET - .2) * 2 * math.pi * 2.4) * shrug * math.exp(-max(0, t - T_NET - .5) * 1.4)
+    n_t = (x + 80 + shrug * 80, 960 - shrug * 150 - 38 * sh_w)
+    f_t = (ex_[0] * u_s + (x - 190) * shrug, ex_[1] * u_s + (770) * shrug - 38 * sh_w)
     expr = dict(lid=.82, look=(.6, .55 - .9 * shrug), brows="det" if t < T_NET else "up", mouth="flat" if t < T_NET else "talk", open=.2 * shrug, smile=0, flush=.15, hair=2 * math.sin(t * 20) * u_s)
     d = stand(t, x, lean=lean, ha=ha, expr=expr, n_t=n_t, f_t=f_t, hands={"n": hand_spec(.4 - .2 * shrug), "f": hand_spec(.85 * u_s + .1 * shrug, (.4, -1))},
               bob=-14 * shrug * math.exp(-(t - T_NET - .2) * 3) * 0 + 5 * math.sin(t * 2 * math.pi * 1.2), torso_k=1.0 - .04 * shrug)
@@ -742,14 +751,14 @@ def frame06(t):
     cl = ""
     if appear > .02 and not burst:
         sc = .85 + .15 * back_out(appear, 2.0)
-        bx, by = hp[0] + 30, hp[1] - 330
+        bx, by = hp[0] + 30, hp[1] - 235
         jig = 1 + .03 * math.sin(t * 22) * smooth(T_NET - .5, T_NET, t)
         inner = hob(0, 40, 1.35) + G(question_mark(t, 0, 0, 1.0), 12, -150, 1.0, 6 * math.sin(t * 4))
-        inner = G(hob(0, 55, 1.0), 0, 0) + G(question_mark(t, 0, 0, .8), 0, -105, 1.0, 6 * math.sin(t * 4))
-        cl = bubbles(hp[0] + 10, hp[1] - 130, bx - 20, by + 190 * sc, appear)
-        cl += thought_cloud(bx, by, 235 * sc, 195 * sc, inner, (1 + .06 * math.sin(t * 22) * smooth(T_NET - .4, T_NET, t)) * sc / sc, (1 - .04 * math.sin(t * 22) * smooth(T_NET - .4, T_NET, t)), 2 * math.sin(t * 3), 3)
+        inner = G(hob(0, 50, .88), 0, 0) + G(question_mark(t, 0, 0, .72), 0, -92, 1.0, 6 * math.sin(t * 4))
+        cl = bubbles(hp[0] + 10, hp[1] - 130, bx - 20, by + 150 * sc, appear)
+        cl += thought_cloud(bx, by, 205 * sc, 165 * sc, inner, (1 + .06 * math.sin(t * 22) * smooth(T_NET - .4, T_NET, t)) * sc / sc, (1 - .04 * math.sin(t * 22) * smooth(T_NET - .4, T_NET, t)), 2 * math.sin(t * 3), 3)
     if burst and bu < 1:
-        bx, by = hp[0] + 30, hp[1] - 330
+        bx, by = hp[0] + 30, hp[1] - 235
         for i in range(10):
             a = i / 10 * 2 * math.pi + .3
             r_ = 60 + 330 * ease_out(bu, 2.2)
@@ -764,7 +773,7 @@ def frame06(t):
     # полный чемодан перед Димой, вещи торчат
     suit = suitcase(940, 1472, 1.3, lid=1.0, fill=1.0, t=t, bulge=.5 + .2 * math.sin(t * 3))
     pz = 1.0 + .2 * ease_io(clamp((t - 10.3) / 1.9))
-    cam = (700 - 40 * ease_io(clamp((t - 10.3) / 1.9)), 1090 - 40 * ease_io(clamp((t - 10.3) / 1.9)), 1.1 + .12 * ease_io(clamp((t - 10.3) / 1.9)), .8 * math.sin(t * 1.8) + 1.2 * math.exp(-(t - T_NET) * 8) * (t >= T_NET) * math.sin(t * 40))
+    cam = (700 - 40 * ease_io(clamp((t - 10.3) / 1.9)), 1060 - 10 * ease_io(clamp((t - 10.3) / 1.9)), 1.14 + .1 * ease_io(clamp((t - 10.3) / 1.9)), .8 * math.sin(t * 1.8) + 1.2 * math.exp(-(t - T_NET) * 8) * (t >= T_NET) * math.sin(t * 40))
     return world(t, "", d, cam, front=cl, suit=suit)
 
 
@@ -803,8 +812,8 @@ def frame13(t):
     x = 790
     nod_t = T_DIMA
     nod = math.exp(-(t - nod_t) * 5) * math.sin((t - nod_t) * 2 * math.pi * 3.0) if t >= nod_t else 0.0
-    ha = .03 * math.sin(t * 1.4) + .14 * nod
-    lean = .04 + .04 * nod
+    ha = .03 * math.sin(t * 1.4) + .30 * nod
+    lean = .04 + .07 * nod + .012 * math.sin(t * 1.9)
     # чашка в ближней руке на уровне груди; подносит ко рту на паре моментов
     sip = smooth(23.3, 23.6, t) * (1 - smooth(23.8, 23.95, t))
     hand_n = (x + 110 - 10 * sip, 965 - 100 * sip)
@@ -812,15 +821,15 @@ def frame13(t):
     expr = dict(lid=.78, look=(.7, -.3), brows="calm", mouth="smile", smile=.5 + .4 * smooth(nod_t - .1, nod_t + .2, t), flush=0.0, blush=.3, closed=.0)
     d = stand(t, x, lean=lean, ha=ha, expr=expr, n_t=hand_n, f_t=f_t, hands={"n": hand_spec(.7, (.2, -1)), "f": hand_spec(.35)}, bob=3 * math.sin(t * 1.6), sx=-1)
     wr = wrist_w(d, "n", x)
-    held = cup(wr[0] + 6, wr[1] + 34, 1.0, t, 0)
+    held = cup(wr[0] - 34, wr[1] + 20, 1.5, t, 0)
     # календарь на стене слева от окна, самолётик, красный овал рисуется на «Дима»/после
     markp = smooth(T0 + .5, T0 + 1.0, t)
-    cal = calendar(440, 740, .95, t, mark_u=clamp(markp))
-    clk = clock(445, 430, 56, t, jump=0.0)
+    cal = calendar(440, 740, .95, t, mark_u=clamp(markp), plane_u=smooth(T_DIMA - .15, T_DIMA + .35, t))
+    clk = clock(445, 530, 52, t, jump=0.0)
     # чемодан раскрытый пустой на кровати справа
     bd = bed(1200, 1440)
     sc = suitcase(1260, 1262, .66, lid=.9, fill=0.0, t=t)
-    cam = (740 + 40 * u, 1180, 1.12 + .08 * ease_io(u), -.9 * (1 - u))
+    cam = (690 + 50 * u, 1225, 1.24 + .08 * ease_io(u), -.9 * (1 - u))
     D.set_ink(cam[2])
     if "tidy" not in _ST:
         _ST["tidy"] = room56("tidy")
