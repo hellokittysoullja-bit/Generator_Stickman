@@ -22,7 +22,7 @@ BASE_TMP = "/tmp/a56c"
 def span(sid):
     s = SHOTS[sid]
     a = max(0.0, s["t0"] - SH["pad"])
-    b = s["t1"] + SH["pad"]
+    b = min(s["t1"] + SH["pad"], SH["end"])
     return a, int(round((b - a) * 30))
 
 

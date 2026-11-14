@@ -904,7 +904,7 @@ def frame16(t):
         u = ((t + ph) % per) / per
         body.append(f'<circle cx="{fx + rs.uniform(-14, 14) + 18 * math.sin(u * 5 + i):.1f}" cy="{fy - 120 * u - 12:.1f}" r="{4 * (1 - u) + 1:.1f}" fill="#ffd070"/>')
     cam = lib.cam(640 + 110 * (ZIN - ZOUT), 880 - 70 * (ZIN - ZOUT), z, -.6 + .9 * ZIN - .9 * ZOUT + 1.2 * bump(t, T_CHAS, .3))
-    return f'<g transform="{cam}">{"".join(body)}</g>' + write_kot16(t, 535, 330)
+    return f'<g transform="{cam}">{"".join(body)}</g>' + write_kot16(t, 470, 330)
 
 
 def Cat_blink16(t):
