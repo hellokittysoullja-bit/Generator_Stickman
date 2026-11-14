@@ -2473,7 +2473,8 @@ def cocoon_feet(x, y, k, t, u=1.0, seed=0):
     return "".join(o)
 
 
-def dima_cocoon(x, y, k=1.0, roll=0.0, squash=0.0, wriggle=0.0, sag=0.0, expr=None, hood=False, t=0.0, head_rot=None, feet=1.0, seed=0, col=C_COCOON):
+def dima_cocoon(x, y, k=1.0, roll=0.0, squash=0.0, wriggle=0.0, sag=0.0, expr=None, hood=False, t=0.0, head_rot=None, feet=1.0, seed=0, col=C_COCOON,
+                hold=0.0):
     global C
     ex = EXPR["dima"].get(expr, {}) if isinstance(expr, str) else dict(expr or EXPR["dima"]["sleepy"])
     c, csh, chi, st = col
@@ -2537,6 +2538,18 @@ def dima_cocoon(x, y, k=1.0, roll=0.0, squash=0.0, wriggle=0.0, sag=0.0, expr=No
     f_in = _cocoon_quilt(820, 600, roll, sd + 60, col)
     o.append(shape(front, c, f_in, w=6.0, seed=sd + 61))
     o.append(line([(-6, fy + 24), (-24, -300), (6, -20)], 5, csh, taper=.3, wmin=.5, seed=sd + 62))
+    if hold > .01:
+        # рилс 71 s08 (группа F): одеяло сползло с головы, но запахнуто на груди до плеч — кисти держат запах у ключиц, голого торса
+        # без рук не видно. hold 0…1 — насколько поднят запах; по умолчанию 0 — рисунок прежний (s03/s06 не меняются).
+        wy = hyW + 175 + (1 - lib.clamp(hold)) * 300
+        wrap = [(-wid - 40, fy + 90, 1), (-wid + 10, wy + 40), (-120, wy - 4), (0, wy + 36), (120, wy - 4), (wid - 10, wy + 40), (wid + 40, fy + 90, 1)]
+        o.append(shape(wrap, c, line([(-wid * .55, wy + 70), (-wid * .62, fy + 60)], 4, csh, taper=.3, wmin=.5, seed=sd + 83)
+                       + line([(wid * .55, wy + 70), (wid * .62, fy + 60)], 4, csh, taper=.3, wmin=.5, seed=sd + 84)
+                       + line([(-200, wy + 44), (-110, wy + 20), (-14, wy + 54)], 5, chi, taper=.3, wmin=.5, seed=sd + 81)
+                       + line([(14, wy + 54), (110, wy + 20), (200, wy + 44)], 5, chi, taper=.3, wmin=.5, seed=sd + 82), w=5.4, seed=sd + 80))
+        for j, (hxp, dx) in enumerate(((-62, .22), (62, -.22))):
+            o.append(hand_svg("dima", (hxp, wy + 118), (dx, -1), k=1.0, far=j == 0, flip=-1 if j == 0 else 1, curl=(.6, .65, .7, .72),
+                              spread=.04, thumb=.5, seed=7860 + j))
     # край капюшона над лбом (пока одеяло на голове)
     cover = ex.get("cover", 0.0)
     if e1 < .5:

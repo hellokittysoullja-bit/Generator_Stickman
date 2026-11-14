@@ -194,7 +194,7 @@ def s08(t):
     else:
         e = ex("gloom", look=(.3, .6), cover=.35 * (1 - up))
     coc = people.dima_cocoon(COC08[0], COC08[1], 1.0, squash=.22 * (1 - up) + .05 * bump(t, T_LENI + .05, .3), sag=sag, expr=e, hood=True, t=t,
-                             feet=1.0, roll=20 * sag)
+                             feet=1.0, roll=20 * sag, hold=sm(t, T_NE08 + .12, T_LENI + .3))
     # выдох: две мягкие дуги у рта
     puff = ""
     q = clamp((t - T_LENI - .12) / .6)
