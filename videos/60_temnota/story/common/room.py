@@ -6,7 +6,7 @@
 Все функции возвращают строку SVG (мировые координаты); динамические defs (градиенты) создаются при каждом вызове — вызывать между lib.dyn_begin().
 
     FL=1440 (пол под ногами), WALL_Y=1330 (низ стены), WIN=(590,340,1030,1090) окно, SILL_Y=1100, HORIZON=790 (горизонт за окном, мир)
-    SEAT=(330,1130) таз сидящего Димы, CHAIR_X, LAMP_X, LAMP_SHADE=(340,470)
+    SEAT=(330,1130) таз сидящего Димы, CHAIR_X, LAMP_X, LAMP_SHADE=(342,372)
     wall_floor()                          стена, плинтус, пол, ковёр (статика)
     window_view(t, par=0.0, zoom=1.0)     даль за стеклом (без рамы): par 0…1 — «вглубь»: дальние слои идут к зрителю слабее, ближние сильнее
     window_frame(t, curtains=True, plant=True)  рама со стёклами (блики), переплёт, подоконник, шторы, растение на подоконнике
@@ -17,6 +17,8 @@
     side_table(t)                         столик с кружкой и паром (справа, у окна)
     room_static(t)                        wall_floor + side_table + кресло-back не входят: только фон (стена, пол, ковёр, окно-блоки собираются в клипе)
     gaze_dots(a, b, u, t)                 пунктир взгляда: точки от a к b, u 0…1 — сколько пути пройдено (круглые точки с лёгкой обводкой)
+    wall_clock(cx, cy, r, minute_deg, hour_deg, shake=0.0)  настенные часы БЕЗ цифр (засечки штрихами), стрелки в градусах от 12 по часовой
+    CLOCK=(470,160,80)                    место часов на стене над торшером/креслом (мир)
 """
 import math
 import os
@@ -38,7 +40,7 @@ HORIZON = 790.0
 SEAT = (330.0, 1130.0)
 CHAIR_X = 330.0
 LAMP_X = 96.0
-LAMP_SHADE = (342.0, 470.0)
+LAMP_SHADE = (342.0, 372.0)
 
 WALL_TOP, WALL_MID, WALL_BOT = "#6f6788", "#a08f86", "#c5ab8b"
 FLOOR_C, FLOOR_SH, FLOOR_LN = "#8e6040", "#6d4529", "#4e301b"
@@ -181,6 +183,35 @@ def window_view(t, par=0.0, zoom=1.0):
     return f'<g clip-path="url(#{clip})">{"".join(o)}</g>'
 
 
+def window(t, par=0.0, zoom=1.0, curtains=True, plant=True):
+    """Даль за стеклом и рама с подоконником одним вызовом."""
+    return window_view(t, par, zoom) + window_frame(t, curtains, plant)
+
+
+CLOCK = (470.0, 160.0, 80.0)
+
+
+def wall_clock(cx, cy, r, minute_deg, hour_deg, shake=0.0):
+    """Круглые настенные часы без цифр: обод, 12 засечек (четыре длинные), стрелки — минутная длинная, часовая короткая и толще."""
+    o = []
+    o.append(blob(ellipse_pts(cx + 6, cy + 8, r + 6, r + 6, 28), "#2b1d12", .25))
+    o.append(shape(ellipse_pts(cx, cy, r + 10, r + 10, 30), "#b9783f", w=4.2, seed=500))
+    o.append(shape(ellipse_pts(cx, cy, r, r, 30), "#fbf4e2", blob(ellipse_pts(cx + r * .25, cy + r * .25, r * .8, r * .8, 22), "#efe3c6", .7), w=3.4, seed=501))
+    for i in range(12):
+        a = math.radians(i * 30)
+        l0 = r * (.72 if i % 3 == 0 else .82)
+        p0 = (cx + l0 * math.sin(a), cy - l0 * math.cos(a))
+        p1 = (cx + r * .92 * math.sin(a), cy - r * .92 * math.cos(a))
+        o.append(line([p0, p1], w=(5.0 if i % 3 == 0 else 3.0), color=INK, taper=.2, seed=510 + i))
+    for deg, L_, w_, sd in ((hour_deg, r * .5, 8.0, 530), (minute_deg, r * .8, 5.2, 531)):
+        a = math.radians(deg + shake)
+        tip = (cx + L_ * math.sin(a), cy - L_ * math.cos(a))
+        tail = (cx - r * .12 * math.sin(a), cy + r * .12 * math.cos(a))
+        o.append(line([tail, (cx, cy), tip], w=w_, color=INK, taper=.45, wmin=.3, seed=sd))
+    o.append(f'<circle cx="{f(cx)}" cy="{f(cy)}" r="{f(r * .09)}" fill="#c0583f" stroke="{INK}" stroke-width="2"/>')
+    return "".join(o)
+
+
 def window_frame(t, curtains=True, plant=True):
     x0, y0, x1, y1 = WIN
     o = []
@@ -265,14 +296,17 @@ def armchair(k=1.0):
 
 def floor_lamp(on=1.0, flick=0.0):
     """Торшер с дугой: стойка у левой стены, дуга вправо, абажур висит над креслом. on 0…1 — яркость (0 — выключен).
-    Возвращает dict(lamp=..., pool=..., cone=...): pool рисовать ДО фигур (свет на стене/ковре), cone — после, lamp — поверх."""
+    Возвращает dict(lamp=..., pool=..., cone=...): pool рисовать ДО фигур (свет на стене/ковре), lamp — за креслом (стойка позади), cone — после фигур."""
     sx, sy = LAMP_SHADE
     o = []
     # основание и стойка
     o.append(blob(ellipse_pts(LAMP_X + 4, 1428, 104, 22, 16), "#2b1d12", .35))
     o.append(shape(ellipse_pts(LAMP_X, 1418, 84, 18, 18), "#3a3d46", blob(ellipse_pts(LAMP_X + 14, 1424, 66, 12, 12), "#2a2c34", .9), w=4.0, seed=300))
-    pts = [(LAMP_X, 1412), (LAMP_X, 900), (LAMP_X, 560), (LAMP_X + 10, 440), (LAMP_X + 70, 372), (LAMP_X + 160, 352), (sx - 40, 366), (sx - 6, 392), (sx, 410)]
+    dy = sy - 470.0
+    pts = [(LAMP_X, 1412), (LAMP_X, 900), (LAMP_X, 560 + dy * .5), (LAMP_X + 10, 440 + dy), (LAMP_X + 70, 372 + dy), (LAMP_X + 160, 352 + dy), (sx - 40, 366 + dy),
+           (sx - 6, 392 + dy), (sx, 410 + dy)]
     o.append(shape(band(pts, 18, 9, step=6, cap=False), "#8a8d96", blob([(LAMP_X + 4, 1412)], "#8a8d96"), w=3.4, seed=301))
+    o.append(line([(sx, 410 + dy - 4), (sx + 1, (410 + dy + sy) / 2), (sx, sy - 2)], w=5.0, color="#3a3d46", taper=.1, wmin=.6, seed=304))
     glow = on
     # абажур
     top_w, bot_w, hh = 54, 138, 112
