@@ -54,6 +54,7 @@ def main():
         t1 = time.time()
         if sheet:
             outd = os.path.join(cs, sid)
+            shutil.rmtree(outd, ignore_errors=True)
             os.makedirs(outd, exist_ok=True)
             pngs = [os.path.join(outd, f"{sid}_{t:.2f}.png") for t in times]
             open(os.path.join(tmp, "list.txt"), "w").write("\n".join(f"{s}\t{p}" for s, p in zip(svgs, pngs)))
