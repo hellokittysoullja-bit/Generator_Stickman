@@ -471,7 +471,7 @@ def draw(pose):
             d = np.array(hd, float) / np.linalg.norm(hd)
         hk = pose.get("hands", {}).get(side, "fist")
         o = ""
-        held = pose.get("held") if side == pose.get("held_side", "n") else None
+        held = pose.get("held") if side == pose.get("held_side", "n") else pose.get("held2")
         if held and held[0] == "behind":
             o += held[1](Wr, d)
         o += sleeve(sp, E, Wr, far, 600 + (0 if far else 50))

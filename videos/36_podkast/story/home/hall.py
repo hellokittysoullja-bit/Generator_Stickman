@@ -385,8 +385,8 @@ def vignette(op=0.28):
 
 
 def frame(t, cam=WIDE, door=0.0, rain=0.0, mid="", fg="", phone=True, screen_fg=""):
-    """Полный кадр 1080×1920 (SVG-строка): фон прихожей, mid (герои в мире), fg (поверх в мире), screen_fg (поверх в экране)."""
-    lib.DEFS.clear()
+    """Полный кадр 1080×1920 (SVG-строка): фон прихожей, mid (герои в мире), fg (поверх в мире), screen_fg (поверх в экране).
+    lib.DEFS НЕ очищается здесь (в mid уже есть ссылки на clipPath) — сцена делает lib.DEFS.clear() в начале своего кадра."""
     cx, cy, s, rot = cam
     body = f'<g transform="{lib.cam(cx, cy, s, rot)}">{back(t, door, rain, phone)}{mid}{front(t)}{fg}</g>'
     return lib.svg(f'<rect width="1080" height="1920" fill="#2a2030"/>{body}{vignette()}{screen_fg}')
@@ -394,4 +394,5 @@ def frame(t, cam=WIDE, door=0.0, rain=0.0, mid="", fg="", phone=True, screen_fg=
 
 if __name__ == "__main__":      # пробный кадр: python3 hall.py out.svg
     import sys
+    lib.DEFS.clear()
     open(sys.argv[1] if len(sys.argv) > 1 else "/dev/stdout", "w").write(frame(1.0, rain=0.0))

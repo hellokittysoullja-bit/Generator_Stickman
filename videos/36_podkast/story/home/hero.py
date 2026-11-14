@@ -16,7 +16,7 @@ BAG, BAG_SH, BAG_STRIPE = "#25335c", "#18223f", "#f08a2c"
 CARD, CARD_SH = "#2fb3a8", "#22877f"
 
 
-def stand(hx, fx_far, fx_near, bend=0.965, lean=0.04, dy=0.0, **kw):
+def stand(hx, fx_far, fx_near, bend=0.985, lean=0.04, dy=0.0, **kw):
     """Стоит: таз над полом, стопы плоско (лодыжки в fx_far, fx_near)."""
     p = dict(hip=np.array([hx, -(SOLE + LEG * bend) + dy]), lean=lean,
              feet={"f": (np.array([fx_far, -SOLE]), 0.0), "n": (np.array([fx_near, -SOLE]), 0.0)},
@@ -60,7 +60,6 @@ def bag_on_shoulder(sw=0.0, rot_extra=0.0):
         b = bc + np.array([110, -80])
         o = []
         o.append(line([tuple(a), tuple(top - fw * 40 + up * 4), tuple(top + fw * 50)], 16, "#1b2445", seed=971, taper=.08, wmin=.9))
-        o.append(line([tuple(top + fw * 50), tuple(top + fw * 70 - up * 120), tuple(b)], 16, "#1b2445", seed=972, taper=.08, wmin=.9))
         o.append(duffel(bc[0], bc[1], rot=-8 + sw * .05 + rot_extra, seed=980))
         return "".join(o)
     return f
