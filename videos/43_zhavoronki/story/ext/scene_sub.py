@@ -1,4 +1,5 @@
-"""Карточка подписки рилса 41 (основа — scene_sub рилса 29).
+"""Карточка подписки рилса 43 (основа — scene_sub рилса 41; ниже — исходное описание 41, время — рилса 43:
+«Подпишись» 3.20, «мифы» 4.68 — нажатие, кнопка серая с галочкой; «верят» 5.84 — штамп «МИФ?» и сердечки).
 s03 (3.2–4.64): карточка влетает (3.0–3.2), на «Подпишись» (3.2) большой жёлтый колокольчик раскачивается и
 звенит (штрихи звона), под ним красная кнопка «ПОДПИСАТЬСЯ». Из-за правого края карточки выглядывает кот, лапа на краю.
 s04 (4.64–6.4): кот вылезает сильнее, тянет лапу к кнопке, на «истории» (5.24) вдавливает её и держит; на «Диму» (5.8)
@@ -12,8 +13,9 @@ from lib import (INK, W, H, blob, blur, cam, clamp, ease_in, ease_io, ease_out, 
 
 _ST = {}
 HIT = 3.2           # «Подпишись»
-PRESS = 5.24        # «истории»
-DONE = 5.8          # «Диму»
+PRESS = 4.68        # «мифы»
+DONE = 4.88        # кнопка серая сразу после нажатия
+STAMP = 5.84       # «верят»
 CX0, CX1, CY0, CY1 = 80, 830, 300, 1240      # карточка
 BELL = (450, 420)
 BS = 1.2   # точка подвеса колокольчика
@@ -158,7 +160,7 @@ HEARTS = [(-420, -760, -18, 1.25), (-250, -900, 8, 1.0), (-80, -980, -6, 1.4), (
 
 
 def hearts(t):
-    e = t - DONE - 0.03
+    e = t - STAMP - 0.03
     if e < 0:
         return ""
     s = []
@@ -181,13 +183,13 @@ def cat_pose(t):
     sc = 1.08
     # s03: выглядывает из-за края (выезжает вбок на 3.3–3.66), s04: вылезает выше и тянется
     k1 = ease_out(clamp((t - 3.3) / 0.36))
-    k2 = ease_io(clamp((t - 4.5) / 0.5))
+    k2 = ease_io(clamp((t - 3.95) / 0.4))
     X = 1060 - 100 * k1 - 70 * k2
     Y = 1190 - 40 * k2 + 4 * math.sin(t * 2.4)
     # лапа: в s03 на краю карточки, в s04 — к кнопке
     edge_w = (CX1 + 6, 1050 - 10 * k2)
     btn_w = (BX1 - 78, BY0 + 80)
-    ka = ease_io(clamp((t - 4.8) / (PRESS - 4.8)))
+    ka = ease_io(clamp((t - 4.15) / (PRESS - 4.15)))
     lift = 40 * math.sin(math.pi * ka)
     tw = (edge_w[0] + (btn_w[0] - edge_w[0]) * ka, edge_w[1] + (btn_w[1] - edge_w[1]) * ka - lift)
     if t < 3.48:
@@ -207,13 +209,13 @@ def cat_pose(t):
     # взгляд: на колокольчик, на кнопку, после нажатия — в камеру
     lk_b = (-0.9, -0.7)
     lk_btn = (-0.9, 0.2)
-    k = smooth(4.55, 4.85, t)
+    k = smooth(3.95, 4.2, t)
     look = (lk_b[0] * (1 - k) + lk_btn[0] * k, lk_b[1] * (1 - k) + lk_btn[1] * k)
     kc = smooth(DONE + 0.05, DONE + 0.25, t)
     look = (look[0] * (1 - kc), look[1] * (1 - kc))
     tilt = -6 * k1 * (1 - k2) + 3 * k2 + 4 * kc * math.sin((t - DONE) * 3) * (t > DONE)
     blink = 0.0
-    for c, half in ((4.1, 0.07), (6.15, 0.08)):
+    for c, half in ((3.86, 0.07), (5.4, 0.08), (6.6, 0.08)):
         if c - half <= t <= c + half:
             blink = 1 - abs(t - c) / half
     if t < 3.42:
@@ -258,8 +260,8 @@ def frame(sid, t):
     if e >= 0:
         ang = 22 * math.exp(-e * 1.3) * math.sin(2 * math.pi * 2.4 * e) + 3 * math.sin(t * 2.0)
         cl = -14 * math.exp(-e * 1.3) * math.sin(2 * math.pi * 2.4 * e - 0.9)
-        e2 = t - DONE
-        if e2 >= 0:      # второй звяк на «Диму»
+        e2 = t - STAMP
+        if e2 >= 0:      # второй звяк на «верят»
             ang += 10 * math.exp(-e2 * 3) * math.sin(2 * math.pi * 2.6 * e2)
             cl += -7 * math.exp(-e2 * 3) * math.sin(2 * math.pi * 2.6 * e2 - 0.9)
     else:
@@ -279,7 +281,7 @@ def frame(sid, t):
             ln = 380 * (1 - k)
             s.append(line([(x0 + 40, yy), (x0 + 40 + ln, yy + 4)], 9 * (1 - k) + 2, INK, taper=.6, seed=480 + j))
     # камера: лёгкий наезд, удар на влёте и толчок на нажатии
-    v = clamp((t - 3.0) / (6.6 - 3.0))
+    v = clamp((t - 3.0) / (6.84 - 3.0))
     ccx, ccy = 590 + 15 * v, 920 - 20 * v
     scc = 1.0 + 0.05 * ease_io(v) + 0.01 * v
     if e >= 0:
@@ -292,10 +294,10 @@ def frame(sid, t):
         scc *= 1 + 0.045 * kk * math.sin(min(ep * 14, math.pi))
         ccx += 7 * kk * math.sin(ep * 47)
         ccy += 9 * kk * math.sin(ep * 39)
-    ed = t - DONE
+    ed = t - STAMP
     if ed >= 0:
         kk = math.exp(-ed * 8)
-        scc *= 1 + 0.035 * kk * math.sin(min(ed * 14, math.pi))
+        scc *= 1 + 0.05 * kk * math.sin(min(ed * 14, math.pi))
         ccy += 6 * kk * math.sin(ed * 42)
     crot = 0.6 * math.sin(t * 0.9)
     return svg(f'<rect width="{W}" height="{H}" fill="#e6a862"/><g transform="{cam(ccx, ccy, scc, crot)}">{"".join(s)}</g>')

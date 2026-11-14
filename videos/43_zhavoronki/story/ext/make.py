@@ -1,4 +1,4 @@
-"""Рендер 2D-клипов рилса 41 (sub: s03 s04; brain: s10; study: s11; chart: s14 s15): python3 make.py s02 [s14 ...]  — клип clips/<id>.mp4 по контракту брифа;
+"""Рендер 2D-клипов рилса 43 (myth: s01 s02; sub: s03 s04; owl: s07 s08): python3 make.py s02 [s14 ...]  — клип clips/<id>.mp4 по контракту брифа;
 python3 make.py s02 --sheet [t1,t2,...] — кадры PNG на эти моменты (по умолчанию 6 равномерно) + лист sheets/<id>.jpg.
 SVG кадров строятся в Python, растр — Chromium в NP процессов (по умолчанию 2), PNG потоком в ffmpeg."""
 import importlib
@@ -15,9 +15,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 STORY = os.path.dirname(HERE)
 SH = json.load(open(os.path.join(STORY, "shots.json")))
 SHOTS = {s["id"]: s for s in SH["shots"]}
-SCENE_MOD = {"s03": "scene_sub", "s04": "scene_sub", "s10": "scene_brain41", "s11": "scene_study41",
-             "s14": "scene_chart41", "s15": "scene_chart41"}
-NP = int(os.environ.get("NP", "2"))   # процессов: 4 ядра общие с другими агентами
+SCENE_MOD = {"s01": "scene_myth", "s02": "scene_myth", "s03": "scene_sub", "s04": "scene_sub",
+             "s07": "scene_owl", "s08": "scene_owl"}
+NP = int(os.environ.get("NP", "1"))   # процессов: 4 ядра общие с другими агентами
 
 
 def span(sid):
@@ -47,7 +47,7 @@ def main():
     sheet = "--sheet" in args
     ids = [a for a in args if a.startswith("s") and a[1:].isdigit()]
     tl = [a for a in args if "," in a or a.replace(".", "").isdigit()]
-    base_tmp = os.environ.get("EXT_TMP", "/tmp/claude-0/-home-user-Generator-Stickman/edc00e3c-b4b7-525e-ada0-10d8bb51f7f2/scratchpad/c41/tmp")
+    base_tmp = os.environ.get("EXT_TMP", "/tmp/claude-0/-home-user-Generator-Stickman/3721440c-9c0e-59b3-8845-f15efa83d004/scratchpad/a")
     os.makedirs(base_tmp, exist_ok=True)
     for sid in ids:
         a, n = span(sid)
@@ -65,7 +65,8 @@ def main():
             open(os.path.join(tmp, "list.txt"), "w").write("\n".join(f"{s}\t{p}" for s, p in zip(svgs, pngs)))
             subprocess.check_call(["node", os.path.join(HERE, "render.js"), os.path.join(tmp, "list.txt"), "png",
                                    str(min(NP, len(times))), "x"])
-            print(sid, "sheet", " ".join(pngs))
+            subprocess.check_call([sys.executable, os.path.join(HERE, "sheet.py"), os.path.join(outd, "sheet.jpg"), *pngs])
+            print(sid, "sheet", os.path.join(outd, "sheet.jpg"))
         else:
             times = [a + k / 30 for k in range(n)]
             svgs = build_svgs(sid, times, tmp)

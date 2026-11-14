@@ -1,4 +1,4 @@
-"""Рендер 2D-клипов рилса 41, агент A (desk: s01 s05 s06; cat: s07; bed: s17 s18): python3 make.py s03 [s14 ...]  — клип clips/<id>.mp4 по контракту брифа;
+"""Рендер 2D-клипов рилса 43, агент C (bed: s05 s11 s13; desk: s06 s14 s15 s16): python3 make.py s03 [s14 ...]  — клип clips/<id>.mp4 по контракту брифа;
 python3 make.py s02 --sheet [t1,t2,...] — кадры PNG на эти моменты (по умолчанию 6 равномерно) + лист sheets/<id>.jpg.
 SVG кадров строятся в Python (несколько процессов), растр — Chromium в 2 процесса (процессор общий), PNG потоком в ffmpeg."""
 import importlib
@@ -15,14 +15,14 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 STORY = os.path.dirname(HERE)
 SH = json.load(open(os.path.join(STORY, "shots.json")))
 SHOTS = {s["id"]: s for s in SH["shots"]}
-SCENE_MOD = {"s01": "scene_desk", "s05": "scene_desk", "s06": "scene_desk", "s07": "scene_desk", "s17": "scene_bed", "s18": "scene_bed"}
-NP = int(os.environ.get("NP", "2"))
+SCENE_MOD = {"s05": "scene_bed", "s11": "scene_bed", "s13": "scene_bed", "s06": "scene_desk", "s14": "scene_desk", "s15": "scene_desk", "s16": "scene_desk"}
+NP = int(os.environ.get("NP", "1"))
 
 
 def span(sid):
     s = SHOTS[sid]
     a = max(0.0, s["t0"] - SH["pad"])
-    b = 37.4 if sid == "s18" else s["t1"] + SH["pad"]
+    b = s["t1"] + SH["pad"]
     n = int(round((b - a) * 30))
     return a, n
 
@@ -46,7 +46,7 @@ def main():
     sheet = "--sheet" in args
     ids = [a for a in args if a.startswith("s") and a[1:].isdigit()]
     tl = [a for a in args if "," in a or a.replace(".", "").isdigit()]
-    base_tmp = os.environ.get("EXT_TMP", "/tmp/claude-0/-home-user-Generator-Stickman/edc00e3c-b4b7-525e-ada0-10d8bb51f7f2/scratchpad/a41")
+    base_tmp = os.environ.get("EXT_TMP", "/tmp/claude-0/-home-user-Generator-Stickman/3721440c-9c0e-59b3-8845-f15efa83d004/scratchpad/c")
     os.makedirs(base_tmp, exist_ok=True)
     for sid in ids:
         a, n = span(sid)

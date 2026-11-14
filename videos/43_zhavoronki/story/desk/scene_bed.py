@@ -408,6 +408,16 @@ def s18(t):
     return o, (cx, cy, sc, -0.6 + 0.9 * u)
 
 
+
+def dbg(t):
+    lie = 1.0 if t < 1 else 0.0
+    expr = {"closed": 1.0, "mouth": "flat", "bags": True, "brows": "calm"}
+    d = dima(t, lie, expr, arms_up=1.0 if t >= 2 else 0.0)
+    before, after = dima_layers(d, lie < .5, arms_back=t >= 2)
+    o = [_ST["room_night"], lamp(0, t), nightstand(), _ST["bed_back"], pillow(), before, blanket(lie, d["head"][0]), head_over(d, lie, expr), after]
+    return o, (600, 950, 0.75, 0)
+
+
 def build_static(sid):
     if sid == "s18":
         lib.INK_K[0] = 0.55
@@ -422,5 +432,5 @@ def frame(sid, t):
     if not _ST:
         build_static(sid)
     lib.dyn_begin()
-    o, (cx, cy, sc, rot) = {"s17": s17, "s18": s18}[sid](t)
+    o, (cx, cy, sc, rot) = {"s17": s17, "s18": s18, "dbg": dbg}[sid](t)
     return svg(f'<rect width="{W}" height="{H}" fill="#2a2a3a"/><g transform="{cam(cx, cy, sc, rot)}">{"".join(o)}</g>')
