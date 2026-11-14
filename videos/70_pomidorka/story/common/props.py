@@ -2677,7 +2677,8 @@ def pedestal(x, y, k=1.0, crack_=0.0, split=0.0, seed=0):
             o.append(line(pts, 4.6, lib.INK, taper=.05, wmin=.9, seed=sd + 9 + side))
         g = "".join(o)
         if su > 0:
-            g = f'<g transform="translate({side * 40 * su:.2f} {12 * su:.2f}) rotate({side * 9 * su:.2f} 0 0)">{g}</g>'
+            g += line([(0, -330), (0, -44)], 4.2, lib.INK, taper=.1, wmin=.8, seed=sd + 12 + side)
+            g = f'<g transform="translate({side * 30 * su:.2f} 0) rotate({side * 84 * su:.2f} {side * 150} 0)">{g}</g>'
         parts.append(g)
     o = parts
     cu = clamp(crack_)

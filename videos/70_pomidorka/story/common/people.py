@@ -2301,7 +2301,7 @@ def dima_back(x, y, scale, tilt=0.0, look_up=0.0, shrug=0.0, hair=0.0, t=0.0, wh
     n = 14
     for i in range(n + 1):        # лохматый контур волос: от левого виска через макушку к правому, низ — неровная линия у шеи
         a = math.pi * (1.05 + 0.9 * i / n) + rs.uniform(-.04, .04)
-        r = 1.0 + (rs.uniform(.08, .2) if i % 2 else .02) + rs.uniform(-.02, .03)
+        r = 1.0 + (rs.uniform(.05, .11) if i % 2 else .0) + rs.uniform(-.015, .02)
         hp.append((132 * r * math.cos(a), -18 + 160 * r * math.sin(a) + (hb * math.sin(i * 1.7 + t * 14) * 4 if hb else 0)) + ((1,) if i % 2 else ()))
     bottom_y = 96 - 40 * lu
     hp += [(134, 20), (126, 60), (104, bottom_y - 4, 1), (80, bottom_y + 12), (50, bottom_y, 1), (20, bottom_y + 14), (-14, bottom_y, 1),
