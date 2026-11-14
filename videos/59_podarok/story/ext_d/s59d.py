@@ -349,7 +349,8 @@ def dima09(t):
     ph = 2 * math.pi * 3.4 * (t - run_a)
     mv = speed > .04
     bob = 14 * abs(math.sin(ph)) * bs * speed
-    hip = (x, hip_y - bob)
+    idle = 4 * math.sin(t * 5.0) * (1 - speed) * (1 - pan)
+    hip = (x, hip_y - bob + idle * .5)
     feet = {}
     stand = {"n": (hip[0] + 24 * bs, GY9 - 4), "f": (hip[0] - 26 * bs, GY9 - 4)}
     for sd, off in (("n", 0.0), ("f", math.pi)):
@@ -405,7 +406,7 @@ def dima09(t):
     else:
         exp = dict(lid=1.0, look=(.5 + .4 * math.sin(t * 20), -.2 * pan), brows="worry", mouth="talk", open=.95, smile=0,
                    hair=16 * math.exp(-hit * 3.0) * math.sin(hit * 38) + 6 + tremor * .3, closed=0, flush=smooth(0, .4, hit) * .55)
-    ha = -.12 * pan * 1.0 + (.03 * math.sin(t * 50) * pan if hit > 0 else 0)
+    ha = .03 * math.sin(t * 3.1) * (1 - pan) - .12 * pan * 1.0 + (.03 * math.sin(t * 50) * pan if hit > 0 else 0)
     hood = 14 * math.sin(t * 30) * speed
     d = dima((hip[0] + tremor, hip[1]), bs, lean, arms, hands, exp, feet=feet, head_ang=ha, hood=hood)
     o = []
@@ -535,11 +536,284 @@ people.jacket_parts = _jk
 people.NEWHEADS = tuple(people.NEWHEADS) + ("seller",)
 
 
-def frame(sid, t):
-    lib.dyn_begin()
-    body = {"s09": frame09, "s10": frame10}[sid](t)
-    return lib.svg(f'<rect width="1080" height="1920" fill="#9aa6c4"/>{body}')
+# ═════════════════════════════ s10 19.04–20.64: цветочный ларёк ═════════════════════════════
+GY10 = 1300
+T_KUPIL = find("купил", 19.0)          # 19.82
+T_CVETY = find("цветы", 19.0)          # 20.16
+T10_0 = 18.84
+BS_D, BS_S = .78, .70
+SELL_X = 780
+GK = 1.2                                # масштаб букета (1 = Дима BS 0.6)
+
+
+def heart(cx, cy, r, col="#e0527a", sd=0, rot=0.0):
+    pts = [(0, -.35), (.45, -.95, 0), (1, -.7), (1.05, -.1), (.5, .5), (0, 1.0, 1), (-.5, .5), (-1.05, -.1), (-1, -.7), (-.45, -.95)]
+    c, sn = math.cos(math.radians(rot)), math.sin(math.radians(rot))
+    P_ = [(cx + r * (x * c - y * sn), cy + r * (x * sn + y * c)) + ((1,) if len(p) > 2 and p[2] else ()) for p in pts for x, y in [(p[0], p[1])]]
+    return shape(P_, col, blob(ellipse_pts(cx + r * .2, cy + r * .1, r * .5, r * .4, 8), "#b8304f", .6), w=3.0, seed=sd)
+
+
+def building(x0, x1, top, bottom, col, sh, rows, cols, sd, awning=None):
+    s = [shape(rrect(x0, top, x1, bottom, 4), col, blob(rrect(x1 - (x1 - x0) * .3, top, x1, bottom), sh, .8), w=4.0, seed=sd)]
+    ww = (x1 - x0) / (cols + 1)
+    hh = (bottom - top - 160) / (rows + 1)
+    for r in range(rows):
+        for c in range(cols):
+            wx = x0 + ww * (c + .6)
+            wy = top + 50 + hh * (r + .15) + r * hh * .2
+            s.append(shape(rrect(wx, wy, wx + ww * .6, wy + hh * .7, 3), "#e9f4fb", blob(rrect(wx + 4, wy + 4, wx + ww * .3, wy + hh * .4), "#ffffff", .6) +
+                           line([(wx + ww * .3, wy), (wx + ww * .3, wy + hh * .7)], 3, INK, taper=0, wmin=1, seed=sd + 7 * r + c), w=3.2, seed=sd + 11 * r + c))
+    return "".join(s)
+
+
+def street_bg(t):
+    s = []
+    g = lib.lin_grad([(0, "#9fd3ee", 1), (.7, "#d7edf5", 1), (1, "#f3f3e6", 1)], 0, 0, 0, 1)
+    s.append(f'<rect x="-300" y="-300" width="1700" height="{GY10 + 300}" fill="url(#{g})"/>')
+    s.append(blob(ellipse_pts(220 + 12 * math.sin(t * .6), 380, 120, 36, 14), "#ffffff", .95) + blob(ellipse_pts(300 + 12 * math.sin(t * .6), 360, 80, 30, 14), "#ffffff", .95))
+    s.append(building(-200, 330, 330, GY10 - 40, "#efd0a6", "#d8b583", 3, 3, 10400))
+    s.append(building(1000, 1360, 260, GY10 - 40, "#c9dcb0", "#a9c492", 4, 3, 10500))
+    # дерево на заднем плане
+    s.append(line([(-40, GY10 - 40), (-30, 780)], 30, "#8a5c3a", taper=0, wmin=1, seed=10600))
+    # тротуар и бордюр
+    s.append(f'<rect x="-300" y="{GY10 - 40}" width="1700" height="900" fill="#d9cdb8"/>')
+    s.append(blob(rrect(-300, GY10 - 40, 1400, GY10 + 12), "#ece4d4"))
+    s.append(line([(-300, GY10 - 40), (1400, GY10 - 40)], 4, INK, taper=.02, wmin=1, seed=10601))
+    s.append(line([(-300, GY10 + 12), (1400, GY10 + 12)], 3, "#a39577", taper=.02, wmin=1, seed=10602))
+    for k in range(1, 7):
+        y = GY10 + 12 + k * 74 + k * k * 4
+        s.append(line([(-300, y), (1400, y + 3)], 2.6, "#a39577", taper=.05, wmin=.9, seed=10610 + k, op=.6))
+    for xx in range(-300, 1400, 260):
+        for k in range(0, 6):
+            y = GY10 + 12 + k * 74 + k * k * 4
+            s.append(line([(xx + (k % 2) * 130 + k * 14, y), (xx + (k % 2) * 130 + k * 22, y + 80 + k * 6)], 2.2, "#a39577", taper=.05, wmin=.9, seed=10630 + k, op=.5))
+    return "".join(s)
+
+
+def stall_back(t):
+    s = []
+    x0, x1, y0 = 430, 1180, 250
+    s.append(f'<rect x="{x0}" y="{y0}" width="{x1 - x0}" height="{GY10 - y0 - 330}" fill="#3d8a82"/>')
+    for x in range(x0 + 50, x1, 100):
+        s.append(line([(x, y0), (x, 970)], 3, "#2d6e68", taper=0, wmin=1, seed=10700 + x, op=.8))
+    s.append(line([(x0, y0), (x0, 970)], 6, INK, taper=0, wmin=1, seed=10701))
+    # полки с горшками (слева и справа, у лица продавщицы пусто)
+    for (ys, sd) in ((560, 10710), (760, 10720)):
+        s.append(shape(rrect(x0 + 4, ys, x1, ys + 22, 3), "#d9b680", "", w=3.8, seed=sd))
+    for (px, py, sd) in ((500, 560, 1), (580, 560, 2), (1000, 560, 3), (1090, 560, 4)):
+        s.append(pot(px, py, sd))
+    s.append(PR.jar_flowers(1060, 760, 1.2, 3))
+    s.append(PR.jar_flowers(500, 760, 1.2, 4))
+    return "".join(s)
+
+
+def pot(x, y, sd):
+    col = ["#d9654f", "#e8b24a", "#7fb6c9", "#d98fb0"][sd % 4]
+    s = []
+    for j, (dx, h, dr) in enumerate(((-16, 76, -18), (0, 96, 0), (16, 70, 20))):
+        s.append(line([(x, y - 30), (x + dx, y - h)], 4.0, "#43803F", taper=.2, wmin=.8, seed=10800 + sd * 5 + j))
+        s.append(PR._leaf(x + dx, y - h, x + dx + 26 * (1 if dx >= 0 else -1), y - h - 18, 11, "#5FA05B", 10810 + sd * 7 + j))
+    s.append(shape([(x - 28, y - 34, 1), (x + 28, y - 34, 1), (x + 22, y, 1), (x - 22, y, 1)], col, blob([(x + 4, y - 34), (x + 28, y - 34), (x + 22, y), (x + 2, y)], PR.mix(col, "#000000", .25), .6), w=3.6, seed=10820 + sd))
+    return "".join(s)
+
+
+def awning(t):
+    x0, x1, y0, y1 = 400, 1160, 110, 262
+    n = 10
+    wd = (x1 - x0) / n
+    s = []
+    sw = 4 * math.sin(t * 2.3)
+    for i in range(n):
+        xa, xb = x0 + i * wd, x0 + (i + 1) * wd
+        col = "#e05a4f" if i % 2 == 0 else "#fff3e6"
+        wave = sw * math.sin(i * .9 + t * 3)
+        pts = [(xa, y0, 1), (xb, y0, 1), (xb, y1 + wave, 1), ((xa + xb) / 2, y1 + 40 + wave * 1.4), (xa, y1 + wave, 1)]
+        s.append(shape(pts, col, blob([((xa + xb) / 2, y0), (xb, y0), (xb, y1 + wave), ((xa + xb) / 2, y1 + 40 + wave * 1.4)], PR.mix(col, "#000000", .12), .55), w=3.6, seed=10900 + i))
+    s.append(line([(x0, y0), (x1, y0)], 6, INK, taper=0, wmin=1, seed=10930))
+    s.append(line([(x0 + 10, y1 + 70), (x0 + 6, 940)], 12, "#8a5c3a", taper=0, wmin=1, seed=10931))
+    return "".join(s)
+
+
+def hanging_sign(t):
+    px, py = 940, 300
+    ang = 7 * math.sin(t * 2.0)
+    s = line([(px - 40, py), (px - 30, py + 70)], 3, INK, taper=0, wmin=1, seed=10950) + line([(px + 40, py), (px + 30, py + 70)], 3, INK, taper=0, wmin=1, seed=10951)
+    board = shape(ellipse_pts(px, py + 130, 74, 66, 16), "#f4d88a", blob(ellipse_pts(px + 14, py + 146, 60, 48, 12), "#e0b858", .6), w=4.6, seed=10952)
+    board += PR._daisy(px, py + 130, 34, 12, 10960)
+    board += PR._leaf(px - 6, py + 164, px - 40, py + 150, 9, "#5FA05B", 10970) + PR._leaf(px + 6, py + 164, px + 40, py + 150, 9, "#5FA05B", 10972)
+    return f'<g transform="rotate({ang:.2f} {px} {py})">{s}{board}</g>'
+
+
+def counter(t):
+    s = []
+    x0, x1 = 440, 1200
+    top = 936
+    s.append(blob(ellipse_pts((x0 + x1) / 2, GY10 + 18, 400, 18, 16), "#2a1608", .3))
+    front = shape(rrect(x0, top + 24, x1, GY10, 4), "#e8b24a", "", w=4.8, seed=11000)
+    for k in range(1, 8):
+        front += line([(x0 + k * 100, top + 30), (x0 + k * 100, GY10 - 4)], 2.8, "#c9922c", taper=0, wmin=1, seed=11010 + k, op=.85)
+    s.append(front)
+    s.append(shape(rrect(x0, 1100, x1, 1140, 2), "#ffffff", "", w=3.0, seed=11020, ink=False) if False else "")
+    s.append(PR._daisy(830, 1120, 60, 8, 11030))
+    for sd, (dx, dy, a) in enumerate(((-62, 40, 28), (60, 40, -28), (0, 70, 0))):
+        s.append(PR._leaf(830 + dx * .2, 1150, 830 + dx * 1.5, 1150 + dy * .5, 14, "#5FA05B", 11040 + sd * 3))
+    s.append(shape(rrect(x0 - 10, top, x1 + 10, top + 30, 5), "#c8915a", blob(rrect(x0 - 10, top + 14, x1 + 10, top + 30), "#a8703c", .7), w=4.8, seed=11060))
+    return "".join(s)
+
+
+def bucket_flowers(x, y, kind, t, sd, k=1.0):
+    """Ведро (дно в (x, y)) с цветами: kind 0 — ромашки, 1 — тюльпаны."""
+    s = []
+    rs = np.random.RandomState(sd)
+    n = 7
+    for i in range(n):
+        u = i / (n - 1) * 2 - 1
+        sw = 3 * math.sin(t * 1.7 + i + sd)
+        hx = x + u * 56 * k + sw
+        hy = y - (150 + 40 * rs.uniform() - 28 * abs(u)) * k
+        s.append(line([(x + u * 16 * k, y - 60 * k), (hx, hy + 16 * k)], 4.0, "#43803F", taper=.2, wmin=.8, seed=sd * 100 + i))
+        if (i % 3 == 1) and kind == 0:
+            s.append(PR._leaf(x + u * 16 * k, y - 80 * k, hx + 24, hy + 40 * k, 8, "#5FA05B", sd * 100 + 20 + i))
+        s.append(PR._daisy(hx, hy, 24 * k, 20 * i, sd * 100 + 40 + i) if kind == 0 else PR._tulip(hx, hy, 23 * k, 8 * u, sd * 100 + 40 + i))
+    s.append(shape([(x - 44 * k, y - 82 * k, 1), (x + 44 * k, y - 82 * k, 1), (x + 36 * k, y, 1), (x - 36 * k, y, 1)], PR.C_TIN if hasattr(PR, "C_TIN") else "#8D8F94",
+                   blob([(x + 6 * k, y - 82 * k), (x + 44 * k, y - 82 * k), (x + 36 * k, y), (x + 4 * k, y)], "#6E7075", .8) +
+                   line([(x - 40 * k, y - 62 * k), (x + 40 * k, y - 62 * k)], 2.6, "#6E7075", seed=sd + 5, op=.9), w=3.8, seed=sd + 7))
+    return "".join(s)
+
+
+def person(who, x, bs, y_hip, lean, arms, hands, expr, feet, head_ang=0.0, flip=False, hood=0.0, strings=(0, 0)):
+    """Рисует героя слоями; flip — зеркально вокруг x (цели рук в arms уже в зеркальной системе). wrist/head — в мире."""
+    pose = dict(hip=(x, y_hip), scale=bs, lean=lean, feet=feet, arms=arms, hands=hands, head_ang=head_ang, expr=expr, torso_k=1.0, hood=hood,
+                strings=strings, head_off=(0, 0))
+    o = people.draw(pose, who)
+    L = {k: o[k] for k in ("legs", "pelvis", "arm_f", "body", "arm_n") if k in o}
+    wr = {k: tuple(map(float, v)) for k, v in o["wrist"].items()}
+    hd = tuple(map(float, o["head"]))
+    if flip:
+        L = {k: f'<g transform="translate({2 * x:.2f} 0) scale(-1 1)">{v}</g>' for k, v in L.items()}
+        wr = {k: (2 * x - v[0], v[1]) for k, v in wr.items()}
+        hd = (2 * x - hd[0], hd[1])
+    return L, wr, hd
+
+
+NO_HAND = dict(kind="none")
+
+
+def bouquet_pos(t):
+    """Центр захвата букета (мир): у продавщицы → к Диме → к его груди."""
+    a = (700.0, 800.0)
+    b = (548.0, 808.0)
+    c = (372.0, 748.0)
+    uB = ease_io(clamp((t - 19.70) / .32))
+    uC = back_out(clamp((t - 20.12) / .34), 1.1) if t > 20.12 else 0.0
+    x = lerp(lerp(a[0], b[0], uB), c[0], uC)
+    y = lerp(lerp(a[1], b[1], uB), c[1], uC)
+    return x, y, uB, uC
 
 
 def frame10(t):
-    return '<rect width="1080" height="1920" fill="#cfe9f5"/>'
+    z0 = clamp((t - T10_0) / 2.0)
+    hitC = t - T_CVETY
+    z = 1.04 + .14 * ease_io(z0) + (.03 * (1 - math.exp(-hitC * 10)) * math.exp(-hitC * 2) if hitC > 0 else 0)
+    set_ink(z)
+    shake = 7 * math.exp(-max(0.0, hitC) * 9) * math.sin(max(0.0, hitC) * 55) if hitC > 0 else 0.0
+    cxm = lerp(560, 520, ease_io(z0)) + shake
+    cym = lerp(820, 790, ease_io(z0)) + shake * .5
+    roll = .8 * math.sin(t * 2.0) + (1.6 * math.exp(-hitC * 7) * math.sin(hitC * 28) if hitC > 0 else 0)
+
+    scn = [street_bg(t), stall_back(t)]
+    bx, by, uB, uC = bouquet_pos(t)
+    R = 34 * GK
+    gk_d, gk_s = BS_D, BS_S
+    sway = 1.5 * math.sin(t * 3.1)
+    # ── продавщица (смотрит влево)
+    hip_s = GY10 - 610 * BS_S * .985
+    s_hold = 1 - smooth(20.0, 20.16, t)
+    Rw = R + 60 * gk_s
+    wr_hold = (bx + Rw, by)
+    rest_n = (SELL_X - 60 * BS_S, hip_s + 50)
+    wr_n = tuple(lerp(rest_n[i], wr_hold[i], s_hold) for i in (0, 1))
+    # дальняя рука поправляет букет, потом на прилавке
+    tie = math.sin(t * 9) * (1 - smooth(19.6, 19.8, t))
+    far_t = (lerp(SELL_X - 20 * BS_S, bx + 20, smooth(18.8, 18.95, t) * (1 - smooth(19.7, 19.95, t))) + 8 * tie, lerp(hip_s + 80, by - 60, smooth(18.8, 18.95, t) * (1 - smooth(19.7, 19.95, t))) + 10 * tie)
+    mir = lambda p: (2 * SELL_X - p[0], p[1])  # noqa: E731
+    exp_s = dict(lid=1.0, look=(.4, .1), closed=blink_of(t, (19.3, 20.5)), brows="up", mouth="talk", open=.3 + .25 * abs(math.sin(t * 9)) * (1 - smooth(19.7, 19.95, t)), smile=.9,
+                 hair=3 * math.sin(t * 4))
+    if t > T_CVETY:
+        exp_s = dict(lid=1.0, look=(.3, .0), closed=blink_of(t, (20.5,)), brows="up", mouth="grin", open=.4, smile=1.0)
+    S_, Sw, Sh = person("seller", SELL_X, BS_S, hip_s, -.03 + .03 * smooth(19.6, 19.85, t),
+                        {"n": ("ik", mir(wr_n), -1), "f": ("ik", mir(far_t), -1)}, {"n": NO_HAND, "f": open_hand(.5, (1, 0), .15, .4, flip=1)}, exp_s, None,
+                        head_ang=.03 * math.sin(t * 2.4) - .04 * smooth(19.7, 19.9, t), flip=True)
+    scn.append(S_.get("pelvis", "") + S_["arm_f"] + S_["body"])
+    scn.append(counter(t))
+    scn.append(awning(t) + hanging_sign(t))
+    scn.append(bucket_flowers(1090, 936, 0, t, 3, 1.15))
+    scn.append(bucket_flowers(960, 936, 1, t, 4, 1.0))
+    # ведра на земле перед прилавком
+    scn.append(bucket_flowers(640, GY10 - 14, 1, t, 5, 1.1) + bucket_flowers(790, GY10 - 8, 0, t, 6, 1.25) + bucket_flowers(960, GY10 - 14, 1, t, 7, 1.1))
+    # ── Дима
+    walk = clamp((t - T10_0) / .78)
+    x_d = -80 + (230 + 80) * ease_io(walk)
+    speed = (1 - walk) ** .5 if walk < 1 else 0.0
+    sp = max(speed, .0) if walk < 1 else 0.0
+    hip_y = GY10 - 610 * BS_D * .985
+    ph = 2 * math.pi * 2.2 * (t - T10_0)
+    amp = clamp(sp * 1.5)
+    hip = (x_d, hip_y - 8 * abs(math.sin(ph)) * BS_D * amp)
+    feet = {}
+    for sd, off in (("n", 0.0), ("f", math.pi)):
+        p_ = ph + off
+        stand = (x_d + (26 if sd == "n" else -26) * BS_D, GY10 - 4)
+        wk = (hip[0] + 150 * BS_D * math.sin(p_), GY10 - 4 - max(0.0, math.cos(p_)) * 130 * BS_D)
+        a = (lerp(stand[0], wk[0], amp), lerp(stand[1], wk[1], amp))
+        feet[sd] = (a, -.18 * max(0.0, math.cos(p_)) * amp)
+    D_hold = smooth(19.96, 20.06, t)
+    reach = smooth(19.70, 19.94, t)
+    Rd = R + 60 * gk_d
+    wr_d = (bx - Rd, by)
+    hang = (hip[0] + 60 * BS_D, hip[1] + 300 * BS_D)
+    sw_ = (hip[0] + 90 * BS_D * math.sin(ph + math.pi) * amp + 60 * BS_D, hip[1] + 280 * BS_D - 40 * BS_D * math.cos(ph) * amp)
+    base_n = tuple(lerp(hang[i], sw_[i], amp) for i in (0, 1))
+    tgt_n = tuple(lerp(base_n[i], wr_d[i], reach) for i in (0, 1))
+    base_f = (hip[0] + 30 * BS_D + 90 * BS_D * math.sin(ph) * amp, hip[1] + 290 * BS_D)
+    tgt_f = tuple(lerp(base_f[i], (bx + 20, by - 20)[i], smooth(20.14, 20.36, t)) for i in (0, 1))
+    exp_d = dict(lid=.9, look=(.7, .0), closed=blink_of(t, (19.5,)), brows="calm", mouth="smile", smile=.4, flush=0.0)
+    if t > T_KUPIL - .1:
+        k = smooth(T_KUPIL - .1, T_KUPIL + .2, t)
+        exp_d = dict(lid=1.0, look=(.8, -.1), brows=("calm", "up", k), mouth="smile", smile=.4 + .6 * k, closed=0)
+    if t > T_CVETY:
+        k = smooth(T_CVETY, T_CVETY + .2, t)
+        exp_d = dict(lid=1.0, look=(.5, .1), brows="up", mouth="grin", open=.5, smile=1.0, blush=k, laugh=.3 * k, closed=blink_of(t, (20.45,)), hair=6 * math.exp(-hitC * 4) * math.sin(hitC * 30))
+    D_, Dw, Dh = person("dima", x_d, BS_D, hip[1], .06 * amp + .02 - .05 * uC, {"n": ("ik", tgt_n, -1), "f": ("ik", tgt_f, -1)},
+                        {"n": NO_HAND if D_hold > .5 else open_hand(.35 if reach > .5 else .2, (1, .1) if reach > .5 else (0, 1), .2, .3), "f": open_hand(.4, (0, 1), .1, .3, flip=-1) if t < 20.14 else NO_HAND}, exp_d, feet,
+                        head_ang=.03 * math.sin(t * 2.6) + .05 * uC, hood=8 * math.sin(ph) * amp)
+    scn.append(blob(ellipse_pts(x_d, GY10 + 14, 150, 14, 14), "#2a1608", .35))
+    scn.append(D_["legs"] + D_["arm_f"] + D_["body"])
+    # букет и руки
+    rot = 4 * math.sin(t * 3.2) * (1 - uC) - 14 * uC
+    tip = (bx, by + 70 * GK)
+    gb_s, gf_s = PR.bouquet(0, 0, 0), ""  # заглушка, не используется
+    scn.append(S_["arm_n"])
+    back_s, front_s = people.grip_svg("seller", (bx, by), R, +1, k=gk_s, seed=910) if s_hold > .02 else ("", "")
+    back_d, front_d = people.grip_svg("dima", (bx, by), R, -1, k=gk_d, seed=930) if D_hold > .5 else ("", "")
+    scn.append(D_["arm_n"] if True else "")
+    bq = PR.bouquet(tip[0], tip[1], GK, rot, 1)
+    scn.append(back_s + back_d + bq + front_s + front_d)
+    # сверкание, сердечки на «цветы»
+    if hitC > 0:
+        scn.append(burst(bx, by - 70, clamp(hitC / .55), 12, 70, 190, 10, "#fff0a8", 11200, spread=360))
+        for i, (dx, dy, tt, rr) in enumerate(((-80, -110, .05, 40), (70, -140, .14, 34), (10, -200, .22, 46), (-30, -60, .3, 30))):
+            scn.append(glint(bx + dx, by + dy, clamp((hitC - tt) / .8), rr, "#fffbe0"))
+        for i, (dx, tt, col) in enumerate(((-50, .12, "#e0527a"), (30, .26, "#f58aa6"), (80, .4, "#e0527a"))):
+            u = clamp((hitC - tt) / .9)
+            if 0 < u < 1:
+                scn.append(heart(bx + 150 + dx * .6 + 14 * math.sin(u * 8 + i), by - 120 - 260 * ease_out(u, 2), 20 * (.6 + .5 * math.sin(math.pi * u)), col, 11300 + i, 10 * math.sin(u * 6 + i)))
+    cam = lib.cam(cxm, cym, z, roll)
+    return f'<g transform="{cam}">{"".join(scn)}</g>'
+
+
+def frame(sid, t):
+    lib.dyn_begin()
+    body = {"s09": frame09, "s10": frame10}[sid](t)
+    bg = "#9aa6c4" if sid == "s09" else "#cfe9f5"
+    return lib.svg(f'<rect width="1080" height="1920" fill="{bg}"/>{body}')
