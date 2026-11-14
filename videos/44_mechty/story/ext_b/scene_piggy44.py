@@ -76,8 +76,7 @@ def piggy(sticker=0.0, slot_glow=0.0, sd=7000):
     slot = [(-50, -421, 1), (50, -421, 1), (46, -409, 1), (-46, -409, 1)]
     o.append(shape(slot, "#3a2216", "", w=3.2, seed=sd + 61))
     if slot_glow > 0.01:
-        o.append(f'<ellipse cx="0" cy="-415" rx="{f(60 + 30 * slot_glow)}" ry="{f(14 + 8 * slot_glow)}" fill="none" stroke="#ffe27a" '
-                 f'stroke-width="{f(7 * slot_glow)}"/>')
+        o.append(line([(-34, -415), (34, -415)], 6 * slot_glow, "#ffd84a", taper=.3, seed=sd + 62))
     # глянцевые блики — керамика
     o.append(line([(-130, -180), (-136, -120), (-126, -70)], 14, CER_HI, taper=.6, seed=sd + 70))
     o.append(line([(-96, -390), (-72, -404)], 10, CER_HI, taper=.6, seed=sd + 71))
@@ -312,7 +311,7 @@ def s16(t):
         y = STACK16[1] - 6 - j * 22
         tj = 33.3 + j * 1.9 / 12
         q = t - tj
-        dy = -260 * (1 - ease_in(clamp(q / 0.12), 2)) if q < 0.12 else 0.0
+        dy = -700 * (1 - ease_in(clamp(q / 0.12), 2)) if q < 0.12 else 0.0
         st.append(coin_side(STACK16[0], y + dy, 1.4, 8000 + j))
     s.append("".join(st))
     # копилка надувается на «растёт»
@@ -332,7 +331,7 @@ def s16(t):
         stick = 1.6 - 0.6 * ease_out(clamp(q / 0.1)) if q < 0.1 else 1 - 0.08 * math.exp(-q * 9) * math.cos(q * 26)
     s.append(piggy_at(PIG16[0], PIG16[1], k * breathe, 1.5 * math.sin(t * 1.6), sqx, sqy, sticker=stick))
     if T_RAST <= t < T_RAST + 0.5:
-        s.append(props.burst(PIG16[0], PIG16[1] - 260 * k, 2.6, (t - T_RAST) / 0.5, seed=8100, n=8, r0=160, r1=220))
+        s.append(props.burst(PIG16[0], PIG16[1] - 250 * k, 1.5, (t - T_RAST) / 0.4, seed=8100, n=8, r0=200, r1=250))
     return "".join(s)
 
 
@@ -345,7 +344,7 @@ def cam16(t):
 
 # ───────────────────────── s17
 CAT17 = (330, SHELF_Y + 4, 1.0)
-PIG17 = (760, SHELF_Y, 1.3)
+PIG17 = (740, SHELF_Y, 1.18)
 
 
 def s17(t):
@@ -382,9 +381,9 @@ def cam17(t):
     u = clamp((t - 35.1) / 2.5)
     k1, r1 = kick(t, [T_KOS], 0.02, 8)
     v = ease_io(clamp((t - T_KOS + 0.2) / 0.8))
-    sc = 1.3 + 0.08 * ease_io(u) + 0.12 * v
-    cx = 540 + (-70) * v
-    return cam(cx, 900 - 30 * v, sc * k1, r1 + 0.6 - 1.0 * u)
+    sc = 1.16 + 0.06 * ease_io(u) + 0.06 * v
+    cx = 530 - 20 * v
+    return cam(cx, 920 - 20 * v, sc * k1, r1 + 0.6 - 1.0 * u)
 
 
 def frame(sid, t):
