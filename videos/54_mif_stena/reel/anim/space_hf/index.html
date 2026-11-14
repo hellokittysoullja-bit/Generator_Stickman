@@ -41,7 +41,7 @@
       gsap.set("#qL", { transformOrigin: px(K.q_c) });
       gsap.set("#planetL", { transformOrigin: px(K.port_c) });
       // кот: невесомое покачивание и рывки с кадра 0 (в кадре 0 уже на ходу, без разгона с нуля)
-      const J = 0.13;
+      const J = 2 / 15;   // полупериод ровно 2 кадра: крайние положения на границах кадров, ни один кадр не стоит
       tl.fromTo("#catL", { y: -30, x: -14, rotation: -2.8, scaleY: 1.025 }, { y: 8, x: 10, rotation: 2.0, scaleY: 0.985, duration: J / 2, ease: "none" }, 0);
       let t = J / 2, i = 0;
       while (t < H - 0.1) {
@@ -55,11 +55,11 @@
       tl.to("#catL", { x: -120, y: -70, rotation: -7, scaleX: 1.03, scaleY: 1.03, duration: 0.13, ease: "power3.out" }, H);
       tl.to("#catL", { x: 0, y: 0, rotation: 0, scaleX: 1, scaleY: 1, duration: 0.85, ease: "elastic.out(1, 0.35)" }, H + 0.13);
       // иллюминатор: медленный дрейф и поворот, свет Земли пульсирует (только слой планеты)
-      tl.fromTo("#planetL", { x: -16, y: 10, rotation: -0.7 }, { x: 18, y: -12, rotation: 0.8, duration: 2.0, ease: "none" }, 0);
+      tl.fromTo("#planetL", { x: -8, y: 5, rotation: -0.4 }, { x: 9, y: -6, rotation: 0.4, duration: 2.0, ease: "none" }, 0);
       for (let k = 0; k * 0.1 < DURATION(); k++) {
         tl.to("#planet", { filter: k % 2 ? "brightness(1.00) saturate(1.0)" : "brightness(1.07) saturate(1.2)", duration: 0.1, ease: "none" }, k * 0.1);
       }
-      tl.to("#planetL", { x: 40, y: -26, scale: 1.02, duration: 0.2, ease: "power2.out" }, H);   // от испуга: Земля тоже вздрагивает
+      tl.to("#planetL", { x: 18, y: -12, scale: 1.01, duration: 0.2, ease: "power2.out" }, H);   // от испуга: Земля тоже вздрагивает
       // «?»: подрагивает с кадра 0, на ударе выскакивает крупнее и качается
       tl.fromTo("#qL", { y: 6, rotation: -8, scale: 1.0 }, { y: -8, rotation: 7, scale: 1.06, duration: 0.11, ease: "none" }, 0);
       for (let k = 1; 0.11 * k < H - 0.05; k++) {
