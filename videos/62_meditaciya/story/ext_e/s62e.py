@@ -102,7 +102,7 @@ def speed_lines(p, vel, k=1.0, seed=0, u=1.0):
     for i, (off, ln) in enumerate(((-150, 240), (-40, 320), (80, 260), (190, 200))):
         a = (p[0] - dx * (150 + 40 * (i % 2)) + nx * off * k, p[1] - dy * (150 + 40 * (i % 2)) + ny * off * k)
         b = (a[0] - dx * ln * k * u, a[1] - dy * ln * k * u)
-        o.append(line([a, b], 7 * k, INK, taper=.8, wmin=.1, seed=seed + i, peak=.15))
+        o.append(line([a, b], 13 * k, INK, taper=.8, wmin=.1, seed=seed + i, peak=.15))
     return "".join(o)
 
 
@@ -137,14 +137,14 @@ def frame01(t):
     if t < TL:
         u = t / TL
         x = lerp(X - 330, X, u)
-        y = lerp(Y - 400, Y, u * u * .55 + u * .45) - 120 * 4 * u * (1 - u) * .35
+        y = lerp(Y - 540, Y, u * u * .55 + u * .45) - 120 * 4 * u * (1 - u) * .35
         spin = lerp(-.42, -.05, u)
-        fold = lerp(.05, .45, u)
-        vel = (330 / TL, (400 * (1.1 * u + .45)) / TL)
+        fold = lerp(.42, .62, u)
+        vel = (330 / TL, (540 * (1.1 * u + .45)) / TL)
     else:
         x, y = X, Y
         spin = -.05 * math.exp(-8 * (t - TL))
-        fold = .45 + .55 * ease_out(clamp((t - TL) / .16), 2)
+        fold = .62 + .38 * ease_out(clamp((t - TL) / .16), 2)
         vel = (0, 0)
     # приземление: подушка сплющивается, Дима проседает со сжатием и отскакивает
     csx, csy = PR.squash(t, TL, amp=.32, freq=3.2, damp=7.0)
