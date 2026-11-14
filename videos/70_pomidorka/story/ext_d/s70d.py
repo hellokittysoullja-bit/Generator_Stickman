@@ -148,8 +148,10 @@ def s06(t):
     # тень под таймером
     shadow = f'<ellipse cx="{tx + 6:.1f}" cy="{ty + PR.TOMATO_RY * K6 + 6:.1f}" rx="{105 - .4 * hop:.1f}" ry="16" fill="#000" opacity=".22"/>'
     # кружка появляется к ночи (время прошло)
-    mo = sm(t, 9.55, 9.75)
-    mug = f'<g opacity="{mo:.3f}">' + PR.mug(MUG6[0], MUG6[1], 1.25, 0, col="blue", coffee=False, seed=2) + "</g>" if mo > .01 else ""
+    mug = ""
+    if t >= 9.58:       # скачок времени: кружка уже стоит (маленький «плюх» на месте)
+        mk = 1.25 * (1 + .12 * math.exp(-14 * (t - 9.58)) * math.cos(30 * (t - 9.58)))
+        mug = PR.mug(MUG6[0], MUG6[1], mk, 0, col="blue", coffee=False, seed=2)
     lap = PR.laptop(R.LAPTOP_V[0] + 60, R.LAPTOP_V[1], .7, 1.0, "page", t=t, seed=1)
     # рука и рукав Димы — из people.py: только ближняя рука, плечо за кадром слева внизу
     W, hd, vis = s06_hand(t)
@@ -164,7 +166,7 @@ def s06(t):
     sx1, sy1 = shake2(t, CYC[0]["slap"], 13)
     sx2, sy2 = shake2(t, CYC[1]["slap"], 13)
     cx = 175 + 25 * math.sin(t * .7) - sx1 - sx2
-    cy = 1070 - sy1 - sy2 + 60 * push
+    cy = 1215 - sy1 - sy2 + 30 * push
     s = 1.6 * (1 + push + .02 * math.sin(t * 1.3))
     set_ink(s)
     body = f'<g transform="{lib.cam(cx, cy, s, .4 * math.sin(t * .9))}">{"".join(world)}</g>'
