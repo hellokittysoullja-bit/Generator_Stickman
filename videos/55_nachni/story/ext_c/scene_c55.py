@@ -1,4 +1,5 @@
-"""Рилс 51 «назови чувство», группа D: спокойная комната Димы.
+"""Рилс 55, группа C (комната): s15 s16 s17 s18 — основа scene_d рилса 51 (кот, Дима, ноутбук, таймер). Старые функции 51 ниже — не используются.
+ИСХОДНО: Рилс 51 «назови чувство», группа D: спокойная комната Димы.
 s13 (24.2–26.8): Дима у стола, кот рядом; глубокий вдох, выдох, плечи вниз, краснота с лица уходит, кулаки раскрываются.
 s15 (29.1–32.3): телефон крупно, злой ответ стирается по буквам на «стирает» (30.0), на «пишет» (31.2) набирается спокойный.
 s16 (32.3–34.2): кот рядом с Димой медленно моргает на «моргает» (33.52), мягкий тёплый свет, Дима улыбается.
@@ -30,19 +31,19 @@ def wt(word, after=0.0):
     raise KeyError(word)
 
 
-T_TEPER = wt("теперь")        # 24.72
-T_STIRAET = wt("стирает")     # 30.0
-T_PISHET = wt("пишет")        # 31.2
-T_MORGAET = wt("моргает")     # 33.52
-T_KOT = wt("кот", 34.0)       # 34.76
-T_OBLEGCH = wt("одобрительно")  # 32.88
+
+
+
+
+T_KOT = wt("кот", 40.0)       # 34.76
+
 
 _ST = {}
 SKIN, SKIN_SH, SKIN_SH2, NAIL = "#ecc4a2", "#d39f83", "#bf8a74", "#f1cdbd"
 HOOD, HOOD_SH, FOLD = "#d4a23e", "#a97b25", "#6b4a12"
 BS = 0.6
 D_HIP = np.array([250.0, 1262.0])
-CAT_POS = (790.0, 1146.0, 0.68)
+CAT_POS = (848.0, 1146.0, 0.68)
 DESK_BACK, DESK_FRONT = 1108, 1160
 PHONE_POS = (630, 1134)
 
@@ -367,8 +368,6 @@ def Cat_blink(t, items):
 # ═════════════════════════════ s15: телефон крупно ═════════════════════════════
 ANGRY = ("Да сколько можно?!", "Ты вообще слышишь?!")
 CALM = ("Мне обидно.", "Поговорим?")
-ERASE_T0, ERASE_T1 = T_STIRAET + .08, T_STIRAET + .98
-TYPE_T0, TYPE_T1 = T_PISHET + .02, T_PISHET + 1.0
 PX0, PX1, PY0, PY1 = 170, 910, 110, 1760            # корпус телефона
 KEYS_Y = 990
 
@@ -716,14 +715,250 @@ def sparks(t):
     return "".join(o)
 
 
+
+# ═══════════════════ рилс 55: ноутбук, таймер, сон, призыв ═══════════════════
+T_MIN = wt("минут", 35.0)          # 35.98 — звонок
+T_ZAS = wt("засыпает")             # 38.13
+T_KOT = wt("кот", 40.0)            # 40.35
+
+
+def laptop(t, n_lines=0.0, glow=0.0, caret=True):
+    """Ноутбук на столе (3/4): база с клавишами, экран с белым документом; строки-штрихи растут (n_lines — дробное число строк)."""
+    o = []
+    o.append(blob([(488, 1150), (820, 1150), (836, 1168), (480, 1168)], "#2a1408", .28))
+    scr = [(530, 1124, 1), (790, 1124, 1), (806, 846, 1), (520, 852, 1)]
+    inner = ""
+    inner += blob([(540, 1112), (780, 1112), (792, 870), (532, 874)], "#f6f2e8")
+    inner += blob([(700, 1112), (780, 1112), (792, 870), (720, 872)], "#e6e0d0", .9)
+    for i in range(9):
+        y = 905 + i * 38
+        u = clamp(n_lines - i)
+        if u <= 0:
+            continue
+        L = (200 - 30 * (i % 3) - 18 * (i % 2)) * u
+        inner += line([(556, y), (556 + L, y - 1)], 8, "#3b4a6a", taper=.04, wmin=.95, seed=8100 + i)
+    if caret:
+        i = int(n_lines)
+        u = n_lines - i
+        cx = 556 + (200 - 30 * (i % 3) - 18 * (i % 2)) * u + 8
+        if int(t * 2.2) % 2 == 0:
+            inner += f'<rect x="{cx:.1f}" y="{905 + i * 38 - 14:.1f}" width="4" height="28" fill="#1c1622"/>'
+    o.append(shape(scr, "#333a4c", inner, w=5, seed=8001))
+    if glow > 0:
+        g = rad_grad([(0, "#fff6d8", .34 * glow), (1, "#fff6d8", 0)], 660, 1000, 360, 300)
+        o.append(f'<rect x="260" y="640" width="800" height="700" fill="url(#{g})" style="mix-blend-mode:screen"/>')
+    base_top = [(512, 1122, 1), (796, 1122, 1), (824, 1154, 1), (486, 1154, 1)]
+    keys = ""
+    for r in range(3):
+        for c in range(9):
+            x0 = 524 + c * 30 - r * 6 + r * 4
+            keys += blob([(x0 + r * 9, 1130 + r * 8), (x0 + 22 + r * 9, 1130 + r * 8), (x0 + 24 + r * 10, 1135 + r * 8), (x0 + 1 + r * 10, 1135 + r * 8)], "#5a6176")
+    o.append(shape(base_top, "#aeb4c2", keys, w=4.2, seed=8002))
+    o.append(shape([(486, 1154, 1), (824, 1154, 1), (820, 1166, 1), (490, 1166, 1)], "#7c8294", "", w=3.6, seed=8003))
+    return "".join(o)
+
+
+def timer(t, rem, ring=0.0, x=1018.0, y=DESK_BACK + 40, sc=.74):
+    """Кухонный таймер без цифр: круглый корпус, белый циферблат с красным сектором (rem 0..1 — сколько осталось), два звонка."""
+    sh = 0.0
+    if ring > 0:
+        sh = 9 * math.sin(t * 2 * math.pi * 17) * ring
+    o = [blob(ellipse_pts(x + 8, y + 2, 86, 11, 14), "#2a1408", .3)]
+    cy = y - 70
+    inner = ""
+    for k in range(5):                        # пять делений-засечек
+        a = math.radians(-90 + 72 * k)
+        inner += line([(x + 60 * math.cos(a), cy + 60 * math.sin(a)), (x + 46 * math.cos(a), cy + 46 * math.sin(a))], 4, INK, taper=.05, wmin=.95, seed=8200 + k)
+    # красный сектор
+    if rem > .01:
+        pts = [(x, cy)] + [(x + 52 * math.cos(math.radians(-90 + 360 * rem * v)), cy + 52 * math.sin(math.radians(-90 + 360 * rem * v))) for v in np.linspace(0, 1, 16)]
+        inner = blob(pts, "#e2574c") + inner
+    face = shape(ellipse_pts(x, cy, 66, 66, 28), "#f7f2e6", inner, w=4.4, seed=8210)
+    # стрелка
+    ang = math.radians(-90 + 360 * (1 - rem) * 0 + 0)
+    hand = line([(x, cy), (x + 48 * math.cos(math.radians(-90 + 360 * rem)), cy + 48 * math.sin(math.radians(-90 + 360 * rem)))], 6, INK, taper=.1, wmin=.9, seed=8211)
+    body = shape(ellipse_pts(x, cy, 80, 80, 30), "#e2574c", blob(ellipse_pts(x + 14, cy + 12, 70, 70, 26), "#b83f3a", .7), w=5, seed=8212)
+    bells = ""
+    for sx in (-1, 1):
+        bells += shape(ellipse_pts(x + sx * 46, cy - 82, 24, 18, 14, rot=sx * 28), "#e9c46a", "", w=3.8, seed=8220 + sx)
+    bells += line([(x - 50, cy - 70), (x, cy - 100), (x + 50, cy - 70)], 5, INK, taper=.05, wmin=.9, seed=8225)
+    feet = line([(x - 56, cy + 66), (x - 66, y)], 9, INK, taper=.05, wmin=.9, seed=8226) + line([(x + 56, cy + 66), (x + 66, y)], 9, INK, taper=.05, wmin=.9, seed=8227)
+    waves = ""
+    if ring > 0:
+        for k in range(3):
+            u = (t * 3.4 + k / 3) % 1.0
+            r_ = 105 + 110 * u
+            for sx in (-1, 1):
+                a0 = math.radians(-35 if sx < 0 else -35)
+                pts = [(x + sx * r_ * math.cos(a), cy - 30 + r_ * math.sin(a)) for a in np.linspace(-.9, .5, 8)]
+                if u < .85:
+                    waves += line(pts, 16 * (1 - u) + 4, "#f2b53a", taper=.5, wmin=.3, seed=8230 + k * 3 + (sx > 0))
+    g = f'<g transform="rotate({sh:.2f} {x} {y})">{feet}{body}{face}{hand}{bells}</g>'
+    return f'<g transform="translate({x} {y}) scale({sc}) translate({-x} {-y})">' + "".join(o) + g + waves + "</g>"
+
+
+def world2(t, d, cat_st, cam, lap=None, tim=None, extra_front="", glow=0.0, flame_k=1.0, between="", chair_dx=0.0):
+    set_ink(cam[2])
+    w = [_ST["room"], _ST["lamp"]]
+    w.append(room.chair(D_HIP[0] + chair_dx, D_HIP[1] + 4, 1, 2300))
+    w.append(_ST["legs"])
+    w.append(d.get("legs", ""))
+    w.append(_ST["top"])
+    w.append(_ST["light"])
+    w.append(motes(t))
+    w.append(laptop(t, *(lap or (0.0, glow))))
+    w.append(cat_draw(t, cat_st))
+    if tim is not None:
+        w.append(timer(t, *tim))
+    w.append(d["arm_f"])
+    w.append(d["body"])
+    w.append(d["arm_n"])
+    w.append(between)
+    w.append(extra_front)
+    w.append(flame_glow(t, cat_st, flame_k))
+    return f'<g transform="{lib.cam(*cam)}">{"".join(w)}</g>'
+
+
+def typing_hands(t, rate=7.0, ph=0.0):
+    c1 = .35 + .3 * (.5 + .5 * math.sin(t * rate + ph))
+    c2 = .35 + .3 * (.5 + .5 * math.sin(t * rate + ph + 2.1))
+    return {"n": fist(c1), "f": fist(c2)}
+
+
+def typer(t, expr, lean=.1, hx=0.0, rate=7.0, head_ang=0.0, head_dy=0.0, dx=0.0):
+    arms = {"n": ("ik", (520 + hx + 10 * math.sin(t * rate), DESK_FRONT - 22 + 4 * math.sin(t * rate * 1.3))),
+            "f": ("ik", (560 + hx + 8 * math.sin(t * rate + 2), DESK_BACK + 6 + 4 * math.sin(t * rate + 1)))}
+    return dima(lean, arms, typing_hands(t, rate), expr, head_ang=head_ang, torso_k=1.0, head_off=(0, head_dy), hip_off=(dx, 0), feet_dx=dx)
+
+
+def calm_expr(t, smile=.7, look=(.7, .25), closed=0.0):
+    return dict(lid=.55, look=look, closed=closed, brows=("det", "calm", 1.0) if False else "calm", mouth="smile", smile=smile, blush=.5)
+
+
+def kitty(t, **kw):
+    st = dict(look=(-.6, .1), turn=-.5, blink=0.0, ear=0, perk=0.2, tail=5 * osc(t, .45) + 2 * osc(t, 1.3), smile=1, tilt=0, flame_e=1.0)
+    st.update(kw)
+    return st
+
+
+def sleep_bubble(t, x, y, u):
+    """Пузырь сна без букв: облачко с полумесяцем и звёздами, три кружка к голове кота."""
+    if u <= 0:
+        return ""
+    sc = ease_out(u) * (1 + .03 * math.sin(t * 2.3))
+    yy = y + 6 * math.sin(t * 1.7)
+    o = []
+    for k, (dx, dy, r) in enumerate([(-70, 150, 11), (-50, 100, 17), (-20, 52, 24)]):
+        o.append(shape(ellipse_pts(x + dx, yy + dy, r, r, 14), "#f4f1ea", "", w=3.6, seed=8300 + k))
+    cl = ellipse_pts(x, yy, 130, 96, 24)
+    inner = blob(ellipse_pts(0, 0, 1, 1, 6), "#f4f1ea", 0)
+    moon = blob(ellipse_pts(x - 6, yy, 46, 46, 20), "#f2d070") + blob(ellipse_pts(x + 14, yy - 8, 40, 40, 20), "#f4f1ea")
+    stars = ""
+    for (sx_, sy_, r) in [(x + 62, yy - 30, 12), (x + 78, yy + 24, 8), (x - 74, yy - 36, 8)]:
+        stars += blob([(sx_, sy_ - r), (sx_ + r * .3, sy_ - r * .3), (sx_ + r, sy_), (sx_ + r * .3, sy_ + r * .3), (sx_, sy_ + r), (sx_ - r * .3, sy_ + r * .3),
+                       (sx_ - r, sy_), (sx_ - r * .3, sy_ - r * .3)], "#f2b53a")
+    o.append(shape(cl, "#f4f1ea", moon + stars, w=4.6, seed=8310))
+    return f'<g transform="translate({x} {yy}) scale({sc:.4f}) translate({-x} {-yy})">{"".join(o)}</g>'
+
+
+def frame15(t):
+    """s15 34.9–37.6: таймер звенит на «минут» (35.98), Дима не замечает, печатает с улыбкой."""
+    ring = smooth(T_MIN - .02, T_MIN + .05, t) * 1.0
+    rem = clamp(1 - (t - 34.2) / (T_MIN - 34.2)) * .12 + .0 if t < T_MIN else 0.0
+    rem = max(0.0, .14 * (1 - (t - 34.7) / (T_MIN - 34.7))) if t < T_MIN else 0.0
+    n = 1.4 + 1.9 * (t - 34.7) / 2.9
+    expr = calm_expr(t, smile=.55 + .35 * smooth(T_MIN, T_MIN + .8, t))
+    d = typer(t, expr, rate=7.5, head_dy=2 * math.sin(t * 3))
+    st = kitty(t, look=(-.5, .1), ear=7 * bump(t, T_MIN, .4), perk=.5 * smooth(T_MIN - .02, T_MIN + .1, t) * (1 - smooth(T_MIN + .4, T_MIN + .9, t)))
+    u = clamp((t - 34.7) / 2.9)
+    shake = 5 * math.exp(-(t - T_MIN) * 7) * math.sin((t - T_MIN) * 60) if t >= T_MIN else 0.0
+    cam = (640 + 20 * (u - .5) + shake, 1265 - 14 * u + .6 * shake, 1.24 + .08 * ease_io(u) + .02 * bump(t, T_MIN, .25), -.9 + 1.5 * u)
+    return world2(t, d, st, cam, lap=(n, .3), tim=(rem, ring), flame_k=1.0)
+
+
+def frame16(t):
+    """s16 37.6–39.4: кот сворачивается, глаза-дуги на «засыпает» (38.13), огонёк тлеет, пузырь сна."""
+    sl = ease_io(clamp((t - 37.75) / 1.05))
+    blink = smooth(T_ZAS - .22, T_ZAS + .05, t)
+    expr = calm_expr(t, smile=.9)
+    d = typer(t, expr, rate=7.0, head_dy=2 * math.sin(t * 3), head_ang=.02)
+    st = kitty(t, look=(-.7 + .3 * sl, .2), blink=blink, sleep=sl, ear=-6 * sl, perk=0.0, tail=2 * osc(t, .3) * (1 - sl), flame_e=1.0 - .6 * sl,
+               smile=0, turn=-.5 + .4 * sl)
+    u = clamp((t - 37.4) / 2.2)
+    cam = (650 + 50 * ease_io(u), 1190 - 40 * ease_io(u), 1.3 + .3 * ease_io(u), -.7 + .9 * u)
+    bub = sleep_bubble(t, 900, 790, clamp((t - 38.65) / .5))
+    return world2(t, d, st, cam, lap=(3.6 + .5 * (t - 37.4), .3), tim=(0.0, 0.0), between=bub, flame_k=1.0 - .65 * sl)
+
+
+def frame17(t):
+    """s17 39.4–41.2: кот крупно смотрит в камеру, над ним рукописное «кот» на 40.35; Дима печатает на фоне."""
+    wk = smooth(39.45, 39.85, t)                        # проснулся
+    expr = calm_expr(t, smile=.9)
+    d = typer(t, expr, rate=7.0, head_dy=2 * math.sin(t * 3))
+    st = kitty(t, look=(0.0, 0.05), turn=0.0, blink=(1 - wk) * 1.0 + Cat_blink(t, [(40.9, .06, 0.0)]) * wk, sleep=(1 - ease_io(wk)) * .9, flame_e=1.6,
+               smile=1, ear=6 * bump(t, 39.7, .4), perk=.3 * wk)
+    u = clamp((t - 39.2) / 2.2)
+    cam = (870 - 10 * u, 985 + 4 * u, 2.4 + .3 * ease_io(u), .6 - .9 * u)
+    spark = sparks(t)
+    return svg_wrap(world2(t, d, st, cam, lap=(4.2, .3), tim=(0.0, 0.0), between=spark, flame_k=1.6 + .3 * math.sin(t * 9)) + write_kot55(t))
+
+
+def svg_wrap(x):
+    return x
+
+
+def write_kot55(t):
+    if t < T_KOT - .02:
+        return ""
+    H_, Wd, gap = 200, 160, 36
+    total = 3 * Wd + 2 * gap
+    x0, y0 = 540 - total / 2, 260
+    o = []
+    tm = [(T_KOT, T_KOT + .22), (T_KOT + .24, T_KOT + .46), (T_KOT + .48, T_KOT + .70)]
+    for li, ((ch, strokes, _), (a, b)) in enumerate(zip(_letter_paths(), tm)):
+        lx = x0 + li * (Wd + gap)
+        for si, st_ in enumerate(strokes):
+            ta = a + (b - a) * si / len(strokes)
+            tb = a + (b - a) * (si + 1) / len(strokes)
+            u = clamp((t - ta) / (tb - ta))
+            if u <= 0:
+                continue
+            P = lib.sample([(lx + px * Wd, y0 + py * H_) for px, py in st_], False, 4.0)
+            seg = [tuple(p) for p in P[:max(2, int(len(P) * u))]]
+            if len(seg) < 2:
+                continue
+            o.append(line(seg, 40, INK, taper=.04, wmin=.96, seed=7000 + li * 5 + si))
+            o.append(line(seg, 26, "#fff3cf", taper=.04, wmin=.96, seed=7050 + li * 5 + si))
+    u = clamp((t - (T_KOT + .72)) / .28)
+    if u > 0:
+        ux0, ux1 = x0 - 10, x0 + total + 10
+        pts = [(ux0 + (ux1 - ux0) * v, y0 + H_ + 46 - 14 * math.sin(v * 3.1)) for v in np.linspace(0, u, 8)]
+        o.append(line(pts, 26, INK, taper=.3, wmin=.6, seed=7100))
+        o.append(line(pts, 15, "#ffb050", taper=.3, wmin=.6, seed=7101))
+    e = t - T_KOT
+    sc = 1 + .06 * math.exp(-e * 9) * math.sin(min(e * 14, math.pi)) if e >= 0 else 1
+    return f'<g transform="translate({x0 + total / 2:.1f} {y0 + H_ / 2:.1f}) scale({sc:.4f}) translate({-(x0 + total / 2):.1f} {-(y0 + H_ / 2):.1f})">{"".join(o)}</g>'
+
+
+def frame18(t):
+    """s18 41.2–42.9: Дима, кот и ноутбук с готовой строкой, Дима оглядывается на зрителя; дрейф назад, тепло."""
+    turn = smooth(41.55, 42.1, t)
+    expr = calm_expr(t, smile=.55 + .35 * turn, look=(.7 - .7 * turn, .25 * (1 - turn)))
+    typing = 1 - smooth(41.45, 41.8, t)
+    rate = 7.0
+    d = typer(t, expr, rate=rate * typing + .01, head_ang=-.07 * turn, head_dy=2 * math.sin(t * 3) - 6 * turn, lean=.1 - .04 * turn)
+    st = kitty(t, look=(-.2, .1), turn=-.2, flame_e=1.2, ear=5 * bump(t, 41.4, .4), tail=6 * osc(t, .5))
+    u = clamp((t - 41.0) / 2.1)
+    cam = (640 - 40 * u, 1180 + 20 * u, 1.55 - .3 * ease_io(u), .5 - .9 * u)
+    return world2(t, d, st, cam, lap=(5.0, .5, False), tim=(0.0, 0.0), between=sparks(t), flame_k=1.2)
+
+
 def frame(sid, t):
     if not _ST:
         static_all()
     lib.dyn_begin()
-    if sid == "s13":
-        body = frame13(t)
-    elif sid == "s15":
-        body = frame15(t)
-    else:
-        body = frame_pair(t, sid)
+    if sid in ("s07", "s08", "s09"):
+        import cafe55
+        return cafe55.frame(sid, t)
+    body = {"s15": frame15, "s16": frame16, "s17": frame17, "s18": frame18}[sid](t)
     return svg(f'<rect width="1920" height="1920" fill="#2a1f2a"/>{body}')

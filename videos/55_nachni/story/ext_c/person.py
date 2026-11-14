@@ -157,6 +157,13 @@ def face(spec, pose, sd):
         cc = spec["cap"]
         s.append(shape([(-hx - 6, -36), (-hx + 4, -78), (-10, -hy - 28), (hx - 6, -78), (hx + 6, -36)], cc, blob([(10, -hy - 20), (hx, -70), (hx + 6, -36), (20, -36)], shade(cc), .9), w=4.2, seed=sd + 23))
         s.append(shape([(fc * 30 - 40, -40), (fc * 30 + 50 + 40 * fc, -44), (fc * 30 + 60 + 50 * fc, -30), (fc * 30 - 40, -30)], shade(cc), w=3.6, seed=sd + 24))
+    if spec.get("cloche"):          # шляпка-клош 1920-х: колокол до бровей, лента и цветок
+        hc_ = spec["cloche"]
+        bell = [(-hx - 12, -42), (-hx - 14, -84), (-50, -hy - 34), (6, -hy - 46), (hx - 2, -hy - 28), (hx + 14, -76), (hx + 16, -42),
+                (hx + 4, -50), (fc * 14, -56), (-hx + 8, -50)]
+        s.append(shape(bell, hc_, blob([(14, -hy - 40), (hx - 2, -hy - 26), (hx + 14, -76), (hx + 14, -42), (20, -56)], shade(hc_), .9), w=4.4, seed=sd + 26))
+        s.append(shape([(-hx - 12, -42), (-hx - 13, -62), (hx + 16, -60), (hx + 16, -42), (fc * 14, -56), (-hx + 8, -50)], spec.get("ribbon", "#6b3a2a"), w=3.4, seed=sd + 27))
+        s.append(shape(ellipse_pts(hx - 10, -62, 13, 13, 10), "#e8b04a", w=3, seed=sd + 28))
     return "".join(s)
 
 

@@ -16,14 +16,14 @@ STORY = os.path.dirname(HERE)
 os.makedirs(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "clips"), exist_ok=True)
 SH = json.load(open(os.path.join(STORY, "shots.json")))
 SHOTS = {s["id"]: s for s in SH["shots"]}
-SCENE_MOD = {k: "scene_c55" for k in ("s07","s08","s09","s15","s16","s17","s18")}
+SCENE_MOD = {k: "scene_c55" for k in ("s07", "s08", "s09", "s15", "s16", "s17", "s18")}
 TMP = os.path.join(os.path.dirname(STORY), ".." , "..", "..")
 
 
 def span(sid):
     s = SHOTS[sid]
     a = max(0.0, s["t0"] - SH["pad"])
-    b = SH["end"] if sid == "s18" else s["t1"] + SH["pad"]
+    b = s["t1"] + SH["pad"]
     n = int(round((b - a) * 30))
     return a, n
 
@@ -37,7 +37,7 @@ def _job(args):
 
 def build_svgs(sid, times, tmp):
     jobs = [(sid, i, t, os.path.join(tmp, f"f{i:04d}.svg")) for i, t in enumerate(times)]
-    with Pool(4) as p:
+    with Pool(2) as p:
         return p.map(_job, jobs, chunksize=4)
 
 
@@ -72,7 +72,7 @@ def main():
             t1 = time.time()
             open(os.path.join(tmp, "list.txt"), "w").write("\n".join(svgs))
             pre = os.path.join(tmp, "seg")
-            subprocess.check_call(["node", os.path.join(HERE, "render.js"), os.path.join(tmp, "list.txt"), "mp4", "4", pre])
+            subprocess.check_call(["node", os.path.join(HERE, "render.js"), os.path.join(tmp, "list.txt"), "mp4", "2", pre])
             segs = sorted(x for x in os.listdir(tmp) if x.startswith("seg_") and x.endswith(".mp4"))
             open(os.path.join(tmp, "concat.txt"), "w").write("".join(f"file '{os.path.join(tmp, s)}'\n" for s in segs))
             out = os.path.join(STORY, "clips", f"{sid}.mp4")

@@ -195,15 +195,18 @@ def body():
 
 
 def draw(x, y, k, st, t):
-    """st: tilt (град), turn, look, blink, ear, perk, tail (град), breath (0..1), smile, flame_e."""
-    br = 1 + 0.012 * math.sin(t * 2 * math.pi / 3.1)
-    tail_a = st.get("tail", 0.0)
-    tilt = st.get("tilt", 0.0)
+    """st: tilt (град), turn, look, blink, ear, perk, tail (град), breath (0..1), smile, flame_e, sleep (0..1: свернулся, голова опущена)."""
+    sl = st.get("sleep", 0.0)
+    br = 1 + 0.012 * math.sin(t * 2 * math.pi / 3.1) * (1 + 1.5 * sl)
+    tail_a = st.get("tail", 0.0) + 14 * sl
+    tilt = st.get("tilt", 0.0) + 16 * sl
     o = []
-    o.append(f'<g transform="rotate({tail_a:.2f} {TAIL_PIVOT[0]} {TAIL_PIVOT[1]})">{tail_art()}{flame(t, 1.3, st.get("flame_e", 1.0))}</g>')
-    o.append(f'<g transform="translate(0 {CBOT}) scale(1 {br:.4f}) translate(0 {-CBOT})">{body()}</g>')
-    hy = -(br - 1) * (CBOT - NECK[1])
-    o.append(f'<g transform="translate(0 {hy:.2f}) rotate({tilt:.2f} {NECK[0]} {NECK[1]})">{head(st, t)}</g>')
+    o.append(f'<g transform="rotate({tail_a:.2f} {TAIL_PIVOT[0]} {TAIL_PIVOT[1]})">{tail_art()}{flame(t, 1.3 - .45 * sl, st.get("flame_e", 1.0))}</g>')
+    sy = br * (1 - .2 * sl)
+    sx = 1 + .12 * sl
+    o.append(f'<g transform="translate({CX} {CBOT}) scale({sx:.4f} {sy:.4f}) translate({-CX} {-CBOT})">{body()}</g>')
+    hy = -(sy - 1) * (CBOT - NECK[1]) + 34 * sl
+    o.append(f'<g transform="translate({22 * sl:.2f} {hy:.2f}) rotate({tilt:.2f} {NECK[0]} {NECK[1]})">{head(st, t)}</g>')
     return f'<g transform="translate({x:.2f} {y:.2f}) scale({k:.4f}) translate({-CX} {-CBOT})">{"".join(o)}</g>'
 
 
