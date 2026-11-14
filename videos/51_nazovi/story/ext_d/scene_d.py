@@ -240,9 +240,9 @@ def static_all():
 
 
 # ═════════════════════════════ герои ═════════════════════════════
-def dima(lean, arms, hands, expr, head_ang=0.0, torso_k=1.0, head_off=(0, 0), hip_off=(0, 0), feet_dx=0):
+def dima(lean, arms, hands, expr, head_ang=0.0, torso_k=1.0, head_off=(0, 0), hip_off=(0, 0), feet_dx=0.0):
     hip = D_HIP + np.array(hip_off, float)
-    p = dict(hip=tuple(hip), scale=BS, lean=lean, torso_k=torso_k, feet={"n": ((470, 1468), 0.0), "f": ((445, 1462), 0.0)},
+    p = dict(hip=tuple(hip), scale=BS, lean=lean, torso_k=torso_k, feet={"n": ((470 + feet_dx, 1468), 0.0), "f": ((445 + feet_dx, 1462), 0.0)},
              arms=arms, hands=hands, expr=expr, head_ang=head_ang, head_off=head_off, hood=0.0, strings=(0, 0))
     return people.draw(p, "dima")
 
@@ -279,10 +279,10 @@ def motes(t, seed=5, n=26, box=(300, 560, 1100, 1180)):
     return "".join(o)
 
 
-def world(t, d, cat_st, cam, extra_front="", glow=0.0, flame_k=1.0, with_motes=False, between=""):
+def world(t, d, cat_st, cam, extra_front="", glow=0.0, flame_k=1.0, with_motes=False, between="", chair_dx=0.0):
     set_ink(cam[2])
     w = [_ST["room"], _ST["lamp"]]
-    w.append(room.chair(D_HIP[0], D_HIP[1] + 4, 1, 2300))
+    w.append(room.chair(D_HIP[0] + chair_dx, D_HIP[1] + 4, 1, 2300))
     w.append(_ST["legs"])
     w.append(d.get("legs", ""))
     w.append(_ST["top"])
@@ -620,41 +620,37 @@ def frame_pair(t, kind):
         sml = .25 + .75 * smooth(32.5, 33.9, t)
         blink_d = Cat_blink(t, [(32.7, .06, 0.0)])
     else:
-        look = (.05 + .1 * osc(t, .2), .05)
+        look = (-.2 + .08 * osc(t, .2), .0)
         mouth = "smile"
         sml = .9
         blink_d = Cat_blink(t, [(35.4, .06, 0.0)])
     exh = smooth(32.3, 34.2, t)
     lean = .10 + .02 * math.sin(t * 1.3) - (.02 * exh if kind == "s16" else 0)
     expr = dict(lid=.34, look=look, closed=blink_d, brows="calm", mouth=mouth, smile=sml, blush=.55)
-    arms = {"n": ("ik", (500 + 4 * math.sin(t * 1.0), DESK_FRONT - 20)), "f": ("ik", (610, DESK_BACK + 16))}
     hands = {"n": dict(kind="open", flip=1, dir=(1, .35), curl=(.3, .3, .35, .4), spread=.1, thumb=.3, bend=.1),
              "f": dict(kind="open", flip=1, dir=(1, .3), curl=(.3, .35, .4, .45), spread=.08, thumb=.4)}
-    hip_off = (0, 0)
+    dx = 0.0
     if kind == "s17":
-        hip_off = (80 * smooth(34.0, 34.6, t), 0)
-        arms = {"n": ("ik", (560 + 80 * smooth(34.0, 34.6, t), DESK_FRONT - 20)), "f": ("ik", (660, DESK_BACK + 16))}
-    d = dima(lean, arms, hands, expr, head_ang=(-.03 if kind == "s17" else .02) + .012 * math.sin(t * 1.1), torso_k=.99, head_off=(0, 3 * math.sin(t * 2 * math.pi / 3.2)),
-             hip_off=hip_off)
+        dx = 170 * ease_io(clamp((t - 34.0) / 0.9))      # придвинулся к коту вместе со стулом
+    arms = {"n": ("ik", (452 + .6 * dx + 4 * math.sin(t * 1.0), DESK_FRONT - 24)), "f": ("ik", (500 + .6 * dx, DESK_BACK + 10))}
+    d = dima(lean, arms, hands, expr, head_ang=(-.03 if kind == "s17" else .02) + .012 * math.sin(t * 1.1), torso_k=.99,
+             head_off=(0, 3 * math.sin(t * 2 * math.pi / 3.2)), hip_off=(dx, 0), feet_dx=dx)
     if kind == "s16":
         blink = Cat_blink(t, [(T_MORGAET - .28 + .28, .28, .28 + .08)])   # закрыт 33.52–33.88, открывается к 34.16
         st = dict(look=(-.95 + .25 * smooth(32.4, 33.0, t), .1), turn=-.7 + .5 * smooth(32.3, 33.1, t), blink=blink,
                   ear=5 * bump(t, 32.55, .5), tail=5 * osc(t, .45) + 2 * osc(t, 1.3), smile=1 if t > T_MORGAET - .1 else 0,
                   tilt=-2 + 2.5 * smooth(32.3, 33.6, t), perk=.2, flame_e=1.0)
         u = clamp((t - 32.1) / 2.3)
-        hc = np.array([CAT_POS[0] - 70, CAT_POS[1] + (1072 - 1306) * CAT_POS[2]])
-        cam = (hc[0] - 120 + 40 * u, hc[1] + 70, 1.5 + .28 * ease_io(u), -.8 + 1.2 * u)
+        cam = (545 + 25 * ease_io(u), 1015 - 10 * u, 1.45 + .17 * ease_io(u), -.8 + 1.2 * u)
         return world(t, d, st, cam, glow=.2, flame_k=1.2, with_motes=True)
     # s17
     st = dict(look=(.05 * osc(t, .3), .05), turn=0.0, blink=Cat_blink(t, [(35.9, .07, 0.0)]), ear=7 * bump(t, 34.2, .4) - 5 * bump(t, 35.2, .35),
               tail=7 * osc(t, .6) + 3 * osc(t, 1.7), smile=1, tilt=2 * osc(t, .25), perk=.3 * smooth(34.0, 34.6, t), flame_e=1.5)
     u = clamp((t - 34.0) / 2.9)
-    hc = np.array([CAT_POS[0], CAT_POS[1] + (1072 - 1306) * CAT_POS[2]])
-    cam = (hc[0] - 230 + 190 * ease_io(u), hc[1] + 20 + 20 * u, 1.18 + .55 * ease_io(u), -.6 + .8 * u)
-    # на экране рядом с котом: рукописное «кот» (мировые координаты — над ними; рисуется после слова)
-    wr = write_kot(t)
+    cam = (560 + 70 * ease_io(u), 1040 + 10 * u, 1.24 + .3 * ease_io(u), -.6 + .8 * u)
     spark = sparks(t)
-    return world(t, d, st, cam, extra_front=wr, glow=.35, flame_k=1.5 + .3 * math.sin(t * 9), with_motes=True, between=spark)
+    wsvg = world(t, d, st, cam, glow=.35, flame_k=1.5 + .3 * math.sin(t * 9), with_motes=True, between=spark, chair_dx=dx)
+    return wsvg + write_kot(t)
 
 
 # ── рукописное «кот»
@@ -668,11 +664,11 @@ def _letter_paths():
 def write_kot(t):
     if t < T_KOT - .02:
         return ""
-    H_, Wd = 230, 170
-    gap = 42
+    H_, Wd = 200, 160
+    gap = 36
     total = 3 * Wd + 2 * gap
-    x0 = 560 - total / 2 + 40
-    y0 = 560
+    x0 = 540 - total / 2
+    y0 = 385
     o = []
     for li, (ch, strokes, (a, b)) in enumerate(_letter_paths()):
         lx = x0 + li * (Wd + gap)
@@ -688,8 +684,8 @@ def write_kot(t):
             seg = [tuple(p) for p in P[:n]]
             if len(seg) < 2:
                 continue
-            o.append(line(seg, 30, INK, taper=.04, wmin=.96, seed=7000 + li * 5 + si))
-            o.append(line(seg, 19, "#fff3cf", taper=.04, wmin=.96, seed=7050 + li * 5 + si))
+            o.append(line(seg, 40, INK, taper=.04, wmin=.96, seed=7000 + li * 5 + si))
+            o.append(line(seg, 26, "#fff3cf", taper=.04, wmin=.96, seed=7050 + li * 5 + si))
     # подчёркивание
     u = clamp((t - 35.58) / .3)
     if u > 0:
