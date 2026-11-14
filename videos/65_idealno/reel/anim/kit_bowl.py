@@ -27,11 +27,12 @@ def P(pts):
     return [(int(x * K), int(y * K)) for x, y in pts]
 
 
-CAT_REG = P([(0, 270), (555, 270), (555, 500), (590, 560), (590, 660), (505, 720), (505, 935), (0, 935)])
+CAT_REG = P([(3, 270), (555, 270), (555, 500), (590, 560), (590, 660), (505, 720), (505, 935), (3, 935)])   # x≥3: save_layer берёт поле 6 px
 MARKS_BOX = tuple(int(v * K) for v in (555, 395, 622, 497))
 POST_L = P([(288, 822), (372, 822), (374, 1018), (286, 1018)])
 ROPE_BOX = tuple(int(v * K) for v in (330, 815, 728, 918))
 EXHIBIT = P([(390, 905), (520, 905), (528, 798), (782, 798), (782, 1112), (348, 1112), (348, 1022), (390, 1000)])
+PAW_R = (467, 873, 38, 38)                # правая лапа кота на краю миски (вид): остаётся коту
 PIVOT = P([(300, 900)])[0]                # кот качается от лап
 HEAD = P([(370, 520)])[0]
 MARKS_C = P([(588, 446)])[0]
@@ -65,27 +66,40 @@ def main():
     # экспонат спереди: столбики, канат, миска, табличка, крошки
     rope = cv2.morphologyEx(red & box_mask(A.shape, ROPE_BOX), cv2.MORPH_CLOSE, np.ones((9, 9), np.uint8))
     rope = cv2.dilate(rope, np.ones((9, 9), np.uint8)) & cv2.dilate(non, np.ones((3, 3), np.uint8))
-    post = cv2.morphologyEx(non & poly_mask(A.shape, POST_L), cv2.MORPH_CLOSE, np.ones((11, 11), np.uint8))
-    post = fill_holes(post) & poly_mask(A.shape, POST_L)
-    exr = poly_mask(A.shape, EXHIBIT)
+    pl = poly_mask(A.shape, POST_L)
+    post = cv2.morphologyEx(((g > 100) & (g < 236) & (pl > 0)).astype(np.uint8), cv2.MORPH_OPEN, np.ones((5, 5), np.uint8))
+    post = cv2.dilate(anim.keep_attached(post), np.ones((15, 15), np.uint8)) & non & pl   # металл + контур тушью, без меха
+    paw = np.zeros(A.shape[:2], np.uint8)
+    cx, cy, rx, ry = PAW_R; cv2.ellipse(paw, (int(cx * K), int(cy * K)), (int(rx * K), int(ry * K)), 0, 0, 360, 1, -1)
+    exr = poly_mask(A.shape, EXHIBIT) & (1 - paw)
     ex = cv2.morphologyEx(non & exr, cv2.MORPH_CLOSE, np.ones((13, 13), np.uint8)) & exr
     front = ((rope | post | ex) > 0).astype(np.uint8)
     # кот: тушь в области кота без экспоната
-    reg = poly_mask(A.shape, CAT_REG)
+    reg = poly_mask(A.shape, CAT_REG) & (1 - exr)
     ink = cv2.morphologyEx(non & reg, cv2.MORPH_CLOSE, np.ones((11, 11), np.uint8)) & reg
     core = anim.keep_attached(ink)
     cat = (fill_holes(core) & reg).astype(np.uint8)
     cat |= (ink & ~cv2.dilate(cat, np.ones((3, 3), np.uint8))).astype(np.uint8)   # усы — мазки рядом с котом
-    cat = (cat & (1 - front)).astype(np.uint8)
+    # канат и столбик спереди кота: в слое кота под ними дорисован мех (иначе при отшатывании видна дыра)
+    over = (cv2.dilate(front, np.ones((5, 5), np.uint8)) & cat).astype(np.uint8)
+    x0, y0, bw, bh = cv2.boundingRect(over); x1, y1 = x0 + bw, y0 + bh
+    crop = np.ascontiguousarray(np.clip(A[y0:y1, x0:x1], 0, 255).astype(np.uint8))
+    om = np.ascontiguousarray((over[y0:y1, x0:x1] > 0).astype(np.uint8) * 255)
+    small = cv2.resize(crop, None, fx=0.25, fy=0.25, interpolation=cv2.INTER_AREA)   # мех под канатом — мягко, быстро
+    sm = (cv2.resize(om, small.shape[1::-1], interpolation=cv2.INTER_NEAREST) > 0).astype(np.uint8) * 255
+    fill = cv2.resize(cv2.inpaint(small, cv2.dilate(sm, np.ones((3, 3), np.uint8)), 5, cv2.INPAINT_TELEA), crop.shape[1::-1],
+                      interpolation=cv2.INTER_CUBIC)
+    catimg = A.copy()
+    catimg[y0:y1, x0:x1] = np.where(om[..., None] > 0, fill, crop).astype(np.float32)
+    cat_edge = cv2.erode(fill_holes(cat), np.ones((9, 9), np.uint8))
+    cat = (cat * ~((front > 0) & (cat_edge == 0))).astype(np.uint8)   # снаружи силуэта канат — только у экспоната
     mk = cv2.morphologyEx(((g < 140) & (box_mask(A.shape, MARKS_BOX) > 0)).astype(np.uint8), cv2.MORPH_CLOSE,
                           np.ones((7, 7), np.uint8))
-    bg = A.copy()
-    for m in (cat, mk, front):
-        hole = cv2.dilate(m, np.ones((17, 17), np.uint8)) > 0
-        bg = anim.inpaint_bg(bg, hole, cache_dir=CACHE)
-    Ap, bg = anim.paper_like(A), anim.paper_like(bg)
+    hole = cv2.dilate((cat | mk | front).astype(np.uint8), np.ones((17, 17), np.uint8)) > 0
+    bg = anim.inpaint_bg(A.copy(), hole, cache_dir=CACHE)
+    Ap, bg, Cp = anim.paper_like(A), anim.paper_like(bg), anim.paper_like(catimg)
     layers = {}
-    anim.save_layer(OUT, "cat", Ap, cat, layers, keep_attached_=False)
+    anim.save_layer(OUT, "cat", Cp, cat, layers, keep_attached_=False)
     anim.save_layer(OUT, "marks", Ap, mk, layers, keep_attached_=False)
     anim.save_layer(OUT, "front", Ap, front, layers, keep_attached_=False)
     ox, oy = ORIGIN; w, h = SIZE
