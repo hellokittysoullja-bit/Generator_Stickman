@@ -312,7 +312,7 @@ def check_mark(cx, cy, r, k, seed=7500):
     s = lib.back_out(clamp(k * 1.6), 2.0)
     o = [f'<g transform="translate({cx:.1f} {cy:.1f}) scale({s:.3f})">']
     o.append(shape(ellipse_pts(0, 0, r, r, 24), "#3aa86b", blob(ellipse_pts(r * .2, r * .22, r * .85, r * .8, 20), "#2f8f5a", .9), w=4, seed=seed))
-    u = clamp((k - .25) / .5)
+    u = clamp((k - .1) / .45)
     pts = [(-r * .5, r * .02), (-r * .14, r * .38), (r * .55, -r * .36)]
     if u > 0:
         if u < .4:
@@ -598,11 +598,11 @@ def compose(world, cam, warm=False, light="", over=""):
         o = ['<rect width="1080" height="1920" fill="#cfe0d6"/>', f'<g transform="{lib.cam(cx, cy, s, r)}">{world}{tint}{light}</g>',
              vignette("#3a2a1a", .26)]
     else:
-        g = lib.rad_grad([(0, "#ffd59a", .5), (.55, "#ffc27a", .18), (1, "#ffc27a", 0)], 820, 900, 1000, 900)
+        g = lib.rad_grad([(0, "#ffd59a", .28), (.55, "#ffc27a", .1), (1, "#ffc27a", 0)], 900, 800, 900, 800)
         warm_l = f'<rect x="-600" y="-600" width="2400" height="3400" fill="url(#{g})" style="mix-blend-mode:screen"/>'
         mul = '<rect x="-600" y="-600" width="2400" height="3400" fill="#ffbf80" opacity=".42" style="mix-blend-mode:multiply"/>'
         o = ['<rect width="1080" height="1920" fill="#e8d2b0"/>',
-             f'<g transform="{lib.cam(cx, cy, s, r)}">{world}{den.lamp_cone(0, 1.0)}{mul}{warm_l}{light}</g>', vignette("#4a2a14", .3)]
+             f'<g transform="{lib.cam(cx, cy, s, r)}">{world}{mul}{warm_l}{light}</g>', vignette("#4a2a14", .3)]
     o.append(over)
     return lib.svg("".join(o))
 
@@ -762,7 +762,7 @@ def s05(t):
         p = LAP.key(.3 + .3 * j, .3) + np.array([0, -30])
         tap += burst(p[0], p[1], u, 18, 40, 3, INK, 4, seed=8600 + j * 5, rot0=-2.4)
     on_desk = lap + phone_flat(*PHONE_DESK, .9, 1.0, .4) + mug_tip(*MUG, 0)
-    w = desk_world(t, d, on_desk=on_desk, mid=hs, front=tap)
+    w = desk_world(t, d, on_desk=on_desk, mid=hs)
     return compose(w, cam, False, LAP.glow())
 
 
@@ -1075,9 +1075,10 @@ def s15(t):
 def s16(t):
     te = T_OSHIBOK
     k = ease_io(clamp((t - 28.32) / 1.88))
-    s = (2.45 + .2 * k) * (1 + punch(t, te, .06, .05, .35))
+    s = (2.4 + .12 * k) * (1 + punch(t, te, .06, .05, .35))
     back = smooth(te + .1, te + .6, t)
-    cam = (540 - 25 * back + 10 * k, 985 - 10 * k + 6 * bump(t, te, .3) * osc(t, 11), s, -.4 + .6 * k + .8 * bump(t, te, .3) * osc(t, 9))
+    pan = ease_io(clamp((t - te - .15) / .7))
+    cam = (565 - 95 * pan, 985 - 25 * pan + 6 * bump(t, te, .3) * osc(t, 11), s, -.4 + .6 * k + .8 * bump(t, te, .3) * osc(t, 9))
     arms, hands, keys = typing_arms(t, .6, .4)
     if back > 0:
         n0, f0 = np.array(arms["n"][1]), np.array(arms["f"][1])
@@ -1115,7 +1116,7 @@ def s17(t):
         x = lerp(1010, CAT_X, ease_out(u, 1.4))
         y = lerp(1340, CAT_Y, u) - 230 * math.sin(math.pi * u) * (1 - u * .25)
         tilt_b = lerp(-26, 0, u)
-        up = .55 * (1 - u)
+        up = .3 * math.sin(math.pi * u)
     else:
         x, y, tilt_b = CAT_X, CAT_Y, 0.0
         e = t - t_land
@@ -1127,18 +1128,22 @@ def s17(t):
     tilt = (-6 * stroke + 4 * sw) if u >= 1 else 0
     cat_svg = cat2.draw(x, y, CAT_S * (1 + .02 * osc(t, .4)), t, up=up, look=(-.5, -.2) if happy < .5 else (0, 0), blink=0.0, tilt=tilt + tilt_b,
                         tail=6 * osc(t, 1.1) + 10 * (1 - u), happy=happy)
+    if u < 1:
+        cat_svg = f'<g transform="rotate({-24 * math.sin(math.pi * u):.2f} {x:.1f} {y - 90:.1f})">{cat_svg}</g>'
     if sq:
         cat_svg = f'<g transform="translate({x:.1f} {y:.1f}) scale({1 + sq:.3f} {1 - sq:.3f}) translate({-x:.1f} {-y:.1f})">{cat_svg}</g>'
     # рука гладит: от затылка вдоль спины
     head_w = np.array(cat.to_world((836, 1040), x, y, CAT_S))
     back_w = np.array(cat.to_world((900, 1170), x, y, CAT_S))
     top_w = np.array(cat.to_world((836, 975), x, y, CAT_S))
-    p_hand = top_w + (back_w - top_w) * sw + np.array([-30, -12 + 20 * sw])
+    p_hand = top_w + np.array([-78 + 46 * sw, 8 + 6 * sw])
     arms, hands, keys = typing_arms(t, .4, .3)
+    arms["f"] = ("ik", (340.0, 1150.0 + 2 * osc(t, .9)), -1)
+    hands["f"] = hnd(REST, (1, .3))
     if stroke > 0:
         n0 = np.array(arms["n"][1])
-        arms["n"] = ("ik", tuple(n0 + (p_hand - n0) * stroke), -1)
-        hands["n"] = hnd(REST, (lerp(1, .9, stroke), lerp(.3, .55, stroke)), curl=(.15, .2, .25, .3), spread=.05)
+        arms["n"] = ("ik", tuple(n0 + (p_hand - n0) * stroke + np.array([-30, -90]) * math.sin(math.pi * stroke)), -1)
+        hands["n"] = hnd(REST, (lerp(1, .95, stroke), lerp(.3, .32 + .1 * sw, stroke)), curl=(.3, .35, .4, .45), spread=.05)
     look_cat = smooth(29.9, 30.1, t)
     expr = dict(lid=.55, look=(lerp(.6, .9, look_cat), lerp(.3, .55, look_cat)), brows="calm" if t < 30.2 else "up", mouth="smile", smile=.5 + .5 * happy,
                 closed=blink_at(t, 31.1, .16), hair=1.5 * osc(t, 1.2) + 2 * bump(t, t_land, .3))
