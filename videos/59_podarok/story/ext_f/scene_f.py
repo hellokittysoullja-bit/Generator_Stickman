@@ -163,10 +163,144 @@ def frame12(t):
     return f'<g transform="{cam}">{"".join(scn)}</g>'
 
 
+# ═══════════════════════════════ s13: кот крадёт кусок ═══════════════════════════════
+CK = .75
+T_LAND, T_BITE, T_RUN = 24.64, 24.72, 25.10
+PIE = (560, 1050)
+TABLE_Y = 1108
+
+
+def cat_state(t):
+    """x, y (низ кота), поворот, масштаб X/Y, голова вниз, поворот морды, взгляд, уши торчком, есть ли кусок во рту."""
+    x, y, rot, sx, sy = 610.0, TABLE_Y, 0.0, 1.0, 1.0
+    drop, turn, look, perk, has = 0.0, 0.0, (0.0, 0.2), 0.0, False
+    if t < 24.40:
+        return None
+    if t < T_LAND:                           # прыжок снизу слева на стол
+        u = (t - 24.40) / (T_LAND - 24.40)
+        x = 450 + 160 * ease_out(u, 1.5)
+        y = 1560 + (TABLE_Y - 1560) * u - 330 * math.sin(math.pi * u) ** 1.0
+        sy, sx = 1.14 - .1 * u, .93 + .06 * u
+        rot = -10 * (1 - u)
+        look = (.3, .5 - u)
+        perk = 1.0
+    else:
+        q = spring(t - T_LAND, 4.2, 9)       # посадка: сжатие и отпружинил
+        sy = 1 - .22 * (1 - q) * math.exp(-(t - T_LAND) * 3)
+        sx = 1 + .12 * (1 - q) * math.exp(-(t - T_LAND) * 3)
+        sy = 1 - .16 * math.exp(-(t - T_LAND) * 9) * math.cos((t - T_LAND) * 28) if t < T_LAND + .3 else 1.0
+        sx = 2 - sy if t < T_LAND + .3 else 1.0
+        look = (.2, .8)
+        drop = ease_io(clamp((t - T_BITE) / .2)) * (1 - ease_io(clamp((t - T_BITE - .26) / .22)))
+        turn = .4
+        has = t > T_BITE + .22
+        if t > T_BITE + .46:                 # вскинул голову: взгляд на маму, глаза «я ничего»
+            turn = -.8 * ease_io(clamp((t - T_BITE - .46) / .12))
+            look = (-1.0, -.1)
+            perk = 1.0
+        if t >= T_RUN:
+            u = clamp((t - T_RUN) / .9)
+            x = 610 + 1700 * ease_in(u, 1.7)
+            hop = abs(math.sin(math.pi * (u * 3.2 + .1)))
+            y = TABLE_Y - 150 * hop * (1 if x < 2150 else 0) + (max(0, x - 2150) * 1.4)
+            rot = 12 + 6 * math.sin(t * 25)
+            turn, look = .9, (1.0, 0.0)
+            sy, sx = 1 + .12 * (hop > .5), 1 - .08 * (hop > .5)
+            drop = 0.0
+    return dict(x=x, y=y, rot=rot, sx=sx, sy=sy, drop=drop, turn=turn, look=look, perk=perk, has=has)
+
+
+def mouth_world(c):
+    return (c["x"] + 22 * c["turn"] * CK, c["y"] + (1128 - Cat.CBOT + 70 * c["drop"]) * CK * c["sy"])
+
+
+def cat_draw(t, c):
+    st = dict(look=c["look"], turn=c["turn"], blink=blink_of(t, (24.95, 25.5)), ear=3 * math.sin(t * 20) * (t > T_RUN), perk=c["perk"], tail=18 * math.sin(t * 9) + (30 if t >= T_RUN else 0),
+              tilt=-6 * c["turn"], drop=c["drop"], flame_e=1.3, smile=0)
+    o = Cat.draw(0, 0, 1.0, st, t)       # в локальных единицах 0,0 = (CX, CBOT)
+    extra = ""
+    if c["has"]:
+        extra += B.piece(836 + 22 * c["turn"] + 4, 1136 + 70 * c["drop"], .5, 14, 1)
+    if t > T_BITE + .22:
+        extra += B.crumbs(836 + 22 * c["turn"], 1146 + 70 * c["drop"], 6, 40, 1.1, seed=3)
+    # звёздочки удивления над кабаном: штрихи, без букв
+    if T_BITE + .46 < t < T_BITE + .9:
+        u = (t - T_BITE - .46) / .44
+        for i, a in enumerate((-60, -30, 0, 30, 60)):
+            r0, r1 = 90 + 40 * u, 150 + 70 * u
+            ca, sa = math.sin(math.radians(a)), -math.cos(math.radians(a))
+            extra += line([(836 + 24 * c["turn"] + r0 * ca, 960 + r0 * sa * .6), (836 + 24 * c["turn"] + r1 * ca, 960 + r1 * sa * .6)], 7, "#e2574c", taper=.5, wmin=.3, seed=900 + i, op=1 - u * .6)
+    inner = f'{o}<g transform="translate({-Cat.CX} {-Cat.CBOT})">{extra}</g>'
+    return (f'<g transform="translate({c["x"]:.1f} {c["y"]:.1f}) rotate({c["rot"]:.2f}) scale({CK * c["sx"]:.4f} {CK * c["sy"]:.4f})">{inner}</g>')
+
+
+def crumb_field(t, seed=5):
+    rs = np.random.RandomState(seed)
+    o = ""
+    for i in range(16):
+        te = rs.uniform(T_BITE + .2, 25.85)
+        if t < te:
+            continue
+        c = cat_state(te)
+        mx, my = mouth_world(c)
+        vx, vy = rs.uniform(-60, 60), rs.uniform(-120, -20)
+        dt = t - te
+        x, y = mx + vx * dt, my + vy * dt + 900 * dt * dt
+        gy = rs.uniform(TABLE_Y - 40, TABLE_Y + 10)
+        if y > gy:
+            x, y = mx + vx * math.sqrt(max(0, 2 * (gy - my) / 900)) * .6 + vx * .2, gy
+        r = rs.uniform(3.5, 6.5)
+        o += blob(ellipse_pts(x, y, r, r * .8, 6, rot=i * 30), B.CRUST if i % 3 else B.FILL)
+    return o
+
+
+def frame13(t):
+    c = cat_state(t)
+    catx = c["x"] if c else 610
+    cx = 540 + clamp((catx - 610) * .62, 0, 1100) * ease_io(clamp((t - T_RUN + .12) / .5)) if t >= T_RUN else 540
+    cx = 540 + 12 * math.sin(t * 1.2) + (cx - 540)
+    z = 1.4 + .06 * ease_io(clamp((t - 24.1) / 1.2))
+    set_ink(z)
+    scn = [B.kitchen(t, -500, 2600)]
+    # зрители за столом
+    bs = .7
+    mh, dh = (250, 1020), (830, 1020)
+    seen = (t >= 24.40)
+    cat_x = c["x"] if c else 600
+    gasp = ease_io(clamp((t - T_BITE - .3) / .2)) if seen else 0.0
+    mexp = dict(lid=1.0, look=(.7, .2 + .3 * gasp), closed=blink_of(t, (24.6, 25.6)) + .0, brows="up", mouth="talk" if gasp < .4 else "laugh", open=.35 + .6 * gasp, smile=.9, blush=.9,
+                laugh=0.0 if gasp < .6 else .9 * (t > T_RUN))
+    mama = fig("mama", mh, bs, .02, {"n": ("ik", (mh[0] + 130 * bs, mh[1] - 340 * bs * (1 + .15 * gasp)), -1), "f": ("ik", (mh[0] + 20, mh[1] + 140), -1)}, {"n": open_hand(.4, (.3, -1), .1, .5, k=bs * 1.0), "f": NONE}, mexp, head_ang=.04 * math.sin(t * 3) + .08 * gasp)
+    dexp = dict(lid=1.0, look=(-.5, .2), closed=blink_of(t, (24.8,)), brows="up", mouth="talk", open=.2 + .7 * gasp, smile=.6, blush=.6, flush=.0)
+    dima = fig("dima", dh, bs, -.02, {"n": ("ik", (dh[0] - 130 * bs, dh[1] - 340 * bs * (1 + .1 * gasp)), -1), "f": ("ik", (dh[0], dh[1] + 140), -1)}, {"n": open_hand(.5, (-.3, -1), .1, .4, flip=-1, k=bs * 1.0), "f": NONE}, dexp, head_ang=-.03 - .06 * gasp, flip=True)
+    scn.append(mama["arm_f"] + mama["body"] + mama["arm_n"])
+    scn.append(dima["arm_f"] + dima["body"] + dima["arm_n"])
+    scn.append(B.table(-400, 2500, 1010, 120, legs=False))
+    # пирог: до кражи целый; потом с вырезом
+    cut = (8, 54) if t > T_BITE + .18 else None
+    scn.append(B.pie(PIE[0], PIE[1], .95, cut=cut, sag=1.0))
+    scn.append(B.jar(380, 1080, .8, sway=.25 * math.sin(t * 2)))
+    if c is not None:
+        scn.append(cat_draw(t, c))
+        # кусок: пока не взят — на пироге
+    if c is not None and not c["has"] and T_BITE <= t <= T_BITE + .22:
+        u = (t - T_BITE) / .22
+        mx, my = mouth_world(c)
+        scn.append(B.piece(PIE[0] + 100 + (mx - PIE[0] - 100) * u, PIE[1] + 44 + (my - PIE[1] - 44) * u, .6, 12, 1))
+    if c is not None and t < T_RUN and t > T_LAND:      # пыль на посадке
+        u = (t - T_LAND) / .35
+        if 0 < u < 1:
+            for i, s_ in enumerate((-1, 1)):
+                scn.append(blob(ellipse_pts(c["x"] + s_ * (50 + 70 * u), TABLE_Y + 8, 22 * (1 - u * .5), 12 * (1 - u * .5), 8), "#f6ecd8"))
+    scn.append(crumb_field(t))
+    cam = lib.cam(cx, 930, z, .5 * math.sin(t * 1.5) + 1.5 * bump(t, T_RUN, .3))
+    return f'<g transform="{cam}">{"".join(scn)}</g>'
+
+
 WORDS_IDX = {w["word"].strip(".,!?"): i for i, w in enumerate(WORDS)}
 
 
 def frame(sid, t):
     lib.dyn_begin()
-    body = {"s12": frame12}[sid](t)
+    body = {"s12": frame12, "s13": frame13}[sid](t)
     return lib.svg(f'<rect width="1080" height="1920" fill="#f3e3c3"/>{body}')

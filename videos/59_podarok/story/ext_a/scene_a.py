@@ -356,24 +356,24 @@ def frame04(t):
     SCL = 1.5
     fg = people.figure("dima", 0, 0, SCL, expr, head_ang=ha, layers=("body",), lean=0.0)
     hx, hy = fg["head"]
-    tx, ty = 430, 1290
+    tx, ty = 500, 1290
     o.append(f'<g transform="translate({tx - hx:.1f} {ty - hy:.1f})">{fg["svg"]}</g>')
     hp = (tx, ty)
     # отражение экрана в глазах: мини-лента, появляется на «товаров»
     ru = clamp((t - T_TO) / .25)
     if ru > 0:
         for w_ in ("n", "f"):
-            ex, ey, rx, ry = eye_world(hp, SCL * .6, ha, w_)
+            ex, ey, rx, ry = eye_world(hp, SCL, ha, w_)
             cid2 = lib.clip_of(ellipse_pts(ex, ey, rx * .72, ry * .7, 14))
             mini = ""
             off = (pos * .12) % 40
             for r in range(-1, 4):
                 for c in range(3):
                     n = (r + c * 2) % 6
-                    mini += blob(rect_pts(ex - rx * .7 + c * rx * .5, ey - ry * .7 + r * 26 - off, ex - rx * .7 + c * rx * .5 + rx * .42, ey - ry * .7 + r * 26 + 20 - off), CARD_COLS[n])
+                    mini += blob(rect_pts(ex - rx * .7 + c * rx * .5, ey - ry * .7 + r * 34 - off, ex - rx * .7 + c * rx * .5 + rx * .42, ey - ry * .7 + r * 34 + 28 - off), CARD_COLS[n])
             o.append(f'<g clip-path="url(#{cid2})" opacity="{.92 * ru:.2f}">{blob(rect_pts(ex - rx, ey - ry, ex + rx, ey + ry), "#F6F7FB")}{mini}</g>')
     # свет экрана на лицо
-    g = rad_grad([(0, "#cfe8ff", .30), (.6, "#9fd0f5", .12), (1, "#9fd0f5", 0)], 500, 1250, 520, 330)
+    g = rad_grad([(0, "#cfe8ff", .14), (.6, "#9fd0f5", .06), (1, "#9fd0f5", 0)], 500, 1250, 520, 330)
     o.append(f'<rect x="-100" y="900" width="1300" height="900" fill="url(#{g})" style="mix-blend-mode:screen"/>')
     # камера: наезд и тряска
     u = clamp((t - 4.3) / 1.6)

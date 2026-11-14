@@ -8,10 +8,12 @@ import sys
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+COMMON = os.path.join(os.path.dirname(HERE), "common")
 sys.path.insert(0, HERE)
-sys.path.insert(0, os.path.join(os.path.dirname(HERE), "common"))
+sys.path.insert(0, COMMON)           # lib/ink/hand/people/props — общие файлы рилса 59 (группы A, B), своих копий нет
 import lib  # noqa: E402
 import people  # noqa: E402
+import props as PR  # noqa: E402
 from lib import (INK, back_out, blob, blur, clamp, ease_in, ease_io, ease_out, ellipse_pts, f, line, mix, rad_grad, rrect,  # noqa: E402,F401
                  shape, smooth, spring)
 
@@ -430,6 +432,109 @@ def dima09(t):
     return "".join(o)
 
 
+
+
+# ═════════════════════════════ продавщица: свой цвет, голова, фартук (общий people.py её не знает) ═════════════════════════════
+people.PAL["seller"] = dict(SKIN="#e9bf9d", SKIN_SH="#d09f7e", SKIN_SH2="#b9866a", HAIR="#2b1d27", HAIR_SH="#18101a", HAIR_HI="#5a3f52",
+                            TOP="#f2b8c6", TOP_SH="#d98fa4", TOP_SH2="#b96d85", FOLD="#8f4a62", STITCH="#fff3f6", TEE="#fff7f0", TEE_SH="#e6d9cc",
+                            APRON="#4f9a6a", APRON_SH="#357a50", APRON_HI="#7fc08f",
+                            LEGS="#3d4558", LEGS_SH="#2c3342", LEGS_SEAM="#5d6780", SHOE="#7a4a2a", SHOE_SH="#5a341c", SOLE="#3b2c22", SOLE_SH="#2a1f18",
+                            STRIPE="#a76a3e", NAIL="#f6dccd")
+people.FRIENDLIKE = tuple(people.FRIENDLIKE) + ("seller",)
+_orig_head = people.person_head
+_orig_jacket = people.jacket_parts
+
+
+def seller_head(expr):
+    """Молодая женщина: чёрные волосы, пучок, жёлтая повязка, красные губы, ресницы, серёжка, румянец (3/4 вправо, как у остальных)."""
+    C = people.C
+    P_ = people
+    hb = expr.get("hair", 0.0)
+    s = []
+    # пучок сзади сверху
+    s.append(shape(ellipse_pts(-70, -176, 56, 50, 16), C["HAIR"], blob(ellipse_pts(-52, -164, 26, 22, 10), C["HAIR_HI"], .8) +
+                   line([(-96, -190), (-60, -214)], 2.4, C["HAIR_SH"], seed=1301, op=.9) + line([(-84, -150), (-44, -200)], 2.4, C["HAIR_SH"], seed=1302, op=.9),
+                   w=5.0, seed=1300))
+    ear = [(-86, -26), (-112, -38), (-132, -14), (-130, 22), (-116, 48), (-94, 52), (-84, 40)]
+    s.append(shape(ear, C["SKIN"], blob([(-132, -14), (-130, 22), (-116, 48), (-116, 10)], C["SKIN_SH"], .9), w=4.8, seed=1303))
+    s.append(line([(-98, 32), (-118, 20), (-116, -8), (-102, -18)], 3.2, seed=1304))
+    s.append('<circle cx="-112" cy="58" r="8" fill="#e0b440"/><circle cx="-114" cy="56" r="2.4" fill="#fff2b8"/>')
+    inner = [blob([(-120, -210), (-40, -210), (-60, -40), (-56, 40), (-30, 160), (-120, 160)], C["SKIN_SH"], .95),
+             blob(ellipse_pts(56, -16, 100, 60, 14), "#e5a99a", .3),
+             blob(ellipse_pts(100, 38, 24, 13, 10), "#ec8a88", .55), blob(ellipse_pts(8, 44, 30, 14, 10), "#ec8a88", .5)]
+    fl = expr.get("flush", 0.0)
+    if fl > .01:
+        inner.append(blob(ellipse_pts(30, 20, 140, 120, 16), "#e2493c", .3 * fl))
+    s.append(shape(P_.FACE_G, C["SKIN"], "".join(inner), w=5.6, seed=1305))
+    s.append(P_._nose())
+    s.append(P_._mouth_gen(expr, "#c4303f", seed=1306))
+    s.append(P_.eyes(expr, P_.F_EYE_N, P_.F_EYE_F, bags=False))
+    for (cx_, cy_, rx_, sd_) in ((18, -22, 44, 1320), (90, -20, 34, 1324)):
+        s.append(line([(cx_ + rx_ * .55, cy_ - 38), (cx_ + rx_ * 1.0, cy_ - 56)], 3.4, seed=sd_, taper=.3, wmin=.5))
+        s.append(line([(cx_ + rx_ * .25, cy_ - 44), (cx_ + rx_ * .55, cy_ - 64)], 3.0, seed=sd_ + 1, taper=.3, wmin=.5))
+    s.append(P_._brows(expr, C["HAIR_SH"], .8))
+    # волосы: гладкая шапка с пробором и локоном на висок
+    hair = P_._bounce(P_.SM_HAIR, hb * .5)
+    hi = blob(P_._bounce([(-140, -200), (-30, -200), (-40, -130), (-80, -100), (-90, -40), (-140, -20)], hb * .5), C["HAIR_SH"], .9)
+    hi += blob(P_._bounce([(0, -160), (60, -136), (96, -100), (60, -120), (30, -140)], hb * .5), C["HAIR_HI"], .75)
+    hi += line([(-20, -150), (-60, -120), (-96, -80)], 3.0, C["HAIR_SH"], seed=1330, op=.85)
+    s.append(shape(hair, C["HAIR"], hi, w=5.4, seed=1331))
+    s.append(shape([(100, -90), (62, -118), (8, -124), (-26, -110), (-14, -90), (30, -98), (70, -80), (104, -56), (98, -30), (86, -62)], C["HAIR"],
+                   line([(60, -112), (10, -112)], 2.6, C["HAIR_SH"], seed=1332, op=.9), w=4.4, seed=1333))
+    # жёлтая повязка
+    band_ = [(-110, -112), (-60, -132), (20, -146), (80, -128), (112, -100), (110, -80), (74, -104), (20, -122), (-60, -108), (-114, -90)]
+    s.append(shape(band_, "#f3c23b", line([(-60, -122), (20, -134), (80, -116)], 2.0, "#c99a1e", seed=1340, op=.8), w=4.0, seed=1341))
+    s.append(shape([(-100, -112), (-130, -96), (-140, -60), (-118, -84), (-110, -62), (-94, -98)], "#f3c23b", "", w=3.6, seed=1342))
+    return "".join(s)
+
+
+def seller_body():
+    C = people.C
+    body = [(-112, 34), (-120, -40), (-132, -170), (-128, -280), (-112, -360), (-78, -410), (-20, -432), (40, -426), (84, -398), (112, -330), (126, -230),
+            (124, -120), (116, -20), (110, 34)]
+    inner = blob([(30, -440), (130, -380), (140, 40), (60, 40), (80, -200)], C["TOP_SH"], .85)
+    inner += blob([(-140, -300), (-100, -320), (-104, -100), (-140, -60)], C["TOP_SH"], .55)
+    torso = shape(body, C["TOP"], inner, w=5.2, seed=1400)
+    ap = [(-50, -330), (30, -360), (96, -340), (120, -230), (120, -120), (116, -20), (112, 40), (-110, 40), (-106, -80), (-84, -230)]
+    ai = blob([(40, -350), (120, -240), (122, 40), (60, 40), (66, -210)], C["APRON_SH"], .85)
+    ai += blob([(-100, -100), (-60, -240), (-40, -300), (-110, -300)], C["APRON_SH"], .5)
+    ai += line([(-70, -300), (-84, -200), (-90, -90)], 2.0, C["APRON_SH"], seed=1410, op=.8)
+    ai += shape([(10, -150), (86, -158), (108, -128), (110, -40), (10, -36)], C["APRON"], blob([(60, -150), (110, -128), (110, -40), (60, -40)], C["APRON_SH"], .8), w=3.4, seed=1411)
+    ai += line([(18, -138), (92, -146)], 2.0, C["APRON_HI"], seed=1412, op=.9)
+    # цветочек-нашивка на кармане без букв
+    for k, a in enumerate(range(0, 360, 72)):
+        ai += blob(ellipse_pts(58 + 12 * math.cos(math.radians(a)), -92 + 12 * math.sin(math.radians(a)), 8, 8, 8), "#fff3f6")
+    ai += blob(ellipse_pts(58, -92, 6, 6, 8), "#f3c23b")
+    torso += shape(ap, C["APRON"], ai, w=4.8, seed=1415)
+    torso += line([(-96, 4), (110, 4)], 2.4, C["APRON_SH"], seed=1416, op=.9)
+    # завязки фартука на спине
+    torso += shape([(-112, -50), (-160, -76), (-176, -40), (-130, -36)], C["APRON"], "", w=3.8, seed=1417)
+    torso += shape([(-112, -50), (-150, -10), (-130, 40), (-110, -22)], C["APRON"], "", w=3.8, seed=1418)
+    col = [(-60, -440), (-20, -462), (40, -452), (72, -420), (52, -396), (20, -420), (-30, -424), (-70, -410)]
+    back = shape(col, C["TEE"], line([(-50, -430), (30, -436)], 1.8, C["TEE_SH"], seed=1419, op=.8), w=4.0, seed=1420)
+    # лямка фартука на шее
+    torso += line([(54, -366), (6, -440)], 18, C["APRON"], taper=0, wmin=1, seed=1421)
+    torso += line([(54, -366), (6, -440)], 3, C["APRON_SH"], taper=0, wmin=1, seed=1422, op=.8)
+    return back, torso, ""
+
+
+def _ph(expr, style):
+    if style == "seller":
+        return seller_head(expr)
+    return _orig_head(expr, style)
+
+
+def _jk(*a, **k):
+    if people.C.get("APRON"):
+        return seller_body()
+    return _orig_jacket(*a, **k)
+
+
+people.person_head = _ph
+people.jacket_parts = _jk
+people.NEWHEADS = tuple(people.NEWHEADS) + ("seller",)
+
+
 def frame(sid, t):
     lib.dyn_begin()
     body = {"s09": frame09, "s10": frame10}[sid](t)
@@ -437,4 +542,4 @@ def frame(sid, t):
 
 
 def frame10(t):
-    return ""
+    return '<rect width="1080" height="1920" fill="#cfe9f5"/>'

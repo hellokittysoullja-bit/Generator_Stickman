@@ -171,8 +171,8 @@ def frame05(t):
         if g > 0:
             expr.update(mouth="talk", open=.2 + .6 * abs(math.sin((t - talk_t[who]) * 11 + i)), smile=.6, brows="up", lid=.95)
             up = ease_out(g)
-            wy = TY - (300 + 60 * gest) * up
-            wx = x + 130 + 30 * math.sin((t - talk_t[who]) * 7)
+            wy = TY - (330 + 50 * gest) * up
+            wx = x + {"girl": 215, "bald": 150, "cap": -215}[who] + 25 * math.sin((t - talk_t[who]) * 7)
             arms["n"] = ("ik", (wx, wy), -1)
             hands["n"] = {"bald": point_hand((.3, -1), flip=1, k=bs), "girl": open_hand(.1, (.4, -1), .35, .1, k=bs)}.get(who, open_hand(.45, (.3, -1), .15, .5, k=bs))
             head_ang = .06 * math.sin((t - talk_t[who]) * 8)
@@ -186,9 +186,9 @@ def frame05(t):
     sq = clamp((t - T_SVOE) / .25)
     look_x = -.6 * math.sin(clamp((t - T_DRUZ) / 1.6) * math.pi * 2.2)
     expr = dict(lid=.85 - .35 * sq, brows="worry", mouth="flat" if sq < .5 else "wobble", smile=0, look=(look_x, .15), closed=blink_of(t, (6.4, 7.6, 8.5)), open=.3)
-    wr = (dx + 150 - 110 * sq, 1450 - 360 * sq)
+    wr = (dx + 190 - 140 * sq, 1690 - 640 * sq)
     arms = {"f": ("ik", (dx + 100, 1740), -1), "n": ("ik", wr, -1)}
-    hands = {"f": open_hand(.5, (1, .1), .1, .4, k=dbs), "n": open_hand(.3 + .5 * sq, (.2, -1), .3, .3, k=dbs)}
+    hands = {"f": open_hand(.5, (1, .1), .1, .4, k=dbs), "n": open_hand(.3 + .5 * sq, (1 - sq, .5 - 1.5 * sq), .3, .3, k=dbs)}
     hoff = (0, 16 * ease_out(clamp((t - T_SVOE) / .2)) + 4 * math.sin(t * 5))
     d = person("dima", (dx, 1960), dbs, expr, arms, hands, head_ang=.04 * math.sin(t * 3) + .05 * sq, head_off=hoff)
     o.append(d["arm_f"] + d["body"] + d["arm_n"])
@@ -209,7 +209,7 @@ def frame05(t):
         by = 400 + 8 * math.sin(t * 4 + x) + 20 * (1 - u) + 110 * ease_out(push)
         jig = 10 * decay(t, T_SVOE + .03 * ("girl", "bald", "cap").index(who), 6, 26)
         sqq = (clamp((t - T_SVOE) / .2) * (math.sin((t - T_SVOE) * 30) * .4 + .6)) if t > T_SVOE else 0
-        o.append(cloud(bx + jig, by, s, {"girl": 1.0, "bald": 2.2, "cap": 3.1}[who], tk[who], 1.0, rot_i=4 * math.sin(t * 5 + x),
+        o.append(cloud(bx + jig, by, s, {"girl": 1.0, "bald": 2.2, "cap": 3.1}[who], tk[who], 1.5, rot_i=4 * math.sin(t * 5 + x),
                        tail_to=(hx, hy - 150 * bs), squash=sqq))
     dh = d["head"]
     if t > T_SVOE:
@@ -221,7 +221,7 @@ def frame05(t):
 
 # ═════════════════════════════ s06: статья ═════════════════════════════
 T_STAT, T_LUCH, T_PODA = wt(24), wt(26), wt(27)          # 10.05, 10.60, 11.00
-SH_C = (590, 740)
+SH_C = (610, 740)
 SH_W, SH_H = 800, 1060
 # строки текста листа: (y, x0, x1, блок)
 LINES = []
@@ -233,7 +233,7 @@ def sheet_layout():
     for blk in range(3):
         n = (4, 3, 4)[blk]
         for j in range(n):
-            L.append((y, 280 + (0 if j else 54), 880 - ((j * 37 + blk * 53) % 120), blk))
+            L.append((y, 330 + (0 if j else 54), 840 - ((j * 37 + blk * 53) % 120), blk))
             y += 44
         y += 60
     return L
@@ -307,7 +307,7 @@ def finger_tip_path(t):
 
 def frame06(t):
     a = 8.5
-    u = clamp((t - a) / 1.0)                 # въезд листа
+    u = clamp((t - a + .3) / 1.1)            # въезд листа (первый кадр уже с заголовком)
     z0 = 1.02 + .26 * ease_io(clamp((t - a) / 2.9))
     set_ink(z0)
     sh = 7 * decay(t, T_LUCH, 7, 22) + 12 * decay(t, T_PODA, 6, 20)
@@ -339,8 +339,8 @@ def frame06(t):
         sp.append(PR.spark(x + 30, y + (SH_C[1] - 740) - 60, 1.0, clamp((t - tt - .1) / .5), "#ffd54a"))
     o.append(f'<g transform="translate({slide:.2f} {-slide * .3:.2f}) rotate({rot:.2f} {SH_C[0]} {SH_C[1]})">{"".join(art)}{"".join(sp)}</g>')
     # Дима в углу + рука с пальцем
-    bs = .95
-    hip = (150, 1520)
+    bs = 1.08
+    hip = (215, 1640)
     reading = clamp((t - (T_STAT - .3)) / .3)
     fx, fy, li = finger_tip_path(t)
     # перевод в мир через вращение листа

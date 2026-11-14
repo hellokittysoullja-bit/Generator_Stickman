@@ -16,7 +16,7 @@ STORY = os.path.dirname(HERE)
 os.makedirs(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "clips"), exist_ok=True)
 SH = json.load(open(os.path.join(STORY, "shots.json")))
 SHOTS = {s["id"]: s for s in SH["shots"]}
-SCENE_MOD = {k: "scene_v" for k in ("s01", "s03", "s07", "s11", "s13", "s14")}
+SCENE_MOD = {k: "scene_a" for k in ("s01", "s03", "s04")}
 TMP = os.path.join(os.path.dirname(STORY), ".." , "..", "..")
 
 
@@ -37,7 +37,7 @@ def _job(args):
 
 def build_svgs(sid, times, tmp):
     jobs = [(sid, i, t, os.path.join(tmp, f"f{i:04d}.svg")) for i, t in enumerate(times)]
-    with Pool(2) as p:
+    with Pool(1) as p:
         return p.map(_job, jobs, chunksize=4)
 
 
@@ -47,7 +47,7 @@ def main():
     sheet = "--sheet" in args
     ids = [a for a in args if a.startswith("s") and a[1:].isdigit()]
     tl = [a for a in args if "," in a or a.replace(".", "").isdigit()]
-    base_tmp = "/tmp/a57a"
+    base_tmp = "/tmp/a59a"
     os.makedirs(base_tmp, exist_ok=True)
     for sid in ids:
         a, n = span(sid)
@@ -64,7 +64,7 @@ def main():
             pngs = [os.path.join(outd, f"{sid}_{t:.2f}.png") for t in times]
             open(os.path.join(tmp, "list.txt"), "w").write("\n".join(f"{s}\t{p}" for s, p in zip(svgs, pngs)))
             subprocess.check_call(["node", os.path.join(HERE, "render.js"), os.path.join(tmp, "list.txt"), "png",
-                                   str(min(2, len(times))), "x"])
+                                   "1", "x"])
             print(sid, "sheet", " ".join(pngs))
         else:
             times = [a + k / 30 for k in range(n)]
@@ -72,7 +72,7 @@ def main():
             t1 = time.time()
             open(os.path.join(tmp, "list.txt"), "w").write("\n".join(svgs))
             pre = os.path.join(tmp, "seg")
-            subprocess.check_call(["node", os.path.join(HERE, "render.js"), os.path.join(tmp, "list.txt"), "mp4", "2", pre])
+            subprocess.check_call(["node", os.path.join(HERE, "render.js"), os.path.join(tmp, "list.txt"), "mp4", "1", pre])
             segs = sorted(x for x in os.listdir(tmp) if x.startswith("seg_") and x.endswith(".mp4"))
             open(os.path.join(tmp, "concat.txt"), "w").write("".join(f"file '{os.path.join(tmp, s)}'\n" for s in segs))
             out = os.path.join(STORY, "clips", f"{sid}.mp4")
