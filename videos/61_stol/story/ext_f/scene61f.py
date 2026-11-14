@@ -249,9 +249,9 @@ def frame17(t):
 T_KOT18, T_BARD = wt("кот", 1), wt("бардак")
 S18_T0 = 44.1
 T_WHIP = T_BARD - .14           # хлёст к кадру хука: пик размытия чуть раньше «бардак»
-CAT18 = (40.0, 936.0)
+CAT18 = (310.0, 940.0)
 K18 = .62
-DIMA18 = (600.0, room.seat_y(1.0))
+DIMA18 = (660.0, room.seat_y(1.0))
 
 
 def hook_world(t):
@@ -267,13 +267,17 @@ def hook_world(t):
 
 
 def room18(t):
-    rb = room.room_bg(t, lamp_on=1.0, with_door=False)
+    # фон без набросков на стене: над котом чистая стена под рукописное «кот» (иначе слово тонет в рисунках)
+    cr = room.desk(*room.CREATIVE, kind="creative")
+    lamp = room.desk_lamp(1.0, 0.0)
     yb, yf = room.DESK_TOP - room.DESK_D + 30, room.DESK_TOP - 8
-    o = [rb["bg"], rb["pool"]]
+    o = ['<rect x="-1200" y="2100" width="4000" height="900" fill="#c38c5a"/>', room.wall_floor(), room.window(t, 0.0),
+         room.sketch(-640, 260, 150, 120, -4, 1, seed=1), cr["back"], cr["front"], cr["legs"], lamp["pool"]]
+    rb = dict(lamp=lamp["lamp"])
     o.append(props.paper_pile(-330, yf - 10, 1.05, seed=3) + props.cable_tangle(-210, yf - 26, .8, seed=2, t=t) +
              props.mug(-120, yb + 44, .95, col="blue", seed=1) + props.sticky(-240, yb + 40, .8, rot=8, col="pink", seed=2, mark="star"))
     o.append(rb["lamp"])
-    o.append(props.mug(300, yf, 1.0, col="red", steam=.8, t=t, seed=2))
+    o.append(props.mug(80, yf, 1.0, col="red", steam=.8, t=t, seed=2))
     o.append(props.paper_pile(CAT18[0], CAT18[1] + 14, .8, seed=18, sy=.45, n=8))
     return "".join(o)
 
@@ -320,15 +324,15 @@ def frame18(t):
               tilt=3 * math.sin(t * 1.3) + 5 * hap, tail=8 * math.sin(t * 2.4), flame_e=1.1 + .8 * bump(t, T_KOT18 + .1, .5),
               sy=1 + .03 * bump(t, T_KOT18, .3))
     u = sm(t, S18_T0, T_WHIP)
-    z = 1.42 + .3 * u + .04 * bump(t, T_KOT18 + .3, .4)
+    z = 1.36 + .26 * u + .04 * bump(t, T_KOT18 + .3, .4)
     set_ink(z * K18 * 1.5)
     o.append(blob(ellipse_pts(CAT18[0] + 8, CAT18[1] - 2, 120, 12, 14), "#6b4422", .3))
     o.append(catf.draw_f(CAT18[0], CAT18[1], K18, st, t))
     set_ink(z)
     # единственная надпись рилса: пером «кот» над котом, дописано к звуку 44.94
-    o.append(hand_kot.kot(t, T_KOT18 - .06, .36, CAT18[0] - 160, 610, 1.75))
-    cx = 250 + (120 - 250) * u + 8 * math.sin(t * .9)
-    cy = 860 + (780 - 860) * u
+    o.append(hand_kot.kot(t, T_KOT18 - .06, .36, CAT18[0] - 150, 560, 1.75))
+    cx = 440 + (390 - 440) * u + 8 * math.sin(t * .9)
+    cy = 900 + (820 - 900) * u
     rot = -.6 + .8 * u
     # хлёст на входе плана и уход в хлёст к хуку
     ein = ease_out(clamp((t - S18_T0) / .16), 2)

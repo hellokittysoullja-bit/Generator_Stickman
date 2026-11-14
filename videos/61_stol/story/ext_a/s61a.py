@@ -368,8 +368,8 @@ def frame04(t):
     probe = people.draw(dict(hip=(SX4, sy), scale=BS4 * people.HEIGHT["dima"], lean=lean, feet=None, arms={"n": ("ang", 0, 0), "f": ("ang", 0, 0)},
                              hands={}, head_ang=lerp(0, .18, sl), expr={}, torso_k=1.0, hood=0.0, head_off=(0, 0)), "dima")
     hx, hy = probe["head"]
-    cheek = (hx + 40 * BS4, hy + 150 * BS4)
-    tgt_n = (lerp(800, cheek[0], sl), lerp(DY4 - 70, cheek[1], sl))
+    cheek = (hx + 30 * BS4, hy + 175 * BS4)
+    tgt_f = (lerp(860, cheek[0], sl), lerp(DY4 - 60, cheek[1], sl))
     if t < 7.55:
         ex = {"brows": "up", "mouth": "smile", "smile": .6, "lid": 1.0, "look": (.3, -.9)}
     elif t < 7.95:
@@ -378,9 +378,9 @@ def frame04(t):
         ex = dict(people.EXPR["dima"]["gloom"], look=(.6, .5))
     else:
         ex = dict(people.EXPR["dima"]["gloom"], look=(.9, .2), lid=.5)
-    hands = {"n": dict(kind="open", flip=1, dir=(lerp(1, .25, sl), lerp(.2, -1, sl)), curl=(.3, .3, .35, .4), thumb=.2, spread=.15),
-             "f": dict(kind="open", flip=1, dir=(1, .35), curl=(.4, .4, .45, .5), thumb=.3)}
-    arms = {"n": ("ik", tgt_n, -1), "f": ("ik", (860, DY4 - 60), -1)}
+    hands = {"f": dict(kind="open", flip=1, dir=(lerp(1, .3, sl), lerp(.35, -1, sl)), curl=(.3, .3, .35, .4), thumb=.2, spread=.15),
+             "n": dict(kind="open", flip=1, dir=(1, .3), curl=(.45, .45, .5, .55), thumb=.3)}
+    arms = {"f": ("ik", tgt_f, -1), "n": ("ik", (lerp(800, 760, sl), DY4 - 66), -1)}
     feet = {"n": ((SX4 + 320 + 40 * sl, R.FL - 52), 0.0), "f": ((SX4 + 270 + 40 * sl, R.FL - 50), 0.0)}
     full = people.draw(dict(hip=(SX4, sy), scale=BS4 * people.HEIGHT["dima"], lean=lean, feet=feet, arms=arms, hands=hands,
                             head_ang=lerp(0, .18, sl), expr=ex, torso_k=1.0, hood=0.0, head_off=(0, 0)), "dima")
@@ -398,7 +398,7 @@ def frame04(t):
     # лампочка-идея над головой: горит, мигает с 7.55, гаснет
     on = props.flicker(t, 7.55, 7.95, 3)
     bob = 8 * math.sin(t * 4)
-    bx, by = hx + 30, hy - 260 * BS4 + bob + 60 * sl
+    bx, by = hx + 40, hy - 340 * BS4 + bob + 50 * sl
     o.append(props.idea_bulb(bx, by, 1.15, on, t, 2))
     if on < .05 and t < 8.6:   # дымок от погасшей лампочки
         u = clamp((t - 7.95) / .6)
@@ -406,8 +406,8 @@ def frame04(t):
     body = "".join(o)
     # камера: хлёст на входе, откат и дрейф, мини-тряска на прыжке
     u = ease_io(clamp((t - 7.0) / 2.9))
-    cx = lerp(600, 680, u)
-    cy = lerp(880, 960, u)
+    cx = lerp(620, 690, u)
+    cy = lerp(860, 930, u)
     s = lerp(1.32, 1.1, u)
     wx, bl = whip_in(t, 6.9)
     dx, dy = props.shake(t, 8.92, 9, .35, 5)

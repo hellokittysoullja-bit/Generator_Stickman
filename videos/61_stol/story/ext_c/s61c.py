@@ -200,12 +200,12 @@ def frame09(t):
     if t < land:
         u = clamp((t - (T_ZAHL - .25)) / (land - (T_ZAHL - .25)))
         fy = lerp(150, L.TOP_FRONT - 40, u ** 1.6)
-        fx = 470 + 60 * math.sin(u * 5)
+        fx = 380 + 50 * math.sin(u * 5)
         extra += PR.flying_sheet(fx, fy, .9, -20 + 30 * u, 41, "sketch", flap=t * 9)
     else:
-        extra += PR.paper(470, L.TOP_FRONT - 34, .9, -14, 120, 160, 41, "sketch", .45)
+        extra += PR.paper(400, L.TOP_FRONT - 34, .9, -14, 120, 160, 41, "sketch", .45)
     mug_land = T_ZAHL + .3
-    mx, my = 560.0, L.TOP_BACK + 48
+    mx, my = 285.0, L.TOP_BACK + 52
     if t < mug_land:
         u = clamp((t - (T_ZAHL - .15)) / .45)
         extra_mug = L.mug(mx, lerp(-200, my, u * u), 1.0, "green", 12 * (1 - u), 77)
@@ -267,7 +267,7 @@ def frame12(t):
     fig0 = P.figure("bob", X, y, PS, ex, **P.pose_kw("sit_desk", X, y, PS, "bob"))
     hd = fig0["head"]
     if g > 0:
-        tgt = (lerp(X + 240 * PS * .95, hd[0] + 55 * PS, g), lerp(y - 195 * PS, hd[1] + 100 * PS, g))
+        tgt = (lerp(X + 240 * PS * .95, hd[0] + 55 * PS, g), lerp(y - 195 * PS, hd[1] + 96 * PS, g))
         arms["n"] = ("ik", tgt, -1)
         hands["n"] = {"dir": (-.15, -1), "curl": (.0, .75, .85, .85), "spread": .05, "thumb": .5}
     reach = smooth(T_POLEZ - .08, T_POLEZ + .35, t)
