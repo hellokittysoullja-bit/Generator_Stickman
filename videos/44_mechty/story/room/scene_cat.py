@@ -14,6 +14,7 @@ sys.path.insert(0, HERE)
 import cat  # noqa: E402
 import den  # noqa: E402
 import dream  # noqa: E402
+import piggy44  # noqa: E402
 import lib  # noqa: E402
 import world  # noqa: E402
 from ink import ellipse_pts  # noqa: E402
@@ -232,11 +233,10 @@ def piggy_edge():
 
 
 def wall_blur(t):
+    """Стена как в s17 (шалфейные обои ext_b), мягко размыта — кот крупно, фон дальше."""
     if "wall18" not in _ST:
-        _ST["wall18"] = den.wall(t) + den.shelf(t) + den.board(t)
-    g = lib.rad_grad([(0, "#ffd890", .35), (1, "#ffbe6a", 0)], 900, 500, 900, 800)
-    return (f'<g {blur(8)}><g transform="{cam(760, 520, 1.6, 0)}">{_ST["wall18"]}</g></g>'
-            f'<rect width="{W}" height="{H}" fill="url(#{g})" style="mix-blend-mode:screen"/>')
+        _ST["wall18"] = piggy44.wallpaper()
+    return f'<g {blur(5)}><g transform="{cam(560, 820, 1.25, 0)}">{_ST["wall18"]}</g></g>'
 
 
 def slow_blink(t, t0, close=.32, hold=.22, open_=.38):
@@ -251,8 +251,8 @@ def slow_blink(t, t0, close=.32, hold=.22, open_=.38):
 
 def s18(t):
     if "pl" not in _ST:
-        _ST["pl"] = shelf_plank()
-        _ST["pig"] = piggy_edge()
+        _ST["pl"] = f'<g transform="translate(0 {1268 - piggy44.SHELF_Y})">{piggy44.shelf(-400, 1500)}</g>'
+        _ST["pig"] = piggy44.piggy_at(-60, 1268, 1.6, sticker=1.0)
         wall_blur(t)
         cat.static_parts()
         lib.static_done()
@@ -282,8 +282,8 @@ def s18(t):
     z = 1.0 + .1 * (.3 * u + .7 * ease_io(u)) + .03 * math.sin(math.pi * es)
     fg = f'translate({zc[0]} {zc[1]}) scale({z:.4f}) translate({-zc[0]} {-zc[1]})'
     par = f'translate({zc[0]} {zc[1]}) scale({1 + (z - 1) * .4:.4f}) translate({-zc[0] - 10 * u} {-zc[1]})'
-    return svg(f'<rect width="{W}" height="{H}" fill="#3a3550"/><g transform="{par}">{wall_blur(t)}</g>'
-               f'<g transform="{fg} translate(0 -60)">{_ST["pl"]}<g transform="translate(-70 0)">{_ST["pig"]}</g>{gl}<g transform="translate(30 0)">{kitty}</g>{emb}</g>' + vignette())
+    return svg(f'<rect width="{W}" height="{H}" fill="#9fae8e"/><g transform="{par}">{wall_blur(t)}</g>'
+               f'<g transform="{fg} translate(0 -60)">{_ST["pl"]}<g transform="rotate({1.0 * math.sin(t * 1.4):.3f} -60 1268)">{_ST["pig"]}</g>{gl}<g transform="translate(30 0)">{kitty}</g>{emb}</g>' + vignette())
 
 
 SHOTS = {"s05": s05, "s18": s18}
