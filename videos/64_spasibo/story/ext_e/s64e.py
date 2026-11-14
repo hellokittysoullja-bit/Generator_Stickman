@@ -83,45 +83,46 @@ def clip_y(inner, y0, y1, x0=-3000, x1=6000):
 
 # ═════════════════════════ s09: аудитория, трое пишут ═════════════════════════
 T9_WRITE, T9_LETTER, T9_THANKS = wt(43), wt(44), wt(45)
-HALL_FLOOR = 1520.0
-SIT9 = 1290.0
-PS9 = 0.66
-STATIONS = [("youth", 330.0, 0.0), ("beard", 1080.0, .10), ("curly", 1830.0, .20)]   # кто, таз x, сдвиг начала
+WALL9 = 640.0             # низ стены аудитории (дальше — пол уходит к зрителю)
+# кто, таз (x, y), масштаб, сдвиг начала: дальний — юноша, средний — бородач, ближний — женщина с кудрями
+STATIONS = [("youth", 640.0, 830.0, .50, 0.0), ("beard", 250.0, 1190.0, .66, .10), ("curly", 520.0, 1600.0, .86, .20)]
 
 
 def hall_back(t):
-    o = [blob(rect_pts(-1400, -900, 3600, HALL_FLOOR), "#F3EBDC")]
-    o.append(blob(rect_pts(-1400, HALL_FLOOR - 120, 3600, HALL_FLOOR), "#EADFCB"))
-    o.append(line([(-1400, HALL_FLOOR - 120), (3600, HALL_FLOOR - 118)], 4, INK, taper=0, wmin=.8, seed=9001))
-    o.append(blob(rect_pts(-1400, HALL_FLOOR, 3600, 2800), "#D9C3A0"))
-    for j in range(-6, 26):        # доски пола
-        x = j * 170
-        o.append(line([(x, HALL_FLOOR + 8), (x - 60, 2700)], 2.4, "#BFA47D", taper=0, wmin=.6, seed=9010 + j))
-    o.append(line([(-1400, HALL_FLOOR), (3600, HALL_FLOOR + 2)], 5, INK, taper=0, wmin=.8, seed=9002))
-    # высокие окна между местами: рамы и полосы дневного света на полу (форма окна, без овалов)
-    for j, wx in enumerate((-60, 705, 1455, 2205)):
-        x0, x1, y0, y1 = wx - 150, wx + 150, 330, 1060
-        sky = blob(rect_pts(x0, y0, x1, y1), "#CFE6F2") + blob(rect_pts(x0, y1 - 160, x1, y1), "#DCEFE0")
-        sky += blob(ellipse_pts(x0 + 90, y1 - 150, 110, 70, 14), "#A9CF9A") + blob(ellipse_pts(x1 - 60, y1 - 130, 90, 60, 14), "#9CC48C")
+    o = [blob(rect_pts(-1400, -1400, 3000, WALL9), "#F3EBDC")]
+    o.append(blob(rect_pts(-1400, WALL9 - 70, 3000, WALL9), "#E6D9C2"))
+    o.append(line([(-1400, WALL9 - 70), (3000, WALL9 - 69)], 4, INK, taper=0, wmin=.8, seed=9001))
+    o.append(blob(rect_pts(-1400, WALL9, 3000, 3200), "#D9C3A0"))
+    for j in range(-12, 22):        # доски пола сходятся к стене
+        x = 540 + j * 130
+        o.append(line([(540 + j * 70, WALL9 + 4), (x + (x - 540) * 1.4, 3000)], 2.4, "#C2A880", taper=0, wmin=.6, seed=9010 + j))
+    o.append(line([(-1400, WALL9), (3000, WALL9 + 2)], 5, INK, taper=0, wmin=.8, seed=9002))
+    # высокие окна в стене; от каждого на полу — полоса света формы окна (чёткая, с переплётом)
+    for j, wx in enumerate((-260, 220, 700, 1180)):
+        x0, x1, y0, y1 = wx - 130, wx + 130, -60, 520
+        sky = blob(rect_pts(x0, y0, x1, y1), "#CFE6F2") + blob(rect_pts(x0, y1 - 130, x1, y1), "#DCEFE0")
+        sky += blob(ellipse_pts(x0 + 80, y1 - 120, 100, 60, 14), "#A9CF9A") + blob(ellipse_pts(x1 - 50, y1 - 105, 80, 52, 14), "#9CC48C")
         o.append(shape(rect_pts(x0, y0, x1, y1), "#CFE6F2", sky, w=5, seed=9100 + j))
         o.append(line([(wx, y0), (wx, y1)], 7, "#FFFFFF", taper=0, wmin=1, seed=9110 + j))
         o.append(line([(x0, (y0 + y1) / 2), (x1, (y0 + y1) / 2)], 7, "#FFFFFF", taper=0, wmin=1, seed=9120 + j))
-        o.append(shape(rect_pts(x0 - 18, y1, x1 + 18, y1 + 22), "#FFFFFF", "", w=3.4, seed=9130 + j))
-        # полоса света на полу: трапеция формы окна
-        o.append(blob([(x0 + 40, HALL_FLOOR + 14), (x1 + 40, HALL_FLOOR + 14), (x1 + 230, HALL_FLOOR + 330), (x0 + 230, HALL_FLOOR + 330)], "#E7D3B0"))
+        o.append(shape(rect_pts(x0 - 16, y1, x1 + 16, y1 + 20), "#FFFFFF", "", w=3.4, seed=9130 + j))
+        for half in (0, 1):        # две створки — два чётких светлых параллелограмма
+            ax0 = x0 + half * 136 + 6
+            ax1 = ax0 + 118
+            q = [(ax0 + 60, WALL9 + 20, 1), (ax1 + 60, WALL9 + 20, 1), (ax1 + 330, WALL9 + 520, 1), (ax0 + 330, WALL9 + 520, 1)]
+            o.append(blob(q, "#E6D2AE"))
     return "".join(o)
 
 
-def chair9(x, y, sc, seed):
+def chair9(x, y, sc, floor, seed):
     """Стул участника: спинка слева от таза (смотрит вправо), сиденье под тазом."""
     o = []
     bx = x - 150 * sc
-    o.append(shape([(bx - 18 * sc, y + 40 * sc), (bx - 30 * sc, y - 360 * sc), (bx + 10 * sc, y - 360 * sc), (bx + 16 * sc, y + 40 * sc)],
+    o.append(shape([(bx - 18 * sc, y + 40 * sc, 1), (bx - 30 * sc, y - 360 * sc, 1), (bx + 10 * sc, y - 360 * sc, 1), (bx + 16 * sc, y + 40 * sc, 1)],
                    "#7C9AB8", blob(rect_pts(bx, y - 350 * sc, bx + 12 * sc, y + 40 * sc), "#5E7D9C"), w=4, seed=seed))
     o.append(shape(lib.rrect(bx - 26 * sc, y - 380 * sc, bx + 24 * sc, y - 200 * sc, 14 * sc), "#8BA9C6", "", w=4, seed=seed + 1))
-    leg_y = HALL_FLOOR + 8
     for j, lx in enumerate((x - 140 * sc, x + 110 * sc)):
-        o.append(shape(rect_pts(lx - 9 * sc, y + 40 * sc, lx + 9 * sc, leg_y), "#5E6B78", "", w=3.4, seed=seed + 3 + j))
+        o.append(shape(rect_pts(lx - 9 * sc, y + 40 * sc, lx + 9 * sc, floor), "#5E6B78", "", w=3.4, seed=seed + 3 + j))
     return "".join(o)
 
 
@@ -135,10 +136,11 @@ def write_u(t, d):
     return 1.0 * ease_out(clamp((t - (T9_WRITE - .5 + d * .3)) / (T9_THANKS - .12 - (T9_WRITE - .5 + d * .3))), 1.4)
 
 
-def station(who, X, d, t, look_cam=0.0):
+def station(who, X, Y0, PS9, d, t, look_cam=0.0):
     """Участник за столом пишет письмо; к «благодарности» рисует внизу сердечко и улыбается."""
     sc = PS9 * PE.HEIGHT[who]
-    Y = SIT9 + 3 * math.sin(t * 1.7 + X)
+    Y = Y0 + 3 * sc * math.sin(t * 1.7 + X)
+    floor = Y0 + 300 * sc
     yb, yf = Y - 250 * sc, Y - 150 * sc               # задний и передний край крышки
     lw, lh, lk, lsy = 200.0, 260.0, .95 * sc, .52
     LX, LY = X + 270 * sc, (yb + yf) / 2 + 4 * sc
@@ -188,15 +190,15 @@ def station(who, X, d, t, look_cam=0.0):
     kw["hands"]["f"] = {"dir": (.85, .35), "curl": (.2, .2, .25, .3), "thumb": .3, "spread": .12}
     kw["lean"] += .04 * math.sin(t * 2.1 + d * 3) + .05 * smile
     kw["head_ang"] += .05 * smile - .03
-    kw["feet"] = {"n": ((X + 330 * sc, HALL_FLOOR + 40), 0.0), "f": ((X + 280 * sc, HALL_FLOOR + 30), 0.0)}
+    kw["feet"] = {"n": ((X + 330 * sc, floor), 0.0), "f": ((X + 280 * sc, floor - 8 * sc), 0.0)}
     fig = PE.figure(who, X, Y, PS9, ex, layers=("legs", "pelvis"), **kw)
     upper = PE.figure(who, X, Y, PS9, ex, layers=("arm_f", "body"), **kw)
     arm_f = PE.figure(who, X, Y, PS9, ex, layers=("arm_f",), **kw)
     arm_n = PE.figure(who, X, Y, PS9, ex, layers=("arm_n",), **kw)
-    o = [chair9(X, Y, sc, 9300 + int(X)), fig["svg"], seat_front9(X, Y, sc, 9320 + int(X))]
+    o = [chair9(X, Y, sc, floor - 6 * sc, 9300 + int(X)), fig["svg"], seat_front9(X, Y, sc, 9320 + int(X))]
     o.append(clip_y(upper["svg"], -3000, yb + 6))
     # стол: крышка от yb до yf, кромка и ножки
-    o.append(P.desk(X + 250 * sc, yf, 640 * sc, 1.0, depth=yf - yb, legs=True, seed=int(X) % 50, leg_h=HALL_FLOOR - yf - 10))
+    o.append(P.desk(X + 250 * sc, yf, 640 * sc, 1.0, depth=yf - yb, legs=True, seed=int(X) % 50, leg_h=floor - yf - 26))
     o.append(clip_y(arm_f["svg"], yb + 6, 6000))
     o.append(P.letter(LX, LY, lk, LROT, lw, lh, write=wu, seed=d * 10, sy=lsy))
     if hu > 0:
@@ -211,8 +213,8 @@ def station(who, X, d, t, look_cam=0.0):
 def s09(t):
     o = [hall_back(t)]
     info = {}
-    for who, X, d in STATIONS:
-        sv, inf = station(who, X, d, t)
+    for who, X, Y0, ps, d in STATIONS:
+        sv, inf = station(who, X, Y0, ps, d, t)
         o.append(sv)
         info[who] = inf
         if inf["smile"] > .3:
@@ -220,11 +222,12 @@ def s09(t):
             o.append(P.sparkles(hx + 40, hy - 40, 1.1, inf["smile"] * .9, t, seed=int(X) % 13, n=3, r=150))
     # камера: с ближнего плана юноши — панорама вдоль столов с отъездом (видны все трое к «благодарности»),
     # потом наезд на ближний лист и лицо женщины с кудрями
-    a = sm(t, 21.6, 22.95)
-    b = sm(t, 23.2, 24.25)
-    cx = lerp(lerp(470, 1080, a), info["curly"]["letter"][0] - 60, b)
-    cy = lerp(lerp(1060, 1010, a), info["curly"]["letter"][1] - 170, b)
-    s = lerp(lerp(1.05, .5, ease_out(a, 1.6)), 1.12, ease_in(b, 1.3))
+    a = sm(t, 21.6, 22.9)
+    b = sm(t, 23.15, 24.25)
+    L = info["curly"]["letter"]
+    cx = lerp(lerp(800, 600, a), L[0] - 40, b)
+    cy = lerp(lerp(720, 1470, a), L[1] - 120, b)
+    s = lerp(lerp(1.5, .9, ease_out(a, 1.6)), 1.55, ease_in(b, 1.3))
     rot = lerp(-1.2, .6, a) + lerp(0, -.8, b)
     set_ink(s)
     return cam_wrap("".join(o), cx, cy, s, rot, bg="#F3EBDC")

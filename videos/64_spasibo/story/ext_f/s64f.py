@@ -137,7 +137,7 @@ def s16(t):
     lift = 0.0 if ph < .62 else math.sin(math.pi * (ph - .62) / .38) * 22
     pet_on = sm(t, T_A16 - .3, T_A16 + .1)
     back_y = cy - 104 * K16
-    Wn = (cx - 170 * K16 + 210 * K16 * stroke, back_y - 30 - lift)
+    Wn = (cx - 95 * K16 + 200 * K16 * stroke, back_y - 30 - lift)
     Wn = lerp2((HX + 250 * SC, HY - 160 * SC), Wn, pet_on)
     e = ex("relief64", look=(lerp(.3, -.25, sm(t, T_MUR + .3, T_MUR + .8)), lerp(.55, .15, sm(t, T_MUR + .3, T_MUR + .8))),
            closed=blinks(t, (40.6,)), smile=.8 + .2 * sq)
@@ -149,7 +149,11 @@ def s16(t):
     sc = R.sofa_scene(t, "day")
     mob = PR.mobilnik(HX + 545 * SC, R.SOFA_SEAT - 12, .8, 84)   # мобильник опущен рядом на подушку, у колена
     purr = PR.purr(cx - 120 * K16, cy - 150 * K16, 1.1, t, purr_u, seed=1) + PR.purr(cx + 120 * K16, cy - 120 * K16, .9, t + .35, purr_u * .8, seed=7)
-    world = [sc["bg"], sc["sofa"], mob, parts["legs"], parts["pelvis"], parts["arm_f"], parts["body"], cat_svg, parts["arm_n"], sc["front"], purr]
+    # голова кота лежит ближе к зрителю, чем предплечье: копия кота поверх руки, обрезанная по голове и передним лапам
+    hc = lib.uid("hd")
+    lib.DEFS.append(f'<clipPath id="{hc}"><path d="{lib.fill_d(ellipse_pts(cx - 150 * K16, cy - 120 * K16, 128 * K16, 150 * K16, 24))}"/></clipPath>')
+    head_over = f'<g clip-path="url(#{hc})">{cat_svg}</g>'
+    world = [sc["bg"], sc["sofa"], mob, parts["legs"], parts["pelvis"], parts["arm_f"], parts["body"], cat_svg, parts["arm_n"], head_over, sc["front"], purr]
     # камера: медленный откат, «дыхание»
     u = sm(t, T_A16 - .2, 41.44)
     z = 1.72 - .22 * u + .012 * math.sin(t * 2.1)
