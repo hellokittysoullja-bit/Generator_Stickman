@@ -1,0 +1,194 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Рилс 40 — s03 s05 лёжа, слои</title>
+<style>html,body{margin:0;background:transparent}svg{display:block}</style></head>
+<body>
+<!--SVG-->
+<script src="../timing40.js"></script>
+<script>
+// s03, s05 рилса 40 (основа — s02 рилса 26): лёжа под пледом. Свет, огонёк — из ../timing40.js; поза, мимика, кот — по плану и t.
+const TT = window.Timing40, $ = id => document.getElementById(id);
+const set = (id, a, v) => { const e = $(id); if (e) e.setAttribute(a, v); };
+const show = (id, on) => { const e = $(id); if (e) e.style.display = on ? '' : 'none'; };
+const cl = x => Math.min(1, Math.max(0, x));
+const ss = (a, b, x) => { const u = cl((x - a) / (b - a)); return u * u * (3 - 2 * u); };
+const LAYERS = ['L_dima', 'L_plaid', 'L_cat', 'L_fx'];
+/*CONST*/
+function catBlinkAt(t, list) {
+  let v = 0;
+  for (const [b, dur] of list) {
+    const d = t - b, q = dur * .35;
+    if (d < 0 || d > dur) continue;
+    v = Math.max(v, d < q ? ss(0, q, d) : d < dur - q ? 1 : 1 - ss(dur - q, dur, d));
+  }
+  return v;
+}
+function mat(r, g, b) { return `${r * .9} ${r * .1} 0 0 0  ${g * .05} ${g * .9} ${g * .05} 0 0  0 ${b * .1} ${b * .9} 0 0  0 0 0 1 0`; }
+const deg = x => x * 180 / Math.PI;
+function armIK(tx, ty) {      // плечо S, локоть E, запястье P (покой); углы поворота плеча и предплечья, °
+  const [Sx, Sy] = ARM.S, [Ex, Ey] = ARM.E, [Px, Py] = ARM.P;
+  const L1 = Math.hypot(Ex - Sx, Ey - Sy), L2 = Math.hypot(Px - Ex, Py - Ey);
+  let dx = tx - Sx, dy = ty - Sy, D = Math.hypot(dx, dy);
+  D = Math.min(L1 + L2 - 1e-3, Math.max(Math.abs(L1 - L2) + 1e-3, D));
+  const base = Math.atan2(dy, dx), a = Math.acos((L1 * L1 + D * D - L2 * L2) / (2 * L1 * D));
+  const a0 = Math.atan2(Ey - Sy, Ex - Sx);
+  let best = null;
+  for (const sg of [1, -1]) {     // локоть наружу (вправо-вниз от линии плечо—кисть), как в покое
+    const ang = base + sg * a, ex = Sx + L1 * Math.cos(ang), ey = Sy + L1 * Math.sin(ang);
+    const cr = (tx - Sx) * (ey - Sy) - (ty - Sy) * (ex - Sx);
+    if (!best || cr > best.cr) best = {cr, ang, ex, ey};
+  }
+  const f0 = Math.atan2(Py - Ey, Px - Ex), f1 = Math.atan2(ty - best.ey, tx - best.ex);
+  const r1 = best.ang - a0;
+  return [deg(r1), deg(f1 - f0 - r1)];
+}
+const easeOutBack = (u, k = 1.6) => 1 + (k + 1) * Math.pow(u - 1, 3) + k * Math.pow(u - 1, 2);
+const UP = [500, 960];          // запястье поднятой руки (s05)
+function wave(t) {
+  // s05: покой (кулак на пачке) → «можно» рывок вверх открытой кистью → два взмаха кистью «не продолжать» →
+  // «продолжать» рука падает (ускорение) на плед с отскоком. [x, y, u, flick°, open]
+  const [px, py] = ARM.P, t0 = TT.WAVE - .06, tD = TT.GIVEUP + .26;
+  let u = 0;
+  if (t >= t0) u = easeOutBack(cl((t - t0) / .22));
+  const drop = t - tD;
+  if (drop >= 0) {
+    const D = .22;
+    if (drop < D) u = 1 - Math.pow(drop / D, 2);
+    else { const e = drop - D; u = -.05 * Math.exp(-e * 9) * Math.sin(e * 26); }
+  }
+  let x = px + (UP[0] - px) * u + 22 * Math.sin(Math.PI * cl(u)), y = py + (UP[1] - py) * u;
+  // взмах: кисть в запястье туда-обратно 2 раза, предплечье чуть качается следом
+  let flick = 0;
+  const w0 = TT.WAVE + .16;
+  if (t > w0 && t < tD + .05) {
+    const d = t - w0;
+    flick = 28 * Math.sin(2 * Math.PI * d / .3) * ss(0, .06, d) * (1 - ss(tD - .1, tD + .05, t));
+    x += 7 * Math.sin(2 * Math.PI * d / .3 - .6) * (1 - ss(tD - .1, tD + .05, t));
+  }
+  return [x, y, u, flick, t >= t0 - .02];
+}
+function seek(t, shot) {
+  if (shot) window.CUR = shot;
+  const CUR = window.CUR || 's03';
+  const fl = TT.flame(t, CUR), lamp = TT.lamp(t, CUR);
+  const m = CUR === 's03' ? mat(0.80, 0.78, 0.82) : mat(0.66, 0.58, 0.56);
+  set('fNightM', 'values', m);
+  { const v = m.split(/\s+/).map(Number), c = [58, 54, 70];
+    const rgb = [0, 1, 2].map(r => Math.round(v[r * 5] * c[0] + v[r * 5 + 1] * c[1] + v[r * 5 + 2] * c[2]));
+    for (const e of document.querySelectorAll('.catlid')) e.setAttribute('fill', `rgb(${rgb.join(',')})`); }
+  const sleep = CUR === 's03';
+  // рука
+  let wx, wy, u = 0, flick = 0, open = false;
+  if (sleep) { wx = ARM.P[0] + 2; wy = ARM.P[1] + 3 + 2 * Math.sin(2 * Math.PI * t / 3.0); }
+  else [wx, wy, u, flick, open] = wave(t);
+  const [r1, r2] = armIK(wx, wy);
+  set('arm_up', 'transform', `rotate(${r1.toFixed(3)} ${ARM.S[0]} ${ARM.S[1]})`);
+  set('arm_fore', 'transform', `rotate(${r2.toFixed(3)} ${ARM.E[0]} ${ARM.E[1]})`);
+  show('hand_fist', !open); show('hand_flat', open);
+  set('hand_flat_rot', 'transform', `rotate(${flick.toFixed(3)} ${ARM.P[0]} ${ARM.P[1]})`);
+  // дыхание груди: во сне глубже и реже (храп)
+  const per = sleep ? 3.0 : 2.4;
+  const slump = sleep ? 0 : ss(TT.GIVEUP + .3, TT.GIVEUP + .8, t);
+  const br = Math.sin(2 * Math.PI * t / per) * (sleep ? 1.8 : 1) + (sleep ? 0 : 1.2 * slump * Math.exp(-Math.max(0, t - TT.GIVEUP - .6) * 2));
+  set('plaid_breath', 'transform', `translate(0 1300) scale(1 ${(1 + .006 * br).toFixed(5)}) translate(0 -1300)`);
+  // голова
+  let hx, hy, hr;
+  if (sleep) {
+    const sn = Math.sin(2 * Math.PI * t / 3.0);
+    hx = -2; hy = 5 + 1.6 * sn; hr = -3 + .8 * sn;
+  } else {
+    const lift = ss(TT.WAVE - .1, TT.WAVE + .1, t) * (1 - slump);
+    hx = 3 * lift - 2 * slump; hy = -5 * lift + 6 * slump + .9 * Math.sin(2 * Math.PI * t / 2.4);
+    hr = 2.5 * lift - 3 * slump;
+  }
+  const htf = `translate(${hx.toFixed(2)} ${hy.toFixed(2)}) rotate(${hr.toFixed(3)} 330 1100)`;
+  for (const id of ['dima_head_pose', 'face_light_tv', 'face_light_lamp']) set(id, 'transform', htf);
+  // глаза
+  let lid, px, py, mouth, brows;
+  if (sleep) {
+    lid = 58; px = 5; py = -4; mouth = 'm_open'; brows = 'brows_calm';
+  } else {
+    // устал, веки тяжёлые; на «можно» приоткрыл, кривится; обмяк — веки ниже, взгляд в потолок
+    lid = 24 - 10 * ss(TT.WAVE - .1, TT.WAVE + .1, t);
+    lid = lid * (1 - slump) + 34 * slump;
+    const blk = (t > 7.18 && t < 7.35) ? Math.sin(Math.PI * (t - 7.18) / .17) : 0;
+    lid = lid + (58 - lid) * blk;
+    px = 4 * (1 - slump) + 6 * slump; py = -2 * (1 - slump) - 14 * slump;
+    mouth = t >= TT.WAVE - .06 && t < TT.GIVEUP + .3 ? 'm_tense' : (t >= TT.GIVEUP + .3 ? 'm_tired' : 'm_flat');
+    brows = 'brows_tired';
+  }
+  for (const nm of ['N', 'F']) set('dima_lid_' + nm, 'transform', `translate(0 ${lid.toFixed(2)})`);
+  for (const nm of ['N', 'F']) set('dima_pupil_' + nm, 'transform', `translate(${px.toFixed(2)} ${py.toFixed(2)})`);
+  show('dima_eyes', true); show('dima_eyes_laugh', false);
+  for (const b of ['brows_up', 'brows_tired', 'brows_calm']) show(b, b === brows);
+  for (const k of ['m_tired', 'm_tense', 'm_smile', 'm_open', 'm_chew', 'm_flat', 'm_warm', 'm_laugh']) show(k, k === mouth);
+  show('dima_sweat', false);
+  // Z над головой (s03): три знака по очереди выскакивают, поднимаются вправо-вверх и лопаются (масштаб, без прозрачности)
+  show('zzz', sleep);
+  if (sleep) {
+    for (let i = 0; i < 3; i++) {
+      const P = 1.05, ph = ((t - 2.62 + i * P / 3) % P + P) % P / P;
+      const sc = ph < .18 ? easeOutBack(ph / .18, 2.2) : ph > .82 ? 1 - ss(.82, 1, ph) : 1;
+      const zx = 400 + 120 * ph + 10 * Math.sin(ph * 9 + i), zy = 900 - 190 * ph;
+      const rot = -12 + 16 * Math.sin(ph * 5 + i);
+      set('z' + i, 'transform', `translate(${zx.toFixed(1)} ${zy.toFixed(1)}) rotate(${rot.toFixed(2)}) scale(${(Math.max(0, sc) * (.75 + .35 * ph)).toFixed(4)})`);
+    }
+  }
+  // свет
+  set('tv_dima', 'opacity', 0); set('tv_plaid', 'opacity', 0); set('tv_cat', 'opacity', 0);
+  set('lamp_dima', 'opacity', Math.min(1, .36 * lamp).toFixed(4));
+  set('lamp_plaid', 'opacity', Math.min(1, .34 * lamp).toFixed(4));
+  set('lamp_cat', 'opacity', Math.min(1, .5 * lamp).toFixed(4));
+  set('fl_cat', 'opacity', Math.min(1, .72 * fl).toFixed(4)); set('fl_plaid', 'opacity', Math.min(1, .72 * fl).toFixed(4));
+  // кот
+  let cx_, cy_, upL, upR, lo, tilt, browL = 0, browR = 0;
+  if (sleep) {
+    // смотрит на часы (влево-вверх); на «проспал» глаза распахиваются, голова дёргается к часам;
+    // потом косится на спящего Диму и медленно моргает
+    const jolt = ss(TT.OVERSLEPT, TT.OVERSLEPT + .12, t), toDima = ss(3.85, 4.1, t);
+    cx_ = -10 * (1 - toDima) - 9 * toDima; cy_ = -7 * (1 - toDima) + 3 * toDima;
+    const cb = catBlinkAt(t, [[2.86, .2], [4.28, .4]]);
+    const wide = jolt * (1 - ss(3.5, 3.8, t));
+    upL = Math.max(cb, .5 - .5 * wide); upR = upL; lo = Math.max(cb, .1 * (1 - wide));
+    tilt = -3 - 5 * (jolt - .6 * ss(3.4, 3.7, t)) + 3 * toDima;
+    browL = -6 * wide; browR = -8 * wide;
+  } else {
+    // следит за рукой: вниз на пачку → вверх за взмахом → вниз за падением; в конце — на зрителя
+    const up_ = ss(TT.WAVE - .02, TT.WAVE + .14, t) * (1 - ss(TT.GIVEUP + .26, TT.GIVEUP + .45, t));
+    const toCam = ss(7.2, 7.45, t);
+    cx_ = (-9 - 2 * up_) * (1 - toCam); cy_ = (3 - 9 * up_) * (1 - toCam);
+    const cb = catBlinkAt(t, [[5.82, .2], [7.48, .24]]);
+    const sq = .5 + .12 * toCam;
+    upL = Math.max(cb, sq); upR = upL; lo = Math.max(cb, .12);
+    tilt = -2 - 3 * up_ + 4 * toCam;
+    browR = -5 * toCam;
+  }
+  set('cat_lid_L', 'transform', `translate(0 ${(-84 + 84 * upL).toFixed(2)})`);
+  set('cat_lid_R', 'transform', `translate(0 ${(-84 + 84 * upR).toFixed(2)})`);
+  for (const nm of ['L', 'R']) {
+    set('cat_pupil_' + nm, 'transform', `translate(${cx_.toFixed(2)} ${cy_.toFixed(2)})`);
+    set('cat_lidlo_' + nm, 'transform', `translate(0 ${(48 - 48 * lo).toFixed(2)})`);
+    const shut = Math.max(upL, upR) >= .9;
+    show('cat_ring_' + nm, !shut); show('cat_eye_' + nm, !shut); show('cat_closed_' + nm, shut); show('cat_happy_' + nm, false);
+  }
+  set('brow_L', 'transform', `translate(0 ${browL.toFixed(2)})`);
+  set('brow_R', 'transform', `translate(0 ${browR.toFixed(2)})`);
+  show('cat_mouth_n', true); show('cat_mouth_h', false);
+  const ttf = `rotate(${tilt.toFixed(3)} 836 1146)`;
+  for (const id of ['cat_headg', 'cat_eyes_tilt', 'cat_head_rim', 'cat_head_rim_tv_cat', 'cat_head_rim_lamp_cat', 'cat_brows_tilt']) set(id, 'transform', ttf);
+  const cbr = Math.sin(2 * Math.PI * t / 2.3);
+  const hop = sleep ? -6 * Math.sin(Math.PI * cl((t - TT.OVERSLEPT) / .22)) : 0;     // вздрог на «проспал»
+  set('cat_jump', 'transform', `translate(0 ${hop.toFixed(2)}) translate(${CAT_AT[0]} ${CAT_AT[1]}) scale(${(1 + .004 * cbr).toFixed(5)} ${(1 + .010 * cbr).toFixed(5)}) translate(${-CAT_AT[0]} ${-CAT_AT[1]})`);
+  const tail = 3 * Math.sin(2 * Math.PI * t / 2.2) + (sleep ? 6 * ss(TT.OVERSLEPT, TT.OVERSLEPT + .1, t) * Math.exp(-(t - TT.OVERSLEPT) * 3) * Math.sin(2 * Math.PI * (t - TT.OVERSLEPT) / .5) : 0);
+  const rot = `rotate(${tail.toFixed(3)} 912 1272)`;
+  set('cat_tail', 'transform', rot); set('tail_rim', 'transform', rot);
+  const sk = 6 * Math.sin(t * 7.3) + 3 * Math.sin(t * 13.1 + 1), fs = Math.min(1.25, fl);
+  set('cat_flame', 'transform', `${rot} translate(995 1076) skewX(${sk.toFixed(3)}) scale(${(1 / Math.sqrt(fs)).toFixed(4)} ${fs.toFixed(4)}) translate(-995 -1076)`);
+}
+function only(name) { for (const L of LAYERS) $(L).style.display = (!name || L === name) ? '' : 'none'; }
+function setView(x, y, w, h, ow, oh) {
+  const s = $('scene'); s.setAttribute('viewBox', `${x} ${y} ${w} ${h}`); s.setAttribute('width', ow); s.setAttribute('height', oh);
+}
+window.seek = seek; window.only = only; window.setView = setView;
+seek(3.5, 's03');
+</script>
+</body></html>

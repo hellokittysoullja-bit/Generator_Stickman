@@ -1,0 +1,31 @@
+{
+ "shot": "s06",
+ "fps": 30,
+ "t_start": 7.3,
+ "frames": 69,
+ "frame_time": "t = t_start + k/30",
+ "scale": 2.544,
+ "offset_px": [
+  572,
+  526
+ ],
+ "size_px": [
+  572,
+  1018
+ ],
+ "out_size": [
+  1455,
+  2590
+ ],
+ "order": [
+  "L_dima",
+  "L_plaid",
+  "L_cat",
+  "L_fx"
+ ],
+ "flame_px": [
+  987,
+  934
+ ],
+ "notes": "пиксель (u, v) PNG = точка кадра 0 комнаты (offset_px + (u, v) / scale). Камера — room/cameras.json. L_dima — Дима (и подушка в s02); L_plaid — плед и всё поверх него (рука, чипсы, коробка с кроссовками); L_cat — кот с огоньком; L_fx — Z сна (s03)."
+}
