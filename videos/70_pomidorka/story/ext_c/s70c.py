@@ -18,7 +18,7 @@ import lib  # noqa: E402
 import people  # noqa: E402
 import props as PR  # noqa: E402
 import room as R  # noqa: E402
-from lib import INK, blob, clamp, ease_io, ease_out, ellipse_pts, line, shape  # noqa: E402,F401
+from lib import INK, blob, clamp, ease_in, ease_io, ease_out, ellipse_pts, line, shape  # noqa: E402,F401
 
 WORDS = json.load(open(os.path.join(STORY, "voice", "words.json")))
 BS = 1.0
@@ -238,7 +238,7 @@ def s01(t):
 
 # ═════════════════════════ s04: средний план сбоку — завёл и поставил ═════════════════════════
 T_DIMA, T_POST, T_TAIM = wt("дима"), wt("поставил"), wt("таймер")          # 5.11 5.33 5.74
-TK4 = .72
+TK4 = .82
 T4_DESK0 = (R.TIMER_DESK[0] - 10, table_y(TK4))
 T4_DESK1 = (R.TIMER_DESK[0] + 30, table_y(TK4))
 T4_UP = (R.TIMER_DESK[0] + 60, 745.0)
@@ -294,7 +294,7 @@ def s04(t):
              parts["arm_f"], parts["body"], gb, timer, gf, parts["arm_n"], hit, sc["lamp"]]
     sx1, sy1 = shake2(t, T_TAIM + .01, 12)
     cx0, cy0, s0 = R.CAM_SIDE_MID
-    cx = cx0 - 50 + 110 * sm(t, 4.9, 6.6) - sx1
+    cx = cx0 - 60 + 45 * sm(t, 4.9, 6.6) - sx1
     cy = cy0 - 20 * sm(t, 4.9, 6.6) - sy1
     s = s0 * (1 + .05 * sm(t, 4.9, 6.6) + .03 * bump(t, T_POST + .02, .3))
     set_ink(s)
@@ -302,8 +302,41 @@ def s04(t):
     return lib.svg(f'<rect width="1080" height="1920" fill="#2a2440"/>{body}')
 
 
+# ═════════════════════════ s05: через плечо — сел и смотрит в стену ═════════════════════════
+T_SEL, T_DV5, T_MIN5, T_SMOT, T_STENU = wt("сел"), wt("двадцать", 6.0), wt("минут", 7.0), wt("смотрел"), wt("стену")   # 6.32 6.85 7.25 7.56 8.05
+TL0, TL1 = T_DV5 - .05, T_MIN5 + .3      # ускоренное время
+
+
 def s05(t):
-    raise NotImplementedError
+    lib.dyn_begin()
+    tl = sm(t, TL0, TL1)
+    v = R.wall_view(t, "night", tl, spot=1.0)
+    # плюх: Дима опускается в кадр сверху, стул пружинит, плечи подпрыгивают и успокаиваются
+    drop = ease_in(clamp((t - (T_SEL - .2)) / .2), 2)
+    ny = R.DIMA_V[1] - 300 * (1 - drop) + damp(t, T_SEL, 34, 2.6, 5.5)
+    squash = max(0.0, damp(t, T_SEL, 1.0, 2.6, 5.5))
+    bounce = damp(t, T_SEL, 2.2, 2.6, 5.0)
+    breath = 4 * math.sin(t * 2.4) * (1 - tl * .5)
+    # «смотрел в стену»: затылок медленно склоняется набок
+    tilt = 2 * math.sin(t * 1.7) * (1 - tl) + 11 * sm(t, T_SMOT, T_STENU + .2) + 2 * damp(t, T_SEL, 1.0, 3, 5)
+    nx = R.DIMA_V[0] + 6 * math.sin(t * 1.3) * (1 - tl)
+    back = people.dima_back(nx, ny + breath, 1.9, tilt=tilt, shrug=.15 + .25 * sm(t, T_SMOT, T_STENU + .2), t=t)
+    # таймер на столе: клин тает до нуля за «двадцать пять минут», тикает (в ускоренном времени — чаще)
+    wedge = PR.WEDGE_25 * (1 - tl)
+    tx, ty = R.TIMER_V
+    timer = PR.tomato_timer(tx, ty, .66, -3, wedge=wedge, shake=1.6 + 2.5 * tl * (1 - tl) * 4, leaf_swing=4 * math.sin(t * 3), t=t, seed=1)
+    lap = PR.laptop(R.LAPTOP_V[0], R.LAPTOP_V[1], .7, 1.0, "page", t=t, seed=1)
+    world = [v["bg"], v["desk"], v["pool"], lap, timer, v["lamp"], back["svg"], v["chair"](squash, bounce)]
+    # камера: тряска на плюхе, затем ровный наезд через плечо к пятнышку на стене
+    sx1, sy1 = shake2(t, T_SEL + .02, 14)
+    cx0, cy0, s0 = R.CAM_SHOULDER
+    z = ease_io(clamp((t - 6.2) / 2.5))
+    cx = lerp(cx0, R.WALL_SPOT_V[0] - 20, .5 * z) - sx1
+    cy = lerp(cy0, 900.0, z) - sy1
+    s = s0 * (1 + .22 * z)
+    set_ink(s)
+    body = f'<g transform="{lib.cam(cx, cy, s)}">{"".join(world)}</g>'
+    return lib.svg(f'<rect width="1080" height="1920" fill="#2a2440"/>{body}')
 
 
 def frame(sid, t):
