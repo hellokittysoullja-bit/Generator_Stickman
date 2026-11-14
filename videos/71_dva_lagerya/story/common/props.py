@@ -2928,3 +2928,410 @@ def wind_lines(x, y, k=1.0, u=1.0, t=0.0, seed=0, n=4):
         if ph < .9:
             o.append(line(pts, 5 * k * (1 - ph * .7), "#7C8794", taper=.7, wmin=.1, seed=71500 + seed + j))
     return "".join(o)
+
+
+# ═════════════════════════════ РИЛС 71 «ДВА ЛАГЕРЯ» (автор — группа A) ═════════════════════════════
+# Букв и цифр нет нигде: пузыри — штрихи-волны и пиктограммы, флажки — знаки (молния / клубок), ящик без надписей.
+#   camp_tent(x, y, k, col, flag, open_, bounce, t, seed, wave)
+#                         туристическая палатка в три четверти, (x, y) — ЦЕНТР ДНА, ~600×430·k (+ флагшток до −640·k);
+#                         col "yellow" | "blue"; flag "bolt" | "yarn" (знак на флажке); open_ 0…1 — полог раскрывается (виден тёмный вход);
+#                         bounce — сжатие от дна (+ приплюснута, − вытянута; подскок/удар задаёт сцена через P.squash);
+#                         wave — сила колыхания флажка (1 — ветерок). tent_door(x, y, k, bounce) → (x, y) центр входа (откуда вылетают пузыри).
+#   camp_flag(x, y, k, flag, t, wave, seed, col)  флажок на древке отдельно (ЦЕНТР НИЗА древка), древко 200·k, полотнище 130×90·k
+#   flag_sign(kind, cx, cy, s, seed, col)         только знак: "bolt" — молния, "yarn" — спутанный клубок (s — радиус)
+#   comment_bubble(x, y, k, icon, u, wobble, seed, tail, col)
+#                         круглый пузырь-реплика 220×180·k (ЦЕНТР); icon "waves" | "arrow_up" | "yarn" | "" ; u — масштаб (pop задаёт сцена);
+#                         wobble −1…1 — желейное покачивание (кивок/удар); tail=(dx, dy) хвостик от низа; col — заливка (по лагерю:
+#                         BUB_YELLOW / BUB_BLUE / белый).
+#   bubble_swarm(cx, cy, t, n, r, k, u, split, spread, seed, icons, cols)
+#                         рой пузырей, кружащих вокруг (cx, cy) по эллипсу радиуса r; split 0…1 — чётные уходят влево, нечётные вправо
+#                         на spread px; u — масштаб всех (проявление). swarm_pos(...) → [(x, y, i)] те же места.
+#   split_flash(x, y0, y1, u, seed, w)            вспышка-зигзаг раскола (вертикальная молния + штрихи-искры), u 0…1 (1 — погасла)
+#   task_crate(x, y, k, shrink, rot, seed)        деревянный ящик-дело 300×250·k (ЦЕНТР ДНА), доски, верёвка крест-накрест, узел;
+#                         shrink 0…1 — сжимается до кубика (CRATE_MIN доли); при сжатии стороны «хлюпают» (перелёт по осям).
+#                         crate_box(x, y, k, shrink) → (x0, y0, x1, y1) рамка в мире.
+#   chalk_wall(x0, y0, x1, y1, u, eyes, crumble, t, seed, masks, blink, eye_at, col, sh, rows)
+#                         невидимая стена — ТОЛЬКО пунктирный меловой контур кирпичей в прямоугольнике (не полупрозрачная фигура);
+#                         masks=[(cx, cy, r), ...] — штрихи видны только у этих точек (ладони), радиус × u; masks=None — вся стена,
+#                         проявление от центра по u; eyes 0…1 — сонные глаза-сторож (eye_at=(x, y) центр между глаз, по умолч. центр
+#                         стены), blink 0…1 — моргание; crumble 0…1 — кирпичи по одному срываются и падают кусочками, внизу пыль.
+#   chalk_dust(x, y, k, u, seed, col)             облачко меловой пыли (u 0…1 — разлёт и исчезновение уменьшением)
+#   striped_sock(x, y, k, rot, seed, flat)        полосатый носок лежит на полу (ЦЕНТР), 230×110·k, пятка и мысок синие; flat 0…1 —
+#                         насколько смят (0 — «стоит» уголком, 1 — плашмя)
+#   sock_worn(ax, ay, k, dirv, pull, seed)        носок НА ступне: (ax, ay) — щиколотка, dirv — куда пальцы; pull 0…1 — натянут
+#                         (0 — висит на пальцах, 1 — до щиколотки с резинкой). Рисовать поверх босой ступни.
+#   speed_arcs(x, y, k, u, t, seed, n, ang)       дуги-штрихи скорости за движущимся (ang — куда «хвост», градусы)
+C_TENT = {"yellow": ("#F2C53D", "#C99A1E", "#F8DD7A"), "blue": ("#4F78B5", "#36588C", "#79A0D6")}
+BUB_YELLOW = "#FFF4C7"
+BUB_BLUE = "#DCE9F7"
+CRATE_MIN = 0.22
+C_CHALK = "#FFFFFF"
+C_CHALK_SH = "#6F7F92"
+C_SOCK = ("#D9483B", "#F4EFE6", "#4F78B5")
+
+
+def flag_sign(kind, cx, cy, s=30.0, seed=0, col=None):
+    sd = 72000 + seed
+    if kind == "bolt":
+        c = col or "#F2C53D"
+        pts = [(-.15, -1.0, 1), (.55, -1.0, 1), (.12, -.15, 1), (.6, -.15, 1), (-.35, 1.05, 1), (-.02, .12, 1), (-.5, .12, 1)]
+        pts = [(cx + p[0] * s, cy + p[1] * s, 1) for p in pts]
+        return shape(pts, c, "", w=3.0, seed=sd)
+    if kind == "yarn":
+        c = col or "#4F78B5"
+        o = shape(ellipse_pts(cx, cy, s, s, 16), c, "", w=3.0, seed=sd)
+        sh = lib.mul(c, (.72, .72, .72))
+        for j, (a0, a1) in enumerate(((-.9, .7), (-.3, 1.0), (.2, -.8), (.9, -.2))):
+            o += line([(cx + s * .85 * math.cos(a0 * 2), cy + s * .85 * math.sin(a0 * 2)), (cx + s * .1 * j - s * .1, cy - s * .1 * j + s * .1),
+                       (cx + s * .85 * math.cos(a1 * 2.4), cy + s * .85 * math.sin(a1 * 2.4))], 2.6, sh, taper=.3, wmin=.4, seed=sd + 2 + j)
+        o += line([(cx + s * .7, cy + s * .7), (cx + s * 1.25, cy + s * .95), (cx + s * 1.5, cy + s * .7), (cx + s * 1.8, cy + s * 1.0)], 3.0, sh,
+                  taper=.5, wmin=.3, seed=sd + 9)
+        return o
+    return ""
+
+
+def camp_flag(x, y, k=1.0, flag="bolt", t=0.0, wave=1.0, seed=0, col="#FFFFFF", pole=200.0):
+    sd = 72100 + seed
+    o = [line([(0, 0), (0, -pole)], 7, "#5B4632", taper=.05, wmin=.9, seed=sd)]
+    o.append(shape(ellipse_pts(0, -pole - 6, 9, 9, 10), "#E2B65C", "", w=2.6, seed=sd + 1))
+    top, L, H = -pole + 4, 130.0, 90.0
+    pts = []
+    for i in range(7):
+        q = i / 6
+        pts.append((L * q, top + 10 * wave * q * math.sin(t * 7 + q * 3 + seed)))
+    bot = [(L * q, top + H - 4 * q + 10 * wave * q * math.sin(t * 7 + q * 3 + seed + .4)) for q in [i / 6 for i in range(6, -1, -1)]]
+    poly = [(p[0], p[1], 1) if i in (0, 6) else p for i, p in enumerate(pts)] + bot
+    inner = blob([(L * .55, top), (L, top), (L, top + H), (L * .55, top + H)], lib.mul(col, (.9, .9, .9)), .7)
+    o.append(shape(poly, col, inner, w=3.6, seed=sd + 2))
+    mid = 10 * wave * .5 * math.sin(t * 7 + 1.5 + seed)
+    o.append(flag_sign(flag, L * .5, top + H / 2 + mid, 28, seed))
+    return _tf("".join(o), x, y, k)
+
+
+def tent_door(x, y, k=1.0, bounce=0.0):
+    return (x - 70 * k * (1 + .5 * bounce), y - 120 * k * (1 - bounce))
+
+
+def camp_tent(x, y, k=1.0, col="yellow", flag="bolt", open_=0.0, bounce=0.0, t=0.0, seed=0, wave=1.0):
+    sd = 72200 + seed
+    c, csh, chi = C_TENT[col]
+    o = []
+    o.append(blob(ellipse_pts(20, 6, 330, 30, 18), "#3a2a20", .18))
+    # растяжки и колышки (за палаткой и у края)
+    for (a, b) in (((-250, -150), (-340, 8)), ((180, -330), (330, 10))):
+        o.append(line([a, b], 2.4, "#7a6a58", taper=.1, wmin=.6, seed=sd + 1))
+        o.append(line([(b[0], b[1] - 16), (b[0] + 4, b[1] + 8)], 5, "#5B4632", taper=.2, wmin=.6, seed=sd + 2))
+    apex, back_apex = (-70, -420), (170, -380)
+    # бок (теневая сторона)
+    side = [(apex[0], apex[1], 1), (back_apex[0], back_apex[1], 1), (300, -10, 1), (140, 0, 1)]
+    s_in = "".join(line([(apex[0] + 60 * j + 40, apex[1] + 10 * j + 8), (160 + 40 * j - 10, -4 - 3 * j)], 2.6, lib.mul(csh, (.85, .85, .85)), seed=sd + 5 + j, op=.6)
+                   for j in range(3))
+    o.append(shape(side, csh, s_in, w=4.6, seed=sd + 3))
+    # перёд
+    front = [(apex[0], apex[1], 1), (140, 0, 1), (-290, 0, 1)]
+    f_in = blob([(apex[0], apex[1]), (apex[0] - 40, apex[1] + 60), (-250, -10), (-290, 0)], chi, .8)
+    o.append(shape(front, c, f_in, w=4.8, seed=sd + 4))
+    # вход: тёмный треугольник, полог расходится
+    da, dl, dr = (apex[0], apex[1] + 110), (-175, 0), (35, 0)
+    ou = clamp(open_)
+    o.append(shape([(da[0], da[1], 1), (dr[0], dr[1], 1), (dl[0], dl[1], 1)], "#2E2A33",
+                   blob([(da[0], da[1] + 40), (dr[0] - 30, -4), (dl[0] + 30, -4)], "#3E3844", .9), w=3.8, seed=sd + 6))
+    for side_ in (-1, 1):
+        edge = dl if side_ < 0 else dr
+        mid_x = da[0] + (edge[0] - da[0]) * (.02 + .98 * ou)
+        bulge = 26 * side_ * ou
+        flap = [(da[0], da[1], 1), (edge[0], edge[1], 1), (mid_x, 0, 1), (mid_x * .5 + da[0] * .5 + bulge, da[1] * .45, 0)]
+        fc = c if side_ < 0 else lib.mul(c, (.94, .93, .9))
+        o.append(shape(flap, fc, "", w=3.6, seed=sd + 7 + side_))
+        if ou > .6:     # подвязанный рулон
+            rx = edge[0] - side_ * 10
+            o.append(shape(ellipse_pts(rx, -140, 18, 60, 12, rot=8 * side_), chi, "", w=3.2, seed=sd + 9 + side_))
+            o.append(line([(rx - 16, -150), (rx + 16, -142)], 3, "#7a3a2a", seed=sd + 11 + side_))
+    # шов-молния и конёк
+    o.append(line([apex, back_apex], 4.4, lib.mul(csh, (.8, .8, .8)), taper=.1, wmin=.7, seed=sd + 13))
+    # флагшток с вершины
+    fl = camp_flag(apex[0], apex[1] + 6, 1.0, flag, t, wave, seed, pole=210)
+    body = "".join(o) + fl
+    sx, sy = 1 + .5 * bounce, 1 - bounce
+    return f'<g transform="translate({f(x)} {f(y)}) scale({k * sx:.5f} {k * sy:.5f})">{body}</g>'
+
+
+def _bubble_icon(icon, s, seed, col_bg):
+    sd = 72300 + seed
+    if icon == "waves":
+        o = ""
+        for j in range(3):
+            yy = -s * .34 + j * s * .34
+            ww = s * (.62 if j < 2 else .4)
+            o += line([(-s * .62 + s * .25 * q * ww / (s * .62), yy + (5 if q % 2 else -5)) for q in range(6)], 5.2, INK, taper=.3, wmin=.4, seed=sd + j)
+        return o
+    if icon == "arrow_up":
+        pts = [(0, -s * .8, 1), (s * .55, -s * .15, 1), (s * .2, -s * .15, 1), (s * .2, s * .75, 1), (-s * .2, s * .75, 1), (-s * .2, -s * .15, 1),
+               (-s * .55, -s * .15, 1)]
+        return shape(pts, "#E0A21E", blob([(s * .05, -s * .6), (s * .5, -s * .15), (s * .2, -s * .15), (s * .2, s * .75), (s * .05, s * .75)], "#C2861A", .8),
+                     w=4.0, seed=sd + 5)
+    if icon == "yarn":
+        return flag_sign("yarn", -s * .1, 0, s * .55, seed, "#6E92C9")
+    return ""
+
+
+INK = lib.INK
+
+
+def comment_bubble(x, y, k=1.0, icon="waves", u=1.0, wobble=0.0, seed=0, tail=(-50, 55), col="#FFFFFF"):
+    if u <= 0.02:
+        return ""
+    sd = 72400 + seed
+    hw, hh = 110.0, 88.0
+    o = []
+    o.append(shape([(tail[0] * .2 - 26, hh * .66, 1), (tail[0], hh + tail[1], 1), (tail[0] * .2 + 24, hh * .76, 1)], col, "", w=3.8, seed=sd + 1))
+    sh = lib.mul(col, (.92, .93, .95))
+    o.append(shape(ellipse_pts(0, 0, hw, hh, 28), col, blob(ellipse_pts(hw * .18, hh * .3, hw * .75, hh * .55, 18), sh), w=4.4, seed=sd))
+    o.append(blob(ellipse_pts(-hw * .5, -hh * .52, 18, 9, 10, rot=-.5), "#FFFFFF", .9))
+    o.append(_bubble_icon(icon, 70, seed, col))
+    wb = clamp(wobble, -1, 1)
+    sx, sy = 1 + .14 * wb, 1 - .14 * wb
+    return f'<g transform="translate({f(x)} {f(y)}) rotate({6 * wb:.2f}) scale({k * u * sx:.5f} {k * u * sy:.5f})">{"".join(o)}</g>'
+
+
+def swarm_pos(cx, cy, t, n=9, r=260.0, split=0.0, spread=300.0, seed=0):
+    rs = _rs(72500 + seed)
+    out = []
+    for i in range(n):
+        ph = rs.uniform(0, 2 * math.pi)
+        sp = rs.uniform(.9, 1.5) * (1 if i % 3 else -1)
+        rr = r * rs.uniform(.45, 1.0)
+        a = ph + sp * t
+        s = clamp(split)
+        side = -1 if i % 2 == 0 else 1
+        x = cx + rr * math.cos(a) * (1 - .55 * s) + side * spread * lib.ease_io(s)
+        y = cy + rr * .7 * math.sin(a) * (1 - .4 * s)
+        out.append((x, y, i))
+    return out
+
+
+def bubble_swarm(cx, cy, t, n=9, r=260.0, k=.6, u=1.0, split=0.0, spread=300.0, seed=0, icons=("waves",), cols=("#FFFFFF",)):
+    o = []
+    for (x, y, i) in sorted(swarm_pos(cx, cy, t, n, r, split, spread, seed), key=lambda p: p[1]):
+        wb = .5 * math.sin(t * 9 + i * 1.7)
+        o.append(comment_bubble(x, y, k * (.8 + .25 * ((i * 7) % 5) / 4), icons[i % len(icons)], u, wb, seed + i, (-40 if i % 2 else 40, 45),
+                                cols[i % len(cols)]))
+    return "".join(o)
+
+
+def split_flash(x, y0, y1, u=0.0, seed=0, w=70.0):
+    if u <= 0 or u >= 1:
+        return ""
+    o = [bolt(x, y0, x + 20, y1, clamp(u * 1.4), w, seed, 7)]
+    g = 1 - u
+    for j in range(8):
+        a = math.radians(j * 45 + 22)
+        r0, r1 = 40 + 160 * u, 90 + 260 * u
+        cy = (y0 + y1) / 2
+        o.append(line([(x + r0 * math.cos(a), cy + r0 * math.sin(a)), (x + r1 * math.cos(a), cy + r1 * math.sin(a))], 9 * g + 1, "#F2B632",
+                      taper=.6, wmin=.2, seed=72600 + seed + j))
+    return "".join(o)
+
+
+def crate_box(x, y, k=1.0, shrink=0.0):
+    s = 1 - (1 - CRATE_MIN) * clamp(shrink)
+    w, h = 300 * k * s, 250 * k * s
+    return (x - w / 2, y - h - 60 * k * s, x + w / 2 + 70 * k * s, y)
+
+
+def task_crate(x, y, k=1.0, shrink=0.0, rot=0.0, seed=0):
+    sd = 72700 + seed
+    sh = clamp(shrink)
+    s = 1 - (1 - CRATE_MIN) * lib.ease_io(sh)
+    # «хлюп» по осям во время сжатия
+    j = math.sin(math.pi * sh) * .12
+    sx, sy = s * (1 - j), s * (1 + j)
+    W, H, D = 300.0, 250.0, 70.0
+    o = [blob(ellipse_pts(30, 4, W * .62, 18, 14), "#3a2a20", .2)]
+    top = [(-W / 2, -H, 1), (-W / 2 + D, -H - 60, 1), (W / 2 + D, -H - 60, 1), (W / 2, -H, 1)]
+    side = [(W / 2, 0, 1), (W / 2, -H, 1), (W / 2 + D, -H - 60, 1), (W / 2 + D, -60, 1)]
+    t_in = "".join(line([(-W / 2 + 20 + 90 * i, -H - 4), (-W / 2 + 20 + 90 * i + D * .9, -H - 56)], 2.6, C_WOOD_SH, seed=sd + 1 + i) for i in range(4))
+    o.append(shape(top, C_WOOD_HI, t_in, w=4.4, seed=sd))
+    o.append(shape(side, C_WOOD_SH, line([(W / 2 + 4, -H * .5), (W / 2 + D - 4, -H * .5 - 60)], 2.6, "#6b4424", seed=sd + 6), w=4.4, seed=sd + 5))
+    f_in = ""
+    for i in range(1, 3):      # доски
+        f_in += line([(-W / 2 + 6, -H * i / 3), (W / 2 - 6, -H * i / 3 + 3)], 3.0, C_WOOD_SH, taper=.1, wmin=.6, seed=sd + 8 + i)
+    f_in += blob([(-W / 2, -H), (-W / 2 + 30, -H), (-W / 2 + 30, 0), (-W / 2, 0)], C_WOOD_SH, .7)
+    f_in += blob([(W / 2 - 30, -H), (W / 2, -H), (W / 2, 0), (W / 2 - 30, 0)], C_WOOD_SH, .7)
+    for (px, py) in ((-W / 2 + 15, -H + 18), (W / 2 - 15, -H + 18), (-W / 2 + 15, -18), (W / 2 - 15, -18)):
+        f_in += f'<circle cx="{px}" cy="{py}" r="4.5" fill="#4a3424"/>'
+    o.append(shape([(-W / 2, 0, 1), (-W / 2, -H, 1), (W / 2, -H, 1), (W / 2, 0, 1)], C_WOOD, f_in, w=4.8, seed=sd + 7))
+    rope = "#C9A66B"
+    o.append(line([(-W / 2 - 4, -H * .2), (0, -H * .5), (W / 2 + 4, -H * .8)], 9, rope, taper=.05, wmin=.9, seed=sd + 12))
+    o.append(line([(-W / 2 - 4, -H * .8), (0, -H * .5), (W / 2 + 4, -H * .2)], 9, rope, taper=.05, wmin=.9, seed=sd + 13))
+    o.append(line([(W / 2 + 4, -H * .8), (W / 2 + D, -H * .8 - 60)], 8, lib.mul(rope, (.85, .85, .85)), taper=.05, wmin=.9, seed=sd + 14))
+    o.append(shape(ellipse_pts(0, -H * .5, 22, 18, 12), rope, line([(-12, -H * .5 - 6), (12, -H * .5 + 6)], 2.4, "#8a6a38", seed=sd + 16), w=3.4, seed=sd + 15))
+    o.append(line([(0, -H * .5 + 14), (-14, -H * .5 + 52), (-6, -H * .5 + 70)], 6, rope, taper=.4, wmin=.5, seed=sd + 17))
+    return f'<g transform="translate({f(x)} {f(y)}) rotate({f(rot)}) scale({k * sx:.5f} {k * sy:.5f})">{"".join(o)}</g>'
+
+
+def _dashes(p0, p1, dash=18.0, gap=13.0, off=0.0):
+    L = math.hypot(p1[0] - p0[0], p1[1] - p0[1])
+    out = []
+    s = -off
+    while s < L:
+        a, b = max(0.0, s), min(L, s + dash)
+        if b > a + 2:
+            out.append(((p0[0] + (p1[0] - p0[0]) * a / L, p0[1] + (p1[1] - p0[1]) * a / L), (p0[0] + (p1[0] - p0[0]) * b / L, p0[1] + (p1[1] - p0[1]) * b / L)))
+        s += dash + gap
+    return out
+
+
+def chalk_dust(x, y, k=1.0, u=0.0, seed=0, col="#E9ECF0"):
+    if u <= 0 or u >= 1:
+        return ""
+    rs = _rs(72800 + seed)
+    o = []
+    for j in range(7):
+        a = rs.uniform(math.pi * 1.05, math.pi * 1.95)
+        d = (30 + 90 * lib.ease_out(u)) * rs.uniform(.6, 1.2)
+        r = (16 + 10 * rs.uniform(0, 1)) * (1 - u) * k
+        if r > 1:
+            o.append(shape(ellipse_pts(x + d * math.cos(a) * k, y + d * math.sin(a) * k * .6, r, r * .8, 10), col, "", w=2.2, seed=72810 + seed + j,
+                           ink_color="#8C98A6"))
+    return "".join(o)
+
+
+def chalk_wall(x0, y0, x1, y1, u=1.0, eyes=0.0, crumble=0.0, t=0.0, seed=0, masks=None, blink=0.0, eye_at=None, col=C_CHALK, sh=C_CHALK_SH,
+               rows=None, bw=150.0, bh=70.0, wline=4.0):
+    if u <= 0.005 and eyes <= 0.005:
+        return ""
+    rs = _rs(72900 + seed)
+    o = []
+    H = y1 - y0
+    nr = rows or max(1, int(round(H / bh)))
+    rh = H / nr
+    cxw, cyw = (x0 + x1) / 2, (y0 + y1) / 2
+    R0 = math.hypot(x1 - x0, H) * .6
+
+    def vis(px, py):
+        if masks is None:
+            d = math.hypot(px - cxw, py - cyw)
+            return clamp((R0 * clamp(u) * 1.15 - d) / 60)
+        v = 0.0
+        for (mx, my, mr) in masks:
+            rr = mr * clamp(u)
+            if rr <= 1:
+                continue
+            v = max(v, clamp((rr - math.hypot(px - mx, py - my)) / (rr * .45)))
+        return v
+    bricks = []
+    for r in range(nr):
+        ya, yb = y0 + r * rh, y0 + (r + 1) * rh
+        xs = x0 - (bw / 2 if r % 2 else 0)
+        while xs < x1:
+            xa, xb = max(x0, xs), min(x1, xs + bw)
+            if xb - xa > 12:
+                bricks.append((xa, ya, xb, yb))
+            xs += bw
+    for i, (xa, ya, xb, yb) in enumerate(bricks):
+        d0 = rs.uniform(0, .6)
+        fu = clamp((crumble - d0) / .4) if crumble > 0 else 0.0
+        if fu >= 1:
+            continue
+        cxb, cyb = (xa + xb) / 2, (ya + yb) / 2
+        dy = fu * fu * (y1 - cyb + 140)
+        dx = rs.uniform(-40, 40) * fu
+        rot = rs.uniform(-40, 40) * fu
+        sc = 1 - .6 * fu
+        segs = []
+        for (p, q) in (((xa, ya), (xb, ya)), ((xb, ya), (xb, yb)), ((xb, yb), (xa, yb)), ((xa, yb), (xa, ya))):
+            segs += _dashes(p, q, off=rs.uniform(0, 20))
+        part = []
+        for (p, q) in segs:
+            v = vis((p[0] + q[0]) / 2, (p[1] + q[1]) / 2) if fu == 0 else 1.0
+            if v < .05:
+                continue
+            ww = wline * (.35 + .65 * v)
+            part.append(line([p, q], ww + 2.6, sh, taper=.3, wmin=.5, seed=73000 + i, op=.45))
+            part.append(line([p, q], ww, col, taper=.3, wmin=.5, seed=73100 + i))
+        if part:
+            if fu > 0:
+                o.append(f'<g transform="translate({dx:.1f} {dy:.1f}) rotate({rot:.1f} {cxb:.1f} {cyb:.1f}) translate({cxb:.1f} {cyb:.1f}) scale({sc:.3f}) '
+                         f'translate({-cxb:.1f} {-cyb:.1f})">{"".join(part)}</g>')
+            else:
+                o.append("".join(part))
+        if 0 < fu < 1 and fu > .55:
+            o.append(chalk_dust(cxb + dx, y1 - 10, .8, (fu - .55) / .45, i))
+    if eyes > 0.01:
+        ex, ey = eye_at or (cxw, cyw)
+        op_ = clamp(eyes) * (1 - clamp(blink))
+        for side in (-1, 1):
+            cx, cy = ex + side * 95, ey
+            rx, ry = 62 * clamp(eyes), 30
+            lid = cy - ry * .2 + ry * .9 * (1 - op_)      # сонное веко: низко
+            low = [(cx - rx, cy), (cx - rx * .5, cy + ry * .9), (cx + rx * .5, cy + ry * .9), (cx + rx, cy)]
+            o.append(line(low, 6.5, sh, taper=.4, wmin=.4, seed=73200 + side, op=.45))
+            o.append(line(low, 4.4, col, taper=.4, wmin=.4, seed=73201 + side))
+            if op_ > .08:
+                pr = min(ry * .55, ry * .9 * op_ + 4)
+                o.append(f'<circle cx="{cx + 4 * side:.1f}" cy="{cy + ry * .35:.1f}" r="{pr:.1f}" fill="{col}" stroke="{sh}" stroke-width="2" stroke-opacity=".5"/>')
+            upper = [(cx - rx - 6, cy), (cx - rx * .4, lid - 4), (cx + rx * .4, lid - 4), (cx + rx + 6, cy)]
+            o.append(line(upper, 8.5, sh, taper=.3, wmin=.5, seed=73210 + side, op=.45))
+            o.append(line(upper, 6.0, col, taper=.3, wmin=.5, seed=73211 + side))
+            for j in range(3):     # ресницы
+                q = .3 + .2 * j
+                bx = cx - rx + 2 * rx * q
+                o.append(line([(bx, lid + 2), (bx + 6 * side * 0 + (j - 1) * 6, lid + 22)], 3.4, col, taper=.6, wmin=.2, seed=73220 + j + side))
+    return "".join(o)
+
+
+def striped_sock(x, y, k=1.0, rot=0.0, seed=0, flat=1.0):
+    sd = 73300 + seed
+    red, wht, blu = C_SOCK
+    fl = clamp(flat)
+    # лежит сбоку: голенище слева, пятка снизу, мысок справа
+    pts = [(-110, -40 + 18 * (1 - fl), 1), (-30, -44), (20, -36), (80, -30), (112, -6), (106, 26), (60, 36), (0, 34), (-40, 40), (-66, 24),
+           (-110, 26, 1)]
+    stripes = ""
+    for i in range(5):
+        xx = -96 + 26 * i
+        stripes += shape([(xx, -46), (xx + 13, -46), (xx + 13, 46), (xx, 46)], wht, "", w=0, seed=sd + i, ink=False)
+    stripes += blob([(-70, 46), (-70, 10), (-44, 4), (-30, 46)], blu)          # пятка
+    stripes += blob([(70, -40), (130, -40), (130, 40), (70, 40)], blu)          # мысок
+    stripes += blob([(-120, -50), (-96, -50), (-96, 50), (-120, 50)], blu)      # резинка
+    stripes += blob([(-120, 20), (120, 20), (120, 50), (-120, 50)], "#000000", .1)
+    body = shape(pts, red, stripes, w=4.2, seed=sd)
+    return _tf(body, x, y, k, rot)
+
+
+def sock_worn(ax, ay, k=1.0, dirv=(1.0, 0.15), pull=1.0, seed=0):
+    sd = 73400 + seed
+    red, wht, blu = C_SOCK
+    d = (dirv[0], dirv[1])
+    n_ = math.hypot(*d) or 1
+    ang = math.degrees(math.atan2(d[1] / n_, d[0] / n_))
+    p = clamp(pull)
+    back = -40 - 30 * p      # насколько далеко назад (к щиколотке и выше) натянут
+    hang = 26 * (1 - p)      # не натянутый — висит ниже мыска
+    pts = [(back, -46 - 10 * p, 1), (40, -38), (110, -26), (150, -6 + hang * .3), (150 + hang, 18 + hang), (110, 34), (40, 36),
+           (back + 20, 40), (back, 30, 1)]
+    stripes = ""
+    for i in range(6):
+        xx = back + 10 + 26 * i
+        stripes += blob([(xx, -60), (xx + 13, -60), (xx + 13, 60), (xx, 60)], wht)
+    stripes += blob([(118, -60), (200, -60), (200, 70), (118, 70)], blu)
+    stripes += blob([(back - 10, -70), (back + 18, -70), (back + 18, 70), (back - 10, 70)], blu)
+    body = shape(pts, red, stripes, w=4.0, seed=sd)
+    return f'<g transform="translate({f(ax)} {f(ay)}) rotate({ang:.2f}) scale({k:.5f})">{body}</g>'
+
+
+def speed_arcs(x, y, k=1.0, u=1.0, t=0.0, seed=0, n=3, ang=180.0):
+    if u <= 0.01:
+        return ""
+    o = []
+    a = math.radians(ang)
+    nx, ny = -math.sin(a), math.cos(a)
+    for j in range(n):
+        off = (j - (n - 1) / 2) * 46 * k
+        L = (130 + 50 * ((j + seed) % 2)) * k * clamp(u)
+        p0 = (x + nx * off, y + ny * off)
+        p1 = (p0[0] + math.cos(a) * L * .5 + nx * 10 * k, p0[1] + math.sin(a) * L * .5 + ny * 10 * k)
+        p2 = (p0[0] + math.cos(a) * L, p0[1] + math.sin(a) * L)
+        o.append(line([p0, p1, p2], 6 * k, INK, taper=.8, wmin=.1, seed=73500 + seed + j, op=.85))
+    return "".join(o)
