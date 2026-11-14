@@ -87,7 +87,7 @@ function wave(t) {
     flick = 28 * Math.sin(2 * Math.PI * d / .3) * ss(0, .06, d) * (1 - ss(tD - .1, tD + .05, t));
     x += 7 * Math.sin(2 * Math.PI * d / .3 - .6) * (1 - ss(tD - .1, tD + .05, t));
   }
-  return [x, y, u, flick, t >= t0 - .02];
+  return [x, y, u, flick, t >= t0 - .02 && t < tD + .2];     // упала на пачку — снова сжала её (кулак)
 }
 function seek(t, shot) {
   if (shot) window.CUR = shot;
@@ -168,7 +168,7 @@ function seek(t, shot) {
     // смотрит на часы (влево-вверх); на «проспал» глаза распахиваются, голова дёргается к часам;
     // потом косится на спящего Диму и медленно моргает
     const jolt = ss(TT.OVERSLEPT, TT.OVERSLEPT + .12, t), toDima = ss(3.85, 4.1, t);
-    cx_ = -10 * (1 - toDima) - 9 * toDima; cy_ = -7 * (1 - toDima) + 3 * toDima;
+    cx_ = -16 * (1 - toDima) - 11 * toDima; cy_ = -12 * (1 - toDima) + 5 * toDima;
     const cb = catBlinkAt(t, [[2.86, .2], [4.28, .4]]);
     const wide = jolt * (1 - ss(3.5, 3.8, t));
     upL = Math.max(cb, .5 - .5 * wide); upR = upL; lo = Math.max(cb, .1 * (1 - wide));

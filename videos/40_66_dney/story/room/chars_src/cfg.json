@@ -1,18 +1,18 @@
 [
  {
-  "id": "s03",
-  "start": 2.76,
-  "n": 58,
+  "id": "s06",
+  "start": 7.3,
+  "n": 69,
   "region": [
-   6,
-   105,
-   1018,
-   1810
+   572,
+   526,
+   572,
+   1018
   ],
-  "S": 1.384,
-  "ow": 1409,
-  "oh": 2505,
-  "out": "/home/user/Generator_Stickman/videos/40_66_dney/story/room/chars/s03",
-  "html": "heroes40l.html"
+  "S": 2.544,
+  "ow": 1455,
+  "oh": 2590,
+  "out": "/home/user/Generator_Stickman/videos/40_66_dney/story/room/chars/s06",
+  "html": "heroes40e.html"
  }
 ]
