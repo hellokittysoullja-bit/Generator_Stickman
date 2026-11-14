@@ -1033,7 +1033,7 @@ def day_room(t):
     o = [wall_floor("day")]
     o.append(window(-560, 200, -120, 900, "day", t, seed=6, sway=.7, curtain="#5a8fae"))
     o.append(_sun_quad((-80, 300), (300, 30), (70, 640), "#f6e7bf", "#fbf0d2", inset=.05))
-    o.append(shelf(460, 760, 560, "day", seed=4, t=t))
+    o.append(shelf(1110, 1410, 600, "day", seed=4, t=t))
     o.append(rug(600, FL + 60, 420, 80, "day", seed=5))
     # окно над кроватью справа, чистая стена DR_CLEAN между флажками
     o.append(window(2420, 160, 2760, 560, "day", t, seed=7, sway=.6, curtain="#e0b04a"))
