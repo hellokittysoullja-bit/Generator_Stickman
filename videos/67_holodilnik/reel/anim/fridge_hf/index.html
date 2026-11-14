@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1664, height=2496" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1664px; height: 2496px; overflow: hidden; background: #f7f3ea; }
+      #root { position: relative; width: 1664px; height: 2496px; overflow: hidden; }
+      .layer { position: absolute; left: 0; top: 0; width: 1664px; height: 2496px; }
+      .abs { position: absolute; display: block; }
+    </style>
+  </head>
+  <body>
+    <!-- Хук рилса 67 «Открыл холодильник и закрыл?»: мир — рисунок g1_fridge_glow ×2 целиком, в половинном размере
+         (координаты композиции = координаты исходника 1664×2496). Слои — anim/kit_fridge.py, положение подставляет
+         fridge_hf.py из kit.json. Кадр 0: дверца уже распахивается (закрытая стенка сжимается к петле, открытая дверца
+         проявляется), кот рывками раскачивается к полке; на «закрыл» (data-vars.hit) дверца захлопывается, кот
+         вздрагивает и отшатывается пружиной. Камеру, тряску, субтитры и звук даёт сборщик. -->
+    <div id="root" data-composition-id="main" data-start="0" data-duration="2.0" data-width="1664" data-height="2496"
+         data-vars='{"hit": 1.14}' data-motion-blur="on" data-layout-allow-overflow data-layout-allow-overlap>
+      <img id="bg" class="abs clip" src="assets/bg.png" style="left:0;top:0" data-start="0" data-duration="2.0" />
+      <div id="doorL" class="layer clip" data-start="0" data-duration="2.0">
+        <img id="door" class="abs" src="assets/door.png" style="left:0px;top:0px" />
+      </div>
+      <div id="faceL" class="layer clip" data-start="0" data-duration="2.0">
+        <img id="face" class="abs" src="assets/face.png" style="left:0px;top:0px" />
+      </div>
+      <div id="catL" class="layer clip" data-start="0" data-duration="2.0">
+        <div id="catS" class="layer">
+          <img id="cat" class="abs" src="assets/cat.png" style="left:0px;top:0px" />
+        </div>
+      </div>
+    </div>
+    <script>
+      const root = document.getElementById("root");
+      const V = JSON.parse(root.dataset.vars), H = V.hit, K = V.kit;
+      const tl = gsap.timeline({ paused: true });
+      const px = (p) => `${p[0]}px ${p[1]}px`;
+      gsap.set("#faceL", { transformOrigin: px(K.hinge) });
+      gsap.set("#doorL", { transformOrigin: px(K.hinge) });
+      gsap.set(["#catL", "#catS"], { transformOrigin: px(K.feet) });
+      const J = 2 / 15;
+      // «Открыл»: в кадре 0 дверца уже на ходу — стенка сжимается к петле, открытая дверца разворачивается
+      tl.fromTo("#faceL", { scaleX: 0.86 }, { scaleX: 0.0, duration: 0.3, ease: "power2.out" }, 0);
+      tl.set("#faceL", { opacity: 0 }, 0.3);
+      tl.fromTo("#doorL", { scaleX: 0.15, opacity: 0.3 }, { scaleX: 1, opacity: 1, duration: 0.3, ease: "power2.out" }, 0);
+      // кот рывками качается к полке и обратно (крайние положения на границах кадров — ни один кадр не стоит)
+      tl.fromTo("#catL", { rotation: 3.0, x: 28, y: -18 }, { rotation: -1.6, x: -14, y: 4, duration: J / 2, ease: "none" }, 0);
+      let t = J / 2, i = 0;
+      while (t < H - 0.08) {
+        const f = i % 2 === 0;
+        tl.to("#catL", { rotation: f ? 3.0 - 0.6 * (i % 3) : -1.6, x: f ? 28 : -14, y: f ? -18 - 6 * (i % 3) : 4,
+                         duration: J / 2, ease: "none" }, t);
+        t += J / 2; i++;
+      }
+      // «закрыл»: дверца захлопывается от петли, кот вздрагивает и отшатывается
+      tl.set("#faceL", { opacity: 1, scaleX: 0.08 }, H - 0.1);
+      tl.to("#faceL", { scaleX: 1.02, duration: 0.1, ease: "power3.in" }, H - 0.1);
+      tl.to("#faceL", { scaleX: 1, duration: 0.25, ease: "elastic.out(1, 0.4)" }, H);
+      tl.to("#doorL", { scaleX: 0.1, opacity: 0, duration: 0.1, ease: "power3.in" }, H - 0.1);
+      tl.to("#catL", { rotation: 0, x: 0, y: 0, duration: 0.05, ease: "power2.in" }, H - 0.05);
+      tl.to("#catS", { scaleY: 0.9, scaleX: 1.06, rotation: -5, x: -50, duration: 0.08, ease: "power3.out" }, H);
+      tl.to("#catS", { scaleY: 1, scaleX: 1, rotation: 0, x: 0, duration: 0.8, ease: "elastic.out(1, 0.35)" }, H + 0.08);
+      function DURATION() { return 2.0; }
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
