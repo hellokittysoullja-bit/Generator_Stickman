@@ -338,5 +338,194 @@ def hallway(t, x0=-400, x1=2600):
     return "".join(o)
 
 
+# ═════════════════════════════ s06: кухня днём, одна обычная кружка, «Дима-изюм» ═════════════════════════════
+T6_OBYCH, T6_CHASHKA, T6_KOFE, T6_POCHTI, T6_NE, T6_SUSHIT, T6_ORG = 9.60, 10.16, 10.53, 10.95, 11.33, 11.48, 11.82
+T6_POP = 11.40
+SC6 = 1.12
+
+
+def dashed(pts, w, dash=26.0, gap=16.0, seed=0, col=INK):
+    """Пунктир по ломаной: короткие штрихи тушью, просветы — бумага."""
+    P = np.array(pts, float)
+    seg = np.r_[0, np.cumsum(np.linalg.norm(np.diff(P, axis=0), axis=1))]
+    o, d, i = [], 0.0, 0
+    while d < seg[-1]:
+        a, b = d, min(d + dash, seg[-1])
+        q = [tuple(np.array([np.interp(v, seg, P[:, 0]), np.interp(v, seg, P[:, 1])])) for v in np.linspace(a, b, 4)]
+        o.append(line(q, w, col, seed=seed + i, taper=.35, wmin=.4))
+        d += dash + gap
+        i += 1
+    return "".join(o)
+
+
+def raisin(cx, cy, k, u, burst, t, seed=6100):
+    """Пунктирный «Дима-изюм»: сморщенная голова с вихрами, глаза-точки, губы волной, морщины. u — проявление 0..1 (растёт пружиной),
+    burst 0..1 — лопается: контур раздувается и рвётся на штрихи, летящие наружу."""
+    if u <= 0 or burst >= 1:
+        return ""
+    o = []
+    if burst <= 0:
+        kk = k * u
+        n = 40
+        pts = []
+        for i in range(n + 1):
+            a = 2 * math.pi * i / n
+            r = 120 * (1 + .09 * math.sin(7 * a + 1.3) + .05 * math.sin(13 * a)) * kk
+            pts.append((cx + r * math.cos(a) * .86, cy + r * math.sin(a)))
+        o.append(blob([(cx + (p[0] - cx) * 1.12, cy + (p[1] - cy) * 1.12) for p in pts], "#fbf6ea"))
+        o.append(dashed(pts, 6.5 * min(1.0, kk / k + .2), 22 * kk, 13 * kk, seed))
+        # вихры
+        for j, (x0, h) in enumerate(((-40, 60), (0, 75), (38, 55))):
+            o.append(blob([(cx + (x0 - 6) * kk, cy - 100 * kk), (cx + (x0 + 8) * kk, cy - (112 + h) * kk), (cx + (x0 + 34) * kk, cy - 100 * kk)], "#fbf6ea"))
+            o.append(dashed([(cx + x0 * kk, cy - 105 * kk), (cx + (x0 + 8) * kk, cy - (105 + h) * kk), (cx + (x0 + 26) * kk, cy - 112 * kk)], 5.0,
+                            14 * kk, 9 * kk, seed + 40 + 7 * j))
+        # морщины
+        for j, (yy, ww) in enumerate(((-60, 60), (40, 70), (75, 50))):
+            o.append(dashed([(cx - ww * kk, cy + yy * kk), (cx - ww * .3 * kk, cy + (yy + 8) * kk), (cx + ww * .3 * kk, cy + (yy - 6) * kk),
+                             (cx + ww * kk, cy + (yy + 4) * kk)], 4.0, 12 * kk, 9 * kk, seed + 60 + 9 * j))
+        for ex in (-34, 34):
+            o.append(f'<circle cx="{cx + ex * kk:.1f}" cy="{cy - 12 * kk:.1f}" r="{7 * kk:.1f}" fill="{INK}"/>')
+        # пузырьки-мыслинки к голове Димы
+        return "".join(o)
+    # лопается: 22 штриха разлетаются, укорачиваясь
+    for i in range(22):
+        a = 2 * math.pi * i / 22 + .2
+        r0 = (120 + 220 * ease_out(burst, 2)) * k
+        L = 34 * k * (1 - burst)
+        if L < 1:
+            continue
+        p0 = (cx + r0 * math.cos(a) * .9, cy + r0 * math.sin(a))
+        p1 = (cx + (r0 + L) * math.cos(a) * .9, cy + (r0 + L) * math.sin(a))
+        o.append(line([p0, p1], 7 * (1 - .5 * burst), INK, seed=seed + 200 + i, taper=.4, wmin=.3))
+    return "".join(o)
+
+
+def s06(t):
+    lib.dyn_begin()
+    s = SC6
+    hx, hy = R.K_DIMA
+    br = math.sin(2 * math.pi * (t - 9.4) / 2.1)
+    kmug = 1.15
+    tbl = R.K_TABLE[2] - 40
+    HO = 46 * s * 1.15
+    # фазы руки с кружкой: 0 — держит у груди, отпивает, ставит, отпускает, щупает щёку, опускает
+    sip = smooth(9.5, 9.82, t) * (1 - smooth(10.12, 10.42, t))
+    put = smooth(10.18, 10.5, t)
+    rel = smooth(T6_SUSHIT - .06, T6_SUSHIT + .14, t) * (1 - smooth(12.2, 12.6, t))
+    ha = -.13 * sip + .02 * br + .06 * smooth(T6_POCHTI, T6_POCHTI + .3, t) * (1 - smooth(T6_SUSHIT, T6_SUSHIT + .2, t)) \
+        - .05 * bump(t, T6_ORG, .35) + .05 * rel
+    lean = .03 + .02 * br - .04 * sip
+    # сначала фигура без рук, чтобы знать, где лицо
+    ex = {}
+    if t < 9.62:
+        ex = dict(E["dima"]["doubt"], look=(.75, .4))
+    elif t < 10.2:
+        ex = dict(E["dima"]["relief"], lid=.25, look=(.6, .3))
+    elif t < T6_POCHTI:
+        ex = dict(E["dima"]["doubt"], look=(.5, .1))
+        ex["closed"] = blink_of(t, [10.62], .16)
+    elif t < T6_SUSHIT:
+        ex = dict(E["dima"]["surprise"], brows="worry", look=(.55, -.85))
+    elif t < T6_ORG:
+        ex = dict(E["dima"]["doubt"], look=(-.2, .25), mouth="o", open=.15)
+    elif t < 12.02:
+        ex = dict(E["dima"]["surprise"], look=(.1, 0))
+    else:
+        ex = dict(E["dima"]["smug"], look=(-.15, .05))
+    probe = people.figure("dima", hx, hy + 4 * br, s, ex, lean=lean, head_ang=ha, layers=("body",))
+    hd = np.array(probe["head"])
+    ang = lean * .5 + ha
+    mouth = hd + np.array(_rot((64 * s, 92 * s), math.degrees(ang)))
+    cheek = hd + np.array(_rot((-6 * s, 66 * s), math.degrees(ang)))
+    # кружка: ручка слева (hs=−1), на столе / у груди / у рта
+    rest_base = (hx + 300, tbl)
+    rest_H = base_from_point((0, 0), (0, 0), 1, 0, 1)
+    rest_H = (rest_base[0] - 88 * kmug, rest_base[1] - 70 * kmug)
+    chest_H = (hx + 250, hy - 360)
+    sip_rot = -38.0
+    sip_H = (mouth[0] + 70 * s, mouth[1] + 50 * s)
+    if t < 10.18:
+        a = smooth(9.45, 9.6, t)
+        H = tuple(np.array(chest_H) * (1 - sip) + np.array(sip_H) * sip)
+        rot = sip_rot * ease_io(sip)
+        del a
+    else:
+        H = tuple(np.array(chest_H) * (1 - put) + np.array(rest_H) * put)
+        rot = 0.0
+        if put >= 1:
+            H = rest_H
+    mb = base_from_point(H, MUG_HANDLE, kmug, rot, -1)
+    on_table = put >= 1
+    W_mug = (H[0] - HO, H[1] + 4 * s)
+    # ближняя рука: держит кружку → на «сушит» к щеке, похлопывает → опускает на стол
+    pat = .5 + .5 * math.sin(2 * math.pi * (t - T6_SUSHIT) * 3.2) if rel > .9 else 0.0
+    W_cheek = (cheek[0] - 4 * s, cheek[1] + 118 * s + 10 * s * pat)
+    W_rest = (hx + 160, tbl - 10)
+    if t < T6_SUSHIT + .5:
+        Wn = tuple(np.array(W_mug) * (1 - rel) + np.array(W_cheek) * rel)
+    else:
+        dn = smooth(12.2, 12.6, t)
+        Wn = tuple(np.array(W_cheek) * (1 - dn) + np.array(W_rest) * dn) if rel < 1 or dn > 0 else W_cheek
+    holding = rel < .5
+    arms = {"f": ("ik", (hx + 120 * s, tbl - 20), -1), "n": ("ik", Wn, -1)}
+    hands = {"f": {"dir": (1, .25), "curl": (.35, .35, .4, .45), "thumb": .35}}
+    if holding:
+        hands["n"] = {"kind": "none"}
+    else:
+        hands["n"] = {"dir": (.05, -1), "spread": .12, "curl": (.12, .12, .15, .2), "thumb": .15, "flip": 1}
+    fig = people.figure("dima", hx, hy + 4 * br, s, ex, lean=lean, head_ang=ha, arms=arms, hands=hands,
+                        layers=("pelvis", "arm_f", "body"))
+    near = people.figure("dima", hx, hy + 4 * br, s, ex, lean=lean, head_ang=ha, arms=arms, hands=hands, layers=("arm_n",))
+    Wn_real = near["wrist"]["n"]
+    steam = .35 + .65 * smooth(10.4, 10.8, t)
+    if holding:
+        H2 = (Wn_real[0] + HO, Wn_real[1] - 4 * s) if not on_table else H
+        mb = base_from_point(H2, MUG_HANDLE, kmug, rot, -1)
+        back, front = people.handle_grip("dima", H2, k=s, side=-1, seed=961)
+        mugsvg = back + cmug(mb[0], mb[1], kmug, rot, -1, fill=.8 - .25 * smooth(9.7, 10.1, t), steam=steam * (1 - sip), t=t, seed=3) + front
+    else:
+        mugsvg = cmug(mb[0], mb[1], kmug, 0, -1, fill=.55, steam=steam, t=t, seed=3)
+    k_ = R.kitchen(t, "day")
+    # мысль: пузырьки от головы и пунктирный изюм; лопается на «не» (11.40)
+    bub_c = (hd[0] + 290 * s, hd[1] - 30 * s)
+    ru = spring(t - T6_POCHTI, 2.4, 6.0) if t > T6_POCHTI else 0.0
+    bu = clamp((t - T6_POP) / .28) if t > T6_POP else 0.0
+    thought = raisin(bub_c[0], bub_c[1], .72, ru, bu, t)
+    if T6_POCHTI < t < T6_POP + .05:
+        for j, (fx, fy, r) in enumerate(((.25, .25, 10), (.45, .5, 14), (.65, .72, 18))):
+            a = clamp((t - T6_POCHTI - .05 * j) / .12)
+            if a > 0:
+                px_ = hd[0] + 150 * s + (bub_c[0] - 120 - hd[0] - 150 * s) * fx
+                py_ = hd[1] - 120 * s + (bub_c[1] - hd[1] + 120 * s) * fx
+                o_ = lib.circle_d(px_, py_, r * a) if hasattr(lib, "circle_d") else None
+                thought += shape(ellipse_pts(px_, py_, r * a, r * a, 12), "#f6f1e6", "", w=3.4, seed=6300 + j)
+    # «порядок»: на «организм» — две искры-штриха у бровей
+    spark = ""
+    u = (t - T6_ORG) / .35
+    if 0 < u < 1:
+        for i in range(3):
+            th = -1.9 + i * .4
+            c = hd + np.array([40 * s, -150 * s])
+            r0, r1 = 40 + 40 * u, 70 + 60 * u
+            spark += line([(c[0] + math.cos(th) * r0, c[1] + math.sin(th) * r0), (c[0] + math.cos(th) * r1, c[1] + math.sin(th) * r1)], 7, INK,
+                          seed=6400 + i, taper=.5, wmin=.2)
+    world = [k_["bg"], fig["svg"], k_["table"]]
+    if on_table:
+        world.append(mugsvg)
+    world.append(near["svg"])
+    if not on_table:
+        world.append(mugsvg)
+    world += [thought, spark, k_["front"]]
+    # камера: медленный дрейф вправо и наезд на лицо
+    u = clamp((t - 9.45) / 3.4)
+    z = 1.28 + .3 * ease_io(u) + .04 * bump(t, T6_ORG, .4)
+    cx = 600 + 40 * u
+    cy = 840 - 110 * ease_io(u)
+    sx, sy = shake2(t, T6_POP, 7)
+    set_ink(z)
+    cam = lib.cam(cx - sx, cy - sy, z, .5 * math.sin((t - 9.4) * .8))
+    return lib.svg(f'<rect width="1080" height="1920" fill="#efe2c6"/><g transform="{cam}">{"".join(world)}</g>')
+
+
 def frame(sid, t):
-    return {"s04": s04}[sid](t)
+    return {"s04": s04, "s06": s06}[sid](t)
