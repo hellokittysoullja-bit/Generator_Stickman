@@ -290,12 +290,12 @@ def frame09(t):
     z = 1.10 + .16 * ease_io(pre) + .0
     hit = t - T_ZAV
     if hit > 0:
-        z = 1.26 + .07 * (1 - math.exp(-hit * 9)) + .04 * clamp(hit / 0.9) - .05 * math.exp(-hit * 6) * math.cos(hit * 40)
+        z = 1.26 + .08 * (1 - math.exp(-hit * 9)) + .13 * ease_io(clamp(hit / 0.95)) - .05 * math.exp(-hit * 6) * math.cos(hit * 40)
     z += .05 * math.exp(-(t - t0) * 6)
     set_ink(z)
     shake = 16 * math.exp(-max(0.0, hit) * 7) * math.sin(max(0.0, hit) * 62) if hit > 0 else 0.0
-    cxm = lerp(620, 600, ease_io(pre)) + (shake if hit > 0 else 0)
-    cym = lerp(760, 730, ease_io(pre)) + (shake * .6 if hit > 0 else 0)
+    cxm = lerp(620, 600, ease_io(pre)) + 40 * ease_io(clamp(hit / .95)) + (shake if hit > 0 else 0)
+    cym = lerp(760, 730, ease_io(pre)) + 40 * ease_io(clamp(hit / .95)) + (shake * .6 if hit > 0 else 0)
     cym += (-6 * math.sin(t * 3.0))
     roll = .9 * math.sin(t * 2.2) + (2.4 * math.exp(-hit * 6) * math.sin(hit * 30) if hit > 0 else 0)
 
