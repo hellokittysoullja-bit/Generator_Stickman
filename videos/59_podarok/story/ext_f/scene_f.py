@@ -166,19 +166,19 @@ def frame12(t):
 # ═══════════════════════════════ s13: кот крадёт кусок ═══════════════════════════════
 CK = .75
 T_LAND, T_BITE, T_RUN = 24.64, 24.72, 25.10
-PIE = (560, 1050)
-TABLE_Y = 1108
+PIE = (560, 1060)
+TABLE_Y = 1124
 
 
 def cat_state(t):
     """x, y (низ кота), поворот, масштаб X/Y, голова вниз, поворот морды, взгляд, уши торчком, есть ли кусок во рту."""
-    x, y, rot, sx, sy = 610.0, TABLE_Y, 0.0, 1.0, 1.0
+    x, y, rot, sx, sy = 640.0, TABLE_Y, 0.0, 1.0, 1.0
     drop, turn, look, perk, has = 0.0, 0.0, (0.0, 0.2), 0.0, False
     if t < 24.40:
         return None
     if t < T_LAND:                           # прыжок снизу слева на стол
         u = (t - 24.40) / (T_LAND - 24.40)
-        x = 450 + 160 * ease_out(u, 1.5)
+        x = 470 + 170 * ease_out(u, 1.5)
         y = 1560 + (TABLE_Y - 1560) * u - 330 * math.sin(math.pi * u) ** 1.0
         sy, sx = 1.14 - .1 * u, .93 + .06 * u
         rot = -10 * (1 - u)
@@ -199,10 +199,10 @@ def cat_state(t):
             look = (-1.0, -.1)
             perk = 1.0
         if t >= T_RUN:
-            u = clamp((t - T_RUN) / .9)
-            x = 610 + 1700 * ease_in(u, 1.7)
-            hop = abs(math.sin(math.pi * (u * 3.2 + .1)))
-            y = TABLE_Y - 150 * hop * (1 if x < 2150 else 0) + (max(0, x - 2150) * 1.4)
+            u = clamp((t - T_RUN) / 1.25)
+            x = 640 + 1500 * ease_in(u, 1.25)
+            hop = abs(math.sin(math.pi * (u * 4.2 + .1)))
+            y = TABLE_Y - 150 * hop
             rot = 12 + 6 * math.sin(t * 25)
             turn, look = .9, (1.0, 0.0)
             sy, sx = 1 + .12 * (hop > .5), 1 - .08 * (hop > .5)
@@ -220,7 +220,7 @@ def cat_draw(t, c):
     o = Cat.draw(0, 0, 1.0, st, t)       # в локальных единицах 0,0 = (CX, CBOT)
     extra = ""
     if c["has"]:
-        extra += B.piece(836 + 22 * c["turn"] + 4, 1136 + 70 * c["drop"], .5, 14, 1)
+        extra += B.piece(836 + 22 * c["turn"] + 6, 1138 + 70 * c["drop"], .72, 14, 1)
     if t > T_BITE + .22:
         extra += B.crumbs(836 + 22 * c["turn"], 1146 + 70 * c["drop"], 6, 40, 1.1, seed=3)
     # звёздочки удивления над кабаном: штрихи, без букв
@@ -256,15 +256,15 @@ def crumb_field(t, seed=5):
 
 def frame13(t):
     c = cat_state(t)
-    catx = c["x"] if c else 610
-    cx = 540 + clamp((catx - 610) * .62, 0, 1100) * ease_io(clamp((t - T_RUN + .12) / .5)) if t >= T_RUN else 540
-    cx = 540 + 12 * math.sin(t * 1.2) + (cx - 540)
-    z = 1.4 + .06 * ease_io(clamp((t - 24.1) / 1.2))
+    catx = c["x"] if c else 640
+    cx = 570 + (catx - 640) * .93 * ease_io(clamp((t - T_RUN + .1) / .4)) if t >= T_RUN else 570
+    cx = cx + 8 * math.sin(t * 1.2)
+    z = 1.7 + .05 * ease_io(clamp((t - 24.1) / 1.2))
     set_ink(z)
     scn = [B.kitchen(t, -500, 2600)]
     # зрители за столом
     bs = .7
-    mh, dh = (250, 1020), (830, 1020)
+    mh, dh = (350, 1020), (770, 1020)
     seen = (t >= 24.40)
     cat_x = c["x"] if c else 600
     gasp = ease_io(clamp((t - T_BITE - .3) / .2)) if seen else 0.0
@@ -279,7 +279,7 @@ def frame13(t):
     # пирог: до кражи целый; потом с вырезом
     cut = (8, 54) if t > T_BITE + .18 else None
     scn.append(B.pie(PIE[0], PIE[1], .95, cut=cut, sag=1.0))
-    scn.append(B.jar(380, 1080, .8, sway=.25 * math.sin(t * 2)))
+    scn.append(B.jar(440, 1090, .8, sway=.25 * math.sin(t * 2)))
     if c is not None:
         scn.append(cat_draw(t, c))
         # кусок: пока не взят — на пироге
@@ -293,7 +293,11 @@ def frame13(t):
             for i, s_ in enumerate((-1, 1)):
                 scn.append(blob(ellipse_pts(c["x"] + s_ * (50 + 70 * u), TABLE_Y + 8, 22 * (1 - u * .5), 12 * (1 - u * .5), 8), "#f6ecd8"))
     scn.append(crumb_field(t))
-    cam = lib.cam(cx, 930, z, .5 * math.sin(t * 1.5) + 1.5 * bump(t, T_RUN, .3))
+    if c is not None and t >= T_RUN and c["x"] < 2000:
+        for i in range(3):
+            yy = c["y"] - 40 - 55 * i
+            scn.append(line([(c["x"] - 130 - 40 * i, yy), (c["x"] - 260 - 60 * i, yy + 4)], 8, "#ffffff", taper=.7, wmin=.2, seed=980 + i))
+    cam = lib.cam(cx, 1010, z, .5 * math.sin(t * 1.5) + 1.5 * bump(t, T_RUN, .3))
     return f'<g transform="{cam}">{"".join(scn)}</g>'
 
 
