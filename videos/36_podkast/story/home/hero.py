@@ -66,17 +66,15 @@ def bag_on_shoulder(sw=0.0, rot_extra=0.0):
 
 
 def headphones_neck():
-    """Крюк over_torso: белые накладные наушники на шее."""
+    """Крюк over_torso: белые накладные наушники на шее (профиль: ближняя чашка сбоку шеи, дуга по груди)."""
     def f(info):
         nk, fw, up = info["neck"], info["fw"], info["up"]
-        c = nk - up * 30 + fw * 10
-        o = [line([tuple(c - fw * 70 + up * 20), tuple(c - fw * 30 - up * 30), tuple(c + fw * 40 - up * 40), tuple(c + fw * 86 + up * 10)], 16,
-                  "#f4f2ec", seed=990, taper=.1, wmin=.9),
-             line([tuple(c - fw * 70 + up * 20), tuple(c - fw * 30 - up * 30), tuple(c + fw * 40 - up * 40), tuple(c + fw * 86 + up * 10)], 3.4,
-                  INK, seed=991, taper=.1, wmin=.9, op=.9)]
-        e = c + fw * 92 + up * 30
-        o.append(shape(ellipse_pts(e[0], e[1], 34, 44, 14), "#f4f2ec", blob(ellipse_pts(e[0] + 10, e[1] + 6, 22, 34, 12), "#d9d5cb", .9), w=4.4,
-                       seed=992))
+        cup = nk - fw * 34 - up * 6
+        band_pts = [tuple(cup + fw * 10 - up * 30), tuple(nk + fw * 40 - up * 40), tuple(nk + fw * 92 - up * 4)]
+        o = [line(band_pts, 18, INK, seed=990, taper=.1, wmin=.9), line(band_pts, 11, "#f4f2ec", seed=991, taper=.1, wmin=.9)]
+        o.append(shape(ellipse_pts(cup[0], cup[1], 40, 48, 14, rot=-20), "#f4f2ec",
+                       blob(ellipse_pts(cup[0] - 8, cup[1] + 8, 26, 34, 12, rot=-20), "#d9d5cb", .9) +
+                       blob(ellipse_pts(cup[0] + 6, cup[1] - 4, 14, 20, 10, rot=-20), "#c9c3b6", .9), w=4.4, seed=992))
         return "".join(o)
     return f
 

@@ -15,8 +15,8 @@ from lib import (INK, W, H, back_out, blob, blur, cam, clamp, ease_in, ease_io, 
                  rect_pts, shape, smooth, svg)
 
 _ST = {}
-AMER = P.wt("америке")          # 16.44
-GIRLS = P.wt("девушкам")        # 17.04
+AMER = 99.0
+GIRLS = 99.0
 GROUND = 1090                   # низ стены / верх ступеней
 PLAZA = 1235                    # уровень площадки перед ступенями
 BRICK, BRICK_SH, BRICK_DK = "#b8523a", "#97402c", "#7e3322"

@@ -30,7 +30,7 @@ def bag_path(t):
     if "rel" not in _S:
         _S["rel"] = dima.draw(pose(T_THROW))[1]["n"]
     p0 = _S["rel"]
-    p1 = np.array([room.CORNER[0] - 70, -62.0])
+    p1 = np.array([room.CORNER[0] - 105, -62.0])
     T1 = 0.27
     u = clamp((t - T_THROW) / T1)
     x = p0[0] + (p1[0] - p0[0]) * u
@@ -115,9 +115,9 @@ def pose(t):
 
 def camera(t):
     o = smooth(T_THROW - 0.05, T_FLOP + 0.15, t)
-    cx = 110 + 40 * o
+    cx = 110 + 72 * o
     cy = -440 + 70 * o
-    s = 1.80 - 0.36 * o + 0.03 * (t - T_A)
+    s = 1.80 - 0.44 * o + 0.03 * (t - T_A)
     land = t - T_FLOP
     if land > -0.03:
         s *= 1 + 0.06 * smooth(-0.03, 0.03, land) * math.exp(-4 * max(0, land))

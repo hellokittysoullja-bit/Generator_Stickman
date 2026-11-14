@@ -137,7 +137,8 @@ def face(spec, pose, sd):
     lx, ly = pose.get("look", (0.0, 0.0))
     blink = pose.get("blink", 0.0)
     for i, x in enumerate(ex_):
-        rx, ry = 15 * (1 - .18 * abs(fc) * (1 if (x - fc * 22) * fc < 0 else 0)), 19
+        ek = pose.get("eye_k", 1.0)
+        rx, ry = 15 * (1 - .18 * abs(fc) * (1 if (x - fc * 22) * fc < 0 else 0)) * (1 + .25 * (ek - 1)), 19 * ek
         ey = -8
         e = ellipse_pts(x, ey, rx, ry, 14)
         if blink < .95:
@@ -208,7 +209,34 @@ def face(spec, pose, sd):
         cc = spec["cap"]
         s.append(shape([(-hx - 6, -36), (-hx + 4, -78), (-10, -hy - 28), (hx - 6, -78), (hx + 6, -36)], cc, blob([(10, -hy - 20), (hx, -70), (hx + 6, -36), (20, -36)], shade(cc), .9), w=4.2, seed=sd + 23))
         s.append(shape([(fc * 30 - 40, -40), (fc * 30 + 50 + 40 * fc, -44), (fc * 30 + 60 + 50 * fc, -30), (fc * 30 - 40, -30)], shade(cc), w=3.6, seed=sd + 24))
+    if spec.get("phones") or pose.get("phones"):          # белые накладные наушники (рилс 36)
+        s.append(phones(hx, hy, fc, sd + 90))
     return "".join(s)
+
+
+def phones(hx, hy, fc, sd):
+    """Белые накладные наушники на голове: дужка поверх волос, чашки у ушей."""
+    o = []
+    band_ = [(-hx - 12, 2), (-hx - 10, -50), (-40, -hy - 34), (0, -hy - 40), (40, -hy - 34), (hx + 10, -50), (hx + 12, 2)]
+    o.append(line(band_, 15, INK, taper=.05, wmin=.95, seed=sd))
+    o.append(line(band_, 8, "#f4f4f0", taper=.05, wmin=.95, seed=sd + 1))
+    for k, side in enumerate((-1, 1)):
+        cx = side * (hx + 8)
+        cup = ellipse_pts(cx, 6, 17, 30, 14)
+        o.append(shape(cup, "#f4f4f0", blob(ellipse_pts(cx + 6, 12, 10, 22, 10), "#c9ccd4", .9) +
+                       blob(ellipse_pts(cx - 5, -6, 4, 10, 8), "#ffffff", .9), w=3.6, seed=sd + 2 + k))
+    return "".join(o)
+
+
+def leg_ik(hip, foot, L1=140, L2=140):
+    """Углы ноги (a1, k) для person(): бедро hip -> щиколотка foot (координаты человека, лицом вправо, колено вперёд)."""
+    dx, dy = foot[0] - hip[0], foot[1] - hip[1]
+    D = max(1.0, min(math.hypot(dx, dy), L1 + L2 - 0.5))
+    b = math.degrees(math.atan2(dx, dy))
+    al = math.degrees(math.acos(max(-1, min(1, (L1 * L1 + D * D - L2 * L2) / (2 * L1 * D)))))
+    a1 = b + al
+    k = a1 - (b - math.degrees(math.acos(max(-1, min(1, (L2 * L2 + D * D - L1 * L1) / (2 * L2 * D))))))
+    return a1, k
 
 
 def back_head(spec, hx, hy, sd):
@@ -259,7 +287,10 @@ def person(spec, pose, sd=0):
         arms = {"L": (8, -6), "R": (-8, 6)}
     arms.update(pose.get("arms", {}))
     sh_w0 = 74 * spec.get("bw", 1.0)
+    lean = pose.get("lean", 0.0)
     for side, tgt in pose.get("hand_target", {}).items():          # IK: кисть в точку (координаты человека)
+        if lean:
+            tgt = rot(tgt, -lean, (0, hipY))
         sign = -1 if side == "L" else 1
         p0 = (sign * (sh_w0 - 10), shY + 18 + bob)
         dx, dy = tgt[0] - p0[0], tgt[1] - p0[1]
@@ -310,12 +341,15 @@ def person(spec, pose, sd=0):
 
     hands = {}
     nl = pose.get("no_legs")
+    legs_out = []
     if not nl:
-        s.append(leg(far))
+        legs_out.append(leg(far))
+        s.append(legs_out[-1])
     a_far, hands[far] = arm(far)
     s.append(a_far)
     if not nl:
-        s.append(leg(near))
+        legs_out.append(leg(near))
+        s.append(legs_out[-1])
     a_near, hands[near] = arm(near)
     s.append(a_near)
     if pose.get("only_arms"):
@@ -376,6 +410,8 @@ def person(spec, pose, sd=0):
         hx, hy = hands[item[0]]
         s.append(jar_small(hx, hy - 4, item[1], sd + 80))
         s.append(hand((hx - 6, hy + 4), 15, skin, sd + 81))
+    if lean:
+        s = [x if any(x is lg for lg in legs_out) else f'<g transform="rotate({lean:.2f} 0 {hipY})">{x}</g>' for x in s if x]
     return "".join(s)
 
 
