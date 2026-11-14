@@ -359,20 +359,20 @@ def check(t):
     e = t - (CHECK - 0.06)
     if e < 0:
         return ""
-    pts = wobble([(712, 1150), (752, 1196), (838, 1092)], 1100, 1.0, 8)
+    pts = wobble([(748, 1118), (784, 1158), (866, 1062)], 1100, 1.0, 8)
     u = clamp(e / 0.16)
     pp, _ = partial(pts, ease_out(u, 2))
     pop = 1 + 0.18 * math.exp(-max(e - 0.16, 0) * 9) * math.sin(min(max(e - 0.16, 0) * 18, math.pi)) if e > 0.16 else 1
     s = line(pp, 34, INK, taper=.1, wmin=.85, seed=1101) + line(pp, 24, "#3cb34a", taper=.1, wmin=.85, seed=1101)
     if u >= 1:
         s += line([(p[0] - 4, p[1] - 6) for p in pts[: len(pts) // 2]], 6, "#9be89f", taper=.4, seed=1102, op=.9)
-    g = f'<g transform="translate(775 1145) scale({f(pop)}) translate(-775 -1145)">{s}</g>'
+    g = f'<g transform="translate(805 1110) scale({f(pop)}) translate(-805 -1110)">{s}</g>'
     if 0.16 < e < 0.6:
         v = (e - 0.16) / 0.44
         for j in range(7):
             a = -math.pi * (0.1 + 0.8 * j / 6)
             r0, r1 = 90 + 60 * v, 120 + 110 * v
-            g += line([(775 + r0 * math.cos(a), 1145 + r0 * math.sin(a)), (775 + r1 * math.cos(a), 1145 + r1 * math.sin(a))], 9 * (1 - v) + 2,
+            g += line([(805 + r0 * math.cos(a), 1110 + r0 * math.sin(a)), (805 + r1 * math.cos(a), 1110 + r1 * math.sin(a))], 9 * (1 - v) + 2,
                       "#ffcf3a", taper=.6, seed=1110 + j)
     return g
 
@@ -466,7 +466,7 @@ def s12(t):
     if t > 23.85 and t < 25.6:
         art += hand_at(tip, lift, t)
     pan = ease_io(clamp((t - 23.7) / 0.55))
-    cy = 800 + (1215 - 800) * pan
+    cy = 800 + (1135 - 800) * pan
     scl = 1.32 + 0.06 * clamp((t - 24.2) / 1.6)
     cx = 545 + 15 * pan
     e = t - CHECK
