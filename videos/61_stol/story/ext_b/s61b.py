@@ -125,12 +125,12 @@ def room_wall03(t):
 def foreground_desk03(t, sh):
     """Край стола-бардака на переднем плане (низ кадра): гора бумажек, кружки, провод — едет чуть быстрее фона (параллакс)."""
     dx = sh * 1.6
-    o = [PR.desk(760 + dx, 1700, 1250, 1.0, 230, legs=False, col="wood", seed=3)]
-    o.append(PR.paper_pile(560 + dx, 1600, 1.45, seed=7, n=12))
-    o.append(PR.coffee_ring(900 + dx, 1640, 1.2, 0, seed=2))
-    o.append(PR.mug(1000 + dx, 1655, 1.5, -4, col="blue", coffee=True, steam=.6, t=t, handle=1, seed=4))
-    o.append(PR.mug(260 + dx, 1690, 1.35, 6, col="red", coffee=False, handle=-1, seed=5))
-    o.append(PR.cable_tangle(800 + dx, 1600, 1.3, seed=2, t=t))
+    o = [PR.desk(640 + dx, 1640, 1700, 1.0, 380, legs=True, leg_h=500, col="wood", seed=3)]
+    o.append(PR.paper_pile(520 + dx, 1500, 1.6, seed=7, n=12))
+    o.append(PR.coffee_ring(900 + dx, 1560, 1.2, 0, seed=2))
+    o.append(PR.mug(1010 + dx, 1580, 1.6, -4, col="blue", coffee=True, steam=.6, t=t, handle=1, seed=4))
+    o.append(PR.mug(170 + dx, 1600, 1.45, 6, col="red", coffee=False, handle=-1, seed=5))
+    o.append(PR.cable_tangle(820 + dx, 1490, 1.35, seed=2, t=t))
     return "".join(o)
 
 
@@ -140,9 +140,9 @@ def frame03(t):
     x0, y0, x1, y1 = DOOR
     # мама входит в проём: с кадра 0 наклон «заглядывает» → выпрямляется
     enter = ease_out(clamp((t - a) / .45))
-    s = .98
+    s = 1.12
     sc = s * people.HEIGHT["mama"]
-    hip = (548 - 60 * (1 - enter), 1245 + 10 * (1 - enter))
+    hip = (520 - 60 * (1 - enter), 1300 + 10 * (1 - enter))
     lean = .16 * (1 - enter)
     # 1) «бардаке» — обводит рукой комнату (ближняя рука вперёд и дугой вправо-вниз)
     sw_in = ease_out(clamp((t - (T_BARD - .14)) / .22))
@@ -189,14 +189,14 @@ def frame03(t):
     o = [room_wall03(t)]
     # тень мамы на косяке и полу коридора
     o.append(blob(ellipse_pts(hip[0] + 30, y1 - 120, 230, 30, 14), "#7a5530", .3))
-    o.append(m["arm_f"] + m["body"] + m["arm_n"])
+    o.append(m.get("pelvis", "") + m["arm_f"] + m["body"] + m["arm_n"])
     hx, hy = m["head"]
     # тряска на «бардаке», дрейф и наезд на лицо
     sx_, sy_ = PR.shake(t, T_BARD, 14, .4, seed=3)
-    z = 1.02 + .5 * push
+    z = 1.06 + .42 * push
     set_ink(z)
     cx = 560 + (hx + 40 - 560) * push + sx_
-    cy = 1000 + (hy + 60 - 1000) * push + sy_
+    cy = 960 + (hy + 140 - 960) * push + sy_
     o.append(foreground_desk03(t, (cx - 560) * .5))
     cam = lib.cam(cx, cy, z, -1.0 + 1.6 * push + .6 * decay(t, T_BARD, 6, 9))
     return f'<g transform="{cam}">{"".join(o)}</g>'
@@ -253,21 +253,21 @@ def frame10(t):
     o = [neat_bg(), busy_bg(t)]
     # разделитель
     o.append(line([(MID, -700), (MID + 4, 2600)], 12, INK, taper=0, wmin=1, seed=370))
-    s = 1.12
+    s = 1.6
     # участница слева, смотрит вправо
     bl = blink_of(t, (23.9, 25.5))
     ex_b = dict(people.EXPR["bob"]["think"], look=(.55, -.55 - .1 * math.sin(t * 2)), closed=bl)
     if t > T_BESP + .3:
         ex_b = dict(ex_b, brows="calm", mouth="flat", look=(.7, -.2))
-    hipL = (200, 1520 + 6 * math.sin(t * 2.4))
+    hipL = (190, 1660 + 6 * math.sin(t * 2.4))
     pL = person("bob", hipL, s, ex_b, {"f": ("ang", .15, .2), "n": ("ang", -.05, .2)}, {}, lean=.05, head_ang=-.06 + .03 * math.sin(t * 1.7))
     # бородач справа, смотрит влево (отражение)
     up_b = ease_out(clamp((t - T_BESP) / .3))
     ex_r = dict(people.EXPR["beard"]["think"], look=(.5, -.6 + .1 * math.sin(t * 2.3)), closed=blink_of(t, (23.6, 24.4)))
     if t > T_BESP:
         ex_r = dict(people.EXPR["beard"]["idea"], look=(.45, -.7), open=.5 + .3 * up_b, hair=0)
-    hipR = 880
-    pR = person("beard", (hipR, 1500 + 6 * math.sin(t * 2.1 + 1)), s, ex_r, {"f": ("ang", .15, .2), "n": ("ang", -.05, .2)}, {}, lean=.04 - .05 * up_b,
+    hipR = 950
+    pR = person("beard", (hipR, 1640 + 6 * math.sin(t * 2.1 + 1)), s, ex_r, {"f": ("ang", .15, .2), "n": ("ang", -.05, .2)}, {}, lean=.04 - .05 * up_b,
                 head_ang=-.05 - .08 * up_b + .03 * math.sin(t * 1.5))
     cL = lib.clip_of(rect_pts(-700, -700, MID - 6, 2600))
     cR = lib.clip_of(rect_pts(MID + 6, -700, 1800, 2600))
@@ -280,12 +280,12 @@ def frame10(t):
     uc2 = back_out(clamp((t - (T_IDEI + .07)) / .32), 2.2)
     grow = spring(t - T_BESP, 2.2, 4.0) if t > T_BESP else 0.0
     if uc > 0:
-        o.append(PR.thought_cloud(hLx + 70, hLy - 330 + 6 * math.sin(t * 2.2), 1.0, 300, 190, uc, seed=1, dots=1))
+        o.append(PR.thought_cloud(hLx + 90, hLy - 470 + 6 * math.sin(t * 2.2), 1.15, 300, 190, uc, seed=1, dots=1))
     if uc2 > 0:
-        kR = 1.0 + .55 * grow
-        cxR, cyR = hRx + 20 - 40 * grow, hRy - 340 - 90 * grow + 6 * math.sin(t * 2.5)
+        kR = 1.15 + .6 * grow
+        cxR, cyR = hRx - 60 - 40 * grow, hRy - 440 - 60 * grow + 6 * math.sin(t * 2.5)
         if grow > .02:
-            o.append(PR.glow(cxR, cyR, 340 * kR, .9 * min(1.0, grow) * (1 + .08 * math.sin(t * 9))))
+            o.append(PR.glow(cxR, cyR - 20, 210 * kR, .8 * min(1.0, grow) * (1 + .08 * math.sin(t * 9)), ry=150 * kR))
         o.append(PR.thought_cloud(cxR, cyR, kR, 300, 190, uc2, seed=2, dots=-1, col=lib.mix("#FFFFFF", "#FFF2B8", min(1.0, grow))))
         if grow > .05:      # искры-штрихи вокруг раздувшегося облака
             for k in range(7):
@@ -298,7 +298,7 @@ def frame10(t):
     z = 1.04 + .06 * drift + .05 * move
     set_ink(z)
     sx_, sy_ = PR.shake(t, T_BESP, 8, .3, seed=5)
-    cam = lib.cam(540 + 170 * move + 20 * drift + sx_, 920 - 30 * drift + sy_, z, .5 - .8 * drift)
+    cam = lib.cam(540 + 120 * move + 20 * drift + sx_, 880 - 30 * drift + sy_, z, .5 - .8 * drift)
     return f'<g transform="{cam}">{"".join(o)}</g>'
 
 
@@ -341,29 +341,29 @@ def frame13(t):
     o.append(blob(ellipse_pts(tx, ty + 6, 420, 26, 16), "#c9c2b2", .6))
     o.append(PR.tray(tx, ty, K, 360, col="#5C9A78"))
     # шоколадка остаётся
-    o.append(PR.chocolate(tx - 210, ty - 34 * K - 60, K * .95, -8))
+    o.append(PR.chocolate(tx - 260, ty - 34 * K - 60, K * .95, -8))
     # яблоко: рука приходит справа с кадра 0, берёт (30.15), поднимает к «рту» вверх, укус на «еду», кладёт назад к 31.0
     AP0 = np.array([tx + 150.0, ty - 34 * K])        # дно яблока на подносе
     reach = ease_out(clamp((t - a) / .35))
     lift = ease_io(clamp((t - 30.18) / .28))
     down = ease_io(clamp((t - 30.86) / .3))
     up_y = -430
-    ap = AP0 + np.array([-60.0, up_y]) * lift * (1 - down) + np.array([30.0, 0]) * down
+    ap = AP0 + np.array([-60.0, up_y]) * lift + np.array([560.0, 120.0]) * down
     bite = smooth(T_EDU - .02, T_EDU + .05, t)
     sx_, sy_ = PR.shake(t, T_EDU, 12, .3, seed=7)
     ak = K * 1.05
     rot_a = -10 * lift * (1 - down)
     # чашки «привычное»: выезжают слева по подносу перед словом
     cups = ease_out(clamp((t - (T_PRIV - .4)) / .35))
-    cpx = tx - 140 + (-700) * (1 - cups)
+    cpx = tx - 70 + (-700) * (1 - cups)
     cpy = ty - 34 * K
-    csx = tx + 120 + 700 * (1 - cups) if cups < 1 else tx + 120
+    csx = tx + 140 + 700 * (1 - cups) if cups < 1 else tx + 140
     # рука: до 31.0 — с яблоком; 31.0–31.35 уходит; 31.35–31.75 зависает над колючей, переходит к простой и берёт (31.8), чуть поднимает
     R = 33 * ak
     gk = .95 * ak / 2.3 * 2.3 * .55
     o_back, o_front, o_arm = "", "", ""
     hand_k = 1.25
-    if t < 31.05:
+    if t < 31.16:
         C_ = ap + np.array([0.0, -32 * ak])        # центр яблока
         if t < 30.15:      # подлетает раскрытой ладонью
             W_ = np.array([1300.0, 900.0]) + (C_ + np.array([R + 70, 20]) - np.array([1300.0, 900.0])) * reach
@@ -401,11 +401,11 @@ def frame13(t):
             o_arm = sleeve_arm(W_ + np.array([-18, 0]), E_, hand_k, seed=420)
             o_back, o_front = gb, gf
     # слои: предметы, рука за предметом, предмет, пальцы
-    apple_svg = PR.apple(float(ap[0]), float(ap[1]), ak, rot_a, bite=bite, seed=1)
-    if t >= 31.05:
+    # отражено: надкус слева, его не закрывают пальцы (рука держит справа)
+    apple_svg = f'<g transform="translate({f(2 * ap[0])} 0) scale(-1 1)">{PR.apple(float(ap[0]), float(ap[1]), ak, -rot_a, bite=bite, seed=1)}</g>'
+    if t >= 31.16:
         if cups > 0:
             o.append(PR.cup_spiky(csx, cpy, ak * .9, 0, t))
-        o.append(apple_svg)
         o.append(o_back)
         if cups > 0:
             lift2 = ease_out(clamp((t - 31.9) / .3)) if t > 31.85 else 0.0
@@ -416,11 +416,11 @@ def frame13(t):
     # хруст: крошки и штрихи «хрум» на укусе
     if t > T_EDU:
         u = clamp((t - T_EDU) / .5)
-        ac = ap + np.array([30.0 * ak, -34 * ak])
-        o.append(PR.clink(float(ac[0]) + 40, float(ac[1]) - 30, 1.6, 1 - u, seed=3))
+        ac = ap + np.array([-30.0 * ak, -34 * ak])
+        o.append(PR.clink(float(ac[0]) - 40, float(ac[1]) - 30, 1.6, 1 - u, seed=3))
         rs = np.random.RandomState(5)
         for k in range(6):
-            ang = rs.uniform(-1.2, .9)
+            ang = math.pi - rs.uniform(-1.2, .9)
             sp = rs.uniform(260, 420)
             px = ac[0] + math.cos(ang) * sp * u
             py = ac[1] + math.sin(ang) * sp * u + 600 * u * u
@@ -429,10 +429,10 @@ def frame13(t):
     # зелёная галочка у простой чашки
     if t > 32.0:
         uc = clamp((t - 32.0) / .35)
-        o.append(PR.check_mark(cpx + 230, cpy - 360, 2.2, ease_out(uc), w=12, seed=4))
-    z = 1.08 + .1 * drift
+        o.append(PR.check_mark(cpx - 30, cpy - 380, 1.8, ease_out(uc), w=12, seed=4))
+    z = 1.5 + .12 * drift
     set_ink(z)
-    cam = lib.cam(540 - 60 * drift + sx_ + 30 * math.sin(t * .9), 960 - 80 * drift + sy_, z, -.6 + 1.0 * drift)
+    cam = lib.cam(540 - 30 * drift + sx_ + 14 * math.sin(t * .9), TABLE_Y - 200 - 40 * drift + sy_, z, -.6 + 1.0 * drift)
     return f'<g transform="{cam}">{"".join(o)}</g>'
 
 
