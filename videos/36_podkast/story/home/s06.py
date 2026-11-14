@@ -117,9 +117,4 @@ def frame(t):
             aa = math.radians(ang)
             x0, y0 = hd[0] + math.cos(aa) * r0, hd[1] + math.sin(aa) * r0
             fg.append(hero.line([(x0, y0), (x0 + math.cos(aa) * 26, y0 + math.sin(aa) * 26)], 4.2, hero.INK, seed=3100 + j, op=sk))
-    defl = smooth(T_DEFL - 0.05, T_DEFL + 0.3, t)
-    if defl > 0 and t < T_DEFL + 0.8:   # выдох-облачко
-        u = clamp((t - T_DEFL) / 0.6)
-        op = math.sin(math.pi * u) * .8
-        fg.append(lib.blob(lib.ellipse_pts(hd[0] + 70 + 30 * u, hd[1] + 40 + 10 * u, 16 + 22 * u, 10 + 12 * u, 12), "#ffffff", op))
     return hall.frame(t, cam=camera(t), mid=mid, fg="".join(fg))
