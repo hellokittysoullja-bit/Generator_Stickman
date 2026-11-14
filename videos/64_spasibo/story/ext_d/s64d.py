@@ -274,7 +274,245 @@ def s15(t):
     return frame_svg(body, cx, cy, s, rot=.3 * math.sin(t * .8))
 
 
+# ═════════════════════════════ s02: класс-воспоминание → фото в рамке в руке взрослого Димы ═════════════════════════════
+T_SPAS, T_UCH, T_NO, T_OTKL = 1.42, 2.29, 3.25, 3.65
+CFL = 1560.0                                   # пол класса
+CLS_BOX = (-400.0, 300.0, 1480.0, 1710.0)      # область класса, что видна на фото (4:3)
+Q_PH = 160.0 / (CLS_BOX[2] - CLS_BOX[0])       # класс → фото (фото 160×120 в единицах рамки)
+CLS_C = ((CLS_BOX[0] + CLS_BOX[2]) / 2, (CLS_BOX[1] + CLS_BOX[3]) / 2)
+T_HIP = (470.0, 0.0)
+T_SC = .7
+K_SC = .72
+K_HIP = (800.0, 0.0)
+DESK2 = (600.0, 760.0)
+FR_K = 1.6
+import room as _R  # noqa: E402,F811
+
+
+def _sm(t, a, b):
+    return ease_io(clamp((t - a) / max(1e-6, b - a)))
+
+
+def _blinkv(t, times, dur=.15):
+    v = 0.0
+    for a in times:
+        u = (t - a) / dur
+        if 0 < u < 1:
+            v = max(v, math.sin(math.pi * u))
+    return v
+
+
+def _set_ink(s):
+    lib.INK_K[0] = 1.0 / max(1.0, s) ** 0.62
+
+
+def class_bg(t):
+    """Класс: стена, панель, чистая доска без мела, окно слева с полосой света формы окна, пол."""
+    x0, y0, x1, y1 = CLS_BOX
+    o = [blob(rect_pts(x0 - 300, y0 - 300, x1 + 300, CFL), "#e2d6b4")]
+    o.append(shape(rect_pts(x0 - 300, 1250, x1 + 300, CFL), "#a9b98e", blob(rect_pts(x0 - 300, 1250, x1 + 300, 1268), "#c3d0a6"), w=3.4, seed=1100))
+    o.append(blob(rect_pts(x0 - 300, CFL, x1 + 300, y1 + 400), "#b98a5a"))
+    for i in range(12):
+        yy = CFL + 18 + i * 30 + i * i * 2
+        o.append(line([(x0 - 300, yy), (x1 + 300, yy + 3)], 2.2, "#8f6640", taper=0, wmin=1, seed=1110 + i, op=.55))
+    o.append(line([(x0 - 300, CFL), (x1 + 300, CFL)], 4.0, seed=1109))
+    # окно слева: рама, небо, ветка
+    wx0, wy0, wx1, wy1 = -330.0, 430.0, 60.0, 1130.0
+    sky = blob(rect_pts(wx0, wy0, wx1, wy1), "#cfe6ef") + blob(rect_pts(wx0, wy0 + 420, wx1, wy1), "#e8f2ea", .8)
+    sway = 6 * math.sin(t * 1.3)
+    sky += line([(wx0, 700), (-150 + sway, 640), (-40 + sway * 1.4, 600)], 9, "#6e4a2c", taper=.5, seed=1120)
+    for j, (lx, ly) in enumerate(((-170, 625), (-90, 600), (-40, 620), (-120, 660))):
+        sky += blob(ellipse_pts(lx + sway * 1.2, ly, 46, 26, 12), "#8fb86a", .95)
+    o.append(shape(rect_pts(wx0, wy0, wx1, wy1), "#cfe6ef", sky, w=4.6, seed=1121))
+    for xs in ((wx0 + wx1) / 2,):
+        o.append(shape(rect_pts(xs - 10, wy0, xs + 10, wy1), "#f1ece0", "", w=3.0, seed=1122))
+    o.append(shape(rect_pts(wx0, (wy0 + wy1) / 2 - 10, wx1, (wy0 + wy1) / 2 + 10), "#f1ece0", "", w=3.0, seed=1123))
+    o.append(shape(rect_pts(wx0 - 24, wy1, wx1 + 24, wy1 + 26), "#f1ece0", "", w=3.4, seed=1124))
+    # полоса света формы окна на стене и полу (четыре стекла, чёткие края)
+    def pane(a, b, c, d):
+        return f'<polygon points="{" ".join(f"{p[0]:.1f},{p[1]:.1f}" for p in (a, b, c, d))}" fill="#fff4d2" opacity=".45"/>'
+    sh = 330.0
+    gx = [wx0, (wx0 + wx1) / 2 - 10, (wx0 + wx1) / 2 + 10, wx1]
+    gy = [wy0, (wy0 + wy1) / 2 - 10, (wy0 + wy1) / 2 + 10, wy1]
+    for (ax, bx) in ((gx[0], gx[1]), (gx[2], gx[3])):
+        for (ay, by) in ((gy[0], gy[1]), (gy[2], gy[3])):
+            dx, dy = 470.0, 330.0
+            o.append(pane((ax + dx + (ay - wy0) * .35, ay + dy), (bx + dx + (ay - wy0) * .35, ay + dy), (bx + dx + (by - wy0) * .35, by + dy),
+                          (ax + dx + (by - wy0) * .35, by + dy)))
+    del sh
+    # доска: чистая, без мела, деревянная рамка и полочка
+    bx0, by0, bx1, by1 = 640.0, 420.0, 1420.0, 800.0
+    inner = blob([(bx0 + 60, by0 + 60), (bx0 + 300, by0 + 40), (bx0 + 360, by0 + 120), (bx0 + 90, by0 + 150)], "#456b55", .55)
+    inner += blob([(bx1 - 300, by1 - 120), (bx1 - 80, by1 - 140), (bx1 - 60, by1 - 60), (bx1 - 260, by1 - 50)], "#3a5c48", .5)
+    o.append(shape(rect_pts(bx0 - 22, by0 - 22, bx1 + 22, by1 + 22), C_WOOD2, "", w=4.0, seed=1130))
+    o.append(shape(rect_pts(bx0, by0, bx1, by1), "#3f6450", inner, w=3.6, seed=1131))
+    o.append(shape(rect_pts(bx0 - 40, by1 + 22, bx1 + 40, by1 + 44), C_WOOD2, blob(rect_pts(bx0 - 40, by1 + 36, bx1 + 40, by1 + 44), "#8a5b32"), w=3.4, seed=1132))
+    return "".join(o)
+
+
+C_WOOD2 = "#b27c4c"
+
+
+def school_desk(khy):
+    """Парта сбоку: крышка, полка под ней, металлические ножки."""
+    x0, x1 = DESK2
+    top = khy - 175 * K_SC * .66
+    o = [shape(rect_pts(x0, top, x1, top + 22), "#c99a62", blob(rect_pts(x0, top + 14, x1, top + 22), "#a07440"), w=3.6, seed=1140)]
+    o.append(shape(rect_pts(x0 + 16, top + 70, x1 - 30, top + 84), "#a07440", "", w=3.0, seed=1141))
+    for i, lx in enumerate((x0 + 28, x1 - 34)):
+        o.append(shape(rect_pts(lx - 7, top + 22, lx + 7, CFL), "#5b6770", blob(rect_pts(lx + 2, top + 22, lx + 7, CFL), "#3f4850"), w=2.8, seed=1142 + i))
+    o.append(blob(ellipse_pts((x0 + x1) / 2, CFL + 4, (x1 - x0) / 2 + 20, 10, 16), "#7a5232", .35))
+    return "".join(o), top
+
+
+def kid_chair(x, y):
+    """Стул школьника сбоку, спинка за спиной (справа)."""
+    o = [shape(rect_pts(x - 110, y + 18, x + 70, y + 40), "#c99a62", "", w=3.2, seed=1150)]
+    o.append(shape(rect_pts(x + 52, y - 230, x + 72, y + 40), "#c99a62", "", w=3.0, seed=1151))
+    o.append(shape(rect_pts(x + 40, y - 230, x + 84, y - 150), "#c99a62", "", w=3.0, seed=1152))
+    for i, lx in enumerate((x - 96, x + 60)):
+        o.append(shape(rect_pts(lx - 6, y + 40, lx + 6, CFL), "#5b6770", "", w=2.6, seed=1153 + i))
+    return "".join(o)
+
+
+def classroom(t):
+    """Сцена класса в своих координатах (для фото и для крупного плана)."""
+    ts = T_SC * P.HEIGHT["teacher_y"]
+    ks = K_SC * P.HEIGHT["kid2"]
+    thx, thy = T_HIP[0], CFL - (P.LEG_LEN - 12) * ts
+    khx = K_HIP[0]
+    khy = CFL - 330 * ks - 30
+    desk, dtop = school_desk(khy)
+    u_sh = _sm(t, T_UCH - .1, T_UCH + .32)               # ладонь на плечо
+    beam = _sm(t, T_UCH - .05, T_UCH + .3)
+    # школьник: сидит лицом влево, предплечья на парте; на «учительнице» поднимает глаза и сияет
+    kex = dict(P.EXPR["kid2"]["shy"])
+    kex = mix_expr(kex, dict(P.EXPR["kid2"]["beam"], look=(.5, -.75)), beam)
+    kex["closed"] = _blinkv(t, [1.75])
+    kfeet = {"n": ((khx - 128 + 8 * math.sin(t * 4.5), khy + 112), .15), "f": ((khx - 108, khy + 118), .15)}
+    karms = {"f": ("ik", (2 * khx - (DESK2[0] + 90), dtop - 10), -1), "n": ("ik", (2 * khx - (DESK2[0] + 60), dtop - 6), -1)}
+    khands = {"f": {"curl": (.4, .45, .5, .55), "thumb": .4}, "n": {"curl": (.3, .3, .35, .4), "thumb": .3}}
+    kkw = dict(feet=kfeet, flip=True, arms=karms, hands=khands, lean_add=.06 - .05 * beam + .01 * math.sin(t * 3),
+               head_add=-.12 * beam + .02 * math.sin(t * 2.4), shrug=.12 * beam)
+    k_back = P.kid_dima(khx, khy, K_SC, kex, "sit_desk", layers=("legs", "pelvis", "arm_f", "body"), **kkw)
+    k_arm = P.kid_dima(khx, khy, K_SC, kex, "sit_desk", layers=("arm_n",), **kkw)
+    k_sh = k_back["head"]
+    shoulder = (khx + 14 * ks, khy - 375 * ks)
+    del k_sh
+    # учительница: склоняется к парте, в дальней руке его лист, ближняя ладонь — к листу, потом на плечо
+    tex = dict(P.EXPR["teacher_y"]["kind"], look=(.55, .55))
+    tex = mix_expr(tex, dict(P.EXPR["teacher_y"]["praise"], look=(.6, .2)), _sm(t, T_UCH - .05, T_UCH + .35))
+    tex["closed"] = _blinkv(t, [2.0, 3.05])
+    lean = .52 + .03 * math.sin(t * 2.2) + .04 * u_sh
+    sheet_c = (thx + 185 + 4 * math.sin(t * 2.6), khy - 200 * ks + 3 * math.cos(t * 2.1) + 14 * u_sh)
+    G = (sheet_c[0] - 62 * .55 + 6, sheet_c[1] + 10)
+    W_f = (G[0] - 58 * ts, G[1] + 26 * ts)
+    pnt = (sheet_c[0] + 10, sheet_c[1] - 10 + 12 * math.sin(t * 5) * (1 - u_sh))
+    W_n = lerp2(pnt, (shoulder[0] - 30, shoulder[1] - 6), u_sh)
+    tarms = {"f": ("ik", W_f, -1), "n": ("ik", W_n, -1)}
+    hn = {"dir": (.6, .5), "curl": (.15, .55, .65, .7), "spread": .05, "thumb": .4} if u_sh < .5 else \
+        {"dir": (.75, .65), "curl": (.2, .25, .3, .35), "spread": .12, "thumb": .25}
+    thands = {"f": {"kind": "none"}, "n": hn}
+    tfeet = P.stand_kw(thx, thy, T_SC, "teacher_y", spread=70)["feet"]
+    tkw = dict(feet=tfeet, arms=tarms, hands=thands, lean_add=lean - .42, head_add=.04 * math.sin(t * 1.7) - .05 * u_sh)
+    t_back = P.teacher("young", thx, thy, T_SC, tex, "lean_desk", layers=("legs", "pelvis", "arm_f", "body"), **tkw)
+    t_arm = P.teacher("young", thx, thy, T_SC, tex, "lean_desk", layers=("arm_n",), **tkw)
+    gb, gf = P.grip_svg("teacher_y", G, 9 * .55, -1, k=ts * .95, h=60, seed=1160)
+    sheet = PR.letter(sheet_c[0], sheet_c[1], k=.55, rot=-8, w=200, h=250, write=1.0, seed=7)
+    chair = kid_chair(khx, khy)
+    return "".join([class_bg(t), t_back["svg"], chair, k_back["svg"], desk, k_arm["svg"], gb, sheet, gf, t_arm["svg"]])
+
+
+def photo_framed(inner, face=1.0, glare=0.0, seed=0):
+    """Рамка 200×160 с фото (без надписей); face 1 — лицом, к 0 — поворот через нижнее ребро; glare — блик на стекле."""
+    sd = 16700 + seed
+    a = math.pi * (1 - clamp(face))
+    sy = math.cos(a)
+    if abs(sy) < .04:
+        return shape(rect_pts(-100, -7, 100, 7), "#8A5B32", "", w=3.2, seed=sd + 6)
+    if sy > 0:
+        c = lib.clip_rect(-80, -60, 160, 120)
+        ph = blob(rect_pts(-84, -64, 84, 64), "#E9DDC2") + inner + blob(rect_pts(-84, -64, 84, 64), "#c8955a", .14)
+        fr = shape(rect_pts(-100, -80, 100, 80), "#B27C4C", blob(rect_pts(-100, 60, 100, 82), "#8A5B32") + blob(rect_pts(-100, -80, 100, -72), "#CE9A68"),
+                   w=3.6, seed=sd)
+        fr += shape(rect_pts(-80, -60, 80, 60), "#E9DDC2", f'<g clip-path="url(#{c})">{ph}</g>', w=2.8, seed=sd + 1)
+        if glare > .01:
+            fr += line([(-66, -48), (-34, -54)], 3, "#FFFFFF", taper=.5, wmin=.3, seed=sd + 2, op=glare)
+    else:
+        fr = shape(rect_pts(-100, -80, 100, 80), "#8A5B32", shape(rect_pts(-84, -64, 84, 64), "#A7835A", "", w=2.4, seed=sd + 4) +
+                   shape([(-14, 30), (14, 30), (8, 76), (-8, 76)], "#8A6A44", "", w=2.4, seed=sd + 5), w=3.6, seed=sd + 3)
+    return f'<g transform="scale(1 {sy:.4f})">{fr}</g>'
+
+
+def _whip_in(t, t0, dur=.18):
+    e = 1 - ease_out(clamp((t - t0) / dur), 3)
+    return -160 * e, -2.0 * e
+
+
+def s02(t):
+    # камера класса: медленный наезд на лица; на «но всё» — быстрый откат к рамке
+    face_c = (660.0, 1040.0)
+    s_c0 = lerp(1.42, 1.62, _sm(t, 1.22, T_NO))
+    pull = ease_io(clamp((t - T_NO) / .42))
+    lay = _sm(t, T_OTKL - .02, T_OTKL + .5)
+    # мир стола (вечер): Дима держит рамку ближней рукой
+    SX, SY = _R.SIT
+    BS = 1.0
+    fc0 = (SX + 290.0, SY - 330.0)
+    fc1 = (SX + 330.0, _R.DESK_TOP - 70.0)
+    fc = lerp2(fc0, fc1, lay)
+    fc = (fc[0] + 3 * math.sin(t * 2.3) * (1 - lay), fc[1] + 2 * math.cos(t * 1.9) * (1 - lay))
+    face = lerp(1.0, .37, lay)
+    frot = lerp(-3.0, 4.0, lay)
+    # класс → фото → мир: точка класса p ↦ fc + FR_K·Q_PH·(p − CLS_C)
+    kq = FR_K * Q_PH
+    desk_cam = (lerp(fc0[0] - 20, _R.CAM_DESK_CLOSE[0] - 30, lay), lerp(fc0[1] + 70, _R.CAM_DESK_CLOSE[1] + 40, lay), 1.3)
+    cls_cam_world = (fc0[0] + kq * (face_c[0] - CLS_C[0]), fc0[1] + kq * (face_c[1] - CLS_C[1]), s_c0 / kq)
+    ls = lerp(math.log(cls_cam_world[2]), math.log(desk_cam[2]), pull)
+    cx = lerp(cls_cam_world[0], desk_cam[0], pull)
+    cy = lerp(cls_cam_world[1], desk_cam[1], pull)
+    s = math.exp(ls)
+    s_cls = s * kq
+    rot = .4 * math.sin(t * .9) + 1.6 * math.sin(math.pi * pull)
+    wdx, wrot = _whip_in(t, T_SPAS)
+    cx += wdx / s
+    rot += wrot
+    _set_ink(s_cls)
+    cls = classroom(t)
+    inner = f'<g transform="translate({-CLS_C[0] * Q_PH:.4f} {-CLS_C[1] * Q_PH:.4f}) scale({Q_PH:.6f})">{cls}</g>'
+    inner = f'<g transform="scale({1 / 1:.4f})">{inner}</g>'
+    _set_ink(s)
+    if t < T_NO - .01:     # до отката — только класс (быстрее), камера та же
+        body = f'<g transform="{lib.cam(cx, cy, s, rot)}"><g transform="translate({fc0[0]:.3f} {fc0[1]:.3f}) scale({FR_K})">{inner}</g></g>'
+        over = vignette(1.0)
+        return svg(f'<rect width="1080" height="1920" fill="#e2d6b4"/>{body}{over}')
+    sc = _R.desk_scene(t, "evening", drawer=0.0)
+    gl = clamp((pull - .6) / .4)
+    frame_svg_ = photo_framed(inner, face, glare=gl * .8)
+    frame_g = f'<g transform="translate({fc[0]:.3f} {fc[1]:.3f}) rotate({frot:.3f}) scale({FR_K})">{frame_svg_}</g>'
+    # ближняя рука держит правый край рамки
+    sy_f = math.cos(math.pi * (1 - face))
+    G = (fc[0] + 100 * FR_K * math.cos(math.radians(frot)) - 8, fc[1] + 100 * FR_K * math.sin(math.radians(frot)) + 6 * sy_f)
+    W_n = (G[0] + 64 * BS, G[1] + 26 * BS)
+    W_f = (SX + 240, _R.DESK_TOP - 70 + 4 * math.sin(t * 2))
+    e = dict(P.EXPR["dima"]["thoughtful"], brows="sad", mouth="smile", smile=.25 * (1 - lay), look=(.6, .35 + .3 * lay), lid=.6 - .1 * lay)
+    e["closed"] = _blinkv(t, [3.95])
+    kw = dict(feet={"n": ((SX + 300, _R.FL - 52), 0.0), "f": ((SX + 250, _R.FL - 50), 0.0)}, arms={"f": ("ik", W_f, -1), "n": ("ik", W_n, -1)},
+              hands={"n": {"kind": "none"}, "f": {"curl": (.35, .35, .4, .45), "thumb": .35, "dir": (1, .3)}},
+              lean_add=.06 * lay + .02 * math.sin(t * 2), head_add=.08 * lay)
+    parts = {k: P.dima(SX, SY, BS, e, "card", layers=(k,), **kw)["svg"] for k in ("legs", "pelvis", "arm_f", "body", "arm_n")}
+    gb, gf = P.grip_svg("dima", G, 7 * FR_K, +1, k=BS * .95, h=70, seed=1170)
+    world = [sc["bg"], sc["chair_back"], sc["desk_top"], sc["pool"], parts["legs"], sc["desk_legs"], sc["chair_seat"], parts["pelvis"], parts["arm_f"],
+             parts["body"], parts["arm_n"], gb, frame_g, gf, sc["lamp"]]
+    sx = sy = 0.0
+    if t > T_OTKL + .45:      # рамка легла — лёгкий толчок
+        h = t - (T_OTKL + .45)
+        sx, sy = 6 * math.exp(-9 * h) * math.sin(h * 110), 5 * math.exp(-9 * h) * math.sin(h * 90 + 1)
+    body = f'<g transform="{lib.cam(cx + sx, cy + sy, s, rot)}">{"".join(world)}</g>'
+    return svg(f'<rect width="1080" height="1920" fill="#2a2440"/>{body}{vignette(1 - pull)}')
+
+
 def frame(sid, t):
     lib.dyn_begin()
     lib.DEFS.clear()
-    return {"s14": s14, "s15": s15}[sid](t)
+    return {"s02": s02, "s14": s14, "s15": s15}[sid](t)
