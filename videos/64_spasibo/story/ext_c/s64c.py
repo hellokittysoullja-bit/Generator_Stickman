@@ -170,15 +170,15 @@ def s01(t):
     # ближняя кисть с ручкой: у груди → кончик ручки зависает над правой (пустой) страницей
     hover = sm(t, T_DAVNO + .18, T_HOTEL)
     cpos_end = (SX + 225 * SC + 150, R.DESK_TOP - 40 - 115 * CARD_K * .9)
-    tgt = (cpos_end[0] + 75, cpos_end[1] - 30)
-    rot_end = 20.0
+    tgt = (cpos_end[0] + 50, R.DESK_TOP - 70)
+    rot_end = -48.0
     tip_off = PR.pen_tip(0, 0, PEN_K, rot_end)
-    dn = np.array((.55, .85)) / np.linalg.norm((.55, .85))
+    dn = np.array((.9, .45)) / np.linalg.norm((.9, .45))
     W_end = (tgt[0] - tip_off[0] - dn[0] * 58 * SC, tgt[1] - tip_off[1] - dn[1] * 58 * SC)
     Wn = lerp2((SX + 250 * SC, SY - 330 * SC + 8 * math.sin(t * 6)), W_end, hover)
     Wn = (Wn[0], Wn[1] - 16 * bump(t, T_HOTEL - .04, .2) + 3 * math.sin(t * 13) * hover)    # дрожит в нерешительности
     hands = {"f": {"curl": (.55, .6, .62, .65), "thumb": .55, "dir": (.75, -.65)},
-             "n": {"curl": (.78, .8, .82, .85), "thumb": .65, "dir": (lerp(.85, .55, hover), lerp(.35, .85, hover))}}
+             "n": {"curl": (.78, .8, .82, .85), "thumb": .65, "dir": (lerp(.85, .9, hover), lerp(.35, .45, hover))}}
     talk = t > T_SKAZAT - .25
     e = ex("unsure", look=(lerp(.35, .7, sm(t, .2, T_DAVNO)), lerp(.1, .7, op)), lid=.68 + .25 * blinkv(t, [1.25]) * 0)
     if talk:      # губы шевелятся — репетирует
@@ -192,11 +192,15 @@ def s01(t):
     rot_c = lerp(-14 + 16 * math.sin(t * 7.5), -6, lay)
     cpos = lerp2((wf[0] + 125, wf[1] - 95), (wf[0] + 150, R.DESK_TOP - 40 - 115 * CARD_K * .9), lay)
     card = PR.card(cpos[0], cpos[1], CARD_K * (1 - .1 * lay), rot_c, op, "blank", seed=1, droop=0.0)
+    # открытка ложится на стол наклонно: сжатие по высоте к нижнему краю (верх видно сверху)
+    yb = cpos[1] + 115 * CARD_K * .9
+    q = 1 - .45 * lay
+    card = f'<g transform="translate(0 {yb:.2f}) scale(1 {q:.4f}) translate(0 {-yb:.2f})">{card}</g>'
     # кончик пальцев дальней кисти поверх края открытки — хват (большой палец спереди)
     fthumb = people.hand_svg("dima", wf, (.75, -.65), k=SC, far=True, curl=(.55, .6, .62, .65), thumb=.55, seed=720)
-    cap = sm(t, T_HOTEL - .03, T_HOTEL + .1)
+    cap = .995 * sm(t, T_HOTEL - .03, T_HOTEL + .1)
     pen_rot = lerp(150, rot_end, hover) + 4 * math.sin(t * 11) * hover
-    pen, pc = held_pen(wn, (lerp(.85, .55, hover), lerp(.35, .85, hover)), pen_rot, cap)
+    pen, pc = held_pen(wn, (lerp(.85, .9, hover), lerp(.35, .45, hover)), pen_rot, cap)
     tip = PR.pen_tip(pc[0], pc[1], PEN_K, pen_rot)
     clk = PR.click(pc[0] - 30, pc[1] + 30, 1.0, clamp((t - T_HOTEL) / .25), seed=2)
     sc = R.desk_scene(t, "evening", drawer=0.0)

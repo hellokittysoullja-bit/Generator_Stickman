@@ -86,8 +86,8 @@ def s14(t):
     rw = R.window_scene(t, "day", sway=1.5)
     # голос дрожит → крепнет (34.53–34.69), выпрямляется
     u = ease_io(clamp((t - 34.50) / .34))
-    nerv = {"brows": "worry", "mouth": "talk", "open": .1, "smile": 0.0, "lid": .92, "look": (.55, .15), "bags": False}
-    stead = {"brows": "calm", "mouth": "talk", "open": .1, "smile": .45, "lid": .78, "look": (.5, .05), "bags": False}
+    nerv = {"brows": "worry", "mouth": "talk", "open": .1, "smile": 0.0, "lid": .92, "look": (.5, .55), "bags": False}
+    stead = {"brows": "calm", "mouth": "talk", "open": .1, "smile": .45, "lid": .78, "look": (.45, .3), "bags": False}
     ex = mix_expr(nerv, stead, u)
     sp = speaking(t, amp=.26 + .12 * u, base=.06)
     ex["open"] = sp
@@ -101,17 +101,21 @@ def s14(t):
     breath = .006 * math.sin(t * 2 * math.pi * .45)
     feet = P.stand_kw(hip[0], hip[1], sc, spread=70)["feet"]
     kw = dict(feet=feet, flip=True, shrug=shrug, lean_add=lean - .02 + breath, head_add=trem + lerp(.08, -.04, u))
-    # письмо в дальней руке: дрожит, пока голос дрожит
+    # письмо в дальней руке у груди: пальцы огибают правый край листа, большой палец за листом; дрожит, пока голос дрожит
     let_d = (1 - u) * 3.5 * math.sin(t * 2 * math.pi * 7.3)
-    arms = {"f": ("ik", (hip[0] + 215 * sc, hip[1] - (250 + 30 * u) * sc), -1)}
-    base = P.dima(hip[0], hip[1], sc, ex, "mobile_letter", layers=("legs", "pelvis", "arm_f", "body"), arms=arms, **kw)
-    wf = base["wrist"]["f"]
-    lx, ly = wf[0] - 38 * sc, wf[1] - 120 * sc + let_d
-    letter = PR.letter(lx, ly, k=sc * 1.05, rot=-6 + let_d * .4, w=200, h=260, write=1.0, seed=3)
-    handf = P.dima(hip[0], hip[1], sc, ex, "mobile_letter", layers=("hand_f",), arms=arms, **kw)
+    lk = sc * 1.0
+    L = (hip[0] - 250 * sc, hip[1] - (330 + 25 * u) * sc + let_d)
+    rot_l = -4 + let_d * .4
+    xr = L[0] + 100 * lk
+    G = (xr - 6 * lk, L[1] + 60 * lk)
+    arms = {"f": ("ik", (2 * hip[0] - (G[0] + 64 * lk), G[1] + 22 * lk), -1)}
+    hands = {"f": {"kind": "none"}}
+    base = P.dima(hip[0], hip[1], sc, ex, "mobile_letter", layers=("legs", "pelvis", "arm_f", "body"), arms=arms, hands=hands, **kw)
+    gb, gf = P.grip_svg("dima", G, 12 * lk, +1, k=lk * .95, h=70, seed=930)
+    letter = PR.letter(L[0], L[1], k=lk, rot=rot_l, w=200, h=260, write=1.0, seed=3)
     mob = P.mobile_at_ear(base, sc, flip=True)
-    armn = P.dima(hip[0], hip[1], sc, ex, "mobile_letter", layers=("arm_n",), arms=arms, **kw)
-    body = rw["bg"] + base["svg"] + letter + handf["svg"] + mob + armn["svg"]
+    armn = P.dima(hip[0], hip[1], sc, ex, "mobile_letter", layers=("arm_n",), arms=arms, hands=hands, **kw)
+    body = rw["bg"] + base["svg"] + gb + letter + gf + mob + armn["svg"]
     a = ease_io(clamp((t - 33.72) / 2.4))
     cx, cy, s = lerp(-170, -110, a), lerp(930, 780, a), lerp(.95, 1.1, a)
     cx += 6 * math.sin(t * .9)

@@ -89,7 +89,7 @@ T7_GOV, T7_VSLUH, T7_RAD, T7_OST, T7_VNU = 15.96, 16.613, 17.58, 17.96, 18.389
 def s07(t):
     lib.dyn_begin()
     s = 1.12
-    hx, hy = 430.0, 1500.0
+    hx, hy = 470.0, 1760.0
     breath = math.sin(t * 2 * math.pi / 3.2)
     lean = .03 + .012 * breath - .03 * bump(t, T7_VSLUH + .2, .6)
     # мимика
@@ -108,15 +108,15 @@ def s07(t):
     # рука на груди: поднимается к груди на «внутри»
     hu = ease_io(smooth(T7_OST - .1, T7_VNU + .1, t))
     sc = s * people.HEIGHT["dima"]
-    a_rest = people.ik_ang("dima", hx, hy, s, lean, (hx + 150 * sc, hy + 40 * sc), -1)
-    a_chest = people.ik_ang("dima", hx, hy, s, lean, (hx + 70 * sc, hy - 300 * sc), -1)
+    a_rest = people.ik_ang("dima", hx, hy, s, lean, (hx + 150 * sc, hy - 110 * sc), -1)
+    a_chest = people.ik_ang("dima", hx, hy, s, lean, (hx + 55 * sc, hy - 255 * sc), -1)
     arm_n = people.mix_ang(a_rest, a_chest, hu)
     hand_n = {"dir": (-.25 * hu + .2 * (1 - hu), -1 * hu + 1 * (1 - hu)), "curl": (.1 + .3 * (1 - hu), .1 + .3 * (1 - hu), .15 + .3 * (1 - hu), .2 + .3 * (1 - hu)),
               "spread": .12, "thumb": .15 + .2 * (1 - hu)}
     ha = .05 * breath * .3 + .08 * smooth(T7_VSLUH + .3, T7_RAD, t) + .05 * bump(t, T7_GOV, .3)
-    fig = people.figure("dima", hx, hy, s, ex, lean=lean, head_ang=ha, arms={"f": ("ang", 0.25, 0.2), "n": arm_n},
+    fig = people.figure("dima", hx, hy, s, ex, lean=lean, head_ang=ha, arms={"f": ("ik", (hx + 40 * sc, hy - 120 * sc), -1), "n": arm_n},
                         hands={"n": hand_n}, layers=("pelvis", "arm_f", "body"))
-    near = people.figure("dima", hx, hy, s, ex, lean=lean, head_ang=ha, arms={"f": ("ang", 0.25, 0.2), "n": arm_n},
+    near = people.figure("dima", hx, hy, s, ex, lean=lean, head_ang=ha, arms={"f": ("ik", (hx + 40 * sc, hy - 120 * sc), -1), "n": arm_n},
                          hands={"n": hand_n}, layers=("arm_n",))
     head = fig["head"]
     mouth = (head[0] + 64 * sc, head[1] + 92 * sc)
@@ -144,7 +144,7 @@ def s07(t):
     glow = ""
     gu = ease_out(clamp((t - T7_RAD) / .3), 2)
     if gu > .01:
-        chest = (hx + (30 - 330 * math.sin(lean)) * sc, hy - 270 * sc)
+        chest = (hx + (95 - 330 * math.sin(lean)) * sc, hy - 240 * sc)
         beat = max(bump(t, T7_OST, .22), bump(t, T7_OST + .22, .22), bump(t, T7_VNU, .22), bump(t, T7_VNU + .24, .22))
         glow = PR.chest_glow(chest[0], chest[1], 1.25, t, gu, beat, seed=3)
         # огонёк тянется наружу и возвращается: мелкие искры поднимаются и гаснут у самой груди
@@ -153,11 +153,11 @@ def s07(t):
             if 0 < v < 1:
                 rise = 60 * math.sin(math.pi * v)
                 glow += PR.mote(chest[0] + (i - 1.5) * 14, chest[1] - 70 - rise, 5 + 2 * (1 - v), (1 - v) * .9)
-    world = [paper_bg(), fig["svg"], glow, near["svg"], bub]
+    world = [paper_bg(), fig["svg"], near["svg"], glow, bub]
     # камера: наезд на лицо, затем вниз к огоньку
-    z = lerp(1.18, 1.32, ease_io(smooth(15.76, 17.3, t))) - .1 * ease_io(smooth(17.4, 18.3, t))
-    cx = lerp(head[0] + 70, hx + 40 * sc, ease_io(smooth(17.4, 18.4, t)))
-    cy = lerp(head[1] + 60, hy - 330 * sc, ease_io(smooth(17.4, 18.4, t)))
+    z = lerp(1.45, 1.62, ease_io(smooth(15.76, 17.3, t))) - .12 * ease_io(smooth(17.4, 18.3, t))
+    cx = lerp(head[0] + 20, hx + 60 * sc, ease_io(smooth(17.4, 18.4, t)))
+    cy = lerp(head[1] + 10, hy - 330 * sc, ease_io(smooth(17.4, 18.4, t)))
     cy -= 40 * bump(t, T7_GOV, .5)
     rot = .6 * math.sin(t * 1.1) - 1.0 * bump(t, T7_VSLUH, .4)
     set_ink(1.0)

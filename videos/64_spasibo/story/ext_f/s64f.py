@@ -115,8 +115,8 @@ def dima_sofa(e, pose, arms=None, hands=None, lean_add=0.0, head_add=0.0):
 
 
 # ═════════════════════════ s16: кот на коленях ═════════════════════════
-CAT16 = (HX + 205.0, HY - 58.0)       # середина низа клубка — на бёдрах
-K16 = .86
+CAT16 = (HX + 225.0, HY - 50.0)       # середина низа клубка — на бёдрах
+K16 = 1.12
 PET_PER = 1.25                        # период поглаживания
 
 
@@ -137,24 +137,24 @@ def s16(t):
     lift = 0.0 if ph < .62 else math.sin(math.pi * (ph - .62) / .38) * 22
     pet_on = sm(t, T_A16 - .3, T_A16 + .1)
     back_y = cy - 104 * K16
-    Wn = (cx - 150 * K16 + 230 * K16 * stroke, back_y - 64 - lift + 8 * math.sin(t * 7) * 0)
+    Wn = (cx - 170 * K16 + 210 * K16 * stroke, back_y - 30 - lift)
     Wn = lerp2((HX + 250 * SC, HY - 160 * SC), Wn, pet_on)
     e = ex("relief64", look=(lerp(.3, -.25, sm(t, T_MUR + .3, T_MUR + .8)), lerp(.55, .15, sm(t, T_MUR + .3, T_MUR + .8))),
            closed=blinks(t, (40.6,)), smile=.8 + .2 * sq)
-    hands = {"n": {"dir": (1, .32), "curl": (.18, .2, .24, .3), "spread": .16, "thumb": .25},
+    hands = {"n": {"dir": (1, .42 - .3 * (lift / 22)), "curl": (.32, .34, .38, .42), "spread": .14, "thumb": .3, "bend": .25},
              "f": {"dir": (.9, .45), "curl": (.35, .4, .45, .5), "thumb": .35}}
     Wf = (HX + 330 * SC, HY - 70 * SC)
     full, parts = dima_sofa(e, "pet", arms={"n": ("ik", Wn, -1), "f": ("ik", Wf, -1)}, hands=hands,
                             lean_add=.04 * math.sin(t * 1.1) + .06, head_add=.06 * math.sin(t * .9) - .04)
     sc = R.sofa_scene(t, "day")
-    mob = PR.mobilnik(HX + 395 * SC, HY - 30, .9, 78)          # мобильник опущен на колено
+    mob = PR.mobilnik(HX + 545 * SC, R.SOFA_SEAT - 12, .8, 84)   # мобильник опущен рядом на подушку, у колена
     purr = PR.purr(cx - 120 * K16, cy - 150 * K16, 1.1, t, purr_u, seed=1) + PR.purr(cx + 120 * K16, cy - 120 * K16, .9, t + .35, purr_u * .8, seed=7)
-    world = [sc["bg"], sc["sofa"], parts["legs"], parts["pelvis"], mob, parts["arm_f"], parts["body"], cat_svg, parts["arm_n"], sc["front"], purr]
+    world = [sc["bg"], sc["sofa"], mob, parts["legs"], parts["pelvis"], parts["arm_f"], parts["body"], cat_svg, parts["arm_n"], sc["front"], purr]
     # камера: медленный откат, «дыхание»
     u = sm(t, T_A16 - .2, 41.44)
-    z = 1.5 - .2 * u + .012 * math.sin(t * 2.1)
-    ccx = HX + 150 - 20 * u
-    ccy = 1010 + 20 * u + 4 * math.sin(t * 1.7)
+    z = 1.72 - .22 * u + .012 * math.sin(t * 2.1)
+    ccx = HX + 200 - 20 * u
+    ccy = 900 + 40 * u + 4 * math.sin(t * 1.7)
     set_ink(z)
     g = f'<g transform="{lib.cam(ccx, ccy, z, .7 - 1.0 * u)}">{"".join(world)}</g>'
     return whip(g, t, T_A16), "#e6dcc0"
