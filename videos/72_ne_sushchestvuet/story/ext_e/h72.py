@@ -73,3 +73,23 @@ def whip(g, t, t_in, amp=280.0, blur=30.0, dur=.2, side=-1):
 
 def shake(t, t0, amp, k=9.0, fr=19.0):
     return amp * decay(t, t0, k, fr), amp * .6 * decay(t, t0 + .03, k, fr * 1.13)
+
+
+def cat_tail_only(x, y, k, st, t):
+    """Только хвост с огоньком кота common/cat.py в той же позе (тот же transform, что в cat.draw): им кот прикрывает то, что
+    нарисовано между телом и хвостом (мозг за хвостом, s15)."""
+    import cat as CAT
+    sl = st.get("sleep", 0.0)
+    tail_a = st.get("tail", 0.0) + 14 * sl
+    g = (f'<g transform="rotate({tail_a:.2f} {CAT.TAIL_PIVOT[0]} {CAT.TAIL_PIVOT[1]})">{CAT.tail_art()}'
+         f'{CAT.flame(t, 1.3 - .45 * sl, st.get("flame_e", 1.0))}</g>')
+    return (f'<g transform="translate({x:.2f} {y:.2f}) rotate({st.get("rot", 0.0):.2f}) scale({k:.4f}) '
+            f'translate({-CAT.CX} {-CAT.CBOT})">{g}</g>')
+
+
+def cat_pt(x, y, k, p, rot=0.0):
+    """Точка рисунка кота (координаты cat.py) в мире."""
+    import cat as CAT
+    a = math.radians(rot)
+    dx, dy = (p[0] - CAT.CX) * k, (p[1] - CAT.CBOT) * k
+    return (x + dx * math.cos(a) - dy * math.sin(a), y + dx * math.sin(a) + dy * math.cos(a))
