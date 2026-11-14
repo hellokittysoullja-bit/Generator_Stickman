@@ -47,7 +47,7 @@
       while (t < H - 0.1) {
         const up = i % 2 === 0;
         tl.to("#catL", { y: up ? -26 - 8 * (i % 3) : 6, x: up ? -14 + 5 * (i % 2) : 12, rotation: up ? -2.6 : 2.2,
-                         scaleY: up ? 1.025 : 0.985, duration: J / 2, ease: up ? "power2.out" : "power2.in" }, t);
+                         scaleY: up ? 1.025 : 0.985, duration: J / 2, ease: "none" }, t);
         t += J / 2; i++;
       }
       // «кОсмоса»: сжался и отшатнулся назад (влево-вверх, от иллюминатора), пружиной с перелётом на место
