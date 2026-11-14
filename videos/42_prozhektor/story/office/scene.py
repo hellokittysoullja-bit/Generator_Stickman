@@ -777,14 +777,13 @@ def s05(t):
     shock = smooth(tk - .04, tk + .12, t)
     probe = dima(t, *calm_arms(t), {}, lean=.12)
     tagw = probe["tag_w"]
-    reach = ease_io(clamp((t - 6.3) / .55))
+    reach = ease_out(clamp((t - 6.3) / .45), 2)
     # пальцы щупают бирку: запястье ниже-левее бирки, кисть вверх-вправо; мелкое теребление
     rub = 4 * osc(t, 3.2) * (1 - shock)
     tgt = tagw + np.array([-4 + rub, 96 - .5 * rub])
-    a_n = np.array(calm_arms(t)[0]["n"][1])
-    p = a_n + (tgt - a_n) * reach
-    arms = {"n": ("ik", tuple(p), 1), "f": calm_arms(t)[0]["f"]}
-    hands = {"n": hnd(dict(kind="open", curl=(.12, .6, .75, .85), spread=.04, thumb=.15, bend=.08), (lerp(1, .12, reach), lerp(.3, -1, reach))),
+    p = tgt + np.array([10, 60]) * (1 - reach)
+    arms = {"n": ("ik", tuple(p), -1), "f": calm_arms(t)[0]["f"]}
+    hands = {"n": hnd(dict(kind="open", curl=(.12, .6, .75, .85), spread=.04, thumb=.15, bend=.08), (.12 + .1 * (1 - reach), -1)),
              "f": hnd(REST, (1, .25))}
     expr = dict(lid=lerp(.45, 1.0, shock), look=(lerp(.2, .1, shock), lerp(.5, -.05, shock)), brows="up" if shock > .5 else "calm",
                 mouth="talk" if shock > .5 else "flat", open=.35 * shock, smile=0, blush=shock,
@@ -797,8 +796,8 @@ def s05(t):
     fx = ""
     if t > tk:
         e = clamp((t - tk) / .5)
-        sp = head_pt(d, (-72, -40))
-        fx += sweat(sp[0] - 6, sp[1] + 28 * ease_in(clamp((t - tk - .1) / .9), 2), 1.4 * lib.back_out(clamp(e * 1.6), 2), seed=9210)
+        sp = head_pt(d, (-96, -20))
+        fx += sweat(sp[0] - 6, sp[1] + 28 * ease_in(clamp((t - tk - .1) / .9), 2), 1.0 * lib.back_out(clamp(e * 1.6), 2), seed=9210)
         fx += burst(*head_pt(d, (40, -40)), clamp((t - tk) / .35), 120, 170, 8, INK, 4, seed=9220, rot0=-2.8)
     lap = LAP.draw(report(14, 286, 3.0, t, caret=False))
     w = desk_world(t, d, on_desk=lap + phone_flat(*PHONE_DESK, .9, 1.0, .4) + mug_tip(*MUG, 0), front=fx)
@@ -905,12 +904,17 @@ def cloud_pts(cx, cy, rx, ry, n=11, bump_k=.16, ph=0.0):
 
 
 def tag_icon(x, y, s, ang=0.0, seed=9500):
-    loc = [(-34, -46, 1), (34, -46, 1), (34, 46, 1), (-34, 46, 1)]
-    P_ = T(loc, x, y, s, ang)
-    P_ = [tuple(p[:2]) + (1,) for p in P_]
-    inn = "".join(line(T([(-20, -24 + 14 * j), (20, -24 + 14 * j)], x, y, s, ang), 4 * s, "#9aa1ae", seed=seed + j, taper=.1, wmin=.8) for j in range(3))
-    inn += blob(T([(-20, 22), (-6, 22), (-13, 34)], x, y, s, ang), "#9aa1ae")
-    return shape(P_, "#fbfaf5", inn, w=4 * s, seed=seed + 9)
+    """Ворот футболки крупно, из него торчит белая бирка."""
+    o = []
+    fab = T([(-70, 6, 1), (-46, -6), (0, -14), (46, -6), (70, 6, 1), (70, 52, 1), (-70, 52, 1)], x, y + 20 * s, s)
+    rib = lib.band([tuple(p) for p in T([(-66, 4), (-30, -8), (30, -8), (66, 4)], x, y + 20 * s, s)], 14 * s, 14 * s, step=3, cap=False)
+    o.append(shape(fab, "#d4a23e", blob(rib, "#a97b25", .9), w=4 * s, seed=seed + 20))
+    loc = [(-22, 4, 1), (22, 4, 1), (26, -64, 1), (-18, -66, 1)]
+    P_ = [tuple(p[:2]) + (1,) for p in T(loc, x, y + 14 * s, s, ang)]
+    inn = "".join(line(T([(-12, -50 + 12 * j), (14, -50 + 12 * j)], x, y + 14 * s, s, ang), 3.4 * s, "#9aa1ae", seed=seed + j, taper=.1, wmin=.8)
+                  for j in range(3))
+    o.append(shape(P_, "#fbfaf5", inn, w=4 * s, seed=seed + 9))
+    return "".join(o)
 
 
 def tee_icon(x, y, s, seed=9520):
@@ -927,7 +931,8 @@ def face_icon(x, y, s, t):
     people.C = people.PAL["dima"]
     lib.INK_K[0], k0 = lib.INK_K[0] * 1.3, lib.INK_K[0]
     o = (f'<g transform="translate({x:.1f} {y:.1f}) scale({s:.3f})">'
-         + people.dima_head(dict(lid=.95, look=(.0, .0), brows="worry", mouth="talk", open=.3, blush=1.0, hair=2 * osc(t, 3))) + "</g>")
+         + people.dima_head(dict(lid=.95, look=(.0, .0), brows="worry", mouth="talk", open=.3, blush=1.0, hair=2 * osc(t, 3)))
+         + blob(ellipse_pts(20, 20, 120, 110, 16), "#ff5a4a", .28, 'style="mix-blend-mode:multiply"') + "</g>")
     lib.INK_K[0] = k0
     return o
 
@@ -936,7 +941,7 @@ def s08(t):
     td, ts = T_DUMAESH, T_SEBE
     k = ease_io(clamp((t - 12.9) / 2.5))
     arms, hands = calm_arms(t)
-    expr = dict(lid=.7, look=(.35, -.85), brows="worry", mouth="flat", smile=0, blush=.4 * smooth(ts, ts + .3, t),
+    expr = dict(lid=.9, look=(.35, -.85), brows="worry", mouth="flat", smile=0, blush=.4 * smooth(ts, ts + .3, t),
                 closed=blink_at(t, 13.4, .14), hair=1.5 * osc(t, 1.9) + 3 * bump(t, td, .3))
     d = dima(t, arms, hands, expr, lean=.12, head_ang=-.06 + .02 * osc(t, .9))
     hp = d["head"]
@@ -948,13 +953,13 @@ def s08(t):
         for j, (u, r) in enumerate([(.25, 12), (.5, 19), (.75, 27)]):
             uu = clamp((t - 12.9 - j * .07) / .25)
             if uu > 0:
-                p = hp + np.array([40, -150]) + (bc + np.array([-110, 120]) - hp - np.array([40, -150])) * u
+                p = hp + np.array([70, -130]) + (bc + np.array([-120, 170]) - hp - np.array([70, -130])) * u
                 bub += shape(ellipse_pts(p[0], p[1], r * uu, r * uu * .9, 12), "#ffffff", "", w=3.4, seed=9600 + j)
         rx, ry = 250 * grow, 150 * grow
         cp = cloud_pts(bc[0], bc[1] + 3 * osc(t, 1.1), rx, ry, n=12, ph=.05 * t)
         inner = blob(ellipse_pts(bc[0] + 20, bc[1] + 30, rx * .9, ry * .7, 18), "#eef3fa", .9)
         # картинки по очереди: бирка, футболка, своё красное лицо
-        pics = [(td, -150, tag_icon, 1.1), (td + .2, 0, tee_icon, 1.15), (ts, 150, None, .3)]
+        pics = [(td, -150, tag_icon, 1.1), (td + .2, 0, tee_icon, 1.15), (ts, 160, None, .46)]
         for j, (tj, dx, fn, sc) in enumerate(pics):
             u = lib.back_out(clamp((t - tj + .04) / .25), 2.6)
             if u <= 0:
@@ -970,8 +975,8 @@ def s08(t):
         if t > ts:
             bub += burst(bc[0] + 150, bc[1], clamp((t - ts) / .35), 70, 110, 7, RED, 4, seed=9640)
     hit = punch(t, td, .04, .05, .3) + punch(t, ts, .04, .05, .3)
-    s = (1.45 + .2 * k) * (1 + hit)
-    cam = (hp[0] + 120, hp[1] - 60 + 10 * k, s, -.4 + .7 * k)
+    s = (1.72 + .22 * k) * (1 + hit)
+    cam = (hp[0] + 110, hp[1] - 110 + 10 * k, s, -.4 + .7 * k)
     lap = LAP.draw(report(14, 286, 3.0, t, caret=True))
     w = desk_world(t, d, on_desk=lap + phone_flat(*PHONE_DESK, .9, 1.0, .4) + mug_tip(*MUG, 0), front=bub)
     return compose(w, cam, False, LAP.glow())
@@ -989,11 +994,11 @@ def s14(t):
     expr = dict(lid=.55, look=(.3, .2), brows="up" if lg > .3 else "calm", mouth="laugh" if lg > .2 else "smile", open=.6 + .4 * bounce,
                 smile=sm, laugh=lg, tears=.6 * smooth(tl + .2, tl + .7, t), closed=blink_at(t, 25.4, .14),
                 hair=3 * bounce + 1.5 * osc(t, 1.9))
-    d = dima(t, arms, hands, expr, lean=.1 - .06 * lg, head_ang=-.03 - .16 * lg - .04 * bounce, tag_ang=14 + 22 * lg * osc(t, 8.4) + 3 * osc(t, 2))
+    d = dima(t, arms, hands, expr, lean=.1 - .06 * lg, head_ang=-.03 - .26 * lg - .05 * bounce, tag_ang=14 + 22 * lg * osc(t, 8.4) + 3 * osc(t, 2))
     hp = d["head"]
     sh = lg * (1 - smooth(tl + .9, tl + 1.3, t) * .6)
-    s = (2.0 + .2 * k) * (1 + punch(t, tl, .06, .05, .35))
-    cam = (hp[0] + 60 + 7 * sh * osc(t, 11), hp[1] + 140 + 6 * sh * osc(t, 13, 1), s, .5 - .8 * k + 1.4 * sh * osc(t, 7))
+    s = (2.35 + .2 * k) * (1 + punch(t, tl, .06, .05, .35))
+    cam = (hp[0] + 60 + 7 * sh * osc(t, 11), hp[1] + 110 + 6 * sh * osc(t, 13, 1), s, .5 - .8 * k + 1.4 * sh * osc(t, 7))
     fx = ""
     if lg > 0:
         for j in range(3):
@@ -1008,36 +1013,57 @@ def s14(t):
 
 # ═════════════════════════ s15: облако-вихрь — футболка правильно, большой палец ═════════════════════════
 def fight_cloud(cx, cy, t, u, seed=9800):
-    """Мультяшное облако-вихрь: пухлое облако с вращающимися завитками, из него мелькают руки и звёздочки."""
+    """Мультяшное облако-вихрь (как драка в мультфильмах): пухлые клубы крутятся, внутри завитки, по краю мелькают
+    рука, нога, клочок футболки и звёздочки, вокруг — штрихи скорости."""
     if u <= 0:
         return ""
     o = []
-    sc = lib.back_out(clamp(u * 2.5), 1.6) * (1 - smooth(.8, 1, u) * .3)
-    op = 1 - smooth(.82, 1, u)
-    rx, ry = 270 * sc, 300 * sc
-    ph = t * 6
-    inner = ""
-    for j in range(5):
-        a = ph * (1 + .2 * j) + j * 1.3
-        rr = (.25 + .12 * j)
-        sw = [(cx + rx * rr * (1 - q * .5) * math.cos(a + q * 4), cy + ry * rr * (1 - q * .5) * math.sin(a + q * 4)) for q in np.linspace(0, 1, 12)]
-        inner += line(sw, 5, "#b9b2a6", taper=.4, wmin=.3, seed=seed + 10 + j, op=.9)
-    inner += blob(ellipse_pts(cx + 30 * sc, cy + 60 * sc, rx * .8, ry * .6, 18), "#e7e1d6", .8)
-    o.append(shape(cloud_pts(cx, cy, rx, ry, n=13, bump_k=.2, ph=ph * .15), "#f6f2ea", inner, w=5, seed=seed))
-    # мелькающие кулаки/ноги и звёздочки по краю
-    for j in range(5):
-        a = ph * .7 + j * 2 * math.pi / 5
-        if math.sin(t * 20 + j * 2) > .2:
-            p = (cx + rx * 1.02 * math.cos(a), cy + ry * 1.02 * math.sin(a))
-            o.append(shape(ellipse_pts(p[0], p[1], 22, 18, 10, rot=math.degrees(a)), "#ecc4a2" if j % 2 else "#d4a23e", "", w=3.4, seed=seed + 30 + j))
+    sc = lib.back_out(clamp(u * 3), 1.8) * (1 - ease_in(smooth(.76, .97, u), 2))
+    if sc < .04:
+        return ""
+    rx, ry = 230 * sc, 250 * sc
+    ph = t * 7
+    # штрихи скорости по кругу
+    for j in range(10):
+        a = -ph * .6 + j * 2 * math.pi / 10
+        r0, r1 = 1.08, 1.32
+        arc = [(cx + rx * (r0 + (r1 - r0) * .5) * math.cos(a + q * .5), cy + ry * (r0 + (r1 - r0) * .5) * math.sin(a + q * .5)) for q in np.linspace(0, 1, 6)]
+        o.append(line(arc, 6, INK, taper=.6, wmin=.2, seed=seed + 60 + j, op=.8))
+    # клубы по краю (вращаются)
+    for j in range(9):
+        a = ph * .35 + j * 2 * math.pi / 9
+        pr = (.34 + .06 * math.sin(t * 9 + j)) * (rx + ry) / 2
+        px, py = cx + rx * .78 * math.cos(a), cy + ry * .78 * math.sin(a)
+        o.append(shape(ellipse_pts(px, py, pr, pr * .9, 16), "#f4efe4", blob(ellipse_pts(px + pr * .25, py + pr * .3, pr * .7, pr * .55, 12), "#ddd5c6", .9),
+                       w=4.4, seed=seed + 70 + j))
+    inner = blob(ellipse_pts(cx + 30 * sc, cy + 50 * sc, rx * .8, ry * .6, 18), "#e2dacb", .85)
     for j in range(4):
-        a = -ph * .5 + j * 1.7
-        p = (cx + rx * 1.15 * math.cos(a), cy + ry * 1.1 * math.sin(a))
-        r = 16 + 4 * math.sin(t * 15 + j)
-        st = [(p[0] + r * (1 if q % 2 == 0 else .42) * math.cos(q * math.pi / 5 - math.pi / 2), p[1] + r * (1 if q % 2 == 0 else .42) * math.sin(q * math.pi / 5 - math.pi / 2)) + (1,)
-              for q in range(10)]
+        a = -ph * (1 + .15 * j) + j * 1.6
+        sw = [(cx + rx * .62 * (1 - q * .75) * math.cos(a + q * 4.2), cy + ry * .62 * (1 - q * .75) * math.sin(a + q * 4.2)) for q in np.linspace(0, 1, 16)]
+        inner += line(sw, 7, "#9a8f7e", taper=.5, wmin=.25, seed=seed + 10 + j, op=.95)
+    o.append(shape(cloud_pts(cx, cy, rx * .82, ry * .82, n=11, bump_k=.22, ph=ph * .2), "#f6f2ea", inner, w=5, seed=seed))
+    # мелькающее: кулак, кроссовок, клочок футболки, бирка
+    for j in range(4):
+        a = ph * .8 + j * 2 * math.pi / 4
+        if math.sin(t * 22 + j * 1.9) < -.1:
+            continue
+        p = (cx + rx * .95 * math.cos(a), cy + ry * .95 * math.sin(a))
+        if j == 0:
+            o.append(shape(ellipse_pts(p[0], p[1], 26, 22, 12, rot=math.degrees(a)), "#ecc4a2", line([(p[0] - 8, p[1] - 6), (p[0] + 8, p[1] - 6)], 2, "#bf8a74", seed=seed + 41), w=3.6, seed=seed + 40))
+        elif j == 1:
+            o.append(shape(T(rect_pts(-34, -14, 34, 14, 10), p[0], p[1], 1, math.degrees(a)), "#4b505e", blob(T(rect_pts(-34, 6, 34, 14, 6), p[0], p[1], 1, math.degrees(a)), "#f2eee6"), w=3.6, seed=seed + 42))
+        elif j == 2:
+            o.append(shape(T([(-30, -20, 1), (30, -24, 1), (24, 22, 1), (-26, 18, 1)], p[0], p[1], 1, math.degrees(a)), "#d4a23e", "", w=3.6, seed=seed + 43))
+        else:
+            o.append(shape(T([(-12, -16, 1), (12, -16, 1), (12, 16, 1), (-12, 16, 1)], p[0], p[1], 1, math.degrees(a) + 30), "#fbfaf5", "", w=3, seed=seed + 44))
+    for j in range(5):
+        a = -ph * .5 + j * 1.3
+        p = (cx + rx * 1.18 * math.cos(a), cy + ry * 1.15 * math.sin(a))
+        r = 17 + 5 * math.sin(t * 15 + j)
+        st = [(p[0] + r * (1 if q % 2 == 0 else .42) * math.cos(q * math.pi / 5 - math.pi / 2),
+               p[1] + r * (1 if q % 2 == 0 else .42) * math.sin(q * math.pi / 5 - math.pi / 2)) + (1,) for q in range(10)]
         o.append(shape(st, "#ffd23a", "", w=3, seed=seed + 50 + j))
-    return f'<g opacity="{op:.3f}">{"".join(o)}</g>'
+    return "".join(o)
 
 
 def s15(t):
@@ -1065,7 +1091,7 @@ def s15(t):
     s = (1.9 + .15 * k) * (1 + hit)
     shk = bump(t, tp + .3, .7)
     cam = (hp[0] + 60 + 8 * shk * osc(t, 12), hp[1] + 160 + 6 * shk * osc(t, 10, 1), s, .4 - .6 * k + 1.2 * shk * osc(t, 8))
-    cloud = fight_cloud(hp[0] + 30, hp[1] + 170, t, cu)
+    cloud = fight_cloud(hp[0] + 20, hp[1] + 150, t, cu)
     spark = ""
     if swapped:
         e = clamp((t - tf) / .45)

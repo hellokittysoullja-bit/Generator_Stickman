@@ -483,7 +483,7 @@ def tee_arm(S, E, Wr, far, seed):
     d = (E - S) / np.linalg.norm(E - S)
     n = np.array([-d[1], d[0]])
     a = S - d * 20
-    b = S + (E - S) * .5
+    b = S + (E - S) * (.72 if far else .5)
     pts = band([P(a), P((a + b) / 2), P(b)], 146, 138, step=5, cap=False)
     pts = pts + [P(a - n * 50 - d * 30), P(a - d * 52), P(a + n * 50 - d * 30)]
     inner = blob([P(a - n * 80), P(b - n * 80), P(b - n * 26), P(a - n * 30)], far_c(C["TOP_SH"], far), .85)
@@ -545,6 +545,9 @@ def tee_parts(mode="back", tag_ang=-14.0, tag_k=1.0):
     torso = shape(body, C["TOP"], inner, w=5.2, seed=400)
     torso += line([P(p) for p in neck], 3.0, INK, seed=486, op=.9)
     tag = ""
+    if mode == "front":
+        fn = [(28, -412), (50, -397), (76, -398), (100, -420)]
+        tag += shape(band([P(p) for p in fn], 18, 16, step=4, cap=False), C["TOP_SH"], "", w=3.0, seed=489)
     if mode == "back":
         fn = [(30, -418), (52, -411), (76, -412), (100, -424)]
         tag += shape(band([P(p) for p in fn], 20, 18, step=4, cap=False), C["TOP"], _dash([(p[0], p[1] + 1) for p in fn], 1.6, C["TOP_SH2"], 488, 7, 5), w=3.2, seed=487)
