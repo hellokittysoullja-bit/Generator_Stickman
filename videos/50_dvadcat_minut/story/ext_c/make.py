@@ -1,4 +1,4 @@
-"""Рендер 2D-клипов рилса 29 (sub: s03 s04; clock: s09 s14; timer: s15): python3 make.py s02 [s14 ...]  — клип clips/<id>.mp4 по контракту брифа;
+"""Рендер 2D-клипов рилса 50 группы C (plan: s08 s09; chart: s10 s11; notebook: s12 s13 s14): python3 make.py s02 [s14 ...]  — клип clips/<id>.mp4 по контракту брифа;
 python3 make.py s02 --sheet [t1,t2,...] — кадры PNG на эти моменты (по умолчанию 6 равномерно) + лист sheets/<id>.jpg.
 SVG кадров строятся в Python (несколько процессов), растр — Chromium в 4 процесса, PNG потоком в ffmpeg."""
 import importlib
@@ -15,8 +15,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 STORY = os.path.dirname(HERE)
 SH = json.load(open(os.path.join(STORY, "shots.json")))
 SHOTS = {s["id"]: s for s in SH["shots"]}
-SCENE_MOD = {"s03": "scene_sub", "s04": "scene_sub", "s09": "scene_clock", "s14": "scene_clock", "s15": "scene_timer"}
-TMP = os.path.join(os.path.dirname(STORY), ".." , "..", "..")
+SCENE_MOD = {"s08": "scene_plan", "s09": "scene_plan", "s10": "scene_chart", "s11": "scene_chart", "s12": "scene_notebook", "s13": "scene_notebook", "s14": "scene_notebook"}
 
 
 def span(sid):
@@ -46,7 +45,7 @@ def main():
     sheet = "--sheet" in args
     ids = [a for a in args if a.startswith("s") and a[1:].isdigit()]
     tl = [a for a in args if "," in a or a.replace(".", "").isdigit()]
-    base_tmp = "/tmp/claude-0/-home-user-Generator-Stickman/c0cd9249-3cc1-556a-b439-a496b206d913/scratchpad/b29/tmp"
+    base_tmp = "/tmp/claude-0/-home-user-Generator-Stickman/476f4f0e-2bdf-528c-8940-bf052089dec4/scratchpad/c50/tmp"
     os.makedirs(base_tmp, exist_ok=True)
     for sid in ids:
         a, n = span(sid)
