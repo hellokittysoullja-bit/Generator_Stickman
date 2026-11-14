@@ -140,7 +140,7 @@ def s05(t):
         rot = lerp(0, -3, u)
     else:
         u = ease_out((t - T_LAUNCH) / .6, 3)
-        ccx, ccy, s = lerp(CARD0[0], 540, u), lerp(CARD0[1], 880, u), lerp(1.75, 1.14, u)
+        ccx, ccy, s = lerp(CARD0[0], 540, u), lerp(CARD0[1], 915, u), lerp(1.75, 1.14, u)
         rot = lerp(-3, 0, u)
         if t > 11.0:
             s *= 1 - .06 * ease_io((t - 11.0) / 2.4)
@@ -179,11 +179,13 @@ def s12(t):
         for j in range(5):
             yy = y - h / 2 + 90 + 170 * j
             o.append(line([(x - w / 2, yy), (x, yy + 14), (x + w / 2, yy - 6)], 4, P.C_WOOD_SH, taper=.2, wmin=.4, seed=1200 + j))
-        o.append(blob([(x - w / 2, y + 120), (x + 60, y - h / 2), (x + 300, y - h / 2), (x - w / 2 + 40, y + h / 2), (x - w / 2, y + h / 2)], "#E8B77C"))
+        cdesk = lib.clip_rect(x - w / 2, y - h / 2, w, h)
+        o.append(f'<g clip-path="url(#{cdesk})">' + blob([(x - w / 2 - 300, y + 380, 1), (x + 40, y - h / 2 - 100, 1), (x + 300, y - h / 2 - 100, 1),
+                                                          (x - w / 2 + 20, y + h / 2 + 200, 1)], "#E8B77C") + '</g>')
         o.append(P.letter(x + 60, y + 120, 1.2, -6, write=1.0, seed=3))
 
     # гвоздик
-    o.append(P.calendar(x + trem, y, w, h, st, gl, fl, t, seed=1))
+    o.append(P.calendar(x + trem, y, w, h, st, gl * (1 - clamp(fl * 4)), fl, t, seed=1))
     # солнышко на только что проставленной клетке — короткие искорки
     if 0 < st < 35:
         i = int(st)

@@ -420,7 +420,8 @@ def dima14(t):
     ar = math.radians(a)
     rx, ry = hx * math.cos(ar) - hy * math.sin(ar), hx * math.sin(ar) + hy * math.cos(ar)
     tx, ty = S14_HEAD[0] - rx, S14_HEAD[1] - ry + 3 * br
-    svg = f'<g transform="translate({tx:.2f} {ty:.2f}) rotate({a})">{fg["svg"]}</g>'
+    cl = lib.clip_rect(-2000, -2000, 2000 + 470, 6000)          # правее края одеяла тело под одеялом (капюшон не торчит)
+    svg = f'<g clip-path="url(#{cl})"><g transform="translate({tx:.2f} {ty:.2f}) rotate({a})">{fg["svg"]}</g></g>'
     arm = f'<g transform="translate({tx:.2f} {ty:.2f}) rotate({a})">{arm}</g>'
     return svg, arm, (tx, ty), br
 
@@ -431,7 +432,7 @@ def quilt14(t, hip, br):
     mt = y - 118 * k
     hx = hip[0]
     up = 14 * br
-    pts = [(400, mt + 40, 1), (402, mt - 150 - up * .6), (450, mt - 212 - up), (560, mt - 218 - up), (hx - 10, mt - 200 - up * .8),
+    pts = [(400, mt + 40, 1), (402, mt - 190 - up * .6), (445, mt - 262 - up), (580, mt - 276 - up), (hx - 10, mt - 200 - up * .8),
            (hx + 90, mt - 230 - up * .5), (hx + 200, mt - 185), (hx + 300, mt - 200), (hx + 360, mt - 130), (x + 285 * k, mt - 60),
            (x + 296 * k, mt + 74 * k, 1), (400, mt + 74 * k, 1)]
     col, sh = "#c8553d", "#9a3b2b"

@@ -14,7 +14,10 @@
     desk_scene(t, mode, drawer=0.0, lamp_swing=0.0, chair_tilt=0.0) -> dict:
         bg     — стена, окно, полка, пол, ковёр (класть первым)
         chair_back / chair_front — спинка стула (ДО Димы) и сиденье с ножками (после ног Димы, до тела — как в 61: legs → seat → body)
-        desk   — столешница, царга, ящик (выдвинут на drawer 0…1), ножки (класть ПОСЛЕ туловища Димы, ДО его ближней руки)
+        desk   — столешница, царга, ящик (выдвинут на drawer 0…1), ножки — всё вместе
+        desk_top / desk_legs — то же по частям. Стол стоит СПРАВА от туловища Димы и не перекрывает его, колени лишь заходят под
+                 столешницу, поэтому порядок, в котором руки лежат НА столе, а колени — за передней ножкой:
+                 bg → chair_back → desk_top → pool → [Дима: legs] → desk_legs → chair_seat → [pelvis, arm_f, body] → предметы → [arm_n] → lamp
         pool   — небольшой круг света лампы на столешнице (после desk, до предметов на столе); днём пусто
         lamp   — лампа (после предметов)
         inside — (x0, y0, x1, y1) видимая внутренность выдвинутого ящика (класть открытку внутрь: clip lib.clip_rect)
@@ -471,7 +474,7 @@ def desk_scene(t, mode="evening", drawer=0.0, lamp_swing=0.0, chair_tilt=0.0, la
     lp = desk_lamp(on, lamp_swing, mode)
     d = desk(mode, drawer)
     return dict(bg="".join(o), chair_back=ch["back"], chair_seat=ch["seat"], desk=d["legs"] + d["top"] + d["front"], pool=lp["pool"], lamp=lp["lamp"],
-                inside=d["inside"], drawer_front=d["drawer_front"])
+                inside=d["inside"], drawer_front=d["drawer_front"], desk_top=d["top"] + d["front"], desk_legs=d["legs"])
 
 
 # ═════════════════════════ окно в полный рост ═════════════════════════
