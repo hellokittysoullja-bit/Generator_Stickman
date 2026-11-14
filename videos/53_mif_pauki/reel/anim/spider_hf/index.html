@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1664, height=1800" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1664px; height: 1800px; overflow: hidden; background: #f7f3ea; }
+      #root { position: relative; width: 1664px; height: 1800px; overflow: hidden; }
+      .abs { position: absolute; display: block; }
+      #thread { position: absolute; width: 5px; background: #1d1b1e; border-radius: 2px; transform-origin: 50% 0%; }
+      #glow { position: absolute; border-radius: 50%; left: 0; top: 0; width: 700px; height: 700px;
+              background: radial-gradient(circle, rgba(255, 150, 60, 0.55) 0%, rgba(255, 150, 60, 0.18) 40%, rgba(255, 150, 60, 0) 70%); opacity: 0; }
+    </style>
+  </head>
+  <body>
+    <!-- Хук рилса 53 «Восемь пауков за ночь?»: мир — рисунок g1_mouth_guard в его размере, от верха до y=1800.
+         Слои — anim/kit_spider.py, положения берутся из data-vars.kit. С кадра 0 всё уже в движении: кот дрожит
+         рывками под одеялом, паук качается на нити и ползёт вниз, хвост качается, огонёк мерцает; на ударном слоге
+         «ночь» (data-vars.hit) паук срывается вниз на нити с отскоком, кот подпрыгивает, огонёк вспыхивает.
+         Камеру, тряску, субтитры и звук даёт сборщик. -->
+    <div id="root" data-composition-id="main" data-start="0" data-duration="2.0" data-width="1664" data-height="1800"
+         data-vars='{"hit": 1.41, "kit": {"layers": {"cat": {"xy": [282, 753]}, "tail": {"xy": [2, 1372]}, "flame": {"xy": [108, 1180]}, "spider": {"xy": [680, 243]}}, "base": {"cat": [800, 1580], "tail": [60, 1740], "flame": [150, 1405], "spider": [800, 360]}, "thread_x": 803, "spider_top": 300}}'
+         data-motion-blur="on" data-layout-allow-overflow data-layout-allow-overlap>
+      <img id="bg" class="abs clip" src="assets/bg.png" style="left:0;top:0" data-start="0" data-duration="2.0" />
+      <div id="glow" class="clip" data-start="0" data-duration="2.0"></div>
+      <img id="tail" class="abs clip" src="assets/tail.png" data-start="0" data-duration="2.0" />
+      <img id="flame" class="abs clip" src="assets/flame.png" data-start="0" data-duration="2.0" />
+      <img id="cat" class="abs clip" src="assets/cat.png" data-start="0" data-duration="2.0" />
+      <div id="spL" class="abs clip" style="left:0;top:0;width:1664px;height:900px" data-start="0" data-duration="2.0">
+        <div id="thread"></div>
+        <img id="spider" class="abs" src="assets/spider.png" />
+      </div>
+    </div>
+    <script>
+      const root = document.getElementById("root");
+      const V = JSON.parse(root.dataset.vars), H = V.hit, K = V.kit;
+      const tl = gsap.timeline({ paused: true });
+      for (const n of ["cat", "tail", "flame", "spider"]) {
+        const el = document.getElementById(n), xy = K.layers[n].xy, b = K.base[n];
+        el.style.left = xy[0] + "px"; el.style.top = xy[1] + "px";
+        el.style.transformOrigin = `${b[0] - xy[0]}px ${b[1] - xy[1]}px`;
+      }
+      const th = document.getElementById("thread"), TH = K.spider_top + 8;
+      th.style.left = (K.thread_x - 2) + "px"; th.style.top = "0px"; th.style.height = TH + "px";
+      gsap.set("#spL", { transformOrigin: `${K.thread_x}px 0px` });
+      gsap.set("#glow", { left: K.base.flame[0] - 350, top: K.base.flame[1] - 350 });
+      const dropTo = (D, dur, ease, at) => {        // нить и паук опускаются вместе: одна кривая, нить растягивается
+        tl.to("#thread", { scaleY: (TH + D) / TH, duration: dur, ease }, at);
+        tl.to("#spider", { y: D, duration: dur, ease }, at);
+      };
+      // --- кот: дрожит рывками с кадра 0 (в кадре 0 уже на скорости), пивот у лап
+      const J = 0.08;
+      tl.fromTo("#cat", { y: -22, x: -16, rotation: -3.6, scaleY: 1.045, scaleX: 0.99 },
+                { y: 7, x: 14, rotation: 3.2, scaleY: 0.98, scaleX: 1.012, duration: J / 2, ease: "none" }, 0);
+      let t = J / 2, i = 0;
+      while (t < H - 0.12) {
+        const up = i % 2 === 0;
+        tl.to("#cat", { y: up ? -22 - 6 * (i % 3) : 7, x: up ? -17 : 15, rotation: up ? -3.6 : 3.2, scaleY: up ? 1.05 : 0.985,
+                        duration: J / 2, ease: "none" }, t);
+        t += J / 2; i++;
+      }
+      // «ночь»: присел и подпрыгнул, потом пружиной на место
+      tl.to("#cat", { y: 8, x: 0, rotation: 0, scaleY: 0.955, scaleX: 1.03, duration: 0.06, ease: "power3.in" }, H - 0.06);
+      tl.to("#cat", { y: -46, scaleY: 1.07, scaleX: 0.975, rotation: -2.2, duration: 0.13, ease: "power3.out" }, H);
+      tl.to("#cat", { y: 0, scaleY: 1, scaleX: 1, rotation: 0, duration: 0.75, ease: "elastic.out(1, 0.38)" }, H + 0.13);
+      // --- хвост: маятник с кадра 0, на ударе хлещет
+      tl.fromTo("#tail", { rotation: -14 }, { rotation: 12, duration: 0.2, ease: "sine.inOut" }, 0);
+      for (let q = 0; 0.2 + q * 0.2 < H; q++) tl.to("#tail", { rotation: q % 2 ? 12 : -14, duration: 0.2, ease: "sine.inOut" }, 0.2 + q * 0.2);
+      tl.to("#tail", { rotation: 15, duration: 0.1, ease: "power3.out" }, H);
+      tl.to("#tail", { rotation: 0, duration: 0.7, ease: "elastic.out(1, 0.35)" }, H + 0.1);
+      tl.fromTo("#flame", { rotation: -8, scaleY: 1.1, scaleX: 0.95 }, { rotation: 7, scaleY: 0.9, scaleX: 1.06, duration: 0.1, ease: "none" }, 0);
+      for (let q = 0; 0.1 + q * 0.1 < H; q++) {
+        tl.to("#flame", { rotation: q % 2 ? 7 : -8, scaleY: q % 2 ? 0.9 : 1.12, scaleX: q % 2 ? 1.06 : 0.94, duration: 0.1, ease: "none" }, 0.1 + q * 0.1);
+        tl.to("#glow", { opacity: q % 2 ? 0.5 : 0.8, duration: 0.1, ease: "none" }, 0.1 + q * 0.1);
+      }
+      tl.to("#flame", { scaleY: 1.5, scaleX: 1.3, rotation: 0, duration: 0.09, ease: "power3.out" }, H);
+      tl.to("#glow", { opacity: 1, scale: 1.6, duration: 0.1, ease: "power3.out" }, H);
+      tl.to("#flame", { scaleY: 1, scaleX: 1, duration: 0.6, ease: "elastic.out(1, 0.4)" }, H + 0.09);
+      tl.to("#glow", { opacity: 0.45, scale: 1, duration: 0.7 }, H + 0.1);
+      // --- паук: качается на нити и ползёт вниз ступеньками, на «ночь» срывается и подпрыгивает на нити
+      tl.fromTo("#spL", { rotation: -15 }, { rotation: 14, duration: 0.3, ease: "sine.inOut" }, 0);
+      for (let q = 0; 0.3 + q * 0.3 < H; q++) tl.to("#spL", { rotation: q % 2 ? 14 : -15, duration: 0.3, ease: "sine.inOut" }, 0.3 + q * 0.3);
+      tl.to("#spL", { rotation: 0, duration: 0.1, ease: "power3.out" }, H);
+      tl.to("#spL", { rotation: 0, duration: 0.5 }, H + 0.1);
+      for (let k = 0; k * 0.22 < H - 0.15; k++) tl.to("#spider", { scaleX: k % 2 ? 1.12 : 0.9, scaleY: k % 2 ? 0.9 : 1.12, duration: 0.11, ease: "none" }, k * 0.11);
+      dropTo(50, H - 0.08, "none", 0);                                  // в кадре 0 уже ползёт, без разгона с нуля
+      dropTo(390, 0.1, "power3.in", H - 0.08 + 0.0);                    // срыв к пасти
+      tl.to("#thread", { scaleY: (TH + 310) / TH, duration: 0.5, ease: "elastic.out(1, 0.45)" }, H + 0.04);
+      tl.to("#spider", { y: 310, duration: 0.5, ease: "elastic.out(1, 0.45)" }, H + 0.04);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
