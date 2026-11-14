@@ -350,7 +350,7 @@ def frame06(t):
     wy = SH_C[1] + px * math.sin(ang) + py * math.cos(ang) - slide * .3
     dvec = np.array([.8, .6])
     dvec = dvec / np.linalg.norm(dvec)
-    rest = (430, 1180)
+    rest = (520, 1500)
     h_u = ease_out(reading)
     tipx, tipy = rest[0] + (wx - rest[0]) * h_u, rest[1] + (wy - rest[1]) * h_u
     wrist = (tipx - dvec[0] * 130 * bs / .96 - 0, tipy - dvec[1] * 130 * bs / .96 + 18)
@@ -387,17 +387,17 @@ def frame07(t):
     a = 11.1
     # камера: наезд с разгоном (ease_in), тряска на «запутался»
     ui = ease_in(clamp((t - a) / 2.2), 2.2)
-    z = 1.0 + .75 * ui
+    z = 1.0 + .4 * ui
     set_ink(z)
     shk = 14 * decay(t, T_ZAP, 7, 21) + 8 * decay(t, T_SIL, 8, 24)
     # фон
     g = rad_grad([(0, "#f6ead3", 1), (1, "#d9c3a0", 1)], 540, 900, 900)
     o = [f'<rect x="-600" y="-500" width="2300" height="3000" fill="url(#{g})"/>']
-    HX, HY = 540, 1040
+    HX, HY = 560, 1010
     sp_u = ease_out(clamp((t - T_ZAP) / .7))
     inten = 1 + 1.4 * smooth(T_ESHE - .05, T_ESHE + .4, t)
     cover = ease_out(clamp((t - T_SIL) / .22))
-    cx, cy = HX + 40, HY - 400
+    cx, cy = HX + 10, HY - 300
     # спираль + значки (за головой)
     if t >= T_ZAP - .02:
         spin = (t - T_ZAP) * (2.4 + 3.0 * smooth(T_ESHE - .05, T_ESHE + .5, t) + 1.2 * cover)
@@ -419,8 +419,8 @@ def frame07(t):
             kind = i % 6
             o.append(mini_icon(kind, x_, y_ + 28, .62 * back_out(k_, 2.4) * (.85 + .3 * s), rot=(spin * 40 + i * 30) % 360 - 180 if i % 3 == 0 else 14 * math.sin(i + t * 4)))
     # Дима
-    bs = 1.28
-    hip = (HX - 80, 1760)
+    bs = 1.7
+    hip = (HX - 30 * bs, HY + 586 * bs)
     ph = t * 9
     dz = smooth(T_ZAP - .05, T_ZAP + .25, t)
     dz2 = smooth(T_ESHE - .05, T_ESHE + .3, t)
@@ -430,17 +430,18 @@ def frame07(t):
                 closed=blink_of(t, (11.5, 12.9)) if dz < .2 else 0.0, open=.3)
     expr["mouth"] = "talk" if dz > .5 and cover < .5 else ("flat" if cover >= .5 else "flat")
     expr["open"] = .25 + .1 * abs(math.sin(t * 8))
-    hx_, hy_ = HX + 20, HY - 330          # где окажется голова (проверено рендером)
-    arm_n = ("ik", (hx_ - 40 + 30 * (1 - cover), hy_ + 30 + 520 * (1 - ease_out(cover))), 1)
-    arm_f = ("ik", (hx_ + 70 + 30 * (1 - cover), hy_ + 30 + 560 * (1 - ease_out(cover))), 1)
-    hands = {"n": open_hand(.15 + .35 * cover, (0, -1), .35, .3, flip=1, k=bs), "f": open_hand(.15 + .35 * cover, (0, -1), .35, .3, flip=-1, k=bs)}
+    hx_, hy_ = HX, HY
+    arm_n = ("ik", (hx_ + 60 + 260 * (1 - ease_out(cover)), hy_ + 330 + 900 * (1 - ease_out(cover))), 1)
+    arm_f = ("ik", (hx_ + 10 + 300 * (1 - ease_out(cover)), hy_ + 360 + 900 * (1 - ease_out(cover))), 1)
+    dd = (.25 * (1 - cover), -1 + 2 * (1 - cover))
+    hands = {"n": open_hand(.15 + .35 * cover, dd, .35, .3, flip=1, k=bs), "f": open_hand(.15 + .35 * cover, dd, .35, .3, flip=-1, k=bs)}
     d = person("dima", hip, bs, expr, {"n": arm_n, "f": arm_f}, hands, lean=.03 + .05 * cover, head_ang=.08 * dz - .35 * cover,
                head_off=(0, 40 * cover))
     o.append(d["body"])
     if cover > .02:
         o.append(d["arm_f"])
     o.append(d["arm_n"])
-    cam = lib.cam(HX + 20 + shk, HY - 160 + 80 * ui + shk * .6, z, -.6 * dz + 1.4 * decay(t, T_ZAP, 6, 16) + .6 * cover)
+    cam = lib.cam(HX + shk, HY - 80 + 40 * ui + shk * .6, z, -.6 * dz + 1.4 * decay(t, T_ZAP, 6, 16) + .6 * cover)
     return f'<g transform="{cam}">{"".join(o)}</g>'
 
 
