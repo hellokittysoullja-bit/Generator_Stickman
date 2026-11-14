@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1664, height=1800" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1664px; height: 1800px; overflow: hidden; background: #f7f3ea; }
+      #root { position: relative; width: 1664px; height: 1800px; overflow: hidden; }
+      .layer { position: absolute; left: 0; top: 0; width: 1664px; height: 1800px; }
+      .abs { position: absolute; display: block; }
+    </style>
+  </head>
+  <body>
+    <!-- Хук рилса 65 «Тянешь, чтобы было идеально?»: мир — рисунок g1_bowl_museum ×2 от (0, 1000), в половинном размере.
+         Слои — anim/kit_bowl.py, положение подставляет bowl_hf.py из kit.json.
+         С кадра 0 всё уже в движении: кот дрожит от ужаса рывками (лапа у щеки, хвост с огоньком — вместе), штрихи
+         испуга у уха дёргаются, миска-экспонат с канатом подрагивает; на ударном «идеАльно» (data-vars.hit) кот
+         отшатывается назад пружиной с перелётом, штрихи испуга выскакивают крупнее, экспонат вздрагивает.
+         Камеру, тряску, субтитры и звук даёт сборщик. -->
+    <div id="root" data-composition-id="main" data-start="0" data-duration="2.0" data-width="1664" data-height="1800"
+         data-vars='{"hit": 1.17}' data-motion-blur="on" data-layout-allow-overflow data-layout-allow-overlap>
+      <img id="bg" class="abs clip" src="assets/bg.png" style="left:0;top:0" data-start="0" data-duration="2.0" />
+      <div id="catL" class="layer clip" data-start="0" data-duration="2.0">
+        <img id="cat" class="abs" src="assets/cat.png" style="left:0px;top:0px" />
+      </div>
+      <div id="marksL" class="layer clip" data-start="0" data-duration="2.0">
+        <img id="marks" class="abs" src="assets/marks.png" style="left:0px;top:0px" />
+      </div>
+      <div id="frontL" class="layer clip" data-start="0" data-duration="2.0">
+        <img id="front" class="abs" src="assets/front.png" style="left:0px;top:0px" />
+      </div>
+    </div>
+    <script>
+      const root = document.getElementById("root");
+      const V = JSON.parse(root.dataset.vars), H = V.hit, K = V.kit;
+      const tl = gsap.timeline({ paused: true });
+      const px = (p) => `${p[0]}px ${p[1]}px`;
+      gsap.set("#catL", { transformOrigin: px(K.pivot) });
+      gsap.set("#marksL", { transformOrigin: px(K.marks_c) });
+      gsap.set("#frontL", { transformOrigin: px(K.bowl_c) });
+      // кот: дрожь ужаса рывками с кадра 0 (в кадре 0 уже на ходу), чуть подаётся назад к удару
+      const J = 2 / 15;   // полупериод ровно 2 кадра: ни один кадр не стоит
+      tl.fromTo("#catL", { x: 16, y: -6, rotation: 2.4, scaleY: 1.02 }, { x: -16, y: 6, rotation: -2.2, scaleY: 0.985, duration: J / 2, ease: "none" }, 0);
+      let t = J / 2, i = 0;
+      while (t < H - 0.1) {
+        const a = i % 2 === 0, back = -10 * t / H;
+        tl.to("#catL", { x: (a ? 18 : -18) + back, y: a ? -10 - 4 * (i % 3) : 6, rotation: a ? 2.6 : -2.4,
+                         scaleY: a ? 1.025 : 0.985, duration: J / 2, ease: "none" }, t);
+        t += J / 2; i++;
+      }
+      // «идеАльно»: сжался и отшатнулся назад (влево, от миски), пружиной с перелётом на место
+      tl.to("#catL", { x: 10, y: 10, rotation: 1.5, scaleX: 1.03, scaleY: 0.95, duration: 0.06, ease: "power2.in" }, H - 0.06);
+      tl.to("#catL", { x: -130, y: -60, rotation: -8, scaleX: 0.98, scaleY: 1.04, duration: 0.13, ease: "power3.out" }, H);
+      tl.to("#catL", { x: 0, y: 0, rotation: 0, scaleX: 1, scaleY: 1, duration: 0.8, ease: "elastic.out(1, 0.35)" }, H + 0.13);
+      // штрихи испуга: дёргаются с кадра 0, на ударе выскакивают крупнее
+      tl.fromTo("#marksL", { x: -6, rotation: -10, scale: 1.0 }, { x: 8, rotation: 9, scale: 1.12, duration: 0.1, ease: "none" }, 0);
+      for (let k = 1; 0.1 * k < H - 0.05; k++) {
+        tl.to("#marksL", { x: k % 2 ? -6 : 8, rotation: k % 2 ? -10 : 9, scale: k % 2 ? 1.0 : 1.12, duration: 0.1, ease: "none" }, 0.1 * k);
+      }
+      tl.to("#marksL", { scale: 2.3, x: 40, y: -30, rotation: 14, duration: 0.1, ease: "power3.out" }, H);
+      tl.to("#marksL", { scale: 1.7, rotation: -4, duration: 0.8, ease: "elastic.out(1, 0.4)" }, H + 0.1);
+      // экспонат (миска, канат, столбики): подрагивает, на ударе подскакивает
+      tl.fromTo("#frontL", { y: 3, rotation: -0.5 }, { y: -3, rotation: 0.5, duration: 0.2, ease: "none" }, 0);
+      for (let k = 1; 0.2 * k < H - 0.05; k++) {
+        tl.to("#frontL", { y: k % 2 ? 3 : -3, rotation: k % 2 ? -0.5 : 0.5, duration: 0.2, ease: "none" }, 0.2 * k);
+      }
+      tl.to("#frontL", { y: -22, rotation: 1.2, duration: 0.08, ease: "power2.out" }, H);
+      tl.to("#frontL", { y: 0, rotation: 0, duration: 0.7, ease: "bounce.out" }, H + 0.08);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
