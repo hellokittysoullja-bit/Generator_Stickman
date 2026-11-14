@@ -167,7 +167,7 @@ def head(st, t):
     return "".join(s)
 
 
-def body():
+def body(skip_paw=None):
     s = []
     bd = [(760, 1296), (744, 1240), (756, 1180), (790, 1142), (880, 1142), (916, 1180), (928, 1240), (912, 1296)]
     bp = fur(bd, 7, 7, seed=22)
@@ -186,6 +186,8 @@ def body():
             ang = math.radians(-90 + (k - 1) * 42 + sx * 10)
             s.append(blob(ellipse_pts(px + sx * 3 + math.cos(ang) * 19, 1296 + math.sin(ang) * 15, 5, 4.4, 8), "#e8823a"))
     for sx, sd in [(-1, 244), (1, 245)]:
+        if sx == skip_paw:
+            continue
         fx = CX + sx * 25
         paw = [(fx - 20, 1306, 1), (fx - 19, 1252), (fx + 19, 1252), (fx + 20, 1306, 1)]
         s.append(shape(paw, CAT, blob([(fx + sx * 6, 1250), (fx + 20 * sx, 1250), (fx + 20 * sx, 1306), (fx + sx * 8, 1306)], CAT_SH, .7),
@@ -195,16 +197,46 @@ def body():
     return "".join(s)
 
 
+def raised_paw(u, wave=0.0):
+    """Поднятая лапа (справа от зрителя): u 0..1 — от «стоит» до «вскинута у головы»; wave — качание кисти."""
+    def lp(a, b):
+        return (a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u)
+    sh = (CX + 34, 1196)
+    el = lp((CX + 32, 1262), (CX + 100, 1206))
+    tip = lp((CX + 26, 1296), (CX + 126 + 10 * wave, 1092))
+    S = [sh, el, tip]
+    poly = lib.band(S, 46, 38, step=4, cap=True)
+    o = [shape(poly, CAT, blob([(CX + 60, 1150), (CX + 160, 1090), (CX + 160, 1300), (CX + 70, 1300)], CAT_SH, .5), w=4.8, seed=246)]
+    ang = math.atan2(tip[1] - el[1], tip[0] - el[0])
+    px, py = tip[0] + math.cos(ang) * 4, tip[1] + math.sin(ang) * 4
+    o.append(blob(ellipse_pts(px, py, 13, 11, 10, rot=math.degrees(ang)), "#e8823a"))
+    for kk in range(3):
+        a2 = ang + (kk - 1) * .55
+        o.append(blob(ellipse_pts(px + math.cos(a2) * 22, py + math.sin(a2) * 22, 5, 4.4, 8), "#e8823a"))
+    for kk in (-9, 9):
+        qx, qy = tip[0] - math.sin(ang) * kk, tip[1] + math.cos(ang) * kk
+        o.append(line([(qx, qy), (qx + math.cos(ang) * 22, qy + math.sin(ang) * 22)], 2.2, seed=247 + kk))
+    return "".join(o)
+
+
 def draw(x, y, k, st, t):
-    """st: tilt (град), turn, look, blink, ear, perk, tail (град), breath (0..1), smile, flame_e."""
-    br = 1 + 0.012 * math.sin(t * 2 * math.pi / 3.1)
-    tail_a = st.get("tail", 0.0)
-    tilt = st.get("tilt", 0.0)
+    """st: tilt (град), turn, look, blink, ear, perk, tail (град), breath (0..1), smile, flame_e,
+    paw (0..1 — лапа вскинута), sleep (0..1 — свернулся: тело ниже и шире, голова опущена)."""
+    br = 1 + 0.012 * math.sin(t * 2 * math.pi / 3.1) * (1 + 1.5 * st.get("sleep", 0.0))
+    sl = st.get("sleep", 0.0)
+    tail_a = st.get("tail", 0.0) - 28 * sl
+    tilt = st.get("tilt", 0.0) + 22 * sl
+    paw = st.get("paw", 0.0)
+    sy = 1 - .26 * sl
+    sx_ = 1 + .12 * sl
     o = []
     o.append(f'<g transform="rotate({tail_a:.2f} {TAIL_PIVOT[0]} {TAIL_PIVOT[1]})">{tail_art()}{flame(t, 1.3, st.get("flame_e", 1.0))}</g>')
-    o.append(f'<g transform="translate(0 {CBOT}) scale(1 {br:.4f}) translate(0 {-CBOT})">{body()}</g>')
-    hy = -(br - 1) * (CBOT - NECK[1])
-    o.append(f'<g transform="translate(0 {hy:.2f}) rotate({tilt:.2f} {NECK[0]} {NECK[1]})">{head(st, t)}</g>')
+    o.append(f'<g transform="translate({CX} {CBOT}) scale({sx_:.4f} {br * sy:.4f}) translate({-CX} {-CBOT})">{body(1 if paw > .01 else None)}</g>')
+    hy = -(br * sy - 1) * (CBOT - NECK[1]) + 56 * sl
+    hx = 14 * sl
+    o.append(f'<g transform="translate({hx:.2f} {hy:.2f}) rotate({tilt:.2f} {NECK[0]} {NECK[1]})">{head(st, t)}</g>')
+    if paw > .01:
+        o.append(raised_paw(paw, st.get("wave", 0.0)))
     return f'<g transform="translate({x:.2f} {y:.2f}) scale({k:.4f}) translate({-CX} {-CBOT})">{"".join(o)}</g>'
 
 

@@ -114,7 +114,14 @@ def eyes(expr, EN, EF, bags=True, lash_col=INK):
             continue
         ep = ellipse_pts(cx, cy, rx, ry, 14)
         cid = lib.clip_of(ep)
-        s.append(f'<g><path d="{fill_d(ep)}" fill="#f6f2ea"/><g clip-path="url(#{cid})">')
+        red = expr.get("red", 0.0)
+        white = lib.mix("#f6f2ea", "#f1b4aa", red)
+        s.append(f'<g><path d="{fill_d(ep)}" fill="{white}"/><g clip-path="url(#{cid})">')
+        if red > 0.05:
+            for vi in range(5):
+                va = math.radians(200 + vi * 28 if nm == "N" else 330 + vi * 30)
+                s.append(line([(cx + rx * 1.05 * math.cos(va), cy + ry * 1.0 * math.sin(va)),
+                               (cx + rx * .55 * math.cos(va + .12), cy + ry * .55 * math.sin(va + .12))], 2.2, "#c4443f", seed=sd + 80 + vi, op=.85 * red))
         s.append(blob([(cx - rx, cy - ry), (cx + rx, cy - ry), (cx + rx, cy - ry * .2), (cx - rx, cy - ry * .25)], "#d9d2e2", .8))
         px, py = cx + rx * lx, cy + ry * ly
         s.append(f'<ellipse cx="{px:.1f}" cy="{py:.1f}" rx="7.4" ry="8.2" fill="{INK}"/>'
