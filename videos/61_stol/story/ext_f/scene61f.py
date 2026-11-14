@@ -169,7 +169,7 @@ def frame05(t):
 
 # ───────────────────────────── s17: кот спит на тёплом творческом столе ─────────────────────────────
 T_KOT17, T_SPIT, T_TEPL, T_NAP = wt("кот"), wt("спит"), wt("теплее"), wt("напиши")
-CAT17 = (262.0, 946.0)
+CAT17 = (300.0, 946.0)
 K17 = .55
 
 
@@ -207,7 +207,7 @@ def zzz(t, t0, x, y):
         if a > 1.14 and t < t0 + 2.6 and False:
             pass
         u = math.sin(math.pi * ph) ** .6
-        xx = x + 26 * ph + 10 * math.sin(a * 4) + 14 * i
+        xx = x + 46 * ph + 8 * math.sin(a * 4) + 14 * i
         yy = y - 120 * ph - 6 * i
         o.append(props.z_mark(xx, yy, .5 + .35 * ph, u, col="#3F6FB0"))
     return "".join(o)
@@ -221,26 +221,24 @@ def frame17(t):
     px, py, rx, ry = room.LAMP_POOL
     if warm > .01:
         o.append(f'<ellipse cx="{px + 20}" cy="{py + 10}" rx="{rx * .9:.1f}" ry="{ry * 1.1:.1f}" fill="#ffd27a" opacity="{.35 * warm:.3f}"/>')
-        o.append(f'<ellipse cx="{px + 20}" cy="{py + 10}" rx="{rx * .9:.1f}" ry="{ry * 1.1:.1f}" fill="none" stroke="#f3b84a" stroke-width="3" '
-                 f'opacity="{.6 * warm:.3f}"/>')
     o.append(rb["lamp"])
     o.append(props.paper_pile(CAT17[0], CAT17[1] + 10, .78, seed=17, sy=.45, n=9))
     u = sm(t, 41.3, 44.5)
-    z = 1.85 + .32 * u + .03 * bump(t, T_NAP, .4)
+    z = 2.7 + .4 * u + .05 * bump(t, T_NAP, .4)
     set_ink(z * K17 * 1.6)
     o.append(blob(ellipse_pts(CAT17[0] + 6, CAT17[1] - 4, 110, 12, 14), "#6b4422", .3))
     o.append(cat17(t))
     set_ink(z)
     if t > T_SPIT - .02:
-        o.append(zzz(t, T_SPIT - .02, CAT17[0] + 60, CAT17[1] - 120))
+        o.append(zzz(t, T_SPIT - .02, CAT17[0] + 105, CAT17[1] - 95))
     if warm > .01:      # тёплые искорки от огонька — штрихи, не пятно
         for i in range(3):
             a = (t - T_TEPL) * 1.3 + i * .33
             ph = a % 1.0
             sx_, sy_ = CAT17[0] - 70 + 18 * i, CAT17[1] - 40 - 60 * ph
             o.append(line([(sx_, sy_), (sx_ + 4, sy_ - 10)], 3, "#f39a3a", seed=1700 + i, taper=.5, wmin=.4) if ph < .8 else "")
-    cx = CAT17[0] - 10 + 10 * math.sin(t * .7)
-    cy = 820 + 30 * u
+    cx = CAT17[0] + 10 + 10 * math.sin(t * .7)
+    cy = 850 + 20 * u
     cam = lib.cam(cx, cy, z, .6 - 1.2 * u)
     return f'<g transform="{cam}">{"".join(o)}</g>'
 

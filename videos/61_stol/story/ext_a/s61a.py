@@ -200,7 +200,7 @@ import room as R  # noqa: E402
 BS2 = 1.0
 SX2, SY2 = 330.0, R.seat_y(BS2)          # таз Димы на стуле
 DX2, DY2 = 930.0, R.DESK_TOP              # передний край стола (центр), стол справа от Димы
-MUG_R2, MUG_B2 = (680.0, DY2 - 14), (772.0, DY2 - 40)
+MUG_R2, MUG_B2 = (630.0, DY2 - 2), (722.0, DY2 - 22)
 TANG2 = (1050.0, DY2 - 24)
 CHG2 = (900.0, DY2 - 30)
 
@@ -215,8 +215,8 @@ def wob(t, t0, amp, freq=3.2, damp=4.0):
 def hand_path2(t):
     """Цель запястья ближней руки: роется в бумагах → отдёргивает назад и задевает кружку (1.72) → тянется к зарядке → тянет её
     к себе (2.37), провода ползут и обматывают запястье → на «Мама» (3.42) рука с проводами застыла чуть выше."""
-    keys = [(1.25, (980, 880)), (1.45, (1020, 900)), (1.58, (960, 880)), (1.72, (720, 905)), (1.95, (760, 915)), (2.2, (905, 925)),
-            (2.37, (900, 920)), (2.75, (760, 900)), (3.3, (740, 905)), (3.6, (730, 870)), (4.5, (735, 865))]
+    keys = [(1.25, (980, 880)), (1.45, (1020, 900)), (1.58, (960, 880)), (1.72, (690, 900)), (1.95, (780, 915)), (2.2, (905, 925)),
+            (2.37, (900, 920)), (2.75, (820, 840)), (3.3, (800, 830)), (3.6, (790, 790)), (4.5, (795, 785))]
     for (ta, a), (tb, b) in zip(keys, keys[1:]):
         if t <= tb:
             u = ease_io((t - ta) / (tb - ta))
@@ -255,8 +255,8 @@ def frame02(t):
     # кружки: красная качается от удара (1.72) и звякает о синюю
     rr = wob(t, 1.72, 16, 3.4, 3.6)
     rb = wob(t, 1.80, -7, 3.8, 4.5)
-    mugs = props.mug(MUG_B2[0], MUG_B2[1], 1.1, rb, "blue", seed=3, handle=-1) + props.mug(MUG_R2[0], MUG_R2[1], 1.15, rr, "red", steam=.8, t=t, seed=4)
-    clk = props.clink(MUG_R2[0] + 46, MUG_R2[1] - 70, 1.0, clamp((t - 1.76) / .32), 5) + props.clink(MUG_R2[0] + 40, MUG_R2[1] - 64, .8, clamp((t - 1.98) / .28), 6)
+    mugs = props.mug(MUG_B2[0], MUG_B2[1], 1.35, rb, "blue", seed=3, handle=1) + props.mug(MUG_R2[0], MUG_R2[1], 1.45, rr, "red", steam=.8, t=t, seed=4)
+    clk = props.clink(MUG_R2[0] + 50, MUG_R2[1] - 96, 1.0, clamp((t - 1.76) / .32), 5) + props.clink(MUG_R2[0] + 46, MUG_R2[1] - 90, .8, clamp((t - 1.98) / .28), 6)
     # мимика
     if t < 1.72:
         ex = dict(people.EXPR["dima"]["focus"], look=(.7, .5))
@@ -278,7 +278,7 @@ def frame02(t):
     full = people.draw(dict(hip=(SX2, SY2), scale=BS2 * people.HEIGHT["dima"], lean=lean, feet=feet, arms=arms, hands=hands, head_ang=head_ang,
                             expr=ex, torso_k=1.0, hood=0.0, head_off=(0, 0)), "dima")
     wrist = np.array(full["wrist"]["n"], float)
-    o = [bg, full["legs"], ch["seat"], full["arm_f"], full.get("pelvis", ""), full["body"], mugs]
+    o = [bg, ch["base"], full["legs"], ch["seat"], full["arm_f"], full.get("pelvis", ""), full["body"]]
     # зарядка в руке (после хвата — под пальцами) и провод от клубка к ней, витки вокруг запястья
     if grip:
         chg = wrist + np.array([70, 6])
@@ -286,27 +286,39 @@ def frame02(t):
         chg = np.array(CHG2)
     o.append(props.cable([(tang[0] - 30, tang[1] - 10), ((tang[0] + chg[0]) / 2, tang[1] + 16), (chg[0] + 22, chg[1] + 4)], w=8, seed=21))
     o.append(props.charger(chg[0] + 4, chg[1], .9, 80))
-    o.append(full["arm_n"])
-    if pull > 0:
+    loops_b, loops_f = [], []
+    if pull > 0:   # витки провода вокруг запястья: задняя половина под рукой, передняя поверх
         n_loops = 3 * pull
         for j in range(3):
             if n_loops <= j:
                 break
             fr = clamp(n_loops - j)
-            cx = wrist[0] - 34 - 22 * j
-            pts = [(cx + 20 * math.cos(a) * .55, wrist[1] + 46 * math.sin(a)) for a in np.linspace(-math.pi / 2, -math.pi / 2 + 2 * math.pi * fr, 18)]
-            o.append(props.cable(pts, ("#3A3D44", "#E7E2D6", "#C8553D")[j], 7, seed=30 + j))
+            cx = wrist[0] - 8 - 20 * j
+            col = ("#3A3D44", "#E7E2D6", "#C8553D")[j]
+            a0 = -math.pi / 2
+            ang = np.linspace(a0, a0 + 2 * math.pi * fr, 24)
+            pts = [(cx + 11 * math.cos(a), wrist[1] + 44 * math.sin(a)) for a in ang]
+            front = [p for p, a in zip(pts, ang) if math.cos(a) >= 0]
+            back = [p for p, a in zip(pts, ang) if math.cos(a) < 0]
+            if len(back) > 1:
+                loops_b.append(props.cable(back, col, 7, seed=30 + j, hi=False))
+            if len(front) > 1:
+                loops_f.append(props.cable(front, col, 7, seed=40 + j))
+    o.extend(loops_b)
+    o.append(full["arm_n"])
+    o.extend(loops_f)
+    o.append(mugs)
     o.append(clk)
     body = "".join(o)
     # камера: дрейф вправо, наезд на руку с проводами, на «Мама» чуть назад к лицу
     u1 = ease_io(clamp((t - 1.3) / 3.0))
-    cx = 520 + 120 * u1
-    cy = 900
-    s = 1.0 + .06 * u1
+    cx = 570 + 60 * u1
+    cy = 920
+    s = 1.2 + .05 * u1
     push = ease_io(clamp((t - 2.3) / .8)) * (1 - ease_io(clamp((t - 3.35) / .45)))
-    cx = lerp(cx, 760, push * .6)
-    cy = lerp(cy, 900, push)
-    s *= 1 + .22 * push
+    cx = lerp(cx, 700, push * .6)
+    cy = lerp(cy, 860, push)
+    s *= 1 + .2 * push
     cy -= 70 * ease_io(clamp((t - 3.35) / .5))
     dx, dy = props.shake(t, 1.72, 7, .3, 4)
     return frame_svg(body, cx + dx, cy + dy, s, .4 * math.sin(t * .9))

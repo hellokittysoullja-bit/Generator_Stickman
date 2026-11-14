@@ -154,7 +154,7 @@ def frame14(t):
     wi = ease_out(clamp((t - a) / .3), 3)
     push = sm(t, a + .3, 35.9)
     s = lerp(1.0, 1.32, push) - .12 * (1 - wi)
-    cx = lerp(470, 470, push) + 260 * (1 - wi) + 5 * math.sin(t * 1.3)
+    cx = lerp(430, 450, push) + 260 * (1 - wi) + 5 * math.sin(t * 1.3)
     cy = lerp(800, 760, push) + 4 * math.sin(t * 1.1)
     rot = lerp(-1.5, .6, push) + 3 * (1 - wi)
     sh = shake(t, T_STOLOM + .02, 16, .45)
@@ -170,7 +170,7 @@ def frame14(t):
     hx, hy = HX + dx, HY - up - sq
     beh, front, items = room_layers(t, fly=sm(t, T_TVOR - .05, T_TVOR + .75), jump=18 * bump(t, T_STOLOM, .3), flick=.5 + .5 * math.sin(t * 7))
     # лист для рисования под рукой
-    pcx, pcy = 300.0, R.DESK_TOP - 50
+    pcx, pcy = 215.0, R.DESK_TOP - 58
     paper = PR.paper(pcx, pcy, 1.0, rot=-6, w=150, h=170, seed=11, kind="blank", sy=.5)
     du = clamp((t - T_PRIDUM) / .85)
     paper += scribble(pcx - 4, pcy, du)
@@ -178,19 +178,19 @@ def frame14(t):
     t_up0, t_slap = T_STOLOM - .32, T_STOLOM
     draw_ph = (t - T_PRIDUM) * 9.0
     if t < T_PRIDUM:
-        near = (lerp(390, 330, sm(t, T_DIMA, T_PRIDUM)), lerp(1000, 930, sm(t, T_DIMA, T_PRIDUM)))
+        near = (lerp(390, pcx + 8, sm(t, T_DIMA, T_PRIDUM)), lerp(1000, pcy - 92, sm(t, T_DIMA, T_PRIDUM)))
     elif t < t_up0:
         S = lib.sample(SCRIBBLE, False, 2.0)
         i = min(len(S) - 1, int(len(S) * clamp(du)))
-        near = (pcx - 4 + float(S[i][0]) + 34, pcy + float(S[i][1]) * .62 - 70 + 3 * math.sin(draw_ph))
+        near = (pcx - 4 + float(S[i][0]) + 54, pcy + float(S[i][1]) * .62 - 78 + 3 * math.sin(draw_ph))
     elif t < t_slap:
         k = ease_out(clamp((t - t_up0) / .22), 2)
-        near = (lerp(326, 300, k), lerp(900, 760, k))
+        near = (lerp(pcx + 54, 300, k), lerp(pcy - 78, 760, k))
     else:
         k = ease_in(clamp((t - t_slap) / .07), 2)
         near = (lerp(300, 250, k), lerp(760, R.DESK_TOP - 70, k))
     slap = t >= t_slap - .02
-    far_t = (pcx + 60, pcy - 30) if not slap else (pcx + 60, pcy - 30)
+    far_t = (pcx + 110, pcy - 6)
     arms = {"f": ("ik", (far_t[0] + 0, far_t[1] + 14), -1), "n": ("ik", near, -1)}
     hands = {"f": {"curl": (.35, .35, .4, .45), "thumb": .35, "dir": (1, .55)},
              "n": ({"kind": "open", "dir": (1, .55), "curl": (.02, .02, .05, .08), "spread": .25, "thumb": .15} if slap else {"kind": "none"})}
@@ -207,7 +207,7 @@ def frame14(t):
     body = dima(hx, hy, flip=True, expr=ex, lean=lean, head_ang=ha, arms=arms, hands=hands, layers=("pelvis", "arm_f", "body"))
     armn = dima(hx, hy, flip=True, expr=ex, lean=lean, head_ang=ha, arms=arms, hands=hands, layers=("arm_n",))
     ch = chair(spin=.2, side=1, dx=dx, dy=-up - sq)
-    o = [beh, ch["back"], legs["svg"], front, ch["base"], ch["seat"], items, paper, body["svg"]]
+    o = [beh, ch["back"], front, legs["svg"], ch["base"], ch["seat"], items, paper, body["svg"]]
     if not slap:
         bk, mk, fr, tip = marker_in_fist(armn["wrist"]["n"], +1, tilt=-14)
         o += [bk, armn["svg"], mk, fr]
@@ -297,7 +297,7 @@ def frame15(t):
     armn = dima(HX, HY, flip=False, expr=ex, lean=lean, head_ang=ha, arms=arms, hands=hands, layers=("arm_n",))
     ch = chair(spin=-.2, side=1)
     bk, mk, fr, _ = marker_in_fist(armn["wrist"]["n"], side, tilt=tilt, col="#4f8a8b", seed=940)
-    o = [beh, ch["back"], legs["svg"], front, ch["base"], ch["seat"], items, body["svg"], bk, armn["svg"], mk, fr]
+    o = [beh, ch["back"], front, legs["svg"], ch["base"], ch["seat"], items, body["svg"], bk, armn["svg"], mk, fr]
     if shine > 0:
         u = shine
         for i, (px, py) in enumerate(((1560, R.DESK_TOP - 100), (1290, R.DESK_TOP - 70), (980, R.DESK_TOP - 20))):
