@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1664, height=2096" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1664px; height: 2096px; overflow: hidden; background: #f7f3ea; }
+      #root { position: relative; width: 1664px; height: 2096px; overflow: hidden; }
+      .layer { position: absolute; left: 0; top: 0; width: 1664px; height: 2096px; }
+      .abs { position: absolute; display: block; }
+    </style>
+  </head>
+  <body>
+    <!-- Хук рилса 54 «Видишь стену из космоса?»: мир — рисунок g1_space_look ×2 от (0, 800), в половинном размере.
+         Слои — anim/kit_space.py, положение подставляет space_hf.py из kit.json.
+         С кадра 0 всё уже в движении: кот невесомо покачивается и вздрагивает рывками (бинокль трясётся вместе с головой),
+         иллюминатор с Землёй медленно дрейфует и пульсирует светом, «?» подрагивает; на ударном «кОсмоса»
+         (data-vars.hit) кот отшатывается назад пружиной с перелётом, «?» выскакивает крупнее.
+         Камеру, тряску, субтитры и звук даёт сборщик. -->
+    <div id="root" data-composition-id="main" data-start="0" data-duration="2.0" data-width="1664" data-height="2096"
+         data-vars='{"hit": 1.23}' data-motion-blur="on" data-layout-allow-overflow data-layout-allow-overlap>
+      <img id="bg" class="abs clip" src="assets/bg.png" style="left:0;top:0" data-start="0" data-duration="2.0" />
+      <div id="planetL" class="layer clip" data-start="0" data-duration="2.0">
+        <img id="planet" class="abs" src="assets/planet.png" style="left:0px;top:0px" />
+      </div>
+      <div id="catL" class="layer clip" data-start="0" data-duration="2.0">
+        <img id="cat" class="abs" src="assets/cat.png" style="left:0px;top:0px" />
+      </div>
+      <div id="qL" class="layer clip" data-start="0" data-duration="2.0">
+        <img id="q" class="abs" src="assets/q.png" style="left:0px;top:0px" />
+      </div>
+    </div>
+    <script>
+      const root = document.getElementById("root");
+      const V = JSON.parse(root.dataset.vars), H = V.hit, K = V.kit;
+      const tl = gsap.timeline({ paused: true });
+      const px = (p) => `${p[0]}px ${p[1]}px`;
+      gsap.set("#catL", { transformOrigin: px(K.pivot) });
+      gsap.set("#qL", { transformOrigin: px(K.q_c) });
+      gsap.set("#planetL", { transformOrigin: px(K.port_c) });
+      // кот: невесомое покачивание и рывки с кадра 0 (в кадре 0 уже на ходу, без разгона с нуля)
+      const J = 0.13;
+      tl.fromTo("#catL", { y: -30, x: -14, rotation: -2.8, scaleY: 1.025 }, { y: 8, x: 10, rotation: 2.0, scaleY: 0.985, duration: J / 2, ease: "none" }, 0);
+      let t = J / 2, i = 0;
+      while (t < H - 0.1) {
+        const up = i % 2 === 0;
+        tl.to("#catL", { y: up ? -26 - 8 * (i % 3) : 6, x: up ? -14 + 5 * (i % 2) : 12, rotation: up ? -2.6 : 2.2,
+                         scaleY: up ? 1.025 : 0.985, duration: J / 2, ease: up ? "power2.out" : "power2.in" }, t);
+        t += J / 2; i++;
+      }
+      // «кОсмоса»: сжался и отшатнулся назад (влево-вверх, от иллюминатора), пружиной с перелётом на место
+      tl.to("#catL", { x: 0, y: 8, rotation: 1.5, scaleX: 1.03, scaleY: 0.96, duration: 0.06, ease: "power2.in" }, H - 0.06);
+      tl.to("#catL", { x: -120, y: -70, rotation: -7, scaleX: 1.03, scaleY: 1.03, duration: 0.13, ease: "power3.out" }, H);
+      tl.to("#catL", { x: 0, y: 0, rotation: 0, scaleX: 1, scaleY: 1, duration: 0.85, ease: "elastic.out(1, 0.35)" }, H + 0.13);
+      // иллюминатор: медленный дрейф и поворот, свет Земли пульсирует (только слой планеты)
+      tl.fromTo("#planetL", { x: -16, y: 10, rotation: -0.7 }, { x: 18, y: -12, rotation: 0.8, duration: 2.0, ease: "none" }, 0);
+      for (let k = 0; k * 0.1 < DURATION(); k++) {
+        tl.to("#planet", { filter: k % 2 ? "brightness(1.00) saturate(1.0)" : "brightness(1.07) saturate(1.2)", duration: 0.1, ease: "none" }, k * 0.1);
+      }
+      tl.to("#planetL", { x: 40, y: -26, scale: 1.02, duration: 0.2, ease: "power2.out" }, H);   // от испуга: Земля тоже вздрагивает
+      // «?»: подрагивает с кадра 0, на ударе выскакивает крупнее и качается
+      tl.fromTo("#qL", { y: 6, rotation: -8, scale: 1.0 }, { y: -8, rotation: 7, scale: 1.06, duration: 0.11, ease: "none" }, 0);
+      for (let k = 1; 0.11 * k < H - 0.05; k++) {
+        tl.to("#qL", { y: k % 2 ? 6 : -8, rotation: k % 2 ? -8 : 7, scale: k % 2 ? 1.0 : 1.06, duration: 0.11, ease: "none" }, 0.11 * k);
+      }
+      tl.to("#qL", { scale: 2.6, y: -40, x: 30, rotation: 12, duration: 0.1, ease: "power3.out" }, H);
+      tl.to("#qL", { scale: 2.0, rotation: -6, duration: 0.8, ease: "elastic.out(1, 0.4)" }, H + 0.1);
+      function DURATION() { return 2.0; }
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
