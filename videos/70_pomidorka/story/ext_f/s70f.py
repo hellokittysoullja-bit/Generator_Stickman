@@ -76,6 +76,20 @@ def cat_paw(base, tip, k, seed=4600):
     return "".join(o)
 
 
+def cat_left_paw(x, y, k, st, t, paw, paw_dx=82.0):
+    """Кот (как cat.draw) тянет ЛЕВУЮ от зрителя переднюю лапу: туловище с лапами зеркалится вокруг оси кота (своя стоячая лапа
+    этой стороны уходит в поднятую — третьей лапы нет), голова с загнутым левым ухом и хвост — как есть."""
+    br = 1 + 0.012 * math.sin(t * 2 * math.pi / 3.1)
+    o = [f'<g transform="rotate({st.get("tail", 0.0):.2f} {CAT.TAIL_PIVOT[0]} {CAT.TAIL_PIVOT[1]})">{CAT.tail_art()}{CAT.flame(t, 1.3, st.get("flame_e", 1.0))}</g>']
+    sy = br * st.get("sy", 1.0)
+    sx = st.get("sx", 1.0)
+    o.append(f'<g transform="translate({CAT.CX} {CAT.CBOT}) scale({-sx:.4f} {sy:.4f}) translate({-CAT.CX} {-CAT.CBOT})">'
+             f'{CAT.body(None, 0.0, paw, paw_dx)}</g>')
+    hy = -(sy - 1) * (CAT.CBOT - CAT.NECK[1])
+    o.append(f'<g transform="translate(0 {hy:.2f}) rotate({st.get("tilt", 0.0):.2f} {CAT.NECK[0]} {CAT.NECK[1]})">{CAT.head(st, t)}</g>')
+    return f'<g transform="translate({x:.2f} {y:.2f}) rotate({st.get("rot", 0.0):.2f}) scale({k:.4f}) translate({-CAT.CX} {-CAT.CBOT})">{"".join(o)}</g>'
+
+
 # ═════════════════════════ s08: кот будит Диму и отталкивает таймер ═════════════════════════
 T_A08 = 12.16
 T_JUMP0, T_LAND = 12.02, 12.42                          # присед → толчок → приземление (whoosh 12.3 — полёт)
@@ -148,12 +162,8 @@ def s08(t):
         cat = CAT.draw(cx, cy - 3 * abs(math.sin(t * 7)) * (wu < 1), CAT_K, st, t)
         # лапа на макушку Димы (левая от зрителя): поднимается, два лёгких касания, опускается
         pu = sm(t, T_DELO + .17, T_DELO + .3) * (1 - sm(t, T_SOVS - .04, T_SOVS + .1))
-        if pu > .02:
-            hx, hy = full["head"]
-            base = (cx - 22 * CAT_K, cy - 70 * CAT_K)
-            top = (hx + 120, hy - 60 + 10 * tap)
-            tip = lerp2((base[0] - 30, base[1] + 30), top, pu)
-            paw_svg = cat_paw(base, tip, CAT_K)
+        if pu > .02:          # лапа на макушку: левая передняя поднимается (своя стоячая лапа не рисуется)
+            cat = cat_left_paw(cx, cy, CAT_K, st, t, pu * (1 - .12 * min(1.0, tap)))
     shadow = blob(ellipse_pts(roll_x(t)[0], R.DESK_TOP - 40, 52, 8, 12), "#20182e", .25)
     world = [sc["bg"], sc["chair_back"], sc["desk_top"], sc["pool"], lap, parts["legs"], sc["desk_legs"], sc["chair_seat"],
              dima_up, sc["lamp"], shadow, timer, cat, paw_svg]
