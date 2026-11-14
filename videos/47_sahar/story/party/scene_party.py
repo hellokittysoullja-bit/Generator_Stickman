@@ -32,7 +32,7 @@ T_KROSHKAM = wt("крошкам")          # 30.28
 KID = dict(skin="#f2c6a6", hair="short", hair_c="#d98a2b", top="#3d9be0", low="#f0c04a", shoes="#e0473a", face=.5, h=1.0, head_k=1.38, brow_c="#8a4a1a")
 SIS = dict(skin="#e9b896", hair="ponytail", hair_c="#7a3b24", top="#e2778e", low="#3f5b8f", shoes="#3a2a22", face=-.5, h=1.0, brow_c="#4a2a1e")
 KID_SC, SIS_SC = .6, .85
-DIMA_X, SIS_X, FEET = 790, 1035, 1290
+DIMA_X, SIS_X, FEET = 780, 1135, 1290
 CAT_X, CAT_Y, CAT_S = 245, 1306, .55
 HOODIE_SKIN = dima.SKIN
 
@@ -76,7 +76,7 @@ def kid_fig(x, fy, sc, t, fc, walk=None, amp=1.0, mouth="laugh", arms=None, legs
 def sis_fig(t, nod=0.0, look=(-.6, 0), mouth="smile", glass=True, arms=None, blink=0.0):
     spec = dict(SIS)
     pose = {"mouth": mouth, "head_tilt": nod, "look": look, "brow": 0.2, "blink": blink,
-            "arms": arms or {"L": (-10, -128), "R": (6, 12)}}
+            "arms": arms or {"L": (-2, -112), "R": (6, 12)}}
     if glass:
         pose["hold"] = ("L", lambda hx, hy: glass_hold(hx, hy - 6))
     fy = FEET + 2 * math.sin(t * 1.9)
@@ -92,8 +92,8 @@ def dima_fig(t, reach=0.0, jab=0.0, mouth="flat", brows="calm", lid=.55, look=(.
     hands = {"f": ("open", .5)}
     held = None
     if reach > 0.01:
-        tx = x + 86 + 70 * jab + 14 * reach
-        ty = sh_y - 52 * reach + 20 * (1 - reach) + 10 * jab
+        tx = x + 40 + 100 * reach + 34 * jab
+        ty = sh_y - 40 * reach + 70 * (1 - reach) + 30 * jab
         arms["n"] = ("ik", (tx, ty))
         hands["n"] = None
         ang = -42 + 20 * jab
@@ -228,7 +228,7 @@ def cam_s02(t):
 def cam_s03(t):
     e = t - 3.5
     sx, sy = shake(t, T_SKAZAL, 10, 10, 60)
-    return 880 + 18 * e + sx, 1050 + sy, 1.46 + .07 * e + .03 * math.exp(-max(0, t - T_SKAZAL) * 8), .8 * math.sin(e * 3)
+    return 955 + 10 * e + sx, 1050 + sy, 1.32 + .05 * e + .03 * math.exp(-max(0, t - T_SKAZAL) * 8), .8 * math.sin(e * 3)
 
 
 def cam_s04(t):
@@ -239,7 +239,7 @@ def cam_s04(t):
 def cam_s14(t):
     u = (t - 26.7) / 2.5
     k = kick(t, [T_PRAZD], .04, 12)
-    return 380 + 360 * ease_io(clamp(u)) , 1030, 1.15 + .05 * u + (k[0] - 1) * 1.2, 1.2 * math.sin(t * 2.4) + k[1]
+    return 430 + 440 * ease_io(clamp(u)), 1030, 1.15 + .05 * u + (k[0] - 1) * 1.2, 1.2 * math.sin(t * 2.4) + k[1]
 
 
 def cam_s15(t):
@@ -310,7 +310,7 @@ def s03(t):
         for k in range(4):                       # штрихи тычка у пальца
             a = math.radians(-50 + k * 24)
             r0, r1 = 40 + 90 * q, 80 + 120 * q
-            x0, y0 = DIMA_X + 210, FEET - 590
+            x0, y0 = DIMA_X + 250, FEET - 520
             if q < .3:
                 ex += line([(x0 + r0 * math.cos(a), y0 + r0 * math.sin(a)), (x0 + r1 * math.cos(a), y0 + r1 * math.sin(a))], 7 * (1 - q / .3) + 1.5, INK, taper=.8, wmin=.1, seed=960 + k)
     figs = [(FEET, dm), (FEET + 1, sis)]
@@ -351,7 +351,7 @@ def s04(t):
 
 def s14(t):
     e = t - T_PRAZD
-    x = 560 + 30 * math.sin(t * 2.4)
+    x = 650 + 30 * math.sin(t * 2.4)
     jump = abs(math.sin((t - 26.7) * 2 * math.pi * 1.3)) * 70
     up = clamp((t - 26.7) / .2)
     bal = balloon_hold(t, "#e8505b", 2.0)
@@ -379,14 +379,14 @@ def s14(t):
 def s15(t):
     e = t - T_KOT
     # кот въезжает прыжками справа на «кот» (29.24) и садится к крошкам
-    if t < T_KOT:
+    if t < T_KOT - .2:
         x, y, vis = 700, CAT_Y, False
     else:
-        u = clamp((t - T_KOT) / .5)
+        u = clamp((t - T_KOT + .2) / .62)
         x = 560 + (CAT_X - 560) * ease_out(u, 2)
         y = CAT_Y - 90 * abs(math.sin(u * math.pi * 2)) * (1 - u * .4) if u < 1 else CAT_Y
         vis = True
-    eat = smooth(T_KOT + .55, T_KOT + .7, t)
+    eat = smooth(T_KOT + .5, T_KOT + .65, t)
     chew = eat * (math.sin((t - T_KOT) * 2 * math.pi * 4.6) * .5 + .5)
     gulp = ease_out(clamp((t - T_KROSHKAM - .2) / .12)) * (1 - smooth(T_KROSHKAM + .3, T_KROSHKAM + .6, t))
     blink = 1.0 if (eat > .5) else 0.0
@@ -396,18 +396,18 @@ def s15(t):
         mouth = (shape(ellipse_pts(836, 1129, 11, 3 + 11 * mo, 10), "#4a1c1c", blob(ellipse_pts(836, 1132, 7, 3 + 4 * mo, 8), "#d46a6a"), w=2.4, seed=990))
     squash = -.04 * chew + .03 * gulp
     tilt = (8 * math.sin((t - T_KOT) * 2 * math.pi * 2.3)) * eat + (-8 if t < T_KOT + .5 and vis else 0)
-    ct = cat_fig(t, x, y, CAT_S, look=(.3, .5), blink=blink if eat > .5 else None, tilt=tilt, tail=34 * math.sin(t * 8.5) if vis else 0, extra=mouth, squash=squash) if vis else ""
+    ct = cat_fig(t, x, y, CAT_S, look=(.3, .5), blink=blink if eat > .5 else None, tilt=tilt, tail=14 * math.sin(t * 8.5) if vis else 0, extra=mouth, squash=squash) if vis else ""
     over = ""
     # крошки на полу и падающие со стола
     rs = np.random.RandomState(9)
     for k in range(9):
         cx_ = 190 + rs.uniform(0, 130)
         over += blob(ellipse_pts(cx_, 1298 + rs.uniform(-4, 6), 6 + k % 3, 3, 6), ["#f6d9a0", "#c98a54", "#f7a9bc"][k % 3])
-    for k in range(5):                           # сыплются со стола
-        ph = (t * .9 + k * .21) % 1
-        cx_ = 120 + k * 70 + 10 * math.sin(t * 4 + k)
+    for k in range(8):                           # сыплются со стола
+        ph = (t * 1.1 + k * .13) % 1
+        cx_ = 110 + k * 45 + 10 * math.sin(t * 4 + k)
         if t < T_KROSHKAM or k != 2:
-            over += blob(ellipse_pts(cx_, 1090 + ph * 200, 5, 4, 6), ["#f6d9a0", "#c98a54", "#f7a9bc"][k % 3])
+            over += blob(ellipse_pts(cx_, 1090 + ph * 210, 7, 5, 6), ["#f6d9a0", "#c98a54", "#f7a9bc"][k % 3])
     # крупная крошка падает прямо в рот на «крошкам» (30.28)
     if T_KROSHKAM - .26 <= t < T_KROSHKAM + .16:
         u = (t - (T_KROSHKAM - .26)) / .42
