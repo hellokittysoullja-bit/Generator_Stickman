@@ -205,9 +205,17 @@ def body(walk=None, legs=0.0, paw=0.0, paw_dx=40.0):
             lift = max(0.0, math.sin(2 * math.pi * walk + (0 if sx < 0 else math.pi))) * 30
         lift += 26 * legs * (1 if sx < 0 else .8)      # в прыжке передние подобраны
         dx = 0.0
-        if sx > 0 and paw > 0:      # рилс 64: правая (от зрителя) передняя лапа тянется вперёд-вверх (тянет ящик, трогает)
-            lift += 78 * paw
-            dx = paw_dx * paw
+        if sx > 0 and paw > .02:    # рилс 64: правая (от зрителя) передняя лапа тянется вперёд-вверх (тянет ящик, трогает)
+            from ink import band as _band
+            tip = (fx + paw_dx * paw * 1.6, 1306 - 110 * paw)
+            arm = _band([(fx, 1236), (fx + paw_dx * paw * .8, 1270 - 70 * paw), tip], 40, 34, step=4, cap=False)
+            s.append(shape(arm, CAT, blob([(fx + 6, 1230), (fx + 30, 1230), (tip[0] + 20, tip[1]), (tip[0], tip[1])], CAT_SH, .6), w=4.6, seed=sd))
+            pp = ellipse_pts(tip[0] + 4, tip[1], 24, 21, 12, rot=-30 * paw)
+            s.append(shape(pp, CAT, "", w=4.4, seed=sd + 50))
+            s.append(blob(ellipse_pts(tip[0] + 10, tip[1] + 4, 9, 7, 8), "#e8823a"))
+            for kk in (-8, 6):
+                s.append(line([(tip[0] + kk - 6, tip[1] - 14), (tip[0] + kk + 2, tip[1] - 4)], 2.2, seed=sd + kk))
+            continue
         b = 1306 - lift
         pw = [(fx - 20 + dx, b, 1), (fx - 19, 1252), (fx + 19, 1252), (fx + 20 + dx, b, 1)]
         s.append(shape(pw, CAT, blob([(fx + sx * 6, 1250), (fx + 20 * sx, 1250), (fx + 20 * sx + dx, b), (fx + sx * 8 + dx, b)], CAT_SH, .7),
@@ -252,7 +260,7 @@ def curl(x, y, k, st, t):
     o = []
     # тело: овал, верх «дышит»
     bd = [(bx - 160, by - 6), (bx - 168, by - ry * .7), (bx - 120, by - ry * 1.18), (bx - 20, by - ry * 1.36), (bx + 90, by - ry * 1.28),
-          (bx + 160, by - ry * .96), (bx + 182, by - ry * .4), (bx + 164, by - 4)]
+          (bx + 190, by - ry * .96), (bx + 214, by - ry * .4), (bx + 196, by - 4)]
     inner = blob([(bx + 40, by - 140), (bx + 200, by - 100), (bx + 200, by + 10), (bx + 20, by + 10), (bx + 90, by - 60)], CAT_SH, .85)
     inner += blob([(bx - 90, by - ry * 1.1), (bx + 10, by - ry * 1.3), (bx + 60, by - ry * 1.16), (bx - 40, by - ry * .96)], CAT_FUR, .55)
     inner += line([(bx + 40, by - 10), (bx + 70, by - ry * .9), (bx + 136, by - ry * .9), (bx + 160, by - 20)], 3.0, CAT_SH, seed=301, op=.9)   # бедро
@@ -265,11 +273,11 @@ def curl(x, y, k, st, t):
     eye_open = st.get("eye", 0.0)
     hst = dict(turn=st.get("turn", -.15), look=st.get("look", (-.2, .3)), ear=st.get("ear", 0.0), perk=0.0,
                blink_L=1.0, blink_R=1.0 - .8 * eye_open, smile=1.0 if sq > .3 else 0.0)
-    hx, hy = bx - 128, by - 96 - 3 * br * ph
-    o.append(f'<g transform="translate({hx:.2f} {hy:.2f}) rotate({-6 + 4 * sq:.2f}) scale(.92) translate({-836} {-1072})">{head(hst, t)}</g>')
+    hx, hy = bx - 140, by - 88 - 3 * br * ph
+    o.append(f'<g transform="translate({hx:.2f} {hy:.2f}) rotate({-6 + 4 * sq:.2f}) scale(.84) translate({-836} {-1072})">{head(hst, t)}</g>')
     if sq > .05:      # жмурится: щёки приподняты дугами под закрытыми глазами
         for ex in (-44, 44):
-            o.append(line([(hx + ex * .92 - 26, hy + 30), (hx + ex * .92, hy + 22 - 6 * sq), (hx + ex * .92 + 26, hy + 30)], 2.6, CAT_EDGE, seed=310 + ex, op=.8 * sq))
+            o.append(line([(hx + ex * .84 - 26, hy + 30), (hx + ex * .84, hy + 22 - 6 * sq), (hx + ex * .84 + 26, hy + 30)], 2.6, CAT_EDGE, seed=310 + ex, op=.8 * sq))
     # передние лапы под подбородком
     for i, px in enumerate((bx - 190, bx - 116)):
         pp = ellipse_pts(px, by - 18, 36, 20, 12)
@@ -278,7 +286,7 @@ def curl(x, y, k, st, t):
             o.append(line([(px + kk, by - 30), (px + kk + 2, by - 18)], 2.0, seed=324 + i * 3 + kk))
     # хвост обвивает спереди справа налево, кончик с огоньком
     sw = st.get("tail", 0.0)
-    tp = [(bx + 170, by - 30), (bx + 150, by - 2), (bx + 80, by + 10), (bx - 10, by + 12), (bx - 70 + sw, by + 4 - abs(sw) * .2)]
+    tp = [(bx + 176, by - 40), (bx + 166, by - 4), (bx + 120, by + 10), (bx + 60, by + 12), (bx + 10 + sw, by + 6 - abs(sw) * .2)]
     tl = band(tp, 40, 18, step=4)
     o.append(shape(tl, CAT, blob([(bx - 80, by + 8), (bx + 180, by + 8), (bx + 180, by + 30), (bx - 80, by + 30)], CAT_SH, .7), w=4.6, seed=330))
     tip = tp[-1]

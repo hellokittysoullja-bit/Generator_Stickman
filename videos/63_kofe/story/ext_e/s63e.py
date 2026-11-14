@@ -410,8 +410,8 @@ def dima14(t):
     probe = people.figure("dima", x0, y0, s, e, flip=True, layers=("body",), head_ang=.12)
     hx, hy = probe["head"]
     cheek = (hx - 175 * sc, hy + 70 * sc)
-    arms = {"n": ("ik", cheek, -1), "f": ("ang", .3, .4)}
-    hands = {"n": {"dir": (-.15, -1), "curl": (.15, .2, .25, .3), "thumb": .2, "spread": .15}, "f": {"kind": "none"}}
+    arms = {"n": ("ik", (2 * x0 - cheek[0], cheek[1]), -1), "f": ("ang", .3, .4)}   # цели — в неотражённой системе
+    hands = {"n": {"dir": (-.15, -1), "curl": (.15, .2, .25, .3), "thumb": .75, "spread": .15}, "f": {"kind": "none"}}
     kw = dict(flip=True, head_ang=.12 + .03 * breath, arms=arms, hands=hands, torso_k=1 + .03 * br)
     fg = people.figure("dima", x0, y0, s, e, layers=("pelvis", "body"), **kw)
     arm = people.figure("dima", x0, y0, s, e, layers=("arm_n",), **kw)["svg"]
@@ -431,8 +431,8 @@ def quilt14(t, hip, br):
     mt = y - 118 * k
     hx = hip[0]
     up = 14 * br
-    pts = [(400, mt + 40, 1), (402, mt - 190 - up * .6), (450, mt - 262 - up), (560, mt - 272 - up), (hx - 10, mt - 250 - up * .8),
-           (hx + 90, mt - 280 - up * .5), (hx + 200, mt - 230), (hx + 300, mt - 245), (hx + 360, mt - 160), (x + 285 * k, mt - 60),
+    pts = [(400, mt + 40, 1), (402, mt - 150 - up * .6), (450, mt - 212 - up), (560, mt - 218 - up), (hx - 10, mt - 200 - up * .8),
+           (hx + 90, mt - 230 - up * .5), (hx + 200, mt - 185), (hx + 300, mt - 200), (hx + 360, mt - 130), (x + 285 * k, mt - 60),
            (x + 296 * k, mt + 74 * k, 1), (400, mt + 74 * k, 1)]
     col, sh = "#c8553d", "#9a3b2b"
     inner = blob([(380, mt + 30), (x + 300 * k, mt + 30), (x + 300 * k, mt + 80 * k), (380, mt + 80 * k)], sh)
@@ -451,7 +451,7 @@ def frame14(t):
     # перевёрнутая пустая кружка на тумбочке
     sx, sy = R.B_SIDE_STAND
     top = sy - 260
-    mug = PR.coffee_mug(sx + 70, top, .95, fill=0.0, upside=True, seed=41)
+    mug = PR.coffee_mug(sx - 92, top, .85, fill=0.0, upside=True, seed=41, col="blue")
     # Z из-за головы на «спит»
     hx, hy = S14_HEAD
     z = PR.zzz(hx + 60, hy - 170, 1.15, t - T_SPIT, u=clamp((t - T_SPIT) / .25)) if t > T_SPIT else ""
@@ -460,7 +460,7 @@ def frame14(t):
     mu = sm(t, T_NOCH - .1, T_NOCH + .3)
     moon = ""
     if mu > 0:
-        mpx, mpy = wx0 + (wx1 - wx0) * .62, wy0 + (wy1 - wy0) * .3
+        mpx, mpy = wx0 + (wx1 - wx0) * .3, wy0 + (wy1 - wy0) * .72   # ниже луны окна: в кадре видна нижняя часть окна
         sx_, sy_ = PR.pop(t, T_NOCH - .1, amp=.2)
         moon = f'<g transform="translate({mpx} {mpy}) scale({sx_:.3f} {sy_:.3f}) translate({-mpx} {-mpy})">{PR.moon(mpx, mpy, 46, halo=mu)}</g>'
         for j, (ox, oy, d) in enumerate(((-110, -60, 0), (70, 90, .15), (-60, 120, .3))):
@@ -469,9 +469,9 @@ def frame14(t):
     # камера: от лица медленный откат и мягкий дрейф; влёт хлёстом
     wi = whip_in(t, 28.3, .3)
     pb = sm(t, 28.1, 30.35)
-    cx = lerp(360, 560, pb) - 300 * wi
-    cy = lerp(1150, 1010, pb)
-    sc_cam = lerp(1.95, 1.3, pb) + .1 * wi
+    cx = lerp(380, 470, pb) - 300 * wi
+    cy = lerp(1170, 1050, pb)
+    sc_cam = lerp(2.05, 1.45, pb) + .1 * wi
     rr = -4 * wi + .5 * math.sin(t * .9)
     set_ink(sc_cam)
     return lib.svg(cam_wrap(world, cx, cy, sc_cam, rr))

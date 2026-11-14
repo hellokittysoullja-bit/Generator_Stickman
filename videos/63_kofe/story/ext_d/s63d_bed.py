@@ -50,11 +50,11 @@ def legs_under(hx, hy, ang, crumple, t):
     for j, s_ in enumerate((-1, 1)):
         x0 = hx + s_ * 70 + 2 * ang
         x1 = hx + s_ * 85 + 5 * ang
-        o.append(lib.line([(x0 + s_ * 70, hy + 60), (x0 + s_ * 80, hy + 400), (x1 + s_ * 60, bot - 40)], 4.5, sh, taper=.4, wmin=.3, seed=9900 + j))
-        o.append(lib.line([(x0 + s_ * 20, hy + 120), (x0 + s_ * 25, hy + 420)], 5, hi, taper=.6, wmin=.2, seed=9910 + j))
+        o.append(lib.line([(x0 + s_ * 70, hy - 60), (x0 + s_ * 80, hy + 120), (x1 + s_ * 60, bot - 50)], 4.5, sh, taper=.4, wmin=.3, seed=9900 + j))
+        o.append(lib.line([(x0 + s_ * 20, hy), (x0 + s_ * 25, bot - 160)], 5, hi, taper=.6, wmin=.2, seed=9910 + j))
         fx = x1 + s_ * 20
         o.append(lib.line([(fx - 55, bot), (fx - 30, bot - 50), (fx + 30, bot - 50), (fx + 55, bot)], 4.5, sh, taper=.3, wmin=.3, seed=9920 + j))
-    o.append(lib.line([(hx - 10 + 3 * ang, hy + 140), (hx + 4 * ang, bot - 60)], 4, sh, taper=.5, wmin=.2, seed=9930))
+    o.append(lib.line([(hx - 10 + 3 * ang, hy + 60), (hx + 4 * ang, bot - 70)], 4, sh, taper=.5, wmin=.2, seed=9930))
     return "".join(o)
 
 

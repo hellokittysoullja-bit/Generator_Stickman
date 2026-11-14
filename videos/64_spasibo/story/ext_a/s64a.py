@@ -48,14 +48,16 @@ def bezier(p0, p1, p2, u):
 
 
 # ═══════════════════════════════ s05: открытка, туча → солнце ═══════════════════════════════
-S05_HOUSE = (540, 1170)
-S05_CLOUD = (540, 760)          # центр дна тучки
-S05_SUN = (540, 610)            # где солнце стоит (верх дуги)
+S05_HOUSE = (540, 1180)
+S05_CLOUD = (540, 650)          # центр дна тучки
+S05_SUN = (540, 470)            # где солнце стоит (верх дуги)
+ARC_R = 430.0
+ARC_C = (540, 470 + .8 * ARC_R)
 T_LAUNCH, T_TOUCH, T_WARM, T_LONG = 10.40, 11.02, 11.55, 12.14
 T_LONG_END = 13.02
 CARD0 = (230, 1440)
-CARD_CTRL = (120, 700)
-CARD_HIT = (470, 700)
+CARD_CTRL = (100, 560)
+CARD_HIT = (470, 590)
 
 
 def s05(t):
@@ -76,15 +78,15 @@ def s05(t):
     for j, gxx in enumerate((150, 320, 760, 940)):   # травинки
         o.append(line([(gxx, gy + 2), (gxx + 6, gy - 22)], 4, mix("#8E9196", "#4F8A5E", warm), taper=.6, wmin=.3, seed=5110 + j))
     # деревья и домик
-    o.append(P.tree(830, gy, 1.55, warm, t, seed=1))
-    o.append(P.tree(230, gy, 1.2, warm, t + .7, seed=2))
-    o.append(P.house(S05_HOUSE[0], gy, 1.75, warm, seed=3))
+    o.append(P.tree(860, gy, 1.9, warm, t, seed=1))
+    o.append(P.tree(200, gy, 1.5, warm, t + .7, seed=2))
+    o.append(P.house(S05_HOUSE[0], gy, 2.1, warm, seed=3))
     # тучка до касания, потом лопается
     if t < T_TOUCH:
         jig = 3 * math.sin(t * 13) * clamp((t - 10.75) / .25)
-        o.append(P.gloom(S05_CLOUD[0] + jig, S05_CLOUD[1], 2.0, t, 1.0, seed=4))
+        o.append(P.gloom(S05_CLOUD[0] + jig, S05_CLOUD[1], 2.5, t, 1.0, seed=4))
     else:
-        o.append(P.gloom_burst(S05_CLOUD[0], S05_CLOUD[1] + 30, 2.0, (t - T_TOUCH) / .5, seed=4))
+        o.append(P.gloom_burst(S05_CLOUD[0], S05_CLOUD[1] + 40, 2.5, (t - T_TOUCH) / .5, seed=4))
     # солнце: выкатывается из тучи (выскок), поднимается, лучи пером
     if t >= T_TOUCH:
         u = t - T_TOUCH
@@ -95,15 +97,15 @@ def s05(t):
         rays = clamp((u - .12) / .4)
         if T_LONG <= t < T_LONG_END:
             ph = .5 + 4.0 * ease_io((t - T_LONG) / (T_LONG_END - T_LONG))
-            svg_arc, _ = P.day_arc(540, 1080, 440, ph, seed=5)
+            svg_arc, _ = P.day_arc(ARC_C[0], ARC_C[1], ARC_R, ph, seed=5)
             if (ph % 2.0) < 1.0:   # солнце на дуге — с лучами, чуть крупнее
                 q = ph % 1.0
                 a = math.pi * (1 - q)
-                o.append(P.sun(540 + 440 * math.cos(a), 1080 - 352 * math.sin(a), 70, 1.0, t, seed=5))
+                o.append(P.sun(ARC_C[0] + ARC_R * math.cos(a), ARC_C[1] - .8 * ARC_R * math.sin(a), 92, 1.0, t, seed=5))
             else:
                 o.append(svg_arc)
         else:
-            o.append(P.sun(x, y, 80 * k, rays, t, seed=5))
+            o.append(P.sun(x, y, 92 * k, rays, t, seed=5))
         if T_LONG - .05 < t < T_LONG + .2 or t > T_LONG_END:
             o.append(P.sparkles(S05_SUN[0], S05_SUN[1], 1.3, clamp((t - T_LONG_END) / .2) if t > T_LONG_END else .7, t, seed=6, n=5, r=150))
     # открытка
@@ -113,13 +115,13 @@ def s05(t):
         u = ease_in((t - T_LAUNCH) / (T_TOUCH - T_LAUNCH), 1.6)
         cx, cy = bezier(CARD0, CARD_CTRL, CARD_HIT, u)
         rot = -8 + 380 * u
-        ck = lerp(1.25, .85, u)
+        ck = lerp(1.25, 1.0, u)
     else:   # отскок от тучки и мягкое падение к двери домика
         u = clamp((t - T_TOUCH) / .7)
-        land = (700, S05_HOUSE[1] - 70)
+        land = (735, S05_HOUSE[1] - 92)
         cx, cy = bezier(CARD_HIT, (620, 520), land, ease_in(u, 1.5))
         rot = lerp(12, -14, u)
-        ck = .85
+        ck = 1.0
         if u >= 1:
             sxq, syq = P.squash(t, T_TOUCH + .7, .2)
             rot = -14
@@ -138,10 +140,10 @@ def s05(t):
         rot = lerp(0, -3, u)
     else:
         u = ease_out((t - T_LAUNCH) / .6, 3)
-        ccx, ccy, s = lerp(CARD0[0], 540, u), lerp(CARD0[1], 930, u), lerp(1.75, 1.0, u)
+        ccx, ccy, s = lerp(CARD0[0], 540, u), lerp(CARD0[1], 880, u), lerp(1.75, 1.14, u)
         rot = lerp(-3, 0, u)
         if t > 11.0:
-            s *= 1 - .07 * ease_io((t - 11.0) / 2.4)
+            s *= 1 - .06 * ease_io((t - 11.0) / 2.4)
             ccy -= 20 * ease_io((t - 11.0) / 2.4)
     dx, dy = P.shake(t, T_TOUCH, 14, .35, 1)
     bg = mix(P.C_PAGE, "#2C3463", night)
@@ -149,7 +151,7 @@ def s05(t):
 
 
 # ═══════════════════════════════ s12: календарь ═══════════════════════════════
-CAL = (540, 900, 820, 900)
+CAL = (540, 900, 840, 820)
 T_E, T_C, T_M, T_FLIP = 29.20, 29.50, 29.84, 30.48
 
 
@@ -173,14 +175,13 @@ def s12(t):
     o = [paper_bg()]
     # под листом календаря — следующий день: тёплый стол Димы (дерево и полоса солнца), открывается при перевороте
     if fl > 0:
-        o.append(blob(rect_pts(x - w / 2, y - h / 2, x + w / 2, y + h / 2), P.C_WOOD))
+        o.append(lib.shape(rect_pts(x - w / 2, y - h / 2, x + w / 2, y + h / 2), P.C_WOOD, "", w=4.2, seed=1210))
         for j in range(5):
             yy = y - h / 2 + 90 + 170 * j
             o.append(line([(x - w / 2, yy), (x, yy + 14), (x + w / 2, yy - 6)], 4, P.C_WOOD_SH, taper=.2, wmin=.4, seed=1200 + j))
         o.append(blob([(x - w / 2, y + 120), (x + 60, y - h / 2), (x + 300, y - h / 2), (x - w / 2 + 40, y + h / 2), (x - w / 2, y + h / 2)], "#E8B77C"))
         o.append(P.letter(x + 60, y + 120, 1.2, -6, write=1.0, seed=3))
-        o.append(line([(x - w / 2, y - h / 2), (x + w / 2, y - h / 2), (x + w / 2, y + h / 2), (x - w / 2, y + h / 2), (x - w / 2, y - h / 2)], 4.2, INK,
-                      taper=0, wmin=1, seed=1210))
+
     # гвоздик
     o.append(P.calendar(x + trem, y, w, h, st, gl, fl, t, seed=1))
     # солнышко на только что проставленной клетке — короткие искорки
@@ -191,12 +192,12 @@ def s12(t):
     if gl > 0 and fl < .3:
         o.append(P.sparkles(x, y + 60, 2.2, gl, t, seed=12, n=7, r=300))
     # камера: наезд на сетку, ход за бегущими солнышками; на «Поэтому» хлёсткий поворот за листом вверх
-    u = ease_out(clamp((t - 29.0) / 1.4), 2)
-    s = lerp(1.08, 1.32, u)
+    u = ease_out(clamp((t - 29.0) / 1.6), 2)
+    s = lerp(1.0, 1.12, u)
     i = int(clamp(st, 0, 34))
     ccx, ccy = P.calendar_cell(x, y, w, h, i)
-    fx = lerp(x, ccx, .35 * (1 - gl))
-    fy = lerp(y + 40, ccy, .35 * (1 - gl))
+    fx = lerp(x, ccx, .12 * (1 - gl))
+    fy = lerp(y + 90, ccy + 90, .12 * (1 - gl))
     rot = 0.0
     if t > T_FLIP:
         e = ease_in(clamp((t - T_FLIP) / .5), 2.2)
