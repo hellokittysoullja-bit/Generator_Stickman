@@ -244,8 +244,8 @@ def head_mask(face, k, ang, squash, head_up, expr):
 T_POM = wt("помогает", 35.0)     # 36.37
 T_VST = wt("встать", 36.0)       # 37.10
 T_SDE = wt("сделать", 36.0)      # 37.71
-CAT22 = (190.0, 1360.0)
-CAT22_K = 2.0
+CAT22 = (1000.0, 1180.0)
+CAT22_K = 1.7
 D22_SC = 1.12
 
 
@@ -253,7 +253,7 @@ def s22(t):
     lib.dyn_begin()
     bc = R.bed_close(t)
     fx, fy = R.BC_FACE
-    burst = sm(t, T_VST - .06, T_VST + .04)
+    burst = 1.0 if t >= T_VST - .03 else 0.0          # кокон распахивается за кадр: без полупрозрачного наложения
     # кокон: лежит, как в хуке, улыбается, ёрзает от тычков (тычок — на «помогает» и ещё раз)
     poke = bump(t, T_POM, .22) + bump(t, T_POM + .32, .2)
     k, ang = 2.2, 58.0 + 3 * math.sin(t * 5.3) + 6 * poke
@@ -262,22 +262,23 @@ def s22(t):
     e = ex("smile_cam", look=(-.5 + .5 * sm(t, T_POM + .1, T_POM + .4), .2), lid=.75 + .25 * poke)
     e["hair"] = 5 * math.sin(t * 9) + 6 * poke
     world = [bc["bg"], bc["mattress"], bc["pillow"](.12 + .3 * bump(t, T_VST - .1, .3) * (1 - burst), 0.0)]
-    if burst < 1:
-        # нога в полосатом носке торчит из-под края одеяла (верхний бок кокона ближе к камере), пальцы шевелятся
-        a1 = cocoon_pt(face, k, ang, squash, (120, -290))
-        dv = (math.cos(math.radians(ang - 70)), math.sin(math.radians(ang - 70)))
-        wig = 8 * math.sin(t * 10)
-        sock = PR.sock_worn(a1[0], a1[1], k * .5, (dv[0], dv[1] + wig * .01), 1.0, seed=3)
-        co = cocoon_lying(face, k, ang, 300 * t, squash, .5 + .6 * poke, e, t, 2 * math.sin(t * 3))
-        world += [f'<g opacity="{1 - burst:.3f}">{co}{sock}</g>']
-    # кот слева на матрасе: тянет лапу и тычет в бок кокона, потом довольно садится
+    # кот справа на матрасе (за коконом, зеркально): тянет лапу и тычет в бок кокона, потом довольно садится
     pw = sm(t, T_POM - .25, T_POM - .02) * (1 - sm(t, T_VST - .1, T_VST + .15)) + .25 * bump(t, T_POM + .3, .2)
     cst = dict(paw=clamp(pw), paw_dx=90, look=(.7, -.2), tilt=-8 * pw, tail=10 * math.sin(t * 3.4), perk=bump(t, T_VST, .5),
                smile=sm(t, T_SDE - .1, T_SDE + .2), blink=blinkv(t, [36.25, 37.95]))
     if t > T_VST + .1:
         cst["look"] = (.4, -.9 + .5 * sm(t, T_SDE, T_SDE + .3))
     cat_y = CAT22[1] - 30 * bump(t, T_VST + .05, .3)
-    world.append(people.cat_svg(CAT22[0], cat_y, CAT22_K, cst, t))
+    cat = people.cat_svg(CAT22[0], cat_y, CAT22_K, cst, t)
+    world.append(f'<g transform="translate({2 * CAT22[0]:.1f} 0) scale(-1 1)">{cat}</g>')      # зеркально: лапа влево, к кокону
+    if burst < 1:
+        # нога в полосатом носке торчит из-под края одеяла (верхний бок кокона ближе к камере), пальцы шевелятся
+        a1 = cocoon_pt(face, k, ang, squash, (-60, -300))
+        dv = (math.cos(math.radians(ang - 70)), math.sin(math.radians(ang - 70)))
+        wig = 8 * math.sin(t * 10)
+        sock = PR.sock_worn(a1[0], a1[1], k * .5, (dv[0], dv[1] + wig * .01), 1.0, seed=3)
+        co = cocoon_lying(face, k, ang, 300 * t, squash, .5 + .6 * poke, e, t, 2 * math.sin(t * 3))
+        world += [f'<g opacity="{1 - burst:.3f}">{co}{sock}</g>']
     # Дима выпрыгивает: таз из кокона вверх по дуге, приземляется на матрас на ноги, руки вверх
     cam_up = 0.0
     if burst > 0:
@@ -293,17 +294,18 @@ def s22(t):
             tuck = 4 * u * (1 - u)
             st = {"feet": {kk: ((v[0][0] + 60 * tuck, v[0][1] - 260 * tuck * D22_SC), v[1]) for kk, v in st["feet"].items()}}
         wv = 60 * math.sin(t * 8) * (1 - sm(t, T_SDE, T_SDE + .3))
-        arms = {"f": ("ik", (-300, -700 + wv), 1), "n": ("ik", (340, -720 - wv), -1)}
+        sc_ = D22_SC * people.HEIGHT["dima"]
+        arms = {"f": ("ik", (hx - 300 * sc_, hy + (-700 + wv) * sc_), 1), "n": ("ik", (hx + (300 - 140 * sm(t, T_SDE - .1, T_SDE + .2)) * sc_, hy + (-560 - wv * .5) * sc_ + 420 * sc_ * sm(t, T_SDE - .1, T_SDE + .2)), -1)}
         fig = people.dima(hx, hy, D22_SC, de, "hooray", feet=st["feet"], arms=arms, lean_add=-.04 * math.sin(t * 7))
-        # одеяло распахнулось, взлетает вверх из кадра и опадает на кровать к ногам (ложится поверх ступней)
-        bu = clamp((t - (T_VST - .06)) / .75)
-        up = math.sin(math.pi * min(1.0, bu * 1.25)) if bu < .8 else 0.0
-        by = lerp(fy + 420, 1780, sm(bu, .55, 1.0)) - 1300 * up
-        flat = sm(bu, .8, 1.0)
+        # одеяло распахнулось и закрутилось вокруг ног: взлетает вместе с ним и опадает на кровать к ступням
+        a_n, a_f = st["feet"]["n"][0], st["feet"]["f"][0]
+        mx, my = (a_n[0] + a_f[0]) / 2, (a_n[1] + a_f[1]) / 2 - 60
+        bu = clamp((t - (T_VST - .06)) / .7)
+        flat = sm(t, T_SDE - .05, T_SDE + .2)
         bl = people.cocoon_blanket(0, 0, 1.0, min(.32, bu), t)
-        blank = (f'<g transform="translate({lerp(fx + 120, 600, bu):.1f} {by:.1f}) rotate({-30 + 60 * bu - 30 * flat:.1f}) '
-                 f'scale({1.25 + .3 * flat:.3f} {1.25 - .65 * flat:.3f})">{bl}</g>')
-        world += ([blank, fig["svg"]] if bu < .55 else [fig["svg"], blank])
+        blank = (f'<g transform="translate({mx:.1f} {my + 60 * flat:.1f}) rotate({-14 + 18 * math.sin(t * 9) * (1 - flat):.1f}) '
+                 f'scale({1.05 + .25 * flat:.3f} {1.05 - .45 * flat:.3f})">{bl}</g>')
+        world += [fig["svg"], blank]
         cam_up = sm(t, T_VST, T_SDE + .1)
     world.append(bc["motes"](t))
     cx0, cy0, s0 = R.CAM_BED_CLOSE
