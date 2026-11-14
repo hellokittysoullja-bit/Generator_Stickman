@@ -207,8 +207,8 @@ def frame03(t):
     S = 1.04
     a = 2.5
     # ёрзает на «сел»: два подскока со сжатием, таз бегает вбок
-    hop = PR.hop(t, T_SEL - .02, h=34, dur=.22) + PR.hop(t, T_SEL + .24, h=18, dur=.18)
-    wig = 16 * math.sin(2 * math.pi * 3.2 * (t - T_SEL)) * math.exp(-3 * max(0.0, t - T_SEL)) if t > T_SEL - .05 else 0.0
+    hop = PR.hop(t, T_SEL - .02, h=58, dur=.24) + PR.hop(t, T_SEL + .26, h=30, dur=.2)
+    wig = 26 * math.sin(2 * math.pi * 3.2 * (t - T_SEL)) * math.exp(-3 * max(0.0, t - T_SEL)) if t > T_SEL - .05 else 0.0
     csx, csy = PR.squash(t, T_SEL + .2, amp=.14, freq=3.2, damp=8)
     breath = math.sin(2 * math.pi * (t - T_GLAZA) / 1.6) if t > T_GLAZA else 0.0
     settle = sm(t, T_GLAZA, T_GLAZA + .45)
@@ -242,8 +242,8 @@ def frame03(t):
     push = sm(t, a + .3, 4.6)
     hx, hy = fg["head"]
     cx = lerp(560, hx + 10, push * .7) + 380 * (1 - wi)
-    cy = lerp(990, hy + 330, push * .75)
-    s = lerp(1.2, 1.42, push) - .1 * (1 - wi)
+    cy = lerp(990, hy + 300, push * .85)
+    s = lerp(1.2, 1.62, push) - .1 * (1 - wi)
     rot = 4 * (1 - wi) + .4 * math.sin(t * 1.3)
     set_ink(s)
     return lib.svg(cam_wrap(world, cx, cy, s, rot))
@@ -287,15 +287,15 @@ def frame08(t):
     kw["head_ang"] = .05 * math.sin(t * 2.4) * (1 - duck) + .04 * duck
     kw["lean"] = .05 * duck
     shiver = 3.0 * math.sin(t * 40) * duck
-    fg = people.figure("dima", X + shiver, Y, S, e, head_off=(0, 70 * duck), torso_k=1.0 - .05 * duck, **kw)
+    fg = people.figure("dima", X + shiver, Y, S, e, head_off=(0, 105 * duck), torso_k=1.0 - .05 * duck, **kw)
     hx, hy = fg["head"]
     top = hy - 220 * S
     # башня: снизу обед, над ним друг, наверху утюг; каждый ярус качается сильнее, облака сплющены теснотой
     sway = math.sin(2 * math.pi * .9 * (t - a))
-    lean_deg = 5.5 * sway + 20 * tilt_u + damp(t, T_MEDIT2 + .45, 4, 1.6, 2.5)
+    lean_deg = 5.5 * sway + 19 * tilt_u + damp(t, T_MEDIT2 + .45, 4, 1.6, 2.5)
     clouds = []
-    base = (hx + 10, top - 20)
-    levels = [("lunch", 360, 220, 121), ("friend", 330, 250, 122), ("iron", 400, 230, 123)]
+    base = (hx + 10 - 70 * tilt_u, top - 10)
+    levels = [("lunch", 500, 290, 121), ("friend", 470, 320, 122), ("iron", 540, 300, 123)]
     yc = 0.0
     for i, (kind, w, h, sd) in enumerate(levels):
         jostle = math.sin(2 * math.pi * 1.7 * t + i * 1.9)
@@ -306,12 +306,12 @@ def frame08(t):
         ang = math.radians(lean_deg * (.35 + .4 * i))
         cxw = base[0] + math.sin(ang) * (-yc) * -1 + 10 * jostle * (i + 1) * .5
         cyw = base[1] - yc * math.cos(ang) + (8 * i if t > T_MEDIT2 else 0)
-        k = .95
+        k = 1.5
         inner = {"lunch": _lunch, "friend": _friend, "iron": _iron}[kind](k, t)
         dots = (hx + 30 - cxw, top + 60 - cyw) if i == 0 else None
         c = PR.cloud(cxw, cyw, w, h, sqx, sqy, seed=sd, dots=dots, inner=inner)
         clouds.append(rotate_about(c, cxw, cyw - h * sqy * .5, lean_deg * (.3 + .35 * i)))
-        yc += h * sqy * .98
+        yc += h * sqy * .9
     bgr = R.room_bg(t, "evening")
     sweat = ""
     if t > T_MEDIT2 + .1:
@@ -320,9 +320,9 @@ def frame08(t):
     world = bgr["bg"] + R.cushion_layer() + fg["svg"] + sweat + "".join(clouds) + bgr["front"]
     # медленный откат, кадр качается в такт башне
     pb = sm(t, a, 12.95)
-    s = lerp(1.06, .98, pb)
-    cx = 560 + 6 * sway
-    cy = lerp(800, 790, pb)
+    s = lerp(1.04, .97, pb)
+    cx = 560 + 6 * sway + 40 * tilt_u
+    cy = lerp(690, 665, pb)
     rot = 1.4 * sway + 2.2 * tilt_u
     sh = PR.shake(t, T_MEDIT2, 10, .35, seed=8)
     set_ink(s)
