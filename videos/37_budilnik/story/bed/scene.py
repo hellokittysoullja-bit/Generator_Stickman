@@ -470,7 +470,7 @@ def s07(t):
 # ═════════════════════════ s08: общий план, швыряет будильник в угол на «угол» ═════════════════════════
 T8_REL = 10.04
 P8_HIT = np.array([B.CORNER_X - 52.0, 1110.0])
-P8_FLOOR = np.array([B.CORNER_X - 90.0, B.FLOOR_Y + 30 - AL.FOOT_Y / 200 * ALS])
+P8_FLOOR = np.array([B.CORNER_X - 90.0, B.FLOOR_Y + 30 - AL.FOOT_Y / 200 * ALS * 1.25])
 
 
 def s08(t):
@@ -523,15 +523,15 @@ def s08(t):
                 b = v - .38
                 al_c = P8_FLOOR + np.array([0, -18 * abs(math.sin(b * 14)) * math.exp(-b * 9)])
         ring = .8
-    al = alarm(al_c[0], al_c[1], ring=ring, t=t, rot=al_rot, squash=sq, uid="a8")
-    fx = AL.ring_marks(al_c[0], al_c[1], ALS, t, ring * .9, seed=29) if t < T8_REL or t > T_UGOL + .4 else ""
+    al = alarm(al_c[0], al_c[1], size=ALS * 1.25, ring=ring, t=t, rot=al_rot, squash=sq, uid="a8")
+    fx = AL.ring_marks(al_c[0], al_c[1], ALS * 1.25, t, ring * .9, seed=29) if t < T8_REL or t > T_UGOL + .4 else ""
     hit = ""
     if T_UGOL <= t < T_UGOL + .3:
         hit = click_star(P8_HIT[0] + 30, P8_HIT[1], (t - T_UGOL) / .3, k=2.2, col="#ffe08a")
     w = bed_world(t, head=head, plaid=plaid_svg(), arm_back=arm, front=trail + al + fx + hit, pillow_kw=dict(dent=.5))
     s = .78 + .04 * clamp((t - 9.48) / 1.6) + punch(t, T_UGOL, .05, .05, .35)
     sh = shake_at(t, T_UGOL, 18, .38)
-    return compose(w, focus_cam(780, 900, s, 0.0, screen_y=800), sh)
+    return compose(w, focus_cam(780, 900, s, 0.0, screen_y=900), sh)
 
 
 # ═════════════════════════ s10: вслепую выключает будильник на «выключил» ═════════════════════════
