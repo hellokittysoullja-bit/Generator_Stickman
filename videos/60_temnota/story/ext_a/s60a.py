@@ -332,8 +332,92 @@ def frame18(t):
 
 
 # ───────────────────────── s04 ─────────────────────────
+def mama_shadow(x, y, k, sd):
+    """Силуэт мамы руки в боки — тень на ткани одеяла (одним цветом, края мягкие)."""
+    sk = k * people.HEIGHT["mama"]
+    hip = (x, y)
+    arms = {"n": ("ik", (x + 120 * sk, y - 80 * sk), 1), "f": ("ik", (x - 110 * sk, y - 90 * sk), -1)}
+    fig = people.figure("mama", x, y, k, dict(mouth="flat", lid=.8, brows="frown"), lean=.0, head_ang=.0, arms=arms,
+                        hands={"n": {"kind": "none"}, "f": {"kind": "none"}}, flip=True)
+    fid = lib.uid("sil")
+    lib.DEFS.append(f'<filter id="{fid}" x="-30%" y="-30%" width="160%" height="160%"><feFlood flood-color="#1E0B14"/>'
+                    f'<feComposite in2="SourceAlpha" operator="in"/><feGaussianBlur stdDeviation="{sd:.1f}"/></filter>')
+    return f'<g filter="url(#{fid})">{fig["svg"]}</g>'
+
+
+S4_HIP = (120.0, 1590.0)
+S4_SCALE = 1.5
+
+
 def frame04(t):
-    return frame01(t - 4.7)
+    T_FO, T_MA = T[14], T[16]            # 5.00 «фонариком», 5.82 «мамой»
+    on = smooth(T_FO, T_FO + .03, t)
+    click = bump(t, T_FO, .12)
+    fr = smooth(T_MA - .02, T_MA + .12, t)          # замер
+    live = 1 - fr
+    o = []
+    o.append(blob(rect_pts(-400, -400, 1500, 2400), "#2A1420"))
+    o.append(props.tent_inside(540, 1900, 1800, 2000, seed=2))
+    # тень мамы на ткани: растёт и становится резче
+    su = clamp((t - (T_MA - .1)) / .45)
+    shadow = ""
+    if su > 0:
+        k = lerp(.7, 1.05, ease_out(su, 2))
+        shadow = mama_shadow(lerp(800, 770, su), lerp(1330, 1300, su), k, lerp(18, 4, su))
+    # Дима лежит на животе под куполом, книга перед ним
+    sc = S4_SCALE * people.HEIGHT["kid"]
+    book_c = (850.0, 1478.0)
+    bk = 1.75
+    flip_u = clamp((t - 5.25) / .5) * live
+    book = props.book_open(book_c[0], book_c[1], bk, -4, flip=flip_u, seed=2, cover=props.C_RED_COVER)
+    blanket = shape([(-300, 1520, 1), (60, 1440), (420, 1470), (800, 1450), (1200, 1500, 1), (1300, 2300), (-300, 2300)], props.C_BLUE,
+                    blob([(-300, 1560), (1300, 1560), (1300, 2300), (-300, 2300)], props.C_BLUE_SH, .9)
+                    + "".join(line([(-200 + 260 * i, 1530), (-160 + 260 * i, 1900)], 6, props.C_BLUE_HI, taper=.3, wmin=.6, seed=8400 + i) for i in range(6)),
+                    w=5.0, seed=8410)
+    # дальняя кисть прижимает левую страницу
+    fwr = (book_c[0] - 150 * bk + 14 * live * math.sin(t * 2), book_c[1] - 70 + 4 * math.sin(t * 3))
+    # фонарик в ближней руке у подбородка, светит вниз-вправо на страницу
+    jolt = 6 * click * math.sin((t - T_FO) * 60)
+    fl_ang = 28 + 3 * math.sin(t * 5) * live + jolt * .5
+    F = (742.0 + 3 * math.sin(t * 4) * live, 1300.0 + jolt)
+    fk = 1.15
+    nb, nf, nwr = grip_on("kid", (F[0] - 20 * fk * math.cos(math.radians(fl_ang)), F[1] - 20 * fk * math.sin(math.radians(fl_ang))), 15 * fk,
+                          fl_ang, sc * 1.05, side=-1, seed=950)
+    look = (lerp(.55, .6, on), lerp(.2, .65, on))
+    look = (lerp(look[0], .75, fr), lerp(look[1], -.8, fr))
+    expr = dict(mouth="talk" if fr > .5 else ("grin" if on > .5 else "flat"), open=.34, smile=-.5, lid=lerp(.55 + .4 * on, 1.0, fr), brows="up" if (on > .5 or fr > .5) else "calm",
+                look=look, closed=1.0 if 4.86 < t < 4.93 else 0.0, hair=.9 * bump(t, T_MA, .25) + .3 * bump(t, T_FO, .2))
+    fig = people.figure("kid", S4_HIP[0], S4_HIP[1], S4_SCALE, expr, lean=.62 + .03 * math.sin(t * 3) * live, head_ang=-.28 - .16 * fr,
+                        arms={"f": ("ik", fwr, -1), "n": ("ik", nwr, -1)}, hands={"f": {"kind": "none"}, "n": {"kind": "none"}},
+                        layers=("arm_f", "body", "arm_n"))
+    fhand = people.hand_svg("kid", fwr, (1.0, -.25), k=sc * 1.05, far=True, curl=(.12, .1, .15, .2), spread=.14, thumb=.25, seed=960)
+    a = math.radians(fl_ang)
+    lens = (F[0] + 64 * fk * math.cos(a), F[1] + 64 * fk * math.sin(a))
+    o.append(shadow)
+    o.append(blanket)
+    o.append(book)
+    o.append(fig["svg"])
+    o.append(fhand)
+    o.append(nb + props.flashlight(F[0], F[1], fk, fl_ang, on) + nf)
+    hx, hy = fig["head"]
+    holes = [(props.cone_d(lens[0], lens[1], fl_ang, 300, 46, 18), .95 * on), (props.circle_d(hx + 60, hy + 60, 260, 240), .7 * on),
+             (props.circle_d(book_c[0], book_c[1] - 120, 330, 200), .8 * on), (props.circle_d(380, 1000, 520, 480), .45 * on)]
+    o.append(props.darkness(lerp(.78, .5, on), color="#12060E", holes=holes, blur_sd=26, box=(-400, -400, 1500, 2400)))
+    o.append(props.beam(lens[0], lens[1], fl_ang, 300, 46, .9 * on, k=1.2))
+    o.append(props.glow(book_c[0] + 30, book_c[1] - 120, 230, .5 * on))
+    o.append(props.glow(hx + 90, hy + 110, 150, .4 * on))                  # отсвет на носу
+    o.append(props.glow(lens[0], lens[1], 90, 1.0 * click))                # вспышка щелчка
+    # камера: наезд к лицу и свету, тряска на тени
+    u = clamp((t - 4.7) / 1.9)
+    s = lerp(1.1, 1.32, ease_io(u)) * (1 + .05 * bump(t, T_FO, .2) + .07 * bump(t, T_MA, .3))
+    cx = lerp(590, 620, ease_io(u))
+    cy = lerp(1230, 1170, ease_io(u))
+    sh = bump(t, T_MA + .05, .45)
+    cx += 14 * sh * math.sin(t * 57)
+    cy += 12 * sh * math.sin(t * 49 + 1)
+    rot = .6 * math.sin(t * 1.6) + 1.8 * sh * math.sin(t * 41)
+    set_ink(s)
+    return f'<g transform="{lib.cam(cx, cy, s, rot)}">{"".join(o)}</g>'
 
 
 def frame(sid, t):
