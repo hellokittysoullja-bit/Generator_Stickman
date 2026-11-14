@@ -127,9 +127,9 @@ def tip_s10(t):
         return np.array(tip), 0.0
     first = STROKES[0]
     if t <= first[0]:
-        a0 = np.array([1350.0, 1900.0])
+        a0 = np.array([1180.0, 1000.0])
         a1 = np.array(first[2][0])
-        u = ease_io(clamp((t - 19.25) / 1.1))
+        u = ease_out(clamp((t - 19.2) / 1.15), 2)
         p = a0 + (a1 - a0) * u
         p = p + np.array([10 * math.sin(t * 6), 8 * math.sin(t * 7.3)]) * smooth(19.9, 20.3, t) * (1 - smooth(20.4, 20.5, t))
         lift = 1.0 - smooth(20.3, 20.5, t)
