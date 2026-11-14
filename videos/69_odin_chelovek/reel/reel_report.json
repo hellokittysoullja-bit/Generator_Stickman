@@ -582,10 +582,10 @@
    "role": "whoosh",
    "peak": 25.207,
    "soft": true,
-   "gain_db": -5.0,
-   "vs_voice_db": -17.0,
-   "with_overlap_db": -17.0,
-   "target_db": -17.0
+   "gain_db": -6.0,
+   "vs_voice_db": -18.1,
+   "with_overlap_db": -18.1,
+   "target_db": -18.0
   },
   {
    "name": "swoosh",
