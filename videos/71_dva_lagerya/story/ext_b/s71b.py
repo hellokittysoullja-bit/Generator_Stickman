@@ -211,7 +211,7 @@ T10_DUM = wt("думает")           # 17.00
 T10_OB = wt("об")                # 17.31
 T10_PR = wt("просто", 17.6)      # 17.78
 T10_VST = wt("встаёт")           # 17.96
-STAND_X = 1010.0                 # у раковины (таз; смотрит влево, к раковине)
+STAND_X = 1130.0                 # у раковины (таз; смотрит влево, к раковине)
 SINK = (900.0, 940.0)
 
 
@@ -261,9 +261,7 @@ def s10(t):
             pose, upose = "temple", None
             arms = None
             hands = None
-            fl = people.person("friend", FX, FY, BS, ef, "temple", feet=FEET_F, head_add=shake_h, layers=("body",))
-            hx, hy = fl["head"]
-            arms = {"n": ("ik", (hx + 55 * SCF, hy + 18 * SCF - 10 * tap), 1)}
+            arms = {"n": ("ik", (FX + (0 + 60 * shake_h) * SCF, FY + (-560 + 14 * tap) * SCF), 1)}
             fp = friend_parts(ef, "temple", head_add=shake_h, arms=arms)
             items = ""
             mug_tbl = P.coffee_mug(R.KS_MUG_R[0], R.KS_MUG_R[1], KM, col="blue", fill=.7, steam=.5, t=t, seed=2)
@@ -288,12 +286,12 @@ def s10(t):
         scrub = math.sin(u * 22) * clamp((u - .1) / .1)
         # смотрит влево к раковине: рисуем вправо и зеркалим вокруг x
         loc_sink = (2 * x - SINK[0], SINK[1])
-        tgt_n = (loc_sink[0] - 10 + 18 * scrub, loc_sink[1] - 60 + 10 * scrub)
-        tgt_f = (loc_sink[0] - 40, loc_sink[1] - 50)
+        tgt_n = (loc_sink[0] + 30 + 18 * scrub, loc_sink[1] - 95 + 10 * scrub)
+        tgt_f = (loc_sink[0] - 10, loc_sink[1] - 70)
         kw = people.stand_kw(x, hipy + jump, BS, "friend", spread=40)
-        fr = people.person("friend", x, hipy + jump, BS, ef, "rest", lean_add=.16, arms={"n": ("ik", tgt_n, -1), "f": ("ik", tgt_f, -1)},
+        fr = people.person("friend", x, hipy + jump, BS, ef, "rest", lean_add=.3, arms={"n": ("ik", tgt_n, -1), "f": ("ik", tgt_f, -1)},
                            hands={"n": {"kind": "none"}, "f": {"curl": (.5, .5, .55, .6), "thumb": .5, "dir": (1, .3)}}, **kw)
-        fr_n = people.person("friend", x, hipy + jump, BS, ef, "rest", lean_add=.16, arms={"n": ("ik", tgt_n, -1), "f": ("ik", tgt_f, -1)},
+        fr_n = people.person("friend", x, hipy + jump, BS, ef, "rest", lean_add=.3, arms={"n": ("ik", tgt_n, -1), "f": ("ik", tgt_f, -1)},
                              hands={"n": {"kind": "none"}}, layers=("arm_n",), **kw)
         Wn = fr_n["wrist"]["n"]
         mug = held_mug("friend", Wn, SCF, rot=-60 + 10 * scrub, seed=2, t=t, col="blue", fill=0)
@@ -313,7 +311,7 @@ def s10(t):
     a = ease_io(clamp((t - 16.28) / 1.4))
     cx, cy, s = lerp(640, 670, a), lerp(820, 800, a), lerp(1.24, 1.3, a)
     j = ease_out(clamp((t - T10_VST) / .2), 3)
-    cx = lerp(cx, 800, j)
+    cx, cy, s = lerp(cx, 900, j), lerp(cy, 720, j), lerp(s, 1.18, j)
     d = ease_io(clamp((t - 18.25) / .4))
     cx, cy, s = lerp(cx, 380, d), lerp(cy, 660, d), lerp(s, 1.6, d)
     ex, ey = P.shake(t, T10_VST, 14, .3, seed=10)
@@ -323,9 +321,9 @@ def s10(t):
 # ═══════════════════════════════ s18: налить воды ═══════════════════════════════
 T18_NAL = wt("налить")           # 30.44
 T18_VOD = wt("воды")             # 30.78
-D18 = (610.0, R.KS_FLOOR - 52 - (people.LEG_LEN - 12) * BS)
+D18 = (520.0, R.KS_FLOOR - 52 - (people.LEG_LEN - 12) * BS)
 CNT = 940.0                      # верх столешницы
-GL18 = (930.0, CNT - 2, 1.0)     # стакан на столешнице (дно)
+GL18 = (1010.0, CNT - 2, 1.0)     # стакан на столешнице (дно)
 JUG_HANDLE = (96.0, -140.0)      # центр ручки графина (ручка справа, дно в (0, 0))
 KJ = .95
 
@@ -350,8 +348,8 @@ def s18(t):
     ed = blink(t, ed, [30.3])
     # графин в ближней руке (до глотка), стакан — дальняя рука придерживает, потом ближняя к губам
     jrot = 48 * pour
-    jh_rest = (x + 300, CNT - 120)
-    jh = (jh_rest[0] + 10 * pour, jh_rest[1] - 70 * pour)
+    jh_rest = (x + 235, CNT - 2 + JUG_HANDLE[1] * KJ)
+    jh = (jh_rest[0] + 30 * pour, jh_rest[1] - 90 * pour)
     jx, jy = base_from_point(jh, JUG_HANDLE, KJ, jrot, -1)
     gx, gy, gk = GL18
     if drink < .02:
@@ -390,13 +388,13 @@ def s18(t):
         rot = -40 * clamp((drink - .4) / .6) - 18 * sip
         bx, by = base_from_point(H, (0.0, -70.0), gk, rot, 1)
         gfill = gl_fill - .25 * sip
-        jug_s = jug_left(jx + 0, CNT - 2, KJ, 0, .5)
+        jug_s = jug_left(jh_rest[0] + JUG_HANDLE[0] * KJ, CNT - 2, KJ, 0, .5)
         body = sc["bg"] + jug_s + fd["svg"] + bk + P.glass(bx, by, gk, rot, gfill, t, seed=4) + fr + fn["svg"]
         if sip > 0:
             body += P.sparkles(Wn[0] + 60, Wn[1] - 160, 1.0, clamp(sip * 2), t, seed=18, n=3, r=70)
     # камера: лёгкий наезд, на глотке мини-подъём
     a = ease_io(clamp((t - 30.2) / 1.5))
-    cx, cy, s = lerp(760, 740, a), lerp(700, 680, a), lerp(1.45, 1.56, a)
+    cx, cy, s = lerp(740, 730, a), lerp(700, 680, a), lerp(1.38, 1.48, a)
     cy -= 40 * ease_io(clamp((t - T18_VOD - .2) / .4))
     return frame_svg(body, cx, cy, s, -.4 + .6 * a, R.KS_PAL["wall"])
 
