@@ -131,9 +131,9 @@ T12_A = wt("хватает")      # 15.24
 T12_B = wt("сил")          # 15.76
 T12_C = wt("начать")       # 16.08
 GROUND12 = 1250.0
-ENG = (660.0, GROUND12)
-ENG_K = 1.25
-D12 = (240.0, GROUND12 - (people.LEG_LEN - 12) * .7)
+ENG = (640.0, GROUND12)
+ENG_K = 1.15
+D12 = (320.0, GROUND12 - (people.LEG_LEN - 12) * .7)
 S12 = .7
 
 
@@ -182,7 +182,7 @@ def s12(t):
         cough = ((t - T12_B - .05) / .16) % 1
     o.append(P.blob(ellipse_pts(ENG[0], ENG[1] + 4, 200, 18, 14), "#000000", .12) if hasattr(P, "blob") else "")
     # Дима: стойка → откидывается при рывке → плюхается на траву
-    lean_pull = .32 - .5 * clamp((cord - .44) / .56)
+    lean_pull = .45 - .75 * clamp((cord - .44) / .56)
     hip0 = D12
     hipx = hip0[0] - 40 * clamp((cord - .44) / .56) - 90 * plop
     hipy = lerp(hip0[1], GROUND12 - 40, plop)
@@ -196,10 +196,9 @@ def s12(t):
         else:
             feet[sd] = ((lerp(a0[0], a1[0], plop), lerp(GROUND12, a1[1], plop)), lerp(p0, p1, plop))
     # ручка: пока стоит — в точке тросика; после падения — в руке (рука опускается на колено)
-    hx, hy = P.engine_handle(ENG[0], ENG[1], ENG_K, min(1.0, cord))
-    if cord > 1.0:
-        hx -= (cord - 1) * 120
-        hy -= (cord - 1) * 40
+    cu = clamp((cord - .44) / .64)
+    hx = lerp(hip0[0] + 170 * S12, hip0[0] - 250 * S12, ease_io(cu))
+    hy = lerp(hip0[1] + 150 * S12, hip0[1] - 300 * S12, cu)
     if plop > 0:
         rest = (hipx + 230 * S12, hipy - 120 * S12)
         hx, hy = lerp(hx, rest[0], ease_io(plop)), lerp(hy, rest[1], ease_io(plop))
@@ -216,11 +215,12 @@ def s12(t):
     if ex in ("hope", "resolve", "surprise", "sink"):
         exd["look"] = (.75, .45)
     fig = people.dima(hipx, hipy, S12, exd, "pull_cord", lean_add=lean_pull + .12 * plop * (1 - land) - .05 * land,
-                      arms={"n": ("ik", (hx, hy), 1)}, feet=feet,
-                      hands={"n": {"dir": (-.6, -.8), "curl": (.75, .78, .8, .8), "thumb": .7}})
+                      arms={"n": ("ik", (hx, hy), 1), "f": ("ik", (hipx + 190 * S12, hipy + (40 - 200 * plop) * S12), -1)}, feet=feet,
+                      hands={"n": {"dir": (-.6, -.8), "curl": (.75, .78, .8, .8), "thumb": .7}, "f": {"dir": (.3, 1), "curl": (.45, .5, .55, .6), "thumb": .4}})
     # дальняя рука на раме мотора, пока стоит; при падении — машет
+    hh = people.hand_pos(fig, "n", 42)
     o.append(P.pull_engine(ENG[0], ENG[1], ENG_K, cough=cough if cough >= 0 else 0, shake=shake, cord=min(1.0, cord), t=t,
-                           handle=(hx, hy), hand_ang=-148 + 40 * plop))
+                           handle=hh, hand_ang=-148 + 40 * plop))
     o.append(fig["svg"])
     if ex == "strain":
         o.append(people.strain_marks(fig["head"], S12, t, 1.0))
@@ -228,17 +228,17 @@ def s12(t):
     if T12_B + .05 < t < T12_C + .05:
         for j in range(3):
             c = ((t - T12_B - .05) / .18 - j * .33) % 1
-            o.append(P.puff_cloud(ENG[0] + 300 + 60 * j * ENG_K, ENG[1] - 200 * ENG_K - 80 * c, 1.0, c, seed=j + 3, col="#BFC4CC"))
+            o.append(P.puff_cloud(ENG[0] + (240 - 50 * j) * ENG_K, ENG[1] - (210 + 160 * c) * ENG_K, 1.1, c, seed=j + 3, col="#BFC4CC"))
         for sx in (-1, 1):
             o.append(line([(ENG[0] + sx * 260, ENG[1] - 220), (ENG[0] + sx * 285, ENG[1] - 180)], 6, INK, taper=.6, wmin=.1, seed=12100 + sx))
             o.append(line([(ENG[0] + sx * 275, ENG[1] - 140), (ENG[0] + sx * 300, ENG[1] - 100)], 6, INK, taper=.6, wmin=.1, seed=12110 + sx))
     # жалкий пуф на «начать»: один маленький клубок, падает вниз
     pf = (t - T12_C - .05) / .9
     if 0 < pf < 1:
-        o.append(P.puff_cloud(ENG[0] + 290, ENG[1] - 190 * ENG_K + 60 * pf, .8, pf, seed=9, col="#9AA0AA"))
+        o.append(P.puff_cloud(ENG[0] + 245 * ENG_K, ENG[1] - 175 * ENG_K - 40 * pf, .8, pf, seed=9, col="#9AA0AA"))
     if T12_C + .15 < t:
         # «пиу» — повисшая струйка дыма из выхлопа
-        o.append(P.smoke_curls(ENG[0] + 270, ENG[1] - 172 * ENG_K, .9, clamp((t - T12_C - .15) / .4), t, seed=5, n=1, col="#BFC4CC"))
+        o.append(P.smoke_curls(ENG[0] + 214 * ENG_K, ENG[1] - 150 * ENG_K, .9, clamp((t - T12_C - .15) / .4), t, seed=5, n=1, col="#BFC4CC"))
     # удар о траву: штрихи и комья
     if plop >= 1 and land < 1:
         for j in range(5):
@@ -254,15 +254,15 @@ def s12(t):
     sh3 = P.shake(t, T12_C + .3, 14, .3, seed=8)
     cy = 900 + 90 * ease_io(clamp((t - T12_C) / .5))
     s = 1.12 + .05 * ease_io(clamp((t - 14.5) / 1.4)) + .04 * ease_out(clamp((t - T12_B) / .2)) * (1 - plop)
-    return frame_svg("".join(o), 470 + wx + sh[0] + sh2[0] + sh3[0], cy + sh[1] + sh2[1] + sh3[1], s, wr + .6 * math.sin(t * 1.1), P.C_PAGE)
+    return frame_svg("".join(o), 500 + wx + sh[0] + sh2[0] + sh3[0], cy + sh[1] + sh2[1] + sh3[1], s, wr + .6 * math.sin(t * 1.1), P.C_PAGE)
 
 
 # ═══════════════════════════════ s13: мозг выглядывает ═══════════════════════════════
 T13_M = wt("мозг")         # 17.08
 T13_V = wt("видит")        # 17.72
-BK = (540.0, 1180.0)
-BK_K = 2.1
-EDGE13 = 1030.0
+BK = (540.0, 1130.0)
+BK_K = 2.6
+EDGE13 = 1080.0
 
 
 def _sheet_front(t, y, seed=0):
@@ -272,7 +272,6 @@ def _sheet_front(t, y, seed=0):
     lines = "".join(line([(-900, y + 90 + 64 * j), (1600, y + 92 + 64 * j)], 2, "#D9DCD6", taper=.02, wmin=.9, seed=13000 + j) for j in range(14))
     o = blob([(p[0], p[1] - 14) for p in pts[:6]] + [(1600, y + 60), (-900, y + 60)], "#000000", .1)
     o += lib.shape(pts, "#FDF7E4", lines, w=5, seed=13050 + seed)
-    o += lib.shape([(1050, y - 4, 1), (1180, y + 120, 1), (1240, y + 26, 1)], P.C_PAGE_SH, "", w=4, seed=13060)
     return o
 
 
@@ -281,9 +280,9 @@ def s13(t):
     o = [paper_bg()]
     # тень сверху наползает к концу (то, что мозг увидел)
     shd = ease_in(clamp((t - T13_V - .05) / .35), 2)
-    peek = ease_out(clamp((t - T13_M + .2) / .45), 3)          # всплывает из-за края
-    pre = .1 * (0.5 + .5 * math.sin(t * 9)) * (1 - peek)        # до «Мозг» — макушка подрагивает у края
-    rise = lerp(330, 0, max(peek, pre))
+    peek = .3 * ease_io(clamp((t - 16.75) / .3)) + .7 * ease_out(clamp((t - T13_M + .05) / .35), 3)    # всплывает из-за края
+    pre = .06 * math.sin(t * 9) * (1 - peek)                    # макушка подрагивает у края
+    rise = lerp(420, 0, peek + pre) + 60 * P.hop(t, T13_V, 1.0, .35)
     hop = P.hop(t, T13_V, 40, .3)
     ex = "peek" if t < T13_V else "wide"
     look = (.4 * math.sin(t * 2), 0) if t < T13_V else (0, -1)
@@ -303,9 +302,9 @@ def s13(t):
                               INK, taper=.6, wmin=.1, seed=13100 + j + sx * 5))
     o.append(_sheet_front(t, EDGE13))
     # тень башни сверху: тёмный клин сползает по листу
-    if shd > 0:
-        yb = -400 + 900 * shd
-        o.append(blob([(-900, -1600), (2000, -1600), (2000, yb - 200), (900, yb), (200, yb + 60), (-900, yb - 80)], "#1C2030", .28 * shd))
+    if shd > 0:      # тень чего-то высокого сверху: прямоугольный силуэт (башня) сползает по листу
+        yb = -500 + 1050 * shd
+        o.append(blob([(110, -1600), (1000, -1600), (1000, yb - 30), (780, yb), (560, yb + 14), (330, yb + 6), (110, yb - 24)], "#232842", .2 * shd))
     # камера: резкая смена (хлёст), лёгкий наезд на глаза
     wx, wr = whip_in(t, 16.70, .2, amp=170)
     s = 1.0 + .12 * ease_io(clamp((t - 16.9) / 1.2)) + .06 * ease_out(clamp((t - T13_V) / .15)) * (1 - .5 * clamp((t - T13_V - .3) / .4))
@@ -318,11 +317,11 @@ def s13(t):
 T14_W = wt("написать")     # 18.16
 T14_D = wt("диплом")       # 18.60
 G14 = 1240.0
-TW = (640.0, G14)
+TW = (660.0, G14)
 TW_K = 2.0
 TW_N = 64
 BK14 = (330.0, G14)
-BK14_K = .62
+BK14_K = .8
 
 
 def s14(t):
@@ -330,10 +329,10 @@ def s14(t):
     o = [paper_bg()]
     o.append(line([(-1400, G14 + 4), (400, G14), (2600, G14 + 4)], 5, INK, taper=.03, wmin=.8, seed=14001))
     # наклон: на «написать» клонится к мозгу (влево), на «диплом» — ещё ниже и качается
-    l1 = -6 * ease_out(clamp((t - T14_W) / .3), 2)
-    l2 = -5 * ease_out(clamp((t - T14_D) / .25), 2)
-    wob = 2.2 * math.sin((t - 17.9) * 7) * math.exp(-max(0, t - T14_D) * 1.5)
-    lean = l1 + l2 + wob - .8
+    l1 = -14 * ease_out(clamp((t - T14_W) / .3), 2)
+    l2 = -13 * ease_out(clamp((t - T14_D) / .25), 2)
+    wob = 3.0 * math.sin((t - 17.9) * 7) * math.exp(-max(0, t - T14_D) * 1.2)
+    lean = l1 + l2 + wob - 2
     fl = .6 + .4 * clamp((t - T14_W) / .3)
     # тень башни накрывает мозг
     shd = clamp(.35 + .65 * ease_out(clamp((t - T14_W) / .5)))
@@ -352,9 +351,9 @@ def s14(t):
     o.append(P.sweat(BK14[0] + 110 * BK14_K * 1.4, BK14[1] - 260 * BK14_K + 30 * ((t * 1.5) % 1), 1.0))
     # камера: резко задирается снизу вверх вдоль башни, потом медленно давит
     u = ease_out(clamp((t - 17.95) / .4), 3)
-    cy = lerp(1060, 520, u) - 30 * ease_io(clamp((t - T14_D) / .5))
-    cx = lerp(420, 560, u)
-    s = lerp(1.25, .8, u) + .03 * ease_io(clamp((t - T14_D) / .5))
+    cy = lerp(1080, 600, u) + 20 * ease_io(clamp((t - T14_D) / .5))
+    cx = lerp(420, 540, u)
+    s = lerp(1.3, .9, u) + .04 * ease_io(clamp((t - T14_D) / .5))
     rot = lerp(-3, 2.5, u) + .8 * math.sin(t * 2)
     return frame_svg("".join(o), cx, cy, s, rot, P.C_PAGE)
 
