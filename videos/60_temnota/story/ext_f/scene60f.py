@@ -13,6 +13,7 @@ for d in (os.path.join(STORY, "common"), os.path.join(STORY, "..", "..", "59_pod
         sys.path.insert(0, d)
 import cat as Cat  # noqa: E402
 import catf  # noqa: E402
+import hand_kot  # noqa: E402
 import lib  # noqa: E402
 import people  # noqa: E402
 import room  # noqa: E402
@@ -242,7 +243,91 @@ def frame15(t):
     return f'<g transform="{cam}">{"".join(o)}</g>'
 
 
-FRAMES = {"s15": frame15, "s16": frame16}
+# ═══════════════════════════════ s17: призыв, Дима и кот на диване, пером «кот» ═══════════════════════════════
+T_NAP, T_KOT17 = wt("напиши"), wt("кот", 1)
+S17_T0 = 28.4
+
+
+def whip_in(out, t, t0, dist=300):
+    wp = ease_out(clamp(1 - (t - t0) / .16), 2)
+    if wp > .02:
+        fid = lib.uid("wh")
+        lib.DEFS.append(f'<filter id="{fid}" x="-20%" y="-5%" width="140%" height="110%"><feGaussianBlur stdDeviation="{70 * wp:.1f} 0"/></filter>')
+        return f'<g filter="url(#{fid})" transform="translate({dist * wp:.1f} 0)">{out}</g>'
+    return out
+
+
+def sofa17(x0, x1, seat_y, floor_y, col="#7b6aa0"):
+    sh, hi = lib.mix(col, "#000000", .24), lib.mix(col, "#ffffff", .18)
+    back_top = seat_y - 360
+    o = shape(rrect(x0 + 40, back_top, x1 - 40, seat_y + 30, 70), col, blob(rrect(x0 + 70, back_top + 26, x1 - 70, back_top + 120, 40), hi, .5), w=5.4, seed=3610)
+    mid = (x0 + x1) / 2 + 40
+    o += line([(mid, back_top + 46), (mid + 4, seat_y - 24)], 4, sh, taper=.2, wmin=.8, seed=3611)
+    # подушка-думка у подлокотника
+    o += shape([(x0 + 96, seat_y - 210), (x0 + 220, seat_y - 236, 1), (x0 + 236, seat_y - 60), (x0 + 110, seat_y - 40, 1)], "#e0a24a",
+               blob([(x0 + 170, seat_y - 230), (x0 + 240, seat_y - 236), (x0 + 236, seat_y - 50), (x0 + 180, seat_y - 46)], "#bd8133", .8) +
+               line([(x0 + 130, seat_y - 180), (x0 + 196, seat_y - 80)], 2.6, "#bd8133", seed=3619, op=.8), w=4.6, seed=3618)
+    o += shape(rrect(x0 + 24, seat_y - 40, x1 - 24, floor_y - 70, 44), lib.mix(col, "#ffffff", .08),
+               blob(rrect(x0 + 24, floor_y - 150, x1 - 24, floor_y - 70, 40), sh, .5), w=5.4, seed=3612)
+    o += line([(mid, seat_y - 38), (mid + 2, floor_y - 74)], 4, sh, taper=.2, wmin=.8, seed=3613)
+    for (a, b, sd) in ((x0 - 30, x0 + 96, 3614), (x1 - 96, x1 + 30, 3615)):
+        o += shape(rrect(a, seat_y - 180, b, floor_y - 50, 48), col, blob(rrect(a + 12, seat_y - 170, a + 36, floor_y - 70, 12), hi, .6), w=5.4, seed=sd)
+    for xx in (x0 + 30, x1 - 30):
+        o += shape(rrect(xx - 14, floor_y - 56, xx + 14, floor_y - 4, 5), "#7a5430", "", w=3.6, seed=3620 + int(xx))
+    return o
+
+
+def blink17(t, times, dur=.16):
+    v = 0.0
+    for tb in times:
+        u = (t - tb) / dur
+        if 0 < u < 1:
+            v = max(v, math.sin(math.pi * u))
+    return v
+
+
+def frame17(t):
+    u = sm(t, 28.2, 30.4)
+    z = 1.08 + .2 * u + .03 * bump(t, T_KOT17, .35)
+    set_ink(z)
+    SEAT, FLOORY = 1190.0, room.FL
+    o = [room.wall_floor()]
+    # тёплый свет торшера на стене за диваном
+    g = lib.rad_grad([(0, "#fbe6bb", .75), (1, "#fbe6bb", 0)], 300, 760, 420)
+    o.append(f'<rect x="-200" y="300" width="1000" height="900" fill="url(#{g})"/>')
+    o.append(sofa17(10, 1070, SEAT, FLOORY))
+    kick = bump(t, T_NAP + .05, .5)
+    bob = 3 * math.sin(t * 3.6)
+    hip = (360, SEAT - 30 + bob * .3)
+    BS = .84
+    # ближняя рука лежит на спинке дивана за котом, дальняя — на колене
+    nt = (600 + 8 * kick, 1150 - 14 * kick + bob * .3)
+    ft = (520, 1210)
+    look = (-.25 + .55 * bump(t, T_KOT17 + .15, .7), .04 - .25 * bump(t, T_KOT17 + .15, .7))
+    ex = dict(lid=.9, look=look, closed=blink17(t, (28.75, 29.95)), brows="up" if kick > .2 or t > T_KOT17 else "calm", mouth="smile", smile=1.0, blush=.3)
+    pose = dict(hip=hip, scale=BS, lean=.03, torso_k=1.0, feet={"n": ((590, FLOORY - 4), 0.0), "f": ((530, FLOORY - 10), 0.0)},
+                arms={"n": ("ik", nt, -1), "f": ("ik", ft, 1)},
+                hands={"n": dict(kind="open", flip=1, dir=(1, .5), curl=(.35, .35, .4, .4), spread=.08, thumb=.25, bend=.1, k=1.0),
+                       "f": dict(kind="open", flip=1, dir=(1, .55), curl=(.4, .4, .4, .35), spread=.06, thumb=.3, bend=.1, k=1.0)},
+                expr=ex, head_ang=-.06 + .05 * kick + .03 * math.sin(t * 1.6), head_off=(0, 0), hood=0.0, strings=(0, 0))
+    d = people.draw(pose, "dima")
+    o.append(d.get("legs", "") + d["arm_f"] + d["body"])
+    # кот справа на диване, смотрит на зрителя; после «кот» — довольный прищур
+    CX_, CY_, CK = 790, SEAT - 6, .88
+    hap = sm(t, T_KOT17 + .25, T_KOT17 + .5)
+    st = dict(turn=-.15 * (1 - u), look=(-.1, .0), blink=blink17(t, (28.95,)), yawn=0.0, happy=hap, smile=1.0,
+              ear=5 * bump(t, T_NAP + .1, .4) + 6 * bump(t, T_KOT17 + .1, .35), perk=.3 * sm(t, T_KOT17 - .15, T_KOT17 + .1) * (1 - hap),
+              tail=8 * math.sin(t * 2.4), flame_e=1.2 + .6 * bump(t, T_KOT17 + .1, .5), tilt=3 * math.sin(t * 1.3) + 4 * hap, drop=0.0)
+    o.append(blob(ellipse_pts(CX_ + 6, CY_ + 8, 130 * CK, 14, 14), lib.mix("#7b6aa0", "#000000", .4)))
+    o.append(catf.draw2(CX_, CY_, CK, st, t))
+    o.append(d["arm_n"])
+    # единственная надпись рилса: пером «кот» над котом
+    o.append(hand_kot.kot(t, T_KOT17 - .04, .62, 610, 760, 1.85))
+    cam = lib.cam(600 + 30 * u, 1000 - 40 * u, z, -.6 + .9 * u)
+    return whip_in(f'<g transform="{cam}">{"".join(o)}</g>', t, S17_T0)
+
+
+FRAMES = {"s15": frame15, "s16": frame16, "s17": frame17}
 
 
 def frame(sid, t):
