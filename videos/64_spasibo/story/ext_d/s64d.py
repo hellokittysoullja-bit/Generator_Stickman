@@ -389,7 +389,7 @@ def classroom(t):
     kex = dict(P.EXPR["kid2"]["shy"])
     kex = mix_expr(kex, dict(P.EXPR["kid2"]["beam"], look=(.5, -.75)), beam)
     kex["closed"] = _blinkv(t, [1.75])
-    kfeet = {"n": ((khx - 128 + 8 * math.sin(t * 4.5), khy + 112), .15), "f": ((khx - 108, khy + 118), .15)}
+    kfeet = {"n": ((khx + 128 + 8 * math.sin(t * 4.5), khy + 112), .15), "f": ((khx + 108, khy + 118), .15)}     # до зеркала (flip)
     karms = {"f": ("ik", (2 * khx - (DESK2[0] + 90), dtop - 10), -1), "n": ("ik", (2 * khx - (DESK2[0] + 60), dtop - 6), -1)}
     khands = {"f": {"curl": (.4, .45, .5, .55), "thumb": .4}, "n": {"curl": (.3, .3, .35, .4), "thumb": .3}}
     kkw = dict(feet=kfeet, flip=True, arms=karms, hands=khands, lean_add=.06 - .05 * beam + .01 * math.sin(t * 3),
