@@ -1,3 +1,4 @@
 clips/
 */tmp/
 room/chars/*/L_*/
+__pycache__/
