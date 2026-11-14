@@ -73,9 +73,9 @@ def s03(t):
 
 # ═════════════════════════ s06: звонок, шлепок, завод — и ещё, и ещё ═════════════════════════
 T_POTOM, T_ESCH, T_RAZ, T_ESCH2 = wt("потом"), wt("ещё"), wt("раз"), wt("ещё", 9.5)     # 8.57 8.88 9.18 9.7
-TV6 = (330.0, 1300.0)     # таймер на столе (координаты кадра wall_view)
-K6 = 1.0
-MUG6 = (590.0, 1330.0)
+TV6 = (170.0, 1290.0)     # таймер на столе (координаты кадра wall_view)
+K6 = 1.15
+MUG6 = (440.0, 1300.0)
 # два цикла «звонит → шлепок → завод»; второй быстрее
 CYC = [dict(ring=T_POTOM, slap=T_ESCH, wind=T_RAZ, wind_d=.24, off=T_RAZ + .32),
        dict(ring=T_ESCH2 - .08, slap=T_ESCH2 + .14, wind=T_ESCH2 + .26, wind_d=.16, off=T_ESCH2 + .5)]
@@ -110,7 +110,7 @@ def s06_state(t):
 def s06_hand(t):
     """Ладонь: ждёт за кадром → падает на таймер (шлепок) → хват сверху и поворот → уходит. Возвращает (W, dir, hand, vis)."""
     top = (TV6[0] - 20, TV6[1] - PR.TOMATO_RY * K6 - 40)
-    away = (TV6[0] - 520, TV6[1] + 260)
+    away = (TV6[0] - 700, TV6[1] + 700)
     for c in CYC:
         a0, a1 = c["slap"] - .14, c["off"] + .25
         if a0 <= t <= a1:
@@ -150,22 +150,22 @@ def s06(t):
     # кружка появляется к ночи (время прошло)
     mo = sm(t, 9.55, 9.75)
     mug = f'<g opacity="{mo:.3f}">' + PR.mug(MUG6[0], MUG6[1], 1.25, 0, col="blue", coffee=False, seed=2) + "</g>" if mo > .01 else ""
-    lap = PR.laptop(R.LAPTOP_V[0] + 120, R.LAPTOP_V[1], .7, 1.0, "page", t=t, seed=1)
+    lap = PR.laptop(R.LAPTOP_V[0] + 60, R.LAPTOP_V[1], .7, 1.0, "page", t=t, seed=1)
     # рука и рукав Димы — из people.py: только ближняя рука, плечо за кадром слева внизу
     W, hd, vis = s06_hand(t)
     arm = ""
     if vis:
         e = ex("frowny")
-        fig = people.dima(-330, 2330, 1.6, e, None, arms={"f": ("ang", .2, .2), "n": ("ik", W, 1)}, hands={"n": hd}, layers=("arm_n",))
+        fig = people.dima(-560, 2330, 1.6, e, None, arms={"f": ("ang", .2, .2), "n": ("ik", W, 1)}, hands={"n": hd}, layers=("arm_n",))
         arm = fig["svg"]
     world = [v["bg"], v["desk"], v["pool"], lap, mug, shadow, tim, v["lamp"], arm]
     # камера: храповик — толчок-наезд на каждом звонке, тряска на шлепках
     push = .07 * sm(t, CYC[0]["ring"], CYC[0]["ring"] + .1) + .07 * sm(t, CYC[1]["ring"], CYC[1]["ring"] + .08)
     sx1, sy1 = shake2(t, CYC[0]["slap"], 13)
     sx2, sy2 = shake2(t, CYC[1]["slap"], 13)
-    cx = 240 + 30 * math.sin(t * .7) - sx1 - sx2
-    cy = 1080 - sy1 - sy2 + 20 * push
-    s = 1.3 * (1 + push + .02 * math.sin(t * 1.3))
+    cx = 175 + 25 * math.sin(t * .7) - sx1 - sx2
+    cy = 1070 - sy1 - sy2 + 60 * push
+    s = 1.6 * (1 + push + .02 * math.sin(t * 1.3))
     set_ink(s)
     body = f'<g transform="{lib.cam(cx, cy, s, .4 * math.sin(t * .9))}">{"".join(world)}</g>'
     return lib.svg(f'<rect width="1080" height="1920" fill="#2a2440"/>{body}')
