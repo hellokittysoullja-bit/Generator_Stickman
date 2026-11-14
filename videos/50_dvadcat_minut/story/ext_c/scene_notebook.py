@@ -186,9 +186,9 @@ def qmark(t):
 
 
 # ───────────────────────── кот на тетради
-CAT_X, CAT_Y, CAT_S = 770, 490, 1.0
+CAT_X, CAT_Y, CAT_S = 790, 650, 1.0
 TAPS = [24.04, 24.46, 24.88]
-TARGET = (575, 600)
+TARGET = (610, 600)
 
 
 def cat_scene(t, sid):
@@ -337,18 +337,18 @@ def frame_reports(t):
     ha = 180.0
     if t < 28.0:
         u = ease_out(clamp((t - 27.5) / 0.5), 3)
-        hx, hy = 1250 - 560 * u, 1180 - 40 * u
+        hx, hy = 1500 - 700 * u, 1180 - 40 * u
     elif t < NEAR + 0.4:
         # три взмаха: к листам и смахивает
         ph = (t - 28.0) / 0.8
-        hx = 700 + 60 * math.sin(ph * math.pi * 2.2)
-        hy = 1100 - 420 * smooth(0, 1, ph) + 40 * math.sin(ph * 9)
+        hx = 820 + 60 * math.sin(ph * math.pi * 2.2)
+        hy = 1130 - 120 * smooth(0, 1, ph) + 40 * math.sin(ph * 9)
     else:
         u = ease_io(clamp((t - NEAR - 0.4) / 0.5))
-        hx, hy = 740 + 100 * u, 880 + 200 * u + 8 * math.sin(t * 5)
+        hx, hy = 900 + 100 * u, 1000 + 160 * u + 8 * math.sin(t * 5)
         ha = 180 - 12 * u
     s.append(blob(ellipse_pts(hx - 80, hy + 90, 150, 26, 14), "#3a2410", .25, blur(10)))
-    s.append(dima_hand(hx, hy, ha, 0.3 * smooth(NEAR + .4, NEAR + .8, t), 0.95))
+    s.append(dima_hand(hx, hy, ha, 0.3 * smooth(NEAR + .4, NEAR + .8, t), 2.0))
     return "".join(s)
 
 
