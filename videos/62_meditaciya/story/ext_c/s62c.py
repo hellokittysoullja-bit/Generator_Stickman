@@ -180,21 +180,21 @@ def friend_fig(t, x, y, sc, stomp_t, seed=0):
     hip = (x, y + body_dy)
     leg_y = y + 600 * s
     feet = {"f": ((x - 70 * s, leg_y), 0.0),
-            "n": ((x + 90 * s, leg_y - 150 * s * up), -0.35 * up)}
+            "n": ((x + 90 * s, leg_y - 230 * s * up), -0.35 * up)}
     # мобильник: у груди, трясётся после «не ответил»
     shk = decay(t, stomp_t - .02, 5.5, 7) * 1.0
-    mob = np.array([x + 210 * s + 40 * s * shk, y - 330 * s - 30 * s * abs(shk)])
+    mob = np.array([x + 250 * s + 40 * s * shk, y - 250 * s - 30 * s * abs(shk)])
     mob_rot = 22 * shk
-    wr = mob + np.array([60 * s, 34 * s])
-    arms = {"f": ("ik", (x - 150 * s, y - 40 * s), 1), "n": ("ik", tuple(wr), -1)}
-    hands = {"n": {"kind": "none"}, "f": {"curl": (.5, .5, .55, .6), "thumb": .4, "dir": (-.2, 1)}}
+    wr = mob + np.array([115 * s, 12 * s])
+    arms = {"f": ("ang", 0.12, 0.3), "n": ("ik", tuple(wr), -1)}
+    hands = {"n": {"kind": "none"}, "f": {"curl": (.55, .55, .6, .65), "thumb": .45}}
     expr = dict(people.EXPR["pal"]["hurt" if t > stomp_t - .1 else "cross"])
     fig = people.figure(who, hip[0], hip[1], sc, expr, lean=-.04 - .05 * up, head_ang=.08 * shk, arms=arms, hands=hands, feet=feet)
     o = [fig["svg"]]
     # мобильник в кулаке: ладонь за корпусом, пальцы обхватывают спереди
-    k = s / .3 * .62
-    gb, gf = people.grip_svg(who, (0, 0), 36, +1, k=k, h=78, seed=seed + 40)
-    o.append(G(gb + people.mobilnik(0, 0, 1.0, 0, seed=seed + 50) + gf, mob[0], mob[1], 1.0, mob_rot))
+    k = s * 1.5            # кисть ≈ треть лица, мобильник чуть длиннее кисти
+    gb, gf = people.grip_svg(who, (0, 0), 34, +1, k=1.0, h=78, seed=seed + 40)
+    o.append(G(gb + people.mobilnik(0, 0, 1.0, 0, seed=seed + 50) + gf, mob[0], mob[1], k, mob_rot))
     # пыль от топа
     if t > stomp_t:
         u = clamp((t - stomp_t) / .35)
@@ -316,19 +316,19 @@ def frame05(t):
     # облако обеда: было в центре, на «вспомнил» его отпихивают влево и сплющивают
     push = spring(max(0.0, t - (T_VSP + .06)), 2.2, 6.0) if t > T_VSP + .06 else 0.0
     sqz = squeeze(t, T_VSP + .06, .36)
-    LX = 470 - 300 * push
+    LX = 470 - 220 * push
     LY = 560 - 40 * push
     l_in = lunch(t, 1.0, wob=osc(t, .9))
-    lunch = cloud(LX, LY + 5 * osc(t, .7), 345, 255, (1 - sqz) * 1.0, (1 + sqz * .45), 41, l_in, t=t, rot=-2 - 6 * push)
+    lunch_c = cloud(LX, LY + 5 * osc(t, .7), 345, 255, (1 - sqz) * 1.0, (1 + sqz * .45), 41, l_in, t=t, rot=-2 - 6 * push)
     # облако друга
     C5 = (760.0, 640.0)
     sx, sy = pop(t, T_VSP, 2.4, 6.0, .3)
     f_in = ""
     if sx > 0:
-        f_in = friend_fig(t, -10, -60, .27, T_OTV, seed=300)
-    fr = cloud(C5[0], C5[1] + 5 * osc(t, .6, 1), 330, 330, sx, sy * (1 + .04 * max(0.0, decay(t, T_OTV, 8, 6))), 57, f_in, t=t, rot=2,
+        f_in = friend_fig(t, 10, -95, .33, T_OTV, seed=300)
+    fr = cloud(C5[0], C5[1] + 5 * osc(t, .6, 1), 340, 370, sx, sy * (1 + .04 * max(0.0, decay(t, T_OTV, 8, 6))), 57, f_in, t=t, rot=2,
                col="#fffef9", n=11)
-    o.append(lunch)
+    o.append(lunch_c)
     o.append(bubbles((top[0] + 40, top[1] - 30), (C5[0] - 210, C5[1] + 300), t, T_VSP - .1, seed=320))
     o.append(fr)
     # удар при толчке: штрихи между облаками
@@ -368,11 +368,11 @@ def frame07(t):
     kick = spring(max(0.0, t - hit), 2.0, 6.5) if t > hit else 0.0
     sq = squeeze(t, hit + .08, .42)
     l_in = lunch(t, 1.0, wob=osc(t, 1.3))
-    lunch = cloud(330 - 250 * kick, 600 + 120 * kick, 300, 222, (1 - sq) * .95, (1 + sq * .5) * .95, 41, l_in, t=t, rot=-4 - 14 * kick)
-    f_in = friend_fig(t, -10, -60, .27, 7.093, seed=300)
-    friend = cloud(760 + 250 * kick, 520 + 60 * kick, 300, 300, (1 - sq) * .92, (1 + sq * .5) * .92, 57, f_in, t=t, rot=3 + 12 * kick,
+    lunch_c = cloud(330 - 230 * kick, 600 + 520 * kick, 300, 222, (1 - sq) * .95, (1 + sq * .5) * .95, 41, l_in, t=t, rot=-4 - 14 * kick)
+    f_in = friend_fig(t, 10, -95, .33, 7.093, seed=300)
+    friend = cloud(760 + 210 * kick, 520 - 200 * kick, 300, 330, (1 - sq) * .92, (1 + sq * .5) * .92, 57, f_in, t=t, rot=3 + 12 * kick,
                    col="#fffef9", n=11)
-    o.append(lunch)
+    o.append(lunch_c)
     o.append(friend)
     # большое облако с утюгом
     C7 = (540.0, 760.0)
@@ -420,9 +420,9 @@ def frame07(t):
             uu = clamp((t - T_UTUG) / .25)
             inner.append(line([(IX + math.cos(a) * 230, IY - 90 + math.sin(a) * 190), (IX + math.cos(a) * (230 + 70 * uu), IY - 90 + math.sin(a) * (190 + 70 * uu))],
                               12, INK, taper=.5, wmin=.4, seed=720 + k))
-    inner_svg = G("".join(inner), 0, 0, .9)
+    inner_svg = G("".join(inner), 0, -95, .74)
     o.append(bubbles((top[0] + 20, top[1] - 30), (C7[0] - 40, C7[1] + 380), t, T_VYK - .08, r=(22, 34, 48), seed=740))
-    o.append(cloud(C7[0], C7[1] + 6 * osc(t, .8), 430, 360, sx, sy * (1 + .03 * decay(t, T_UTUG, 8, 6)), 77, inner_svg, t=t, rot=-1.5,
+    o.append(cloud(C7[0], C7[1] + 6 * osc(t, .8), 410, 360, sx, sy * (1 + .03 * decay(t, T_UTUG, 8, 6)), 77, inner_svg, t=t, rot=-1.5,
                    col="#fffdf6", n=12, w=9))
     o.append(burst(C7[0], C7[1], t, T_VYK + .08, 420, 560, 16, "#ffffff", seed=760, dur=.3))
     o.append(dsvg)
@@ -434,7 +434,7 @@ def frame07(t):
         o.append(shape(drop, "#bfe6fa", blob(ellipse_pts(p[0] - 3, p[1] - 3, 3, 4, 6), "#ffffff"), w=3.4, seed=780))
     # камера: наезд на утюг, тряска на прыжке
     u = ease_in(clamp((t - 9.1) / 2.0), 1.6)
-    z = 1.0 + .2 * u + .06 * math.exp(-7 * max(0.0, t - T_UTUG)) * (t >= T_UTUG)
+    z = .98 + .14 * u + .06 * math.exp(-7 * max(0.0, t - T_UTUG)) * (t >= T_UTUG)
     set_ink(z)
     shk = 14 * decay(t, T_UTUG + .3, 8, 15) + 9 * decay(t, T_VYK + .1, 8, 16)
     cam = lib.cam(540 + shk, 900 - 130 * u + shk * .5, z, 1.5 - 2.5 * u + 1.5 * decay(t, T_UTUG + .3, 7, 6))
