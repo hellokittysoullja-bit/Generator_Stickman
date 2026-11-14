@@ -12,6 +12,8 @@ sys.path.insert(0, os.path.join(STORY, "common"))
 import catf  # noqa: E402
 import props  # noqa: E402
 import room  # noqa: E402
+import people  # noqa: E402
+import hand_kot  # noqa: E402
 import lib  # noqa: E402
 from lib import INK, blob, clamp, ease_in, ease_io, ease_out, ellipse_pts, line, rrect, shape  # noqa: E402,F401
 
@@ -243,10 +245,112 @@ def frame17(t):
     return f'<g transform="{cam}">{"".join(o)}</g>'
 
 
-FRAMES = {"s05": frame05, "s17": frame17}
+# ───────────────────────────── s18: призыв, рукописное «кот», откат к кадру хука ─────────────────────────────
+T_KOT18, T_BARD = wt("кот", 1), wt("бардак")
+S18_T0 = 44.1
+T_WHIP = T_BARD - .14           # хлёст к кадру хука: пик размытия чуть раньше «бардак»
+CAT18 = (40.0, 936.0)
+K18 = .62
+DIMA18 = (600.0, room.seat_y(1.0))
+
+
+def hook_world(t):
+    """Мир кадра хука s01 (группа A, ext_a/s61a.py): стол-бардак сверху-сбоку, гора бумажек, кружки, провода, лампа."""
+    sys.path.insert(0, os.path.join(STORY, "ext_a"))
+    import s61a
+    tt = .0 + (t - T_WHIP) * .5      # пар и петли проводов живут тихо
+    o = [s61a.desk_scene01(tt), s61a.pile01(tt)]
+    for j, (bx, by, br, bs) in enumerate(((470, 880, -14, 3), (600, 860, 18, 5), (540, 930, 6, 8))):
+        o.append(props.paper(bx, by, 2.2, br + 3 * math.sin(t * 3 + j), 120, 160, bs, ("lines", "sketch", "grid")[j], .6))
+    o.append(props.paper_stack(560, 860, 2.1, 6, 9, .35, .6))
+    return "".join(o), s61a
+
+
+def room18(t):
+    rb = room.room_bg(t, lamp_on=1.0, with_door=False)
+    yb, yf = room.DESK_TOP - room.DESK_D + 30, room.DESK_TOP - 8
+    o = [rb["bg"], rb["pool"]]
+    o.append(props.paper_pile(-330, yf - 10, 1.05, seed=3) + props.cable_tangle(-210, yf - 26, .8, seed=2, t=t) +
+             props.mug(-120, yb + 44, .95, col="blue", seed=1) + props.sticky(-240, yb + 40, .8, rot=8, col="pink", seed=2, mark="star"))
+    o.append(rb["lamp"])
+    o.append(props.mug(300, yf, 1.0, col="red", steam=.8, t=t, seed=2))
+    o.append(props.paper_pile(CAT18[0], CAT18[1] + 14, .8, seed=18, sy=.45, n=8))
+    return "".join(o)
+
+
+def dima18(t):
+    """Дима сидит у правого края творческого стола (отражён: смотрит влево к столу), голова к зрителю, спокойная улыбка; ближняя рука на столе."""
+    x, y = DIMA18
+    nod = bump(t, T_KOT18 + .1, .45)
+    ex = dict(people.EXPR["dima"]["calm_smile"], look=(-.15 + .1 * bump(t, T_KOT18 - .1, .5), -.05 + .2 * bump(t, T_KOT18 - .1, .5)),
+              closed=blinks(t, (45.35, 46.3)))
+    # цели рук в неотражённой системе: x' = 2x − мир
+    arms = {"n": ("ik", (2 * x - 330, room.DESK_TOP - 46 + 4 * math.sin(t * 2)), -1), "f": ("ik", (2 * x - 410, room.DESK_TOP - 70), -1)}
+    hands = {"n": dict(kind="open", flip=1, dir=(1, .3), curl=(.4, .4, .45, .5), thumb=.4, spread=.08),
+             "f": dict(kind="open", flip=1, dir=(1, .35), curl=(.45, .45, .5, .5), thumb=.35)}
+    feet = {"n": ((x + 250, room.FL - 50), 0.0), "f": ((x + 200, room.FL - 48), 0.0)}
+    fig = people.figure("dima", x, y + 2 * math.sin(t * 2.2), 1.0, ex, lean=.06 + .02 * math.sin(t * 1.7), head_ang=-.12 + .06 * nod,
+                        arms=arms, hands=hands, feet=feet, flip=True)
+    return fig["svg"]
+
+
+def frame18(t):
+    if t >= T_WHIP:                       # второй половиной хлёста — уже мир хука, камера отъезжает к кадру 0 рилса (петля)
+        body, s61a = hook_world(t)
+        u = ease_io(clamp((t - T_WHIP) / (47.5 - T_WHIP)))
+        e = ease_out(clamp((t - T_WHIP) / .14), 2)
+        cx = 560 + (606 - 560) * u
+        cy = 900 + (930 - 900) * u
+        sc = 1.55 + (1.22 / 1.42 - 1.55) * u
+        rot = 1.5 * (1 - u) - 3.4 * u
+        blur = 30 * (1 - e)
+        dx, dy = props.shake(t, T_BARD, 8, .3, 7)
+        g = f'<g transform="translate({-240 * (1 - e):.1f} 0)"><g transform="{lib.cam(cx + dx, cy + dy, sc, rot)}">{body}</g></g>'
+        if blur > .5:
+            fid = lib.uid("wb")
+            lib.DEFS.append(f'<filter id="{fid}" x="-20%" y="-5%" width="140%" height="110%"><feGaussianBlur stdDeviation="{blur:.1f} 0"/></filter>')
+            g = f'<g filter="url(#{fid})">{g}</g>'
+        return g, "#2a2220"
+    o = [room18(t)]
+    o.append(dima18(t))
+    # кот на куче бумаг смотрит на зрителя, на «кот» ушки торчком и огонёк вспыхивает, после — довольный
+    hap = sm(t, T_KOT18 + .3, T_KOT18 + .55)
+    st = dict(look=(.05 * math.sin(t * .8), 0.0), blink=blinks(t, (44.4, 45.9)), smile=1.0 if hap > .5 else 0.0,
+              perk=.6 * bump(t, T_KOT18 - .05, .5), ear=6 * bump(t, T_KOT18 + .05, .3) + 2 * math.sin(t * 3),
+              tilt=3 * math.sin(t * 1.3) + 5 * hap, tail=8 * math.sin(t * 2.4), flame_e=1.1 + .8 * bump(t, T_KOT18 + .1, .5),
+              sy=1 + .03 * bump(t, T_KOT18, .3))
+    u = sm(t, S18_T0, T_WHIP)
+    z = 1.42 + .3 * u + .04 * bump(t, T_KOT18 + .3, .4)
+    set_ink(z * K18 * 1.5)
+    o.append(blob(ellipse_pts(CAT18[0] + 8, CAT18[1] - 2, 120, 12, 14), "#6b4422", .3))
+    o.append(catf.draw_f(CAT18[0], CAT18[1], K18, st, t))
+    set_ink(z)
+    # единственная надпись рилса: пером «кот» над котом, дописано к звуку 44.94
+    o.append(hand_kot.kot(t, T_KOT18 - .06, .36, CAT18[0] - 160, 610, 1.75))
+    cx = 250 + (120 - 250) * u + 8 * math.sin(t * .9)
+    cy = 860 + (780 - 860) * u
+    rot = -.6 + .8 * u
+    # хлёст на входе плана и уход в хлёст к хуку
+    ein = ease_out(clamp((t - S18_T0) / .16), 2)
+    eout = ease_in(clamp((t - (T_WHIP - .1)) / .1), 2)
+    dxs = 260 * (1 - ein) + 300 * eout
+    blur = 28 * (1 - ein) + 30 * eout
+    g = f'<g transform="translate({dxs:.1f} 0)"><g transform="{lib.cam(cx, cy, z, rot)}">{"".join(o)}</g></g>'
+    if blur > .5:
+        fid = lib.uid("wb")
+        lib.DEFS.append(f'<filter id="{fid}" x="-20%" y="-5%" width="140%" height="110%"><feGaussianBlur stdDeviation="{blur:.1f} 0"/></filter>')
+        g = f'<g filter="url(#{fid})">{g}</g>'
+    return g, "#d9c9a8"
+
+
+FRAMES = {"s05": frame05, "s17": frame17, "s18": frame18}
 
 
 def frame(sid, t):
     lib.dyn_begin()
+    lib.INK_K[0] = 1.0
     body = FRAMES[sid](t)
-    return lib.svg(f'<rect width="1080" height="1920" fill="#d9c9a8"/>{body}')
+    bg = "#d9c9a8"
+    if isinstance(body, tuple):
+        body, bg = body
+    return lib.svg(f'<rect width="1080" height="1920" fill="{bg}"/>{body}')
