@@ -62,21 +62,25 @@ def main():
     core = anim.keep_attached(ink)
     cat = (fill_holes(core) & reg).astype(np.uint8)
     cat |= (ink & ~cv2.dilate(cat, np.ones((3, 3), np.uint8))).astype(np.uint8)       # капля, усы — мазки рядом с котом
+    ext = poly_mask(A.shape, P([(560, 600), (604, 600), (604, 765), (556, 785)]))          # край линз бинокля за основной рамкой кота
+    lens = cv2.morphologyEx((((g < 120) | (sat > 40)) & (ext > 0)).astype(np.uint8), cv2.MORPH_CLOSE, np.ones((9, 9), np.uint8))
+    lens = fill_holes(lens) & ext
+    cat = anim.keep_attached((cat | lens).astype(np.uint8), reach=4)
     qx0, qy0, qx1, qy1 = Q_BOX
     qreg = np.zeros_like(cat); qreg[qy0:qy1, qx0:qx1] = 1
     q = cv2.morphologyEx(((g < 200) & (qreg > 0)).astype(np.uint8), cv2.MORPH_CLOSE, np.ones((9, 9), np.uint8))
     q = anim.keep_attached(q)
     preg = poly_mask(A.shape, PORT)
     pn = cv2.morphologyEx(non & preg, cv2.MORPH_CLOSE, np.ones((15, 15), np.uint8)) & preg
-    port = (fill_holes(pn) & preg).astype(np.uint8)
-    port = anim.keep_attached(port, reach=40)
-    port &= ~cv2.dilate(cat, np.ones((3, 3), np.uint8))           # там, где кот закрывает иллюминатор, слой не нужен — его дорисует LaMa
+    cdil = cv2.dilate(cat, np.ones((33, 33), np.uint8))
+    pc = anim.keep_attached((pn & (1 - cdil)).astype(np.uint8), reach=40)
+    hull = cv2.convexHull(np.argwhere(pc.T > 0).astype(np.int32))        # иллюминатор выпуклый: белое небо и облака внутри — тоже слой
+    port = np.zeros_like(cat); cv2.fillPoly(port, [hull], 1); port &= preg
     # под котом иллюминатор дорисован целиком: для слоя планеты — без кота; для фона — без обоих
-    cat_hole = cv2.dilate(cat, np.ones((9, 9), np.uint8)) > 0
+    cat_hole = cv2.dilate(cat, np.ones((33, 33), np.uint8)) > 0
     port_full = anim.inpaint_bg(A, cat_hole & (preg > 0), cache_dir=CACHE) if (cat_hole & (preg > 0)).any() else A
     port_full = np.where((preg > 0)[..., None], port_full, A)
-    port_mask = (fill_holes(pn | (cv2.dilate(cat, np.ones((9, 9), np.uint8)) & preg)) & preg).astype(np.uint8)
-    port_mask = anim.keep_attached(port_mask, reach=40)
+    port_mask = port
     bg = A.copy()
     for m in (cat, q, port_mask):
         hole = cv2.dilate(m, np.ones((17, 17), np.uint8)) > 0
