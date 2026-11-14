@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1664, height=2496" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1664px; height: 2496px; overflow: hidden; background: #f7f3ea; }
+      #root { position: relative; width: 1664px; height: 2496px; overflow: hidden; }
+      .layer { position: absolute; left: 0; top: 0; width: 1664px; height: 2496px; }
+      .abs { position: absolute; display: block; }
+    </style>
+  </head>
+  <body>
+    <!-- Хук рилса 68 «Убираешься вместо дела?»: мир — рисунок g1_wipe_desk ×2 целиком, в половинном размере
+         (координаты композиции = координаты исходника 1664×2496). Слои — anim/kit_wipe.py, положение подставляет
+         wipe_hf.py из kit.json. С кадра 0 всё уже в движении: кот всем телом трёт стол тряпкой рывками туда-сюда,
+         ноутбук подпрыгивает от тряски стола, искры блеска мигают; на «дела» (data-vars.hit) кот толкает, ноутбук
+         улетает со стола вправо с поворотом. Камеру, тряску, субтитры и звук даёт сборщик. -->
+    <div id="root" data-composition-id="main" data-start="0" data-duration="2.0" data-width="1664" data-height="2496"
+         data-vars='{"hit": 1.05}' data-motion-blur="on" data-layout-allow-overflow data-layout-allow-overlap>
+      <img id="bg" class="abs clip" src="assets/bg.png" style="left:0;top:0" data-start="0" data-duration="2.0" />
+      <div id="all" class="layer clip" data-start="0" data-duration="2.0">
+        <div id="lapL" class="layer">
+          <img id="lap" class="abs" src="assets/lap.png" style="left:0px;top:0px" />
+        </div>
+        <div id="catL" class="layer">
+          <img id="cat" class="abs" src="assets/cat.png" style="left:0px;top:0px" />
+        </div>
+        <div id="sp1" class="layer"><img id="s1" class="abs" src="assets/s1.png" style="left:0px;top:0px" /></div>
+        <div id="sp2" class="layer"><img id="s2" class="abs" src="assets/s2.png" style="left:0px;top:0px" /></div>
+        <div id="sp3" class="layer"><img id="s3" class="abs" src="assets/s3.png" style="left:0px;top:0px" /></div>
+        <div id="sp4" class="layer"><img id="s4" class="abs" src="assets/s4.png" style="left:0px;top:0px" /></div>
+      </div>
+    </div>
+    <script>
+      const root = document.getElementById("root");
+      const V = JSON.parse(root.dataset.vars), H = V.hit, K = V.kit;
+      const tl = gsap.timeline({ paused: true });
+      const px = (p) => `${p[0]}px ${p[1]}px`;
+      gsap.set("#catL", { transformOrigin: px(K.pivot) });
+      gsap.set("#lapL", { transformOrigin: px(K.lap) });
+      ["s1", "s2", "s3", "s4"].forEach((n, i) => gsap.set(`#sp${i + 1}`, { transformOrigin: px(K.sparks[n]) }));
+      const S = 1 / 15;   // полупериод 2 кадра: крайние положения на границах кадров, ни один кадр не стоит
+      // кот трёт стол всем телом с кадра 0 (в кадре 0 уже на ходу): рывки влево-вправо с наклоном
+      tl.fromTo("#catL", { x: -30, y: -6, rotation: -2.4 }, { x: 28, y: 4, rotation: 2.2, duration: S, ease: "none" }, 0);
+      let t = S, i = 0;
+      while (t < H - 0.06) {
+        const r = i % 2 === 0;
+        tl.to("#catL", { x: r ? -30 + 6 * (i % 3) : 28 - 4 * (i % 3), y: r ? -6 : 4, rotation: r ? -2.4 : 2.2,
+                         duration: S, ease: "none" }, t);
+        t += S; i++;
+      }
+      // ноутбук подпрыгивает от тряски стола, в противофазе к коту
+      tl.fromTo("#lapL", { x: 6, y: -10, rotation: 1.0 }, { x: -6, y: 2, rotation: -0.8, duration: S, ease: "none" }, 0);
+      for (let k = 1; S * k < H - 0.04; k++) {
+        tl.to("#lapL", { x: k % 2 ? 6 : -6, y: k % 2 ? -10 : 2, rotation: k % 2 ? 1.0 : -0.8, duration: S, ease: "none" }, S * k);
+      }
+      // искры блеска мигают вразнобой: сжимаются и вспыхивают, чуть поворачиваясь
+      ["#sp1", "#sp2", "#sp3", "#sp4"].forEach((id, j) => {
+        const P = 0.1 + 0.02 * j;
+        tl.fromTo(id, { scale: j % 2 ? 1.35 : 0.45, rotation: j % 2 ? 14 : -14 }, { scale: j % 2 ? 0.45 : 1.35, rotation: j % 2 ? -14 : 14, duration: P, ease: "none" }, 0);
+        for (let k = 1; P * k < 2.0; k++) {
+          const big = (k + j) % 2 === 0;
+          tl.to(id, { scale: big ? 1.35 : 0.45, rotation: big ? 14 : -14, duration: P, ease: "none" }, P * k);
+        }
+      });
+      // «дела»: кот толкает всем телом вправо и пружиной возвращается
+      tl.to("#catL", { x: 70, y: 0, rotation: 3.5, duration: 0.06, ease: "power3.out" }, H - 0.04);
+      tl.to("#catL", { x: 0, y: 0, rotation: 0, duration: 0.8, ease: "elastic.out(1, 0.35)" }, H + 0.04);
+      // ноутбук улетает со стола вправо и вниз с поворотом
+      tl.to("#lapL", { x: 950, y: -40, rotation: 16, duration: 0.22, ease: "power2.out" }, H);
+      tl.to("#lapL", { y: 700, rotation: 34, duration: 0.3, ease: "power2.in" }, H + 0.22);
+      function DURATION() { return 2.0; }
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

@@ -28,13 +28,12 @@ def P(pts):
 
 
 SPARKS = {"s1": ((335, 1650), 82), "s2": ((410, 1790), 66), "s3": ((1043, 1812), 70), "s4": ((1222, 1543), 72)}
-CAT_UP = P([(0, 730), (560, 730), (900, 590), (1190, 590), (1250, 900), (1345, 1150), (1345, 1340), (1160, 1440),
-            (1150, 1600), (1195, 1605), (1195, 1690), (1035, 1690), (1035, DESK_Y), (420, DESK_Y), (250, 1620),
-            (0, 1570)])
-ARM = P([(640, DESK_Y - 4), (862, DESK_Y - 4), (872, 1688), (988, 1742), (955, 1797), (862, 1828), (772, 1893),
-         (668, 1878), (556, 1828), (470, 1772), (486, 1732), (568, 1698), (642, 1698)])
-LAPTOP = P([(1398, 1300), (1664, 1286), (1664, 1895), (1600, 1880), (1116, 1795), (1110, 1745), (1328, 1688),
-            (1338, 1676)])
+CAT_UP = P([(4, 730), (560, 730), (900, 590), (1190, 590), (1250, 900), (1345, 1150), (1345, 1340), (1160, 1440),
+            (1150, 1560), (1195, 1580), (1195, 1668), (1035, 1668), (1035, DESK_Y), (440, DESK_Y), (430, 1612),
+            (250, 1605), (4, 1570)])
+ARM = P([(572, DESK_Y - 4), (862, DESK_Y - 4), (872, 1688), (988, 1742), (955, 1797), (862, 1828), (772, 1893),
+         (668, 1878), (556, 1828), (470, 1772), (486, 1732), (560, 1700), (580, 1690)])
+LAPTOP = P([(1392, 1300), (1664, 1306), (1664, 1890), (1120, 1782), (1110, 1750), (1312, 1662), (1310, 1650)])
 PIVOT = P([(760, DESK_Y)])[0]             # ось раскачки кота: задний край стола под телом
 LAP = P([(1400, 1790)])[0]                 # ось ноутбука: середина основания
 
@@ -65,7 +64,8 @@ def main():
     for c, r in SPARKS.values():
         sp_all |= disc(A.shape, c, r)
     up = poly_mask(A.shape, CAT_UP) & (1 - sp_all)
-    non = ((g < 205) | (sat > 45)) & (up > 0)
+    low = np.zeros((H, Wd), bool); low[int(1600 * K):] = True       # у стола у кота — только тёмный мех лап
+    non = ((g < 205) | (sat > 45)) & (up > 0) & ~(low & (g >= 120))
     ink = cv2.morphologyEx(non.astype(np.uint8), cv2.MORPH_CLOSE, np.ones((11, 11), np.uint8)) & up
     cat = fill_holes(anim.keep_attached(ink)) & up
     # лапа с тряпкой на столе: тёмный мех, голубая тряпка и контуры — без серого стола вокруг
@@ -89,6 +89,40 @@ def main():
         hole = cv2.dilate(part.astype(np.uint8), np.ones((17, 17), np.uint8)) > 0
         bg = anim.inpaint_bg(bg, hole, cache_dir=CACHE)
     Ap, bg = anim.paper_like(A), anim.paper_like(bg)
+    # над столом за котом и ноутбуком — чистая бумага: LaMa оставляла призраки шерсти и рамки экрана (видны, когда
+    # кот раскачивается и ноутбук улетает)
+    wipe = np.zeros((H, Wd), np.uint8); wipe[:int((DESK_Y - 8) * K)] = 1
+    hole_up = cv2.dilate((cat | lap).astype(np.uint8), np.ones((31, 31), np.uint8))
+    for n in ("s1", "s4"):
+        hole_up |= cv2.dilate(sparks[n].astype(np.uint8), np.ones((17, 17), np.uint8))
+    wipe &= hole_up
+    lap_up = poly_mask(A.shape, P([(1300, 1280), (1664, 1280), (1664, 1700), (1300, 1660)]))
+    wipe |= lap_up & ((np.arange(H)[:, None] < int(1655 * K)) * 1).astype(np.uint8)
+    paper = np.median(bg[int(300 * K):int(500 * K), int(300 * K):int(1300 * K)].reshape(-1, 3), axis=0)
+    a = cv2.GaussianBlur(wipe.astype(np.float32), (0, 0), 6)[..., None]
+    bg = bg * (1 - a) + paper * a
+    # стол под тряпкой и под ноутбуком — ровный цвет стола (LaMa рисовала там призрак лапы и края ноутбука), задний край
+    # стола за ноутбуком — дорисованная линия туши
+    dz = np.zeros((H, Wd), np.uint8)
+    dz |= cv2.dilate((am | lap).astype(np.uint8), np.ones((25, 25), np.uint8))
+    top = poly_mask(A.shape, P([(240, DESK_Y + 6), (1664, DESK_Y + 10), (1664, 1905), (60, 1905)]))
+    dz |= poly_mask(A.shape, P([(1100, 1735), (1664, 1835), (1664, 1915), (1100, 1815)]))   # тень под ноутбуком
+    dz |= poly_mask(A.shape, P([(430, 1645), (620, 1645), (620, 1790), (430, 1790)]))       # штрихи и призрак у тряпки
+    dz &= top
+    dz &= ~(((sat > 40) & (g > 120)) & (sum(sparks.values()) > 0))     # искры s2, s3 не трогать (свои слои)
+    # цвет стола — построчная медиана чистого стола (стол светлее сзади, темнее спереди), не одно пятно
+    bgg = bg.mean(2)
+    ok = (top > 0) & (dz == 0) & (bgg > 150) & (sum(sparks.values()) == 0)
+    desk = np.zeros((H, 3), np.float32)
+    for y in range(int((DESK_Y + 6) * K), int(1905 * K)):
+        r = ok[y]
+        desk[y] = np.median(bg[y, r], axis=0) if r.sum() > 50 else desk[y - 1]
+    desk = cv2.GaussianBlur(desk[:, None, :], (1, 0), sigmaX=0.1, sigmaY=12)[:, 0, :] if False else desk
+    desk = np.repeat(desk[:, None, :], Wd, axis=1)
+    a = cv2.GaussianBlur(dz.astype(np.float32), (0, 0), 8)[..., None]
+    bg = bg * (1 - a) + desk * a
+    ink = np.median(A[(g < 60)].reshape(-1, 3), axis=0) if (g < 60).any() else np.array([40, 40, 40])
+    cv2.line(bg, (int(1290 * K), int((DESK_Y - 1) * K)), (Wd, int((DESK_Y + 3) * K)), tuple(float(c) for c in ink), int(5 * K), cv2.LINE_AA)
     layers = {}
     anim.save_layer(OUT, "lap", Ap, lap, layers, keep_attached_=False)
     anim.save_layer(OUT, "cat", Ap, cat, layers, keep_attached_=False)
