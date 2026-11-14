@@ -323,7 +323,7 @@ def s15(t):
     body = desk_layers(sc, parts, items)
     # камера: дрейф по дуге от рук к лицу
     u = ease_io((t - 27.3) / 2.6)
-    cx = lerp(640, 560, u) + 30 * math.sin(math.pi * u)
+    cx = lerp(600, 540, u) + 25 * math.sin(math.pi * u)
     cy = lerp(860, 760, u)
     s = lerp(1.9, 2.0, u)
     return frame_svg(body, cx, cy, s, 0, "#e6dcc0")
