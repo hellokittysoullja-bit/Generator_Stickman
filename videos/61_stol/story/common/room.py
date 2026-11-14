@@ -473,8 +473,8 @@ def clean_top(t, checks=0, u=0.0, k=1.0):
     import props as PR
     yb, yf = DESK_TOP - DESK_D + 30, DESK_TOP - 8
     o = [PR.laptop_closed(1180, yb + 50, 1.15), PR.paper_stack(1500, yb + 60, .9, n=5, seed=4, mess=0.0, sy=.4),
-         PR.marker(1020, yf - 20, .7, rot=-8, col="#4F8A8B", cap=True),
-         PR.checklist(890, yf - 52, 1.0 * k, rot=-3, checks=checks, u=u, seed=1, sy=.62)]
+         PR.marker(1080, yf - 14, .7, rot=-8, col="#4F8A8B", cap=True),
+         PR.checklist(960, yf - 52, 1.0 * k, rot=-3, checks=checks, u=u, seed=1, sy=.62)]
     return "".join(o)
 
 

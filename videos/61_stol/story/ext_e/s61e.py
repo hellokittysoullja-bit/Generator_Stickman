@@ -92,8 +92,8 @@ def marker_in_fist(wrist, side, tilt=0.0, col="#e8735a", seed=930):
     cx = wrist[0] - side * (Rm + 44 * GK)
     cy = wrist[1] + 8
     a = math.radians(90 + tilt)
-    tip = (cx + 70 * math.cos(a), cy + 70 * math.sin(a))
-    mk = PR.marker(cx + 8 * math.cos(a), cy + 8 * math.sin(a), .9, rot=90 + tilt, col=col, cap=False)
+    tip = (cx + 46 * math.cos(a), cy + 46 * math.sin(a))
+    mk = PR.marker(cx - 16 * math.cos(a), cy - 16 * math.sin(a), .9, rot=90 + tilt, col=col, cap=False)
     back, front = people.grip_svg("dima", (cx, cy), Rm, side, k=GK * .82, h=62, seed=seed)
     return back, mk, front, tip
 
@@ -178,14 +178,14 @@ def frame14(t):
     t_up0, t_slap = T_STOLOM - .32, T_STOLOM
     draw_ph = (t - T_PRIDUM) * 9.0
     if t < T_PRIDUM:
-        near = (lerp(390, pcx + 8, sm(t, T_DIMA, T_PRIDUM)), lerp(1000, pcy - 92, sm(t, T_DIMA, T_PRIDUM)))
+        near = (lerp(390, pcx + 8, sm(t, T_DIMA, T_PRIDUM)), lerp(1000, pcy - 70, sm(t, T_DIMA, T_PRIDUM)))
     elif t < t_up0:
         S = lib.sample(SCRIBBLE, False, 2.0)
         i = min(len(S) - 1, int(len(S) * clamp(du)))
-        near = (pcx - 4 + float(S[i][0]) + 54, pcy + float(S[i][1]) * .62 - 78 + 3 * math.sin(draw_ph))
+        near = (pcx - 4 + float(S[i][0]) + 43, pcy + float(S[i][1]) * .62 - 53 + 3 * math.sin(draw_ph))
     elif t < t_slap:
         k = ease_out(clamp((t - t_up0) / .22), 2)
-        near = (lerp(pcx + 54, 300, k), lerp(pcy - 78, 760, k))
+        near = (lerp(pcx + 43, 300, k), lerp(pcy - 53, 760, k))
     else:
         k = ease_in(clamp((t - t_slap) / .07), 2)
         near = (lerp(300, 250, k), lerp(760, R.DESK_TOP - 70, k))
@@ -228,7 +228,7 @@ def frame14(t):
 
 
 # ═══════════════════════════════ s15: чистый стол ═══════════════════════════════
-CK = (890.0, R.DESK_TOP - 60)       # центр листа с чекбоксами (как в room.clean_top)
+CK = (960.0, R.DESK_TOP - 60)       # центр листа с чекбоксами (как в room.clean_top)
 
 
 def box_pos(j):
@@ -243,9 +243,9 @@ def frame15(t):
     a = 35.6
     wi = ease_out(clamp((t - a) / .3), 3)
     push = sm(t, a + .3, 38.9)
-    s = lerp(1.05, 1.3, push) - .12 * (1 - wi)
-    cx = lerp(640, 760, push) - 240 * (1 - wi) + 4 * math.sin(t * 1.2)
-    cy = lerp(800, 820, push) + 4 * math.sin(t * 1.5)
+    s = lerp(1.05, 1.42, push) - .12 * (1 - wi)
+    cx = lerp(640, 800, push) - 240 * (1 - wi) + 4 * math.sin(t * 1.2)
+    cy = lerp(800, 860, push) + 4 * math.sin(t * 1.5)
     rot = lerp(.8, -.4, push) - 3 * (1 - wi)
     set_ink(s)
     c1 = clamp((t - T_PLANU) / .3)
@@ -280,18 +280,18 @@ def frame15(t):
         k = sm(t, t2 + .3, t2 + .8)
         tip = (e[0] + 20 * k, e[1] - 40 * k)
     side = -1                        # Дима лицом вправо: кисть слева от маркера
-    tilt = 12.0
+    tilt = -38.0
     am = math.radians(90 + tilt)
-    mc = (tip[0] - 70 * math.cos(am), tip[1] - 70 * math.sin(am))
-    wrist = (mc[0] - side * (12 + 44 * GK), mc[1] - 8)
+    mc = (tip[0] - 46 * math.cos(am), tip[1] - 46 * math.sin(am))
+    wrist = (mc[0] + side * (12 + 44 * GK), mc[1] - 8)
     arms = {"f": ("ik", (HX + 230, R.DESK_TOP - 30), -1), "n": ("ik", wrist, -1)}
     hands = {"f": {"curl": (.45, .45, .5, .55), "thumb": .4, "dir": (1, .35)}, "n": {"kind": "none"}}
     ex = expr_of("focus", look=(.75, .65), closed=blink(t, (36.3, 38.25)))
     if t > T_CHISTYM:
         ex.update(mouth="smile", smile=.55 * sm(t, T_CHISTYM, T_CHISTYM + .3), brows="calm")
     nod = .05 * bump(t, T_PLANU + .1, .3) + .05 * bump(t, t2 + .1, .3)
-    lean = .16 + .02 * math.sin(t * 1.4)
-    ha = .1 + nod
+    lean = .04 + .02 * math.sin(t * 1.4)
+    ha = .14 + nod
     legs = dima(HX, HY, flip=False, expr=ex, lean=lean, head_ang=ha, arms=arms, hands=hands, layers=("legs",))
     body = dima(HX, HY, flip=False, expr=ex, lean=lean, head_ang=ha, arms=arms, hands=hands, layers=("pelvis", "arm_f", "body"))
     armn = dima(HX, HY, flip=False, expr=ex, lean=lean, head_ang=ha, arms=arms, hands=hands, layers=("arm_n",))
@@ -311,9 +311,9 @@ def frame15(t):
 def frame16(t):
     a = 38.5
     back = sm(t, T_DVA - .05, T_DVA + .65)
-    s = lerp(1.25, .8, back) + .03 * bump(t, T_STYDA, .5)
+    s = lerp(1.3, .9, back) + .03 * bump(t, T_STYDA, .5)
     cx = lerp(560, 570, back) + 4 * math.sin(t * 1.1)
-    cy = lerp(820, 1060, back) + 3 * math.sin(t * 1.4) - 10 * bump(t, T_STYDA, .5)
+    cy = lerp(800, 965, back) + 3 * math.sin(t * 1.4) - 10 * bump(t, T_STYDA, .5)
     rot = lerp(.9, 0.0, back) + .6 * math.sin(t * .9) * back
     set_ink(s)
     beh, front, items = room_layers(t, checks=2)
