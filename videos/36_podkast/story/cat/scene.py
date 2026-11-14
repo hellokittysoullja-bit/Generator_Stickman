@@ -87,13 +87,13 @@ def sparkle(x, y, r, a=0.0, col="#fff6c8", op=1.0):
 
 
 # ═════════════════════════════ s05: кот на подлокотнике дивана
-SOFA, SOFA_SH, SOFA_HI, SOFA_DK = "#6f86a6", "#566b8a", "#8ea2bf", "#45577a"
+SOFA, SOFA_SH, SOFA_HI, SOFA_DK = "#c46a48", "#9e4f34", "#d9845f", "#7c3a26"     # как диван комнаты (home/room.py)
 PLAID, PLAID_SH = "#c9584a", "#a8453a"
 
 
 def room05(t):
     """Вечерняя комната за диваном (будет размыта): тёплая стена, торшер, картина, тёмное окно."""
-    o = [f'<rect x="-2000" y="-2400" width="5000" height="4000" fill="{HL.WALL}"/>']
+    o = [f'<rect x="-2000" y="-2400" width="5000" height="4000" fill="#9db8b8"/>']
     o.append(blob(rect_pts(-2000, 260, 3000, 1600), "#a9744a"))
     # окно-ночь слева
     o.append(shape(rect_pts(-560, -820, -200, -300, 8), "#f3e8d4", blob(rect_pts(-536, -796, -224, -324), "#26315e") +
@@ -131,7 +131,7 @@ def sofa05():
                    line([(-300, 200), (-290, 880)], 4, SOFA_DK, seed=7041, op=.5), w=5.2, seed=7040))
     roll = [(-490, 40), (-470, -40), (-380, -78), (0, -86), (280, -76), (330, -30), (320, 50), (200, 76), (-300, 80), (-470, 72)]
     o.append(shape(roll, SOFA_HI, blob([(-490, 20), (330, 0), (320, 50), (200, 76), (-300, 80), (-470, 72)], SOFA, .9) +
-                   line([(-400, -40), (-100, -56), (220, -50)], 3, "#b8c6da", seed=7043, op=.8), w=5.2, seed=7042))
+                   line([(-400, -40), (-100, -56), (220, -50)], 3, "#ecab88", seed=7043, op=.8), w=5.2, seed=7042))
     # шов-кант по краю валика
     o.append(line([(-470, 60), (-300, 70), (200, 64), (316, 36)], 3, SOFA_DK, seed=7044, op=.7))
     return "".join(o)
@@ -172,7 +172,7 @@ def frame05(t):
     w.append(blob(ellipse_pts(x + 26, y + 4, 140, 12, 16), "#1d2236", .35, lib.blur(5)))
     w.append(flame_glow(x, y + hop, s, tail, t, 1 + (0.6 * math.exp(-e * 3) if e > 0 else 0), 220))
     w.append(cat_svg(x, y + hop, s, t, shadow=False, look=look, blink=blink, tilt=tilt, tail=tail, flick=flick, flame_k=fk))
-    return svg_cam("".join(w), (cx, cy, sc, rot), bg=HL.WALL)
+    return svg_cam("".join(w), (cx, cy, sc, rot), bg="#9db8b8")
 
 
 # ═════════════════════════════ спортивная сумка
