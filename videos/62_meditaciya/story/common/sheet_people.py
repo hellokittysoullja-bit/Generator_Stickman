@@ -1,4 +1,4 @@
-"""Контрольный лист героев рилса 61: python3 sheet_people.py [out.png] — Дима (мимика и позы), мама, участница (bob), бородач (beard), кот."""
+"""Контрольный лист героев рилса 62: python3 sheet_people.py [out] — Дима в лотосе (позы и мимика), друг с мобильником, кот."""
 import os
 import subprocess
 import sys
@@ -13,50 +13,50 @@ R_JS = os.path.join(HERE, "render.js")
 E = people.EXPR
 
 
+def lotus(name, x, y, s, ex, u=0.0, **kw):
+    return people.figure("dima", x, y, s, E["dima"][ex], **people.lotus_kw(name, x, y, s, u, **kw))["svg"]
+
+
 def build(page=0):
     lib.DEFS.clear()
     b = ['<rect width="1080" height="1920" fill="#f4efe4"/>']
     if page == 0:
-        # ряд 1: пять лиц Димы
-        for i, n in enumerate(("guilty", "gloom", "zeal", "focus", "calm_smile")):
-            b.append(people.figure("dima", 110 + i * 215, 420, 0.36, E["dima"][n])["svg"])
-        # ряд 2: позы Димы
-        for i, n in enumerate(("sit_desk", "slump", "draw")):
-            x, y = 150 + i * 340, 1050
-            b.append(f'<rect x="{x - 60}" y="{y - 0.4 * 200}" width="330" height="14" fill="#a07a52"/>')
-            b.append(people.figure("dima", x, y, 0.4, E["dima"][["guilty", "gloom", "focus"][i]], **people.pose_kw(n, x, y, 0.4))["svg"])
-        # ряд 3: tick, arms_wide; мама sweep/cross
-        x, y = 150, 1700
-        b.append(people.figure("dima", x, y, 0.4, E["dima"]["focus"], **people.pose_kw("tick", x, y, 0.4))["svg"])
-        x = 470
-        b.append(people.figure("dima", x, y, 0.4, E["dima"]["calm_smile"], **people.pose_kw("arms_wide", x, y, 0.4))["svg"])
-        b.append(people.figure("mama", 760, y, 0.4, E["mama"]["talk"], **people.pose_kw("sweep", 760, y, 0.4, "mama"))["svg"])
-        b.append(people.figure("mama", 980, y, 0.4, E["mama"]["pursed"], **people.pose_kw("cross", 980, y, 0.4, "mama"))["svg"])
+        b.append(lotus("sit", 300, 700, .62, "solemn"))
+        b.append(lotus("sit", 800, 700, .62, "bliss"))
+        b.append(lotus("slump", 300, 1500, .62, "upset", sag=1.0))
+        b.append(lotus("push", 800, 1500, .62, "soft", u=1.0))
+    elif page == 1:
+        for i, n in enumerate(("smack", "one_eye", "squeeze", "upset", "side_eye")):
+            b.append(people.figure("dima", 110 + i * 215, 420, 0.36, E["dima"][n], layers=("body",))["svg"])
+        for i, n in enumerate(("soft", "friendly", "side_smile", "solemn", "bliss")):
+            b.append(people.figure("dima", 110 + i * 215, 900, 0.36, E["dima"][n], layers=("body",))["svg"])
+        b.append(lotus("flick", 280, 1650, .5, "soft", u=.3))
+        b.append(lotus("wave", 780, 1650, .5, "friendly", u=.25))
     else:
-        # ряд 1: мама — 4 лица
-        for i, n in enumerate(("brow_up", "pursed", "talk", "sigh")):
-            b.append(people.figure("mama", 140 + i * 265, 430, 0.42, E["mama"][n])["svg"])
-        # ряд 2: участница — 4 лица
-        for i, n in enumerate(("calm", "think", "bite", "pleased")):
-            b.append(people.figure("bob", 140 + i * 265, 960, 0.42, E["bob"][n])["svg"])
-        # ряд 3: бородач — 3 лица, кот сидит/шаг
-        for i, n in enumerate(("think", "idea", "calm")):
-            b.append(people.figure("beard", 130 + i * 250, 1480, 0.4, E["beard"][n])["svg"])
-        b.append(people.cat_walk(900, 1380, 0.32, 0.12))
-        # ряд 4: кот прыгает (присед, толчок, полёт), кот спит
-        for i, u in enumerate((0.25, 0.38, 0.6)):
-            b.append(people.cat_jump((140 + i * 250, 1880), (300 + i * 250, 1780), 0.3, u, 0.3))
-        b.append(people.cat_svg(900, 1880, 0.32, {"sleep": 1.0, "blink": 1.0}, 0.5))
+        # друг: стоит, держит мобильник, топает
+        x, y, s = 300, 1000, .5
+        f = people.figure("pal", x, y, s, E["pal"]["hurt"], feet={"n": (x + 60, y + 600 * s), "f": (x - 40, y + 610 * s)} and
+                          {"n": ((x + 60, y + 600 * s), 0.0), "f": ((x - 50, y + 610 * s), 0.0)},
+                          arms={"f": ("ang", 0.2, 0.2), "n": ("ik", (x + 230 * s, y - 330 * s), -1)}, hands={"n": {"kind": "none"}})
+        b.append(f["svg"])
+        w = f["wrist"]["n"]
+        b.append(people.mobilnik(w[0] + 20, w[1] - 40, .9, 12))
+        bk, fr = people.grip_svg("pal", (w[0] + 20, w[1] - 30), 30 * .9, 1, k=s * 1.03)
+        b.append(fr)
+        b.append(people.figure("pal", 800, 600, .42, E["pal"]["cross"], layers=("body",))["svg"])
+        b.append(people.cat_walk(780, 1300, .55, 0.12))
+        b.append(people.cat_svg(320, 1850, .55, {"blink": .55, "look": (.6, .3), "tail": -10}, 0.0))
+        b.append(people.cat_svg(800, 1850, .55, {"blink": .0, "look": (-.6, 0), "turn": -.6}, 0.0))
     return lib.svg("".join(b))
 
 
 if __name__ == "__main__":
-    out = sys.argv[1] if len(sys.argv) > 1 else "/tmp/people_sheet"
+    out = sys.argv[1] if len(sys.argv) > 1 else "/tmp/people62"
     d = tempfile.mkdtemp()
     lst = []
-    for pg in (0, 1):
+    for pg in (0, 1, 2):
         open(f"{d}/a{pg}.svg", "w").write(build(pg))
         lst.append(f"{d}/a{pg}.svg\t{out}_{pg}.png")
     open(d + "/l.txt", "w").write("\n".join(lst))
     subprocess.check_call(["node", R_JS, d + "/l.txt", "png", "1", "x"])
-    print(out)
+    print("\n".join(out + f"_{p}.png" for p in (0, 1, 2)))

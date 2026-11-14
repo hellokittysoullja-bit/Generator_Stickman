@@ -17,6 +17,7 @@ import numpy as np
 import hand as Hand
 import lib
 from lib import INK, band, blob, ellipse_pts, fill_d, ink_closed
+from ink import fur
 
 LWK = 1.0
 C = {}
@@ -25,6 +26,11 @@ PAL = {
                  TOP="#d4a23e", TOP_SH="#a97b25", TOP_SH2="#8c6219", FOLD="#6b4a12",
                  LEGS="#3d4c6e", LEGS_SH="#2c3854", LEGS_SEAM="#5f6f92",
                  SHOE="#4b505e", SHOE_SH="#363a46", SOLE="#f2eee6", SOLE_SH="#c9c3b8", STRIPE="#d8483c", NAIL="#f1cdbd"),
+    # рилс 62: друг Димы — рыжий кудрявый, веснушки, зелёная футболка, бежевые штаны, кеды
+    "pal": dict(SKIN="#f6d6bd", SKIN_SH="#e0b096", SKIN_SH2="#c9927a", HAIR="#d4672a", HAIR_SH="#a04818", HAIR_HI="#ee9152",
+                TOP="#4fa36a", TOP_SH="#3a8052", TOP_SH2="#2c6340", FOLD="#24503a", STITCH="#8fd1a2",
+                LEGS="#c9b48c", LEGS_SH="#a8936c", LEGS_SEAM="#e0d0ac",
+                SHOE="#e8e2d6", SHOE_SH="#bdb4a4", SOLE="#f4f0e8", SOLE_SH="#cfc8bc", STRIPE="#d8483c", NAIL="#f6dccb"),
     "friend": dict(SKIN="#f3d2b6", SKIN_SH="#dcab8e", SKIN_SH2="#c8917a", HAIR="#c8622c", HAIR_SH="#97441c", HAIR_HI="#e4894c",
                    TOP="#5d86b6", TOP_SH="#44678f", TOP_SH2="#344f70", FOLD="#2c4260", STITCH="#e2b46a",
                    TEE="#f4efe6", TEE_SH="#d9d2c4",
@@ -69,8 +75,8 @@ PAL["beard"] = dict(SKIN="#e3b28e", SKIN_SH="#c99270", SKIN_SH2="#b07b5c", HAIR=
                     TEE="#f4efe6", TEE_SH="#d9d2c4",
                     LEGS="#55606e", LEGS_SH="#3e4752", LEGS_SEAM="#76828f", SHOE="#7a4a2a", SHOE_SH="#5a341c", SOLE="#3b2c22", SOLE_SH="#2a1f18",
                     STRIPE="#a76a3e", NAIL="#eec6aa")
-FRIENDLIKE = ("kid", "friend", "granny", "sport", "mama", "bald", "beard")
-NEWHEADS = ("mama", "girl", "bald", "cap", "bob", "beard")
+FRIENDLIKE = ("pal", "kid", "friend", "granny", "sport", "mama", "bald", "beard")
+NEWHEADS = ("mama", "girl", "bald", "cap", "bob", "beard", "pal")
 KID_HEAD_K = 1.32      # голова ребёнка крупнее относительно тела
 KID_LEG_K = 0.8
 FAR = (0.82, 0.82, 0.9)
@@ -133,14 +139,35 @@ def eyes(expr, EN, EF, bags=True, lash_col=INK):
     lidk = expr.get("lid", 0.3)
     lx, ly = expr.get("look", (0.3, 0.0))
     laugh = expr.get("laugh", 0.0)
-    blink = expr.get("closed", 0.0)
+    blink0 = expr.get("closed", 0.0)
     if bags:
+        bk_ = .45 if max(expr.get("shut", 0), expr.get("squeeze", 0)) > .5 else 1.0
         for (cx, cy, rx, ry, sd) in [(*EN, 154), (*EF, 155)]:
             bag = [(cx - rx * .85, cy + ry * .55), (cx, cy + ry * 1.38), (cx + rx * .85, cy + ry * .55), (cx, cy + ry * .9)]
-            s.append(blob(bag, "#a77f8c", .78 * (1 - laugh)))
+            s.append(blob(bag, "#a77f8c", .78 * (1 - laugh) * bk_))
             if laugh < .5:
                 s.append(line([(cx - rx * .8, cy + ry * .7), (cx, cy + ry * 1.36), (cx + rx * .75, cy + ry * .75)], 3.3, seed=sd))
     for nm, (cx, cy, rx, ry), sd in [("F", EF, 160), ("N", EN, 161)]:
+        nl = nm.lower()
+        sc_ = expr.get("scale_" + nl, 1.0)          # глаз распахнулся пружиной: scale_n / scale_f
+        rx, ry = rx * sc_, ry * sc_
+        blink = expr.get("closed_" + nl, blink0)     # один глаз закрыт, другой открыт
+        shut = expr.get("shut_" + nl, expr.get("shut", 0.0))
+        sqz = expr.get("squeeze_" + nl, expr.get("squeeze", 0.0))
+        if sqz > .5:          # напряжённо зажмурен: «>» и «<», морщинки
+            sgn = 1 if nm == "N" else -1
+            a_ = cx - sgn * rx * .75
+            s.append(line([(a_, cy - ry * .55), (cx + sgn * rx * .7, cy - ry * .02), (a_, cy + ry * .45)], 6.6, seed=sd + 80, taper=.35, wmin=.4))
+            for j in (-1, 1):
+                s.append(line([(cx - sgn * rx * 1.05, cy + j * ry * .5), (cx - sgn * rx * 1.35, cy + j * ry * .8)], 2.4, C["SKIN_SH2"], seed=sd + 81 + j))
+            continue
+        if shut > .5:         # закрыт спокойно: дуга «∪» с ресничкой
+            k_ = (shut - .5) * 2
+            yy = cy + ry * .1
+            s.append(line([(cx - rx * .9, yy - ry * .1), (cx - rx * .35, yy + ry * (.18 + .14 * k_)), (cx + rx * .35, yy + ry * (.18 + .14 * k_)),
+                           (cx + rx * .9, yy - ry * .1)], 6.0, seed=sd + 85, taper=.4, wmin=.35))
+            s.append(line([(cx + rx * .85, yy - ry * .08), (cx + rx * 1.1, yy - ry * .3)], 3.0, seed=sd + 86, taper=.3, wmin=.5))
+            continue
         if laugh > .5:
             # зажмурился от смеха: дуга «∩», морщинки у внешнего угла
             k = (laugh - .5) * 2
@@ -271,6 +298,12 @@ def dima_head(expr):
 
 
 BROWS = {"tired": ([(-30, -76), (4, -86), (46, -80)], [(72, -80), (100, -86), (126, -76)]),
+         # рилс 62: торжественно (высоко и ровно), грустно (домиком), сведены от напряжения, одна бровь взлетела
+         "solemn": ([(-30, -98), (6, -108), (46, -102)], [(72, -102), (100, -108), (126, -98)]),
+         "sad": ([(-30, -78), (8, -88), (46, -108)], [(72, -110), (100, -92), (126, -80)]),
+         "pinch": ([(-30, -90), (10, -82), (48, -64)], [(70, -64), (100, -80), (128, -92)]),
+         "one_up": ([(-30, -80), (4, -86), (46, -80)], [(70, -110), (100, -128), (128, -112)]),
+         "n_up": ([(-30, -104), (8, -124), (46, -112)], [(72, -80), (100, -84), (126, -78)]),
          "up": ([(-30, -96), (6, -112), (46, -104)], [(72, -104), (102, -114), (128, -98)]),
          "calm": ([(-30, -80), (4, -86), (46, -78)], [(72, -78), (100, -84), (126, -78)]),
          "det": ([(-30, -88), (8, -84), (48, -68)], [(70, -68), (100, -82), (128, -90)]),
@@ -279,6 +312,33 @@ BROWS = {"tired": ([(-30, -76), (4, -86), (46, -80)], [(72, -80), (100, -86), (1
 
 def dima_mouth(expr):
     m = expr.get("mouth", "tired")
+    if m == "smack":       # причмокивает: губы трубочкой, кончик языка, блестящая слюнка (chew 0..1 — фаза)
+        ch = expr.get("chew", 0.0)
+        w = 16 + 6 * ch
+        cy = 92
+        o = shape(ellipse_pts(64, cy, w, 12 + 4 * (1 - ch), 12), "#c86b6b", blob(ellipse_pts(64, cy - 3, w * .55, 4 + 2 * ch, 8), "#5a2b33", .9), w=4.4, seed=176)
+        if ch > .35:
+            o += shape(ellipse_pts(70 + w * .6, cy + 6, 9, 6, 8), "#e8808c", "", w=2.6, seed=177)
+        if expr.get("drool", 0.0) > .05:
+            dl = 18 * expr["drool"]
+            o += shape([(44, cy + 4), (50, cy + 6), (49, cy + 10 + dl), (45, cy + 14 + dl), (41, cy + 10 + dl)], "#cfeaf6",
+                       blob([(45, cy + 6 + dl), (47, cy + 8 + dl), (45, cy + 11 + dl)], "#ffffff"), w=2.2, seed=178)
+        o += line([(40, cy - 6), (44, cy + 2)], 2.2, C["SKIN_SH2"], seed=179, op=.8) + line([(88, cy - 6), (84, cy + 2)], 2.2, C["SKIN_SH2"], seed=173, op=.8)
+        return o
+    if m == "wobble":      # расстроен: уголки вниз, нижняя губа дрожит (trem — фаза)
+        tr = expr.get("trem", 0.0)
+        j = 2.6 * math.sin(tr * 2 * math.pi * 7)
+        o = line([(36, 98), (48, 88 + j * .4), (62, 86 - j * .5), (76, 87 + j * .5), (92, 98)], 4.8, seed=165, peak=.5)
+        o += line([(48, 102 + j), (62, 106 - j), (78, 102 + j)], 2.6, C["SKIN_SH2"], seed=167, op=.85)
+        o += line([(32, 100), (38, 108)], 2.2, C["SKIN_SH2"], seed=168, op=.7)
+        return o
+    if m == "frown":
+        return line([(38, 96), (60, 88), (82, 89), (92, 98)], 4.8, seed=165, peak=.5) + blob([(50, 102), (76, 102), (72, 108), (54, 108)], C["SKIN_SH"], .7)
+    if m == "o":           # удивлённое «о»
+        o_ = expr.get("open", .6)
+        return shape(ellipse_pts(64, 94, 11 + 5 * o_, 9 + 12 * o_, 12), "#5a2b33", blob(ellipse_pts(64, 100 + 6 * o_, 8, 5, 8), "#c86b6b"), w=4.2, seed=172)
+    if m == "side":        # улыбка краем рта (ближний уголок вверх)
+        return line([(38, 92), (60, 92), (80, 88), (94, 76)], 4.8, seed=165, peak=.5) + line([(92, 72), (98, 78)], 2.4, seed=166, op=.8)
     if m == "talk":
         return talk_mouth(64, 88, expr.get("open", .3), wide=.9, smile=expr.get("smile", .3), seed=165)
     if m == "smile":
@@ -482,12 +542,17 @@ def person_head(expr, style):
         for i, st in enumerate([[(-120, -110), (-140, -20), (-136, 90)], [(-96, -100), (-106, 0), (-100, 100)]]):
             bi += line(st, 2.6, C["HAIR_HI"], seed=455 + i, op=.7)
         s.append(shape(back, C["HAIR"], bi, w=5.2, seed=454))
-    if style not in ("cap", "beard", "bob"):
+    if style not in ("cap", "beard", "bob", "pal"):
         s.append(shape(ear, C["SKIN"], blob([(-132, -14), (-130, 22), (-116, 48), (-116, 10)], C["SKIN_SH"], .9), w=4.8, seed=451))
         s.append(line([(-98, 32), (-118, 20), (-116, -8), (-102, -18)], 3.2, seed=452))
     if style == "mama":       # серёжка
         s.append(f'<circle cx="-110" cy="56" r="7" fill="#e0b440"/><circle cx="-112" cy="54" r="2.2" fill="#fff2b8"/>')
-    face = {"girl": FACE_G, "mama": FACE_G, "bald": FACE_B, "cap": F_FACE, "bob": FACE_G, "beard": F_FACE}[style]
+    if style == "pal":        # кудри сзади, за ухом
+        back = fur([(-40, -150), (-120, -136), (-158, -70), (-160, 10), (-134, 60), (-96, 50), (-88, -10), (-60, -80)], depth=22, every=6, seed=611)
+        s.append(shape(back, C["HAIR_SH"], "", w=5.0, seed=612))
+        s.append(shape(ear, C["SKIN"], blob([(-132, -14), (-130, 22), (-116, 48), (-116, 10)], C["SKIN_SH"], .9), w=4.8, seed=451))
+        s.append(line([(-98, 32), (-118, 20), (-116, -8), (-102, -18)], 3.2, seed=452))
+    face = {"pal": FACE_G, "girl": FACE_G, "mama": FACE_G, "bald": FACE_B, "cap": F_FACE, "bob": FACE_G, "beard": F_FACE}[style]
     inner = []
     inner.append(blob([(-120, -210), (-40, -210), (-60, -40), (-56, 40), (-30, 160), (-120, 160)], C["SKIN_SH"], .95))
     inner.append(blob(ellipse_pts(56, -16, 100, 60, 14), "#e5a99a", .3))
@@ -499,8 +564,8 @@ def person_head(expr, style):
     if fl > .01:
         inner.append(blob(ellipse_pts(30, 20, 140, 120, 16), "#e2493c", .5 * fl))
     rs = np.random.RandomState(41)
-    if style == "girl":       # веснушки
-        for _ in range(34):
+    if style in ("girl", "pal"):       # веснушки
+        for _ in range(34 if style == "girl" else 48):
             x, y = rs.uniform(-6, 116), rs.uniform(8, 44)
             if (x - 56) ** 2 / 70 ** 2 + (y - 26) ** 2 / 20 ** 2 > 1:
                 continue
@@ -619,6 +684,16 @@ def person_head(expr, style):
         s.append(shape(bang, C["HAIR"], blob([(-60, -140), (120, -140), (120, -120), (-60, -116)], C["HAIR_SH"], .6)
                        + line([(70, -130), (60, -96)], 2.2, C["HAIR_SH"], seed=561, op=.8)
                        + line([(20, -134), (14, -98)], 2.2, C["HAIR_SH"], seed=562, op=.8), w=4.6, seed=560))
+    elif style == "pal":
+        # шапка рыжих кудрей: пышная, круглыми завитками, ниже лба — чёлка-завитки
+        base = [(116, -70), (112, -120), (80, -160), (30, -178), (-30, -176), (-84, -156), (-124, -112), (-138, -60), (-120, -20), (-94, -46),
+                (-80, -80), (-40, -96), (0, -92), (40, -98), (80, -86), (104, -64)]
+        hair = _bounce(fur(base, depth=26, every=7, seed=613), hb)
+        hi = blob(_bounce([(-150, -200), (-40, -200), (-50, -120), (-90, -90), (-110, -20), (-150, -20)], hb), C["HAIR_SH"], .85)
+        hi += blob(_bounce([(0, -170), (60, -150), (96, -110), (60, -132), (30, -150)], hb), C["HAIR_HI"], .9)
+        for i, (cx_, cy_) in enumerate([(-80, -140), (-30, -150), (24, -150), (70, -128), (-110, -80), (-50, -110), (10, -118), (60, -100)]):
+            hi += line(_bounce([(cx_ - 12, cy_ + 6), (cx_ - 4, cy_ - 10), (cx_ + 10, cy_ - 6), (cx_ + 6, cy_ + 8)], hb), 2.6, C["HAIR_SH"], seed=620 + i, op=.85)
+        s.append(shape(hair, C["HAIR"], hi, w=5.4, seed=614))
     elif style == "beard":
         # кепка задом наперёд: козырёк смотрит назад (влево), спереди — вырез застёжки с прядью волос
         s.append(shape([(-100, -70), (-130, -30), (-126, 10, 1), (-104, -4), (-96, 30), (-80, -10), (-70, -60)], C["HAIR"], "", w=4.6, seed=570))
@@ -857,6 +932,18 @@ def shoe(A, phi, far, seed, who):
 
 def sleeve(S, E, Wr, far, seed, who):
     s = []
+    if who == "pal":       # футболка: короткий рукав, дальше голая рука (тоньше рукава худи)
+        M = np.array(S, float) + (np.array(E, float) - np.array(S, float)) * .55
+        s.append(limb_band(S, E, 104, 90, C["SKIN"], far, seed + 7,
+                           lambda a, b, d, n: blob([P(np.array(a) - n * 46), P(np.array(b) - n * 40), P(np.array(b) - n * 12), P(np.array(a) - n * 14)],
+                                                   far_c(C["SKIN_SH"], far), .8)))
+        s.append(limb_band(E, Wr, 90, 74, C["SKIN"], far, seed + 8,
+                           lambda a, b, d, n: blob([P(np.array(a) - n * 40), P(np.array(b) - n * 32), P(np.array(b) - n * 10), P(np.array(a) - n * 12)],
+                                                   far_c(C["SKIN_SH"], far), .8)))
+        s.append(limb_band(S, M, 136, 128, C["TOP"], far, seed + 9,
+                           lambda a, b, d, n: blob([P(np.array(a) - n * 64), P(np.array(b) - n * 60), P(np.array(b) - n * 18), P(np.array(a) - n * 20)],
+                                                   far_c(C["TOP_SH"], far), .85)))
+        return "".join(s)
     top, sh, sh2, fold = C["TOP"], C["TOP_SH"], C["TOP_SH2"], C["FOLD"]
 
     def up_in(a, b, d, n):
@@ -1047,7 +1134,9 @@ def draw(pose, who="dima"):
     neck = up * (tl + 52) + fw * 30
     out = {}
     legs = {}
-    if pose.get("feet"):
+    if pose.get("lotus") is not None:
+        out["legs"] = G(lotus_legs(pose["lotus"], lean))
+    elif pose.get("feet"):
         for side in ("f", "n"):
             A, phi = pose["feet"][side]
             A = L(A)
@@ -1074,7 +1163,7 @@ def draw(pose, who="dima"):
             E, Wr = ik2(sp, L(a[1]), UPPER, FORE, a[2] if len(a) > 2 else -1)
         arms[side] = (sp, E, Wr)
 
-    def arm_svg(side):
+    def arm_svg(side, hand_only=False):
         sp, E, Wr = arms[side]
         far = side == "f"
         d = (Wr - E) / np.linalg.norm(Wr - E)
@@ -1082,19 +1171,22 @@ def draw(pose, who="dima"):
         hd = hs.get("dir")
         if hd is not None:
             d = np.array(hd, float) / np.linalg.norm(hd)
-        o = sleeve(sp, E, Wr, far, 600 + (0 if far else 50), who)
+        o = "" if hand_only else sleeve(sp, E, Wr, far, 600 + (0 if far else 50), who)
         kw = hand_kw()
         if far:
             kw.update(skin=far_c(C["SKIN"], True), skin_sh=far_c(C["SKIN_SH"], True))
         kind = hs.get("kind", "open")
         k = hs.get("k", 1.0)
-        if kind == "open":
+        if kind == "mudra":
+            o += mudra(Wr + d * 2, d, k=k, flip=hs.get("flip", 1), far=far, seed=700 + (0 if far else 40))
+        elif kind == "open":
             o += Hand.hand(Wr + d * 2, d, flip=hs.get("flip", 1), k=k, curl=hs.get("curl", (0.15, .1, .15, .2)), spread=hs.get("spread", .2),
                            thumb=hs.get("thumb", .2), bend=hs.get("bend", .1), seed=700 + (0 if far else 40), nails=not far, **kw)
         return o
 
     out["arm_f"] = G(arm_svg("f"))
-    if pose.get("feet") is None and pose.get("pelvis", True):
+    out["hand_f"] = G(arm_svg("f", hand_only=True))
+    if pose.get("feet") is None and pose.get("lotus") is None and pose.get("pelvis", True):
         pel = ellipse_pts(0, -6, 128, 70, 14, rot=math.degrees(lean))
         out["pelvis"] = G(shape(pel, C["LEGS"], blob(ellipse_pts(40, 20, 120, 50, 12), C["LEGS_SH"], .7), w=4.6, seed=880))
     if who in ("dima", "cap"):
@@ -1105,6 +1197,8 @@ def draw(pose, who="dima"):
         back, torso, strings = sweater_parts()
     elif who == "beard":
         back, torso, strings = plaid_parts()
+    elif who == "pal":
+        back, torso, strings = tee_parts()
     else:
         back, torso, strings = jacket_parts(cardigan=(who == "mama"))
     ha = pose.get("head_ang", 0.0)
@@ -1152,12 +1246,12 @@ def hand_world(Wr_world, d, scale, who, far=False, **hs):
 #   cat_svg(x, y, k, st, t) — кот как look/hero.png (левое ухо загнуто, шерсть #3b4143).
 #   expr: lid 0..1, look (x, y), closed, laugh 0..1 (глаза-дуги ∩), tears 0..1 (слёзы счастья при laugh>.5), mouth: talk/smile/grin/laugh/flat/wobble (+open, smile),
 #         brows: Дима tired/up/calm/det/worry, остальные up/calm/worry/frown; blush, flush, hair (волосы подпрыгивают).
-HEIGHT = {"dima": 1.0, "kid": .66, "mama": .92, "girl": .96, "bald": 1.08, "cap": 1.02, "friend": 1.06, "bob": .95, "beard": 1.05}
-FACES = ("dima", "kid", "mama", "girl", "bald", "cap", "friend", "bob", "beard")
+HEIGHT = {"pal": 1.03, "dima": 1.0, "kid": .66, "mama": .92, "girl": .96, "bald": 1.08, "cap": 1.02, "friend": 1.06, "bob": .95, "beard": 1.05}
+FACES = ("pal", "dima", "kid", "mama", "girl", "bald", "cap", "friend", "bob", "beard")
 
 
 def figure(who, x, y, scale=0.5, expr=None, lean=0.0, head_ang=0.0, arms=None, hands=None, feet=None, flip=False, layers=None, torso_k=1.0, hood=0.0,
-           head_off=(0, 0), extra=None):
+           head_off=(0, 0), extra=None, lotus=None):
     """Человек по пояс (feet=None) или с ногами (feet={'n': (ankle, phi), 'f': ...}). (x, y) — таз в мире, scale — масштаб (голова ≈ 300·scale).
     arms по умолчанию — руки вниз. layers — подмножество {'legs','pelvis','arm_f','body','arm_n'} в порядке отрисовки (по умолчанию все).
     Возвращает dict(svg=..., head=(x, y), wrist={'n','f'}, elbow=...) — координаты уже с учётом flip."""
@@ -1165,11 +1259,11 @@ def figure(who, x, y, scale=0.5, expr=None, lean=0.0, head_ang=0.0, arms=None, h
     if arms is None:
         arms = {"f": ("ang", 0.18, 0.18), "n": ("ang", -0.1, 0.25)}
     pose = dict(hip=(x, y), scale=sc, lean=lean, feet=feet, arms=arms, hands=hands or {}, head_ang=head_ang, expr=expr or {}, torso_k=torso_k,
-                hood=hood, head_off=head_off)
+                hood=hood, head_off=head_off, lotus=lotus)
     if extra:
         pose.update(extra)
     o = draw(pose, who)
-    order = layers or ("legs", "pelvis", "arm_f", "body", "arm_n")
+    order = layers or (("arm_f", "body", "legs", "hand_f", "arm_n") if lotus is not None else ("legs", "pelvis", "arm_f", "body", "arm_n"))
     svg = "".join(o[k] for k in order if k in o)
     res = dict(svg=svg, head=tuple(map(float, o["head"])), wrist={k: tuple(map(float, v)) for k, v in o["wrist"].items()},
                elbow={k: tuple(map(float, v)) for k, v in o["elbow"].items()}, scale=sc)
@@ -1320,3 +1414,174 @@ def cat_jump(p0, p1, k, u, t, st=None, height=None):
         st.update(sy=1 - .16 * sq, sx=1 + .1 * sq, perk=1 - e)
         pos = p1
     return cat_svg(float(pos[0]), float(pos[1]), k, st, t)
+
+
+# ═════════════════════════════ РИЛС 62: ПОЗА ЛОТОСА, КИСТЬ «КОЛЕЧКО», ФУТБОЛКА ДРУГА ═════════════════════════════
+def _lerp(a, b, u):
+    return np.array(a, float) + (np.array(b, float) - np.array(a, float)) * u
+
+
+def sock(A, dirv, far, seed, up=0.0):
+    """Ступня в носке (лотос): A — щиколотка, dirv — куда смотрят пальцы, up — подошва к зрителю (0..1)."""
+    d = np.array(dirv, float)
+    d /= np.linalg.norm(d) + 1e-9
+    n = np.array([-d[1], d[0]])
+    if n[1] > 0:
+        n = -n          # n — вверх
+    def tf(x, y):
+        return P(A + d * x + n * y)
+    pts = [tf(-34, 30), tf(10, 40), tf(70, 36), tf(118, 26), tf(140, 6), tf(132, -18), tf(96, -30), tf(30, -40), tf(-28, -36), tf(-46, -4)]
+    col = "#e7e1d6"
+    inner = blob([tf(-40, -40), tf(140, -30), tf(140, -6), tf(-40, -8)], far_c("#c9c1b2", far), .9)
+    inner += blob([tf(-46, 40), tf(4, 40), tf(4, -40), tf(-46, -40)], far_c(C["LEGS_SH"], far), .0)
+    if up > .3:        # подошва к зрителю: серая пятка и подушечка
+        inner += blob(ellipse_pts(*tf(4, 0), 26, 22, 10), far_c("#b9b0a2", far), .8)
+        inner += blob(ellipse_pts(*tf(104, 2), 26, 24, 10), far_c("#b9b0a2", far), .8)
+    inner += line([tf(-30, 34), tf(-36, -32)], 2.2, far_c("#b3aa9a", far), seed=seed + 3, op=.8)
+    return shape(pts, far_c(col, far), inner, w=4.4, seed=seed)
+
+
+def lotus_legs(lot, lean=0.0):
+    """Ноги в позе лотоса (в системе таза, профиль-3/4 вправо): колени в стороны, голени скрещены перед тазом, ступни в носках
+    лежат у противоположных колен. lot: fold 0..1 (0 — ноги свободно висят вперёд-вниз, как в полёте; 1 — сложены),
+    spread (ширина колен), squash (сжатие по вертикали при приземлении), sag (колени опущены — сполз)."""
+    fold = float(lot.get("fold", 1.0))
+    sp = float(lot.get("spread", 1.0))
+    sag = float(lot.get("sag", 0.0))
+    f = lib.clamp(fold)
+    Hn, Hf = np.array([46.0, 18.0]), np.array([-44.0, 8.0])
+    Kn = _lerp((190, 230), (300 * sp, 112 + 30 * sag), f)
+    Kf = _lerp((60, 240), (-236 * sp, 72 + 30 * sag), f)
+    An = _lerp((300, 470), (-70 * sp, 184), f)
+    Af = _lerp((170, 480), (150 * sp, 156), f)
+    o = []
+    # дальнее бедро и голень за тазом
+    o.append(limb_band(Hf, Kf, 140, 118, C["LEGS"], True, 801))
+    pel = ellipse_pts(0, 10, 150, 78, 14)
+    o.append(shape(pel, C["LEGS"], blob(ellipse_pts(40, 34, 130, 50, 12), C["LEGS_SH"], .7), w=4.6, seed=880))
+    o.append(limb_band(Hn, Kn, 146, 122, C["LEGS"], False, 802,
+                       lambda a, b, d, n: blob([P(np.array(a) + n * 60), P(np.array(b) + n * 50), P(np.array(b) + n * 14), P(np.array(a) + n * 20)],
+                                               C["LEGS_SH"], .8)))
+    # нижняя голень (ближняя нога, уходит влево под дальнее колено) и её ступня
+    dn = An - Kn
+    o.append(limb_band(Kn, An, 112, 86, C["LEGS"], False, 803,
+                       lambda a, b, d, n: blob([P(np.array(a) - n * 50), P(np.array(b) - n * 40), P(np.array(b) - n * 14), P(np.array(a) - n * 16)],
+                                               C["LEGS_SH"], .85)))
+    o.append(sock(An, dn if f > .5 else (1.0, .25), False, 805, up=f))
+    # верхняя голень (дальняя нога поверх, ступня ложится на ближнюю голень у колена)
+    df = Af - Kf
+    o.append(limb_band(Kf, Af, 110, 84, C["LEGS"], f < .5, 804,
+                       lambda a, b, d, n: blob([P(np.array(a) + n * 48), P(np.array(b) + n * 38), P(np.array(b) + n * 12), P(np.array(a) + n * 14)],
+                                               C["LEGS_SH"], .85)))
+    o.append(sock(Af, df if f > .5 else (1.0, .3), f < .5, 806, up=f))
+    sq = float(lot.get("squash", 0.0))
+    body = "".join(o)
+    if abs(sq) > 1e-3:
+        body = f'<g transform="translate(0 60) scale({1 + .5 * sq:.4f} {1 - sq:.4f}) translate(0 -60)">{body}</g>'
+    return body
+
+
+def lotus_knees(x, y, scale, spread=1.0, sag=0.0, who="dima"):
+    """Мировые точки колен в лотосе (куда класть кисти): {'n': (x, y), 'f': (x, y)}."""
+    sc = scale * HEIGHT.get(who, 1.0)
+    return {"n": (x + 300 * spread * sc, y + (112 + 30 * sag) * sc), "f": (x - 236 * spread * sc, y + (72 + 30 * sag) * sc)}
+
+
+def mudra(Wr, d, k=1.0, flip=1, far=False, seed=0):
+    """Кисть на колене, «колечко»: большой и указательный сомкнуты кольцом (в кольце — просвет), три пальца расслаблены."""
+    kw = hand_kw()
+    if far:
+        kw.update(skin=far_c(C["SKIN"], True), skin_sh=far_c(C["SKIN_SH"], True))
+    Wr = np.array(Wr, float)
+    d = np.array(d, float) / (np.linalg.norm(d) + 1e-9)
+    n = np.array([-d[1], d[0]]) * flip
+    o = [Hand.hand(Wr, d, flip=flip, k=k, curl=(1.0, .42, .48, .55), spread=.12, thumb=1.0, bend=.12, seed=seed, nails=not far,
+                   show_thumb=False, **kw)]
+    c = Wr + d * 78 * k - n * 40 * k
+    R, wf = 21 * k, 19 * k
+    skin = kw["skin"]
+    # большой палец от основания ладони к кольцу
+    base = Wr + d * 18 * k - n * 30 * k
+    th = band([P(base), P(_lerp(base, c, .55) - n * 6 * k), P(c - n * R * .2 + d * R * .2)], 26 * k, 18 * k, step=2.5, cap=True)
+    o.append(shape(th, skin, "", w=3.0, seed=seed + 51))
+    ink_w = 3.0 * lib.INK_K[0]
+    o.append(f'<circle cx="{c[0]:.1f}" cy="{c[1]:.1f}" r="{R:.1f}" fill="none" stroke="{INK}" stroke-width="{wf + 2 * ink_w:.1f}"/>'
+             f'<circle cx="{c[0]:.1f}" cy="{c[1]:.1f}" r="{R:.1f}" fill="none" stroke="{skin}" stroke-width="{wf:.1f}"/>')
+    # стык пальцев: короткая складка
+    q = c + d * R * .9
+    o.append(line([P(q - n * wf * .4), P(q + n * wf * .4)], 1.8, kw["skin_sh2"], seed=seed + 52, op=.9))
+    return "".join(o)
+
+
+def tee_parts():
+    """Зелёная футболка друга: круглый ворот, складки, без капюшона и кармана."""
+    body = [(-112, 34), (-120, -40), (-132, -170), (-128, -280), (-112, -360), (-78, -410), (-20, -432), (40, -426), (84, -398), (112, -330),
+            (126, -230), (124, -120), (116, -20), (110, 34)]
+    inner = blob([(30, -440), (130, -380), (140, 40), (60, 40), (80, -200)], C["TOP_SH"], .85)
+    inner += blob([(-140, -300), (-100, -320), (-104, -100), (-140, -60)], C["TOP_SH"], .55)
+    inner += line([(-80, -140), (-40, -110), (-6, -100)], 2.6, C["FOLD"], seed=703, op=.7)
+    inner += line([(-60, -30), (-10, -12), (40, -20)], 2.4, C["FOLD"], seed=704, op=.6)
+    inner += line([(-118, 26), (114, 26)], 2.4, C["TOP_SH2"], seed=705, op=.8)
+    torso = shape(body, C["TOP"], inner, w=5.2, seed=706)
+    col = [(-50, -440), (-14, -458), (40, -450), (66, -424), (48, -404), (18, -426), (-28, -428), (-60, -414)]
+    back = shape(col, C["TOP_SH2"], line([(-40, -434), (30, -440)], 2.2, C["STITCH"], seed=707, op=.7), w=4.0, seed=708)
+    return back, torso, ""
+
+
+# Мимика рилса 62 (комедия медитации): EXPR["dima"][имя]. Каждая — своя, чтобы планы не повторялись лицом.
+EXPR["dima"].update({
+    "solemn": {"brows": "solemn", "mouth": "flat", "lid": .55, "look": (.2, -.1)},                         # торжественно: брови вверх, рот ровно
+    "bliss": {"brows": "calm", "mouth": "smile", "smile": .9, "shut": 1.0},                                # блаженно, глаза дугами
+    "smack": {"brows": "calm", "mouth": "smack", "chew": .6, "shut": 1.0, "drool": .6},                   # причмокивает
+    "one_eye": {"brows": "one_up", "mouth": "frown", "shut_n": 1.0, "lid": 1.0, "scale_f": 1.35, "look": (.8, 0)},   # один глаз распахнут
+    "squeeze": {"brows": "pinch", "mouth": "frown", "squeeze": 1.0},                                       # напряжённо зажмурен
+    "upset": {"brows": "sad", "mouth": "wobble", "lid": .45, "look": (0, .5)},                             # расстроен, губа дрожит
+    "side_eye": {"brows": "sad", "mouth": "flat", "lid": .5, "look": (.95, .1), "shut_n": 1.0},           # косится одним глазом
+    "soft": {"brows": "calm", "mouth": "smile", "smile": .55, "shut": 1.0},                                # мягкая улыбка, глаза закрыты
+    "friendly": {"brows": "up", "mouth": "grin", "open": .55, "lid": .85, "look": (-.35, 0)},               # дружелюбно в камеру
+    "side_smile": {"brows": "calm", "mouth": "side", "shut": 1.0},                                        # улыбка краем рта
+})
+EXPR["pal"] = {"hurt": {"brows": "skeptic", "mouth": "pursed", "lid": .8, "look": (.3, -.1)},            # обиженная бровь, губы поджаты
+               "cross": {"brows": "frown", "mouth": "talk", "open": .5, "smile": 0, "lid": .85},             # возмущается
+               "calm": {"brows": "calm", "mouth": "smile", "smile": .6, "lid": .8}}
+
+# Позы рук в лотосе: цели — от колен (lotus_knees), направление кисти — вниз-вперёд по колену.
+def lotus_kw(name, x, y, scale, u=0.0, who="dima", spread=1.0, sag=0.0):
+    """Аргументы figure() для Димы в лотосе: figure("dima", x, y, s, expr, **lotus_kw("sit", x, y, s)).
+    name: sit (кисти на коленях, «колечко»), slump (сполз: плечи вниз, кисти съехали), push (ближняя ладонь толкает вперёд-вверх; u — вытянута 0..1),
+    flick (ближняя кисть у виска, щелчок; u 0..1 — палец распрямился), wave (машет ближней рукой; u — фаза), fidget (ёрзает; u — фаза).
+    Таз (x, y) — на подушке; дальше вызывающий кладёт свой наклон/смещение поверх."""
+    sc = scale * HEIGHT.get(who, 1.0)
+    kn = lotus_knees(x, y, scale, spread, sag, who)
+    lot = {"fold": 1.0, "spread": spread, "sag": sag}
+    mud = {"kind": "mudra", "k": 1.0}
+    f_tgt = ("ik", (kn["f"][0] + 30 * sc, kn["f"][1] - 40 * sc), 1)
+    n_tgt = ("ik", (kn["n"][0] - 40 * sc, kn["n"][1] - 46 * sc), -1)
+    hands = {"f": dict(mud, dir=(-.35, 1)), "n": dict(mud, dir=(.45, 1))}
+    lean, ha = 0.0, 0.0
+    if name == "slump":
+        lean, ha = .22, .32
+        f_tgt = ("ik", (kn["f"][0] + 70 * sc, kn["f"][1] + 10 * sc), 1)
+        n_tgt = ("ik", (kn["n"][0] - 90 * sc, kn["n"][1] + 6 * sc), -1)
+        hands = {"f": {"dir": (.1, 1), "curl": (.3, .35, .4, .45), "thumb": .5}, "n": {"dir": (.1, 1), "curl": (.3, .35, .4, .45), "thumb": .5}}
+    elif name == "fidget":
+        lean = .06 * math.sin(2 * math.pi * u)
+    elif name == "push":
+        e = lib.clamp(u)
+        n_tgt = ("ik", (x + (150 + 260 * e) * sc, y - (420 + 40 * e) * sc), -1)
+        hands = {"f": hands["f"], "n": {"dir": (.15, -1), "spread": .35, "curl": (0, .02, .05, .1), "thumb": .1}}
+    elif name == "flick":
+        e = lib.clamp(u)
+        n_tgt = ("ik", (x + 250 * sc, y - 560 * sc), -1)
+        hands = {"f": hands["f"], "n": {"dir": (.6, -1), "curl": (.85 - .8 * e, .8, .8, .8), "thumb": .9 - .4 * e, "spread": .1}}
+    elif name == "wave":
+        a = math.sin(2 * math.pi * u)
+        n_tgt = ("ik", (x + (230 + 50 * a) * sc, y - 640 * sc), -1)
+        hands = {"f": hands["f"], "n": {"dir": (.3 * a, -1), "spread": .35, "curl": (0, 0, .05, .1), "thumb": .05}}
+    return dict(lean=lean, head_ang=ha, arms={"f": f_tgt, "n": n_tgt}, hands=hands, lotus=lot)
+
+
+def mobilnik(cx, cy, k=1.0, rot=0.0, seed=950):
+    """Мобильник-силуэт: тёмный скруглённый корпус без экрана, кнопок и букв (в руке друга)."""
+    pts = lib.T(lib.rrect(-34, -62, 34, 62, 12), cx, cy, k, rot)
+    return shape(pts, "#2b2e36", blob(lib.T(lib.rrect(-30, -58, -6, 58, 8), cx, cy, k, rot), "#3c414c", .9), w=4.0, seed=seed)
