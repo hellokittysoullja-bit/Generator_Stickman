@@ -11,6 +11,7 @@ sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(STORY, "common"))
 import catf  # noqa: E402
 import props  # noqa: E402
+import room  # noqa: E402
 import lib  # noqa: E402
 from lib import INK, blob, clamp, ease_in, ease_io, ease_out, ellipse_pts, line, rrect, shape  # noqa: E402,F401
 
@@ -166,7 +167,85 @@ def frame05(t):
     return f'<g transform="{cam}">{"".join(o)}</g>'
 
 
-FRAMES = {"s05": frame05}
+# ───────────────────────────── s17: кот спит на тёплом творческом столе ─────────────────────────────
+T_KOT17, T_SPIT, T_TEPL, T_NAP = wt("кот"), wt("спит"), wt("теплее"), wt("напиши")
+CAT17 = (262.0, 946.0)
+K17 = .55
+
+
+def cat17(t):
+    """Кот на куче бумаг под лампой: топчется → на «кот» поворачивается и ложится клубком → спит → на «Напиши» приоткрывает глаз."""
+    x, y = CAT17
+    t_down0, t_swap = T_KOT17 - .02, T_KOT17 + .2
+    if t < t_swap:
+        kn = (t - 41.0) / .32                       # топчется: лапы по очереди, тело покачивается
+        ka = 1.0 - sm(t, T_KOT17 - .1, T_KOT17 + .05)
+        d = sm(t, t_down0, t_swap)                  # ложится: оседает и поворачивается боком (сжатие по x)
+        st = dict(knead=kn, knead_a=ka, look=(.2, .8), tilt=4 * math.sin(2 * math.pi * kn) * ka - 10 * d, blink=.35 + .5 * d,
+                  tail=10 * math.sin(t * 2.6) + 18 * d, flame_e=1.0, ear=3 * math.sin(t * 4),
+                  sy=1 - .28 * d, sx=1 - .25 * math.sin(math.pi * min(1, d * 1.3)), head_dy=40 * d, rot=3 * math.sin(2 * math.pi * kn) * ka)
+        return catf.draw_f(x + 6 * math.sin(2 * math.pi * kn) * ka, y, K17, st, t)
+    e = t - t_swap
+    settle = 1 - math.exp(-7 * e) * math.cos(2 * math.pi * 2.2 * e)    # клубок оседает с пружинкой
+    open_r = sm(t, T_NAP - .02, T_NAP + .16) * (1 - .25 * sm(t, 44.25, 44.45))
+    st = dict(eye_r=open_r, look=(-.2, -.1), ear=10 * bump(t, T_NAP + .05, .22) + 6 * bump(t, T_TEPL + .3, .2),
+              breath=math.sin(2 * math.pi * (t - t_swap) / 1.9), flame_e=1.0 + .9 * bump(t, T_TEPL, .55) + .3 * math.sin(t * 7),
+              flame_k=1.0 + .25 * bump(t, T_TEPL, .55), tail_w=math.sin(t * 2.0))
+    sq = 1 + .08 * (1 - settle)
+    return (f'<g transform="translate({x} {y}) scale({1 / sq:.4f} {sq * (.86 + .14 * min(1, settle)):.4f}) translate({-x} {-y})">'
+            f'{catf.curl(x, y, K17 * .95, st, t)}</g>')
+
+
+def zzz(t, t0, x, y):
+    """Три Z поднимаются по очереди и растут; каждая уходит вверх и исчезает уменьшаясь (без прозрачности)."""
+    o = []
+    for i in range(3):
+        a = t - t0 - i * .38
+        if a <= 0:
+            continue
+        ph = (a % 1.14) / 1.14
+        if a > 1.14 and t < t0 + 2.6 and False:
+            pass
+        u = math.sin(math.pi * ph) ** .6
+        xx = x + 26 * ph + 10 * math.sin(a * 4) + 14 * i
+        yy = y - 120 * ph - 6 * i
+        o.append(props.z_mark(xx, yy, .5 + .35 * ph, u, col="#3F6FB0"))
+    return "".join(o)
+
+
+def frame17(t):
+    rb = room.room_bg(t, lamp_on=1.0, flick=0.0, with_door=False)
+    warm = sm(t, T_TEPL - .05, T_TEPL + .4)
+    o = [rb["bg"], rb["pool"], room.creative_clutter(t)]
+    # тёплый круг лампы крепче на «теплее»: чёткий край, небольшой
+    px, py, rx, ry = room.LAMP_POOL
+    if warm > .01:
+        o.append(f'<ellipse cx="{px + 20}" cy="{py + 10}" rx="{rx * .9:.1f}" ry="{ry * 1.1:.1f}" fill="#ffd27a" opacity="{.35 * warm:.3f}"/>')
+        o.append(f'<ellipse cx="{px + 20}" cy="{py + 10}" rx="{rx * .9:.1f}" ry="{ry * 1.1:.1f}" fill="none" stroke="#f3b84a" stroke-width="3" '
+                 f'opacity="{.6 * warm:.3f}"/>')
+    o.append(rb["lamp"])
+    o.append(props.paper_pile(CAT17[0], CAT17[1] + 10, .78, seed=17, sy=.45, n=9))
+    u = sm(t, 41.3, 44.5)
+    z = 1.85 + .32 * u + .03 * bump(t, T_NAP, .4)
+    set_ink(z * K17 * 1.6)
+    o.append(blob(ellipse_pts(CAT17[0] + 6, CAT17[1] - 4, 110, 12, 14), "#6b4422", .3))
+    o.append(cat17(t))
+    set_ink(z)
+    if t > T_SPIT - .02:
+        o.append(zzz(t, T_SPIT - .02, CAT17[0] + 60, CAT17[1] - 120))
+    if warm > .01:      # тёплые искорки от огонька — штрихи, не пятно
+        for i in range(3):
+            a = (t - T_TEPL) * 1.3 + i * .33
+            ph = a % 1.0
+            sx_, sy_ = CAT17[0] - 70 + 18 * i, CAT17[1] - 40 - 60 * ph
+            o.append(line([(sx_, sy_), (sx_ + 4, sy_ - 10)], 3, "#f39a3a", seed=1700 + i, taper=.5, wmin=.4) if ph < .8 else "")
+    cx = CAT17[0] - 10 + 10 * math.sin(t * .7)
+    cy = 820 + 30 * u
+    cam = lib.cam(cx, cy, z, .6 - 1.2 * u)
+    return f'<g transform="{cam}">{"".join(o)}</g>'
+
+
+FRAMES = {"s05": frame05, "s17": frame17}
 
 
 def frame(sid, t):

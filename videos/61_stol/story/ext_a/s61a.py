@@ -193,9 +193,130 @@ def frame01(t):
     return frame_svg(body, cx + dx, cy + dy, s, rot)
 
 
+# ───────────────────────── s02: Дима за столом средним планом ─────────────────────────
+import people  # noqa: E402
+import room as R  # noqa: E402
+
+BS2 = 1.0
+SX2, SY2 = 330.0, R.seat_y(BS2)          # таз Димы на стуле
+DX2, DY2 = 930.0, R.DESK_TOP              # передний край стола (центр), стол справа от Димы
+MUG_R2, MUG_B2 = (680.0, DY2 - 14), (772.0, DY2 - 40)
+TANG2 = (1050.0, DY2 - 24)
+CHG2 = (900.0, DY2 - 30)
+
+
+def wob(t, t0, amp, freq=3.2, damp=4.0):
+    if t < t0:
+        return 0.0
+    u = t - t0
+    return amp * math.exp(-u * damp) * math.sin(2 * math.pi * freq * u)
+
+
+def hand_path2(t):
+    """Цель запястья ближней руки: роется в бумагах → отдёргивает назад и задевает кружку (1.72) → тянется к зарядке → тянет её
+    к себе (2.37), провода ползут и обматывают запястье → на «Мама» (3.42) рука с проводами застыла чуть выше."""
+    keys = [(1.25, (980, 880)), (1.45, (1020, 900)), (1.58, (960, 880)), (1.72, (720, 905)), (1.95, (760, 915)), (2.2, (905, 925)),
+            (2.37, (900, 920)), (2.75, (760, 900)), (3.3, (740, 905)), (3.6, (730, 870)), (4.5, (735, 865))]
+    for (ta, a), (tb, b) in zip(keys, keys[1:]):
+        if t <= tb:
+            u = ease_io((t - ta) / (tb - ta))
+            p = np.array(a) + (np.array(b) - np.array(a)) * u
+            break
+    else:
+        p = np.array(keys[-1][1], float)
+    if t < 1.6:   # роется: мелкие рывки
+        p = p + np.array([22 * math.sin(t * 31), 10 * math.sin(t * 23 + 1)])
+    return p
+
+
+def scene02(t):
+    o = [R.wall_floor()]
+    o.append(props.wall_sketch(820, 420, 1.3, -4, 7, "rocket") + props.sticky(1010, 500, 1.3, 8, "yellow", 8, "lines") +
+             props.sticky(640, 560, 1.2, -10, "orange", 9, "circle"))
+    ch = R.swivel_chair(SX2 - 20, SY2 + 24, 1.0, 0.0, side=-1)
+    o.append(ch["back"])
+    o.append(props.desk(DX2, DY2, 1000, 1.0, 110, True, "wood", seed=3, leg_h=R.FL - DY2 - 20))
+    # лампа и её небольшой круг света
+    o.append(blob(ellipse_pts(1260, DY2 - 50, 120, 26, 22), "#D9A06A"))
+    o.append(props.lamp_desk(1300, DY2 - 60, 1.3, on=1.0, tilt=-10))
+    o.append(props.coffee_ring(860, DY2 - 30, 1.0, 0, 4, .35))
+    o.append(props.paper_pile(1080, DY2 - 6, 1.15, 11, sy=.42, n=10))
+    # провода: клубок ползёт к руке после 2.37
+    pull = ease_out(clamp((t - 2.37) / .5))
+    tx, ty = TANG2[0] - 150 * pull, TANG2[1] + 6 * pull
+    o.append(props.cable_tangle(tx, ty, .85, 5, t * 1.4, wind=.35 * pull))
+    return "".join(o), ch, (tx, ty), pull
+
+
+def frame02(t):
+    lib.dyn_begin()
+    bg, ch, tang, pull = scene02(t)
+    wr = hand_path2(t)
+    # кружки: красная качается от удара (1.72) и звякает о синюю
+    rr = wob(t, 1.72, 16, 3.4, 3.6)
+    rb = wob(t, 1.80, -7, 3.8, 4.5)
+    mugs = props.mug(MUG_B2[0], MUG_B2[1], 1.1, rb, "blue", seed=3, handle=-1) + props.mug(MUG_R2[0], MUG_R2[1], 1.15, rr, "red", steam=.8, t=t, seed=4)
+    clk = props.clink(MUG_R2[0] + 46, MUG_R2[1] - 70, 1.0, clamp((t - 1.76) / .32), 5) + props.clink(MUG_R2[0] + 40, MUG_R2[1] - 64, .8, clamp((t - 1.98) / .28), 6)
+    # мимика
+    if t < 1.72:
+        ex = dict(people.EXPR["dima"]["focus"], look=(.7, .5))
+    elif t < 2.2:
+        ex = {"brows": "up", "mouth": "talk", "open": .45, "lid": 1.0, "look": (-.2, .6)}
+    elif t < 3.42:
+        ex = {"brows": "worry", "mouth": "flat", "lid": .8, "look": (.55, .55)}
+    else:
+        u = clamp((t - 3.42) / .2)
+        ex = dict(people.EXPR["dima"]["guilty"], look=(lerp(.55, .95, u), lerp(.55, -.35, u)), smile=.45 * u + .05)
+    head_ang = -.06 if t < 3.42 else -.06 - .1 * ease_out(clamp((t - 3.42) / .25))
+    lean = .1 + .03 * math.sin(t * 2.1) - (.06 * ease_out(clamp((t - 3.42) / .3)))
+    grip = 2.2 < t
+    hands = {"n": dict(kind="open", flip=1, dir=(1, .25) if not grip else (1, .15), curl=(.7, .72, .75, .78) if grip else (.25, .2, .3, .35),
+                       thumb=.6 if grip else .25, spread=.1),
+             "f": dict(kind="open", flip=1, dir=(1, .35), curl=(.35, .35, .4, .45), thumb=.3)}
+    arms = {"n": ("ik", tuple(wr), -1), "f": ("ik", (1000 + 8 * math.sin(t * 3), DY2 - 70), -1)}
+    feet = {"n": ((SX2 + 300, R.FL - 52), 0.0), "f": ((SX2 + 250, R.FL - 50), 0.0)}
+    full = people.draw(dict(hip=(SX2, SY2), scale=BS2 * people.HEIGHT["dima"], lean=lean, feet=feet, arms=arms, hands=hands, head_ang=head_ang,
+                            expr=ex, torso_k=1.0, hood=0.0, head_off=(0, 0)), "dima")
+    wrist = np.array(full["wrist"]["n"], float)
+    o = [bg, full["legs"], ch["seat"], full["arm_f"], full.get("pelvis", ""), full["body"], mugs]
+    # зарядка в руке (после хвата — под пальцами) и провод от клубка к ней, витки вокруг запястья
+    if grip:
+        chg = wrist + np.array([70, 6])
+    else:
+        chg = np.array(CHG2)
+    o.append(props.cable([(tang[0] - 30, tang[1] - 10), ((tang[0] + chg[0]) / 2, tang[1] + 16), (chg[0] + 22, chg[1] + 4)], w=8, seed=21))
+    o.append(props.charger(chg[0] + 4, chg[1], .9, 80))
+    o.append(full["arm_n"])
+    if pull > 0:
+        n_loops = 3 * pull
+        for j in range(3):
+            if n_loops <= j:
+                break
+            fr = clamp(n_loops - j)
+            cx = wrist[0] - 34 - 22 * j
+            pts = [(cx + 20 * math.cos(a) * .55, wrist[1] + 46 * math.sin(a)) for a in np.linspace(-math.pi / 2, -math.pi / 2 + 2 * math.pi * fr, 18)]
+            o.append(props.cable(pts, ("#3A3D44", "#E7E2D6", "#C8553D")[j], 7, seed=30 + j))
+    o.append(clk)
+    body = "".join(o)
+    # камера: дрейф вправо, наезд на руку с проводами, на «Мама» чуть назад к лицу
+    u1 = ease_io(clamp((t - 1.3) / 3.0))
+    cx = 520 + 120 * u1
+    cy = 900
+    s = 1.0 + .06 * u1
+    push = ease_io(clamp((t - 2.3) / .8)) * (1 - ease_io(clamp((t - 3.35) / .45)))
+    cx = lerp(cx, 760, push * .6)
+    cy = lerp(cy, 900, push)
+    s *= 1 + .22 * push
+    cy -= 70 * ease_io(clamp((t - 3.35) / .5))
+    dx, dy = props.shake(t, 1.72, 7, .3, 4)
+    return frame_svg(body, cx + dx, cy + dy, s, .4 * math.sin(t * .9))
+
+
 def frame(sid, t):
     lib.DEFS.clear()
     lib.INK_K[0] = 1.0
     if sid == "s01":
         return frame01(t)
+    if sid == "s02":
+        return frame02(t)
     raise KeyError(sid)
