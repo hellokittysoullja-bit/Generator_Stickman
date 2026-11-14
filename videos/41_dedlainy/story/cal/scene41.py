@@ -726,7 +726,8 @@ def cam16(t):
     x, y = FEB.cell(NOW)
     c0 = (540, 900)
     c1 = (x - 40, y + 60)
-    v = ease_io(clamp((t - 28.0) / 2.35))
+    x0 = clamp((t - 27.9) / 2.45)
+    v = 0.2 * x0 + 0.8 * ease_io(x0)
     sc = 1.02 + 0.6 * v
     cx = c0[0] + (c1[0] - c0[0]) * v + 5 * math.sin(t * 1.3)
     cy = c0[1] + (c1[1] - c0[1]) * v
@@ -1218,7 +1219,8 @@ def frame13(t):
 
 
 def cam13(t):
-    u = ease_io(clamp((t - 21.85) / 1.0))
+    x0 = clamp((t - 21.8) / 1.05)
+    u = 0.25 * x0 + 0.75 * ease_io(x0)
     sc = 1.1 - 0.1 * u
     cx = 552 + (548 - 552) * u
     cy = 600 + (872 - 600) * u
