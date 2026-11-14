@@ -81,6 +81,9 @@ FRIENDLIKE = ("pal", "kid", "friend", "granny", "sport", "mama", "bald", "beard"
 NEWHEADS = ("mama", "girl", "bald", "cap", "bob", "beard", "pal")
 KID_HEAD_K = 1.32      # голова ребёнка крупнее относительно тела
 KID_LEG_K = 0.8
+KIDS = ("kid", "kid2")      # рилс 64: kid2 — маленький Дима-школьник в свитере
+HEADS64 = ("teacher_y", "teacher_o", "psych", "curly", "youth", "father")
+CLOTHES64 = {}             # заполняется в разделе «РИЛС 64» в конце файла
 FAR = (0.82, 0.82, 0.9)
 
 THIGH, SHIN, AH = 310.0, 300.0, 62.0
@@ -342,6 +345,10 @@ def dima_mouth(expr):
         o += line([(48, 102 + j), (62, 106 - j), (78, 102 + j)], 2.6, C["SKIN_SH2"], seed=167, op=.85)
         o += line([(32, 100), (38, 108)], 2.2, C["SKIN_SH2"], seed=168, op=.7)
         return o
+    if m == "pressed":     # рилс 64: губы сжаты (слова не вышли) — плотная короткая линия, ямочки в уголках, складка под губой
+        return (line([(42, 92), (56, 90), (72, 90), (86, 93)], 6.0, seed=165, peak=.5)
+                + line([(38, 88), (42, 96)], 2.2, C["SKIN_SH2"], seed=169, op=.85) + line([(88, 89), (91, 97)], 2.2, C["SKIN_SH2"], seed=170, op=.85)
+                + line([(54, 104), (72, 104)], 2.2, C["SKIN_SH2"], seed=171, op=.7))
     if m == "frown":
         return line([(38, 96), (60, 88), (82, 89), (92, 98)], 4.8, seed=165, peak=.5) + blob([(50, 102), (76, 102), (72, 108), (54, 108)], C["SKIN_SH"], .7)
     if m == "o":           # удивлённое «о»
@@ -1158,7 +1165,7 @@ def draw(pose, who="dima"):
             A, phi = pose["feet"][side]
             A = L(A)
             hipj = np.array([10.0 if side == "n" else -4.0, 0.0])
-            lk = KID_LEG_K if who == "kid" else 1.0
+            lk = KID_LEG_K if who in KIDS else 1.0
             K, A2 = ik2(hipj, A, THIGH * lk, SHIN * lk, +1)
             legs[side] = (hipj, K, A2, phi)
         lg = leg(*legs["f"][:3], legs["f"][3], True, 800, who)
@@ -1210,6 +1217,8 @@ def draw(pose, who="dima"):
         back, torso, strings = hoodie_parts(pose.get("hood", 0.0), pose.get("strings", (0, 0)))
     elif who == "kid":
         back, torso, strings = pajama_parts()
+    elif who in CLOTHES64:
+        back, torso, strings = CLOTHES64[who]()
     elif who in ("girl", "bob"):
         back, torso, strings = sweater_parts()
     elif who == "beard":
@@ -1232,8 +1241,10 @@ def draw(pose, who="dima"):
         hf = lambda e, _w=who: person_head(e, _w)  # noqa: E731
     if who in ("granny", "sport"):
         ex_["style"] = who
-    hk = KID_HEAD_K if who == "kid" else 1.0
-    if who == "kid":
+    if who in HEADS64:
+        hf = lambda e, _w=who: head64(e, _w)  # noqa: E731
+    hk = KID_HEAD_K if who in KIDS else 1.0
+    if who in KIDS:
         hf = kid_head
     body += f'<g transform="translate({hpos[0]:.2f} {hpos[1]:.2f}) rotate({math.degrees(lean * .5 + ha):.3f}) scale({hk})">{hf(ex_)}</g>'
     out["body"] = G(body)
@@ -1692,3 +1703,446 @@ def handle_grip(who, hc, k=1.0, side=1, far=False, seed=960, hh=None):
     if far:
         kw.update(skin=far_c(C["SKIN"], True), skin_sh=far_c(C["SKIN_SH"], True))
     return Hand.grip(hc, 9 * k / .5 * .5, side, k=k * 1.15, seed=seed, h=(hh if hh is not None else 62), **kw)
+
+
+# ═════════════════════════════ РИЛС 64 «СПАСИБО»: учительница, психолог, участники, отец, Дима-школьник ═════════════════════════════
+# who: "teacher_y" / "teacher_o" — ОДНА женщина в двух возрастах (родинка над бровью, пучок, мягкий овал, тот же разрез глаз и улыбка);
+#      "psych" — пожилой психолог (седые волосы, короткая седая борода, очки, вельветовый пиджак; НЕ портрет);
+#      "curly" — участница с кудрями в очках (лавандовый свитер); "beard" — бородач в клетчатой рубашке (из 61); "youth" — юноша с короткой
+#      стрижкой (синяя футболка); "father" — пожилой отец участницы (лысина, седые усы, кофта); "kid2" — маленький Дима (свитер).
+PAL["teacher_y"] = dict(SKIN="#f2d0b4", SKIN_SH="#dba98c", SKIN_SH2="#c69078", HAIR="#7a4a2e", HAIR_SH="#55311c", HAIR_HI="#9c6a48",
+                        TOP="#5f9a5c", TOP_SH="#477a45", TOP_SH2="#365e35", FOLD="#284628", STITCH="#b9dcae", TEE="#f4ece0", TEE_SH="#dccfbb",
+                        LEGS="#4e4a5c", LEGS_SH="#3a3746", LEGS_SEAM="#6a6680", SHOE="#6b4a3a", SHOE_SH="#4f3529", SOLE="#e9e2d4", SOLE_SH="#c4bcad",
+                        STRIPE="#a76a3e", NAIL="#f1cdbd", MOLE="#6e4434")
+PAL["teacher_o"] = dict(PAL["teacher_y"], SKIN="#f0d2bc", SKIN_SH="#d9ab93", SKIN_SH2="#c4917c", HAIR="#dcdbe2", HAIR_SH="#a9a8b6", HAIR_HI="#f6f6fa",
+                        TOP="#b0637a", TOP_SH="#8c4a5f", TOP_SH2="#6c3748", FOLD="#4f2534", STITCH="#e8b9c6", FRAME="#7a5a3a")
+PAL["psych"] = dict(SKIN="#eac3a6", SKIN_SH="#d29f84", SKIN_SH2="#bb8970", HAIR="#d6d6dc", HAIR_SH="#a2a2ae", HAIR_HI="#f4f4f8",
+                    TOP="#8a6644", TOP_SH="#6c4e32", TOP_SH2="#523a24", FOLD="#3a2818", STITCH="#b89668", TEE="#cfe0ee", TEE_SH="#a9c0d4",
+                    LEGS="#4a4f58", LEGS_SH="#363a42", LEGS_SEAM="#6a707c", SHOE="#4a3324", SHOE_SH="#33231a", SOLE="#2a1f18", SOLE_SH="#1c1510",
+                    STRIPE="#a76a3e", NAIL="#eec6aa", FRAME="#3a3a44")
+PAL["curly"] = dict(SKIN="#f5d5bf", SKIN_SH="#dfad93", SKIN_SH2="#c9967e", HAIR="#3a2620", HAIR_SH="#22150f", HAIR_HI="#5e4034",
+                    TOP="#8f7fc0", TOP_SH="#6f60a0", TOP_SH2="#55487f", FOLD="#3c325c", STITCH="#c9bfe8", TEE="#f4efe6", TEE_SH="#d9d2c4",
+                    LEGS="#3d4558", LEGS_SH="#2c3342", LEGS_SEAM="#5d6780", SHOE="#6b4a3a", SHOE_SH="#4f3529", SOLE="#e9e2d4", SOLE_SH="#c4bcad",
+                    STRIPE="#a76a3e", NAIL="#f6dccd", FRAME="#b4413c")
+PAL["youth"] = dict(SKIN="#c99470", SKIN_SH="#ad7854", SKIN_SH2="#94623f", HAIR="#1e1a1a", HAIR_SH="#0f0c0c", HAIR_HI="#3a3434",
+                    TOP="#4a6fa5", TOP_SH="#375584", TOP_SH2="#284068", FOLD="#1c2e4c", STITCH="#a9c2e6", TEE="#f4efe6", TEE_SH="#d9d2c4",
+                    LEGS="#2f3b56", LEGS_SH="#222b40", LEGS_SEAM="#4d5b7c", SHOE="#e9e6dd", SHOE_SH="#c4c0b3", SOLE="#2a2c36", SOLE_SH="#1c1d25",
+                    STRIPE="#4b505e", NAIL="#e2b394")
+PAL["father"] = dict(SKIN="#e8b996", SKIN_SH="#cf9a78", SKIN_SH2="#b78262", HAIR="#d4d2d8", HAIR_SH="#a09ea8", HAIR_HI="#f2f2f6",
+                     TOP="#7c8a96", TOP_SH="#5f6c78", TOP_SH2="#48535e", FOLD="#323b44", STITCH="#c6d0d8", TEE="#efe6d6", TEE_SH="#d6cab4",
+                     LEGS="#5a4e44", LEGS_SH="#433a32", LEGS_SEAM="#786a5e", SHOE="#4a3324", SHOE_SH="#33231a", SOLE="#2a1f18", SOLE_SH="#1c1510",
+                     STRIPE="#a76a3e", NAIL="#eec6aa")
+PAL["kid2"] = dict(PAL["kid"], HAIR="#5a3826", HAIR_SH="#3d2418", HAIR_HI="#7a5038",           # волосы как у взрослого Димы
+                   TOP="#c0583e", TOP_SH="#9c4430", TOP_SH2="#7a3222", FOLD="#5a2216", STITCH="#eab09c",
+                   LEGS="#3d4c6e", LEGS_SH="#2c3854", LEGS_SEAM="#5f6f92")
+HEIGHT.update({"teacher_y": .93, "teacher_o": .9, "psych": 1.04, "curly": .95, "youth": 1.02, "father": .98, "kid2": .66})
+FACES = FACES + ("teacher_y", "teacher_o", "psych", "curly", "youth", "father", "kid2")
+FRIENDLIKE = FRIENDLIKE + ("teacher_y", "teacher_o", "psych", "curly", "youth", "father", "kid2")
+
+# лицо учительницы: мягкий овал, лоб выше (под пучок и родинку)
+FACE_T = [(p[0], p[1] * 1.16 if p[1] < -60 else p[1]) for p in FACE_G]
+EAR64 = [(-86, -26), (-112, -38), (-132, -14), (-130, 22), (-116, 48), (-94, 52), (-84, 40)]
+
+
+def _ear64(sd=451):
+    return (shape(EAR64, C["SKIN"], blob([(-132, -14), (-130, 22), (-116, 48), (-116, 10)], C["SKIN_SH"], .9), w=4.8, seed=sd)
+            + line([(-98, 32), (-118, 20), (-116, -8), (-102, -18)], 3.2, seed=sd + 1))
+
+
+def _wrinkles64(eyes_=True, mouth_=True, forehead=0, sd=480, op=.8):
+    """Морщинки: гусиные лапки у глаз, носогубные, лоб (forehead — сколько складок)."""
+    o = ""
+    if eyes_:
+        for k, dy in enumerate((0, 12, 24)):
+            o += line([(122, -22 + dy * .5), (140, -34 + dy)], 2.2, C["SKIN_SH2"], seed=sd + k, op=op)
+            o += line([(-6, 0 + dy * .4), (-24, -8 + dy)], 2.0, C["SKIN_SH2"], seed=sd + 4 + k, op=op * .85)
+    if mouth_:
+        o += line([(30, 60), (22, 86), (26, 104)], 2.2, C["SKIN_SH2"], seed=sd + 8, op=op * .9)
+        o += line([(96, 56), (106, 80), (100, 98)], 2.2, C["SKIN_SH2"], seed=sd + 9, op=op * .9)
+    for k in range(forehead):
+        y = -66 - 14 * k
+        o += line([(0, y), (36, y - 6), (74, y - 2)], 1.8, C["SKIN_SH2"], seed=sd + 12 + k, op=op * .7)
+    return o
+
+
+def _glasses64(kind, col, sd=530, w=5.6):
+    """kind: round — круглые, rect — прямоугольные тонкие, oval — овальные; дужка уходит к уху."""
+    o = ""
+    for (cx_, cy_, rx_, ry_, s_) in ((16, -22, 50, 44, sd), (92, -20, 37, 41, sd + 1)):
+        if kind == "rect":
+            gp = lib.rrect(cx_ - rx_, cy_ - ry_ * .82, cx_ + rx_, cy_ + ry_ * .82, 14)
+        elif kind == "oval":
+            gp = ellipse_pts(cx_, cy_ + 2, rx_, ry_ * .86, 22)
+        else:
+            gp = ellipse_pts(cx_, cy_, rx_ * 1.02, ry_ * 1.1, 22)
+        o += f'<path d="{ink_closed(gp, w * lib.INK_K[0], seed=s_)}" fill="{col}"/>'
+        o += line([(cx_ - rx_ * .6, cy_ - ry_ * .45), (cx_ - rx_ * .25, cy_ - ry_ * .68)], 2.8, "#ffffff", seed=s_ + 4, op=.55)
+    o += line([(70, -26), (54, -28)], w * .8, col, seed=sd + 2)
+    o += line([(-34, -28), (-86, -24)], w * .72, col, seed=sd + 3)
+    return o
+
+
+def _bun64(sd=600):
+    """Пучок на затылке + гладко зачёсанные назад волосы с прядками (общая примета учительницы в обоих возрастах)."""
+    s = []
+    bun = ellipse_pts(-118, -150, 62, 54, 16, rot=-20)
+    bi = blob(ellipse_pts(-130, -132, 50, 38, 12, rot=-20), C["HAIR_SH"], .8)
+    for i, a in enumerate((-60, -10, 40, 90)):
+        r = math.radians(a)
+        bi += line([(-118 + 40 * math.cos(r), -150 + 34 * math.sin(r)), (-118 + 10 * math.cos(r + 1.2), -150 + 8 * math.sin(r + 1.2))], 2.6,
+                   C["HAIR_SH"], seed=sd + i, op=.85)
+    s.append(shape(bun, C["HAIR"], bi, w=5.0, seed=sd + 5))
+    # масса волос: от линии лба гладко назад к пучку, закрывает верх уха
+    hair = [(108, -110), (96, -140), (60, -166), (6, -178), (-52, -172), (-102, -146), (-128, -104), (-134, -54), (-122, -18), (-104, -30),
+            (-92, -64), (-70, -96), (-30, -116), (20, -120), (66, -118), (98, -104)]
+    hi = blob([(-150, -200), (-40, -200), (-60, -120), (-96, -80), (-110, -10), (-150, -10)], C["HAIR_SH"], .85)
+    hi += blob([(0, -172), (60, -156), (96, -124), (56, -142), (20, -158)], C["HAIR_HI"], .85)
+    for i, st in enumerate([[(84, -118), (30, -150), (-40, -158), (-96, -148)], [(70, -110), (10, -136), (-60, -138), (-104, -120)],
+                            [(50, -106), (-10, -122), (-76, -112), (-112, -90)]]):
+        hi += line(st, 2.4, C["HAIR_SH"], seed=sd + 10 + i, op=.8)
+    s.append(shape(hair, C["HAIR"], hi, w=5.2, seed=sd + 9))
+    # выбившаяся прядка у виска
+    s.append(line([(104, -96), (116, -64), (110, -34), (118, -10)], 3.0, C["HAIR_SH"], seed=sd + 20, taper=.3, wmin=.4))
+    return "".join(s)
+
+
+def _curls64(sd=640):
+    """Пышные кудри участницы: масса за головой до плеч + шапка завитков спереди."""
+    back = fur([(-30, -160), (-120, -150), (-176, -90), (-196, 0), (-186, 96), (-150, 150), (-96, 146), (-80, 70), (-70, -20), (-50, -100)],
+               depth=26, every=6, seed=sd)
+    bi = blob([(-220, -180), (-70, -180), (-80, 60), (-110, 180), (-220, 180)], C["HAIR_SH"], .7)
+    for i, (cx_, cy_) in enumerate([(-150, -60), (-170, 20), (-140, 100), (-110, -110), (-120, 40)]):
+        bi += line([(cx_ - 12, cy_ + 6), (cx_ - 4, cy_ - 10), (cx_ + 10, cy_ - 6), (cx_ + 6, cy_ + 8)], 2.6, C["HAIR_HI"], seed=sd + 3 + i, op=.7)
+    return shape(back, C["HAIR"], bi, w=5.0, seed=sd + 1)
+
+
+def _curls64_front(sd=660):
+    base = [(118, -66), (116, -120), (84, -166), (30, -186), (-34, -184), (-92, -162), (-132, -116), (-146, -56), (-126, -16), (-100, -44),
+            (-84, -82), (-40, -100), (0, -96), (44, -104), (86, -90), (108, -60)]
+    hair = fur(base, depth=24, every=7, seed=sd)
+    hi = blob([(-160, -200), (-40, -200), (-50, -120), (-90, -90), (-110, -20), (-160, -20)], C["HAIR_SH"], .85)
+    hi += blob([(0, -176), (60, -156), (96, -116), (60, -138), (30, -156)], C["HAIR_HI"], .9)
+    for i, (cx_, cy_) in enumerate([(-80, -146), (-30, -158), (24, -158), (70, -136), (-112, -88), (-50, -118), (10, -124), (60, -108)]):
+        hi += line([(cx_ - 12, cy_ + 6), (cx_ - 4, cy_ - 10), (cx_ + 10, cy_ - 6), (cx_ + 6, cy_ + 8)], 2.6, C["HAIR_SH"], seed=sd + 2 + i, op=.85)
+    return shape(hair, C["HAIR"], hi, w=5.4, seed=sd + 1)
+
+
+def head64(expr, style):
+    """Головы рилса 64, 3/4 вправо, та же сетка лица и глаз, что у person_head (глаза F_EYE_*, нос, рот _mouth_gen)."""
+    hb = expr.get("hair", 0.0)
+    s = []
+    teacher = style.startswith("teacher")
+    old = style in ("teacher_o", "psych", "father")
+    if teacher:
+        s.append(_ear64())
+        s.append(_bun64())
+    elif style == "curly":
+        s.append(_curls64())
+        s.append(_ear64())
+    else:
+        s.append(_ear64())
+    face = {"teacher_y": FACE_T, "teacher_o": FACE_T, "curly": FACE_G, "psych": F_FACE, "youth": F_FACE, "father": FACE_B}[style]
+    inner = [blob([(-120, -210), (-40, -210), (-60, -40), (-56, 40), (-30, 160), (-120, 160)], C["SKIN_SH"], .95),
+             blob(ellipse_pts(56, -16, 100, 60, 14), "#e5a99a", .3)]
+    bl = expr.get("blush", 0.0) + (.35 if style in ("teacher_y", "teacher_o", "curly") else .1)
+    inner.append(blob(ellipse_pts(100, 38, 22, 12, 10), "#e98a86", .5 * min(1, bl)))
+    inner.append(blob(ellipse_pts(8, 44, 28, 14, 10), "#e98a86", .45 * min(1, bl)))
+    if style == "father":     # блик на лысине, тень на висках
+        inner.append(blob([(10, -190), (56, -176), (84, -146), (60, -158), (24, -172)], "#f6d8bc", .8))
+        inner.append(blob([(-70, -170), (-104, -110), (-100, -60), (-60, -150)], C["SKIN_SH2"], .5))
+    if style == "youth":      # лёгкая тень скулы
+        inner.append(blob([(-60, 70), (-20, 92), (30, 106), (80, 94), (106, 70), (110, 150), (-60, 150)], C["SKIN_SH2"], .25))
+    s.append(shape(face, C["SKIN"], "".join(inner), w=5.6, seed=453 + len(style)))
+    if old:
+        s.append(_wrinkles64(forehead=2 if style != "teacher_o" else 1, op=.85 if style != "teacher_o" else .75))
+    elif teacher:             # у молодой — только смешливые лучики у глаз (те же, что потом станут морщинками)
+        s.append(_wrinkles64(mouth_=False, op=.35))
+    if style == "psych":      # короткая аккуратная седая борода по линии челюсти и усы
+        beard = [(-80, 20), (-66, 64), (-46, 106), (-18, 140), (18, 160), (58, 162), (92, 144), (114, 108), (122, 70), (122, 46), (112, 42),
+                 (100, 66), (82, 76), (62, 72), (40, 76), (18, 68), (-10, 56), (-40, 34), (-64, 8)]
+        bi = blob([(-90, 40), (60, 120), (130, 120), (130, 180), (-90, 180)], C["HAIR_SH"], .75)
+        for i, st in enumerate([[(-44, 70), (-30, 96)], [(-10, 104), (2, 130)], [(30, 122), (36, 148)], [(70, 120), (72, 146)], [(102, 100), (104, 124)]]):
+            bi += line(st, 2.2, C["HAIR_SH"], seed=505 + i, op=.85)
+        s.append(shape(beard, C["HAIR"], bi, w=4.8, seed=504))
+    s.append(_nose())
+    if style in ("psych", "father"):
+        k = expr.get("smile", .3)
+        m = expr.get("mouth", "smile")
+        if m in ("grin", "laugh", "talk"):
+            o_ = expr.get("open", .5)
+            dy = 12 * o_ if m == "laugh" else 6 * o_
+            mp = [(18, 84), (42, 92), (74, 92), (104, 80), (98, 104 + dy), (78, 122 + dy), (50, 124 + dy), (28, 108 + dy)]
+            mi = blob([(18, 84), (104, 80), (100, 96), (22, 98)], "#f6efe2") + blob([(42, 114 + dy), (64, 106 + dy), (90, 110 + dy), (76, 128 + dy), (50, 128 + dy)], "#c86b6b")
+            s.append(shape(mp, "#5a2b33", mi, w=4.4, seed=391))
+        elif m == "wobble":
+            s.append(line([(28, 94), (44, 100), (60, 92), (76, 100), (98, 92)], 4.4, "#5a2b33", seed=391))
+        else:
+            s.append(line([(26, 94 - 6 * k), (50, 100 + 3 * k), (78, 100 + 3 * k), (102, 92 - 6 * k)], 4.6, "#4a2a24", seed=391, peak=.5))
+        mus = [(4, 82), (22, 66), (52, 60), (64, 68), (76, 60), (104, 62), (122, 78), (104, 84), (80, 78), (64, 84), (46, 78), (22, 86)]
+        s.append(shape(mus, C["HAIR"], blob([(8, 82), (120, 80), (102, 88), (24, 90)], C["HAIR_SH"], .8)
+                       + line([(30, 72), (24, 84)], 1.8, C["HAIR_SH"], seed=357, op=.8) + line([(96, 70), (104, 82)], 1.8, C["HAIR_SH"], seed=358, op=.8),
+                       w=4.0, seed=356))
+    else:
+        lip = {"teacher_y": "#c25a60", "teacher_o": "#b0585c", "curly": "#b64e58"}.get(style, INK)
+        s.append(_mouth_gen(expr, lip, seed=391))
+    if expr.get("tear", 0.0) > .02:     # слезинка у ближнего глаза (вытирает пальцем)
+        tr = expr["tear"]
+        ty = 14 + 26 * expr.get("tear_run", 0.0)
+        s.append(shape([(24, ty - 8), (32, ty + 6), (26, ty + 14), (18, ty + 8)], "#bfe6f6", blob([(24, ty), (27, ty + 6), (24, ty + 9)], "#ffffff"),
+                       w=2.0 * tr, seed=397))
+    s.append(eyes(expr, F_EYE_N, F_EYE_F, bags=old and expr.get("bags", True)))
+    if teacher or style == "curly":     # ресницы — короткие, у обеих женщин
+        for (cx_, cy_, rx_, sd_) in ((18, -22, 44, 520), (90, -20, 34, 524)):
+            if expr.get("laugh", 0) > .5 or expr.get("shut", 0) > .5:
+                continue
+            s.append(line([(cx_ + rx_ * .6, cy_ - 36), (cx_ + rx_ * 1.0, cy_ - 50)], 3.2, seed=sd_, taper=.3, wmin=.5))
+            s.append(line([(cx_ + rx_ * .3, cy_ - 42), (cx_ + rx_ * .6, cy_ - 58)], 2.8, seed=sd_ + 1, taper=.3, wmin=.5))
+    if style == "teacher_o":            # очки на цепочке: тонкая оправа, цепочка от дужки вниз к шее
+        s.append(_glasses64("oval", C["FRAME"], sd=540, w=4.4))
+        ch = [(-86, -24), (-98, 20), (-104, 70), (-96, 120), (-80, 170)]
+        s.append(line(ch, 2.2, "#b8954a", seed=545, taper=.1, wmin=.8))
+        for i in range(9):
+            q = ch[min(4, i // 2)]
+            s.append(f'<circle cx="{q[0] - 2 + (i % 2) * 3:.1f}" cy="{q[1] + (i % 2) * 18:.1f}" r="2.2" fill="#d8b866"/>')
+    if style == "psych":
+        s.append(_glasses64("rect", C["FRAME"], sd=546, w=5.0))
+    if style == "curly":
+        s.append(_glasses64("round", C["FRAME"], sd=550, w=6.2))
+    brow_col = C["HAIR_SH"] if style not in ("psych", "father", "teacher_o") else "#8a8894"
+    s.append(_brows(expr, brow_col, {"psych": 1.25, "father": 1.3, "youth": 1.15}.get(style, .9), sd=362, dy=8.0 if teacher else 0.0))
+    if teacher:     # родинка над ближней (левой от зрителя) бровью — главная примета в обоих возрастах
+        s.append(f'<circle cx="-14" cy="-122" r="5.2" fill="{C["MOLE"]}"/>')
+    if style == "curly":
+        s.append(_curls64_front())
+    elif style == "youth":    # короткая стрижка: плотная шапка волос, виски коротко, лёгкий чубчик
+        top = [(112, -84), (108, -128), (80, -160), (30, -176), (-30, -174), (-84, -152), (-118, -110), (-124, -60), (-110, -40), (-96, -70),
+               (-70, -100), (-30, -112), (20, -112), (64, -108), (96, -92)]
+        hi = blob([(-140, -190), (-30, -190), (-50, -120), (-96, -80), (-120, -40)], C["HAIR_SH"], .8)
+        hi += blob([(10, -170), (70, -150), (100, -116), (60, -136)], C["HAIR_HI"], .8)
+        for i in range(10):
+            x0 = -100 + i * 22
+            hi += line([(x0, -150 + abs(i - 5) * 4), (x0 + 6, -128 + abs(i - 5) * 3)], 1.8, C["HAIR_HI"], seed=580 + i, op=.6)
+        s.append(shape(top, C["HAIR"], hi, w=5.0, seed=579))
+        s.append(blob([(-110, -60), (-92, -70), (-86, -20), (-104, -10)], C["HAIR_SH"], .55))     # коротко подстриженный висок
+    elif style == "psych":    # седые волосы: короткие, редеют на макушке, гуще на висках и затылке
+        s.append(shape([(-104, -80), (-126, -40), (-128, 4), (-110, 0), (-96, 26), (-86, -10), (-76, -60)], C["HAIR"],
+                       line([(-112, -40), (-108, -6)], 1.8, C["HAIR_SH"], seed=591, op=.8), w=4.4, seed=590))
+        top = [(108, -92), (100, -136), (64, -168), (10, -180), (-48, -172), (-96, -142), (-120, -96), (-112, -70), (-90, -96), (-50, -120),
+               (0, -130), (50, -124), (90, -104)]
+        hi = blob([(-140, -190), (-40, -190), (-60, -120), (-100, -90), (-120, -60)], C["HAIR_SH"], .7)
+        hi += blob([(-20, -176), (40, -166), (20, -150), (-30, -156)], C["SKIN"], .55)        # редеет на макушке
+        for i, st in enumerate([[(60, -150), (20, -160), (-30, -158)], [(80, -120), (30, -134), (-30, -134), (-80, -116)]]):
+            hi += line(st, 1.8, C["HAIR_SH"], seed=593 + i, op=.8)
+        s.append(shape(top, C["HAIR"], hi, w=4.8, seed=592))
+    elif style == "father":   # лысина, седая подкова волос над ухом и на затылке
+        s.append(shape([(-60, -150), (-100, -128), (-128, -80), (-134, -30), (-120, 10), (-104, -6), (-100, -40), (-86, -84), (-56, -120)], C["HAIR"],
+                       blob([(-140, -120), (-90, -120), (-100, -20), (-140, 0)], C["HAIR_SH"], .7)
+                       + line([(-110, -90), (-120, -30)], 1.8, C["HAIR_SH"], seed=597, op=.8), w=4.4, seed=596))
+        s.append(shape([(96, -96), (110, -70), (112, -40), (102, -52), (94, -76)], C["HAIR"], "", w=3.4, seed=598))
+    return "".join(s)
+
+
+def knit_cardigan_parts():
+    """Вязаный кардиган (учительница, отец): полочки поверх светлой блузы/рубашки, пуговицы, резинка, косички вязки."""
+    back, torso, st = jacket_parts(cardigan=True)
+    knit = ""
+    for k, x0 in enumerate((-80, -40, 0)):
+        pts = [(x0, -380), (x0 + 10, -330), (x0 - 4, -280), (x0 + 10, -230), (x0 - 4, -180), (x0 + 10, -130), (x0 - 4, -80)]
+        knit += line(pts, 2.6, C["TOP_SH2"], seed=760 + k, op=.65)
+        knit += line([(p[0] + 8, p[1]) for p in pts], 1.6, C["STITCH"], seed=770 + k, op=.6)
+    rib = blob([(-118, -28), (84, -28), (84, 30), (-118, 30)], C["TOP_SH"], .9)
+    rib += "".join(line([(-112 + k * 16, -24), (-112 + k * 16, 26)], 1.4, C["TOP_SH2"], seed=780 + k, op=.8) for k in range(13))
+    return back, torso + knit + rib, st
+
+
+def corduroy_parts():
+    """Вельветовый пиджак психолога: рубчик вертикальными штрихами, лацкан, светло-голубая рубашка."""
+    back, torso, st = jacket_parts()
+    cord = "".join(line([(-110 + k * 14, -400 + abs(k - 8) * 3), (-112 + k * 14, 20)], 1.3, C["TOP_SH2"], seed=790 + k, op=.45) for k in range(14))
+    lapel = shape([(36, -428), (70, -380), (58, -330), (80, -250), (52, -260), (34, -340), (22, -410)], C["TOP_SH"],
+                  line([(40, -410), (56, -330), (70, -270)], 1.6, C["STITCH"], seed=799, op=.7), w=3.6, seed=798)
+    return back, torso + cord + lapel, st
+
+
+CLOTHES64.update({"teacher_y": knit_cardigan_parts, "teacher_o": knit_cardigan_parts, "father": knit_cardigan_parts, "psych": corduroy_parts,
+                  "curly": sweater_parts, "youth": tee_parts, "kid2": sweater_parts})
+
+# ─── мимика рилса 64: у каждого плана своя ───
+EXPR["dima"].update({
+    "unsure": {"brows": "worry", "mouth": "flat", "lid": .7, "look": (.55, .25)},                                  # неуверенность (s01)
+    "awkward": {"brows": "worry", "mouth": "side", "lid": .6, "look": (-.5, .2), "blush": .7},                    # неловкость (s03; + плечи dima(shrug=1))
+    "glum": {"brows": "sad", "mouth": "frown", "lid": .42, "look": (.2, .55)},                                     # уныние (s03 конец, s04)
+    "thoughtful": {"brows": "calm", "mouth": "flat", "lid": .7, "look": (.45, -.6)},                               # задумчиво (s06)
+    "pressed": {"brows": "worry", "mouth": "pressed", "lid": .6, "look": (.3, .3)},                                # сжатые губы (s07)
+    "nervous": {"brows": "worry", "mouth": "wobble", "lid": .9, "look": (.4, 0), "bags": False},                  # голос дрожит (s14)
+    "steady": {"brows": "calm", "mouth": "talk", "open": .45, "smile": .4, "lid": .8, "look": (.4, 0), "bags": False},   # крепнет (s14)
+    "relief64": {"brows": "calm", "mouth": "smile", "smile": .8, "lid": .5, "look": (.2, .3), "bags": False},     # облегчение (s16)
+    "warm": {"brows": "calm", "mouth": "smile", "smile": 1.0, "lid": .62, "look": (-.35, 0), "blush": .3, "bags": False},   # тёплая улыбка в камеру
+    "write": {"brows": "det", "mouth": "smile", "smile": .35, "lid": .55, "look": (.5, .7), "bags": False},       # пишет письмо (s13)
+    "breath": {"brows": "up", "mouth": "o", "open": .3, "lid": .85, "look": (.3, -.1), "bags": False},            # вдох перед звонком (s13)
+})
+EXPR["kid2"] = {"beam": {"brows": "up", "mouth": "grin", "open": .7, "lid": .9, "look": (.5, -.6)},             # сияет, смотрит на учительницу
+                "shy": {"brows": "calm", "mouth": "smile", "smile": .8, "lid": .6, "look": (.4, .4), "blush": .6}}
+EXPR["teacher_y"] = {"kind": {"brows": "calm", "mouth": "smile", "smile": .9, "lid": .7, "look": (.4, .5)},     # склонилась к парте
+                     "praise": {"brows": "up", "mouth": "grin", "open": .45, "lid": .78, "look": (.4, .45)}}     # хвалит
+EXPR["teacher_o"] = {"listen": {"brows": "up", "mouth": "flat", "lid": .9, "look": (.3, 0)},                     # слушает в трубку
+                     "moved": {"brows": "sad", "mouth": "wobble", "lid": .7, "look": (.2, .2), "tear": 1.0},   # замерла, глаза влажные
+                     "laugh": {"brows": "up", "mouth": "laugh", "open": .9, "laugh": 1.0},                       # смеётся, запрокинув голову
+                     "wipe": {"brows": "calm", "mouth": "smile", "smile": 1.0, "laugh": .7, "tear": 1.0, "tear_run": .6}}   # вытирает слезу
+EXPR["psych"] = {"calm": {"brows": "calm", "mouth": "smile", "smile": .25, "lid": .75, "look": (-.2, 0)},
+                 "smile": {"brows": "up", "mouth": "smile", "smile": 1.0, "lid": .62, "look": (-.4, 0)},
+                 "explain": {"brows": "up", "mouth": "talk", "open": .4, "smile": .4, "lid": .8, "look": (-.4, 0)}}
+EXPR["curly"] = {"serious": {"brows": "worry", "mouth": "flat", "lid": .7, "look": (.4, .55)},
+                 "happy": {"brows": "up", "mouth": "grin", "open": .5, "lid": .7, "look": (.2, 0)},
+                 "shy": {"brows": "calm", "mouth": "smile", "smile": .9, "lid": .5, "look": (.3, .45), "blush": .8},
+                 "cover": {"brows": "up", "mouth": "grin", "open": .7, "laugh": 1.0}}
+EXPR["beard"].update({"serious": {"brows": "frown", "mouth": "flat", "lid": .7, "look": (.4, .55)},
+                      "happy": {"brows": "up", "mouth": "grin", "open": .5, "lid": .7},
+                      "laugh": {"brows": "up", "mouth": "laugh", "open": 1.0, "laugh": 1.0}})
+EXPR["youth"] = {"serious": {"brows": "calm", "mouth": "flat", "lid": .65, "look": (.4, .6)},
+                 "happy": {"brows": "up", "mouth": "smile", "smile": 1.0, "lid": .75, "look": (.3, 0)}}
+EXPR["father"] = {"serious": {"brows": "frown", "mouth": "flat", "smile": 0, "lid": .55, "look": (.3, .3)},
+                  "look_up": {"brows": "up", "mouth": "flat", "smile": .2, "lid": .95, "look": (.3, -.4)},
+                  "moved": {"brows": "sad", "mouth": "wobble", "lid": .7, "look": (.3, -.2)},
+                  "happy": {"brows": "calm", "mouth": "smile", "smile": 1.0, "lid": .6}}
+
+# ─── позы рилса 64: цели рук в долях масштаба от таза (как POSE) ───
+POSE.update({
+    # держит открытку двумя руками перед грудью (за столом)
+    "card": (0.1, 0.12, {"f": ("ik", (215, -255), -1), "n": ("ik", (300, -250), -1)},
+             {"f": {"curl": (.55, .55, .6, .6), "thumb": .5, "dir": (.6, -.8)}, "n": {"curl": (.55, .55, .6, .6), "thumb": .5, "dir": (.2, -1)}}),
+    # ручка над открыткой: ближняя кисть вперёд-вниз (ручку в пальцы кладёт вызывающий), дальняя прижимает открытку
+    "pen": (0.16, 0.14, {"f": ("ik", (200, -200), -1), "n": ("ik", (300, -235), -1)},
+            {"f": {"curl": (.3, .3, .35, .4), "thumb": .3}, "n": {"curl": (.6, .55, .6, .65), "thumb": .7, "dir": (.5, .8)}}),
+    # чешет затылок: ближняя рука вверх за голову, локоть в сторону
+    "scratch": (0.02, 0.1, {"f": ("ik", (180, -200), -1), "n": ("ik", (-20, -640), 1)},
+                {"f": {"curl": (.4, .4, .45, .5), "thumb": .4}, "n": {"dir": (.3, -1), "curl": (.5, .6, .6, .6), "thumb": .3}}),
+    # откинулся, руки за головой (рисовать с layers=LAYERS_BEHIND — кисти за головой)
+    "behind": (-0.18, -0.12, {"f": ("ik", (-30, -650), 1), "n": ("ik", (-10, -660), 1)},
+               {"f": {"kind": "none"}, "n": {"kind": "none"}}),
+    # ладонь на груди (по грудь, крупно)
+    "chest": (0.02, 0.0, {"f": ("ang", 0.18, 0.18), "n": ("ik", (70, -300), -1)},
+              {"n": {"dir": (-.25, -1), "curl": (.1, .1, .15, .2), "spread": .12, "thumb": .15}}),
+    # пишет: ближняя кисть с ручкой у листа, дальняя прижимает лист
+    "write": (0.22, 0.2, {"f": ("ik", (205, -205), -1), "n": ("ik", (290, -215), -1)},
+              {"f": {"curl": (.2, .2, .25, .3), "thumb": .2}, "n": {"curl": (.45, .5, .55, .6), "thumb": .5, "dir": (.8, .6)}}),
+    # складывает лист: обе кисти сходятся перед собой
+    "fold": (0.12, 0.16, {"f": ("ik", (220, -235), -1), "n": ("ik", (290, -260), -1)},
+             {"f": {"curl": (.5, .5, .55, .6), "thumb": .5, "dir": (.8, -.5)}, "n": {"curl": (.5, .5, .55, .6), "thumb": .5, "dir": (-.3, -1)}}),
+    # мобильник у уха (ближняя рука), дальняя опущена; мобильник рисует dima_mobile()
+    "mobile": (0.02, 0.06, {"f": ("ang", 0.18, 0.2), "n": ("ik", (10, -500), 1)},
+               {"n": {"dir": (.15, -1), "curl": (.6, .65, .7, .7), "thumb": .7}}),
+    # мобильник у уха + письмо в дальней руке перед собой (у окна)
+    "mobile_letter": (0.02, 0.06, {"f": ("ik", (200, -230), -1), "n": ("ik", (10, -500), 1)},
+                      {"f": {"curl": (.55, .55, .6, .6), "thumb": .55, "dir": (.4, -1)}, "n": {"dir": (.15, -1), "curl": (.6, .65, .7, .7), "thumb": .7}}),
+    # гладит кота на коленях: ближняя ладонь на спине кота (u двигает её вдоль), дальняя на подлокотнике
+    "pet": (0.0, 0.18, {"f": ("ik", (160, -150), -1), "n": ("ik", (250, -130), -1)},
+            {"f": {"curl": (.3, .3, .35, .4), "thumb": .3}, "n": {"dir": (1, .25), "curl": (.15, .15, .2, .25), "spread": .15, "thumb": .2}}),
+    # держит письмо перед грудью двумя руками и улыбается в камеру
+    "letter": (0.0, -0.05, {"f": ("ik", (190, -300), -1), "n": ("ik", (275, -300), -1)},
+               {"f": {"curl": (.55, .55, .6, .6), "thumb": .55, "dir": (.5, -1)}, "n": {"curl": (.55, .55, .6, .6), "thumb": .55, "dir": (.1, -1)}}),
+    # убирает открытку в ящик: ближняя рука вниз-вперёд
+    "drawer": (0.26, 0.3, {"f": ("ik", (180, -200), -1), "n": ("ik", (330, -60), -1)},
+               {"f": {"curl": (.4, .4, .45, .5), "thumb": .4}, "n": {"curl": (.5, .5, .55, .6), "thumb": .55, "dir": (.6, .8)}}),
+    # учительница: склоняется к парте, ближняя ладонь на плечо ученика (цель — вызывающий подставит плечо через arms)
+    "lean_desk": (0.42, 0.3, {"f": ("ik", (200, -260), -1), "n": ("ik", (340, -230), -1)},
+                  {"f": {"curl": (.5, .5, .55, .6), "thumb": .5, "dir": (.5, -1)}, "n": {"dir": (.6, .8), "curl": (.15, .2, .25, .3), "spread": .15, "thumb": .2}}),
+    # ладонь к губам (учительница замерла / участница прикрывает рот)
+    "hand_mouth": (0.04, 0.0, {"f": ("ang", 0.2, 0.25), "n": ("ik", (130, -530), -1)},
+                   {"n": {"dir": (.1, -1), "curl": (.15, .15, .2, .25), "spread": .1, "thumb": .2}}),
+    # вытирает слезу пальцем у ближнего глаза
+    "wipe": (-0.06, -0.12, {"f": ("ang", 0.2, 0.25), "n": ("ik", (120, -600), -1)},
+             {"n": {"dir": (.2, -1), "curl": (0, .8, .85, .85), "spread": .05, "thumb": .7}}),
+    # ладонь на сердце (отец)
+    "heart": (0.0, -0.05, {"f": ("ang", 0.2, 0.2), "n": ("ik", (40, -320), -1)},
+              {"n": {"dir": (-.3, -1), "curl": (.15, .15, .2, .25), "spread": .12, "thumb": .2}}),
+    # протягивает лист к краю кадра (психолог)
+    "offer": (0.06, 0.0, {"f": ("ang", 0.2, 0.25), "n": ("ik", (430, -320), -1)},
+              {"n": {"dir": (1, -.1), "curl": (.5, .5, .55, .6), "thumb": .55}}),
+    # поправляет очки указательным пальцем (психолог)
+    "glasses": (0.0, 0.0, {"f": ("ang", 0.2, 0.25), "n": ("ik", (150, -560), -1)},
+                {"n": {"dir": (.3, -1), "curl": (0, .85, .9, .9), "spread": .05, "thumb": .7}}),
+})
+LAYERS_BEHIND = ("legs", "pelvis", "arm_f", "arm_n", "body")     # руки за головой — рисуются под телом и головой
+
+SHRUG = 46.0      # на сколько голова уходит в плечи на «неловко» (L-единицы)
+
+
+def person(who, x, y, scale, expr="", pose=None, u_pose=None, shrug=0.0, flip=False, feet=None, lotus=None, layers=None, lean_add=0.0,
+           head_add=0.0, arms=None, hands=None, **kw):
+    """Любой герой рилса 64 одной строкой: expr — имя из EXPR[who] или dict; pose — имя из POSE (u_pose=(other, u) — переход к другой позе);
+    shrug 0..1 — плечи к ушам (голова опускается в плечи); lean_add/head_add — живой наклон поверх позы; arms/hands — точечная замена."""
+    ex = EXPR.get(who, {}).get(expr, {}) if isinstance(expr, str) else dict(expr or {})
+    if pose and u_pose:
+        pk = mix_pose(pose, u_pose[0], u_pose[1], x, y, scale, who)
+    elif pose:
+        pk = pose_kw(pose, x, y, scale, who)
+    else:
+        pk = dict(lean=0.0, head_ang=0.0, arms=None, hands=None)
+    if arms:
+        A = dict(pk["arms"] or {"f": ("ang", 0.18, 0.18), "n": ("ang", -0.1, 0.25)})
+        A.update(arms)
+        pk["arms"] = A
+    if hands:
+        H = dict(pk.get("hands") or {})
+        H.update(hands)
+        pk["hands"] = H
+    if layers is None and pose == "behind":
+        layers = LAYERS_BEHIND
+    return figure(who, x, y, scale, ex, lean=pk["lean"] + lean_add, head_ang=pk["head_ang"] + head_add, arms=pk["arms"], hands=pk["hands"],
+                  feet=feet, flip=flip, layers=layers, head_off=(0, SHRUG * shrug), lotus=lotus, **kw)
+
+
+def dima(x, y, scale, expr="unsure", pose=None, **kw):
+    """Взрослый Дима (горчичное худи, лохматый, щетина). Вечером s01–s04 мимика с мешками (по умолчанию), днём — bags=False в EXPR."""
+    return person("dima", x, y, scale, expr, pose, **kw)
+
+
+def kid_dima(x, y, scale, expr="beam", pose=None, **kw):
+    """Маленький Дима лет 9: тот же вихор и разрез глаз, без щетины, кирпичный свитер."""
+    return person("kid2", x, y, scale, expr, pose, **kw)
+
+
+def teacher(age="young", x=540, y=1200, scale=.5, expr=None, pose=None, **kw):
+    """Учительница — одна женщина: age="young" (s02, каштановый пучок, зелёная кофта) | "old" (s15, седой пучок, очки на цепочке,
+    вязаный кардиган). Общие приметы — родинка над левой от зрителя бровью, пучок, овал, глаза и улыбка."""
+    who = "teacher_y" if age == "young" else "teacher_o"
+    return person(who, x, y, scale, expr if expr is not None else ("kind" if age == "young" else "listen"), pose, **kw)
+
+
+def psychologist(x, y, scale, expr="calm", pose=None, **kw):
+    return person("psych", x, y, scale, expr, pose, **kw)
+
+
+def participant(name, x, y, scale, expr="serious", pose=None, **kw):
+    """name: "curly" (женщина с кудрями в очках), "beard" (бородач в клетчатой), "youth" (юноша с короткой стрижкой)."""
+    return person(name, x, y, scale, expr, pose, **kw)
+
+
+def old_father(x, y, scale, expr="serious", pose=None, **kw):
+    return person("father", x, y, scale, expr, pose, **kw)
+
+
+def mobile_at_ear(fig, scale, flip=False):
+    """Мобильник-силуэт в ближней руке у уха (поза "mobile"/"mobile_letter"): рисовать МЕЖДУ телом и ближней рукой —
+    figure(..., layers=("legs","pelvis","arm_f","body")) + mobile_at_ear(...) + figure(..., layers=("arm_n",))."""
+    w = fig["wrist"]["n"]
+    sc = fig["scale"]
+    sx = -1 if flip else 1
+    return mobilnik(w[0] + sx * 12 * sc, w[1] - 70 * sc, k=sc * 1.25, rot=-14 * sx)
+
+
+def dima_mobile(x, y, scale, expr="nervous", pose="mobile", **kw):
+    """Дима с мобильником у уха: тело, мобильник, затем ближняя рука поверх (пальцы обхватывают корпус)."""
+    base = dima(x, y, scale, expr, pose, layers=kw.pop("layers_body", ("legs", "pelvis", "arm_f", "body")), **kw)
+    hand_ = dima(x, y, scale, expr, pose, layers=("arm_n",), **kw)
+    base["svg"] = base["svg"] + mobile_at_ear(base, scale, kw.get("flip", False)) + hand_["svg"]
+    return base
+
+
+# ─── кот рилса 64 ───
+def cat_curl(x, y, k, st=None, t=0.0):
+    """Кот клубком (на коленях): см. cat.curl — st: eye (0 закрыт … 1 открыт ближний глаз), squint (жмурится), breath (сила дыхания),
+    flame_e, tail. (x, y) — середина низа клубка."""
+    import cat
+    return cat.curl(x, y, k, st or {}, t)

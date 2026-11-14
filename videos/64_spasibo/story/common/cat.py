@@ -150,7 +150,7 @@ def head(st, t):
             s.append(line([(x0, 1100 + dy), (x0 + sx * ln, 1094 + dy + k * 3)], 5.6, "#f0903e", seed=260 + k + sx, taper=.3, wmin=.5))
     for nm, ex, sd in [("L", CXH - 44 - 4 * turn, 255), ("R", CXH + 44 - 4 * turn, 256)]:
         sq = 1.0 - .22 * max(0.0, turn if nm == "R" else -turn)
-        s.append(eye(ex, 1072, 34, 38, look, blink, sd, sq))
+        s.append(eye(ex, 1072, 34, 38, look, st.get("blink_" + nm, blink), sd, sq))     # рилс 64: blink_L / blink_R — один глаз отдельно
     s.append(shape([(826 + FX, 1108), (846 + FX, 1108), (836 + FX, 1119)], "#c47a72", w=2.6, seed=262))
     s.append(line([(836 + FX, 1119), (836 + FX, 1124)], 2.4, seed=263))
     tg = st.get("tongue", 0.0)
@@ -172,7 +172,7 @@ def head(st, t):
     return "".join(s)
 
 
-def body(walk=None, legs=0.0):
+def body(walk=None, legs=0.0, paw=0.0, paw_dx=40.0):
     """walk — фаза шага (передние лапы по очереди поднимаются, задние в противофазе); legs 0..1 — задние лапы вытянуты (толчок/полёт)."""
     s = []
     bd = [(760, 1296), (744, 1240), (756, 1180), (790, 1142), (880, 1142), (916, 1180), (928, 1240), (912, 1296)]
@@ -204,12 +204,16 @@ def body(walk=None, legs=0.0):
         if walk is not None:
             lift = max(0.0, math.sin(2 * math.pi * walk + (0 if sx < 0 else math.pi))) * 30
         lift += 26 * legs * (1 if sx < 0 else .8)      # в прыжке передние подобраны
+        dx = 0.0
+        if sx > 0 and paw > 0:      # рилс 64: правая (от зрителя) передняя лапа тянется вперёд-вверх (тянет ящик, трогает)
+            lift += 78 * paw
+            dx = paw_dx * paw
         b = 1306 - lift
-        paw = [(fx - 20, b, 1), (fx - 19, 1252), (fx + 19, 1252), (fx + 20, b, 1)]
-        s.append(shape(paw, CAT, blob([(fx + sx * 6, 1250), (fx + 20 * sx, 1250), (fx + 20 * sx, b), (fx + sx * 8, b)], CAT_SH, .7),
+        pw = [(fx - 20 + dx, b, 1), (fx - 19, 1252), (fx + 19, 1252), (fx + 20 + dx, b, 1)]
+        s.append(shape(pw, CAT, blob([(fx + sx * 6, 1250), (fx + 20 * sx, 1250), (fx + 20 * sx + dx, b), (fx + sx * 8 + dx, b)], CAT_SH, .7),
                        w=4.6, seed=sd))
         for k in (-7, 7):
-            s.append(line([(fx + k, b - 12), (fx + k, b)], 2.2, seed=sd + k))
+            s.append(line([(fx + k + dx, b - 12), (fx + k + dx, b)], 2.2, seed=sd + k))
     return "".join(s)
 
 
@@ -224,7 +228,7 @@ def draw(x, y, k, st, t):
     o.append(f'<g transform="rotate({tail_a:.2f} {TAIL_PIVOT[0]} {TAIL_PIVOT[1]})">{tail_art()}{flame(t, 1.3 - .45 * sl, st.get("flame_e", 1.0))}</g>')
     sy = br * (1 - .2 * sl) * st.get("sy", 1.0)
     sx = (1 + .12 * sl) * st.get("sx", 1.0)
-    o.append(f'<g transform="translate({CX} {CBOT}) scale({sx:.4f} {sy:.4f}) translate({-CX} {-CBOT})">{body(st.get("walk"), st.get("legs", 0.0))}</g>')
+    o.append(f'<g transform="translate({CX} {CBOT}) scale({sx:.4f} {sy:.4f}) translate({-CX} {-CBOT})">{body(st.get("walk"), st.get("legs", 0.0), st.get("paw", 0.0), st.get("paw_dx", 40.0))}</g>')
     hy = -(sy - 1) * (CBOT - NECK[1]) + 34 * sl + 70 * st.get("drop", 0.0)
     o.append(f'<g transform="translate({22 * sl:.2f} {hy:.2f}) rotate({tilt:.2f} {NECK[0]} {NECK[1]})">{head(st, t)}</g>')
     return f'<g transform="translate({x:.2f} {y:.2f}) rotate({st.get("rot", 0.0):.2f}) scale({k:.4f}) translate({-CX} {-CBOT})">{"".join(o)}</g>'
@@ -233,3 +237,50 @@ def draw(x, y, k, st, t):
 def head_world(x, y, k, st):
     """Точка морды (между глаз) в мире — для камеры."""
     return x, y + (1072 - CBOT) * k
+
+
+# ═════════════════════════════ РИЛС 64: КОТ КЛУБКОМ (на коленях) ═════════════════════════════
+def curl(x, y, k, st, t):
+    """Кот лежит клубком: тело-овал, голова на передних лапах слева, хвост обвивает спереди, огонёк на кончике.
+    st: eye — ближний (правый от зрителя) глаз приоткрыт 0..1 (по умолчанию оба закрыты), look, squint 0..1 (жмурится: глаза дугами
+    и щёки вверх), breath (сила дыхания, 1 — обычное), flame_e, turn (голова чуть к зрителю), ear. (x, y) — середина низа клубка."""
+    from ink import band
+    br = st.get("breath", 1.0)
+    ph = math.sin(t * 2 * math.pi / 2.6)
+    ry = 74 * (1 + .045 * br * ph)
+    bx, by = 860, 1306
+    o = []
+    # тело: овал, верх «дышит»
+    bd = [(bx - 160, by - 6), (bx - 168, by - ry * .7), (bx - 120, by - ry * 1.18), (bx - 20, by - ry * 1.36), (bx + 90, by - ry * 1.28),
+          (bx + 160, by - ry * .96), (bx + 182, by - ry * .4), (bx + 164, by - 4)]
+    inner = blob([(bx + 40, by - 140), (bx + 200, by - 100), (bx + 200, by + 10), (bx + 20, by + 10), (bx + 90, by - 60)], CAT_SH, .85)
+    inner += blob([(bx - 90, by - ry * 1.1), (bx + 10, by - ry * 1.3), (bx + 60, by - ry * 1.16), (bx - 40, by - ry * .96)], CAT_FUR, .55)
+    inner += line([(bx + 40, by - 10), (bx + 70, by - ry * .9), (bx + 136, by - ry * .9), (bx + 160, by - 20)], 3.0, CAT_SH, seed=301, op=.9)   # бедро
+    for i, st_ in enumerate([[(bx - 60, by - ry * 1.2), (bx - 50, by - ry * 1.05)], [(bx, by - ry * 1.3), (bx + 6, by - ry * 1.14)],
+                             [(bx + 70, by - ry * 1.22), (bx + 70, by - ry * 1.06)]]):
+        inner += line(st_, 2.2, CAT_EDGE, seed=304 + i, op=.8)
+    o.append(shape(fur(bd, 7, 7, seed=300), CAT, inner, w=5, seed=302))
+    # голова на лапах: тот же head(), повёрнута и опущена
+    sq = st.get("squint", 0.0)
+    eye_open = st.get("eye", 0.0)
+    hst = dict(turn=st.get("turn", -.15), look=st.get("look", (-.2, .3)), ear=st.get("ear", 0.0), perk=0.0,
+               blink_L=1.0, blink_R=1.0 - .8 * eye_open, smile=1.0 if sq > .3 else 0.0)
+    hx, hy = bx - 128, by - 96 - 3 * br * ph
+    o.append(f'<g transform="translate({hx:.2f} {hy:.2f}) rotate({-6 + 4 * sq:.2f}) scale(.92) translate({-836} {-1072})">{head(hst, t)}</g>')
+    if sq > .05:      # жмурится: щёки приподняты дугами под закрытыми глазами
+        for ex in (-44, 44):
+            o.append(line([(hx + ex * .92 - 26, hy + 30), (hx + ex * .92, hy + 22 - 6 * sq), (hx + ex * .92 + 26, hy + 30)], 2.6, CAT_EDGE, seed=310 + ex, op=.8 * sq))
+    # передние лапы под подбородком
+    for i, px in enumerate((bx - 190, bx - 116)):
+        pp = ellipse_pts(px, by - 18, 36, 20, 12)
+        o.append(shape(pp, CAT, blob(ellipse_pts(px + 8, by - 12, 26, 12, 10), CAT_SH, .6), w=4.4, seed=320 + i))
+        for kk in (-10, 4, 18):
+            o.append(line([(px + kk, by - 30), (px + kk + 2, by - 18)], 2.0, seed=324 + i * 3 + kk))
+    # хвост обвивает спереди справа налево, кончик с огоньком
+    sw = st.get("tail", 0.0)
+    tp = [(bx + 170, by - 30), (bx + 150, by - 2), (bx + 80, by + 10), (bx - 10, by + 12), (bx - 70 + sw, by + 4 - abs(sw) * .2)]
+    tl = band(tp, 40, 18, step=4)
+    o.append(shape(tl, CAT, blob([(bx - 80, by + 8), (bx + 180, by + 8), (bx + 180, by + 30), (bx - 80, by + 30)], CAT_SH, .7), w=4.6, seed=330))
+    tip = tp[-1]
+    o.append(f'<g transform="translate({tip[0] - FLAME_BASE[0] * .7:.2f} {tip[1] - 6 - FLAME_BASE[1] * .7:.2f}) scale(.7)">{flame(t, 1.3, st.get("flame_e", 1.0))}</g>')
+    return f'<g transform="translate({x:.2f} {y:.2f}) scale({k:.4f}) translate({-bx} {-by})">{"".join(o)}</g>'

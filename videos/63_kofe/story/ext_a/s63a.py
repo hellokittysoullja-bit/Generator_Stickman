@@ -55,7 +55,7 @@ ROW_SPLIT = 830.0
 MUG_COLS = ["red", "white", "blue"]
 T_POP = [None, 2.30, 2.72]             # центральная с самого начала; левая на «каждой», правая на «чашки»
 ORDER = [1, 0, 2]                      # столбец → индекс в T_POP (центр первым)
-T_ARROW, T_LAND, T_FILL = 3.10, 3.66, 4.06
+T_ARROW, T_GO, T_LAND, T_FILL = 2.92, 3.17, 3.66, 4.06
 
 
 def desk_bg(t):
@@ -166,10 +166,10 @@ def bez_pts(pts, s0=0.0, n=30):
 def glass_in_cell(col, t, fill_on=True, dx=0.0, dy=0.0, rot=0.0):
     d = 0.08 * col
     pth = glass_path(col)
-    ta, tl = T_ARROW + d, T_LAND + d * .5
+    ta, tg, tl = T_ARROW + d, T_GO + d, T_LAND + d * .5
     o = ""
     if t < tl:
-        s = ease_io(clamp((t - (ta + .07)) / (tl - ta - .07)))
+        s = ease_io(clamp((t - tg) / (tl - tg)))
         au = clamp((t - ta) / .22)
         if au > 0:
             rest = bez_pts(pth, s)
@@ -196,11 +196,11 @@ def s02(t):
     u1 = ease_io(clamp((t - 1.2) / 1.05))
     s = lerp(1.7, 1.12, u1)
     cx = 540.0
-    cy = lerp(ROW_MUG - 80, 835, u1)
+    cy = lerp(ROW_MUG - 80, 860, u1)
     u2 = ease_io(clamp((t - 3.55) / 1.05))
-    s *= lerp(1.0, 1.12, u2)
-    cx += 70 * u2
-    cy += lerp(0, 60, u2)
+    s *= lerp(1.0, 1.07, u2)
+    cx += 38 * u2
+    cy += lerp(0, 20, u2)
     for tp in (2.30, 2.72, 3.66):   # толчок камеры на выскок/посадку
         dx, dy = P.shake(t, tp, 7, .25, seed=int(tp * 10))
         cx += dx
@@ -254,7 +254,7 @@ def s05(t):
     # камера: наезд с разгоном к центру креста, тряска на ударе
     u = ease_in(clamp((t - 8.05) / (9.14 - 8.05)), 2.4)
     s = lerp(1.06, 1.22, u)
-    cx, cy = lerp(560, 540, u), lerp(850, 860, u)
+    cx, cy = lerp(560, 540, u), lerp(870, 870, u)
     rot = lerp(1.5, -1.0, u)
     if t > 9.14:
         s = 1.22 - .08 * ease_out(clamp((t - 9.14) / .5))
@@ -344,7 +344,7 @@ def s07(t):
         if u < .25:
             body.append(P.splash_drops(x0, y0, SK * .8, u / .25 * .7, seed=4))
     if t >= T_FILLD:
-        body.append(P.splash_drops(rx, ry - 70 * SK, SK * .7, clamp((t - T_FILLD) / .45), seed=8))
+        pass
     # камера: наезд на весы, качание кадра в такт коромыслу
     u = ease_out(clamp((t - 12.45) / 2.9), 2)
     s = lerp(1.0, 1.1, u)
