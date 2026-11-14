@@ -311,6 +311,92 @@ def frame05(t):
     cam = lib.cam(560 - 120 * push + shake, 1080 - 160 * push + .5 * shake, z, .9 - .9 * push + .8 * decay(t, T_RUG, 6, 12))
     return f'<g transform="{cam}">{"".join(o)}</g>'
 
+# ═════════════════════════════ s07: трёт глаза, зевает ═════════════════════════════
+T_GLAZ, T_UST, T_NACH = wt(27), wt(29), wt(30)      # 9.48, 10.22, 10.766
+S07_MATT = 1330
+
+
+def head_pt(fig, q, lean, ha, sc):
+    a = lean * .5 + ha
+    x, y = q[0] * people.KID_HEAD_K, q[1] * people.KID_HEAD_K
+    c, s_ = math.cos(a), math.sin(a)
+    return (fig["head"][0] + (x * c - y * s_) * sc, fig["head"][1] + (x * s_ + y * c) * sc)
+
+
+def frame07(t):
+    a = 9.2
+    pu = ease_io(clamp((t - a) / 2.2))
+    z = 1.12 + .3 * pu
+    set_ink(z)
+    o = []
+    g = lin([(0, "#6c7bb2", 1), (1, "#8796c8", 1)])
+    o.append(f'<rect x="-500" y="-600" width="2200" height="2400" fill="url(#{g})"/>')
+    for j in range(10):
+        for i in range(15):
+            x = -460 + i * 150 + (75 if j % 2 else 0)
+            y = -520 + j * 190
+            o.append(blob([(x, y - 11), (x + 7, y), (x, y + 11), (x - 7, y)], "#9aa8d6", .8))
+    # изголовье, подушка, матрас
+    o.append(shape(rrect(40, 780, 110, S07_MATT + 120, 10), PR.C_WOOD, blob(rect_pts(96, 780, 112, S07_MATT + 120), PR.C_WOOD_SH), w=4.0, seed=71))
+    o.append(shape(rrect(-200, S07_MATT, 1500, S07_MATT + 70, 10), "#EFE9DA", blob(rect_pts(-200, S07_MATT + 44, 1500, S07_MATT + 70), "#CFC7B3"), w=4, seed=72))
+    o.append(blob(rect_pts(-200, S07_MATT + 70, 1500, 2600), "#5a4636"))
+    o.append(PR.pillow(260, S07_MATT + 6, 1.9, -6, seed=3))
+    s = 1.38
+    sc = s * people.HEIGHT["kid"]
+    hip = (400, S07_MATT - 10)
+    # фазы: тереть (кулаки к глазам), зевок, тяжёлые веки
+    rub = smooth(T_GLAZ - .12, T_GLAZ + .06, t) * (1 - smooth(10.0, 10.18, t))
+    yawn = smooth(T_UST - .04, T_UST + .3, t) * (1 - smooth(10.85, 11.15, t))
+    heavy = smooth(10.8, 11.1, t)
+    red = .25 + .75 * smooth(T_GLAZ + .1, 10.1, t)
+    ha = -.04 * rub - .22 * yawn + .08 * heavy + .03 * math.sin(t * 2.5) + .05 * heavy * math.sin((t - 10.8) * 5)
+    lean = .02 + .04 * rub - .05 * yawn + .06 * heavy
+    expr = dict(lid=.7 - .1 * red, brows="sleepy" if (yawn > .3 or heavy > .3) else ("worry" if rub > .2 else "calm"),
+                mouth="yawn" if yawn > .15 else ("wince" if rub > .3 else "flat"), open=yawn, closed=max(.9 * rub, .75 * yawn, blink_of(t, (9.3,))),
+                look=(.5, .55), redeye=red * (1 - .6 * rub))
+    if heavy > .1:
+        expr.update(lid=.6 - .38 * heavy, closed=.25 * (.5 + .5 * math.sin((t - 10.8) * 7)) * heavy)
+    rest_n = (hip[0] + 250 * sc, hip[1] - 70 * sc)
+    rest_f = (hip[0] + 330 * sc, hip[1] - 90 * sc)
+    # предварительный проход: где глаза
+    pre = person("kid", hip, s, expr, {"n": ("ik", rest_n, -1), "f": ("ik", rest_f, -1)}, {"n": {"kind": "none"}, "f": {"kind": "none"}},
+                 lean=lean, head_ang=ha)
+    en = head_pt(pre, (16, 10), lean, ha, sc)
+    ef = head_pt(pre, (96, 8), lean, ha, sc)
+    circ = (t - T_GLAZ) * 2 * math.pi * 3.2
+    rn = (en[0] - 10 * sc + 16 * sc * math.cos(circ), en[1] + 95 * sc + 12 * sc * math.sin(circ))
+    rf = (ef[0] + 30 * sc + 14 * sc * math.cos(circ + 2), ef[1] + 100 * sc + 10 * sc * math.sin(circ + 2))
+    ru = ease_io(rub)
+    wn = (rest_n[0] + (rn[0] - rest_n[0]) * ru, rest_n[1] + (rn[1] - rest_n[1]) * ru)
+    wf = (rest_f[0] + (rf[0] - rest_f[0]) * ru, rest_f[1] + (rf[1] - rest_f[1]) * ru)
+    hk = sc * 1.25
+    hands = {"n": fist((-.15 * ru + (1 - ru), -1 * ru + .2 * (1 - ru)), flip=-1, k=hk) if ru > .3 else open_hand(.35, (1, .25), .1, .4, flip=1, k=hk),
+             "f": fist((.05, -1), flip=-1, k=hk * .95) if ru > .3 else open_hand(.35, (1, .2), .1, .4, flip=1, k=hk * .95)}
+    kid = person("kid", hip, s, expr, {"n": ("ik", wn, -1), "f": ("ik", wf, -1)}, hands, lean=lean, head_ang=ha)
+    if ru > .3:
+        o.append(kid.get("pelvis", "") + kid["body"] + kid["arm_f"] + kid["arm_n"])
+    else:
+        o.append(kid["arm_f"] + kid.get("pelvis", "") + kid["body"] + kid["arm_n"])
+    # одеяло на ногах, книга на коленях (раскрыта, лежит под наклоном)
+    o.append(PR.blanket(640, S07_MATT + 30, 1.0, 760, 170, seed=7, col="blue"))
+    o.append(PR.book_open(690, S07_MATT - 112, 1.45, 8, seed=5, cover=PR.C_RED_COVER))
+    # фонарик стоит торцом вверх, светит в потолок
+    fx, fy = 930, S07_MATT - 150
+    o.append(PR.flashlight(fx, fy, 1.6, -90, 1.0))
+    if ru <= .3:
+        o.append(kid["arm_n"])
+    hx, hy = kid["head"]
+    holes = [(PR.cone_d(fx, fy - 100, -90, 1500, 30, 30), 1.0), (PR.circle_d(fx - 200, fy - 200, 560, 640), .85),
+             (PR.circle_d(hx, hy, 340, 380), .7)]
+    o.append(PR.darkness(op=.66, holes=holes, box=(-600, -700, 1800, 2700)))
+    fl = 1 + .04 * math.sin(t * 19)
+    o.append(PR.beam(fx, fy - 100, -90, 1400, 30, .8 * fl, 1.6))
+    o.append(PR.glow(fx - 120, fy - 120, 520, .45 * fl))
+    o.append(PR.glow(fx, -200, 360, .5 * fl, ry=120))
+    shake = 5 * decay(t, T_UST + .1, 6, 14)
+    cam = lib.cam(560 - 40 * pu + shake, 1000 - 120 * pu, z, .7 - 1.0 * pu + .5 * math.sin(t * 1.3) * .3)
+    return f'<g transform="{cam}">{"".join(o)}</g>'
+
 
 def lib_rect_d(x0, y0, x1, y1):
     return f"M{f(x0)} {f(y0)}H{f(x1)}V{f(y1)}H{f(x0)}Z"
@@ -318,5 +404,5 @@ def lib_rect_d(x0, y0, x1, y1):
 
 def frame(sid, t):
     lib.dyn_begin()
-    fn = {"s03": frame03, "s05": frame05}[sid]
+    fn = {"s03": frame03, "s05": frame05, "s07": frame07}[sid]
     return lib.svg(fn(t))
