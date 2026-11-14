@@ -304,8 +304,8 @@ def props7():
 # ═══════════════════════════════ s08: дорога к кубку через полгода
 HOR = 1010                     # линия горизонта
 TROPHY = (905, 905)            # кубок на холме (низ)
-CAL = (640, 1080)              # календарь (низ стойки)
-BX8, BY8 = 300, 1210
+CAL = (590, 1300)              # календарь (низ стойки)
+BX8, BY8 = 345, 1210
 
 
 def sky8():
@@ -413,8 +413,8 @@ def calendar(x, y, t, sd=2200):
             continue
         # лист отрывается: взлетает вверх-вправо, крутится
         u = e
-        dx = 520 * u + 80 * math.sin(u * 7 + k)
-        dy = -420 * u + 260 * u * u
+        dx = (-120 + 60 * k) * u + 60 * math.sin(u * 7 + k)
+        dy = -1100 * u + 300 * u * u
         rr = 200 * u * (1 if k % 2 else -1)
         scl = 1 - 0.35 * u
         cxp, cyp = x, y0 + bh / 2
@@ -488,9 +488,9 @@ def s08(t):
     body = brain_char(pose, feet, wl, wr, al, ar, cl, cr, fs, held=ck, legs_sd=2400, mirror=False)
     sx = (-1 if mirror else 1) * max(0.08, squash_turn)
     body = f'<g transform="translate({f(pose.x)} 0) scale({f(sx)} 1) translate({f(-pose.x)} 0)">{body}</g>'
+    art.append(fly)
     art.append(sb.shadow(pose.x, g + 4, 200, .5))
     art.append(body)
-    art.append(fly)
     # «пф» — штрихи взмаха
     if t > POLGODA:
         art.append(P.pop_lines(pose.x + 230, pose.y - 220, t - POLGODA, 60, 130, 5, a0=-0.6, spread=1.8, col="#cfe0ff", w=8, sd=2500))
@@ -499,9 +499,9 @@ def s08(t):
     # камера: с общего плана — тянется к кубку на «через полгода», на «полгода» отскок назад к мозгу
     to = ease_io(clamp((t - 11.95) / 0.6))
     back = ease_out(clamp((t - POLGODA) / 0.3), 3)
-    cx = 560 + (790 - 560) * to * (1 - back) - 60 * back
-    cy = 1060 + (960 - 1060) * to * (1 - back) + 40 * back
-    sc = 1.05 + 0.6 * to * (1 - back) + 0.12 * back + 0.05 * P.kick(t, POLGODA, 6, 14)
+    cx = 560 + (760 - 560) * to * (1 - back) - 60 * back
+    cy = 1060 + (930 - 1060) * to * (1 - back) + 40 * back
+    sc = 1.05 + 0.55 * to * (1 - back) + 0.12 * back + 0.05 * P.kick(t, POLGODA, 6, 14)
     return "".join(art), cam(cx, cy, sc, -0.5 + 0.8 * clamp((t - 11.7) / 1.85))
 
 
