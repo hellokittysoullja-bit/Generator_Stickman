@@ -2146,3 +2146,27 @@ def cat_curl(x, y, k, st=None, t=0.0):
     flame_e, tail. (x, y) — середина низа клубка."""
     import cat
     return cat.curl(x, y, k, st or {}, t)
+
+
+def ik_ang(who, x, y, scale, lean, target, side=-1, near=True, torso_k=1.0):
+    """Цель руки в мире → ("ang", th1, bend) — та же поза, что ("ik", target, side), но углами плеча и локтя. Нужна, чтобы рука
+    ПЛАВНО переходила между позами с разным сгибом (side −1 ↔ +1: со стола к уху) — mix_ang() ведёт локоть по дуге, а не перескоком."""
+    sc = scale * HEIGHT.get(who, 1.0)
+    H = np.array((x, y), float)
+    up = rot(np.array([0.0, -1.0]), lean)
+    fw = rot(np.array([1.0, 0.0]), lean)
+    S = up * TORSO * torso_k + fw * 6
+    sp = S + (fw * 4 if near else fw * -14 + up * 6)
+    E, Wr = ik2(sp, (np.array(target, float) - H) / sc, UPPER, FORE, side)
+    d1 = (E - sp) / UPPER
+    d2 = (Wr - E) / np.linalg.norm(Wr - E)
+    th1 = math.atan2(d1[0], d1[1]) - lean * .3
+    bend = -math.atan2(d1[0] * d2[1] - d1[1] * d2[0], float(d1 @ d2))
+    return ("ang", th1, bend)
+
+
+def mix_ang(a, b, u):
+    """Плавный переход между двумя ("ang", th1, bend): плечо — кратчайшей дугой, локоть — линейно (через прямую руку)."""
+    u = max(0.0, min(1.0, u))
+    d = (b[1] - a[1] + math.pi) % (2 * math.pi) - math.pi
+    return ("ang", a[1] + d * u, a[2] + (b[2] - a[2]) * u)

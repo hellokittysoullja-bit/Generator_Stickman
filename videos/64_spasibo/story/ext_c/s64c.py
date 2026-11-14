@@ -25,8 +25,8 @@ BS = 1.0
 SX, SY = R.SIT
 SC = BS * people.HEIGHT["dima"]
 FEET = {"n": ((SX + 300 * BS, R.FL - 52), 0.0), "f": ((SX + 250 * BS, R.FL - 50), 0.0)}
-CARD_K = .62
-PEN_K = .55
+CARD_K = .95
+PEN_K = .9
 
 
 def wt(word, after=0.0):
@@ -146,7 +146,7 @@ def dima_parts(expr, pose, hands=None, arms=None, shrug=0.0, lean_add=0.0, head_
 def held_pen(W, d, rot, cap=0.0, k=PEN_K):
     """Ручка в кулаке: центр ручки — у центра кулака (запястье + 52·sc вдоль кисти), ось — rot (0 — кончик вниз)."""
     dn = np.array(d, float) / (np.linalg.norm(d) + 1e-9)
-    c = np.array(W) + dn * 50 * SC
+    c = np.array(W) + dn * 58 * SC
     return PR.pen(float(c[0]), float(c[1]), k, rot, cap, seed=3), (float(c[0]), float(c[1]))
 
 
@@ -184,12 +184,12 @@ def s01(t):
     wf, wn = full["wrist"]["f"], full["wrist"]["n"]
     # открытка: центр у пальцев дальней кисти, вертится
     rot_c = lerp(-14 + 16 * math.sin(t * 7.5), -6, lay)
-    cpos = lerp2((wf[0] + 70, wf[1] - 40), (wf[0] + 120, wf[1] + 26), lay)
+    cpos = lerp2((wf[0] + 125, wf[1] - 95), (wf[0] + 150, wf[1] - 10), lay)
     card = PR.card(cpos[0], cpos[1], CARD_K * (1 - .1 * lay), rot_c, op, "blank", seed=1, droop=0.0)
     # кончик пальцев дальней кисти поверх края открытки — хват (большой палец спереди)
     fthumb = people.hand_svg("dima", wf, (.75, -.65), k=SC, far=True, curl=(.55, .6, .62, .65), thumb=.55, seed=720)
     cap = sm(t, T_HOTEL - .03, T_HOTEL + .1)
-    pen_rot = lerp(-60, 28, hover) + 5 * math.sin(t * 11) * hover
+    pen_rot = lerp(150, 25, hover) + 5 * math.sin(t * 11) * hover
     pen, pc = held_pen(wn, (.85, .35), pen_rot, cap)
     tip = PR.pen_tip(pc[0], pc[1], PEN_K, pen_rot)
     clk = PR.click(pc[0] - 30, pc[1] + 30, 1.0, clamp((t - T_HOTEL) / .25), seed=2)
