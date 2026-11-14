@@ -374,7 +374,7 @@ def s07(t):
         o.append(P.comment_bubble(x, y, sc, "yarn", 1.0, wb, 70 + i, (-35, 40), P.BUB_BLUE))
     # камера: медленный тёплый дрейф вдоль ряда
     a = ease_io(clamp((t - 10.46) / 2.66))
-    cx, cy, s = lerp(470, 800, a), lerp(860, 900, a), lerp(1.08, 1.14, a)
+    cx, cy, s = lerp(500, 800, a), lerp(940, 960, a), lerp(1.2, 1.26, a)
     wx, wr = whip_in(t, 10.46)
     return frame_svg("".join(o), cx - wx, cy, s, wr + .5 * math.sin(t * 1.1), "#FBF0DA")
 
