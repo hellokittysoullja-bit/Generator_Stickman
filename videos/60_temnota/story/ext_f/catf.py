@@ -12,7 +12,7 @@ for d in (os.path.join(STORY, "common"), os.path.join(STORY, "..", "..", "59_pod
         sys.path.insert(0, d)
 import cat as Cat  # noqa: E402
 import lib  # noqa: E402
-from ink import fill_d, fur  # noqa: E402
+from ink import ellipse_pts, fill_d, fur  # noqa: E402
 from lib import INK, blob, line, shape  # noqa: E402
 
 CAT, CAT_SH, CAT_FUR, CAT_EDGE = Cat.CAT, Cat.CAT_SH, Cat.CAT_FUR, Cat.CAT_EDGE
@@ -115,3 +115,90 @@ def draw2(x, y, k, st, t):
     hy = -(br - 1) * (Cat.CBOT - Cat.NECK[1]) + 70 * st.get("drop", 0.0)
     o.append(f'<g transform="translate(0 {hy:.2f}) rotate({tilt:.2f} {Cat.NECK[0]} {Cat.NECK[1]})">{head2(st, t)}</g>')
     return f'<g transform="translate({x:.2f} {y:.2f}) scale({k:.4f}) translate({-Cat.CX} {-Cat.CBOT})">{"".join(o)}</g>'
+
+
+# ═══════════════════════ кот со спины (s15): тот же рисунок, вид сзади ═══════════════════════
+def _mx(pts):
+    """Отражение относительно оси кота: со спины правое (загнутое) ухо кота — справа от зрителя."""
+    return [(2 * CX - p[0], p[1]) + tuple(p[2:]) for p in pts]
+
+
+def back_ears(ear=0.0):
+    s = []
+    # стоячее ухо (у кота левое) — со спины слева от зрителя, тыльная сторона уха — шерсть, без розового
+    re_out = _mx([(864, 1004), (902, 922, 1), (932, 1016)])
+    re_fill = re_out + _mx([(934, 1046), (866, 1046)])
+    g = [blob(re_fill, CAT)]
+    c = lib.clip_of(re_fill)
+    g.append(f'<g clip-path="url(#{c})">' + blob(_mx([(902, 924), (940, 1000), (936, 1016), (912, 1012)]), CAT_SH, .75) +
+             line(_mx([(892, 1000), (900, 968)]), 2, CAT_EDGE, seed=352, op=.8) + "</g>")
+    g.append(line(re_out, 5, seed=351, taper=.25, wmin=.3))
+    s.append(f'<g transform="rotate({-ear:.2f} {2 * CX - 898} 1030)">{"".join(g)}</g>')
+    # загнутое ухо (у кота правое) — справа от зрителя: кончик свисает наружу
+    le_out = _mx([(752, 1014), (744, 986), (728, 994, 1), (728, 966), (746, 948), (772, 940), (796, 948), (808, 968), (814, 1006)])
+    le_fill = le_out + _mx([(816, 1046), (752, 1046)])
+    g = [blob(le_fill, CAT)]
+    c = lib.clip_of(le_fill)
+    g.append(f'<g clip-path="url(#{c})">' + blob(_mx([(728, 940), (812, 940), (806, 972), (770, 974), (744, 984), (726, 996)]), CAT_SH, .7) + "</g>")
+    g.append(line(_mx([(740, 980), (770, 972), (800, 970)]), 2.4, seed=355, op=.85))
+    g.append(line(le_out, 5, seed=353, taper=.25, wmin=.3))
+    s.append(f'<g transform="rotate({ear * .3:.2f} {2 * CX - 780} 1030)">{"".join(g)}</g>')
+    return "".join(s)
+
+
+def back_head(st, t):
+    s = []
+    hd = [(744, 1062), (760, 1012), (800, 990), (870, 990), (914, 1014), (930, 1062), (922, 1112), (884, 1146), (788, 1146), (750, 1112)]
+    hp = fur(hd, 8, 6, seed=29)
+    inner = blob([(884, 990), (940, 1050), (930, 1150), (870, 1150), (900, 1080)], CAT_SH, .85)
+    inner += blob([(790, 1006), (836, 996), (876, 1006), (860, 1030), (810, 1030)], CAT_FUR, .5)
+    for i, p in enumerate([[(812, 1016), (816, 1034)], [(836, 1010), (838, 1030)], [(860, 1016), (856, 1034)], [(826, 1060), (830, 1080)],
+                           [(852, 1062), (848, 1082)]]):
+        inner += line(p, 2, CAT_EDGE, seed=358 + i, op=.8)
+    # усы видны из-за щёк
+    for sx in (-1, 1):
+        for k, dy in enumerate((-4, 6, 16)):
+            wv = 3 * math.sin(t * 2.3 + k + sx)
+            s.append(line([(CX + sx * 84, 1110 + dy), (CX + sx * 118, 1106 + dy + k * 3 + wv * .5), (CX + sx * 150, 1104 + dy + k * 5 + wv)], 1.6,
+                          "#cfcbe0", seed=370 + k + sx, op=.9))
+    s.append(shape(hp, CAT, inner, w=5.2, seed=357))
+    s.append(back_ears(st.get("ear", 0.0)))
+    return "".join(s)
+
+
+def back_body(legs=0.0, walk=None):
+    """legs 0..1 — задние лапы вытянуты вниз (прыжок); walk — фаза шага (лапы по очереди приподнимаются)."""
+    s = []
+    for sx in (-1, 1):
+        px = CX + sx * 62
+        lift = 0.0
+        if walk is not None:
+            lift = max(0.0, math.sin(2 * math.pi * walk + (0 if sx < 0 else math.pi))) * 16
+        dy = 70 * legs
+        if legs > .05:
+            leg = [(px - 22, 1250), (px + 22, 1250), (px + 18 + sx * 4, 1286 + dy), (px - 18 + sx * 4, 1286 + dy)]
+            s.append(shape(leg, CAT, blob([(px + 4, 1250), (px + 22, 1250), (px + 22, 1300 + dy), (px + 4, 1300 + dy)], CAT_SH, .7), w=4.4, seed=380 + sx))
+        foot = ellipse_pts(px + sx * 4, 1290 + dy - lift, 34, 22, 12, rot=sx * 8)
+        s.append(shape(foot, CAT, blob(lib.T(ellipse_pts(px, 1296 + dy - lift, 26, 14, 10), sx * 6, 0), CAT_SH, .6), w=4.6, seed=382 + sx))
+        # пятка: оранжевая подушечка видна сзади краешком
+        s.append(blob(ellipse_pts(px + sx * 6, 1302 + dy - lift, 12, 5, 8), "#e8823a"))
+    bd = [(752, 1296), (736, 1236), (750, 1176), (788, 1140), (884, 1140), (922, 1176), (936, 1236), (920, 1296)]
+    bp = fur(bd, 7, 7, seed=27)
+    inner = blob([(862, 1140), (940, 1180), (940, 1300), (870, 1300), (890, 1220)], CAT_SH, .9)
+    inner += blob([(822, 1150), (850, 1150), (848, 1290), (824, 1290)], CAT_FUR, .35)
+    for i, p in enumerate([[(800, 1190), (808, 1208)], [(866, 1196), (860, 1214)], [(812, 1240), (818, 1258)], [(856, 1244), (852, 1262)],
+                           [(836, 1170), (836, 1190)]]):
+        inner += line(p, 2.2, CAT_EDGE, seed=384 + i, op=.85)
+    s.append(shape(bp, CAT, inner, w=5, seed=386))
+    return "".join(s)
+
+
+def draw_back(x, y, k, st, t):
+    """Кот со спины. st: sx, sy (сжатие/растяжение тела от точки опоры), legs, walk, tail (град), flame_e, ear, head_dx, head_dy, rot (град)."""
+    br = 1 + 0.012 * math.sin(t * 2 * math.pi / 3.1)
+    sx, sy = st.get("sx", 1.0), st.get("sy", 1.0) * br
+    o = [f'<g transform="translate({CX} {Cat.CBOT}) scale({sx:.4f} {sy:.4f}) translate({-CX} {-Cat.CBOT})">{back_body(st.get("legs", 0.0), st.get("walk"))}']
+    o.append(f'<g transform="rotate({st.get("tail", 0.0):.2f} {Cat.TAIL_PIVOT[0]} {Cat.TAIL_PIVOT[1]})">{Cat.tail_art()}{Cat.flame(t, 1.3, st.get("flame_e", 1.0))}</g></g>')
+    hy = -(sy - 1) * (Cat.CBOT - Cat.NECK[1]) + st.get("head_dy", 0.0)
+    o.append(f'<g transform="translate({st.get("head_dx", 0.0):.2f} {hy:.2f}) rotate({st.get("tilt", 0.0):.2f} {Cat.NECK[0]} {Cat.NECK[1]})">{back_head(st, t)}</g>')
+    return f'<g transform="translate({x:.2f} {y:.2f}) rotate({st.get("rot", 0.0):.2f}) scale({k:.4f}) translate({-CX} {-Cat.CBOT})">{"".join(o)}</g>'

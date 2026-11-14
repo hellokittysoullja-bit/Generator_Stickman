@@ -35,7 +35,7 @@ def _job(args):
 
 def build_svgs(sid, times, tmp):
     jobs = [(sid, t, os.path.join(tmp, f"f{i:04d}.svg")) for i, t in enumerate(times)]
-    with Pool(2) as p:
+    with Pool(1) as p:
         return p.map(_job, jobs, chunksize=4)
 
 
@@ -65,7 +65,7 @@ def main():
             t1 = time.time()
             open(os.path.join(tmp, "list.txt"), "w").write("\n".join(svgs))
             pre = os.path.join(tmp, "seg")
-            subprocess.check_call(["node", os.path.join(HERE, "render.js"), os.path.join(tmp, "list.txt"), "mp4", "2", pre])
+            subprocess.check_call(["node", os.path.join(HERE, "render.js"), os.path.join(tmp, "list.txt"), "mp4", "1", pre])
             segs = sorted(x for x in os.listdir(tmp) if x.startswith("seg_") and x.endswith(".mp4"))
             open(os.path.join(tmp, "concat.txt"), "w").write("".join(f"file '{os.path.join(tmp, s)}'\n" for s in segs))
             out = os.path.join(STORY, "clips", f"{sid}.mp4")

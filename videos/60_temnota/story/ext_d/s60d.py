@@ -145,7 +145,7 @@ def eye_creature(cx, cy, R, t, openk, look, skin="#efbf9f", skin_sh="#d49c7e", s
         s.append(line([(x, y), (x + math.cos(ang) * ln * .55 + u * 5, y + math.sin(ang) * ln * .6),
                        (x + math.cos(ang) * ln * 1.0 + u * 14, y + math.sin(ang) * ln)], 4.6, INK, taper=.9, wmin=.1, seed=seed + 20 + i))
     # бровь
-    by = cy - R * 1.28 - brow * 30
+    by = cy - R * .86 - brow * 22
     s.append(line([(cx - R * 1.0, by + 16 - brow * 6), (cx - R * .3, by - 6), (cx + R * .45, by - 8 - brow * 6), (cx + R * 1.0, by + 12)],
                   16, "#7a4a2e", taper=.55, wmin=.2, seed=seed + 40))
     return "".join(s)
@@ -357,14 +357,14 @@ def frame11(t):
         ti = T_OTDYH + .08 + i * .24
         p = (t - ti) / 1.2
         if 0 < p < 1:
-            x = ecx + 300 + 34 * i + 20 * math.sin(p * 4 + i)
+            x = ecx + 190 + 34 * i + 20 * math.sin(p * 4 + i)
             y = ecy - 300 - 90 * p - 50 * i
             sc = (.75 + .3 * i) * back_out(clamp(p * 4))
             scn.append(zzz(x, y, sc, "#4a63c0", 11600 + i * 4, op=clamp(1.4 - p) if p > .6 else 1))
     cu = clamp((t - (T_OTDYH + .22)) / .34)
     if cu > 0:
         sc = 1.35 * (1 + .12 * math.sin(clamp((t - T_OTDYH - .5) / .4) * math.pi))
-        scn.append(check_mark(ecx - 330, ecy - 470, cu, sc * 1.25))
+        scn.append(check_mark(ecx - 240, ecy - 450, cu, sc * 1.1))
     if hit > 0 and hit < .5:   # мягкие искры довольства
         for i in range(6):
             a = i * math.pi / 3 + .3
