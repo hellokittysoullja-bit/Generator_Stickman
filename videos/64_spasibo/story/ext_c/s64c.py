@@ -166,10 +166,10 @@ def s01(t):
     # дальняя кисть: вертит (кругом) → кладёт открытку на стол и прижимает край
     twirl = 1 - lay
     Wf = (SX + 205 * SC + 26 * math.sin(t * 9.0) * twirl, SY - 300 * SC + 18 * math.cos(t * 9.0) * twirl)
-    Wf = lerp2(Wf, (SX + 230 * SC, R.DESK_TOP - 74), lay)
+    Wf = lerp2(Wf, (SX + 225 * SC, R.DESK_TOP - 120), lay)
     # ближняя кисть с ручкой: у груди → над открыткой
     hover = sm(t, T_DAVNO + .18, T_HOTEL)
-    Wn = lerp2((SX + 250 * SC, SY - 330 * SC + 8 * math.sin(t * 6)), (SX + 300 * SC, R.DESK_TOP - 180), hover)
+    Wn = lerp2((SX + 250 * SC, SY - 330 * SC + 8 * math.sin(t * 6)), (SX + 345 * SC, R.DESK_TOP - 300), hover)
     Wn = (Wn[0], Wn[1] - 14 * bump(t, T_HOTEL - .04, .2) + 3 * math.sin(t * 13) * hover)    # дрожит в нерешительности
     hands = {"f": {"curl": (.55, .6, .62, .65), "thumb": .55, "dir": (.75, -.65)},
              "n": {"curl": (.78, .8, .82, .85), "thumb": .65, "dir": (.85, .35)}}
@@ -184,7 +184,7 @@ def s01(t):
     wf, wn = full["wrist"]["f"], full["wrist"]["n"]
     # открытка: центр у пальцев дальней кисти, вертится
     rot_c = lerp(-14 + 16 * math.sin(t * 7.5), -6, lay)
-    cpos = lerp2((wf[0] + 125, wf[1] - 95), (wf[0] + 150, wf[1] - 10), lay)
+    cpos = lerp2((wf[0] + 125, wf[1] - 95), (wf[0] + 150, R.DESK_TOP - 40 - 115 * CARD_K * .9), lay)
     card = PR.card(cpos[0], cpos[1], CARD_K * (1 - .1 * lay), rot_c, op, "blank", seed=1, droop=0.0)
     # кончик пальцев дальней кисти поверх края открытки — хват (большой палец спереди)
     fthumb = people.hand_svg("dima", wf, (.75, -.65), k=SC, far=True, curl=(.55, .6, .62, .65), thumb=.55, seed=720)
