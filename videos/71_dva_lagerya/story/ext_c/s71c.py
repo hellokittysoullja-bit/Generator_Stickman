@@ -317,5 +317,130 @@ def s22(t):
     return lib.svg(f'<g transform="{lib.cam(cx, cy, s, .4 * math.sin(t * 1.3))}">{"".join(world)}</g>')
 
 
+# ═════════════════════════ кровать средним планом: Дима сидит в коконе-капюшоне (s03, s06) ═════════════════════════
+HOOD_K = 1.12
+HOOD_BASE = (560.0, 1300.0)     # центр дна кокона: сидит на матрасе, ступни свисают через переднюю царгу
+
+
+def hood_cocoon(t, expr, sag=0.0, tilt=0.0, sink=0.0, dx=0.0, squash=0.0):
+    """Сидящий кокон-капюшон (people.dima_cocoon hood=True) с наклоном tilt° вокруг дна; sink 0…1 — проседает в одеяло: кокон
+    опускается, спереди поднимается край одеяла (props.blanket) до глаз. Возвращает (svg, лицо в мире)."""
+    x, y = HOOD_BASE[0] + dx, HOOD_BASE[1] + 200 * sink
+    r = people.dima_cocoon(x, y, HOOD_K, hood=True, sag=sag, expr=expr, t=t, squash=squash, feet=1.0)
+    hx, hy = r["head"]
+    svg = f'<g transform="rotate({tilt:.2f} {x:.1f} {y:.1f})">{r["svg"]}'
+    if sink > .01:
+        h = lerp(300, 760, sink)
+        svg += PR.blanket(x, HOOD_BASE[1] + 30, 1.0, w=960, h=h, seed=5, col="quilt", bump=1.0)
+    svg += "</g>"
+    a = math.radians(tilt)
+    fx, fy = x + (hx - x) * math.cos(a) - (hy - y) * math.sin(a), y + (hx - x) * math.sin(a) + (hy - y) * math.cos(a)
+    return svg, (fx, fy)
+
+
+def sill_cat(t, eye=0.0):
+    """Кот клубком на подоконнике в глубине (спит; в s08 его поднимает группа F)."""
+    return people.cat_curl(R.BM_SILL[0] + 20, R.BM_SILL[1] + 4, .55, dict(eye=eye, breath=1.0, tail=4 * math.sin(t * 1.3)), t)
+
+
+def puff_lines(x, y, u, seed=0):
+    """Сдул край одеяла: три коротких штриха-выдоха вверх от губ."""
+    if not 0 < u < 1:
+        return ""
+    o = ""
+    for i, a in enumerate((-110, -90, -70)):
+        r0, r1 = 30 + 120 * u, 70 + 150 * u
+        aa = math.radians(a)
+        o += line([(x + math.cos(aa) * r0, y + math.sin(aa) * r0), (x + math.cos(aa) * r1, y + math.sin(aa) * r1)], 6 * (1 - u) + 1.5, INK,
+                  taper=.5, wmin=.2, seed=6100 + seed + i)
+    return o
+
+
+# ═════════════════════════ s03: сидит в коконе-капюшоне и не понимает ═════════════════════════
+T3_DIMA, T3_PRAV, T3_NE, T3_PON = wt("дима", 4.0), wt("правда", 4.0), wt("не", 4.9), wt("понимает", 4.9)   # 4.47 4.69 4.99 5.08
+
+
+def s03(t):
+    lib.dyn_begin()
+    bm = R.bed_mid(t)
+    # одеяло со лба съезжает на глаза на «понимает», он сдувает край — край подпрыгивает и снова сползает чуть ниже бровей
+    cover = .15 * sm(t, 3.78, 4.3) + .85 * sm(t, T3_PON - .02, T3_PON + .16) - .45 * bump(t, T3_PON + .3, .3)
+    cover = clamp(cover)
+    blink = blinkv(t, [T3_DIMA + .05], .42)          # медленное моргание
+    if t < T3_NE - .02:
+        e = ex("unsure", bags=False, look=(.3 * math.sin(t * 1.4), .1), lid=.8)
+    else:
+        e = ex("puzzled", look=(0, -.4 + .3 * sm(t, T3_PON + .3, T3_PON + .5)))
+        if T3_PON + .25 < t < T3_PON + .5:
+            e = dict(e, mouth="o", open=.5)
+    e["closed"] = blink
+    e["cover"] = cover
+    tilt = 1.5 * math.sin(t * 2.1) - 7 * sm(t, T3_PRAV - .05, T3_NE + .1) + 3 * bump(t, T3_PON + .3, .3)
+    co, face = hood_cocoon(t, e, sag=0.0, tilt=tilt, squash=.05 * math.sin(t * 2.6))
+    puff = puff_lines(face[0] + 40, face[1] + 20 * HOOD_K, clamp((t - T3_PON - .28) / .3))
+    world = [bm["bg"], sill_cat(t), bm["bed"], co, puff]
+    cx0, cy0, s0 = R.CAM_BED_MID
+    z = sm(t, 3.78, 5.82)
+    cx = lerp(face[0] + 40, face[0], z) + 6 * math.sin(t * 1.7)
+    cy = lerp(face[1] + 330, face[1] + 230, z)
+    s = s0 * (1.45 + .2 * z)
+    set_ink(s)
+    return lib.svg(f'<g transform="{lib.cam(cx, cy, s, -1.2 * z * (tilt < 0) + .3 * math.sin(t * 1.1))}">{"".join(world)}</g>')
+
+
+# ═════════════════════════ s06: пузыри бьют в лоб, проседает в одеяло ═════════════════════════
+T6_DEL, T6_CHTO, T6_TUT, T6_SL = wt("делаешь", 9.0), wt("что", 9.5), wt("тут", 9.5), wt("сложного", 9.5)   # 9.41 9.78 9.9 10.13
+HITS6 = [(T6_DEL, (1, 0), 1.25, "arrow_up"), (T6_CHTO, (1, -.5), .9, "arrow_up"), (T6_TUT + .04, (-1, -.4), .9, "waves")]
+
+
+def s06(t):
+    lib.dyn_begin()
+    bm = R.bed_mid(t)
+    sink = sm(t, T6_SL - .02, T6_SL + .3)
+    hit_any = sum(bump(t, th, .25) for th, *_ in HITS6)
+    e = ex("puzzled", look=(.2, -.6), lid=.9)
+    if hit_any > .2:
+        e = ex("squish", closed=.8)
+    if t > T6_SL:
+        e = ex("puzzled", look=(0, -.2), lid=.95, brows="worry")
+    e["hair"] = 8 * hit_any
+    rock = sum(damp(t, th, 7 * d[0], 2.6, 5.5) for th, d, *_ in HITS6)
+    co, face = hood_cocoon(t, e, sag=.12, tilt=rock + 1.2 * math.sin(t * 2.3), sink=sink, squash=.12 * hit_any)
+    # пузыри влетают из-за правого края (жёлтый лагерь), бьют в лоб, отскакивают и разлетаются
+    bub = ""
+    for i, (th, d, kk, icon) in enumerate(HITS6):
+        fly = clamp((t - (th - .22)) / .22)
+        if fly <= 0:
+            continue
+        brow = (face[0] + 10, face[1] - 60)
+        start = (brow[0] + 900 * d[0], brow[1] - 300 + 200 * i)
+        if t < th:
+            p = lerp2(start, brow, ease_in(fly, 1.6))
+            wob, sc = 0.0, 1.0
+        else:
+            v = t - th
+            p = (brow[0] + d[0] * 520 * v + 40 * (-1) ** i * v, brow[1] - 900 * v + 1600 * v * v)
+            wob, sc = math.exp(-6 * v) * math.cos(30 * v), 1 - .25 * clamp(v / .8)
+        bub += PR.comment_bubble(p[0], p[1], kk * sc, icon, 1.0, wob, seed=60 + i, tail=(-60 * d[0], 50), col=PR.BUB_YELLOW)
+        # штрихи удара в момент касания
+        hu = (t - th) / .2
+        if 0 < hu < 1:
+            for j, ang in enumerate((-160, -130, -50, -20)):
+                aa = math.radians(ang)
+                r0 = 150 + 60 * hu
+                bub += line([(brow[0] + math.cos(aa) * r0, brow[1] + math.sin(aa) * r0),
+                             (brow[0] + math.cos(aa) * (r0 + 60), brow[1] + math.sin(aa) * (r0 + 60))], 7 * (1 - hu) + 1.5, INK, taper=.5,
+                            wmin=.2, seed=6200 + 10 * i + j)
+    world = [bm["bg"], sill_cat(t), bm["bed"], co, bub]
+    cx0, cy0, s0 = R.CAM_BED_MID
+    sx1 = sum(shake2(t, th + .01, 12 * kk)[0] for th, d, kk, _ in HITS6)
+    sy1 = sum(shake2(t, th + .01, 12 * kk)[1] for th, d, kk, _ in HITS6)
+    cx = face[0] - sx1 + 8 * math.sin(t * 1.9)
+    cy = face[1] + 260 - 120 * sink - sy1
+    s = s0 * (1.4 + .08 * sink)
+    set_ink(s)
+    return lib.svg(f'<g transform="{lib.cam(cx, cy, s, .5 * math.sin(t * 1.4))}">{"".join(world)}</g>')
+
+
 def frame(sid, t):
-    return {"s01": s01, "s22": s22}[sid](t)
+    return {"s01": s01, "s03": s03, "s06": s06, "s22": s22}[sid](t)
