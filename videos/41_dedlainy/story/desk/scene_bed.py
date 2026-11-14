@@ -1,12 +1,7 @@
-"""Спальня Димы рилса 35 (сцена bed): одна комната — ночь (s09), утро (s13), вечер (s17), крупно кот (s18).
-Кровать вдоль кадра, изголовье слева, подушка, одеяло; над изголовьем бра со шнурком-выключателем; окно справа.
-s09 (15.25–16.95): ночь, Дима спит, рот приоткрыт; над головой облачко-мысль, в нём мозг в огоньках; рука с одеяла
-     тянется к шнурку бра, на «не выключается» (16.16) — щёлк, комната темнеет, а облачко светится как было.
-s13 (22.85–24.45): утро, солнце в окне, Дима сладко спит (без мешков), кот сидит на одеяле; на «выспаться» (23.60)
-     Дима садится и потягивается, улыбается.
-s17 (28.95–32.1): вечер, Дима сидит и ложится; на «пораньше» (29.68) дёргает шнурок — тёплый ночник; камера уходит
-     к подушке: там клубком спит кот (огонёк тлеет); на «кот» (30.60) — кот в кадре, на «спит» (31.52) дёргает ухом.
-s18 (32.1–35.7): крупно кот на подушке приоткрывает глаза, смотрит в камеру, медленно моргает, огонёк разгорается.
+"""Спальня Димы рилса 41 (сцена bed, агент A; основа — scene_bed рилса 35): s17 (ночь, Дима спокойно спит под
+одеялом, луна в окне, на тумбочке закрытый ноутбук; на «обычной» (32.64) над Димой «z», кот в ногах укладывается
+клубком, огонёк тлеет; камера дрейфует от Димы к коту) и s18 (крупно кот в ногах: приоткрывает глаза, смотрит в
+камеру, на «кот» (34.32) огонёк вспыхивает и ухо дёргается, медленно моргает — призыв).
 Всё — функция общего времени ролика t."""
 import math
 
@@ -15,7 +10,7 @@ import numpy as np
 import cat
 import catcurl
 import lib
-import minibrain
+import kitchen
 import people
 import props
 from lib import (INK, W, H, back_out, blob, blur, cam, clamp, ease_in, ease_io, ease_out, ellipse_pts, f, line, lin_grad, mix,
@@ -31,14 +26,10 @@ HEADB = (64, 128)                # изголовье x0..x1
 PILLOW = (330, 1000, 240, 62)    # центр, полуоси
 LAMP = (400, 540)                # бра
 BEAD0 = (440, 770)               # бусина шнурка в покое
-CAT_POS = (232, 992, 0.5)        # клубок на подушке (s17/s18)
+CAT_POS = (1185, 948, 0.5)       # клубок в ногах, на одеяле (s17/s18)
 
-CLICK9 = 16.16
-STRETCH = 23.60
-DOWN17 = (28.80, 29.32)
-CLICK17 = 29.68
-CAT_T = 30.60
-FLICK = 31.52
+T_OBYCH = 32.64                  # «обычной»
+T_KOT = 34.32                    # «кот»
 
 
 # ───────────────────────── комната
@@ -139,7 +130,7 @@ def bed_back():
     """Изголовье и матрас (то, что за Димой)."""
     o = []
     x0, x1 = HEADB
-    hb = [(x0, FLOOR - 10, 1), (x0, 800), (x0 + 6, 760), ((x0 + x1) / 2, 744), (x1 - 6, 760), (x1, 800), (x1, FLOOR - 10, 1)]
+    hb = [(x0, FLOOR - 10, 1), (x0, 800, 1), (x0 + 9, 770), ((x0 + x1) / 2, 750), (x1 - 9, 770), (x1, 800, 1), (x1, FLOOR - 10, 1)]
     o.append(shape(hb, "#a8693f", blob([(x1 - 22, 750), (x1 + 4, 750), (x1 + 4, FLOOR), (x1 - 22, FLOOR)], "#7f4b2b", .9) +
                    blob([(x0, 750), (x0 + 14, 750), (x0 + 14, FLOOR), (x0, FLOOR)], "#c88a58", .9), w=5, seed=2300))
     o.append(blob(ellipse_pts((x0 + x1) / 2, 780, 14, 8, 10), "#c88a58"))
@@ -276,22 +267,6 @@ def dima_layers(d, arm_visible, arms_back=False):
     return before, ""
 
 
-# ───────────────────────── облачко-мысль
-def thought(t, appear, flare):
-    hx, hy = 520, 880
-    cx, cy, rx, ry = 760, 560, 215, 160
-    s = back_out(clamp(appear), 1.6)
-    o = []
-    g = rad_grad([(0, "#fff2b0", .7), (.5, "#ffe08a", .3), (1, "#ffd060", 0)], cx, cy, rx * 1.7, ry * 1.8)
-    o.append(f'<ellipse cx="{cx}" cy="{cy}" rx="{rx * 1.7 * s:.1f}" ry="{ry * 1.8 * s:.1f}" fill="url(#{g})" style="mix-blend-mode:screen"/>')
-    o.append(props.thought_cloud(cx, cy, rx, ry, (hx, hy), s=s, trail=clamp(appear * 1.5), seed=2700, t=t))
-    if s > 0.3:
-        bob = 6 * math.sin(t * 3.1)
-        look = (math.sin(t * 2.3), 0.2 * math.sin(t * 1.7))
-        o.append(minibrain.draw(cx + 10, cy + 10 + bob, 0.62 * s, t, look=look, lit=1.0 + 0.5 * flare, rot=4 * math.sin(t * 2), arms=False))
-    return "".join(o)
-
-
 def zzz(t, x, y, t0=0.0):
     o = []
     for k in range(3):
@@ -303,7 +278,7 @@ def zzz(t, x, y, t0=0.0):
         cy = y - 170 * ph
         r = 18 * sc
         pts = [(cx - r, cy - r), (cx + r, cy - r), (cx - r, cy + r), (cx + r, cy + r)]
-        o.append(line(pts, 7 * sc + 2.5, "#3a4a8a", taper=.1, wmin=.8, seed=2800 + k))
+        o.append(line(pts, 7 * sc + 2.5, "#dfe6ff", taper=.1, wmin=.8, seed=2800 + k))
     return "".join(o)
 
 
@@ -317,175 +292,129 @@ def blink_at(t, times, dur=0.16):
     return b
 
 
-def s09(t):
-    br = 5 * math.sin(t * 2 * math.pi / 3.0)
-    # рука: лежит на одеяле → тянется к бусине (15.55–16.0) → дёргает на 16.16 → медленно опускается
-    rest = (620, 1000)
-    tug = smooth(CLICK9 - 0.1, CLICK9, t) * (1 - smooth(CLICK9 + 0.05, CLICK9 + 0.25, t))
-    bead = (BEAD0[0], BEAD0[1] + 34 * tug)
-    reach = smooth(15.45, 16.0, t) * (1 - smooth(16.45, 16.95, t))
-    tgt = (rest[0] + (bead[0] + 30 - rest[0]) * reach, rest[1] + (bead[1] + 50 - rest[1]) * reach)
-    on = 1 - smooth(CLICK9 - 0.02, CLICK9 + 0.04, t)
-    expr = {"closed": 1.0, "mouth": "gape", "open": 0.25 + 0.1 * math.sin(t * 2 * math.pi / 3.0), "bags": True, "brows": "calm",
-            "hair": 2 * math.sin(t * 2)}
-    d = dima(t, 1.0, expr, arm_n=tgt, hand_n={"kind": "open", "curl": tuple([.35 + .4 * reach] * 4), "spread": .1}, breath=br * .4)
-    before, after = dima_layers(d, True)
-    head_x = d["head"][0]
-    o = [_ST["room_night"], lamp(on, t), _ST["bed_back"], pillow(), before, blanket(1.0, head_x), head_over(d, 1.0, expr), after, cord(bead, t)]
-    o.append(zzz(t, d["head"][0] - 120, d["head"][1] - 90, 15.0))
-    o.append(dark(0.42 + 0.2 * (1 - on)))
-    o.append(lamp_glow(on))
-    flare = math.exp(-max(0, t - CLICK9) * 3) * (t > CLICK9)
-    o.append(thought(t, (t - 15.05) / 0.35 + 0.5, flare))
-    # штрихи «щёлк» у бра
-    e = t - CLICK9
-    if 0 <= e < 0.35:
-        o.append(props.burst(LAMP[0], LAMP[1] + 20, 1.0, e / 0.35, seed=2900, color="#f4ead0", n=6, r0=90, r1=140))
-    u = clamp((t - 15.05) / 2.1)
-    cx, cy, sc = 560 + 20 * u, 830 - 20 * u, 1.18 + 0.06 * ease_io(u)
-    e = t - CLICK9
-    if e > 0:
-        kk = math.exp(-e * 8)
-        sc *= 1 + 0.02 * kk
-        cy += 5 * kk * math.sin(e * 45)
-    return o, (cx, cy, sc, 0.5 * math.sin(t * 1.1))
+def nightstand():
+    """Тумбочка слева от изголовья: закрытый ноутбук и пустая кружка."""
+    o = []
+    x0, x1, top = -196, 50, 1150
+    o.append(blob(rect_pts(x0 + 10, FLOOR - 14, x1 + 10, FLOOR + 6, 6), "#3a2412", .25, blur(8)))
+    o.append(shape(rect_pts(x0, top, x1, FLOOR - 4, 6), "#a8693f", blob(rect_pts(x1 - 26, top, x1, FLOOR), "#7f4b2b", .9), w=4.6, seed=3300))
+    o.append(shape(rect_pts(x0 - 12, top - 22, x1 + 12, top + 6, 6), "#c88a58", blob(rect_pts(x0 - 12, top - 4, x1 + 12, top + 6), "#a8693f", .9),
+                   w=4.4, seed=3301))
+    for k, (y0, y1) in enumerate(((top + 30, top + 130), (top + 146, FLOOR - 24))):
+        o.append(shape(rect_pts(x0 + 18, y0, x1 - 18, y1, 4), "#b97a4a", blob(rect_pts(x0 + 18, y1 - 12, x1 - 18, y1), "#8f5a34", .8), w=3.2, seed=3302 + k))
+        o.append(shape(rect_pts((x0 + x1) / 2 - 26, (y0 + y1) / 2 - 6, (x0 + x1) / 2 + 26, (y0 + y1) / 2 + 6, 6), "#e2c58a", "", w=2.4, seed=3305 + k))
+    # закрытый ноутбук: плоская крышка, видна кромка и петля
+    lx0, lx1, ly = x0 + 70, x0 + 238, top - 22
+    o.append(shape([(lx0, ly - 18, 1), (lx1, ly - 18, 1), (lx1 + 4, ly, 1), (lx0 - 4, ly, 1)], "#8e95a5",
+                   line([(lx0 + 6, ly - 7), (lx1 - 6, ly - 7)], 2, "#6d737e", seed=3310, taper=.1, wmin=.8), w=3.8, seed=3311))
+    lid = [(lx0 + 22, ly - 52, 1), (lx1 - 22, ly - 52, 1), (lx1, ly - 18, 1), (lx0, ly - 18, 1)]
+    o.append(shape(lid, "#c9ced8", blob([(lx0 + 120, ly - 52), (lx1 - 22, ly - 52), (lx1, ly - 18), (lx0 + 136, ly - 18)], "#a6adbb", .8) +
+                   blob(ellipse_pts((lx0 + lx1) / 2, ly - 35, 16, 7, 12), "#e6e9f0", .9), w=3.8, seed=3312))
+    # пустая кружка
+    o.append(kitchen.mug(x0 + 34, ly, .42, 0, col="#d8483c"))
+    return "".join(o)
 
 
-def s13(t):
-    up = smooth(STRETCH - 0.1, STRETCH + 0.3, t)
-    arms = smooth(STRETCH + 0.05, STRETCH + 0.45, t) * (1 - 0.15 * smooth(24.2, 24.6, t))
-    lie = 1 - up
-    if t < STRETCH:
-        expr = {"closed": 1.0, "mouth": "smile", "smile": .6, "bags": False, "brows": "calm", "hair": 2 * math.sin(t * 2)}
-    elif t < STRETCH + 0.5:
-        expr = {"laugh": 1.0, "mouth": "grin", "open": .9, "bags": False, "brows": "up", "hair": 8 * math.sin((t - STRETCH) * 18)}
-    else:
-        expr = {"lid": .45, "look": (.3, -.3), "mouth": "grin", "open": .5, "bags": False, "brows": "up",
-                "closed": blink_at(t, [24.25]), "hair": 3 * math.sin(t * 6)}
-    br = 4 * math.sin(t * 2 * math.pi / 3.0) * (1 - up)
-    d = dima(t, lie, expr, arms_up=arms, breath=br)
-    before, after = dima_layers(d, False, arms_back=arms > 0)
-    head_x = d["head"][0] if lie > 0.5 else HIP[0]
-    o = [_ST["room_day"], lamp(0, t), cord(BEAD0, t), _ST["bed_back"], pillow(), before, blanket(lie, d["head"][0]), head_over(d, lie, expr), after]
-    # кот сидит на одеяле у ног, смотрит на Диму; на «выспаться» — радостный прищур
-    happy = 1.0 if t > STRETCH + 0.15 else 0.0
-    o.append(cat_sit(t, 1030, 952, 0.55, look=(-0.8, -0.3) if t < STRETCH else (-0.6, -0.6), happy=happy,
-                     blink=blink_at(t, [23.1]), tilt=-6 + 4 * math.sin(t * 2)))
-    o.append(sunbeams(t))
-    if t < STRETCH:
-        o.append(zzz(t, d["head"][0] + 40, d["head"][1] - 110, 22.0))
-    # искорки бодрости
-    e = t - STRETCH - 0.3
-    if 0 <= e < 0.7:
-        hx, hy = d["head"]
-        for k in range(5):
-            a = math.radians(-160 + k * 35)
-            r = 150 + 110 * ease_out(e / 0.7)
-            sc_ = math.sin(math.pi * e / 0.7)
-            o.append(star(hx + math.cos(a) * r, hy + math.sin(a) * r, 18 * sc_ + 1, "#f2b43a", 2950 + k))
-    u = clamp((t - 22.65) / 2.0)
-    cx, cy, sc = 640 + 70 * ease_io(u), 830 - 40 * ease_io(u), 1.2 + 0.05 * u
-    e = t - STRETCH
-    if e > 0:
-        kk = math.exp(-e * 7)
-        sc *= 1 + 0.03 * kk * math.sin(min(e * 12, math.pi))
-    return o, (cx, cy, sc, -0.5 + 0.8 * u)
+def moonbeam(op=1.0):
+    x0, y0, x1, y1 = WIN
+    g = lin_grad([(0, "#c4d2ff", .42 * op), (1, "#c4d2ff", .04 * op)], x1, y0, 500, 1200, units="userSpaceOnUse")
+    pts = [(x0 + 20, y0 + 120), (x1 - 20, y1 - 20), (1000, 1180), (380, 1160)]
+    return f'<path d="{lib.fill_d(pts)}" fill="url(#{g})" {blur(18)} style="mix-blend-mode:screen"/>'
 
 
-def star(x, y, r, col, sd):
-    pts = []
-    for k in range(8):
-        a = math.radians(k * 45 - 90)
-        rr = r if k % 2 == 0 else r * 0.38
-        pts.append((x + rr * math.cos(a), y + rr * math.sin(a), 1))
-    return shape(pts, col, "", w=2.4, seed=sd)
+def flame_glow(x, y, k):
+    g = rad_grad([(0, "#ffb050", .4 * k), (1, "#ffb050", 0)], x, y, 170 + 60 * k)
+    return f'<rect x="{x - 260:.1f}" y="{y - 260:.1f}" width="520" height="520" fill="url(#{g})" style="mix-blend-mode:screen"/>'
 
 
-def cat_sit(t, x, y, s, look=(0, 0), happy=0.0, blink=0.0, tilt=0.0):
-    import cat2
-    return cat2.draw(x, y, s, t, look=look, happy=happy, blink=blink, tilt=tilt, tail=4 * math.sin(t * 2.2), shadow=False)
+def sleeper(t):
+    br = 5 * math.sin(t * 2 * math.pi / 3.4)
+    expr = {"closed": 1.0, "mouth": "smile", "smile": .45, "bags": False, "brows": "calm", "hair": 1.5 * math.sin(t * 1.2)}
+    d = dima(t, 1.0, expr, breath=br * .4)
+    before, after = dima_layers(d, False)
+    return d, expr, before, after
+
+
+def curled(t, smolder=1.0, blink=1.0, look=(0, 0), flame_k=1.0, glow=0.0, head_lift=0.0, flick=0.0, tilt=0.0):
+    x, y, s = CAT_POS
+    return catcurl.draw(x, y, s, t, blink=blink, look=look, flick=flick, smolder=smolder, flame_k=flame_k, glow=glow, head_lift=head_lift,
+                        tilt=tilt)
+
+
+def tip_world():
+    x, y, s = CAT_POS
+    tx, ty = catcurl.static()["tip"]
+    return x + (tx - catcurl.BX) * s, y + (ty - 30 - catcurl.BY) * s
 
 
 def s17(t):
-    a, b = DOWN17
-    lie = smooth(a, b, t)
-    tug = smooth(CLICK17 - 0.1, CLICK17, t) * (1 - smooth(CLICK17 + 0.05, CLICK17 + 0.25, t))
-    bead = (BEAD0[0], BEAD0[1] + 34 * tug)
-    rest = (620, 1000)
-    reach = smooth(29.3, 29.6, t) * (1 - smooth(29.9, 30.4, t))
-    tgt = (rest[0] + (bead[0] + 30 - rest[0]) * reach, rest[1] + (bead[1] + 50 - rest[1]) * reach)
-    if t < b:
-        expr = {"lid": .35, "look": (.6, .2), "mouth": "smile", "smile": .4, "bags": True, "brows": "calm", "closed": blink_at(t, [28.9])}
-    else:
-        cl = smooth(29.95, 30.12, t)
-        expr = {"lid": .3, "look": (-.4, -.6), "mouth": "smile", "smile": .5, "bags": True, "brows": "calm", "closed": cl}
-    on = smooth(CLICK17 - 0.02, CLICK17 + 0.06, t)
-    br = 4 * math.sin(t * 2 * math.pi / 3.0) * lie
-    d = dima(t, lie, expr, arm_n=tgt if lie > 0.5 else (HIP[0] + 40, HIP[1] - 60),
-             hand_n={"kind": "open", "curl": tuple([.35 + .4 * reach] * 4), "spread": .1}, breath=br)
-    before, after = dima_layers(d, lie > 0.5)
-    o = [_ST["room_eve"], lamp(on, t), _ST["bed_back"], pillow()]
-    o.append(curled(t, smolder=1.0))
-    o += [before, blanket(lie, d["head"][0]), head_over(d, lie, expr), after, d["arm_n"] if lie < 0.5 else "", cord(bead, t)]
-    o.append(dark(0.38 - 0.16 * on, "#1c1640"))
-    o.append(lamp_glow(on * 0.85))
-    e = t - CLICK17
-    if 0 <= e < 0.35:
-        o.append(props.burst(LAMP[0], LAMP[1] + 20, 1.0, e / 0.35, seed=2900, color="#7a5a20", n=6, r0=90, r1=140))
-    # камера: на Диме → панорама к подушке и коту (к «кот»)
-    p = ease_io(clamp((t - 29.95) / 0.65))
-    cx = 760 - 40 * clamp((t - 28.75) / 1.2) + (290 - 720) * p
-    cy = 820 + (935 - 820) * p
-    sc = 1.18 + (1.62 - 1.18) * p + 0.06 * clamp((t - 30.6) / 1.7)
-    e = t - CLICK17
-    if e > 0:
-        kk = math.exp(-e * 8)
-        sc *= 1 + 0.02 * kk
-    return o, (cx, cy, sc, 0.4 * math.sin(t * 0.9))
-
-
-def curled(t, smolder=1.0, blink=1.0, look=(0, 0), flame_k=1.0, glow=0.0, head_lift=0.0):
-    x, y, s = CAT_POS
-    flick = 0.0
-    e = t - FLICK
-    if 0 <= e < 0.5:
-        flick = -22 * math.sin(math.pi * clamp(e / 0.18)) * (1 if e < 0.18 else 0) - 10 * math.sin(math.pi * clamp((e - 0.18) / 0.16)) * (e >= 0.18)
-    e2 = t - 33.0
-    return catcurl.draw(x, y, s, t, blink=blink, look=look, flick=flick, smolder=smolder, flame_k=flame_k, glow=glow, head_lift=head_lift)
+    d, expr, before, after = sleeper(t)
+    # кот: голова приподнята, глаза полуоткрыты → на «обычной» опускает голову на лапы и засыпает, огонёк тлеет
+    settle = ease_io(clamp((t - (T_OBYCH - .1)) / .7))
+    lift = .65 * (1 - settle) + .05 * math.sin(t * 1.3) * (1 - settle)
+    blink = .45 + .55 * smooth(T_OBYCH + .1, T_OBYCH + .6, t)
+    if t < T_OBYCH:
+        blink = max(blink, blink_at(t, [31.7], .2))
+    look = (-.6 * (1 - settle), .1)
+    smold = .3 + .7 * settle
+    flick = -14 * math.exp(-(t - 33.3) * 8) * math.sin((t - 33.3) * 34) if 33.3 <= t < 33.8 else 0.0
+    o = [_ST["room_night"], lamp(0, t), nightstand(), _ST["bed_back"], pillow(), before, blanket(1.0, d["head"][0]), head_over(d, 1.0, expr), after]
+    tx, ty = tip_world()
+    o.append(flame_glow(tx, ty, .6 - .3 * settle))
+    o.append(curled(t, smolder=smold, blink=blink, look=look, flame_k=1.0 - .1 * settle, head_lift=lift, flick=flick))
+    o.append(dark(0.58, "#0b1236"))
+    o.append(moonbeam())
+    o.append(zzz(t, d["head"][0] + 30, d["head"][1] - 120, 30.4))
+    o.append(flame_glow(tx, ty, .5 - .2 * settle))
+    u = clamp((t - 31.0) / 3.0)
+    k = ease_io(clamp((t - 31.45) / 1.05))
+    cx = 240 + 30 * u + 815 * k
+    cy = 905
+    sc = 1.36 + 0.34 * k + .06 * u
+    return o, (cx, cy, sc, -0.4 + 0.8 * u)
 
 
 def s18(t):
-    # глаза: спит → приоткрывает (32.3–32.9) → смотрит → медленное моргание (33.9–34.6) → снова смотрит
-    op = smooth(32.25, 32.95, t)
-    bl = 1 - 0.9 * op
-    sb = (t - 33.9) / 0.75
-    if 0 <= sb <= 1:
-        bl = max(bl, 0.1 + 0.9 * math.sin(math.pi * sb))
-    ign = smooth(32.6, 33.5, t)
-    o = [_ST["room_eve"], lamp(1, t), _ST["bed_back"], pillow()]
-    o.append(dark(0.2, "#1c1640"))
-    o.append(lamp_glow(0.55))
-    o.append(curled(t, smolder=1 - ign, blink=bl, look=(0.0, 0.15), flame_k=1.0 + 0.25 * ign, glow=ign, head_lift=0.6 * op))
+    # спит → приоткрывает глаза (33.85–34.3), на «кот» — огонёк вспыхивает, ухо дёргается; медленные моргания 35.2, 36.5
+    op = smooth(33.85, 34.3, t)
+    bl = 1 - 0.92 * op
+    for c0, dur in ((35.15, .9), (36.45, 1.0)):
+        sb = (t - c0) / dur
+        if 0 <= sb <= 1:
+            bl = max(bl, 0.08 + 0.92 * math.sin(math.pi * sb) ** 1.5)
+    ign = back_out(clamp((t - (T_KOT - .04)) / .35), 1.6)
+    flick = 0.0
+    q = t - (T_KOT + .02)
+    if 0 <= q < 0.5:
+        flick = -18 * math.exp(-q * 8) * math.sin(q * 34)
+    d, expr, before, after = sleeper(t)
+    o = [_ST["room_night"], _ST["bed_back"], pillow(), before, blanket(1.0, d["head"][0]), head_over(d, 1.0, expr), after]
+    o.append(dark(0.52, "#0b1236"))
+    o.append(moonbeam(.8))
+    tx, ty = tip_world()
+    o.append(flame_glow(tx, ty, .35 + .55 * ign))
+    o.append(curled(t, smolder=clamp(1 - ign), blink=bl, look=(0.0, 0.12), flame_k=1.0 + 0.3 * ign - .1 * clamp((t - 35) / 2), glow=ign,
+                    head_lift=0.6 * op, flick=flick, tilt=2 * math.sin(t * .9) * op))
     x, y, s = CAT_POS
     hx, hy = catcurl.HEAD_C
     wx = x + (hx - catcurl.BX) * s
     wy = y + (hy - catcurl.BY) * s
-    u = clamp((t - 31.9) / 3.8)
-    cx, cy = wx + 38 - 14 * u, wy + 62 - 8 * u
-    sc = 4.0 + 0.4 * ease_io(u)
-    return o, (cx, cy, sc, -0.6 + 0.8 * u)
+    u = clamp((t - 33.6) / 3.8)
+    cx, cy = wx + 18 - 10 * u, wy + 10 - 8 * u
+    sc = 4.4 + 0.45 * ease_io(u)
+    e = t - T_KOT
+    if e > 0:
+        sc *= 1 + 0.03 * math.exp(-e * 6) * math.sin(min(e * 10, math.pi))
+    return o, (cx, cy, sc, -0.6 + 0.9 * u)
 
 
 def build_static(sid):
     if sid == "s18":
         lib.INK_K[0] = 0.55
     _ST["room_night"] = wall("night") + frame_art() + window("night", 0.0)
-    _ST["room_day"] = wall("day") + frame_art() + window("day", 0.0)
-    _ST["room_eve"] = wall("eve") + frame_art() + window("eve", 0.0)
     _ST["bed_back"] = bed_back()
     catcurl.static()
     cat.static_parts()
-    minibrain.body()
     lib.static_done()
 
 
@@ -493,5 +422,5 @@ def frame(sid, t):
     if not _ST:
         build_static(sid)
     lib.dyn_begin()
-    o, (cx, cy, sc, rot) = {"s09": s09, "s13": s13, "s17": s17, "s18": s18}[sid](t)
+    o, (cx, cy, sc, rot) = {"s17": s17, "s18": s18}[sid](t)
     return svg(f'<rect width="{W}" height="{H}" fill="#2a2a3a"/><g transform="{cam(cx, cy, sc, rot)}">{"".join(o)}</g>')
