@@ -142,7 +142,8 @@ def eyes(expr, EN, EF, bags=True, lash_col=INK):
         cid = lib.clip_of(ep)
         s.append(f'<g><path d="{fill_d(ep)}" fill="#f6f2ea"/><g clip-path="url(#{cid})">')
         s.append(blob([(cx - rx, cy - ry), (cx + rx, cy - ry), (cx + rx, cy - ry * .2), (cx - rx, cy - ry * .25)], "#d9d2e2", .8))
-        px, py = cx + rx * lx, cy + ry * ly
+        lxx, lyy = expr.get("look_" + nm.lower(), (lx, ly))      # look_n / look_f — взгляд каждого глаза отдельно (глаза разъезжаются)
+        px, py = cx + rx * lxx, cy + ry * lyy
         s.append(f'<ellipse cx="{px:.1f}" cy="{py:.1f}" rx="7.4" ry="8.2" fill="{INK}"/>'
                  f'<circle cx="{px - 2.4:.1f}" cy="{py - 3:.1f}" r="2" fill="#ffffff"/>')
         lk = lidk * (1 - blink) - .15 * blink - .35 * laugh

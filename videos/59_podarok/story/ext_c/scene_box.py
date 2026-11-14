@@ -7,13 +7,14 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import lib  # noqa: E402
-import props_c as pc  # noqa: E402
+sys.path.insert(0, os.path.join(os.path.dirname(HERE), 'common'))
+import props  # noqa: E402
 from lib import INK, W, H, back_out, blob, cam, clamp, ease_io, ease_out, ellipse_pts, f, line, mix, rect_pts, shape, spring, svg  # noqa: E402
 
 T0 = 1.2
 T_CAKE, T_FLAME = 1.712, 1.911
-BOX = (300, 1190)
-CAKE = (730, 1190)
+BOX = (265, 1190)
+CAKE = (790, 1190)
 
 
 def rnd(i):
@@ -25,12 +26,12 @@ def lerp(a, b, u):
 
 
 def background(t):
-    s = [f'<rect x="-600" y="-600" width="2400" height="3400" fill="#FCE6CB"/>']
+    s = [f'<rect x="-600" y="-600" width="2400" height="3400" fill="#E4F2F2"/>']
     # широкие тёплые полосы, едут вбок — фон живой с первого кадра
     off = (t * 40) % 240
     for k in range(-4, 12):
         x = k * 240 - off
-        s.append(blob([(x, -600), (x + 120, -600), (x + 120 - 600, 1500), (x - 600, 1500)], "#FBD9B2", 1.0))
+        s.append(blob([(x, -600), (x + 120, -600), (x + 120 - 600, 1500), (x - 600, 1500)], "#D3E8EA", 1.0))
     # конфетти
     for i in range(34):
         x = (rnd(i) * 1500 - 200) + 30 * math.sin(t * 1.3 + i)
@@ -113,21 +114,24 @@ def s02_frame(t):
     sx = 1 + sq * .8 - (0.04 if 0.14 < p < 0.5 else 0)
     wob = 9 * math.sin(t * 14) * (0.4 + 0.6 * math.exp(-e * 1.2))
     bx, by = BOX
-    s.append(shadow(bx, by + 6, 210 - hop * .25, 30, .3 * (1 - hop / 260)))
-    s.append(pc.gift_box(bx, by - hop, 0.92, sx, sy, rot=4 * math.sin(t * 9), wob=wob))
+    s.append(shadow(bx, by + 6, 190 - hop * .25, 28, .3 * (1 - hop / 260)))
+    lidu = 0.32 * clamp(4 * p * (1 - p)) * (0.4 + 0.6 * math.exp(-e * 1.0))
+    bxg = props.giftbox(0, 0, 2.8, lid=lidu, rot=wob * .5)
+    s.append(f'<g transform="translate({bx} {by - hop:.1f}) rotate({4 * math.sin(t * 9):.2f}) scale({sx:.4f} {sy:.4f})">{bxg}</g>')
     # --- торт ---
     cx_, cy_ = CAKE
     u = clamp((t - T_CAKE) / 0.34)
     if t >= T_CAKE - 0.02:
-        kc = 0.78 * back_out(u, 2.2) if u < 1 else 0.78
+        kc = 2.6 * back_out(u, 2.2) if u < 1 else 2.6
         e2 = t - T_CAKE - 0.34
         wob2 = 1 + (0.045 * math.exp(-e2 * 9) * math.sin(e2 * 38) if e2 > 0 else 0)
         fu = clamp((t - T_FLAME) / 0.16)
-        s.append(shadow(cx_, cy_ + 6, 250 * kc / .78 * .9, 28 * kc / .78, .28))
-        s.append(pc.cake(cx_, cy_, kc, 1 / wob2, wob2, rot=0, flame_u=fu, t=t))
+        s.append(shadow(cx_, cy_ + 6, 36 * kc, 5 * kc, .28))
+        cg = props.cake(0, 0, kc, candle=clamp((t - T_FLAME + .02) / 0.22), t=t)
+        s.append(f'<g transform="translate({cx_} {cy_}) scale({1 / wob2:.4f} {wob2:.4f}) translate({-cx_} {-cy_})"><g transform="translate({cx_} {cy_})">{cg}</g></g>')
         # вспышка свечи
         ef = t - T_FLAME
-        fx, fy = cx_, cy_ - 434 * 0.78
+        fx, fy = cx_, cy_ - 150 * 2.6
         if 0 < ef < .5:
             g = ef / .5
             r = 30 + 340 * ease_out(g, 2)
@@ -142,13 +146,13 @@ def s02_frame(t):
     # --- мама в облачке ---
     cp = 0.78 + 0.22 * clamp(1)  # облачко уже стоит (после s01), чуть дышит
     br = 1 + 0.03 * math.sin(t * 6)
-    s.append(cloud(760, 400, 230, t, br))
-    s.append(mama_face(760, 410, 1.1, t))
+    s.append(cloud(760, 470, 205, t, br))
+    s.append(mama_face(760, 478, 1.0, t))
     # --- камера ---
     u = clamp((t - 1.55) / 1.45)
     kk = ease_io(u) ** 1.2
-    sc = lerp(1.0, 1.62, kk)
-    cxc, cyc = lerp(500, 720, kk), lerp(900, 890, kk)
+    sc = lerp(1.0, 1.5, kk)
+    cxc, cyc = lerp(500, 720, kk), lerp(900, 860, kk)
     rot = lerp(2.4, -1.2, kk)
     # лёгкий пульс на каждом прыжке коробки и тряска на свече
     ef = t - T_FLAME
@@ -161,7 +165,7 @@ def s02_frame(t):
     ec = t - T_CAKE
     if 0 < ec < .4:
         sc *= 1 + .035 * math.exp(-ec * 12)
-    return svg(f'<rect width="{W}" height="{H}" fill="#FCE6CB"/><g transform="{cam(cxc, cyc, sc, rot)}">{"".join(s)}</g>')
+    return svg(f'<rect width="{W}" height="{H}" fill="#E4F2F2"/><g transform="{cam(cxc, cyc, sc, rot)}">{"".join(s)}</g>')
 
 
 def lib_glint(cx, cy, k, r=70):

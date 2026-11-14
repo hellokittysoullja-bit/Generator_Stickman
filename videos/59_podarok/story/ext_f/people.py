@@ -695,7 +695,7 @@ def draw(pose, who="dima"):
     ex_ = dict(pose.get("expr", {}))
     if who in ("granny", "sport", "mama"):
         ex_["style"] = who
-    body += f'<g transform="translate({hpos[0]:.2f} {hpos[1]:.2f}) rotate({math.degrees(lean * .5 + ha):.3f})">{hf(ex_)}</g>'
+    body += f'<g transform="translate({hpos[0]:.2f} {hpos[1]:.2f}) rotate({math.degrees(lean * .5 + ha):.3f}) scale({pose.get("head_k", 1.0):.3f})">{hf(ex_)}</g>'
     out["body"] = G(body)
     out["arm_n"] = G(arm_svg("n"))
     out["wrist"] = {k: H + v[2] * BS for k, v in arms.items()}

@@ -1,4 +1,5 @@
-"""Общие помощники сцен tv / plate / jam рилса 23 (тот же способ, что герои 22-го: живая линия с нажимом — ink.py,
+"""Общие помощники сцены cafe рилса 27 (из run рилса 26; добавлен INK_K — толщина туши от масштаба камеры).
+Исходно: помощники сцен tv / plate / jam рилса 23 (тот же способ, что герои 22-го: живая линия с нажимом — ink.py,
 cel-тени, свет слоями). Сцена — функция frame(t) -> строка SVG 1080×1920; статика строится один раз и кэшируется
 (defs статики остаются, динамические defs сбрасываются на каждый кадр — dyn_begin())."""
 import math
@@ -12,12 +13,12 @@ sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.dirname(HERE))
 from ink import band, ellipse_pts, fill_d, ink_closed, ink_open, sample  # noqa: E402,F401
 
-
 W, H = 1080, 1920
 INK = "#1c1622"
 DEFS = []
 _uid = [0]
 _mark = [0, 0]
+INK_K = [1.0]           # множитель толщины туши (крупный план — тоньше в мире, чтобы на экране не толстела)
 
 
 def static_done():
@@ -47,7 +48,7 @@ def shape(pts, fill, inner="", w=5.0, seed=0, ink=True, attrs="", var=0.28, weig
         DEFS.append(f'<clipPath id="{c}"><path d="{d}"/></clipPath>')
         out.append(f'<g clip-path="url(#{c})">{inner}</g>')
     if ink:
-        out.append(f'<path d="{ink_closed(pts, w, var=var, weight=weight, seed=abs(int(seed)) % 2**31)}" fill="{ink_color}"/>')
+        out.append(f'<path d="{ink_closed(pts, w * INK_K[0], var=var, weight=weight, seed=abs(int(seed)) % 2**31)}" fill="{ink_color}"/>')
     out.append("</g>")
     return "".join(out)
 
@@ -65,7 +66,7 @@ def clip_rect(x, y, w, h, r=0):
 
 
 def line(pts, w=4.0, color=INK, taper=0.6, wmin=0.12, seed=3, peak=0.5, op=1.0, extra=""):
-    d = ink_open(pts, w, taper=taper, wmin=wmin, seed=abs(int(seed)) % 2**31, peak=peak)
+    d = ink_open(pts, w * INK_K[0], taper=taper, wmin=wmin, seed=abs(int(seed)) % 2**31, peak=peak)
     if not d:
         return ""
     o = f' opacity="{op:.3f}"' if op != 1 else ""
@@ -78,19 +79,11 @@ def blob(pts, color, op=1.0, extra=""):
 
 
 def rect_pts(x0, y0, x1, y1, r=0):
-    """Прямоугольник; со скруглением — дуги по 3 точки, концы прямых помечены углами (иначе сплайн выгибает
-    длинные стороны и у углов вылезают «усы» туши)."""
     if r <= 0:
         return [(x0, y0, 1), (x1, y0, 1), (x1, y1, 1), (x0, y1, 1)]
-    r = min(r, (x1 - x0) / 2 - 0.5, (y1 - y0) / 2 - 0.5)
-    out = []
-    for (cx, cy, a0) in ((x1 - r, y0 + r, -90), (x1 - r, y1 - r, 0), (x0 + r, y1 - r, 90), (x0 + r, y0 + r, 180)):
-        for k in range(3):
-            a = math.radians(a0 + k * 30)
-            out.append((cx + r * math.cos(a), cy + r * math.sin(a)) + ((1,) if k == 0 else ()))
-        a = math.radians(a0 + 90)
-        out.append((cx + r * math.cos(a), cy + r * math.sin(a), 1))
-    return out
+    k = r * 0.3
+    return [(x0 + r, y0), (x1 - r, y0), (x1 - k, y0 + k), (x1, y0 + r), (x1, y1 - r), (x1 - k, y1 - k), (x1 - r, y1),
+            (x0 + r, y1), (x0 + k, y1 - k), (x0, y1 - r), (x0, y0 + r), (x0 + k, y0 + k)]
 
 
 def blur(sd):
@@ -185,3 +178,16 @@ def svg(body):
 def words():
     import json
     return json.load(open(os.path.join(os.path.dirname(HERE), "voice", "words.json")))
+
+
+def rrect(x0, y0, x1, y1, r=0, n=7):
+    """Скруглённый прямоугольник плотными точками дуг (без «рогов» у углов)."""
+    if r <= 0:
+        return [(x0, y0, 1), (x1, y0, 1), (x1, y1, 1), (x0, y1, 1)]
+    r = min(r, (x1 - x0) / 2 - .5, (y1 - y0) / 2 - .5)
+    out = []
+    for (cx, cy, a0) in ((x1 - r, y0 + r, -90), (x1 - r, y1 - r, 0), (x0 + r, y1 - r, 90), (x0 + r, y0 + r, 180)):
+        for k in range(n + 1):
+            a = math.radians(a0 + 90 * k / n)
+            out.append((cx + r * math.cos(a), cy + r * math.sin(a)) + ((1,) if k in (0, n) else ()))
+    return out
