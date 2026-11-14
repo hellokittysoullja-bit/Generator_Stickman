@@ -14,7 +14,7 @@ import lib
 from ink import ellipse_pts, fill_d, fur, ink_closed, sample
 from lib import INK, blob, line, shape
 
-CAT, CAT_SH, CAT_FUR, CAT_EDGE = "#3a3646", "#211e29", "#56506a", "#6c6688"
+CAT, CAT_SH, CAT_FUR, CAT_EDGE = "#2f3336", "#1f2224", "#444a4d", "#5c6366"   # почти чёрный нейтральный, как look/hero.png (не фиолетовый)
 CX, CBOT = 836, 1306
 TAIL_C = [(904, 1272), (962, 1266), (1004, 1240), (1014, 1198), (994, 1166), (962, 1166), (944, 1192), (954, 1224), (986, 1236),
           (1010, 1214), (1014, 1168), (1006, 1120), (996, 1080)]

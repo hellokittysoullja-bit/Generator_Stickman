@@ -1,4 +1,4 @@
-"""Рендер клипов группы D рилса 51 (s13 s15 s16 s17, scene_d.py): python3 make.py s02 [s14 ...]  — клип clips/<id>.mp4 по контракту брифа;
+"""Рендер клипов группы A рилса 58 (scene_t.py): python3 make.py s02 [s14 ...]  — клип clips/<id>.mp4 по контракту брифа;
 python3 make.py s02 --sheet [t1,t2,...] — кадры PNG на эти моменты (по умолчанию 6 равномерно) + лист sheets/<id>.jpg.
 SVG кадров строятся в Python (несколько процессов), растр — Chromium в 4 процесса, PNG потоком в ffmpeg."""
 import importlib
@@ -16,7 +16,7 @@ STORY = os.path.dirname(HERE)
 os.makedirs(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "clips"), exist_ok=True)
 SH = json.load(open(os.path.join(STORY, "shots.json")))
 SHOTS = {s["id"]: s for s in SH["shots"]}
-SCENE_MOD = {k: "scene_v" for k in ("s01", "s03", "s07", "s11", "s13", "s14")}
+SCENE_MOD = {k: "scene_t" for k in ("s01", "s03", "s06", "s13", "s15", "s18")}
 TMP = os.path.join(os.path.dirname(STORY), ".." , "..", "..")
 
 
@@ -47,7 +47,7 @@ def main():
     sheet = "--sheet" in args
     ids = [a for a in args if a.startswith("s") and a[1:].isdigit()]
     tl = [a for a in args if "," in a or a.replace(".", "").isdigit()]
-    base_tmp = "/tmp/a57a"
+    base_tmp = "/tmp/a58a"
     os.makedirs(base_tmp, exist_ok=True)
     for sid in ids:
         a, n = span(sid)
