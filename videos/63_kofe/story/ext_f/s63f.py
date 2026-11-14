@@ -174,3 +174,125 @@ def frame(sid, t):
     if isinstance(body, tuple):
         body, bg = body
     return lib.svg(f'<rect width="1080" height="1920" fill="{bg}"/>{body}')
+
+
+# ═════════════════════════════ s15: кухонный пол — кот и кофе ═════════════════════════════
+S15_A = 29.95
+MUG15 = (370.0, 1575.0)          # дно кружки на полу
+KM15 = 1.9
+C15_Y = 1530.0                   # лапы кота
+K15 = 1.95
+X_STOP = 790.0
+T_STOP = T_KOT15 + .02
+
+
+def cat15_x(t):
+    if t < T_STOP:          # шагает справа с постоянной скоростью, у остановки тормозит
+        u = clamp((t - S15_A) / (T_STOP - S15_A))
+        return X_STOP + 520 * (1 - u) ** 1.35
+    return X_STOP + 26 * ease_out(clamp((t - T_PRI - .05) / .25), 2) + 30 * sm(t, T_PRI + .55, T_PRI + .95)
+
+
+def s15(t):
+    x = cat15_x(t)
+    walking = t < T_STOP + .08
+    ph = 2.2 * (t - S15_A)
+    lean = sm(t, T_KOFE - .3, T_KOFE + .05) * (1 - ease_out(clamp((t - T_PRI - .04) / .14), 2))   # тянется к кружке → отдёргивает
+    rec = ease_out(clamp((t - T_PRI - .04) / .14), 2) * (1 - sm(t, T_PRI + .35, T_PRI + .7))       # отпрянул назад
+    sniff = max(bump(t, T_KOFE, .16), bump(t, T_KOFE + .17, .16), bump(t, T_KOFE + .33, .14)) * (t < T_PRI)
+    wr = sm(t, T_PRI - .02, T_PRI + .1) * (1 - sm(t, T_PRI + .9, 32.3))
+    away = sm(t, T_PRI + .32, T_PRI + .78)                                                         # отворачивается: 0 → 3/4 со спины
+    turn = -.35 * lean + 1.75 * away
+    st = dict(turn=turn, body_turn=.55 * sm(t, T_PRI + .42, T_PRI + .9),
+              look=(-.9 * (1 - away), .35 * lean - .3 * away), blink=blinks(t, (30.3,)) + .0,
+              ear=2 * math.sin(t * 3.1), perk=.6 * bump(t, T_STOP, .4) + .3 * lean,
+              tail=6 * math.sin(t * 2.6) + 22 * decay(t, T_PRI + .05, 6, 5.5) - 10 * sm(t, T_PRI + .5, 32.0),
+              flame_e=1.1 + .2 * math.sin(t * 7) + .8 * bump(t, T_PRI + .05, .35),
+              head_dx=-50 * lean + 34 * rec, drop=.85 * lean - .15 * rec, tilt=-12 * lean + 9 * rec + 6 * away, sniff=sniff, wrinkle=wr,
+              rot=-5 * lean + 3 * rec, paw=sm(t, T_PRI + .55, T_PRI + .7), paw_shake=(t - T_PRI) * 7 if t > T_PRI + .6 else 0.0)
+    if walking:
+        st["walk"] = ph
+        st["rot"] = 1.8 * math.sin(2 * math.pi * ph) * clamp((T_STOP - t) / .15)
+    bob = abs(math.sin(math.pi * ph)) * 8 if walking else 0.0
+    r = ROOM.kitchen_floor(t, "morning")
+    o = [r["bg"]]
+    set_ink(1.2)
+    o.append(blob(ellipse_pts(MUG15[0] + 10, MUG15[1] + 4, 125, 20, 16), "#9c6b3e", .6))
+    o.append(blob(ellipse_pts(x + 30, C15_Y + 6, 230, 34, 18), "#9c6b3e", .55))
+    steam = 1.0 + .35 * bump(t, T_KOFE, .5)
+    o.append(PR.coffee_mug(MUG15[0], MUG15[1], KM15, col="white", fill=.9, steam=steam, t=t, seed=15))
+    o.append(catf.draw_f(x, C15_Y - bob, K15, st, t))
+    o.append(r["front"])
+    # камера: панорама за котом, наезд на морду к «притрагивается», тряска на отдёргивании
+    u1 = sm(t, S15_A, T_STOP + .2)
+    u2 = sm(t, T_KOFE - .4, T_PRI + .1)
+    z = 1.02 + .3 * u2 - .06 * sm(t, T_PRI + .4, 32.6)
+    hx, hy = catf.head_world(x, C15_Y, K15, st)
+    cx = (880 - 220 * u1) * (1 - u2) + (hx * .72 + MUG15[0] * .28) * u2
+    cy = 1240 * (1 - u2) + (hy + 60) * u2
+    cx += 70 * sm(t, T_PRI + .3, 32.4)
+    dx, dy = shake(t, T_PRI + .04, 10)
+    set_ink(z * 1.2)
+    g = f'<g transform="{lib.cam(cx + dx, cy + dy, z, -.8 + 1.4 * u1 - 1.0 * u2)}">{"".join(o)}</g>'
+    return whip(g, t, t_in=S15_A, dur=.22), "#c8915c"
+
+
+FRAMES["s15"] = s15
+
+
+# ═════════════════════════════ s17: призыв, рукописное «кот» ═════════════════════════════
+S17_A = 34.15
+DS17 = 1.0
+HIP17 = (ROOM.K_DIMA[0] - 40, ROOM.K_FLOOR - (people.LEG_LEN - 12) * DS17 * people.HEIGHT["dima"]) if ROOM else (430, 1000)
+MUG_HC = (-89.0, -70.0)                   # центр ручки зеркальной кружки от центра дна (ед. кружки)
+CAT17 = (945.0, ROOM.K_TABLE[2] - 40 if ROOM else 1060)
+K17 = .9
+KOT_T0, KOT_DUR = T_KOT - .02, .32        # дописано к 35.60 (звук «слово дописано»)
+KOT_XY, KOT_SIZE = (842.0, 672.0), 1.3   # чистая стена между полкой/шкафами (низ 578/560) и плиткой (верх 690)
+
+
+def held_mug(W, rot, t, k=1.0, seed=0):
+    """Кружка кофе в ближней руке за ручку: пальцы в ручке, большой палец сверху (как в s01/s18 группы C)."""
+    hc = (MUG_HC[0] * k, MUG_HC[1] * k)
+    mug = f'<g transform="scale(-1 1)">{PR.coffee_mug(0, 0, k, 0, "white", .8, 0.0, t, seed=seed)}</g>'
+    back, front = people.handle_grip("dima", hc, k=DS17, side=-1, seed=960 + seed)
+    wl = (hc[0] - 70 * DS17, hc[1] + 6 * DS17)
+    return f'<g transform="translate({W[0]:.2f} {W[1]:.2f}) rotate({rot:.3f}) translate({-wl[0]:.2f} {-wl[1]:.2f})">{back}{mug}{front}</g>'
+
+
+def s17(t):
+    hx0, hy0 = HIP17
+    nod = .06 * bump(t, T_NAP + .05, .45) + .05 * bump(t, T_KOT + .25, .45)
+    breath = math.sin(2 * math.pi * (t - S17_A) / 2.4)
+    ex = dict(EX["friendly"], look=(.05, 0), closed=blinks(t, (34.9, 35.95)), open=.5 + .15 * bump(t, T_KOT + .3, .5))
+    kw = people.stand_kw(hx0, hy0, DS17)
+    W = (hx0 + 228 * DS17, hy0 - 285 * DS17 + 6 * breath - 18 * bump(t, T_NAP + .1, .5))
+    far = ("ik", (hx0 + 200 * DS17, ROOM.K_TABLE[2] - 46), -1)
+    arms = {"n": ("ik", W, -1), "f": far}
+    hands = {"n": {"kind": "none"}, "f": {"dir": (1, .25), "curl": (.25, .3, .35, .4), "thumb": .3}}
+    fig = people.figure("dima", hx0, hy0, DS17, ex, lean=-.02, head_ang=-nod, arms=arms, hands=hands, layers=("legs", "pelvis", "arm_f", "body"), **kw)
+    arm = people.figure("dima", hx0, hy0, DS17, ex, lean=-.02, head_ang=-nod, arms=arms, hands={"n": {"kind": "none"}}, layers=("arm_n",), **kw)
+    cup = held_mug(arm["wrist"]["n"], -4 + 3 * math.sin(t * 1.3), t, seed=17)
+    # кот: сначала смотрит на Диму, на «Напиши» поворачивает морду к зрителю через три четверти; на «кот» ушки торчком, огонёк вспыхивает
+    tu = sm(t, T_NAP - .02, T_NAP + .3)
+    turn = -.85 * (1 - tu) + .06 * bump(t, T_NAP + .3, .3)
+    st = dict(turn=turn, look=(-.85 * (1 - tu), -.2 * (1 - tu)), blink=blinks(t, (34.3, 35.75)), tail=7 * math.sin(t * 2.1), ear=2 * math.sin(t * 3.3),
+              tilt=-5 * (1 - tu) + 2.5 * math.sin(t * 1.2) + 4 * bump(t, T_KOT + .1, .5), perk=.6 * bump(t, T_KOT, .55),
+              flame_e=1.1 + .7 * bump(t, T_KOT + .1, .5), smile=1.0 if t > T_KOT + .3 else 0.0)
+    r = ROOM.kitchen(t, "day", clock=PR.clock_hm(13, 5))
+    o = [r["bg"], fig["svg"], r["table"], arm["svg"], cup]
+    set_ink(1.2)
+    o.append(blob(ellipse_pts(CAT17[0] + 6, CAT17[1] - 2, 120, 12, 14), lib.mul(ROOM.LIGHTWOOD, (.82, .82, .82))))
+    o.append(catf.draw_f(CAT17[0], CAT17[1], K17, st, t))
+    o.append(r["front"])
+    o.append(hand_kot.kot(t, KOT_T0, KOT_DUR, KOT_XY[0], KOT_XY[1], KOT_SIZE))
+    u = sm(t, S17_A + .1, 36.3)
+    z = 1.14 + .12 * u + .03 * bump(t, KOT_T0 + KOT_DUR, .35)
+    cx = 690 + 10 * u
+    cy = 900 - 30 * u
+    set_ink(z)
+    g = f'<g transform="{lib.cam(cx, cy, z, .6 - .9 * u)}">{"".join(o)}</g>'
+    return whip(g, t, t_in=S17_A, dur=.22), "#efe2c6"
+
+
+FRAMES["s17"] = s17
