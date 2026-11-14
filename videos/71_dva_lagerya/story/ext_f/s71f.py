@@ -184,8 +184,8 @@ def s08(t):
     sc = R.bed_mid(t)
     # Дима: голова поникла под капюшоном → «и дело» выпрямляется, лицо светлеет → «не в лени» одеяло сползает с плеч до пояса, выдох
     up = sm(t, T_I08 - .05, T_DELO + .2)
-    sag = .08 + .9 * ease_out(clamp((t - (T_NE08 - .05)) / (T_LENI + .32 - (T_NE08 - .05))), 2.2)
-    sag += .015 * math.sin(t * 7) * (sag < .95)
+    sag = .05 + .33 * ease_out(clamp((t - (T_NE08 - .05)) / (T_LENI + .32 - (T_NE08 - .05))), 2.2)
+    sag += .012 * math.sin(t * 7) * (sag < .37)
     rel = sm(t, T_LENI - .05, T_LENI + .3)
     if rel > .02:
         e = ex("relief71" if "relief71" in people.EXPR["dima"] else "relief_day", closed=lerp(0, .75, bump(t, T_LENI + .2, .7)), look=(.2, .05))
