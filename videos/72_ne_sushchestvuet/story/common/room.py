@@ -1147,3 +1147,375 @@ def kitchen_scene(t, mode="day"):
         tb.append(shape([(lx - 14, ty + 32, 1), (lx + 14, ty + 32, 1), (lx + 10, KS_FLOOR, 1), (lx - 10, KS_FLOOR, 1)], "#b48a58", "", w=3.2, seed=9403 + i))
     tb.append(blob(ellipse_pts((x0 + x1) / 2, KS_FLOOR + 4, (x1 - x0) / 2 + 30, 12, 18), "#6e4a2c", .3))
     return dict(bg="".join(o), chairs_back=cl["back"] + cr["back"], chair_seats=cl["seat"] + cr["seat"], table="".join(tb), front="")
+
+
+# ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+# РИЛС 72 «СДВГ не существует» (группа C). Все места — в координатах кадра 1080×1920 при своей камере (cx, cy, s).
+#
+# КУХОННЫЙ СТОЛ КРУПНО ДНЁМ (хук s01):  kitchen_close(t) -> dict(bg, table, motes, front)
+#     резкий белый свет: белая стена с плиткой, жёсткий прямоугольник солнца из окна (чёткие края, тень крестовины), стол
+#     светлого дерева, к зрителю до низа кадра. Кот СИДИТ НА СТОЛЕ мордой к зрителю: лапы на линии KC_CAT (k≈KC_CAT_K),
+#     телефон лежит перед ним KC_PHONE. Порядок: bg → table → [тень кота, телефон, кот] → motes → front.
+#     CAM_KC=(540, 960, 1.0). motes(t, u) — пылинки в луче.
+# НОЧЬ, ТОТ ЖЕ РАКУРС (петля s22):  fire_close(t, u=1) -> dict(bg, table, fire, motes, front)
+#     то же место кота и предмета, но ночь у костра: тёмно-синее небо, силуэты елей, вместо стола — широкий пень (верх на той же
+#     линии, что стол), костёр слева внизу за краем кадра (видны языки и искры у левого края), его свет — пятном на пне и
+#     тёплой гранью справа налево. Порядок: bg → table → [кот, кубик] → fire → motes(искры) → front.
+#
+# ДНЁМ У КРЕСЛА-МЕШКА (s03–s05):  bag_room(t) -> dict(bg, front)
+#     белая стена, большое окно слева с резким белым светом (полоса формы окна на стене и на полу, чёткие края), светлый пол,
+#     ковёр. Кресло-мешок (props.bean_bag) ставит сцена: BB=(560, 1500) центр низа, k≈1; Дима в нём — таз ≈ BB_HIP.
+#     BB_CAT=(900, 1500) кот на полу справа (лапы на линии), BB_TOWER=(220, 1500) низ башни листов (s05) слева у окна,
+#     BB_PHONE_FLOOR=(760, 1520) где телефон ложится экраном вниз на пол. CAM_BB=(560, 960, 1.0), CAM_BB_NEAR=(600, 1000, 1.3).
+#
+# НОЧЬ У КОСТРА:  fire_scene(t, u=1.0, mode="wide") -> dict(sky, bg, ground, stones_back, fire, stones_front, log, front, cam, light)
+#     один мир для s06–s21: небо и ели, земля, круг света вокруг огня (пятно по форме, мерцает, не мягкий овал), камни кругом,
+#     бревно-сиденье слева, большое дерево справа с веткой над огнём. u — сила огня 0…1 (0 — тлеющая искра, тьма; 1 — пламя);
+#     свет пятна, камней и ствола следует за u. Порядок: sky → bg → ground → stones_back → [кот за костром] → fire →
+#     stones_front → log → [Дима на бревне, кот рядом, предметы] → front.  cam — камера режима (cx, cy, s) для lib.cam.
+#     Огонь — props.campfire (группа A), пока его нет — временный огонь здесь же (_temp_fire).
+#     FIRE=(560, 1330) центр основания огня; LOG=(170, 1360) центр бревна (длина ~520, верх ≈ LOG_TOP);
+#     DIMA_LOG=(190, LOG_TOP) таз сидящего Димы (scale 1); CAT_FAR=(800, 1250) кот по ту сторону огня (k≈.45, спиной или
+#     анфас); CAT_NEAR=(860, 1400) кот ближе к огню справа; STONE_SHADOW=(-60, 1080) большой камень за спиной Димы (тень
+#     растёт на нём, s07; камень рисует bg, плоская грань обращена к огню); TOWER=(860, 1400) низ башни листов (s16–s17);
+#     BRANCH=(700, 470) точка ветки над огнём, где висит мешок (s20–s21); SKY_CLEAN=(380, 180, 900, 560) — чистое небо без
+#     звёзд и веток (рукописное «кот» s20). Режимы mode и их камеры FIRE_CAMS:
+#        "wide"   (s06, s11) общий: огонь, бревно, камень, кот за огнём
+#        "face"   (s07, s10) лицо Димы на бревне крупно, огонь внизу справа, камень с тенью за спиной
+#        "smoke"  (s08, s09) вверх над огнём: дым на фоне неба, внизу пламя и макушка Димы
+#        "tower"  (s16, s17) Дима стоит перед башней справа от огня
+#        "laptop" (s18, s19) Дима сидит на бревне с ноутбуком, огонь справа
+#        "branch" (s20, s21) кот близко у огня, над ним ветка с мешком
+#     light(t, u) -> множитель мерцания 0.85…1.1 (для тёплой грани на героях). fire_tint(svg, t, u, k=1) — обернуть героя в
+#     фильтр ночи у костра: тёплый, приглушённый, с мерцанием (контур туши остаётся тёмным, лица читаются).
+# ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+CAM_KC = (540.0, 960.0, 1.0)
+KC_TABLE_Y = 1040.0          # дальний край столешницы (у стены)
+KC_CAT = (540.0, 1270.0)     # точка между задних лап кота на столе
+KC_CAT_K = 3.2
+KC_PHONE = (600.0, 1385.0)   # центр телефона на столе перед котом
+WHITE = dict(wall="#eef0ee", wall_hi="#f8f9f7", wall_sh="#dde1df", wall_ln="#e2e6e4")
+
+BB = (560.0, 1500.0)
+BB_HIP = (560.0, 1300.0)
+BB_CAT = (900.0, 1500.0)
+BB_TOWER = (220.0, 1500.0)
+BB_PHONE_FLOOR = (760.0, 1520.0)
+CAM_BB = (560.0, 960.0, 1.0)
+CAM_BB_NEAR = (600.0, 1000.0, 1.3)
+
+FIRE = (560.0, 1330.0)
+LOG = (170.0, 1360.0)
+LOG_TOP = 1300.0
+DIMA_LOG = (190.0, LOG_TOP)
+CAT_FAR = (800.0, 1250.0)
+CAT_NEAR = (860.0, 1400.0)
+STONE_SHADOW = (-60.0, 1080.0)
+TOWER = (860.0, 1400.0)
+BRANCH = (700.0, 470.0)
+SKY_CLEAN = (380.0, 180.0, 900.0, 560.0)
+HORIZON = 930.0
+FIRE_CAMS = {"wide": (540.0, 1000.0, 1.0), "face": (230.0, 960.0, 1.75), "smoke": (560.0, 760.0, 1.15),
+             "tower": (700.0, 980.0, 1.0), "laptop": (300.0, 1040.0, 1.4), "branch": (720.0, 900.0, 1.05)}
+NIGHT = dict(sky0="#070c1d", sky1="#12204a", sky2="#22336a", tree="#070b16", tree_e="#16213c", ground="#141a2a",
+             ground2="#1b2234", stone="#3a3f4f", stone_sh="#22263a", stone_lit="#b97a4e", log="#4a3324", log_sh="#2c1d14",
+             log_lit="#c47e48", lit=("#2c2630", "#4a3428", "#704a2c", "#9a6634"))
+
+
+def light(t, u=1.0):
+    """Мерцание огня: множитель яркости 0.85…1.1 (несколько синусов разной частоты, не шум-дрожь)."""
+    v = 1 + .05 * math.sin(t * 7.3) + .035 * math.sin(t * 12.9 + 1.3) + .02 * math.sin(t * 23.1 + .4)
+    return 1 + (v - 1) * clamp01(u)
+
+
+def fire_tint(svg, t, u=1.0, k=1.0):
+    """Герой у ночного костра: приглушить и согреть цвета (матрица), сила мерцает. k — 0 день … 1 ночь у огня."""
+    fl = light(t, u)
+    a = clamp01(k)
+    r = 1 - a * (1 - .78 * fl * (.55 + .45 * u))
+    g = 1 - a * (1 - .56 * fl * (.55 + .45 * u))
+    b = 1 - a * (1 - .5 * (.7 + .3 * u))
+    br = a * .045 * u * fl
+    fid = f"ft{int(r * 1000)}_{int(g * 1000)}_{int(b * 1000)}"
+    if not any(f'id="{fid}"' in d for d in lib.DEFS):
+        lib.DEFS.append(f'<filter id="{fid}" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="'
+                        f'{r:.3f} 0 0 0 {br:.3f} 0 {g:.3f} 0 0 {br * .5:.3f} 0 0 {b:.3f} 0 0 0 0 0 1 0"/></filter>')
+    return f'<g filter="url(#{fid})">{svg}</g>'
+
+
+def _jag(cx, cy, rx, ry, t, seed, n=40, amp=.06, speed=1.0):
+    """Неровное пятно света: радиус с неровностями формы + медленное колыхание (мерцание края)."""
+    r = rs(9700 + seed)
+    ph = r.uniform(0, 6.3, 5)
+    pts = []
+    for i in range(n):
+        a = 2 * math.pi * i / n
+        k = 1 + amp * (math.sin(3 * a + ph[0]) + .6 * math.sin(5 * a + ph[1] + t * 2.1 * speed) + .4 * math.sin(9 * a + ph[2] - t * 3.7 * speed)
+                       + .3 * math.sin(14 * a + ph[3] + t * 6.0 * speed))
+        pts.append((cx + rx * k * math.cos(a), cy + ry * k * math.sin(a)))
+    return pts
+
+
+# ═════════════════════════ кухонный стол крупно (s01) ═════════════════════════
+def _wall_light(x0, y0, x1, y1, pal, step=150.0):
+    """Стена: вертикальный градиент и редкие швы обоев (простые штрихи — дёшево для большого холста)."""
+    g = lib.lin_grad([(0, pal["wall_sh"], 1), (.4, pal["wall"], 1), (1, pal["wall_hi"], 1)], 0, y0, 0, y1, units="userSpaceOnUse")
+    d = "".join(f"M{f(x0 + 40 + i * step)} {f(y0)}L{f(x0 + 41.5 + i * step)} {f(y1)}" for i in range(int((x1 - x0) // step) + 1))
+    return (f'<rect x="{f(x0)}" y="{f(y0)}" width="{f(x1 - x0)}" height="{f(y1 - y0)}" fill="url(#{g})"/>'
+            f'<path d="{d}" stroke="{pal["wall_ln"]}" stroke-width="1.8" opacity=".5" fill="none"/>')
+
+
+def _tiles(x0, y0, x1, y1, s=86.0, col="#dfe4e2", seed=0):
+    """Плитка: светлая заливка и сетка швов простыми штрихами (на плитке нет букв и рисунков)."""
+    d = "".join(f"M{f(x0)} {f(y0 + i * s)}L{f(x1)} {f(y0 + i * s + 2)}" for i in range(int((y1 - y0) // s) + 1))
+    d += "".join(f"M{f(x0 + j * s)} {f(y0)}L{f(x0 + j * s + 1)} {f(y1)}" for j in range(int((x1 - x0) // s) + 2))
+    return blob(rect_pts(x0, y0, x1, y1), "#f4f6f4") + f'<path d="{d}" stroke="{col}" stroke-width="2.4" fill="none"/>' 
+
+
+def kitchen_close(t):
+    """Стол крупно днём, резкий белый свет. dict(bg, table, motes(t, u), front)."""
+    o = ['<rect x="-2600" y="-1600" width="6000" height="6000" fill="#c9cfcc"/>', _wall_light(-1400, -900, 2500, KC_TABLE_Y, WHITE)]
+    o.append(_tiles(-300, 640, 1400, KC_TABLE_Y, col="#d6dcda", seed=1))
+    # жёсткий прямоугольник солнца формы окна: белый, с тенью крестовины, косо через стену за котом
+    o.append(_sun_quad((560, -120), (560, 70), (180, 900), "#fffef6", "#ffffff", inset=.05))
+    # край окна слева: рама и белое небо-засвет (резкий свет)
+    o.append(shape(rect_pts(-300, -200, 60, 560), "#ffffff", blob(rect_pts(30, -200, 60, 560), "#d9dedc"), w=5, seed=9611))
+    o.append(shape(rect_pts(-300, 548, 90, 596), "#f1f3f1", blob(rect_pts(-300, 580, 90, 596), "#cfd5d3"), w=4, seed=9612))
+    # столешница светлого дерева: дальний край KC_TABLE_Y, к зрителю шире до низа кадра (вид чуть сверху)
+    tp = [(-700, 2200, 1), (-120, KC_TABLE_Y + 40), (-40, KC_TABLE_Y, 1), (1120, KC_TABLE_Y, 1), (1200, KC_TABLE_Y + 40), (1780, 2200, 1)]
+    g = lib.lin_grad([(0, "#cfa678", 1), (.3, "#e2bd90", 1), (1, "#ecc99e", 1)], 0, KC_TABLE_Y, 0, 1920, units="userSpaceOnUse")
+    inner = f'<rect x="-800" y="{f(KC_TABLE_Y - 20)}" width="2700" height="1300" fill="url(#{g})"/>'
+    for i, (a, b) in enumerate(((60, -500), (300, -60), (620, 820), (900, 1500), (1080, 1900))):     # волокна дерева к зрителю
+        inner += line([(a, KC_TABLE_Y + 8), ((a + b) / 2 + 20, 1400), (b, 2000)], 2.6, "#c49a6c", taper=.6, wmin=.25, seed=9620 + i, op=.75)
+    # солнце на столе: жёсткая полоса продолжает окно (белее дерева)
+    inner += _sun_quad((-40, KC_TABLE_Y + 30), (520, -10), (760, 780), "#f6dcb4", "#fbe8c8", inset=.05)
+    inner += blob(rect_pts(-800, KC_TABLE_Y, 2000, KC_TABLE_Y + 14), "#b88e62")      # тень под стеной
+    table = shape(tp, "#e2bd90", inner, w=5.2, seed=9625)
+
+    def mts(tt, u=1.0):
+        return motes(tt, (120.0, 40.0, 900.0, 1000.0), 18, u, seed=7)
+    return dict(bg="".join(o), table=table, motes=mts, front="")
+
+
+# ═════════════════════════ ночь, тот же ракурс (s22) ═════════════════════════
+def _spruce(x, y, h, w, col, seed, edge=None, lit=0.0):
+    """Ель силуэтом: ярусы-треугольники с зубчатым краем; edge — светлая грань справа (свет огня), lit 0…1."""
+    r = rs(9800 + seed)
+    pts = [(x, y - h, 1)]
+    tiers = 6
+    for i in range(1, tiers + 1):
+        q = i / tiers
+        yy = y - h + h * q * .92
+        ww = w * (.18 + .82 * q) * r.uniform(.88, 1.08)
+        pts.append((x + ww * .55, yy - h * .05))
+        pts.append((x + ww, yy, 1))
+    pts.append((x + w * .12, y))
+    pts.append((x - w * .12, y))
+    left = []
+    for i in range(tiers, 0, -1):
+        q = i / tiers
+        yy = y - h + h * q * .92
+        ww = w * (.18 + .82 * q) * r.uniform(.88, 1.08)
+        left.append((x - ww, yy, 1))
+        left.append((x - ww * .55, yy - h * .05))
+    pts += left
+    o = blob(pts, col)
+    if edge and lit > .01:
+        o += line([(x + 4, y - h * .9), (x + w * .5, y - h * .45), (x + w * .9, y - h * .05)], 6, edge, taper=.6, wmin=.2, seed=9810 + seed,
+                  op=.55 * lit)
+    return o
+
+
+def _night_sky(x0, y0, x1, y1, seed=0, stars=True, clean=None):
+    g = lib.lin_grad([(0, NIGHT["sky0"], 1), (.6, NIGHT["sky1"], 1), (1, NIGHT["sky2"], 1)], 0, y0, 0, y1, units="userSpaceOnUse")
+    o = [f'<rect x="{f(x0)}" y="{f(y0)}" width="{f(x1 - x0)}" height="{f(y1 - y0)}" fill="url(#{g})"/>']
+    if stars:
+        r = rs(9900 + seed)
+        for i in range(70):
+            x, y = r.uniform(x0, x1), r.uniform(y0, y0 + (y1 - y0) * .8)
+            if clean and clean[0] - 40 < x < clean[2] + 40 and clean[1] - 40 < y < clean[3] + 40:
+                continue
+            rr = r.uniform(1.6, 3.6)
+            o.append(f'<circle cx="{f(x)}" cy="{f(y)}" r="{f(rr)}" fill="#dfe6ff" opacity="{r.uniform(.4, .9):.2f}"/>')
+    return "".join(o)
+
+
+def _sparks(x, y, t, u, n=14, h=520.0, seed=0, k=1.0):
+    """Искры вверх от огня: каждая — короткий тёплый штрих, летит по своей кривой, гаснет к верху."""
+    if u <= .02:
+        return ""
+    r = rs(9950 + seed)
+    o = []
+    for i in range(n):
+        per = r.uniform(.9, 1.6)
+        ph = r.uniform(0, per)
+        q = ((t + ph) % per) / per
+        dx = r.uniform(-60, 60) * k + 40 * math.sin(q * 5 + i) * k
+        yy = y - q * h * k * (.6 + .4 * u)
+        xx = x + dx * (.3 + q)
+        a = (1 - q) * u
+        if a < .05:
+            continue
+        L = 10 * k
+        o.append(line([(xx, yy), (xx - 3 * k, yy + L)], 4.2 * k, "#ffcf5a", taper=.5, wmin=.3, seed=9960 + i, op=a))
+    return "".join(o)
+
+
+def _temp_fire(x, y, k, u, t, seed=0):
+    """Временный огонь (пока нет props.campfire группы A): поленья и языки пламени, u 0 — тлеющая искра."""
+    o = []
+    for i, (a, L) in enumerate(((-14, 150), (16, 150), (-2, 120))):
+        p0 = (x - L * k * math.cos(math.radians(a)), y + 8 * k - L * k * math.sin(math.radians(a)) * .3)
+        p1 = (x + L * k * math.cos(math.radians(a)), y + 8 * k + L * k * math.sin(math.radians(a)) * .3)
+        from ink import band as _band
+        o.append(shape(_band([p0, p1], 34 * k, 30 * k, step=6), NIGHT["log"], blob([(p0[0], p0[1]), (p1[0], p1[1]), (p1[0], p1[1] + 14 * k), (p0[0], p0[1] + 14 * k)],
+                                                                                NIGHT["log_sh"]), w=4.2 * k, seed=9970 + i))
+    if u < .3:
+        e = .5 + .5 * math.sin(t * 6.1) * .5 + .25 * math.sin(t * 11.3)
+        o.append(blob(ellipse_pts(x, y - 4 * k, 12 * k * (1 + .2 * e), 7 * k, 10), "#ff5a2a", .6 + .4 * e))
+        o.append(blob(ellipse_pts(x, y - 5 * k, 5 * k, 3.5 * k, 8), "#ffd27a"))
+    if u > .05:
+        for j, (dx, hk) in enumerate(((-40, .7), (0, 1.0), (38, .78))):
+            sw = 10 * math.sin(t * 8 + j * 2)
+            hh = 230 * k * hk * u
+            P = [(x + dx * k - 40 * k * u, y), (x + dx * k - 30 * k * u, y - hh * .4), (x + dx * k + sw * k, y - hh, 1), (x + dx * k + 30 * k * u, y - hh * .45),
+                 (x + dx * k + 40 * k * u, y)]
+            Q = [(x + dx * k - 20 * k * u, y), (x + dx * k + sw * .6 * k, y - hh * .62, 1), (x + dx * k + 20 * k * u, y)]
+            o.append(shape(P, "#ff8a2a", blob(Q, "#ffd04a"), w=3.6 * k, seed=9980 + j, ink_color="#7a2a10"))
+    return "".join(o)
+
+
+def campfire(x, y, k=1.0, u=1.0, t=0.0, seed=0, stones=False):
+    """Огонь: props.campfire группы A, если уже есть; иначе временный. Камни кольцом рисует fire_scene (они освещены огнём)."""
+    try:
+        import props
+        if hasattr(props, "campfire"):
+            return props.campfire(x, y, k, u, t, seed, stones=stones)
+    except Exception:
+        pass
+    return _temp_fire(x, y, k, u, t, seed)
+
+
+def fire_close(t, u=1.0):
+    """Ракурс s01 ночью: тот же кадр, вместо стола пень, костёр слева внизу за краем, тёплый свет. dict(bg, table, fire, motes, front)."""
+    fl = light(t, u)
+    o = ['<rect x="-2600" y="-1600" width="6000" height="6000" fill="#0c1222"/>', _night_sky(-1400, -900, 2500, KC_TABLE_Y, seed=3)]
+    for i, (x, h, w) in enumerate(((-120, 820, 300), (140, 640, 240), (930, 760, 280), (1150, 900, 320), (720, 520, 200))):
+        o.append(_spruce(x, KC_TABLE_Y + 30, h, w, NIGHT["tree"] if i != 4 else NIGHT["tree_e"], 30 + i, "#c88a52", .7 * u * fl if x < 600 else 0))
+    # земля за пнём
+    o.append(blob(rect_pts(-1400, KC_TABLE_Y - 20, 2500, 2400), NIGHT["ground"]))
+    o.append(blob(_jag(-60, KC_TABLE_Y + 120, 760 * (.8 + .2 * u), 120, t, 3, amp=.05), NIGHT["lit"][1] if u > .2 else NIGHT["ground2"]))
+    # широкий пень вместо стола: верх на линии стола (срез с кольцами), свет огня слева
+    top = [(-700, 2200, 1), (-120, KC_TABLE_Y + 40), (-40, KC_TABLE_Y, 1), (1120, KC_TABLE_Y, 1), (1200, KC_TABLE_Y + 40), (1780, 2200, 1)]
+    g = lib.lin_grad([(0, lib.mix("#6b4a30", "#c98a52", .55 * u * fl), 1), (.55, "#5a3d27", 1), (1, "#3e2a1c", 1)], 0, 0, 1, 0)
+    inner = f'<rect x="-800" y="{f(KC_TABLE_Y - 20)}" width="2700" height="1300" fill="url(#{g})"/>'
+    for i in range(6):          # кольца среза
+        cy = 1720 + i * 0
+        inner += line([(540 - 300 - 110 * i, KC_TABLE_Y + 30 + 40 * i), (540, KC_TABLE_Y + 70 + 120 * i), (540 + 300 + 110 * i, KC_TABLE_Y + 30 + 40 * i)],
+                      2.4, "#3a2618", taper=.5, wmin=.3, seed=9990 + i, op=.6)
+        del cy
+    inner += blob(_jag(120, 1300, 520 * (.7 + .3 * u), 260, t, 5, amp=.05), lib.mix("#5a3d27", "#d0915a", .5 * u * fl), .55)
+    table = shape(top, "#5a3d27", inner, w=5.2, seed=9995)
+    fire = campfire(-120, 1830, 2.2, u, t, seed=4) + _sparks(-80, 1700, t, u, 16, 900, seed=2, k=1.6)
+
+    def mts(tt, uu=1.0):
+        return _sparks(-60, 1600, tt, uu * u, 10, 1400, seed=6, k=1.2)
+    return dict(bg="".join(o), table=table, fire=fire, motes=mts, front="")
+
+
+# ═════════════════════════ днём у кресла-мешка (s03–s05) ═════════════════════════
+def bag_room(t):
+    """Белая стена, окно слева с резким светом, светлый пол, ковёр. Кресло ставит сцена (props.bean_bag). dict(bg, front)."""
+    o = ['<rect x="-2600" y="-1600" width="6000" height="6000" fill="#c9cfcc"/>', _wall_light(-1400, -900, 2600, 1440, WHITE)]
+    o.append(window(-300, 200, 200, 1000, "day", t, seed=21, sway=.9, curtain="#9fb6c6"))
+    o.append(_sun_quad((330, 260), (420, 40), (120, 760), "#fffef6", "#ffffff", inset=.05))
+    o.append(shape(rect_pts(-1400, 1400, 2600, 1446), "#f7f8f6", blob(rect_pts(-1400, 1434, 2600, 1446), "#d6dbd9"), w=3.4, seed=9701))
+    gf = lib.lin_grad([(0, "#d8c4a4", 1), (1, "#c8b08a", 1)], 0, 1446, 0, 2100, units="userSpaceOnUse")
+    o.append(f'<rect x="-1400" y="1446" width="4000" height="1200" fill="url(#{gf})"/>')
+    o.append('<path d="' + "".join(f"M-1400 {y}L2600 {y + 3}" for y in (1500, 1580, 1690, 1830)) + '" stroke="#a88e6a" stroke-width="3" opacity=".55" fill="none"/>')
+    o.append(_sun_quad((120, 1460), (520, 20), (300, 140), "#f2e6cf", "#fbf3e2", inset=.08))
+    o.append(rug(620, 1560, 430, 70, "day", seed=5))
+    return dict(bg="".join(o), front="")
+
+
+# ═════════════════════════ ночь у костра (s06–s21) ═════════════════════════
+def _stone(x, y, w, h, t, u, fl, seed, side=0.0):
+    """Камень: тёмный, освещённый бок к огню (side — где огонь по x: <0 слева, >0 справа)."""
+    r = rs(9500 + seed)
+    pts = [(x - w, y), (x - w * .9, y - h * .6), (x - w * .4, y - h * r.uniform(.9, 1.05)), (x + w * .3, y - h), (x + w * .9, y - h * .55), (x + w, y)]
+    lit = lib.mix(NIGHT["stone"], NIGHT["stone_lit"], clamp01(.85 * u * fl))
+    s = 1 if side > 0 else -1
+    inner = blob([(x + s * w * .1, y - h * 1.1), (x + s * w * 1.1, y - h * .7), (x + s * w * 1.1, y + 4), (x + s * w * .2, y + 4)], lit, .9)
+    inner += blob([(x - s * w * 1.1, y - h * .2), (x - s * w * .3, y - h * .1), (x - s * w * .2, y + 4), (x - s * w * 1.1, y + 4)], NIGHT["stone_sh"])
+    return shape(pts, NIGHT["stone"], inner, w=4.4, seed=9520 + seed)
+
+
+def fire_scene(t, u=1.0, mode="wide"):
+    """Ночь у костра. Возвращает слои в мировых координатах и камеру режима (см. шапку раздела)."""
+    fl = light(t, u)
+    sky = '<rect x="-2600" y="-1600" width="6000" height="6000" fill="#05080f"/>' + _night_sky(-1400, -1200, 2600, HORIZON + 40, seed=1, clean=SKY_CLEAN)
+    b = []
+    # дальние ели по горизонту
+    r = rs(9400)
+    x = -1400.0
+    i = 0
+    while x < 2600:
+        h = r.uniform(260, 520)
+        w = r.uniform(110, 180)
+        b.append(_spruce(x, HORIZON + 20, h, w, NIGHT["tree_e"] if i % 3 else NIGHT["tree"], 100 + i))
+        x += r.uniform(110, 190)
+        i += 1
+    # ближние ели слева и справа (тёплая грань от огня)
+    for j, (x, h, w) in enumerate(((-560, 1100, 360), (-260, 900, 300), (1350, 1000, 340), (1650, 1200, 380))):
+        b.append(_spruce(x, HORIZON + 140, h, w, NIGHT["tree"], 200 + j, "#c88a52", .6 * u * fl))
+    # большое дерево справа: ствол и ветка над огнём (мешок висит в BRANCH)
+    from ink import band as _band
+    trunk = _band([(1080, HORIZON + 260), (1060, 700), (1070, 200), (1090, -300)], 120, 90, step=8)
+    tinner = blob([(1000, 1300), (1040, 1300), (1030, -300), (990, -300)], lib.mix(NIGHT["log"], NIGHT["log_lit"], .7 * u * fl), .9)
+    b.append(shape(trunk, NIGHT["log_sh"], tinner, w=5, seed=9411))
+    br = _band([(1060, 420), (900, 450), (BRANCH[0], BRANCH[1]), (520, 500), (420, 530)], 46, 14, step=6)
+    b.append(shape(br, NIGHT["log_sh"], blob([(1060, 440), (420, 545), (420, 560), (1060, 470)], lib.mix(NIGHT["log"], NIGHT["log_lit"], .5 * u * fl), .8),
+                   w=4.2, seed=9412))
+    for k_, (a, c) in enumerate((((860, 455), (820, 380)), ((620, 490), (590, 430)))):        # сучки
+        b.append(line([a, c], 9, NIGHT["log_sh"], taper=.5, wmin=.3, seed=9413 + k_))
+    # большой камень за спиной Димы (на нём растёт тень, s07)
+    sx, sy = STONE_SHADOW
+    sp = [(sx - 330, HORIZON + 420), (sx - 300, sy - 160), (sx - 120, sy - 300), (sx + 160, sy - 320), (sx + 300, sy - 200), (sx + 340, HORIZON + 420)]
+    lit = lib.mix(NIGHT["stone"], "#8a6248", clamp01(.75 * u * fl))
+    b.append(shape(sp, NIGHT["stone"], blob([(sx - 120, sy - 300), (sx + 160, sy - 320), (sx + 300, sy - 200), (sx + 340, HORIZON + 420), (sx - 200, HORIZON + 420),
+                                             (sx - 260, sy - 120)], lit, .95), w=5, seed=9420))
+    # земля и круг света: пятна по форме, края колышутся
+    g = [blob(rect_pts(-1400, HORIZON, 2600, 2600), NIGHT["ground"])]
+    g.append(blob(_jag(FIRE[0], FIRE[1] + 40, 1150, 330, t, 1, amp=.04, speed=.6), NIGHT["ground2"]))
+    if u > .02:
+        for j, (rx, ry, col) in enumerate(((900, 260, NIGHT["lit"][0]), (650, 190, NIGHT["lit"][1]), (420, 125, NIGHT["lit"][2]), (220, 66, NIGHT["lit"][3]))):
+            q = clamp01(u * 1.4 - j * .18)
+            if q <= .01:
+                continue
+            g.append(blob(_jag(FIRE[0], FIRE[1] + 10, rx * (.55 + .45 * q) * fl, ry * (.55 + .45 * q) * fl, t, 10 + j, amp=.07, speed=1.4)
+                          , col, .5 + .5 * q))
+    for j in range(9):      # травинки на краю света
+        gx = -300 + j * 170 + 40 * math.sin(j * 7)
+        g.append(line([(gx, 1560), (gx + 8, 1520), (gx + 14, 1500)], 4, "#2a3348", taper=.5, wmin=.3, seed=9430 + j))
+    # камни кругом огня: задние (до огня) и передние (после)
+    back, front = [], []
+    for j in range(9):
+        a = math.pi * (j / 9) * 2 + .3
+        cx, cy = FIRE[0] + 210 * math.cos(a), FIRE[1] + 40 + 62 * math.sin(a)
+        st = _stone(cx, cy, 46 - 6 * (j % 2), 38 + 6 * (j % 3), t, u, fl, j, side=FIRE[0] - cx)
+        (front if math.sin(a) > 0 else back).append((cy, st))
+    stones_back = "".join(s for _, s in sorted(back))
+    stones_front = "".join(s for _, s in sorted(front))
+    # бревно-сиденье слева: срез к огню светлее
+    lx, ly = LOG
+    lp = _band([(lx - 280, ly + 10), (lx, ly), (lx + 260, ly - 14)], 92, 84, step=8)
+    linner = blob([(lx - 300, ly - 50), (lx + 280, ly - 64), (lx + 280, ly - 30), (lx - 300, ly - 16)], lib.mix(NIGHT["log"], NIGHT["log_lit"], .6 * u * fl), .9)
+    linner += blob([(lx - 300, ly + 20), (lx + 280, ly + 6), (lx + 280, ly + 60), (lx - 300, ly + 60)], NIGHT["log_sh"])
+    for j in range(4):
+        linner += line([(lx - 240 + 130 * j, ly - 30), (lx - 200 + 130 * j, ly - 26)], 2.4, "#2a1a10", seed=9440 + j, op=.7)
+    log = shape(lp, NIGHT["log"], linner, w=5, seed=9445)
+    log += shape(ellipse_pts(lx + 262, ly - 14, 22, 44, 14), lib.mix("#7a5a3c", "#e0a060", .6 * u * fl),
+                 line([(lx + 262, ly - 30), (lx + 256, ly - 14), (lx + 264, ly + 2)], 2.2, "#4a3020", seed=9446), w=4, seed=9447)
+    fire = campfire(FIRE[0], FIRE[1], 1.0, u, t, seed=1) + _sparks(FIRE[0], FIRE[1] - 60, t, u, 12, 600, seed=1)
+    return dict(sky=sky, bg="".join(b), ground="".join(g), stones_back=stones_back, fire=fire, stones_front=stones_front, log=log, front="",
+                cam=FIRE_CAMS.get(mode, FIRE_CAMS["wide"]), light=fl)
