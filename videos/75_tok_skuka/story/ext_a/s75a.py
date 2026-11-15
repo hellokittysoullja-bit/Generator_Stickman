@@ -405,7 +405,7 @@ def s08(t):
     for j in range(4):
         ts = t_pe - .1 + j * .12
         u = clamp((t - ts) / .55)
-        if t < ts - .6 or u >= 1:
+        if t < ts - .6 or u >= 1 or t >= t_in:
             continue
         side = -1 if j % 2 == 0 else 1
         sx = bx + side * (520 + 60 * j)
