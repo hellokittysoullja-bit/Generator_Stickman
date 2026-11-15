@@ -184,7 +184,7 @@ def s09(t):
     ccy = cy + 6 * math.sin(t * 1.7) + 20 * kick
     set_ink(s)
     g = f'<g transform="{lib.cam(ccx, ccy, s, .3 * math.sin(t * .9))}">{"".join(world)}</g>'
-    return whip(g, t, T_A09 - .2, amp=420, blur=36, dur=.24, side=1), "#2a2030"
+    return whip(g, t, T_A09, amp=420, blur=36, dur=.24, side=1), "#2a2030"
 
 
 FRAMES["s09"] = s09
