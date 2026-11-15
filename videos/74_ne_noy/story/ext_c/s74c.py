@@ -415,7 +415,7 @@ def s17_cat(t):
     st = dict(PE.CAT_ST.get("warm74", dict(blink=.3, smile=1.0, flame_e=1.4)))
     st["perk"] = .8
     st["look"] = (.0 + .5 * sm(t, 25.55, 25.7) * (1 - sm(t, 26.2, 26.35)), .1 + .4 * sm(t, 25.55, 25.7) * (1 - sm(t, 26.2, 26.35)))
-    st["blink"] = .3 + .65 * bump(t, 24.95, .16) + .65 * bump(t, T_NOD + .05, .3)
+    st["blink"] = .06 + .9 * bump(t, 24.95, .16) + .65 * bump(t, T_NOD + .05, .3)
     st["tilt"] = 5 * math.sin(2 * math.pi * .45 * t) + damp(t, T_BR, 2.5, 3, 6) + 6 * bump(t, T_NOD - .05, .5)
     st["drop"] = PE.cat_nod(t, T_NOD, .45, .3) if hasattr(PE, "cat_nod") else .3 * bump(t, T_NOD, .45)
     st["ear"] = 3 * math.sin(t * 2.1) + damp(t, T_BR, 5, 4, 6)
@@ -451,7 +451,7 @@ def s17_floor(t):
     o.append(line([(-600, 1700), (1700, 1680)], 4, INK, taper=0, wmin=1, seed=7901))
     d = "".join(f"M{x} 1700L{x * 1.25 - 120:.0f} 2600" for x in range(-500, 1700, 170))
     o.append(f'<path d="{d}" stroke="#4e3424" stroke-width="3" opacity=".6" fill="none"/>')
-    o.append(f'<g transform="translate(790 1205) scale(1.3)">{PR.throne_drape(0, 0, 1.0, 0.0, 0.0, t, 0)}</g>')
+    o.append(f'<g transform="translate(820 985) scale(1.3)">{PR.throne_drape(0, 0, 1.0, 0.0, 0.0, t, 0)}</g>')
     o.append(PR.crown(230, 1790, 1.15, -62, shine=.25 + .25 * math.sin(t * 3), seed=1))
     return "".join(o)
 
@@ -463,10 +463,10 @@ def s17(t):
     # крекер: у груди → трещина → разлом, кусочки разлетаются и падают на колени
     crack = sm(t, T_BR - .2, T_BR - .02)
     bu = clamp((t - T_BR) / .45)
-    cy_u = 1222 + 66 * ease_in_(bu)
+    cy_u = 1222 + 24 * ease_in_(bu)
     ccx, ccy = cat_u(x, y, k, 836, cy_u - 4 * math.sin(t * 2.4) * (1 - bu))
     hide = tuple(i for i, ts in enumerate(T_STEPS) if t >= ts - .05)
-    cr = PR.cracker(ccx, ccy, k * .42, crack, bu, seed=CR_SEED, rot=-8 + 10 * bu, hide=hide)
+    cr = PR.cracker(ccx, ccy, k * .36, crack, bu, seed=CR_SEED, rot=-8 + 10 * bu, hide=hide)
     cr += PR.cracker_bits(ccx, ccy - 20, k * .6, clamp((t - T_BR) / .5), seed=CR_SEED, n=6) if T_BR < t < T_BR + .5 else ""
     over = paw_over(x, y, k, st, "r") + paw_over(x, y, k, st, "l") if t < T_BR + .25 else ""
     # кусочки на подлокотнике (верх подлокотника y≈1268 ед.), один улетает к зрителю
@@ -476,7 +476,7 @@ def s17(t):
         if t < ts - .05:
             continue
         bx, by = cat_u(x, y, k, SLOTS[i], 1262)
-        pop_ = PR.pop(t, ts - .05, .3, .25) if hasattr(PR, "pop") else 0.0
+        pop_ = .35 * bump(t, ts - .05, .22)
         if i == 2 and t > T_FLICK:
             q = clamp((t - T_FLICK) / .38)
             e = q * q
@@ -486,7 +486,7 @@ def s17(t):
             if q >= 1:
                 fly = ""
             continue
-        bits += PR.cracker_bit(bx, by, k * .62 * (1 + (pop_ if isinstance(pop_, float) else 0)), -10 + 14 * i, seed=CR_SEED + i)
+        bits += PR.cracker_bit(bx, by, k * .62 * (1 + pop_), -10 + 14 * i, seed=CR_SEED + i)
     sway = .5 * math.sin(2 * math.pi * .4 * t) + damp(t, T_BR, .5, 2.5, 5)
     world, (x, y, k), d = throne_world(t, "warm", st, None, sway, 0.0, 8.0, extra_front=bits, cat_extra=cr + over, floor=s17_floor(t))
     world = [R.warm_tint(w_, .5) if i == 1 else w_ for i, w_ in enumerate(world)]
