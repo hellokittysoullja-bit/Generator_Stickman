@@ -3286,3 +3286,467 @@ def cat_back74(x, y, k=1.0, t=0.0, turn=0.0):
             o.append(line([(sx * 100 + dx, 30 + 12 * j), (sx * 150 + dx, 26 + 14 * j + wv), (sx * 190 + dx, 30 + 18 * j + wv)], 1.6, "#cfcbe0", seed=7495 + j + 3 * sx,
                           op=.9))
     return f'<g transform="translate({x:.2f} {y:.2f}) scale({k:.4f})">{"".join(o)}</g>'
+
+
+# ═════════════════════════════ РИЛС 77 «СДВГ НЕ БЫВАЕТ?» (автор — группа B) ═════════════════════════════
+# Все люди рилса — отсюда, кот — только common/cat.py (cat_svg / cat_walk / cat_jump / cat_curl). Все смотрят вправо (flip=True — влево).
+# father(x, y, k, expr, pose, t, u, feet, ...) — ОТЕЦ ДИМЫ (новая фигура, who="father77"; старый "father" рилса 64 не трогаем):
+#   лицо из той же сетки, что у Димы (те же брови, нос, разрез глаз — родственное), но шире в челюсти; короткая стрижка с чубом,
+#   седые виски, густые усы, седая щетина, морщины на лбу и у глаз; рабочая рубашка в сине-зелёную клетку, рукава закатаны,
+#   предплечья голые; тёмные брюки. Шире Димы в плечах (рубашка ×1.12), выше (HEIGHT 1.04). (x, y) — таз, голова ≈ 300·k.
+#   expr — имя EXPR["father77"] или dict: shout (хук), tired (поворот), stunned (s06, очки сняты), ashamed (ладонь по лбу), strain
+#   (плечом в штору), surprised, joy (руки вверх), laugh (петля и фото), blow (дует на свечи), calm, proud, sad, look_up (s04: поднимает
+#   глаза). Ключи мимики поверх Диминых: glasses 0…1 — очки на носу; chub — дёрганье чуба (сила); mous — дёрганье усов (фаза ±1).
+#   pose — имя или (из, в) с u. Позы (POSE["fa_*"]): windup (кулак занесён высоко), slam (кулак на столе: кисть в "fist"),
+#   point (палец-копьё вперёд-вниз: кончик в "finger"), temple (кулак у виска), sit (сидит за столом, предплечья на крышке),
+#   slump (сидит, плечи вниз, руки на столе), blow (наклон к торту, руки на столе), brush (кисть у забора: "hold"), drop (кисть выпала,
+#   ладонь раскрыта), forehead (ладонь по лбу), bucket (сидит, локти на коленях), head_hands (голова в ладонях), handle (тянет ручку
+#   шторы вверх двумя руками: "hold"), shoulder (плечом в штору, руки упёрты), fall (падает вперёд, руки вперёд), screw (на табурете,
+#   отвёртка вверх: "hold"), arms_up (руки вверх), hug (ближняя рука за плечо соседа), slap (хохочет, ладонь хлопает по столу:
+#   "palm"), slap_up (ладонь занесена), glasses_off (снял очки, держит у груди: "hold"), hold_shelf (держит полку двумя руками).
+#   feet: None (по пояс), "stand", "sit" (на стуле/ведре — колени вперёд) или dict figure().
+#   Возвращает dict figure() + "hold" (точка в ближней ладони), "palm", "fist" (центр кулака), "finger" (кончик указательного).
+# father_shadow(x, y, k, pose, u, t, col, op) — тень отца на стене / с края (s04, s09): силуэт ЛИНИЕЙ (обводка без заливки, лёгкая
+#   полупрозрачная тень внутри op_fill), pose как у father; finger-кончик в "finger".
+# kid_dima(..., "scared77" | "flinch77") — маленький Дима (s02): испуган, не унижен.
+# Дима: dima(x, y, k, expr, pose) + позы POSE["di_*"]: brush (входит/красит кистью: "hold"), shelf (держит полку снизу двумя руками),
+#   hug (ближняя рука на плечо отца), slouch (сутулится под биркой: руки висят, плечи вниз), laugh (смеётся, рука к животу),
+#   walk_brush — = brush + walk_kw. Мимика EXPR["dima"]: tag77 (тяжесть), slouch77, paint77, proud77, laugh77, hold77.
+PAL["father77"] = dict(SKIN="#e3b08b", SKIN_SH="#c9926e", SKIN_SH2="#ad7a5a", HAIR="#4a3528", HAIR_SH="#2c1e16", HAIR_HI="#6c4f3c",
+                       GREY="#cfccd2", GREY_SH="#9d99a4",
+                       TOP="#4f8288", TOP_SH="#3c666c", TOP_SH2="#2e5156", FOLD="#22393d", STITCH="#e6dcc0", PLAID="#24414c", PLAID2="#e9dfc4",
+                       TEE="#f1ead8", TEE_SH="#d6ccb4",
+                       LEGS="#3b3b45", LEGS_SH="#2a2a32", LEGS_SEAM="#5a5a66", SHOE="#5a3e2c", SHOE_SH="#3f2b1e", SOLE="#2e231c", SOLE_SH="#1f1813",
+                       STRIPE="#a76a3e", NAIL="#efc9ad", FRAME="#3a2e28")
+HEIGHT["father77"] = 1.04
+HEADS64 = HEADS64 + ("father77",)
+FRIENDLIKE = FRIENDLIKE + ("father77",)
+FACES = FACES + ("father77",)
+FA_FACE = [(x * 1.04 + (6 + (y - 40) * .06 if y > 40 else 0) * (1 if x > 0 else -.4), y * 1.02 + (6 if y > 90 else 0)) for x, y in FACE]
+FA_HAIR = [(108, -70), (104, -104), (86, -128), (74, -156, 1), (44, -146), (22, -166, 1), (-6, -150), (-34, -164, 1), (-56, -146),
+           (-92, -150, 1), (-104, -122), (-124, -100), (-114, -76), (-120, -48, 1), (-102, -50), (-92, -70), (-64, -102), (-26, -118), (12, -124),
+           (30, -114, 1), (54, -124), (82, -112, 1), (100, -92), (108, -70, 1)]
+
+
+def _fa_mouth(expr):
+    """Рот отца (под усами): shout — широко открыт, видны нижние зубы и язык; strain — стиснутые зубы; laugh/joy — открыт смехом;
+    blow — губы трубочкой с надутыми щеками; остальное — dima_mouth."""
+    m = expr.get("mouth", "flat")
+    if m == "shout":
+        o_ = expr.get("open", 1.0)
+        dy = 26 * o_
+        pts = [(26, 88), (48, 84), (80, 84), (102, 86), (98, 100 + dy * .7), (82, 110 + dy), (52, 112 + dy), (30, 100 + dy * .7)]
+        inner = blob([(30, 100 + dy * .7), (100, 100 + dy * .7), (92, 106 + dy * .75), (36, 106 + dy * .75)], "#f2eadc")          # нижние зубы
+        inner += blob([(42, 110 + dy * .9), (66, 100 + dy * .75), (90, 108 + dy * .9), (74, 116 + dy), (52, 116 + dy)], "#c86b6b")
+        inner += blob([(24, 88), (104, 86), (100, 96), (28, 98)], "#3a1a20", .6)
+        return (shape(pts, "#5a2b33", inner, w=4.6, seed=7711)
+                + line([(18, 84), (14, 100), (20, 118)], 2.6, C["SKIN_SH2"], seed=7712, op=.85)
+                + line([(108, 80), (114, 98)], 2.4, C["SKIN_SH2"], seed=7713, op=.85))
+    if m == "strain":
+        pts = [(30, 90), (60, 86), (96, 90), (92, 106), (60, 110), (34, 104)]
+        inner = blob(pts, "#f2eadc") + line([(32, 98), (94, 98)], 1.8, "#9c8a84", seed=7714)
+        for i, x_ in enumerate((46, 60, 74, 86)):
+            inner += line([(x_, 90), (x_, 106)], 1.4, "#9c8a84", seed=7715 + i, op=.8)
+        return shape(pts, "#f2eadc", inner, w=4.4, seed=7719) + line([(24, 86), (22, 102)], 2.4, C["SKIN_SH2"], seed=7720, op=.8)
+    if m == "blow":
+        pf = expr.get("puff", 1.0)
+        o = blob(ellipse_pts(104, 54, 22 + 6 * pf, 24 + 6 * pf, 12), "#e98a86", .3 * pf) + blob(ellipse_pts(-2, 60, 36 + 8 * pf, 28, 12), "#e98a86", .25 * pf)
+        o += line([(-44, 30), (-52, 64), (-38, 96)], 2.6, C["SKIN_SH2"], seed=7721, op=.8 * pf)
+        o += shape(ellipse_pts(70, 100, 12, 10, 10), "#c86b6b", blob(ellipse_pts(70, 100, 6, 5, 8), "#3a1a20"), w=3.8, seed=7722)
+        return o
+    if m == "laugh":
+        o_ = expr.get("open", 1.0)
+        dy = 18 * o_
+        pts = [(22, 86), (50, 92), (80, 92), (106, 82), (100, 100 + dy * .6), (80, 112 + dy), (50, 112 + dy), (30, 100 + dy * .6)]
+        inner = blob([(24, 86), (106, 82), (102, 94), (28, 96)], "#f2eadc")
+        inner += blob([(44, 106 + dy * .8), (66, 100 + dy * .6), (90, 104 + dy * .8), (76, 114 + dy), (52, 114 + dy)], "#c86b6b")
+        return (shape(pts, "#5a2b33", inner, w=4.4, seed=7723) + line([(16, 80), (24, 88)], 2.6, seed=7724, op=.8)
+                + line([(108, 76), (114, 84)], 2.6, seed=7725, op=.8))
+    if m == "tired":
+        return line([(36, 100), (56, 94), (78, 94), (94, 102)], 4.6, seed=7726, peak=.5) + blob([(50, 104), (76, 104), (72, 110), (54, 110)], C["SKIN_SH"], .7)
+    e = dict(expr)
+    e["mouth"] = m
+    return f'<g transform="translate(2 6)">{dima_mouth(e)}</g>'
+
+
+def _fa_mustache(expr):
+    """Густые усы щёткой с проседью; mous ±1 — дёрнулись (кончики вверх-вниз), открытый рот поднимает их."""
+    mv = expr.get("mous", 0.0)
+    op_ = expr.get("open", 0.0) if expr.get("mouth") in ("shout", "laugh") else 0.0
+    up = -6 * op_
+    jt = 7 * mv
+    pts = [(10, 86 + jt * .6 + up), (8, 74 + up), (26, 62 + up), (48, 58 + up), (64, 66 + up), (80, 58 + up), (102, 60 + up), (120, 72 + up),
+           (122, 88 - jt * .8 + up), (106, 90 + up), (84, 84 + up), (64, 88 + up), (46, 84 + up), (24, 90 + up)]
+    inner = blob([(10, 80 + up), (122, 80 + up), (120, 92 + up), (12, 92 + up)], C["HAIR_SH"], .8)
+    for i, (a, b) in enumerate([((24, 66), (18, 84)), ((40, 62), (36, 84)), ((56, 64), (52, 84)), ((76, 62), (78, 84)), ((92, 62), (96, 84)),
+                                ((108, 66), (114, 84))]):
+        inner += line([(a[0], a[1] + up), (b[0], b[1] + up)], 2.0, C["GREY"] if i % 2 else C["HAIR_SH"], seed=7730 + i, op=.8)
+    return shape(fur(pts, depth=7, every=9, seed=7737), C["HAIR"], inner, w=4.4, seed=7738)
+
+
+def father_head(expr):
+    """Голова отца, 3/4 вправо: та же сетка, что у Димы (EYE_N/EYE_F, BROWS, нос), челюсть шире, щетина с проседью, морщины."""
+    hb = expr.get("chub", 0.0)
+    s = []
+    # затылок и висок: короткие, седые у уха
+    s.append(shape([(-60, -104), (-106, -84), (-130, -44), (-128, 0), (-112, 22), (-96, 10), (-90, -30), (-74, -70)], C["HAIR"],
+                   blob([(-136, -60), (-96, -60), (-96, 24), (-136, 24)], C["GREY"], .9) + line([(-118, -40), (-112, 0)], 1.8, C["GREY_SH"], seed=7740),
+                   w=4.6, seed=7741))
+    ear = [(-84, -16), (-108, -28), (-130, -6), (-128, 28), (-114, 54), (-92, 58), (-82, 46)]
+    s.append(shape(ear, C["SKIN"], blob([(-130, -6), (-128, 28), (-114, 54), (-114, 14)], C["SKIN_SH"], .9), w=4.8, seed=7742))
+    s.append(line([(-96, 36), (-118, 24), (-116, -2), (-100, -12)], 3.2, seed=7743))
+    inner = [blob([(-110, -130), (-36, -130), (-58, -40), (-54, 40), (-20, 140), (-110, 140)], C["SKIN_SH"], .95),
+             blob([(-60, -60), (-34, -66), (-40, -20), (-62, -10)], C["SKIN_SH2"], .5),
+             blob([(-20, 108), (40, 124), (100, 96), (116, 150), (-30, 150)], C["SKIN_SH"], .85),
+             blob([(-66, 64), (-20, 92), (30, 108), (84, 98), (112, 70), (118, 140), (-66, 140)], "#9a8a90", .45),     # синева щетины
+             blob(ellipse_pts(54, -10, 100, 62, 14), "#d9a08f", .3)]
+    rs = np.random.RandomState(77)
+    for _ in range(220):
+        x, y = rs.uniform(-64, 116), rs.uniform(60, 136)
+        if (x - 30) ** 2 / 100 ** 2 + (y - 60) ** 2 / 78 ** 2 > 1.0:
+            continue
+        inner.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{rs.uniform(1.1, 2.0):.1f}" fill="{"#5c4446" if rs.rand() < .55 else "#b9b4bc"}" opacity=".6"/>')
+    fl = expr.get("flush", 0.0)
+    if fl > .01:
+        inner.append(blob(ellipse_pts(30, 10, 150, 130, 16), "#e2493c", .45 * fl))
+    jd = 18 * expr.get("open", 0.0) if expr.get("mouth") in ("shout", "laugh") else 0.0      # челюсть опускается с открытым ртом
+    face = [(x_, y_ + jd * min(1.0, max(0.0, (y_ - 60) / 50))) for x_, y_ in FA_FACE]
+    s.append(shape(face, C["SKIN"], "".join(inner), w=5.8, seed=7744))
+    # морщины: лоб, у глаз, носогубные
+    fw = 1.0 + .8 * (expr.get("brows") in ("pinch", "up", "det"))
+    for i, yy in enumerate((-110, -124)):
+        s.append(line([(-30, yy + 6), (10, yy - 2), (60, yy), (96, yy + 6)], 2.2 * fw, C["SKIN_SH2"], seed=7745 + i, op=.75))
+    for i, (a, b) in enumerate((((128, -14), (142, -22)), ((128, 0), (142, 4)))):
+        s.append(line([a, b], 2.0, C["SKIN_SH2"], seed=7748 + i, op=.75))
+    s.append(line([(44, 58), (30, 82), (26, 104)], 2.6, C["SKIN_SH2"], seed=7750, op=.8))
+    s.append(line([(104, 60), (110, 84)], 2.2, C["SKIN_SH2"], seed=7751, op=.7))
+    s.append(line([(-66, 70), (-30, 108), (10, 126)], 2.4, C["SKIN_SH2"], seed=7752, op=.8))
+    s.append(eyes(expr, EYE_N, EYE_F, bags=expr.get("bags", True)))
+    br = expr.get("brows", "calm")
+    if isinstance(br, tuple):
+        A_, B_, u_ = BROWS[br[0]], BROWS[br[1]], br[2]
+        B = tuple([(p[0] + (q[0] - p[0]) * u_, p[1] + (q[1] - p[1]) * u_) for p, q in zip(A_[i], B_[i])] for i in (0, 1))
+    else:
+        B = BROWS[br]
+    s.append(line(B[0], 11, C["HAIR_SH"], seed=7753, peak=.4) + line(B[1], 9, C["HAIR_SH"], seed=7754, peak=.55))
+    s.append(line([(p[0], p[1] - 3) for p in B[0]], 2.0, C["GREY"], seed=7755, op=.6))
+    # нос — как у Димы, чуть крупнее
+    s.append(f'<g transform="translate(60 48) scale(1.12) translate(-60 -48)">'
+             + blob([(50, 30), (62, 58), (54, 66), (44, 56)], C["SKIN_SH"], .9)
+             + line([(58, 22), (76, 50), (72, 63), (58, 65)], 4.8, seed=7756, peak=.45) + line([(50, 58), (56, 63)], 2.4, seed=7757, op=.8) + '</g>')
+    s.append(_fa_mouth(expr))
+    s.append(_fa_mustache(expr))
+    if expr.get("glasses", 0.0) > .02:
+        g = expr["glasses"]
+        s.append(f'<g transform="translate(0 {10 + 16 * (1 - g):.1f})" opacity="{min(1.0, g * 1.5):.2f}">{_glasses64("rect", C["FRAME"], sd=7758, w=5.6)}</g>')
+    # волосы: короткая стрижка, чуб надо лбом дёргается (chub), седина на висках
+    hair = _bounce(FA_HAIR, hb * .8, y0=-110, k=40)
+    hin = blob([(-150, -170), (-30, -170), (-40, -120), (-80, -96), (-96, -40), (-150, -30)], C["HAIR_SH"], .9)
+    hin += blob([(0, -150), (50, -130), (90, -96), (60, -118)], C["HAIR_HI"], .8)
+    hin += blob([(-130, -100), (-96, -110), (-90, -50), (-124, -36)], C["GREY"], .85)
+    for i, st in enumerate([[(-10, -140), (-30, -116)], [(30, -130), (10, -106)], [(60, -114), (46, -96)], [(-60, -130), (-84, -110)]]):
+        hin += line(_bounce(st, hb * .8, y0=-110, k=40), 2.6, "#22160f", seed=7760 + i, op=.85)
+    hin += line([(-120, -80), (-104, -60)], 1.8, C["GREY_SH"], seed=7765, op=.8)
+    s.append(shape(hair, C["HAIR"], hin, w=5.2, seed=7766))
+    return "".join(s)
+
+
+def father_shirt_parts():
+    """Рабочая рубашка в клетку, шире в плечах: клетка рубашки бородача в своих цветах, распахнутый ворот с футболкой."""
+    back, torso, tip = plaid_parts()
+    torso += shape([(48, -430), (92, -416), (78, -360), (60, -370)], C["TEE"], blob([(48, -430), (92, -416), (80, -400)], C["TEE_SH"], .6), w=3.0, seed=7770)
+    wide = 'transform="translate(-6 0) scale(1.12 1)"'
+    return f'<g {wide}>{back}</g>', f'<g {wide}>{torso}</g>', f'<g {wide}>{tip}</g>'
+
+
+CLOTHES64["father77"] = father_shirt_parts
+_head64_77 = head64
+
+
+def head64(expr, style):        # noqa: F811 — тот же вызов, плюс голова отца рилса 77
+    if style == "father77":
+        return father_head(expr)
+    return _head64_77(expr, style)
+
+
+_sleeve_77 = sleeve
+
+
+def sleeve(S, E, Wr, far, seed, who):       # noqa: F811 — у отца рукав закатан выше локтя, предплечье голое, волоски
+    if who != "father77":
+        return _sleeve_77(S, E, Wr, far, seed, who)
+    S, E, Wr = np.array(S, float), np.array(E, float), np.array(Wr, float)
+
+    def fore_in(a, b, d, n):
+        o = blob([P(np.array(a) - n * 44), P(np.array(b) - n * 34), P(np.array(b) - n * 10), P(np.array(a) - n * 12)], far_c(C["SKIN_SH"], far), .8)
+        for j in range(4):
+            q = np.array(a) + (np.array(b) - np.array(a)) * (.25 + .15 * j) + n * (10 + 8 * (j % 2))
+            o += line([P(q), P(q + d * 14 + n * 4)], 1.4, far_c(C["SKIN_SH2"], far), seed=seed + 40 + j, op=.7)
+        return o
+
+    def up_in(a, b, d, n):
+        o = blob([P(np.array(a) - n * 64), P(np.array(b) - n * 54), P(np.array(b) - n * 14), P(np.array(a) - n * 18)], far_c(C["TOP_SH"], far), .85)
+        for j in range(3):
+            q0 = np.array(a) + (np.array(b) - np.array(a)) * (.2 + .28 * j)
+            o += line([P(q0 - n * 66), P(q0 + n * 66)], 5, far_c(C["PLAID"], far), seed=seed + 50 + j, op=.5)
+        o += line([P(np.array(a) + n * 20), P(np.array(b) + n * 20)], 5, far_c(C["PLAID"], far), seed=seed + 55, op=.45)
+        return o
+    s = [limb_band(E - (E - S) * .1, Wr, 100, 84, C["SKIN"], far, seed + 8, fore_in),
+         limb_band(S, E + (Wr - E) * .08, 140, 122, C["TOP"], far, seed + 7, up_in)]
+    d = (Wr - E) / np.linalg.norm(Wr - E)
+    c0 = E + d * 4
+    roll = band([P(c0 - d * 18), P(c0 + d * 28)], 134, 130, step=3, cap=False)
+    s.append(shape(roll, far_c(C["TOP_SH"], far), line([P(c0 + np.array([-d[1], d[0]]) * 60), P(c0 - np.array([-d[1], d[0]]) * 60)], 2.0,
+                                                        far_c(C["FOLD"], far), seed=seed + 21, op=.8), w=4.2, seed=seed + 20))
+    return "".join(s)
+
+
+EXPR["father77"] = {
+    "shout": {"brows": "pinch", "mouth": "shout", "open": 1.0, "lid": .8, "look": (.5, .45), "bags": False, "flush": .35},
+    "shout_kid": {"brows": "pinch", "mouth": "shout", "open": .8, "lid": .7, "look": (.4, .75), "bags": False, "flush": .3},
+    "hard": {"brows": "pinch", "mouth": "pressed", "lid": .55, "look": (.5, .3), "bags": False, "flush": .2},
+    "tired": {"brows": "sad", "mouth": "tired", "lid": .32, "look": (.3, .55)},
+    "look_up": {"brows": "sad", "mouth": "tired", "lid": .6, "look": (.35, -.15)},
+    "stunned": {"brows": "up", "mouth": "o", "open": .35, "lid": .95, "look": (.05, .1)},
+    "ashamed": {"brows": "sad", "mouth": "wobble", "closed": .85, "lid": .3, "look": (.2, .6)},
+    "sad": {"brows": "sad", "mouth": "tired", "lid": .2, "closed": .3, "look": (.1, .8)},
+    "strain": {"brows": "pinch", "mouth": "strain", "squeeze": 1.0, "bags": False, "flush": .55},
+    "surprised": {"brows": "up", "mouth": "o", "open": .6, "lid": 1.0, "look": (-.5, .3), "bags": False},
+    "joy": {"brows": "up", "mouth": "laugh", "open": .8, "lid": .75, "look": (.3, -.6), "bags": False},
+    "laugh": {"brows": "up", "mouth": "laugh", "open": 1.0, "laugh": 1.0, "bags": False},
+    "blow": {"brows": "up", "mouth": "blow", "puff": 1.0, "lid": .55, "look": (.6, .5)},
+    "calm": {"brows": "calm", "mouth": "smile", "smile": .5, "lid": .6, "look": (.5, .3), "bags": False},
+    "proud": {"brows": "up", "mouth": "smile", "smile": 1.0, "lid": .7, "look": (.4, -.2), "bags": False},
+    "busy": {"brows": "det", "mouth": "pressed", "lid": .55, "look": (.4, -.7), "bags": False},
+    "paint": {"brows": "calm", "mouth": "smile", "smile": .6, "lid": .55, "look": (.6, .2), "bags": False},
+}
+# поза: (наклон, голова, руки, кисти) в L-единицах отца от таза; кулак — пальцы до упора, большой поверх
+_FIST = {"kind": "fist"}
+_FA_P = {
+    "windup": (-.14, -.1, {"f": ("ik", (150, -230), -1), "n": ("ik", (-60, -820), 1)}, {"f": {"curl": (.5, .5, .55, .6), "thumb": .5}, "n": dict(_FIST, dir=(.2, -1))}),
+    "slam": (.26, .22, {"f": ("ik", (220, -210), -1), "n": ("ik", (380, -150), -1)}, {"f": {"curl": (.4, .4, .45, .5), "thumb": .4}, "n": dict(_FIST, dir=(.5, 1))}),
+    "point": (.2, .26, {"f": ("ik", (170, -230), -1), "n": ("ik", (440, -330), -1)},
+              {"f": {"curl": (.8, .85, .85, .85), "thumb": .7, "dir": (1, .5)}, "n": {"dir": (1, .35), "curl": (0, .95, .95, .92), "spread": .02, "thumb": .8}}),
+    "temple": (.02, .08, {"f": ("ik", (170, -230), -1), "n": ("ik", (-30, -640), 1)}, {"f": dict(_FIST, dir=(1, .4)), "n": dict(_FIST, dir=(.25, -1))}),
+    "sit": (.1, .1, {"f": ("ik", (200, -200), -1), "n": ("ik", (260, -195), -1)},
+            {"f": {"curl": (.4, .4, .45, .5), "thumb": .4}, "n": {"curl": (.35, .35, .4, .45), "thumb": .35, "dir": (1, .2)}}),
+    "slump": (.3, .34, {"f": ("ik", (210, -170), -1), "n": ("ik", (270, -165), -1)},
+              {"f": {"curl": (.3, .3, .35, .4), "thumb": .3}, "n": {"curl": (.3, .3, .35, .4), "thumb": .3, "dir": (1, .3)}}),
+    "blow": (.34, .2, {"f": ("ik", (230, -180), -1), "n": ("ik", (300, -175), -1)},
+             {"f": {"curl": (.3, .3, .35, .4), "thumb": .3}, "n": {"curl": (.2, .2, .25, .3), "thumb": .25, "dir": (1, .3)}}),
+    "brush": (.08, .04, {"f": ("ik", (160, -230), -1), "n": ("ik", (420, -360), -1)},
+              {"f": {"curl": (.45, .45, .5, .55), "thumb": .45}, "n": {"dir": (.3, -1), "curl": (.72, .76, .8, .8), "thumb": .7}}),
+    "drop": (.06, .14, {"f": ("ik", (160, -230), -1), "n": ("ik", (390, -300), -1)},
+             {"f": {"curl": (.45, .45, .5, .55), "thumb": .45}, "n": {"dir": (.8, .7), "curl": (.1, .1, .15, .2), "spread": .3, "thumb": .15}}),
+    "forehead": (-.06, -.22, {"f": ("ik", (170, -220), -1), "n": ("ik", (150, -660), 1)},
+                 {"f": {"curl": (.4, .4, .45, .5), "thumb": .4}, "n": {"dir": (.2, -1), "curl": (.1, .1, .15, .2), "spread": .12, "thumb": .2}}),
+    "bucket": (.34, .3, {"f": ("ik", (230, -110), -1), "n": ("ik", (300, -100), -1)},
+               {"f": {"curl": (.4, .4, .45, .5), "thumb": .4}, "n": {"curl": (.35, .35, .4, .45), "thumb": .35, "dir": (1, .5)}}),
+    "head_hands": (.42, .5, {"f": ("ik", (260, -470), 1), "n": ("ik", (300, -450), 1)},
+                   {"f": {"dir": (.3, -1), "curl": (.2, .2, .25, .3), "thumb": .3}, "n": {"dir": (-.2, -1), "curl": (.2, .2, .25, .3), "spread": .15, "thumb": .3}}),
+    "handle": (-.06, -.2, {"f": ("ik", (250, -790), 1), "n": ("ik", (330, -800), 1)},
+               {"f": dict(_FIST, dir=(1, 0)), "n": dict(_FIST, dir=(1, 0))}),
+    "shoulder": (.62, .22, {"f": ("ik", (560, -470), -1), "n": ("ik", (600, -330), -1)},
+                 {"f": {"dir": (.1, -1), "curl": (.15, .15, .2, .25), "spread": .2, "thumb": .2}, "n": {"dir": (.2, -1), "curl": (.1, .1, .15, .2), "spread": .2, "thumb": .2}}),
+    "fall": (.85, .1, {"f": ("ik", (470, -230), -1), "n": ("ik", (520, -170), -1)},
+             {"f": {"dir": (1, .3), "curl": (.1, .1, .15, .2), "spread": .3, "thumb": .15}, "n": {"dir": (1, .4), "curl": (.1, .1, .15, .2), "spread": .3, "thumb": .15}}),
+    "screw": (-.06, -.24, {"f": ("ik", (330, -640), 1), "n": ("ik", (310, -760), 1)},
+              {"f": {"dir": (1, -.4), "curl": (.15, .15, .2, .25), "spread": .15, "thumb": .2}, "n": {"dir": (.4, -1), "curl": (.75, .8, .82, .82), "thumb": .7}}),
+    "arms_up": (-.1, -.28, {"f": ("ik", (60, -930), 1), "n": ("ik", (260, -900), 1)},
+                {"f": {"dir": (0, -1), "curl": (.1, .1, .15, .2), "spread": .35, "thumb": .15}, "n": {"dir": (.2, -1), "curl": (.1, .1, .15, .2), "spread": .35, "thumb": .15}}),
+    "hug": (.02, .04, {"f": ("ang", 0.2, 0.25), "n": ("ik", (330, -420), -1)},
+            {"n": {"dir": (1, .4), "curl": (.35, .4, .45, .5), "thumb": .3}}),
+    "slap": (-.16, -.34, {"f": ("ik", (150, -260), -1), "n": ("ik", (380, -165), -1)},
+             {"f": {"dir": (.6, .8), "curl": (.3, .3, .35, .4), "thumb": .3}, "n": {"dir": (1, .25), "curl": (.05, .05, .1, .12), "spread": .25, "thumb": .15}}),
+    "slap_up": (-.2, -.4, {"f": ("ik", (150, -260), -1), "n": ("ik", (330, -420), -1)},
+                {"f": {"dir": (.6, .8), "curl": (.3, .3, .35, .4), "thumb": .3}, "n": {"dir": (1, -.4), "curl": (.05, .05, .1, .12), "spread": .25, "thumb": .15}}),
+    "glasses_off": (.06, .14, {"f": ("ik", (200, -200), -1), "n": ("ik", (250, -330), -1)},
+                    {"f": {"curl": (.4, .4, .45, .5), "thumb": .4}, "n": {"dir": (.4, -1), "curl": (.6, .65, .7, .72), "thumb": .7}}),
+    "hold_shelf": (-.04, -.2, {"f": ("ik", (280, -720), 1), "n": ("ik", (400, -730), 1)},
+                   {"f": {"dir": (1, -.2), "curl": (.5, .55, .6, .6), "thumb": .5}, "n": {"dir": (1, -.2), "curl": (.5, .55, .6, .6), "thumb": .5}}),
+}
+POSE.update({"fa_" + k_: v_ for k_, v_ in _FA_P.items()})
+# позы с кистью у лица: цель запястья — смещение от центра головы (в L·scale) и сторона локтя
+_FA_HEAD = {"temple": {"n": ((-80, 30), 1)}, "forehead": {"n": ((40, 30), -1)},
+            "head_hands": {"n": ((90, 190), -1), "f": ((0, 200), -1)}}
+_FA_BEHIND = ("windup", "handle", "screw", "arms_up", "hold_shelf")
+_FA_EXPR = {"windup": "shout", "slam": "shout", "point": "shout_kid", "temple": "hard", "sit": "tired", "slump": "tired", "blow": "blow",
+            "brush": "paint", "drop": "sad", "forehead": "ashamed", "bucket": "sad", "head_hands": "sad", "handle": "strain", "shoulder": "strain",
+            "fall": "surprised", "screw": "busy", "arms_up": "joy", "hug": "proud", "slap": "laugh", "slap_up": "laugh", "glasses_off": "stunned",
+            "hold_shelf": "busy"}
+
+
+def fist_svg(who, Wr, d, k=1.0, flip=1, seed=7790, far=False):
+    """Сжатый кулак (тыльной стороной к зрителю): кисть-брусок, четыре согнутых пальца с костяшками на торце, большой палец поверх
+    средних фаланг. Wr — запястье (мир), d — от запястья к костяшкам, k — масштаб (1 = голова 300), flip — сторона большого пальца."""
+    global C
+    C = PAL[who]
+    d = np.array(d, float)
+    d /= np.linalg.norm(d) + 1e-9
+    ang = math.degrees(math.atan2(d[1], d[0]))
+    sk, sh, sh2 = (far_c(C["SKIN"], far), far_c(C["SKIN_SH"], far), C["SKIN_SH2"])
+
+    def Q(a, b):
+        return (float(a), float(b * flip))
+    o = []
+    # согнутые пальцы: четыре валика на торце кулака
+    for j, (b0, b1) in enumerate(((-40, -20), (-20, 0), (0, 20), (20, 38))):
+        bc = (b0 + b1) / 2
+        pts = [Q(58, b0 + 1), Q(92, b0), Q(106, bc - 6), Q(108, bc), Q(106, bc + 6), Q(92, b1), Q(58, b1 - 1)]
+        o.append(shape(pts, sk, line([Q(84, b0 + 3), Q(86, b1 - 3)], 1.6, sh2, seed=seed + 10 + j, op=.7), w=3.6, seed=seed + j))
+    pp = [Q(-6, -34), Q(30, -42), Q(64, -42), Q(80, -36), Q(84, -10), Q(84, 16), Q(80, 38), Q(60, 42), Q(28, 40), Q(-6, 34)]
+    knuck = "".join(line([Q(80, b - 7), Q(86, b), Q(80, b + 7)], 1.8, sh2, seed=seed + 20 + i, op=.75) for i, b in enumerate((-30, -10, 10, 29)))
+    o.append(shape(pp, sk, blob([pp[6], pp[7], pp[8], pp[9], Q(-6, 14), Q(70, 22)], sh, .55) + knuck, w=4.4, seed=seed + 5))
+    # большой палец поверх согнутых пальцев
+    o.append(shape(lib.band([Q(14, -40), Q(48, -40), Q(74, -26), Q(86, -10)], 30, 22, step=3), sk,
+                   blob([Q(20, -34), Q(70, -24), Q(80, -12), Q(40, -30)], sh, .5) + blob(ellipse_pts(*Q(84, -12), 7, 6, 8), C["NAIL"], .9),
+                   w=4.0, seed=seed + 6))
+    return f'<g transform="translate({Wr[0]:.2f} {Wr[1]:.2f}) rotate({ang:.2f}) scale({k:.4f})">{"".join(o)}</g>'
+
+
+def sit_feet(x, y, k, who="father77", ground=300.0, fwd=250.0):
+    """Сидит на стуле/ведре: колени вперёд, стопы на полу ground·sc ниже таза."""
+    sc = k * HEIGHT.get(who, 1.0)
+    return {"n": ((x + fwd * sc, y + ground * sc), 0.0), "f": ((x + (fwd - 50) * sc, y + (ground + 6) * sc), 0.0)}
+
+
+def father(x, y, k, expr=None, pose="sit", t=0.0, u=1.0, feet=None, flip=False, head_add=0.0, lean_add=0.0, arms=None, hands=None, layers=None,
+           breath=True, **ex_over):
+    """Отец Димы. pose — имя (без «fa_») или (из, в) с u; expr — имя/словарь (по умолчанию — мимика позы); ex_over — правка ключей мимики
+    (look=…, chub=…, mous=…, glasses=…). Возвращает dict figure() + hold, palm, fist, finger."""
+    if isinstance(pose, (tuple, list)):
+        name = pose[1] if u > .5 else pose[0]
+        pk = mix_pose("fa_" + pose[0], "fa_" + pose[1], u, x, y, k, "father77")
+    else:
+        name = pose
+        pk = pose_kw("fa_" + pose, x, y, k, "father77")
+    if isinstance(expr, dict):
+        ex = dict(expr)
+    else:
+        ex = dict(EXPR["father77"][expr or _FA_EXPR.get(name, "calm")])
+    ex.update(ex_over)
+    if feet == "stand":
+        ft = stand_kw(x, y, k, "father77", spread=80)["feet"]
+    elif feet == "sit":
+        ft = sit_feet(x, y, k)
+    else:
+        ft = feet
+    br = .012 * math.sin(t * 2 * math.pi / 3.6) if breath else 0.0
+    if arms:
+        pk["arms"] = dict(pk["arms"], **arms)
+    if hands:
+        pk["hands"] = dict(pk["hands"], **hands)
+    lay = layers
+    hd_rel = _FA_HEAD.get(name)
+    if hd_rel:      # цели кистей у лица — от настоящего положения головы (наклон меняет её место)
+        pre = figure("father77", x, y, k, ex, lean=pk["lean"] + lean_add + br, head_ang=pk["head_ang"] + head_add, arms=pk["arms"], hands=pk["hands"],
+                     feet=ft, layers=("body",))
+        hx_, hy_ = pre["head"]
+        scl = pre["scale"]
+        wv = u if isinstance(pose, (tuple, list)) and pose[1] == name else (1 - u if isinstance(pose, (tuple, list)) else 1.0)
+        for side, (off, sd_) in hd_rel.items():
+            a_ = pk["arms"][side]
+            tgt = (hx_ + off[0] * scl, hy_ + off[1] * scl)
+            if a_[0] == "ik" and wv < 1:
+                tgt = (a_[1][0] + (tgt[0] - a_[1][0]) * wv, a_[1][1] + (tgt[1] - a_[1][1]) * wv)
+            pk["arms"] = dict(pk["arms"], **{side: ("ik", tgt, sd_)})
+    fists = {sd: pk["hands"][sd] for sd in ("n", "f") if (pk["hands"].get(sd) or {}).get("kind") == "fist"}
+    hands_ = dict(pk["hands"])
+    for sd in fists:
+        hands_[sd] = {"kind": "none"}
+    fkw = dict(lean=pk["lean"] + lean_add + br, head_ang=pk["head_ang"] + head_add, arms=pk["arms"], hands=hands_, feet=ft, flip=flip)
+    behind = name in _FA_BEHIND and lay is None
+    fig = figure("father77", x, y, k, ex, layers=("legs", "pelvis", "arm_f", "arm_n") if behind else lay, **fkw)
+    for sd, hs in fists.items():      # кулак — поверх своей руки (дальний кулак в позах всегда перед телом)
+        w_ = np.array(fig["wrist"][sd])
+        e_ = np.array(fig["elbow"][sd])
+        dd = np.array(hs.get("dir") or (w_ - e_), float)
+        if flip and hs.get("dir"):
+            dd[0] = -dd[0]
+        fig["svg"] += fist_svg("father77", w_, dd, k=fig["scale"] * 1.12, flip=-1 if flip else 1, seed=7790 + (0 if sd == "n" else 30), far=sd == "f")
+        fig.setdefault("fists", {})[sd] = tuple(map(float, w_ + dd / (np.linalg.norm(dd) + 1e-9) * 60 * fig["scale"]))
+    if behind:      # рука за головой: тело и голова поверх руки и кулака
+        fig["svg"] += figure("father77", x, y, k, ex, layers=("body",), **fkw)["svg"]
+    fig["hold"] = hand_pos(fig, "n", 70)
+    fig["palm"] = hand_pos(fig, "n", 55)
+    fig["fist"] = fig.get("fists", {}).get("n") or hand_pos(fig, "n", 45)
+    w = np.array(fig["wrist"]["n"])
+    hd = (pk["hands"].get("n") or {}).get("dir")
+    if hd is None:
+        e = np.array(fig["elbow"]["n"])
+        hd = (w - e)
+    hd = np.array(hd, float)
+    if flip:
+        hd[0] = -hd[0]
+    hd /= np.linalg.norm(hd) + 1e-9
+    fig["finger"] = tuple(map(float, w + hd * 150 * fig["scale"]))
+    fig["dir_n"] = tuple(map(float, hd))
+    return fig
+
+
+def father_shadow(x, y, k, pose="point", u=1.0, t=0.0, col="#0b0e1c", op=.9, op_fill=.18, w=6.0, flip=False, blur_sd=0.0):
+    """Тень отца силуэтом ЛИНИЕЙ: фигура рисуется одним цветом (контур — тушь цвета col, заливка — полупрозрачный col).
+    Делается фильтром: альфа рисунка → морфологическая обводка; внутренние линии (лицо, клетка) не видны."""
+    fig = father(x, y, k, "hard", pose, t, u, feet="stand", flip=flip)
+    fid = lib.uid("fsh")
+    ww = max(1.0, w)
+    lib.DEFS.append(f'<filter id="{fid}" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">'
+                    f'<feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 30 0" result="a"/>'
+                    f'<feMorphology in="a" operator="dilate" radius="{ww / 2:.1f}" result="d"/>'
+                    f'<feMorphology in="a" operator="erode" radius="{ww / 2:.1f}" result="e"/>'
+                    f'<feComposite in="d" in2="e" operator="out" result="ring0"/><feGaussianBlur in="ring0" stdDeviation=".9" result="ring"/>'
+                    f'<feFlood flood-color="{col}" flood-opacity="{op:.3f}" result="c1"/><feComposite in="c1" in2="ring" operator="in" result="r1"/>'
+                    f'<feFlood flood-color="{col}" flood-opacity="{op_fill:.3f}" result="c2"/><feComposite in="c2" in2="e" operator="in" result="r2"/>'
+                    + (f'<feGaussianBlur in="r2" stdDeviation="{blur_sd:.1f}" result="r2"/>' if blur_sd > 0 else '')
+                    + '<feMerge><feMergeNode in="r2"/><feMergeNode in="r1"/></feMerge></filter>')
+    fig["svg"] = f'<g filter="url(#{fid})">{fig["svg"]}</g>'
+    return fig
+
+
+# ─── маленький Дима (s02) и взрослый Дима рилса 77 ───
+EXPR["kid2"].update({
+    "scared77": {"brows": "worry", "mouth": "o", "open": .35, "lid": 1.0, "look": (.5, -.7)},
+    "flinch77": {"brows": "worry", "mouth": "wobble", "squeeze": 1.0},
+})
+EXPR["dima"].update({
+    "tag77": {"brows": "sad", "mouth": "frown", "lid": .4, "look": (.4, .6)},
+    "slouch77": {"brows": "sad", "mouth": "wobble", "lid": .25, "look": (.2, .8)},
+    "paint77": {"brows": "calm", "mouth": "smile", "smile": .7, "lid": .6, "look": (.6, .2), "bags": False},
+    "glance77": {"brows": "up", "mouth": "smile", "smile": 1.0, "lid": .7, "look": (-.7, -.2), "bags": False},
+    "proud77": {"brows": "up", "mouth": "grin", "open": .5, "lid": .75, "look": (-.5, -.3), "bags": False},
+    "laugh77": {"brows": "up", "mouth": "laugh", "open": 1.0, "laugh": 1.0, "bags": False},
+    "hold77": {"brows": "det", "mouth": "pressed", "lid": .6, "look": (.4, -.7), "bags": False},
+    "look77": {"brows": "worry", "mouth": "flat", "lid": .75, "look": (-.6, -.2)},
+})
+POSE.update({
+    "di_brush": (.06, .02, {"f": ("ik", (160, -230), -1), "n": ("ik", (400, -330), -1)},
+                 {"f": {"curl": (.45, .45, .5, .55), "thumb": .45}, "n": {"dir": (.3, -1), "curl": (.72, .76, .8, .8), "thumb": .7}}),
+    "di_shelf": (-.04, -.2, {"f": ("ik", (260, -700), 1), "n": ("ik", (380, -710), 1)},
+                 {"f": {"dir": (.3, -1), "curl": (.2, .2, .25, .3), "spread": .2, "thumb": .25}, "n": {"dir": (.3, -1), "curl": (.2, .2, .25, .3), "spread": .2, "thumb": .25}}),
+    "di_hug": (-.02, -.06, {"f": ("ang", 0.2, 0.25), "n": ("ik", (330, -470), -1)},
+               {"n": {"dir": (1, .5), "curl": (.35, .4, .45, .5), "thumb": .3}}),
+    "di_slouch": (.22, .45, {"f": ("ang", 0.08, 0.06), "n": ("ang", -0.02, 0.08)},
+                  {"f": {"curl": (.4, .4, .45, .5), "thumb": .4}, "n": {"curl": (.4, .4, .45, .5), "thumb": .4}}),
+    "di_stand": (0.0, 0.0, {"f": ("ang", 0.16, 0.16), "n": ("ang", -0.08, 0.22)},
+                 {"f": {"curl": (.35, .35, .4, .45), "thumb": .35}, "n": {"curl": (.35, .35, .4, .45), "thumb": .35}}),
+    "di_laugh": (-.12, -.3, {"f": ("ik", (150, -260), -1), "n": ("ik", (250, -240), -1)},
+                 {"f": {"dir": (.6, .8), "curl": (.3, .3, .35, .4), "thumb": .3}, "n": {"dir": (-.3, .9), "curl": (.2, .2, .25, .3), "spread": .15, "thumb": .2}}),
+})
+
+
+def dima77(x, y, k, expr="paint77", pose="di_stand", t=0.0, u=1.0, feet=None, flip=False, **kw):
+    """Взрослый Дима рилса 77: pose — имя POSE (di_*) или (из, в) с u; feet как у father. Возвращает figure() + hold/palm."""
+    if isinstance(pose, (tuple, list)):
+        pk = mix_pose(pose[0], pose[1], u, x, y, k, "dima")
+    else:
+        pk = pose_kw(pose, x, y, k, "dima")
+    ex = dict(EXPR["dima"][expr]) if isinstance(expr, str) else dict(expr)
+    ft = stand_kw(x, y, k, "dima")["feet"] if feet == "stand" else feet
+    br = .012 * math.sin(t * 2 * math.pi / 3.3 + 1.0)
+    arms = dict(pk["arms"], **kw.pop("arms", {}))
+    hands = dict(pk["hands"], **kw.pop("hands", {}))
+    fig = figure("dima", x, y, k, ex, lean=pk["lean"] + kw.pop("lean_add", 0.0) + br, head_ang=pk["head_ang"] + kw.pop("head_add", 0.0), arms=arms,
+                 hands=hands, feet=ft, flip=flip, **kw)
+    fig["hold"] = hand_pos(fig, "n", 70)
+    fig["palm"] = hand_pos(fig, "n", 55)
+    return fig
