@@ -171,3 +171,166 @@ def s14(t):
 
 
 FRAMES["s14"] = s14
+
+
+# ═════════════════════════ s13: кусочек, одно слово, крышка банки слетает сама ═════════════════════════
+T_A13 = 18.55
+T_OKAZ, T_CHTO, T_MOZH = wt(47), wt(48), wt(50)     # 18.59, 19.14, 19.42
+DS13 = .92
+CAT13 = (800.0, R.DESK_TOP - 52)
+CAT13_K = .85
+JAR13 = (982.0, R.DESK_TOP - 62)
+JAR13_K = .74
+BIT_Y = R.DESK_TOP - 30
+T_PICK, T_MOUTH, T_BACK = T_OKAZ + .03, T_OKAZ + .25, T_OKAZ + .45     # берёт кусочек, у рта, руки снова на телефоне
+
+
+def bit_x(t):
+    """Кусочек крекера: кот толкает носом двумя толчками к руке Димы."""
+    x = 718.0
+    for t0, dx in ((18.30, -22.0), (18.46, -26.0)):
+        x += dx * ease_out(clamp((t - t0) / .12), 2)
+    return x
+
+
+def cat13(t):
+    st = dict(people.CAT_ST["warm74"])
+    nudge = bump(t, 18.27, .2) + bump(t, 18.43, .2)
+    low = 1 - sm(t, 18.58, 18.8)                    # голова опущена к кусочку, затем поднимается — смотрит на Диму
+    st.update(turn=-.6, look=(lerp(-.6, -.85, 1 - low), lerp(.6, -.1, 1 - low)), drop=.85 * low + .2 * nudge, rot=-13 * low - 6 * nudge,
+              tilt=-6 * low + 3 * math.sin(t * 1.7), tail=-6 + 7 * math.sin(t * 2.2), ear=2 * math.sin(t * 3.3),
+              blink=blinks(t, (19.55,)), flame_e=1.1 + .7 * bump(t, T_MOZH, .5))
+    return st
+
+
+def s13(t):
+    nd = R.night_desk(t, "lamp", "mid")
+    hx, hy = nd["sit"]
+    fkw = dict(people.sit_kw(hx, hy, DS13))
+    bx = bit_x(t)
+    # руки: телефон у груди → ближняя кисть берёт кусочек → ко рту → обратно к телефону, печатает одно слово
+    pick = sm(t, T_PICK - .1, T_PICK + .08)
+    tomouth = sm(t, T_PICK + .08, T_MOUTH)
+    back = sm(t, T_MOUTH + .1, T_BACK)
+    eat_phase = pick > 0 and back < 1
+    mouth_kw = people.pose_kw("eat74", hx, hy, DS13)
+    Wm = mouth_kw["arms"]["n"][1]
+    Wbit = (bx - 34, BIT_Y - 18)
+    chest_kw = people.pose_kw("phone_chest74", hx, hy, DS13)
+    Wc = chest_kw["arms"]["n"][1]
+    Wn = lerp2(lerp2(lerp2(Wc, Wbit, pick), Wm, tomouth), Wc, back)
+    # мимика
+    if t < T_PICK + .05:
+        e = dict(people.EXPR["dima"]["screen74"], look=(.6, .6), bags=False)
+    elif t < T_BACK + .1:
+        e = dict(people.EXPR["dima"]["chew74"], bags=False)
+        e["mouth"] = "flat" if t < T_MOUTH else ("o" if int(t * 12) % 2 else "flat")
+        e["open"] = .12
+    elif t < T_MOZH:
+        e = dict(people.EXPR["dima"]["screen74"], look=(.55, .55), lid=.62, bags=False)
+    else:
+        e = dict(people.EXPR["dima"]["type_up74"])
+        e["look"] = (.75, .3) if t < T_MOZH + .35 else (.5, .5)
+    e["closed"] = blinks(t, (18.42, 19.9))
+    lean = .02 * math.sin(t * 2.1) + .05 * sm(t, T_MOZH, T_MOZH + .25)
+    head = .02 * math.sin(t * 1.6) + .06 * tomouth * (1 - back) - .05 * sm(t, T_MOZH, T_MOZH + .3)
+    legs = people.dima(hx, hy, DS13, e, "phone_chest74", layers=("legs",), **fkw)["svg"]
+    if eat_phase:
+        u = tomouth * (1 - back)
+        arms = {"n": ("ik", Wn, -1)}
+        hands = {"n": {"dir": lerp2((1, .4), (.3, -1), u), "curl": (.55, .6, .7, .75), "thumb": .7}}
+        body = people.dima(hx, hy, DS13, e, "phone_chest74", u_pose=("eat74", u), layers=("pelvis", "arm_f", "body"), arms=arms, hands=hands,
+                           lean_add=lean, head_add=head, **fkw)
+        arm = people.dima(hx, hy, DS13, e, "phone_chest74", u_pose=("eat74", u), layers=("arm_n",), arms=arms, hands=hands, lean_add=lean,
+                          head_add=head, **fkw)
+        pf = people.hand_pos(body, "f", 55)
+        phone = people.mobilnik(pf[0] + 18 * DS13, pf[1] - 30 * DS13, 1.45 * DS13, -12, seed=952)
+        body_svg = body["svg"] + phone
+        arm_svg = arm["svg"]
+        wrist_n = arm["wrist"]["n"]
+        bit_hand = people.hand_pos(arm, "n", 62) if pick > .6 and t < T_MOUTH + .02 else None
+    else:
+        typing = sm(t, T_BACK - .05, T_BACK + .05) * (1 - sm(t, T_CHTO + .22, T_CHTO + .3))
+        fig = people.dima_phone(hx, hy, DS13, e, "phone_chest74", thumb=typing, t=t, layers_body=("pelvis", "arm_f", "body"), lean_add=lean,
+                                head_add=head, **fkw)
+        body_svg, arm_svg = fig["svg"], ""
+        wrist_n = fig["wrist"]["n"]
+        bit_hand = None
+    # кусочек крекера: на столе → в руке → съеден
+    if pick < .6:
+        bit = PR.cracker_bit(bx, BIT_Y, .7, rot=-20 + 40 * (bx - 718) / 48, seed=3)
+    elif bit_hand is not None:
+        bit = PR.cracker_bit(bit_hand[0], bit_hand[1], .7, rot=20, seed=3)
+    else:
+        bit = ""
+    crumbs = ""
+    if T_MOUTH < t < T_MOUTH + .35:
+        hd = people.dima(hx, hy, DS13, e, "phone_chest74", layers=("legs",), **fkw)["head"]
+        q = (t - T_MOUTH) / .35
+        for j in range(4):
+            crumbs += blob(ellipse_pts(hd[0] + 70 + 14 * j, hd[1] + 90 + 140 * q * q + 10 * j, 4, 3, 6), PR.C_CRACKER, 1 - q)
+    # кот: толкает кусочек носом, «что мы» кладёт левую (от зрителя) переднюю лапу на ближнее запястье, вторая на столе
+    st = cat13(t)
+    cx, cy = CAT13
+    reach = sm(t, T_CHTO - .02, T_CHTO + .2) * (1 - sm(t, 19.85, 20.15))
+    if reach > .01:
+        tgt = (wrist_n[0] + 8, wrist_n[1] - 10)
+        pw = max(.05, (cy - tgt[1]) / (150 * CAT13_K))
+        dxw = max(10.0, ((cx - tgt[0]) / CAT13_K - 25) / (1.6 * pw))
+        st.update(paw_l=pw * reach, paw_l_dx=dxw, turn=lerp(st["turn"], -.85, reach), look=(-.9, lerp(st["look"][1], .2, reach)))
+    cat = CAT.draw(cx, cy, CAT13_K, st, t)
+    if reach > .05:
+        sh_ = (cx + (-25 + 4) * CAT13_K, cy + (1238 - CAT.CBOT) * CAT13_K)
+        tip_ = people.cat_paw_tip(cx, cy, CAT13_K, st, side="l")
+        cat += people.cat_forearm(sh_, tip_, k=.6 * CAT13_K, seed=13)
+        cat += blob(ellipse_pts(sh_[0] + 6 * CAT13_K, sh_[1], 30 * CAT13_K, 26 * CAT13_K, 14), CAT.CAT)
+    flx, fly = flame_world(cx, cy, CAT13_K, st["tail"])
+    cat = blob(ellipse_pts(cx, cy + 4, 130 * CAT13_K, 12, 16), "#2a1a12", .25) + cat + PR.glow(flx, fly - 30, 70, .3 + .3 * bump(t, T_MOZH, .5), "#ffb347")
+    # банка: закрыта, на «можем» крышка сама слетает с пружинкой
+    pre = bump(t, T_MOZH - .12, .12)          # крышка вздрагивает перед щелчком
+    jx, jy, jk = JAR13[0], JAR13[1], JAR13_K
+    closed = PR.jar(jx, jy, jk, 0, 6 * pre, 0.0, .5 * pre, seed=2, t=t)
+    cut = jy - 247 * jk                        # граница горлышка и крышки (общий рисунок props.jar разрезан клипом)
+    cb = lib.clip_rect(jx - 300, cut, 600, 600)
+    jar = f'<g clip-path="url(#{cb})">{closed}</g>'
+    q = clamp((t - (T_MOZH - .01)) / .62)      # крышка: щелчок вверх дугой, кувырок, падает на стол перед банкой и подпрыгивает
+    if q <= 0:
+        cl = lib.clip_rect(jx - 300, cut - 300, 600, 300)
+        jar += f'<g clip-path="url(#{cl})">{closed}</g>'
+    else:
+        land = (jx - 105, R.DESK_TOP - 6)
+        lid0 = (jx, cut - 14 * jk)
+        qq = min(q, 1.0)
+        px = lerp(lid0[0], land[0], ease_out(qq, 1.3))
+        py = lerp(lid0[1], land[1], qq) - 260 * math.sin(math.pi * qq) * (1 - .3 * qq)
+        py += PR.hop(t, T_MOZH + .61, 22, .2)
+        rot_ = -360 * ease_out(qq, 1.6)
+        cl = lib.clip_rect(jx - 300, cut - 300, 600, 300)
+        lid_g = f'<g clip-path="url(#{cl})">{closed}</g>'
+        jar += f'<g transform="translate({px - lid0[0]:.2f} {py - lid0[1]:.2f}) rotate({rot_:.2f} {lid0[0]:.2f} {lid0[1]:.2f})">{lid_g}</g>'
+    lx, ly = PR.jar_lid_c(JAR13[0], JAR13[1], JAR13_K)
+    pop_ = ""
+    pu = bump(t, T_MOZH, .3)
+    if pu > .01:      # штрихи щелчка
+        for j, a in enumerate((-150, -110, -70, -30)):
+            ar = math.radians(a)
+            r0, r1 = 60 + 30 * pu, 90 + 70 * pu
+            pop_ += line([(lx + r0 * math.cos(ar), ly - 20 + r0 * math.sin(ar)), (lx + r1 * math.cos(ar), ly - 20 + r1 * math.sin(ar))], 5, lib.INK,
+                         taper=.7, wmin=.1, seed=7490 + j, op=pu)
+    # свет экрана на лице (тёплый, приглушённый — горит лампа)
+    hd = people.dima(hx, hy, DS13, e, "phone_chest74", layers=("legs",), **fkw)["head"]
+    face = R.screen_light74(hd[0] + 75, hd[1] + 20, 130, 170, .55, t)
+    world = [nd["bg"], nd["chair_back"], nd["desk_top"], nd["pool"], legs, nd["desk_legs"], nd["chair_seat"], body_svg, bit, arm_svg,
+             cat, jar, pop_, crumbs, face, nd["lamp"]]
+    # камера: мягкий наезд 4 %, на «можем» отскок вверх 3 % вслед за крышкой
+    u = sm(t, T_A13 - .2, 20.25)
+    kick = bump(t, T_MOZH, .45)
+    s = 1.38 * (1 + .04 * u + .03 * kick)
+    ccx = lerp(655, 666, u) + 3 * math.sin(t * 1.4)
+    ccy = lerp(850, 840, u) - 40 * kick + 3 * math.sin(t * 1.7)
+    set_ink(s)
+    warm = '<rect x="-3000" y="-3000" width="8000" height="8000" fill="#ff9a40" opacity=".18" style="mix-blend-mode:soft-light"/>'
+    return f'<g transform="{lib.cam(ccx, ccy, s, lerp(-.3, .3, u))}">{"".join(world)}{warm}</g>', "#24170f"
+
+
+FRAMES["s13"] = s13
