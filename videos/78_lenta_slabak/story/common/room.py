@@ -2622,10 +2622,10 @@ def hook_day(t, view="close", warm=0.0, bump=0.0):
                 o.append(blob(q, sh, .55 * (2 * w - 1)))
         o.append(blob([(1000, HD_SHADOW_TOP - 10, 1), (1300, HD_SHADOW_TOP + 40, 1), (1300, 1200, 1), (930, 1200, 1)], P["wall_sh"], .35))
         # изголовье слева за Димой (край), матрас
-        o.append(shape(lib.rrect(-120, 820, 140, 1300, 26), P["head"], blob(rect_pts(90, 820, 140, 1300), lib.mul(P["head"], (.85, .85, .87))), w=4.4, seed=7801))
-        o.append(shape(lib.rrect(-200, HD_BED_Y - 40, 1300, HD_BED_Y + 120, 24), P["sheet"], blob(rect_pts(-200, HD_BED_Y + 60, 1300, HD_BED_Y + 122), P["sheet_sh"]),
+        o.append(shape(lib.rrect(-900, 820, 140, 1300, 26), P["head"], blob(rect_pts(90, 820, 140, 1300), lib.mul(P["head"], (.85, .85, .87))), w=4.4, seed=7801))
+        o.append(shape(lib.rrect(-900, HD_BED_Y - 40, 1980, HD_BED_Y + 120, 24), P["sheet"], blob(rect_pts(-900, HD_BED_Y + 60, 1980, HD_BED_Y + 122), P["sheet_sh"]),
                        w=4.0, seed=7802))
-        bed = _quilt(-120, 1220, HD_BED_Y + 40, 1700, P, t, 7810, bump)
+        bed = _quilt(-860, 1940, HD_BED_Y + 40, 2400, P, t, 7810, bump)
         an = dict(hip=HD_HIP, phone=HD_PHONE_BASE, bed_y=HD_BED_Y, text=HD_TEXT)
     else:
         # общий план: стена, плинтус, пол; кровать справа с подушкой; резкая тень рамы на стене над кроватью
@@ -2845,7 +2845,7 @@ def evening_chair(t, sun=1.0):
     # закатный свет: пятно формы окна косо на стене и полу слева (чёткие края)
     lt = _sun_quad((x0 - 520, y0 + 360), (420, 80), (-120, 560), "#ffc27a", "#ffd89a", inset=.06)
     o.append(f'<g opacity="{.45 * s:.3f}">{lt}</g>')
-    fl = 1560.0
+    fl = 1452.0                      # пол на уровне ступней сидящего Димы (people.dima_chair78)
     o.append(shape(rect_pts(-900, fl - 50, 1980, fl + 4), "#e6c4a2", "", w=3.4, seed=7983))
     o.append(f'<rect x="-900" y="{f(fl + 4)}" width="2880" height="1400" fill="#7a4e32"/>')
     # кресло: спинка, сиденье, подлокотники (сиденье — подушка)
