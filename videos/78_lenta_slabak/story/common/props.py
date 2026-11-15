@@ -4898,6 +4898,8 @@ def tap_rings(x, y, u, k=1.0, col="#FFFFFF"):
 #   ribbon_board(x, y, k, u, t=0, top=-900, board=True, run=1, seed=0)   лента сверху (из y + top·k) бежит вниз на доску-дно в (x, y)
 #                       (доска — wood_board, если board); u 0…1 — лента утыкается и складывается гармошкой (стопка растёт), бег
 #                       останавливается (run — множитель скорости до удара). Без доски (board=False, u=0) лента уходит вниз дальше.
+#   phone_feed(x, y, k, t, scroll, glow, rot, seed)   телефон 300×600·k экраном к зрителю (ЦЕНТР), карточки бегут вниз, прорезь снизу;
+#                       phone_feed_slot(x, y, k) → середина прорези (откуда сцена пускает feed_ribbon). Только на графике без людей.
 #   bell_timer(x, y, k, hand_a, sector_u, ring, t=0, seed=0)   латунный будильник-колокольчик (ЦЕНТР циферблата, Ø 260·k): два колокольчика
 #                       с молоточком, ножки, пустой кремовый циферблат БЕЗ цифр и делений, одна стрелка под углом hand_a (° от «12»,
 #                       по часовой); тёплый сектор от «12» до стрелки, sector_u 0…1 — его сила; ring 0…1 — вздрагивание (корпус
@@ -4936,6 +4938,15 @@ def _strip(path, step=4.0):
     return S, N, cl
 
 
+def _wat(w, s):
+    """Ширина ленты на длине s: число или (w0, w1, полная длина, степень) — сужение к концу (перспектива)."""
+    import numpy as np
+    if isinstance(w, tuple):
+        w0, w1, tot, p = w
+        return w0 + (w1 - w0) * (np.asarray(s) / max(tot, 1e-6)) ** p
+    return w + 0 * np.asarray(s, float)
+
+
 def _seg(S, N, cl, a, b, f0, f1, w):
     """Полигон куска полосы между длинами a…b и долями ширины f0…f1 (−.5….5)."""
     import numpy as np
@@ -4944,8 +4955,9 @@ def _seg(S, N, cl, a, b, f0, f1, w):
     ss = np.concatenate([[a], cl[(cl > a) & (cl < b)], [b]])
     xs, ys = np.interp(ss, cl, S[:, 0]), np.interp(ss, cl, S[:, 1])
     nx, ny = np.interp(ss, cl, N[:, 0]), np.interp(ss, cl, N[:, 1])
-    L = [(x + nx_ * w * f0, y + ny_ * w * f0) for x, y, nx_, ny_ in zip(xs, ys, nx, ny)]
-    R = [(x + nx_ * w * f1, y + ny_ * w * f1) for x, y, nx_, ny_ in zip(xs, ys, nx, ny)]
+    ww = _wat(w, ss)
+    L = [(x + nx_ * w_ * f0, y + ny_ * w_ * f0) for x, y, nx_, ny_, w_ in zip(xs, ys, nx, ny, ww)]
+    R = [(x + nx_ * w_ * f1, y + ny_ * w_ * f1) for x, y, nx_, ny_, w_ in zip(xs, ys, nx, ny, ww)]
     pts = L + R[::-1]
     pts[0] = pts[0] + (1,)
     pts[len(L) - 1] = pts[len(L) - 1] + (1,)
@@ -4965,9 +4977,13 @@ def ribbon_point(path, u):
     return float(np.interp(s, cl, S[:, 0])), float(np.interp(s, cl, S[:, 1]))
 
 
-def feed_ribbon(path, t, speed=300.0, seed=0, w=90.0, card=120.0, gap=10.0, edge=True, op=1.0, start=0.0, end=1.0, ink_w=3.4):
+def feed_ribbon(path, t, speed=300.0, seed=0, w=90.0, card=120.0, gap=10.0, edge=True, op=1.0, start=0.0, end=1.0, ink_w=3.4, w_end=None,
+                taper_p=1.0):
+    """w_end — ширина в конце кривой (лента сужается в глубину по степени taper_p), карточки и тушь сужаются вместе с ней."""
     S, N, cl = _strip(path)
     tot = cl[-1]
+    if w_end is not None:
+        w = (w, w_end, tot, taper_p)
     a0, a1 = clamp(start) * tot, clamp(end) * tot
     if a1 - a0 < 2:
         return ""
@@ -4994,7 +5010,7 @@ def feed_ribbon(path, t, speed=300.0, seed=0, w=90.0, card=120.0, gap=10.0, edge
         for fr in (-.5, .5):
             import numpy as np
             m = (cl >= a0) & (cl <= a1)
-            E = S[m] + N[m] * w * fr
+            E = S[m] + N[m] * (_wat(w, cl[m])[:, None]) * fr
             if len(E) > 2:
                 o.append(line([tuple(e) for e in E[::3]] + [tuple(E[-1])], ink_w, lib.INK, taper=.08, wmin=.6, seed=seed + (7 if fr > 0 else 3)))
     g = "".join(o)
@@ -5306,8 +5322,11 @@ def well_axis(x, y, k=1.0, u=0.0, depth=2600.0):
     return x, y + depth * k * clamp(u) ** 1.1
 
 
-def bottomless_well(x, y, k=1.0, t=0.0, depth=2600.0, flare=1.0, seed=0):
+def bottomless_well(x, y, k=1.0, t=0.0, depth=2600.0, flare=1.0, seed=0, layer="all"):
+    """layer: "back" — шахта, раструб, задняя половина кольца; "front" — передняя половина кольца (поверх ленты); "all"."""
     sd = 78600 + seed
+    if layer == "front":
+        return _well_stones(x, y, k, sd, front=True)
     R = 260 * k
     D = depth * k
     o = []
@@ -5345,29 +5364,36 @@ def bottomless_well(x, y, k=1.0, t=0.0, depth=2600.0, flare=1.0, seed=0):
         o.append(line(pts, 3.4 * k * (1 - u0), "#7078A8", taper=.5, wmin=.2, seed=sd + 10 + j, op=.55 * (1 - u0)))
     o.append(line(lw[:20], 4 * k, lib.INK, taper=.9, wmin=.1, seed=sd + 1))
     o.append(line(rw_[:20], 4 * k, lib.INK, taper=.9, wmin=.1, seed=sd + 2))
-    # каменное кольцо устья
+    # раструб: гладкая серо-голубая воронка внутри устья — сделано нарочно
+    R = 260 * k
+    fu = clamp(flare)
+    if fu > .01:
+        lip_o = _ring_pts(x, y + 4 * k, R * .92, R * .22, 180, 360, 20)
+        lip_i = _ring_pts(x, y + 120 * k, R * .52, R * .12, 360, 180, 20)
+        o.append(f'<g opacity="{fu:.3f}">' + shape(lip_o + lip_i, "#9AA3B8", "", w=3.0 * k, seed=sd + 50))
+        for j in range(5):
+            a = 210 + 30 * j
+            p0 = (x + R * .92 * math.cos(math.radians(a)), y + 4 * k + R * .22 * math.sin(math.radians(a)))
+            p1 = (x + R * .52 * math.cos(math.radians(a)), y + 120 * k + R * .12 * math.sin(math.radians(a)))
+            o.append(line([p0, p1], 3 * k, "#E6ECF7", taper=.5, wmin=.2, seed=sd + 60 + j, op=.8))
+        o.append(line(_ring_pts(x, y + 4 * k, R * .92, R * .22, 195, 345, 16), 4 * k, "#FFFFFF", taper=.6, wmin=.2, seed=sd + 70, op=.6) + "</g>")
+    o.append(_well_stones(x, y, k, sd, front=False if layer == "back" else None))
+    return "".join(o)
+
+
+def _well_stones(x, y, k, sd, front=None):
+    R = 260 * k
     stones = []
     n = 14
     for i in range(n):
         a0, a1 = 360 * i / n + 2, 360 * (i + 1) / n - 2
+        mid = math.sin(math.radians((a0 + a1) / 2))
+        if front is True and mid <= 0 or front is False and mid > 0:
+            continue
         outer = _ring_pts(x, y, R * 1.18, R * .30, a0, a1, 4)
         inner = _ring_pts(x, y, R * .92, R * .22, a1, a0, 4)
         stones.append(shape(outer + inner, "#8C8A86" if i % 3 else "#A09D97", "", w=3.2 * k, seed=sd + 30 + i))
-    # раструб: гладкая латунно-серая воронка внутри устья — сделано нарочно
-    fu = clamp(flare)
-    if fu > .01:
-        lip_o = _ring_pts(x, y + 4 * k, R * .92, R * .22, 0, 180, 20)
-        lip_i = _ring_pts(x, y + 120 * k, R * .52, R * .12, 180, 0, 20)
-        o.append(f'<g opacity="{fu:.3f}">' + shape(lip_o + lip_i, "#9AA3B8", "", w=3.0 * k, seed=sd + 50))
-        for j in range(5):
-            a = 30 + 30 * j
-            p0 = (x + R * .92 * math.cos(math.radians(a)), y + 4 * k + R * .22 * math.sin(math.radians(a)))
-            p1 = (x + R * .52 * math.cos(math.radians(a)), y + 120 * k + R * .12 * math.sin(math.radians(a)))
-            o.append(line([p0, p1], 3 * k, "#E6ECF7", taper=.5, wmin=.2, seed=sd + 60 + j, op=.8))
-        o.append(line(_ring_pts(x, y + 4 * k, R * .92, R * .22, 15, 165, 16), 4 * k, "#FFFFFF", taper=.6, wmin=.2, seed=sd + 70, op=.6) + "</g>")
-    # задняя половина кольца — до шахты не видно разницы, кладём кольцо целиком поверх стенок
-    o.append("".join(stones))
-    return "".join(o)
+    return "".join(stones)
 
 
 def wood_board(x, y, k=1.0, rot=0.0, seed=0):
@@ -5380,27 +5406,26 @@ def wood_board(x, y, k=1.0, rot=0.0, seed=0):
     return _tf(body, x, y, k, rot)
 
 
-def ribbon_board(x, y, k=1.0, u=0.0, t=0.0, top=-900.0, board=True, run=1.0, seed=0, w=110.0):
+def ribbon_board(x, y, k=1.0, u=0.0, t=0.0, top=-900.0, board=True, run=1.0, seed=0, w=110.0, t_hit=None):
+    """t_hit — момент удара (время ролика): после него бег сверху замирает на месте, а не прыгает назад."""
     uu = clamp(u)
     o = []
-    hit = uu > 0
     W = w * k
-    if not (board and hit):
+    if uu <= 0:
         path = [(x, y + top * k), (x + 6 * k, y + (top / 2) * k), (x, y + 700 * k)]
         o.append(feed_ribbon(path, t, speed=420 * run, seed=seed, w=W, card=130 * k, gap=10 * k))
         if board:
-            o.append(wood_board(x, y + 40 * k, k * W / (110 * k) * 1.0 if False else k, 0, seed))
+            o.append(wood_board(x, y + 40 * k, k, 0, seed))
         return "".join(o)
-    # гармошка: n складок растёт, стопка над доской
     nf = 1 + 7 * lib.ease_out(uu, 2)
     fold_h = 22 * k
     stack_h = fold_h * nf
     ybase = y + 17 * k
-    # бег сверху тормозит до нуля
-    off = t * 420 * run * (1 - lib.ease_out(uu, 2)) + 420 * run * .3 * lib.ease_out(uu, 2)
+    th = t if t_hit is None else min(t, t_hit + .25 * (1 - math.exp(-max(0.0, t - t_hit) * 4)))
     path = [(x, y + top * k), (x + 4 * k, y + (top / 2) * k), (x, ybase - stack_h)]
-    o.append(feed_ribbon(path, off / 420 if run else 0, speed=420, seed=seed, w=W, card=130 * k, gap=10 * k))
-    o.append(wood_board(x, y + 40 * k, k, 0, seed))
+    o.append(feed_ribbon(path, th, speed=420 * run, seed=seed, w=W, card=130 * k, gap=10 * k))
+    if board:
+        o.append(wood_board(x, y + 40 * k, k, 0, seed))
     i = 0
     while i < nf:
         hi = min(1.0, nf - i)
@@ -5413,6 +5438,24 @@ def ribbon_board(x, y, k=1.0, u=0.0, t=0.0, top=-900.0, board=True, run=1.0, see
                                      (x - W * .26, y0 + 6 * k)], "#FFFFFF", .4), w=2.6 * k, seed=seed + 40 + i))
         i += 1
     return "".join(o)
+
+
+def phone_feed_slot(x, y, k=1.0):
+    return x, y + 300 * k
+
+
+def phone_feed(x, y, k=1.0, t=0.0, scroll=0.0, glow=1.0, rot=0.0, seed=0):
+    """Телефон 300×600·k экраном к зрителю (ЦЕНТР) с бегущими вниз карточками ленты и прорезью снизу, из которой выходит лента
+    (саму ленту кладёт сцена от phone_feed_slot(x, y, k))."""
+    sd = 79100 + seed
+    o = [shape(rrect(-150, -300, 150, 300, 40), C_PHONE, "", w=4.6, seed=sd)]
+    o.append(blob(rrect(-134, -284, 134, 284, 30), mix("#1A1E27", C_FEED_BASE, clamp(glow))))
+    cid = lib.clip_rect(-134, -284, 268, 568, 30)
+    o.append(f'<g clip-path="url(#{cid})" opacity="{.4 + .6 * clamp(glow):.3f}">{feed_cards(-134, -284, 134, 284, scroll, seed=seed, card=90, gap=12)}</g>')
+    o.append(blob(rrect(-34, -276, 34, -264, 6), C_PHONE))
+    o.append(blob(rrect(-70, 284, 70, 306, 8), "#0D0F14"))
+    o.append(line([(-112, -262), (-118, 250)], 6, "#FFFFFF", taper=.5, wmin=.2, seed=sd + 2, op=.25))
+    return _tf("".join(o), x, y, k, rot)
 
 
 def bell_hand_tip(x, y, k=1.0, hand_a=0.0):
