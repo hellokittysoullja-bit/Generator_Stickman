@@ -242,7 +242,7 @@ def s02(t):
     hx, hy = _stand_hip(W_K)
     hx += W_DX
     px, py = R.HW_PILLOW
-    base = (px - 300, py + 10)                    # низ телефона прилип к одеялу у подушки
+    base = (px + 110, py - 25)                    # низ телефона прилип к дальнему краю подушки
     t_fall = t_bak - .3
     heel = sm(t, W(4) - .1, W(4) + .12)
     tug = math.sin(2 * math.pi * 1.9 * t) * (1 - sm(t, t_fall - .1, t_fall))
@@ -259,7 +259,7 @@ def s02(t):
         mouth = fing
     else:                                         # телефон пружиной назад и довольно шлёпается рядом, на бок
         f0 = (hx + 452 * W_K, hy - 140 * W_K)
-        rest = (base[0] - 170, base[1] - 30)
+        rest = (base[0] + 30, base[1] - 190)
         e = clamp((t - t_fall) / .3)
         sp = 1 - math.exp(-5 * e) * math.cos(8 * e) if e < 1 else 1.0
         sp = min(1.0, sp) if e >= 1 else sp
@@ -280,7 +280,7 @@ def s02(t):
         cid = lib.clip_of(ellipse_pts(fing[0] - 20, fing[1] - 10, 90, 70, 20))
         world = d["bg"] + d["bed"] + fig["svg"] + ph_b + f'<g clip-path="url(#{cid})">{fig["svg"]}</g>' + ph_f + eff + d["shade"]
     else:
-        world = d["bg"] + d["bed"] + ph_b + ph_f + fig["svg"] + eff + d["shade"]
+        world = d["bg"] + d["bed"] + fig["svg"] + ph_b + ph_f + eff + d["shade"]
     cx0, cy0, s0 = W_CAM
     dr = sm(t, T0("s02"), t_bak) * 50
     sx, sy = shake2(t, t_bak, 16)
