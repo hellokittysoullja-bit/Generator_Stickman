@@ -2520,3 +2520,539 @@ def drape74(view, t, u=1.0, swing=0.0, seed=0):
     sx, sy = v["drape_k"]
     y0 = v["seat_y"] - 420 * sy
     return f'<g transform="translate(540 {y0:.2f}) scale({sx:.4f} {sy:.4f})">{PR.throne_drape(0, 0, 1.0, u, swing, t, seed)}</g>'
+
+
+# ═════════════════════════════════════════ РИЛС 75 «Ток или скука» (пишет группа C) ═════════════════════════════════════════
+# Одна геометрия на хук, опыт и комнату Димы (петля s18 = ракурс s01): Дима сидит на стуле слева лицом вправо (LAB_SIT — таз,
+# scale 1.0, ступни на FL, голова ≈ (384, 620)), перед ним справа низкий столик LAB_TABLE (верх y=LAB_TOP), на столике коробка
+# с кнопкой LAB_BOX (дно, центр), на стене справа у головы — счётчик LAB_COUNTER (центр), кот на правом краю столика LAB_CAT
+# (точка между задних лап для cat.draw, k≈LAB_CAT_K). Дома вместо счётчика — окно HOME_WIN, у столика ящик HOME_DRAWER.
+#
+#   lab_room(t, view="hook", light_patch=0.0, cols=None) -> dict:
+#       bg — белые стены со штриховкой, тень в углу, плинтус, пол-линолеум, высокое окно слева LAB_WIN, солнечный квадрат
+#            (light_patch 0…1: ползёт по стене вниз и по полу влево — «15 минут» без часов)
+#       chair_back / chair_seat — стул под LAB_SIT (как room.chair, серый пластик и металл)
+#       table_top / table_legs — столик (верх, торец) / ножки и тень; порядок слоёв:
+#           bg → chair_back → table_top → [Дима: legs] → table_legs → chair_seat → [pelvis, arm_f, body] → предметы → [arm_n] → light
+#       light — свет окна поверх (мягкая полоса), класть последним
+#       cam — (cx, cy, s) ракурса view для lib.cam
+#     view (камеры LAB_CAMS): "hook" — Дима по пояс, столик с коробкой, счётчик, кот (s01); "close" — лицо и плечи, счётчик
+#       вверху справа, кнопка внизу (s02); "cat_box" — столик с коробкой и кот крупно, чистая стена LAB_CLEAN вверху слева (s05);
+#       "cat_wall" — счётчик на стене и кот на столике под ним (s06); "wide" — участник общим-средним, окно и солнце (s09);
+#       "empty" — пустой стул анфас и тумбочка с кнопкой к зрителю (s04): EMPTY_CHAIR (центр сиденья), EMPTY_STAND (верх тумбы),
+#       EMPTY_BOX (дно коробки на тумбе); стул анфас — chair_front(), он в слое chair_seat, тумба — в table_top.
+#   chair_front(x, fy, k=1.0, hop=0.0, cols=None) — стул анфас (x — центр, fy — пол под ножками, hop — подпрыгнул, px).
+#   home_room(t, light="day"|"eve", view="hook", drawer=0.0) -> dict как lab_room: та же геометрия в комнате Димы (тёплые обои,
+#       дощатый пол, окно HOME_WIN вместо счётчика, столик с ящиком; drawer 0…1 — ящик выдвинут; inside — (x0, y0, x1, y1)
+#       видимого дна ящика: кнопку класть туда ПОСЛЕ table_top и ДО drawer_front). room_day(t, view) / room_eve(t, view) —
+#       обёртки. Ракурсы HOME_CAMS: "hook" (s18, = LAB_CAMS["hook"]), "mid" (s12, s13, s16 — чуть шире), "desk" (стол крупно).
+#   window_day(t, cloud_speed=1.0, cloud_shift=None, warm=0.0) -> dict(bg, sill, cam): большое окно вблизи (s17): небо, облака
+#       (cloud_shift — сдвиг облаков в px, сцена интегрирует сама при ускорении), птица, ветка качается, подоконник WD_SILL (верх),
+#       Дима стоит слева спиной-боком WD_DIMA, кот на подоконнике WD_CAT.
+#   campus_night(t, u) -> строка SVG в КООРДИНАТАХ КАДРА (полёт вдоль провода, u 0…1 — пройденный путь): небо, звёзды, деревья,
+#       фонари, газон в перспективе; CAMPUS_WIRE(u, t) — точки провода в кадре (сцена рисует его поверх).
+#   old_lab(t, swing=0.0) -> dict(bg, table, lamp, cam): лабораторный стол под качающейся лампой (конец s07), OLD_APP — дно аппарата.
+
+LAB = dict(wall="#eceeec", wall_hi="#f7f8f6", wall_sh="#d5dad8", hatch="#bfc6c4", floor="#d3d7d2", floor_b="#bfc4bf", floor_ln="#aab1ac",
+           base="#e4e7e4", base_sh="#c3c9c5", shadow="#7f898b", corner="#c9cfcd", sky=("#9fc4e4", "#c8e0f2", "#eef6fb"))
+LAB_CHAIR = dict(c="#8e98a0", sh="#6d767e", hi="#b2bac0", leg="#5d646b")
+HOME = dict(day=dict(wall="#e8dcc0", wall_hi="#f2e8d2", wall_sh="#d3c6a6", hatch="#c8b994", floor="#c8915c", floor_b="#a8743f",
+                     floor_ln="#8a5b34", base="#f3ecdc", base_sh="#d6cab0", shadow="#6e4a2c", corner="#cdbf9e"),
+            eve=dict(wall="#9d8c98", wall_hi="#b19fa8", wall_sh="#7e6e7e", hatch="#7a6a7a", floor="#7c5034", floor_b="#5e3a24",
+                     floor_ln="#40261a", base="#b9a9aa", base_sh="#94848a", shadow="#2c2030", corner="#857585"))
+
+LAB_SIT = (330.0, seat_y(1.0))
+LAB_TOP = 1000.0
+LAB_TABLE = (480.0, 880.0)                # столешница x0…x1 (передняя кромка y = LAB_TOP)
+LAB_TD = 70.0                              # видимая глубина столешницы
+LAB_BOX = (600.0, LAB_TOP - 24.0)          # дно коробки с кнопкой (центр) — на столешнице, ближе к Диме
+LAB_CAT = (765.0, LAB_TOP - 14.0)          # кот на правом краю столика
+LAB_CAT_K = .78
+LAB_COUNTER = (650.0, 600.0)               # центр счётчика на стене (справа у головы Димы)
+LAB_WIN = (-200.0, 120.0, 80.0, 760.0)     # высокое окно (за кадром хука, видно на "wide")
+LAB_CORNER = 1180.0                        # угол комнаты справа (дальше — боковая стена в перспективе)
+LAB_CLEAN = (380.0, 300.0, 540.0, 470.0)   # чистая стена слева от счётчика (s05: рукописное «кот»)
+EMPTY_CHAIR = (2400.0, 1180.0)             # пустой стул анфас: центр передней кромки сиденья
+EMPTY_FL = 1560.0
+EMPTY_STAND = (2700.0, 1080.0)             # тумба справа от стула: центр верха
+EMPTY_BOX = (2700.0, 1072.0)               # дно коробки на тумбе (кнопкой к зрителю)
+HOME_WIN = (540.0, 420.0, 800.0, 790.0)    # окно на месте счётчика (петля s18)
+HOME_DRAWER = (560.0, 800.0)               # ящик столика по x (лицевая панель — под столешницей)
+
+LAB_CAMS = {"hook": (520.0, 811.0, 1.35), "close": (500.0, 693.0, 2.2), "cat_box": (680.0, 860.0, 2.0),
+            "cat_wall": (700.0, 720.0, 2.0), "wide": (420.0, 960.0, .88), "empty": (2520.0, 1000.0, 1.45)}
+HOME_CAMS = {"hook": LAB_CAMS["hook"], "mid": (540.0, 880.0, 1.15), "desk": (680.0, 900.0, 2.0)}
+
+
+def _hatch(x0, y0, x1, y1, col, step=22.0, ang=-58.0, seed=0, op=.45, w=1.6, fade=None):
+    """Лёгкая штриховка тушью в прямоугольнике: короткие наклонные штрихи с разрывами (рука, а не заливка).
+    fade=(fx, fy, r) — штрихи гуще у точки и сходят на нет к радиусу r."""
+    r = rs(7500 + seed)
+    a = math.radians(ang)
+    dx, dy = math.cos(a), math.sin(a)
+    o = []
+    L = math.hypot(x1 - x0, y1 - y0)
+    n = int(L / step) + 2
+    for i in range(-n, n):
+        # линии вдоль направления (dx, dy), смещённые по нормали
+        nx, ny = -dy, dx
+        cx, cy = (x0 + x1) / 2 + nx * i * step, (y0 + y1) / 2 + ny * i * step
+        s = -L
+        while s < L:
+            seg = r.uniform(26, 70)
+            gap = r.uniform(10, 40)
+            px0, py0 = cx + dx * s, cy + dy * s
+            px1, py1 = cx + dx * (s + seg), cy + dy * (s + seg)
+            s += seg + gap
+            if not (x0 <= px0 <= x1 and x0 <= px1 <= x1 and y0 <= py0 <= y1 and y0 <= py1 <= y1):
+                continue
+            k = 1.0
+            if fade:
+                d = math.hypot((px0 + px1) / 2 - fade[0], (py0 + py1) / 2 - fade[1]) / fade[2]
+                k = clamp01(1.1 - d)
+                if k < .08 or r.uniform() > k + .15:
+                    continue
+            o.append(line([(px0, py0), (px1, py1)], w, col, taper=.7, wmin=.25, seed=7600 + seed + i * 7 + int(s), op=op * k))
+    return "".join(o)
+
+
+def _room_shell(P, x0=-1600.0, x1=3600.0, corner=LAB_CORNER, seed=0, ceil=None):
+    """Задняя стена с градиентом и штриховкой у углов и пола, угол с боковой стеной справа, плинтус, пол с линиями стыков."""
+    o = []
+    g = lib.lin_grad([(0, P["wall_sh"], 1), (.3, P["wall"], 1), (1, P["wall_hi"], 1)], 0, -600, 0, WALL_Y, units="userSpaceOnUse")
+    o.append(f'<rect x="{f(x0)}" y="-600" width="{f(x1 - x0)}" height="{f(WALL_Y + 600)}" fill="url(#{g})"/>')
+    # тень у пола и штриховка: у плинтуса, в углу, под окном — стена не «пустая бумага»
+    o.append(blob(rect_pts(x0, WALL_Y - 160, x1, WALL_Y), P["wall_sh"], .35))
+    o.append(_hatch(x0 + 40, WALL_Y - 150, x1 - 40, WALL_Y - 54, P["hatch"], 26, -60, seed + 1, .35))
+    if corner is not None:
+        # боковая стена справа от угла — темнее, в перспективе (сходится к зрителю)
+        side = [(corner, -600, 1), (x1, -900, 1), (x1, 2400, 1), (corner, WALL_Y, 1)]
+        o.append(blob(side, P["corner"]))
+        o.append(_hatch(corner + 8, -500, min(x1, corner + 900), WALL_Y + 200, P["hatch"], 20, -70, seed + 2, .5))
+        o.append(_hatch(corner - 260, -300, corner - 6, WALL_Y - 40, P["hatch"], 24, -62, seed + 3, .38, fade=(corner, 700, 520)))
+        o.append(line([(corner, -600), (corner + 2, WALL_Y)], 3.2, INK, taper=0, wmin=1, seed=7701 + seed, op=.75))
+    o.append(shape(rect_pts(x0, WALL_Y - 42, corner if corner else x1, WALL_Y + 6), P["base"],
+                   blob(rect_pts(x0, WALL_Y - 8, corner if corner else x1, WALL_Y + 6), P["base_sh"]), w=3.2, seed=7702 + seed))
+    gf = lib.lin_grad([(0, P["floor"], 1), (1, P["floor_b"], 1)], 0, WALL_Y, 0, 2400, units="userSpaceOnUse")
+    fl = [(x0, WALL_Y + 6, 1), (corner if corner else x1, WALL_Y + 6, 1), (x1, 2400, 1), (x0, 2400, 1)]
+    o.append(f'<path d="{lib.fill_d(fl)}" fill="url(#{gf})"/>')
+    for k_, y in enumerate((1500, 1590, 1700, 1840, 2010, 2220)):
+        o.append(line([(x0, y), (x1, y)], 2.6, P["floor_ln"], taper=0.0, wmin=1, seed=7710 + seed + k_, op=.5))
+    r = rs(7720 + seed)
+    for j in range(24):
+        x = r.uniform(x0 + 100, x1 - 100)
+        y = r.uniform(1460, 2300)
+        o.append(line([(x, y), (x + r.uniform(30, 90), y + r.uniform(-2, 2))], 1.6, P["floor_ln"], taper=.6, seed=7730 + seed + j, op=.35))
+    return "".join(o)
+
+
+def _lab_window(x0, y0, x1, y1, t=0.0, seed=0, warm=0.0):
+    """Высокое окно опыта: белая рама в два стекла, бледное небо, медленное облако, верхушка дерева; тень откоса."""
+    sd = 7800 + seed
+    fr = 16
+    ix0, iy0, ix1, iy1 = x0 + fr, y0 + fr, x1 - fr, y1 - fr
+    w, h = ix1 - ix0, iy1 - iy0
+    sky = LAB["sky"]
+    g = lib.lin_grad([(0, sky[0], 1), (.6, sky[1], 1), (1, lib.mix(sky[2], "#fbe2b4", warm), 1)], 0, 0, 0, 1)
+    inner = f'<path d="M{f(ix0 - 5)} {f(iy0 - 5)}H{f(ix1 + 5)}V{f(iy1 + 5)}H{f(ix0 - 5)}Z" fill="url(#{g})"/>'
+    for j in range(2):
+        cx = ix0 + ((j * 211 + t * 9 + seed * 37) % (w + 200)) - 100
+        cy = iy0 + h * (.18 + .2 * j)
+        cw = w * (.55 + .1 * j)
+        pts = [(cx - cw / 2, cy + 14)] + [(cx - cw / 2 + cw * i / 5, cy - 16 - 16 * math.sin(i * 1.9 + j)) for i in range(6)] + [(cx + cw / 2, cy + 14)]
+        inner += blob(pts, "#ffffff", .95)
+    inner += _tree(ix0 + w * .7, iy1 + 60, h * .5, .6, t, sd + 3, col="#7fae74", sh="#5f8e58")
+    out = [blob(rect_pts(x0 + 10, y0 + 14, x1 + 22, y1 + 26), LAB["wall_sh"], .6)]
+    out.append(shape(rect_pts(x0, y0, x1, y1), "#f7f8f6", "", w=4.0, seed=sd))
+    out.append(shape(rect_pts(ix0, iy0, ix1, iy1), sky[1], inner, w=3.2, seed=sd + 1))
+    ym = iy0 + h * .5
+    out.append(blob(rect_pts(ix0, ym - 7, ix1, ym + 7), "#f7f8f6") + line([(ix0, ym - 7), (ix1, ym - 7)], 2.4, INK, seed=sd + 4)
+               + line([(ix0, ym + 7), (ix1, ym + 7)], 2.4, INK, seed=sd + 5))
+    out.append(shape(lib.rrect(x0 - 20, y1, x1 + 20, y1 + 20, 4), "#e9ecea", blob(rect_pts(x0 - 22, y1 + 11, x1 + 22, y1 + 22), "#c9cfcc"), w=3.0, seed=sd + 6))
+    return "".join(out)
+
+
+def sun_square(u, x0=LAB_WIN[0], y0=LAB_WIN[1], x1=LAB_WIN[2], y1=LAB_WIN[3], op=.42, col="#fff1c2"):
+    """Солнечный квадрат от высокого окна: u 0…1 — по стене справа вниз, к плинтусу ломается на пол и ползёт влево.
+    Форма окна (параллелограмм с крестовиной-тенью), чёткий край — «время идёт» без часов."""
+    if op <= .01:
+        return ""
+    w = (x1 - x0) * 1.15
+    h = (y1 - y0) * .62
+    # центр пятна: стена (u<.55) → пол
+    if u < .55:
+        q = u / .55
+        cx = lerp_(1060, 820, q)
+        cy = lerp_(620, 1240, q)
+        sk = 140
+        pts = [(cx - w / 2, cy - h / 2), (cx + w / 2, cy - h / 2 + sk * .3), (cx + w / 2 - 30, cy + h / 2 + sk * .3), (cx - w / 2 - 30, cy + h / 2)]
+    else:
+        q = (u - .55) / .45
+        cx = lerp_(760, 300, q)
+        cy = 1700 + 60 * q
+        pts = [(cx - w * .55, cy - 70), (cx + w * .55 - 120, cy - 70), (cx + w * .55 + 60, cy + 90), (cx - w * .55 + 140, cy + 90)]
+    # пятно не заходит выше плинтуса на полу и ниже плинтуса на стене
+    clip = lib.clip_rect(-1600, -600 if u < .55 else WALL_Y + 6, 5200, WALL_Y + 600 if u < .55 else 3000)
+    mx = sum(p[0] for p in pts) / 4
+    my = sum(p[1] for p in pts) / 4
+    bar_v = [((pts[0][0] + pts[1][0]) / 2 - 6, (pts[0][1] + pts[1][1]) / 2), ((pts[0][0] + pts[1][0]) / 2 + 6, (pts[0][1] + pts[1][1]) / 2),
+             ((pts[3][0] + pts[2][0]) / 2 + 6, (pts[3][1] + pts[2][1]) / 2), ((pts[3][0] + pts[2][0]) / 2 - 6, (pts[3][1] + pts[2][1]) / 2)]
+    return (f'<g clip-path="url(#{clip})" opacity="{op:.3f}">' + blob(pts, col) + blob(bar_v, "#e3d7b0", .8)
+            + f'<circle cx="{f(mx)}" cy="{f(my)}" r="1" fill="none"/></g>')
+
+
+def lerp_(a, b, u):
+    return a + (b - a) * u
+
+
+def chair_cols(c="#8e98a0", sh="#6d767e", hi="#b2bac0", leg="#5d646b"):
+    return dict(c=c, sh=sh, hi=hi, leg=leg)
+
+
+def lab_chair(x, sy, k=1.0, cols=None):
+    """Стул опыта сбоку (как room.chair): серое пластиковое сиденье и спинка, тонкие металлические ножки. dict(back, seat)."""
+    C = cols or LAB_CHAIR
+    seat = sy + 24 * k
+    bx0 = x - 120 * k
+    back = [shape([(bx0 - 4 * k, seat, 1), (bx0 + 10 * k, seat, 1), (bx0 + 2 * k, seat - 380 * k, 1), (bx0 - 12 * k, seat - 378 * k, 1)], C["leg"], w=2.8, seed=7900)]
+    back.append(shape(lib.rrect(bx0 - 34 * k, seat - 400 * k, bx0 + 26 * k, seat - 230 * k, 22 * k), C["hi"],
+                      blob(rect_pts(bx0 + 4 * k, seat - 400 * k, bx0 + 26 * k, seat - 230 * k), C["c"], .8), w=3.2, seed=7901))
+    front = [shape(lib.rrect(bx0 - 24 * k, seat - 8 * k, x + 176 * k, seat + 22 * k, 12 * k), C["c"],
+                   blob(rect_pts(bx0 - 24 * k, seat + 12 * k, x + 176 * k, seat + 22 * k), C["sh"]), w=3.2, seed=7902)]
+    for i, lx in enumerate((bx0 + 4 * k, x + 150 * k)):
+        front.append(shape([(lx - 6 * k, seat + 22 * k, 1), (lx + 6 * k, seat + 22 * k, 1), (lx + 9 * k, FL, 1), (lx - 3 * k, FL, 1)], C["leg"], w=2.6, seed=7903 + i))
+    front.append(blob(ellipse_pts(x + 10 * k, FL + 4, 180 * k, 12, 16), "#5a6265", .18))
+    return dict(back="".join(back), seat="".join(front))
+
+
+def lab_table(x0, x1, top, P=None, drawer=None, wood=False, seed=0):
+    """Низкий столик: столешница (видна глубина LAB_TD), торец, царга, 4 ножки. wood=True — деревянный домашний с ящиком
+    drawer (0…1 выдвинут) по HOME_DRAWER. dict(top, legs, inside, drawer_front)."""
+    if wood:
+        c, sh, hi = DESKW, DESKW_SH, DESKW_HI
+    else:
+        c, sh, hi = "#dfe3e2", "#b5bcbb", "#f2f4f3"
+    sd = 7950 + seed
+    th = 26.0
+    tp = [(x0 + 22, top - LAB_TD, 1), (x1 - 22, top - LAB_TD, 1), (x1, top, 1), (x0, top, 1)]
+    inner = blob([(x0 + 22, top - LAB_TD), (x1 - 22, top - LAB_TD), (x1 - 18, top - LAB_TD + 14), (x0 + 26, top - LAB_TD + 14)], sh, .35)
+    o = [shape(tp, hi if not wood else c, inner, w=3.6, seed=sd)]
+    o.append(shape(rect_pts(x0, top, x1, top + th), c, blob(rect_pts(x0, top + th - 8, x1, top + th), sh, .9), w=3.4, seed=sd + 1))
+    legs = []
+    ins = 30.0
+    for i, lx in enumerate((x0 + ins + 50, x1 - ins - 50)):
+        legs.append(shape(rect_pts(lx - 8, top + th, lx + 8, FL - 50), sh, w=2.6, seed=sd + 2 + i))
+    for i, lx in enumerate((x0 + ins, x1 - ins)):
+        legs.append(shape([(lx - 12, top + th, 1), (lx + 12, top + th, 1), (lx + 9, FL, 1), (lx - 9, FL, 1)], c if wood else "#c9cfce",
+                          blob(rect_pts(lx + 2, top + th, lx + 12, FL), sh, .8), w=3.0, seed=sd + 4 + i))
+    legs.insert(0, blob(ellipse_pts((x0 + x1) / 2, FL + 4, (x1 - x0) / 2 + 30, 14, 20), "#3a3a3a", .14))
+    inside = None
+    dfront = ""
+    if drawer is not None:
+        dx0, dx1 = HOME_DRAWER
+        dy0, dy1 = top + th, top + th + 74
+        o.append(shape(rect_pts(x0 + 16, top + th, x1 - 16, dy1 + 6), lib.mul(c, (.94, .94, .94)), blob(rect_pts(x0 + 16, dy1 - 6, x1 - 16, dy1 + 6), sh, .8),
+                       w=3.0, seed=sd + 8))
+        u = clamp01(drawer)
+        o.append(blob(rect_pts(dx0, dy0, dx1, dy1), lib.mul(sh, (.55, .55, .55))))
+        pull = 80.0 * u
+        s = 1 + .07 * u
+        cxm = (dx0 + dx1) / 2
+        fx0, fx1 = cxm - (dx1 - dx0) / 2 * s, cxm + (dx1 - dx0) / 2 * s
+        fy0, fy1 = dy0 + pull * .6, dy1 + pull * .6 + (dy1 - dy0) * (s - 1)
+        if u > .01:
+            bx = [(dx0 + 8, dy0 + 6, 1), (dx1 - 8, dy0 + 6, 1), (fx1 - 10, fy0 + 4, 1), (fx0 + 10, fy0 + 4, 1)]
+            o.append(shape(bx, lib.mul(DESKW_HI, (.92, .9, .86)), blob([(dx0 + 8, dy0 + 6), (dx1 - 8, dy0 + 6), (dx1 - 8, dy0 + 14), (dx0 + 8, dy0 + 14)], sh, .7),
+                           w=2.6, seed=sd + 9))
+            for sg, (a, b) in ((-1, ((dx0 + 8, dy0 + 6), (fx0 + 10, fy0 + 4))), (1, ((dx1 - 8, dy0 + 6), (fx1 - 10, fy0 + 4)))):
+                o.append(shape([(a[0], a[1], 1), (b[0], b[1], 1), (b[0], b[1] + 16, 1), (a[0], a[1] + 12, 1)], hi, "", w=2.2, seed=sd + 11 + sg))
+            inside = (dx0 + 14, dy0 + 6, dx1 - 14, fy0 + 4)
+        dfront = shape(rect_pts(fx0, fy0, fx1, fy1), hi, blob(rect_pts(fx0, fy1 - 9, fx1, fy1), sh, .7), w=3.0, seed=sd + 13)
+        hw = 30 * s
+        my = (fy0 + fy1) / 2
+        dfront += shape(lib.rrect(cxm - hw, my - 7, cxm + hw, my + 7, 6), "#3a3d46", blob(rect_pts(cxm - hw, my + 2, cxm + hw, my + 7), "#22252c"), w=2.2, seed=sd + 14)
+    return dict(top="".join(o), legs="".join(legs), inside=inside, drawer_front=dfront)
+
+
+def chair_front(x, fy, k=1.0, hop=0.0, cols=None, seed=0):
+    """Стул анфас (повёрнут к зрителю): спинка за сиденьем, сиденье-трапеция в перспективе сверху, четыре ножки (задние короче).
+    x — центр, fy — пол под передними ножками, hop — подпрыгнул (px вверх; ножки отрываются от тени)."""
+    C = cols or LAB_CHAIR
+    sd = 8000 + seed
+    y = fy - hop
+    sw, sd_ = 170 * k, 64 * k
+    seat_y_ = y - 380 * k
+    o = []
+    o.append(blob(ellipse_pts(x, fy + 6, (sw + 40) * (1 - .002 * hop), 18 * k, 18), "#3a3d40", .2 * (1 - clamp01(hop / 80)) + .06))
+    # задние ножки и спинка
+    for i, lx in enumerate((x - sw * .82, x + sw * .82)):
+        o.append(shape([(lx - 5 * k, seat_y_ - sd_, 1), (lx + 5 * k, seat_y_ - sd_, 1), (lx + 5 * k, y - 50 * k, 1), (lx - 5 * k, y - 50 * k, 1)], C["leg"], w=2.4, seed=sd + i))
+    for i, lx in enumerate((x - sw * .8, x + sw * .8)):
+        o.append(shape([(lx - 6 * k, seat_y_ - sd_ - 330 * k, 1), (lx + 6 * k, seat_y_ - sd_ - 330 * k, 1), (lx + 6 * k, seat_y_ - sd_, 1), (lx - 6 * k, seat_y_ - sd_, 1)],
+                       C["leg"], w=2.4, seed=sd + 2 + i))
+    o.append(shape(lib.rrect(x - sw * .92, seat_y_ - sd_ - 360 * k, x + sw * .92, seat_y_ - sd_ - 200 * k, 26 * k), C["hi"],
+                   blob(rect_pts(x - sw * .92, seat_y_ - sd_ - 250 * k, x + sw * .92, seat_y_ - sd_ - 200 * k), C["c"], .7), w=3.2, seed=sd + 4))
+    # сиденье
+    seat = [(x - sw * .86, seat_y_ - sd_, 1), (x + sw * .86, seat_y_ - sd_, 1), (x + sw, seat_y_, 1), (x - sw, seat_y_, 1)]
+    o.append(shape(seat, C["hi"], blob([(x - sw * .2, seat_y_ - sd_), (x + sw * .86, seat_y_ - sd_), (x + sw, seat_y_), (x + sw * .1, seat_y_)], C["c"], .55),
+                   w=3.2, seed=sd + 5))
+    o.append(shape(rect_pts(x - sw, seat_y_, x + sw, seat_y_ + 22 * k), C["c"], blob(rect_pts(x - sw, seat_y_ + 12 * k, x + sw, seat_y_ + 22 * k), C["sh"]), w=3.0, seed=sd + 6))
+    for i, lx in enumerate((x - sw * .9, x + sw * .9)):
+        o.append(shape([(lx - 7 * k, seat_y_ + 22 * k, 1), (lx + 7 * k, seat_y_ + 22 * k, 1), (lx + 8 * k, y, 1), (lx - 8 * k, y, 1)], C["leg"], w=2.6, seed=sd + 7 + i))
+    return "".join(o)
+
+
+def stand_box(x, top, k=1.0, seed=0):
+    """Белая тумба (верх — центр x, top): ящик-куб в перспективе сверху (s04, на ней коробка с кнопкой)."""
+    w, d, h = 150 * k, 50 * k, EMPTY_FL - top
+    sd = 8050 + seed
+    o = [blob(ellipse_pts(x, EMPTY_FL + 6, w + 30, 14, 16), "#3a3d40", .18)]
+    o.append(shape([(x - w * .88, top - d, 1), (x + w * .88, top - d, 1), (x + w, top, 1), (x - w, top, 1)], "#f2f4f3", "", w=3.2, seed=sd))
+    o.append(shape(rect_pts(x - w, top, x + w, EMPTY_FL), "#dfe3e2", blob(rect_pts(x + w * .55, top, x + w, EMPTY_FL), "#c3c9c8", .8)
+                   + line([(x - w + 14, top + 150 * k), (x + w - 14, top + 150 * k)], 2.2, "#aab1b0", taper=0, wmin=1, seed=sd + 2), w=3.4, seed=sd + 1))
+    return "".join(o)
+
+
+def lab_room(t, view="hook", light_patch=0.0, cols=None, sun=None):
+    """Белая комната опыта в общей геометрии (см. шапку раздела). sun — сила солнечного квадрата (по умолчанию: есть, если
+    light_patch > 0 или вид "wide")."""
+    P = LAB
+    o = [_room_shell(P, seed=1, corner=2860.0 if view == "empty" else LAB_CORNER)]
+    o.append(_lab_window(*LAB_WIN, t=t, seed=1))
+    # мягкая тень в углу и под окном — штриховкой, не заливкой
+    o.append(_hatch(LAB_WIN[0] - 40, LAB_WIN[3] + 40, LAB_WIN[2] + 80, LAB_WIN[3] + 300, P["hatch"], 22, -58, 11, .3, fade=((LAB_WIN[0] + LAB_WIN[2]) / 2, LAB_WIN[3] + 60, 260)))
+    so = (.42 if (light_patch > 0 or view == "wide") else 0.0) if sun is None else sun
+    o.append(sun_square(light_patch, op=so))
+    sx, sy = LAB_SIT
+    ch = lab_chair(sx, sy, 1.0, cols)
+    tb = lab_table(*LAB_TABLE, LAB_TOP, P)
+    d = dict(bg="".join(o), chair_back=ch["back"], chair_seat=ch["seat"], table_top=tb["top"], table_legs=tb["legs"], light="",
+             cam=LAB_CAMS.get(view, LAB_CAMS["hook"]), inside=None, drawer_front="")
+    if view == "empty":
+        cx, cy = EMPTY_CHAIR
+        d["chair_back"] = ""
+        d["chair_seat"] = chair_front(cx, EMPTY_FL, 1.0, 0.0, cols)
+        d["table_top"] = stand_box(*EMPTY_STAND)
+        d["table_legs"] = ""
+    # полоса света окна поверх (мягкая, чуть тёплая) — на виде с окном
+    if view in ("wide",):
+        x0, y0, x1, y1 = LAB_WIN
+        d["light"] = (f'<path d="M{f(x0)} {f(y0)}L{f(x1)} {f(y0)}L{f(x1 + 900)} {f(FL + 300)}L{f(x0 + 500)} {f(FL + 300)}Z" '
+                      f'fill="#fff6dc" opacity=".10"/>')
+    return d
+
+
+def home_room(t, light="day", view="hook", drawer=0.0, sway=.6):
+    """Комната Димы в той же геометрии, что опыт (петля s18 = ракурс s01): обои, плинтус, доски, окно HOME_WIN на месте счётчика,
+    деревянный столик с ящиком, стул room.chair. light "day" | "eve" (вечер: лампа-бра тёплым кругом, окно в закате)."""
+    P = HOME["eve" if light == "eve" else "day"]
+    mode = "evening" if light == "eve" else "day"
+    o = [_room_shell(P, seed=2, corner=None)]
+    # вертикальные полоски обоев
+    for i in range(-12, 26):
+        x = i * 150.0 + 40
+        o.append(line([(x, -600), (x + 1.5, WALL_Y - 44)], 1.6, P["hatch"], taper=0.0, wmin=1, seed=8100 + i, op=.45))
+    o.append(window(*HOME_WIN, mode, t, seed=5, sway=sway))
+    if light == "day":
+        # полоса солнца формы окна на стене слева-внизу и на полу
+        x0, y0, x1, y1 = HOME_WIN
+        o.append(f'<path d="M{f(x0 - 180)} {f(y1 + 260)}L{f(x1 - 160)} {f(y1 + 300)}L{f(x1 - 260)} {f(WALL_Y - 40)}L{f(x0 - 300)} {f(WALL_Y - 60)}Z" '
+                 f'fill="#fff1c4" opacity=".28"/>')
+    else:
+        # бра слева вверху: тёплый круг на стене
+        o.append(f'<ellipse cx="80" cy="300" rx="260" ry="200" fill="#ffd79a" opacity=".22"/>')
+        o.append(shape(lib.rrect(40, 250, 120, 330, 30), "#f2c98a", blob(rect_pts(40, 300, 120, 330), "#d8a862"), w=3.0, seed=8120))
+        o.append(line([(80, 330), (80, 380)], 6, "#6a5a52", taper=0, wmin=1, seed=8121))
+        o.append(shape(lib.rrect(50, 380, 110, 396, 6), "#6a5a52", "", w=2.4, seed=8122))
+    o.append(shelf(-420, -60, 560, mode, seed=3, t=t))
+    sx, sy = LAB_SIT
+    ch = chair(sx, sy, 1.0, 0.0, mode)
+    tb = lab_table(*LAB_TABLE, LAB_TOP, P, drawer=drawer, wood=True, seed=5)
+    return dict(bg="".join(o), chair_back=ch["back"], chair_seat=ch["seat"], table_top=tb["top"], table_legs=tb["legs"], light="",
+                cam=HOME_CAMS.get(view, HOME_CAMS["hook"]), inside=tb["inside"], drawer_front=tb["drawer_front"])
+
+
+def room_day(t, view="hook", drawer=0.0):
+    return home_room(t, "day", view, drawer)
+
+
+def room_eve(t, view="mid", drawer=0.0):
+    return home_room(t, "eve", view, drawer)
+
+
+# ─────────────── окно вблизи (s17) ───────────────
+WD_WIN = (300.0, 180.0, 1160.0, 1240.0)       # рама окна (в мире = кадр при камере WD_CAM)
+WD_SILL = 1240.0                               # верх подоконника
+WD_DIMA = (250.0, 1250.0)                      # основание шеи Димы (вид сбоку-сзади, dima_back scale≈1.6)
+WD_CAT = (900.0, WD_SILL + 8.0)                # кот на подоконнике (точка между задних лап), k≈1.0
+WD_CAM = (560.0, 960.0, 1.0)
+
+
+def _cloud(cx, cy, cw, seed, col="#ffffff", op=1.0):
+    r = rs(8200 + seed)
+    pts = [(cx - cw / 2, cy + cw * .1)]
+    n = 7
+    for i in range(n + 1):
+        x = cx - cw / 2 + cw * i / n
+        pts.append((x, cy - cw * (.08 + .14 * math.sin(math.pi * i / n)) - r.uniform(0, cw * .05)))
+    pts.append((cx + cw / 2, cy + cw * .1))
+    sh = [(cx - cw / 2 + 20, cy + cw * .02), (cx + cw / 2 - 10, cy + cw * .02), (cx + cw / 2, cy + cw * .1), (cx - cw / 2, cy + cw * .1)]
+    return shape(pts, col, blob(sh, "#dfe8f2", .8), w=2.6, seed=8210 + seed, ink_color="#5a6a80") if op >= .99 else \
+        f'<g opacity="{op:.3f}">' + shape(pts, col, blob(sh, "#dfe8f2", .8), w=2.6, seed=8210 + seed, ink_color="#5a6a80") + "</g>"
+
+
+def window_day(t, cloud_speed=1.0, cloud_shift=None, warm=0.0, bird=True):
+    """Большое окно днём вблизи: небо, 4 облака плывут (cloud_shift px; по умолчанию t·cloud_speed·40), птица пролетает,
+    ветка с листьями качается у верхнего угла, рама, подоконник. warm 0…1 — свет теплеет. dict(bg, sill, frame, cam)."""
+    x0, y0, x1, y1 = WD_WIN
+    sh = (t * cloud_speed * 40.0) if cloud_shift is None else cloud_shift
+    P = HOME["day"]
+    o = [blob(rect_pts(-600, -600, 1800, 2600), lib.mix(P["wall"], "#f2dcb0", .4 * warm))]
+    o.append(_hatch(-400, -500, x0 - 10, 1900, P["hatch"], 24, -62, 21, .35))
+    fr = 26
+    ix0, iy0, ix1, iy1 = x0 + fr, y0 + fr, x1 - fr, y1 - fr
+    g = lib.lin_grad([(0, "#6fa8e0", 1), (.55, "#a9d2f0", 1), (1, lib.mix("#e8f3fa", "#fde3b4", warm), 1)], 0, iy0, 0, iy1, units="userSpaceOnUse")
+    sky = f'<rect x="{f(ix0 - 4)}" y="{f(iy0 - 4)}" width="{f(ix1 - ix0 + 8)}" height="{f(iy1 - iy0 + 8)}" fill="url(#{g})"/>'
+    W_ = ix1 - ix0 + 700
+    for j, (yy, cw, sp) in enumerate(((iy0 + 150, 330, 1.0), (iy0 + 360, 250, .7), (iy0 + 560, 380, 1.25), (iy0 + 760, 220, .85))):
+        cx = ix0 - 350 + ((j * 397 + sh * sp) % W_)
+        sky += _cloud(cx, yy, cw, j)
+    # дальние крыши без окон-знаков и деревья
+    hb = iy1 - 170
+    for j in range(5):
+        bx = ix0 - 20 + j * 190
+        sky += shape(rect_pts(bx, hb + (j % 2) * 40, bx + 170, iy1 + 10), lib.mix("#b9a48a", "#d8c0a0", .3 * (j % 2)),
+                     blob(rect_pts(bx + 120, hb + (j % 2) * 40, bx + 170, iy1 + 10), "#9c8870", .6), w=2.6, seed=8240 + j)
+    sky += _tree(ix0 + 160, iy1 + 40, 300, .8, t, 8251) + _tree(ix1 - 120, iy1 + 50, 260, .8, t, 8252, col="#6faa5c", sh="#548a44")
+    if bird:
+        # птица: галочка машет крыльями, пролетает справа налево за 3 с, по кругу
+        bt = (t * .34) % 1.0
+        bx_ = ix1 + 60 - (ix1 - ix0 + 160) * bt
+        by_ = iy0 + 260 + 40 * math.sin(bt * 6.3)
+        fl = 14 * math.sin(t * 16)
+        sky += line([(bx_ - 26, by_ - fl), (bx_, by_ + 4), (bx_ + 26, by_ - fl)], 4, INK, taper=.4, wmin=.3, seed=8260)
+    clipw = lib.clip_rect(ix0, iy0, ix1 - ix0, iy1 - iy0)
+    o.append(blob(rect_pts(x0 + 16, y0 + 20, x1 + 30, y1 + 30), P["wall_sh"], .55))
+    o.append(shape(rect_pts(x0, y0, x1, y1), "#f4ede0", "", w=4.4, seed=8270))
+    o.append(f'<g clip-path="url(#{clipw})">{sky}</g>')
+    o.append(line([(ix0, iy0), (ix1, iy0), (ix1, iy1), (ix0, iy1), (ix0, iy0)], 3.2, INK, taper=0, wmin=1, seed=8271))
+    xm = (x0 + x1) / 2
+    o.append(blob(rect_pts(xm - 10, iy0, xm + 10, iy1), "#f4ede0") + line([(xm - 10, iy0), (xm - 10, iy1)], 2.8, INK, seed=8272)
+             + line([(xm + 10, iy0), (xm + 10, iy1)], 2.8, INK, seed=8273))
+    # ветка у верхнего угла качается
+    a = 3 * math.sin(t * 1.7) + 1.5 * math.sin(t * 3.9)
+    bpts = [(ix1 + 30, iy0 + 60), (ix1 - 120, iy0 + 120), (ix1 - 260, iy0 + 150), (ix1 - 360, iy0 + 210)]
+    br = line(bpts, 14, "#6e4a2c", taper=.8, wmin=.2, seed=8280)
+    for i, (lx, ly) in enumerate(((ix1 - 100, iy0 + 112), (ix1 - 190, iy0 + 135), (ix1 - 280, iy0 + 168), (ix1 - 340, iy0 + 200), (ix1 - 230, iy0 + 155))):
+        lr = 22 + 6 * (i % 2)
+        br += shape(ellipse_pts(lx, ly + 16, lr * .55, lr, 10, rot=30 + 25 * i), "#6faa5c", "", w=2.2, seed=8290 + i)
+    o.append(f'<g clip-path="url(#{clipw})"><g transform="rotate({a:.2f} {ix1 + 30} {iy0 + 60})">{br}</g></g>')
+    sill = shape(lib.rrect(x0 - 60, WD_SILL, x1 + 60, WD_SILL + 46, 8), "#efe6d4", blob(rect_pts(x0 - 64, WD_SILL + 30, x1 + 64, WD_SILL + 50), "#cdbf9e"),
+                 w=3.6, seed=8300)
+    sill += blob(rect_pts(-600, WD_SILL + 50, 1800, 2600), lib.mix(P["wall_sh"], "#e8c890", .3 * warm))
+    sill += _hatch(-500, WD_SILL + 70, 1700, 2400, P["hatch"], 24, -62, 31, .3)
+    # тёплый свет из окна на подоконнике и раме
+    sill += f'<path d="M{f(x0)} {f(WD_SILL)}L{f(x1)} {f(WD_SILL)}L{f(x1 + 80)} {f(WD_SILL + 46)}L{f(x0 - 80)} {f(WD_SILL + 46)}Z" fill="#fff4cf" opacity="{.25 + .25 * warm:.3f}"/>'
+    return dict(bg="".join(o), sill=sill, cam=WD_CAM)
+
+
+# ─────────────── ночной кампус: полёт вдоль провода (s07) ───────────────
+NIGHT75 = dict(sky0="#0a1230", sky1="#18275e", sky2="#2d3f80", grass="#1f3a34", grass_far="#18302c", tree="#0e1a22", lamp="#ffe2a0")
+
+
+def CAMPUS_WIRE(u, t=0.0):
+    """Провод в кадре при полёте (u 0…1): идёт от нижнего края к горизонту по газону, петляет (волна бежит с u)."""
+    pts = []
+    for i in range(26):
+        q = i / 25
+        y = 1920 + 40 - q * (1920 - 1040)
+        persp = 1 - q * .92
+        x = 540 + 160 * math.sin(q * 5.0 + u * 9.0) * persp + 40 * math.sin(q * 11 + t * 2) * persp
+        pts.append((x, y))
+    return pts
+
+
+def campus_night(t, u):
+    """Ночной газон кампуса в координатах кадра, вид вдоль провода низко над землёй; u — пройденный путь (всё едет к камере):
+    небо со звёздами, дальняя кромка деревьев, ряды фонарей (растут и уходят за край), полосы газона бегут вниз."""
+    o = []
+    g = lib.lin_grad([(0, NIGHT75["sky0"], 1), (.7, NIGHT75["sky1"], 1), (1, NIGHT75["sky2"], 1)], 0, -200, 0, 1080, units="userSpaceOnUse")
+    o.append(f'<rect x="-400" y="-400" width="1880" height="1500" fill="url(#{g})"/>')
+    r = rs(8400)
+    for i in range(80):
+        x, y = r.uniform(-300, 1380), r.uniform(-300, 900)
+        if 60 < y < 400:
+            continue          # верхняя зона кадра без звёзд-«точек» над надписями сборщика не нужна, но и мусора меньше
+        rr = r.uniform(1.6, 3.6)
+        tw = .5 + .45 * math.sin(t * (2 + i % 5) + i)
+        o.append(f'<circle cx="{f(x)}" cy="{f(y)}" r="{f(rr)}" fill="#e6ecff" opacity="{tw:.2f}"/>')
+    o.append(shape(ellipse_pts(860, 300, 60, 60, 24), "#f6f0cc", blob(ellipse_pts(890, 290, 52, 56, 20), NIGHT75["sky1"]), w=2.6, seed=8401))
+    # дальние деревья (параллакс медленный)
+    hz = 1040.0
+    off = -u * 260
+    tr = []
+    for j in range(-2, 14):
+        x = (j * 120 + off) % 1800 - 360
+        h = 140 + 60 * math.sin(j * 1.7)
+        tr.append(shape([(x - 70, hz, 1), (x - 50, hz - h * .6), (x - 10, hz - h), (x + 30, hz - h * .8), (x + 70, hz - h * .4), (x + 80, hz, 1)],
+                        NIGHT75["tree"], "", w=2.4, seed=8410 + j, ink_color="#05080e"))
+    o.append("".join(tr))
+    # газон
+    gg = lib.lin_grad([(0, NIGHT75["grass_far"], 1), (1, NIGHT75["grass"], 1)], 0, hz, 0, 1920, units="userSpaceOnUse")
+    o.append(f'<rect x="-400" y="{f(hz)}" width="1880" height="1300" fill="url(#{gg})"/>')
+    # полосы газона: бегут к камере (перспектива 1/z)
+    for k in range(14):
+        z = ((k + u * 9.0) % 14) / 14
+        y = hz + (1920 - hz) * z ** 2.2
+        o.append(line([(-400, y), (1480, y)], 2 + 6 * z, "#2c5248", taper=0, wmin=1, seed=8430 + k, op=.35 + .4 * z))
+    # фонари по обе стороны: дальние маленькие у горизонта, подлетают и растут
+    for side in (-1, 1):
+        for k in range(5):
+            z = ((k + u * 3.2 + (.5 if side > 0 else 0)) % 5) / 5
+            sc = .15 + 2.2 * z ** 2.4
+            x = 540 + side * (60 + 900 * z ** 2.2)
+            yb = hz + (1920 - hz) * z ** 2.2
+            if sc > 2.4:
+                continue
+            ph = 300 * sc
+            o.append(f'<ellipse cx="{f(x)}" cy="{f(yb)}" rx="{f(90 * sc)}" ry="{f(22 * sc)}" fill="{NIGHT75["lamp"]}" opacity="{.18:.2f}"/>')
+            o.append(line([(x, yb), (x, yb - ph)], max(1.5, 9 * sc), "#2a3346", taper=0, wmin=1, seed=8450 + k + (side > 0) * 10))
+            o.append(f'<circle cx="{f(x)}" cy="{f(yb - ph)}" r="{f(60 * sc)}" fill="{NIGHT75["lamp"]}" opacity=".22"/>')
+            o.append(shape(ellipse_pts(x, yb - ph, 16 * sc + 2, 13 * sc + 2, 12), "#fff1c4", "", w=max(1.2, 2.4 * sc), seed=8470 + k))
+    return "".join(o)
+
+
+# ─────────────── старая лаборатория (конец s07) ───────────────
+OLD_TABLE = (220.0, 1300.0, 1180.0)           # x0, x1, верх стола (кадр)
+OLD_APP = (640.0, 1176.0)                       # дно аппарата (центр), k≈1.4
+OLD_LAMP = (640.0, -40.0)                       # точка подвеса лампы
+
+
+def old_lab(t, swing=0.0):
+    """Ночная лаборатория (кадр): тёмная стена с кирпичной штриховкой, длинный стол, лампа на шнуре качается (swing — угол в
+    градусах), конус света падает на стол и едет с лампой. dict(bg, table, lamp, light)."""
+    o = [blob(rect_pts(-400, -400, 1480, 2400), "#2e3346")]
+    o.append(_hatch(-300, -300, 1380, 1100, "#232838", 30, -60, 41, .6, w=2.0))
+    for row in range(10):
+        y = 120 + row * 96
+        o.append(line([(-300, y), (1380, y)], 1.6, "#3a4058", taper=0, wmin=1, seed=8500 + row, op=.5))
+    o.append(blob(rect_pts(-400, 1100, 1480, 2400), "#232633"))
+    x0, x1, top = OLD_TABLE
+    tb = shape([(x0 + 40, top - 80, 1), (x1 - 40, top - 80, 1), (x1, top, 1), (x0, top, 1)], "#6b5038", blob([(x0 + 40, top - 80), (x1 - 40, top - 80), (x1 - 30, top - 66), (x0 + 50, top - 66)], "#4e3a28", .6),
+               w=3.6, seed=8510)
+    tb += shape(rect_pts(x0, top, x1, top + 40), "#5a4230", blob(rect_pts(x0, top + 28, x1, top + 40), "#3c2c20"), w=3.4, seed=8511)
+    for i, lx in enumerate((x0 + 40, x1 - 40)):
+        tb += shape(rect_pts(lx - 16, top + 40, lx + 16, 2000), "#4a3626", w=3.0, seed=8512 + i)
+    a = math.radians(swing)
+    L = 760.0
+    hx, hy = OLD_LAMP[0] + L * math.sin(a), OLD_LAMP[1] + L * math.cos(a)
+    lamp = line([OLD_LAMP, (hx, hy - 30)], 4, "#151824", taper=0, wmin=1, seed=8520)
+    shade = [(hx - 26, hy - 34, 1), (hx + 26, hy - 34, 1), (hx + 90, hy + 40, 1), (hx - 90, hy + 40, 1)]
+    lamp = (f'<g transform="rotate({-swing:.2f} {hx:.1f} {hy:.1f})">' + shape(shade, "#3d5a4c", blob([(hx + 26, hy - 34), (hx + 90, hy + 40), (hx + 40, hy + 40), (hx + 6, hy - 34)], "#2b4136", .8),
+                                                                               w=3.4, seed=8521)
+            + shape(ellipse_pts(hx, hy + 40, 90, 14, 20), "#fff2c4", "", w=2.6, seed=8522) + "</g>")
+    lamp = line([OLD_LAMP, (hx, hy - 30)], 4, "#151824", taper=0, wmin=1, seed=8520) + lamp
+    cx_ = hx + (top - hy) * math.tan(a) * .6
+    light = (f'<path d="M{f(hx - 86)} {f(hy + 44)}L{f(hx + 86)} {f(hy + 44)}L{f(cx_ + 420)} {f(top + 20)}L{f(cx_ - 420)} {f(top + 20)}Z" fill="#fff0bc" opacity=".16"/>'
+             f'<ellipse cx="{f(cx_)}" cy="{f(top - 40)}" rx="430" ry="46" fill="#fff0bc" opacity=".22"/>')
+    return dict(bg="".join(o), table=tb, lamp=lamp, light=light, cam=(540.0, 960.0, 1.0))
