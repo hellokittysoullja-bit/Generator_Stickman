@@ -367,7 +367,8 @@ def s06(t):
     bd = R.bedroom(t, "moon", "foot")
     cxk, cyk, rk = R.CLOCK_F
     clock = R.lib_clock73(cxk, cyk, rk, t, R.PAL73["moon"])
-    world = [bd["bg"], clock, s06_dima(t), bd["front"], s06_shadow(t)]
+    dima = s06_dima(t) if t > T_VOT - .1 else ""      # до проезда голова за нижним краем кадра в темноте (без обрывка волос)
+    world = [bd["bg"], clock, dima, bd["front"], s06_shadow(t)]
     # темнота: почти чёрная синяя вуаль, проступает к удару сердца; часы и лунный прямоугольник видны сквозь неё
     q = t - T_CUT
     dk = .9 - .3 * sm(t, T_CUT + .1, T_BEAT) - .25 * sm(t, T_BEAT, T_BEAT + .6) - .1 * sm(t, T_VOT, T_VOT + .5)
