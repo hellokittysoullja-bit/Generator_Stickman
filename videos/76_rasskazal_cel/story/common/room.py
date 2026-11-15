@@ -2520,3 +2520,246 @@ def drape74(view, t, u=1.0, swing=0.0, seed=0):
     sx, sy = v["drape_k"]
     y0 = v["seat_y"] - 420 * sy
     return f'<g transform="translate(540 {y0:.2f}) scale({sx:.4f} {sy:.4f})">{PR.throne_drape(0, 0, 1.0, u, swing, t, seed)}</g>'
+
+
+# ═════════════════════════════════════════ РИЛС 76 «Рассказал о цели» (группа C) ═════════════════════════════════════════
+# Комната Димы с напольным МАТРАСОМ (не диван). Мир — в координатах ХУКА: камера CAM76["hook"] = (540, 960, 1.0) — мир = экран.
+#   trophy_room(t, view="hook", light="spot", glow=1.0) -> dict(bg, pool, light, cam, A):
+#       bg    — стена, пол, потолок с люком (в широких планах), окно и полка вне кадра хука (класть первым);
+#       pool  — пятно света на матрасе/полу (после матраса, до Димы); light — луч/свет поверх всего (класть последним);
+#       cam   — (cx, cy, s) ракурса view; A — якоря (ниже). light: "spot" — золотой луч-прожектор из люка в потолке
+#               (конус с чётким краем, днём), "lamp" — тёплая вечерняя лампа-торшер справа от матраса (пятно по форме абажура,
+#               петля s19 — тот же угол и крупность, что хук), "day" — без луча. glow 0…1 — сила луча (s09 гаснет).
+#   Ракурсы CAM76: hook (s01, s19), wide (s02, s04, s09 — вся комната, потолок с люком), mid (s03 — средне-крупно кубок на груди),
+#       cat (s05 — кот на полу у матраса, чистая стена слева сверху под «кот»), top (s08 — сверху на матрас).
+#   Якоря A76: MAT (x, y низа передней грани, k) — props.floor_mattress(x, y, k); HIP, DK — таз и масштаб Димы полулёжа
+#       (people.dima_pj(…, pose="chips76", **people.mattress_kw(*HIP, DK))); TROPHY (x, y, k) — кубок, лежащий на коленях Димы;
+#       HATCH — люк в потолке, куда сходятся шнуры (props.trophy_cords(HATCH, …)); LAPTOP — закрытый ноутбук на полу у матраса
+#       (дно, центр; props.laptop_closed); FLOOR — линия пола у стены; CEIL — линия потолка; CLEAN — чистая стена под «кот» (s05);
+#       CAT_IN — откуда кот входит (s05), CAT_SIT — где он садится; LAMP — торшер вечером.
+#   hook_title(t, t_end) — надпись «Кубок за что?» в ЭКРАННЫХ координатах (s01 и s02 — одно место): пишется 0.00–0.30 с, целиком
+#       к 0.35, гаснет за 0.25 с после t_end (конец «ничего», w8). Буквы y ≈ 160–445, x ≈ 40–655 — шнуры и луч правее.
+#   desk_evening(t) — вечерний стол у окна (s17–s18): desk_scene("evening") + полка над столом SHELF76 под кубок-стакан CUP76.
+#   lecture_room(t, shadow_u=0.0, lamp_l=1.0, lamp_r=1.0, dusk=0.5) — аудитория (s14–s16): окно на город, два стола, две лампы.
+#       LR76: WIN — окно (x0, y0, x1, y1), FL — пол у стены, DESK_L / DESK_R — (x0, x1, передний край столешницы y; верх
+#       на 70 глубже, ножки до y + 330), LAMP_L / LAMP_R — дно ламп на столе. Студенты сидят ЗА столами (рисовать до desks).
+R76_FL = 900.0                 # шов стены и пола (за матрасом)
+R76_CEIL = -620.0              # линия потолка (видна в широких планах)
+A76 = dict(MAT=(560.0, 1335.0, 1.25), HIP=(300.0, 1130.0), DK=1.0, TROPHY=(790.0, 1140.0, 2.0), HATCH=(1500.0, R76_CEIL),
+           LAPTOP=(1180.0, 1330.0), FLOOR=R76_FL, CEIL=R76_CEIL, CLEAN=(-640.0, 40.0, 60.0, 560.0),
+           CAT_IN=(-900.0, 1420.0), CAT_SIT=(-200.0, 1430.0), LAMP=(1010.0, 990.0), STICKY=(1180.0, 560.0))
+CAM76 = {"hook": (540.0, 960.0, 1.0), "wide": (600.0, 1000.0, .5), "mid": (620.0, 960.0, 1.2), "cat": (60.0, 900.0, .72),
+         "top": (600.0, 1060.0, .95)}
+R76_DAY = dict(wall="#efe0bc", wall_hi="#f7ecd2", wall_sh="#ddc89c", wall_ln="#e2d1aa", base="#f6eedc", base_sh="#d8c9a8",
+               floor="#c99060", floor_b="#ad7646", floor_ln="#8c5c36", ceil="#f4ead4", ceil_sh="#e2d3b2", shadow="#7a5432")
+R76_EVE = dict(wall="#c9a184", wall_hi="#d8b293", wall_sh="#a8826a", wall_ln="#b89276", base="#dcc0a6", base_sh="#b49680",
+               floor="#94603c", floor_b="#764a2c", floor_ln="#55331e", ceil="#cfac90", ceil_sh="#b09078", shadow="#3e2a22")
+
+
+def _r76_shell(P, t, seed=0, window_mode="day"):
+    o = []
+    g = lib.lin_grad([(0, P["wall_sh"], 1), (.3, P["wall"], 1), (1, P["wall_hi"], 1)], 0, R76_CEIL, 0, R76_FL, units="userSpaceOnUse")
+    o.append(f'<rect x="-2400" y="{f(R76_CEIL)}" width="6000" height="{f(R76_FL - R76_CEIL)}" fill="url(#{g})"/>')
+    for i in range(-16, 24):
+        x = i * 150.0 + 60
+        if -40 < x < 700:          # стена за надписью хука — без линий обоев (чистая зона)
+            continue
+        o.append(line([(x, R76_CEIL), (x + 1.5, R76_FL - 30)], w=1.8, color=P["wall_ln"], taper=0.0, wmin=1, seed=7600 + seed + i, op=.5))
+    # потолок и карниз
+    o.append(f'<rect x="-2400" y="-2600" width="6000" height="{f(R76_CEIL + 2600)}" fill="{P["ceil"]}"/>')
+    o.append(shape(rect_pts(-2400, R76_CEIL - 4, 3600, R76_CEIL + 26), P["base"], blob(rect_pts(-2400, R76_CEIL + 14, 3600, R76_CEIL + 26), P["base_sh"]),
+                   w=3.4, seed=7650 + seed))
+    # окно слева (вне кадра хука) и полка справа
+    o.append(window(-1020, -380, -420, 520, window_mode, t, seed=76, sway=.7, curtain="#d98b5a"))
+    o.append(shelf(1420, 1780, 260, "day" if window_mode == "day" else "evening", seed=76, t=t))
+    # плинтус и пол
+    o.append(shape(rect_pts(-2400, R76_FL - 40, 3600, R76_FL + 6), P["base"], blob(rect_pts(-2400, R76_FL - 8, 3600, R76_FL + 6), P["base_sh"]),
+                   w=3.4, seed=7660 + seed))
+    gf = lib.lin_grad([(0, P["floor"], 1), (1, P["floor_b"], 1)], 0, R76_FL, 0, 2600, units="userSpaceOnUse")
+    o.append(f'<rect x="-2400" y="{f(R76_FL + 6)}" width="6000" height="{f(4400 - R76_FL)}" fill="url(#{gf})"/>')
+    ys = [R76_FL + 6, 960, 1040, 1150, 1290, 1470, 1700, 2000, 2400, 2900, 3500, 4400]
+    for k, y in enumerate(ys[1:-1]):
+        o.append(line([(-2400, y), (3600, y)], w=3.0, color=P["floor_ln"], taper=0.0, wmin=1, seed=7670 + k, op=.55))
+    r = rs(7676)
+    for k, (ya, yb) in enumerate(zip(ys[:-1], ys[1:])):
+        for j in range(10):
+            x = r.uniform(-2300, 3500)
+            o.append(line([(x, ya), (x + r.uniform(-4, 4), yb)], w=2.4, color=P["floor_ln"], taper=0.0, wmin=1, seed=7690 + k * 11 + j, op=.45))
+    return "".join(o)
+
+
+def _hatch76(P, glow):
+    """Круглый люк-софит в потолке, откуда спускаются шнуры и бьёт луч."""
+    hx, hy = A76["HATCH"]
+    o = [shape(ellipse_pts(hx, hy + 14, 130, 30, 24), P["ceil_sh"], blob(ellipse_pts(hx, hy + 16, 104, 20, 20), "#3a2c20"), w=4, seed=7701)]
+    if glow > .01:
+        o.append(blob(ellipse_pts(hx, hy + 16, 96, 17, 20), "#ffe08a", .95 * glow))
+        o.append(blob(ellipse_pts(hx, hy + 15, 60, 10, 16), "#fff6d2", glow))
+    return "".join(o)
+
+
+def _beam76(t, glow, foot=(470.0, 1150.0, 470.0, 150.0)):
+    """Золотой луч из люка: конус с чётким краем (не мягкий овал), лёгкие пылинки внутри. foot — эллипс пятна (cx, cy, rx, ry)."""
+    if glow <= .01:
+        return "", ""
+    hx, hy = A76["HATCH"]
+    cx, cy, rx, ry = foot
+    a, b = (hx - 70, hy + 20), (hx + 80, hy + 20)
+    L, Rr = (cx - rx * .92, cy - ry * .3), (cx + rx, cy + ry * .1)
+    cone = [a + (1,), b + (1,), Rr + (1,), L + (1,)]
+    fl = 1 + .04 * math.sin(t * 7.3) + .03 * math.sin(t * 13.1)
+    lt = blob(cone, "#ffd76a", .16 * glow * fl)
+    inner = [(a[0] + 30, a[1]), (b[0] - 30, b[1]), (Rr[0] - rx * .45, Rr[1]), (L[0] + rx * .45, L[1])]
+    lt += blob([p + (1,) for p in inner], "#fff0b0", .10 * glow * fl)
+    lt += line([a, L], 3.0, "#e7b545", taper=.1, wmin=.6, seed=7711, op=.45 * glow)
+    lt += line([b, Rr], 3.0, "#e7b545", taper=.1, wmin=.6, seed=7712, op=.45 * glow)
+    r = rs(7713)
+    for i in range(16):           # пылинки в луче плывут вверх-вниз
+        u = r.uniform(.15, .95)
+        v = (r.uniform(0, 1) + .06 * t * r.uniform(.5, 1.5)) % 1.0
+        p0 = (a[0] + (L[0] - a[0]) * u, a[1] + (L[1] - a[1]) * u)
+        p1 = (b[0] + (Rr[0] - b[0]) * u, b[1] + (Rr[1] - b[1]) * u)
+        x, y = p0[0] + (p1[0] - p0[0]) * v, p0[1] + (p1[1] - p0[1]) * v
+        lt += blob(ellipse_pts(x, y + 6 * math.sin(t * 2 + i), 4, 4, 8), "#fff4c8", .7 * glow)
+    pool = blob(ellipse_pts(cx, cy, rx, ry, 30), "#ffe28a", .28 * glow) + blob(ellipse_pts(cx + 20, cy - 6, rx * .62, ry * .62, 26), "#fff1c0", .22 * glow)
+    pool += f'<ellipse cx="{f(cx)}" cy="{f(cy)}" rx="{f(rx)}" ry="{f(ry)}" fill="none" stroke="#f0c050" stroke-width="3" opacity="{.5 * glow:.3f}"/>'
+    return pool, lt
+
+
+def floor_lamp76(on=1.0, t=0.0, P=None):
+    """Торшер справа от матраса: тонкая стойка, абажур-цилиндр; свет — пятно на стене и на полу ПО ФОРМЕ абажура (трапеции с краем)."""
+    P = P or R76_EVE
+    x, y = A76["LAMP"]
+    o = [shape(ellipse_pts(x, y, 70, 16, 18), "#3d3a3a", blob(ellipse_pts(x + 14, y + 4, 50, 9, 14), "#2a2828"), w=3.4, seed=7720)]
+    o.append(line([(x, y - 6), (x - 4, y - 520)], 12, "#4a4646", taper=0.0, wmin=1, seed=7721))
+    top, bot = y - 700, y - 520
+    shade_pts = [(x - 74, top, 1), (x + 74, top, 1), (x + 108, bot, 1), (x - 108, bot, 1)]
+    u = lib.clamp(on)
+    col = lib.mix("#d9c7a0", "#ffd98a", u)
+    fl = 1 + .03 * math.sin(t * 9.0) * u
+    inner = blob([(x + 20, top), (x + 74, top), (x + 108, bot), (x + 40, bot)], lib.mix("#b8a27a", "#f0b85a", u), .7)
+    o.append(shape(shade_pts, col, inner, w=4, seed=7722))
+    light = ""
+    if u > .01:     # трапеции света вверх и вниз из абажура, чёткий край
+        up = [(x - 74, top, 1), (x + 74, top, 1), (x + 230, top - 520, 1), (x - 230, top - 520, 1)]
+        dn = [(x - 108, bot, 1), (x + 108, bot, 1), (x + 330, y + 30, 1), (x - 330, y + 30, 1)]
+        light += blob(up, "#ffcf78", .16 * u * fl) + blob(dn, "#ffcf78", .13 * u * fl)
+        light += blob(ellipse_pts(x, y + 10, 330, 60, 24), "#ffd890", .25 * u * fl)
+        light += blob(ellipse_pts(x - 380, y - 400, 520, 420, 30), "#ffbe70", .07 * u * fl)
+    return dict(lamp="".join(o), light=light)
+
+
+def trophy_room(t, view="hook", light="spot", glow=1.0, foot=None):
+    """Комната хука. Слои: bg → [матрас: props.floor_mattress(…, layer="back")] → pool → [Дима, кубок, кот] → [матрас front] → light."""
+    eve = light == "lamp"
+    P = R76_EVE if eve else R76_DAY
+    bg = _r76_shell(P, t, window_mode="evening" if eve else "day")
+    bg += _hatch76(P, glow if light == "spot" else 0.0)
+    pool, lt = "", ""
+    if light == "spot":
+        pool, lt = _beam76(t, glow, foot or (680.0, 1140.0, 430.0, 140.0))
+    elif eve:
+        fl = floor_lamp76(1.0, t, P)
+        bg += fl["lamp"]
+        lt = fl["light"] + f'<rect x="-2400" y="-2600" width="6000" height="5600" fill="#ff9a50" opacity=".06"/>'
+    return dict(bg=bg, pool=pool, light=lt, cam=CAM76.get(view, CAM76["hook"]), A=A76, P=P)
+
+
+# ── надпись хука «Кубок за что?» (экранные координаты, общая для s01 группы C и s02 группы B) ──
+HOOK76_LINES = (("Кубок", 40.0, 272.0, 0.0, .13), ("за что?", 130.0, 400.0, .13, .17))
+HOOK76_SIZE = 1.2
+
+
+def hook_title(t, t_end, fade=.25, ink="#141a33"):
+    """«Кубок за что?» маркер-росчерком: пишется 0.00–0.30 с, целиком к 0.35, стоит до t_end и гаснет за fade."""
+    from hand_text import hand_text
+    if t >= t_end + fade:
+        return ""
+    op = 1.0 - lib.clamp((t - t_end) / fade)
+    o = "".join(hand_text(txt, t, a, d, x0, y0, HOOK76_SIZE, ink=ink, bold=1.8) for txt, x0, y0, a, d in HOOK76_LINES)
+    return f'<g opacity="{op:.3f}">{o}</g>' if op < 1 else o
+
+
+# ── вечерний стол у окна (s17–s18) ──
+SHELF76 = (640.0, 1040.0, 600.0)        # x0, x1, верх полки над столом
+CUP76 = (930.0, 600.0)                   # дно кубка-стакана на полке (props.trophy_pencils)
+
+
+def desk_evening(t):
+    """desk_scene("evening") + небольшая полка над столом (под кубок-стакан). dict как desk_scene + shelf, A."""
+    d = desk_scene(t, "evening")
+    x0, x1, y = SHELF76
+    kk = _M("evening")["shade_k"]
+    sh = shape(rect_pts(x0, y, x1, y + 22), lib.mul(WOOD, kk), blob(rect_pts(x0, y + 12, x1, y + 22), lib.mul(WOOD_SH, kk)), w=3.4, seed=7730)
+    for bx in (x0 + 60, x1 - 60):
+        sh += line([(bx, y + 22), (bx, y + 70), (bx + 40, y + 22)], 6, lib.mul(WOOD_SH, kk), taper=0.0, wmin=1, seed=7731 + int(bx))
+    d["bg"] += sh
+    d["shelf"] = sh
+    d["A"] = dict(SHELF=SHELF76, CUP=CUP76, LAPTOP=LAPTOP, CAT_DESK=CAT_DESK, SIT=SIT)
+    return d
+
+
+# ── аудитория (s14–s16, по заказу группы A) ──
+LR76 = dict(WIN=(150.0, 120.0, 930.0, 640.0), FL=1060.0, DESK_L=(40.0, 520.0, 1060.0), DESK_R=(580.0, 1060.0, 1060.0),
+            LAMP_L=(430.0, 1040.0), LAMP_R=(970.0, 1040.0))
+
+
+def _lamp76(x, y, on, t, seed):
+    """Настольная лампа-грибок на столе аудитории: свет — чёткий круг на столешнице и трапеция из-под абажура."""
+    o = [shape(ellipse_pts(x, y, 40, 10, 14), "#2f5a52", "", w=3, seed=seed)]
+    o.append(line([(x, y - 4), (x - 6, y - 130)], 9, "#2f5a52", taper=0.0, wmin=1, seed=seed + 1))
+    sh = [(x - 66, y - 150, 1), (x + 40, y - 160, 1), (x + 60, y - 110, 1), (x - 74, y - 104, 1)]
+    u = lib.clamp(on)
+    o.append(shape(sh, lib.mix("#5d7f6e", "#7fae8f", u), blob([(x - 70, y - 110), (x + 58, y - 114), (x + 60, y - 106), (x - 72, y - 100)],
+                                                           lib.mix("#c9c2a0", "#fff1b0", u)), w=3.4, seed=seed + 2))
+    lt = ""
+    if u > .01:
+        fl = 1 + .03 * math.sin(t * 8 + seed)
+        lt = blob([(x - 72, y - 104, 1), (x + 60, y - 108, 1), (x + 170, y + 8, 1), (x - 220, y + 8, 1)], "#ffe9a0", .22 * u * fl)
+        lt += blob(ellipse_pts(x - 25, y + 2, 190, 26, 22), "#fff1b8", .45 * u * fl)
+    return "".join(o), lt
+
+
+def lecture_room(t, shadow_u=0.0, lamp_l=1.0, lamp_r=1.0, dusk=0.5):
+    """Аудитория: стена, большое окно на город (props.city_skyline внутри стекла, без вывесок), два стола, две лампы на них;
+    тени от рамы окна ползут по полу и стене по shadow_u 0…1 (время идёт). dict(bg, desks, lamps, light, A=LR76).
+    Порядок: bg → [студенты сидят] → desks → lamps → [тетради, руки поверх] → light."""
+    import props as PR
+    o = []
+    P = dict(wall="#d9d2bf", wall_hi="#e6dfcd", wall_sh="#c2b9a2", wall_ln="#cbc2ab")
+    o.append(_wall_plain(-900, -600, 2000, LR76["FL"], P, seed=76))
+    gf = lib.lin_grad([(0, "#9c8c74", 1), (1, "#7e6f58", 1)], 0, LR76["FL"], 0, 2600, units="userSpaceOnUse")
+    o.append(f'<rect x="-900" y="{f(LR76["FL"])}" width="2900" height="{f(3600 - LR76["FL"])}" fill="url(#{gf})"/>')
+    o.append(shape(rect_pts(-900, LR76["FL"] - 34, 2000, LR76["FL"] + 4), "#e8e1cf", "", w=3.2, seed=7740))
+    x0, y0, x1, y1 = LR76["WIN"]
+    g = lib.lin_grad([(0, lib.mix("#7fa8d8", "#5a4f8a", dusk), 1), (.6, lib.mix("#bcd6ef", "#e98a6a", dusk), 1),
+                      (1, lib.mix("#e6f1fa", "#f6c27a", dusk), 1)], 0, 0, 0, 1)
+    sky = f'<rect x="{f(x0)}" y="{f(y0)}" width="{f(x1 - x0)}" height="{f(y1 - y0)}" fill="url(#{g})"/>'
+    cid = lib.clip_of(rect_pts(x0, y0, x1, y1))
+    city = PR.city_skyline(x0, y1, x1 - x0, t, dusk)
+    o.append(shape(rect_pts(x0 - 22, y0 - 22, x1 + 22, y1 + 22), "#f0ebde", "", w=4, seed=7741))
+    o.append(f'<g clip-path="url(#{cid})">{sky}{city}</g>')
+    xm = (x0 + x1) / 2
+    for seg in (((xm, y0), (xm, y1)), ((x0, y0 + (y1 - y0) * .42), (x1, y0 + (y1 - y0) * .42))):
+        o.append(line(list(seg), 14, "#f0ebde", taper=0.0, wmin=1, seed=7742))
+        o.append(line(list(seg), 3, INK, taper=0.0, wmin=1, seed=7743, op=.5))
+    o.append(shape(rect_pts(x0 - 40, y1 + 18, x1 + 40, y1 + 44), "#e8e1cf", "", w=3.4, seed=7744))
+    # тени рамы: косые светлые пятна окна на полу ползут вправо и вытягиваются
+    u = lib.clamp(shadow_u)
+    sun = lib.mix("#f3e2b6", "#f0b98a", dusk)
+    o.append(f'<g opacity="{.55 - .25 * u:.3f}">' + _sun_quad((x0 - 300 + 520 * u, LR76["FL"] + 40), (760 + 260 * u, 40 + 60 * u), (-260 - 200 * u, 260),
+                                                               sun, lib.mix(sun, "#ffffff", .3), inset=.05) + '</g>')
+    desks, lamps, light = [], [], []
+    for key, lk, on in (("DESK_L", "LAMP_L", lamp_l), ("DESK_R", "LAMP_R", lamp_r)):
+        a, b, y = LR76[key]
+        top = [(a + 20, y - 70, 1), (b - 20, y - 70, 1), (b, y, 1), (a, y, 1)]
+        d = shape(top, DESKW, blob([(a + 20, y - 70), (b - 20, y - 70), (b - 16, y - 58), (a + 24, y - 58)], DESKW_SH, .5), w=3.6, seed=7750 + int(a))
+        d += shape(rect_pts(a, y, b, y + 34), DESKW_SH, "", w=3.4, seed=7751 + int(a))
+        for lx in (a + 30, b - 30):
+            d += shape(rect_pts(lx - 10, y + 34, lx + 10, y + 330), DESKW_SH, "", w=3, seed=7752 + int(lx))
+        desks.append(d)
+        lx, ly = LR76[lk]
+        lp, lt = _lamp76(lx, ly - 70, on, t, 7760 + int(a))
+        lamps.append(lp)
+        light.append(lt)
+    return dict(bg="".join(o), desks="".join(desks), lamps="".join(lamps), light="".join(light), A=LR76)
