@@ -149,13 +149,14 @@ def s01_rig(t):
     # кадр 0 — уже на середине рывка: палец идёт к Диме с ненулевой скоростью
     yank = .55 + .35 * math.sin(2 * math.pi * 1.6 * t + .2)                 # непрерывные рывки руки
     yank += .45 * kick(t, t1 - .04, .07, 4.0)                                 # удар 1: рывок сильнее, резинка до предела
+    yank += .45 * kick(t, W(0) - .05, .09, 5.0) - .3 * kick(t, W(0) + .17, .06, 6.0)   # второй рывок на «Если» (w0) и отдача резинки
     snap = kick(t, t2 - .02, .06, 3.2)                                        # удар 2: телефон утягивает палец назад
     pull = clamp(.35 + .5 * yank - .2 * snap)
     L = 300 + 150 * yank - 230 * snap + damp(t, t1 + .06, 40, 3.4, 4) + damp(t, t2 + .05, -55, 3.0, 4)
     L += 14 * math.sin(t * 31)                                               # дрожь усилия
     ang = math.radians(-128 + 6 * math.sin(2 * math.pi * 1.6 * t) - 7 * snap)  # направление от основания к пальцу (вверх-влево)
     tip = (H_BASE[0] + L * math.cos(ang), H_BASE[1] + L * math.sin(ang))
-    scroll = 900 * t + 5200 * max(0.0, t - t2) ** 1.4 + 300 * max(0.0, t - t1)
+    scroll = 1500 * t + 5200 * max(0.0, t - t2) ** 1.4 + 300 * max(0.0, t - t1)
     bite = .85 + .15 * kick(t, t1, .05, 6)
     stretch = clamp(.4 + .5 * yank - .3 * snap)
     return dict(tip=tip, pull=pull, scroll=scroll, bite=bite, stretch=stretch, snap=snap, yank=yank)
