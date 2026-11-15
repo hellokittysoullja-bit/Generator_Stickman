@@ -5108,19 +5108,22 @@ def zap(p0, p1, t=0.0, seed=0, u=1.0, w=16.0, branches=2):
     x1, y1 = p1
     L = math.hypot(x1 - x0, y1 - y0) or 1
     nx, ny = -(y1 - y0) / L, (x1 - x0) / L
-    n = max(4, int(L / 40))
+    n = max(3, int(L / 70))
     pts = []
+    sg = rs.choice((-1, 1))
     for i in range(n + 1):
-        q = i / n
-        off = 0 if i in (0, n) else rs.uniform(-.12, .12) * min(L, 300)
+        q = i / n + (0 if i in (0, n) else rs.uniform(-.25, .25) / n)
+        sg = -sg
+        off = 0 if i in (0, n) else sg * rs.uniform(.05, .11) * min(L, 260)
         pts.append((x0 + (x1 - x0) * q + nx * off, y0 + (y1 - y0) * q + ny * off))
     ww = w * clamp(u)
+    pts = [p + (1,) for p in pts]
     o = [line(pts, ww + 6, lib.INK, taper=.2, wmin=.4, seed=15410 + seed),
          line(pts, ww, C_ZAP, taper=.2, wmin=.4, seed=15411 + seed),
          line(pts, ww * .35, C_ZAP_CORE, taper=.2, wmin=.4, seed=15412 + seed)]
     for b in range(branches):
         i = rs.randint(1, n - 1)
-        bx, by = pts[i]
+        bx, by = pts[i][:2]
         a = math.atan2(y1 - y0, x1 - x0) + rs.choice((-1, 1)) * rs.uniform(.5, 1.0)
         bl = L * rs.uniform(.15, .3)
         bp = [(bx, by), (bx + math.cos(a) * bl * .5 + rs.uniform(-8, 8), by + math.sin(a) * bl * .5 + rs.uniform(-8, 8)),
