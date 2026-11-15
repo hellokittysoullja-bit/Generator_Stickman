@@ -1686,8 +1686,7 @@ def _curtains73(x0, y0, x1, y1, u, col, t, seed=0):
     sd = 7330 + seed
     w = x1 - x0
     xm = (x0 + x1) / 2
-    gap = w * (.5 - .03 * u)     # полуширина открытой части
-    gap = lib.lerp(w * .5, w * .035, smooth01(u)) if hasattr(lib, "lerp") else (w * .5 + (w * .035 - w * .5) * smooth01(u))
+    gap = w * .5 + (w * .035 - w * .5) * smooth01(u)     # полуширина открытой части
     o = []
     sh = lib.mul(col, (.78, .78, .8))
     for sgn in (-1, 1):
@@ -2057,7 +2056,7 @@ def warm_tint(svg, k=1.0):
 def cold_tint(svg, k=1.0, night=0.0):
     """Холодный свет (день, k) или луна (night 0…1: темнее и синее, но контур читается)."""
     k, n = clamp01(k), clamp01(night)
-    r = (1 - .06 * k) * (1 - .45 * n)
-    g = (1 - .02 * k) * (1 - .38 * n)
-    b = (1 + .05 * k) * (1 - .12 * n)
+    r = (1 - .13 * k) * (1 - .45 * n)
+    g = (1 - .04 * k) * (1 - .38 * n)
+    b = (1 + .06 * k) * (1 - .12 * n)
     return _tint(svg, f"{r:.3f} 0 0 0 0 0 {g:.3f} 0 0 0 0 0 {b:.3f} 0 {.03 * n:.3f} 0 0 0 1 0", "ct")
