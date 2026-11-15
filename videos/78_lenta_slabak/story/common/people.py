@@ -3602,7 +3602,8 @@ def _inventor_head(expr):
     for i, (cx_, cy_) in enumerate([(-80, -150), (-30, -162), (24, -164), (70, -140), (-112, -96), (-50, -124), (10, -130), (-120, -50)]):
         hi += line([(cx_ - 12, cy_ + 6), (cx_ - 4, cy_ - 10), (cx_ + 10, cy_ - 6), (cx_ + 6, cy_ + 8)], 2.6, C["HAIR_SH"], seed=880 + i, op=.85)
     s.append(shape(fur(base, depth=20, every=7, seed=870), C["HAIR"], hi, w=5.2, seed=871))
-    s.append(f'<g transform="translate(6 -112) scale(.86 .62)">{_glasses64("round", C["FRAME"], sd=890, w=6.4)}</g>')
+    gl = "".join(blob(ellipse_pts(cx_, cy_, rx_, ry_, 18), "#cfe6f6", .75) for cx_, cy_, rx_, ry_ in ((16, -22, 48, 42), (92, -20, 35, 39)))
+    s.append(f'<g transform="translate(4 -118) scale(.82 .58)">{gl}{_glasses64("round", "#2a1e18", sd=890, w=9.0)}</g>')
     return "".join(s)
 
 
@@ -3676,15 +3677,15 @@ _INV_P = {
              {"f": {"dir": (1, .2), "curl": (.4, .45, .5, .55), "thumb": .4}, "n": {"dir": (1, .35), "curl": (.05, .05, .1, .12), "spread": .2, "thumb": .15}}),
     "sit": (.1, .14, {"f": ("ik", (220, -110), -1), "n": ("ik", (290, -100), -1)},
             {"f": {"dir": (1, .4), "curl": (.4, .45, .5, .55), "thumb": .4}, "n": {"dir": (1, .4), "curl": (.35, .4, .45, .5), "thumb": .35}}),
-    "head": (.06, .3, {"f": ("ik", (-40, -700), 1), "n": ("ik", (60, -760), 1)},
-             {"f": {"dir": (.9, -.2), "curl": (.3, .35, .4, .45), "spread": .2, "thumb": .35}, "n": {"dir": (-.9, .1), "flip": -1, "curl": (.3, .35, .4, .45), "spread": .2, "thumb": .3}}),
+    "head": (.06, .3, {"f": ("ik", (-160, -640), 1), "n": ("ik", (-60, -770), 1)},
+             {"f": {"dir": (.5, .9), "curl": (.3, .35, .4, .45), "thumb": .3}, "n": {"dir": (1, .35), "curl": (.25, .3, .35, .4), "spread": .2, "thumb": .3}}),
     "pull": (-.14, -.04, {"f": ("ik", (300, -260), -1), "n": ("ik", (380, -250), -1)},
              {"f": {"dir": (1, 0), "curl": (.75, .78, .8, .82), "thumb": .7}, "n": {"dir": (1, 0), "curl": (.75, .78, .8, .82), "thumb": .7}}),
 }
 POSE.update({"inv_" + k_: v_ for k_, v_ in _INV_P.items()})
 
 
-def inventor(x, y, k, pose="sew", t=0.0, expr=None, u=1.0, feet=None, flip=False, head_add=0.0, lean_add=0.0):
+def inventor(x, y, k, pose="sew", t=0.0, expr=None, u=1.0, feet=None, flip=False, head_add=0.0, lean_add=0.0, arms=None, hands=None):
     """Изобретатель. pose — имя или (из, в) с u; feet: None (по пояс), "stand", "sit" (на куче ленты: ноги вперёд-вниз) или dict."""
     if isinstance(pose, (tuple, list)):
         pa, pb = "inv_" + pose[0], "inv_" + pose[1]
@@ -3703,9 +3704,37 @@ def inventor(x, y, k, pose="sew", t=0.0, expr=None, u=1.0, feet=None, flip=False
     else:
         ft = feet
     breath = .012 * math.sin(t * 2 * math.pi / 3.4)
-    lay = ("legs", "pelvis", "body", "arm_f", "arm_n") if name == "head" else None
+    on_head = name == "head" and (u > .6 or not isinstance(pose, (tuple, list)))
+    lay = ("legs", "pelvis", "arm_f", "arm_n", "body") if on_head else None
+    hand_n = None
+    if on_head:      # руки за голову: локти назад, ближняя кисть поверх волос (рисуется после головы), дальняя — за затылком
+        hand_n = dict(pk["hands"]["n"])
+        pk["hands"] = dict(pk["hands"], n={"kind": "none"})
+    if arms:
+        pk["arms"] = dict(pk["arms"], **arms)
+    if hands:
+        pk["hands"] = dict(pk["hands"], **hands)
+    if name == "head":      # цели кистей — от настоящего положения головы (наклон и посадка меняют её место)
+        pre = figure("inventor", x, y, k, ex, lean=pk["lean"] + lean_add + breath, head_ang=pk["head_ang"] + head_add, arms=pk["arms"], hands=pk["hands"],
+                     feet=ft, layers=("body",))
+        hx_, hy_ = pre["head"]
+        scl = pre["scale"]
+        wv = u if isinstance(pose, (tuple, list)) else 1.0
+        for side, off in (("n", (-70, -150)), ("f", (-190, -40))):
+            a_ = pk["arms"][side]
+            tgt = (hx_ + off[0] * scl, hy_ + off[1] * scl)
+            if a_[0] == "ik":
+                tgt = (a_[1][0] + (tgt[0] - a_[1][0]) * wv, a_[1][1] + (tgt[1] - a_[1][1]) * wv)
+            pk["arms"] = dict(pk["arms"], **{side: ("ik", tgt, 1)})
     fig = figure("inventor", x, y, k, ex, lean=pk["lean"] + lean_add + breath, head_ang=pk["head_ang"] + head_add, arms=pk["arms"], hands=pk["hands"],
                  feet=ft, flip=flip, layers=lay)
+    if hand_n:
+        wr = fig["wrist"]["n"]
+        d = hand_n.get("dir", (1, .35))
+        if flip:
+            d = (-d[0], d[1])
+        fig["svg"] += hand_svg("inventor", wr, d, k=fig["scale"], curl=hand_n.get("curl", (.25, .3, .35, .4)), spread=hand_n.get("spread", .2),
+                               thumb=hand_n.get("thumb", .3), flip=-1 if flip else 1, seed=7)
     fig["hold"] = hand_pos(fig, "n", 70)
     fig["palm"] = hand_pos(fig, "n", 60)
     return fig
