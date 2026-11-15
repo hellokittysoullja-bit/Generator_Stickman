@@ -171,8 +171,9 @@ def trophy_path(t, t_land):
     u = clamp(t / t_land)
     # путь: от (TX+300, TY−470) к месту; без разгона с нуля — ease_in линейно-квадратичный, скорость в кадре 0 уже есть
     e = .35 * u + .65 * u * u
-    x = lerp(TX + 300, TX, e)
-    y = lerp(TY - 470, TY, e) - 40 * math.sin(math.pi * e)
+    # сначала вниз справа от надписи, влево — только когда ручки ниже её (буквы не перекрывает ни кадр)
+    x = TX + 300 * (1 - e * e)
+    y = lerp(TY - 470, TY, e)
     rot = lerp(-16, 0, e) + 4 * math.sin(2 * math.pi * 2.0 * t)
     return x, y, rot, 0.0
 

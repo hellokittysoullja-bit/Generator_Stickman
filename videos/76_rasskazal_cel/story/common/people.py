@@ -3602,18 +3602,36 @@ def cat_clap76(x, y, k, t, u, st=None):
     return cat_svg(x, y, k, st, t)
 
 
-def cat_shh76(x, y, k, t, u, tip=None, st=None):
-    """Кот тянет правую переднюю лапу вверх-вбок (к губам Димы): u 0…1. tip — цель (мир) для подбора paw_dx, иначе вправо-вверх."""
+def cat_shh76(x, y, k, t, u, tip=None, st=None, side="l"):
+    """Кот тянет переднюю лапу к точке tip (губы Димы), u 0…1: тянется на задних лапах — корпус вытягивается (sy), наклоняется к цели
+    (rot), лапа выпрямляется (paw/paw_l + paw_dx). side "l" — левая от зрителя лапа (цель слева от кота), "r" — правая.
+    Вторая передняя лапа остаётся на опоре: лап всегда четыре. Возвращает (svg, кончик лапы в мире)."""
+    import cat
     st = dict(st or {})
     e = lib.clamp(u)
-    st["paw"] = e
+    sg = -1 if side == "l" else 1
+    best = (1e18, 0.0, 1.0, 70.0)
     if tip is not None:
-        import cat
-        dx = (tip[0] - x) / k - (cat.CX + 25 - cat.CX)
-        st["paw_dx"] = max(10.0, dx / 1.6)
-    else:
-        st.setdefault("paw_dx", 110)
-    st.setdefault("look", (.7, -.3))
+        for rot_ in np.linspace(0, 40, 21):
+            for sy in (1.0, 1.08, 1.16, 1.24):
+                for pdx in np.linspace(10, 150, 15):
+                    lx = 25 * sg + sg * pdx * 1.6
+                    ly = -150 * sy
+                    a = math.radians(-rot_ * (1 if sg < 0 else -1))
+                    wx = x + (lx * math.cos(a) - ly * math.sin(a)) * k
+                    wy = y + (lx * math.sin(a) + ly * math.cos(a)) * k
+                    err = (wx - tip[0]) ** 2 + (wy - tip[1]) ** 2 + 30 * rot_ * k + 400 * (sy - 1) * k
+                    if err < best[0]:
+                        best = (err, rot_ * (1 if sg < 0 else -1), sy, pdx)
+    _, rot_, sy, pdx = best if tip is not None else (0, 0.0, 1.0, 110.0)
+    st["paw_l" if side == "l" else "paw"] = e
+    st["paw_l_dx" if side == "l" else "paw_dx"] = pdx
+    st["rot"] = -abs(rot_) * e * (1 if sg < 0 else -1)
+    st["sy"] = st.get("sy", 1.0) * (1 + (sy - 1) * e)
+    st.setdefault("look", (.7 * sg, -.3))
     st.setdefault("squint", .5 * e)
-    st.setdefault("sy", 1 + .08 * e)
-    return cat_svg(x, y, k, st, t)
+    lx = 25 * sg + sg * pdx * 1.6 * e
+    ly = -150 * e * st["sy"]
+    a = math.radians(st["rot"])
+    tipw = (x + (lx * math.cos(a) - ly * math.sin(a)) * k, y + (lx * math.sin(a) + ly * math.cos(a)) * k)
+    return cat_svg(x, y, k, st, t), tipw

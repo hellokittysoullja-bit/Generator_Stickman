@@ -438,7 +438,71 @@ def s02(t):
     return svg(whip_wrap('<rect width="1080" height="1920" fill="#efe0bc"/>' + body + over, t, t0, dx=-260, dur=.18) + title)
 
 
-SCENES = {"s02": s02, "s10": s10, "s11": s11}
+# ═══════════════════════════════ s07: лапа кота у губ — «тсс» ═══════════════════════════════
+def s07(t):
+    """Дима сидит, ноги вытянуты, наклонился к коту — вот-вот похвастается; кот на дальнем краю матраса (у стены) тянет лапу к его губам."""
+    lib.dyn_begin()
+    sh = SH["s07"]
+    t0, t1 = sh["t0"], sh["t1"]
+    T_POKA, T_SDEL = ws(31), ws(33)
+    tr = R.trophy_room(t, "hook", light="day")
+    mx, my, mk = A["MAT"]
+    hx, hy = 270.0, 1170.0
+    k = .9
+    sc = k * people.HEIGHT["dima_pj"]
+    o = [tr["bg"], PR.floor_mattress(mx, my, mk, sag=.1, sag_x=hx + 100, layer="back")]
+    o.append(PR.laptop_closed(940, 925, 1.0, rot=-4))
+    cat_p = (735.0, 965.0)
+    ck = .84
+    land = t0 + .14
+    ju = clamp((t - (t0 - .26)) / (land - (t0 - .26)))
+    shh = ease_out(clamp((t - (T_SDEL - .06)) / .16), 2)
+    lean = .5 + .04 * math.sin(2 * math.pi * 1.1 * (t - t0)) * (1 - shh) - .06 * shh
+    head_add = .18 + .03 * math.sin(t * 2.0) * (1 - shh)
+    # ближняя ладонь хлопает себя по груди («вот я какой!»), дальняя опирается о матрас позади
+    pat = 14 * abs(math.sin(2 * math.pi * 2.2 * (t - t0))) * (1 - shh)
+    chest = people.rot(people.np.array([150.0 - pat, -250.0]), lean) * sc
+    arms = {"f": ("ik", (hx - 60 * sc, hy + 30 * sc), 1), "n": ("ik", (hx + chest[0], hy + chest[1]), -1)}
+    hands = {"f": {"dir": (-.3, 1), "spread": .3, "curl": (.1, .1, .15, .2), "thumb": .2},
+             "n": {"dir": (-.5, -.6), "spread": .15, "curl": (.1, .12, .15, .2), "thumb": .25}}
+    if shh > .3:
+        ex = dict(people.EXPR["dima"]["puffed76"])
+        ex["look"] = (.75, .1)
+    else:
+        ex = dict(people.EXPR["dima"]["boast76"])
+        ex["open"] = .45 + .2 * math.sin(t * 9)
+        ex["look"] = (.7, .1)
+    ex["closed"] = blink(t, 1.3) * (1 - shh)
+    ex["hair"] = 4 * bump(t, T_SDEL, .25)
+    kwd = dict(arms=arms, hands=hands, lean_add=lean, head_add=head_add, **people.plop_kw(hx, hy, k))
+    fig = people.dima_pj(hx, hy, k, ex, None, **kwd)
+    mouth = people.mouth_pt(fig, lean, head_add)
+    o.append(fig["svg"])
+    if ju < 1:
+        o.append(people.cat_jump((1000.0, 1300.0), cat_p, ck, ju, t, {"look": (-.4, 0)}))
+        tip = None
+    else:
+        u_raise = ease_io(clamp((t - (T_POKA - .05)) / .2)) * .45 + .55 * ease_io(clamp((t - (T_SDEL - .2)) / .2))
+        st = {"look": (-.8, .1), "perk": 1.0 - shh * .5, "squint": .8 * shh, "smile": .5 * shh, "tilt": -6 * shh}
+        st["sx"], st["sy"] = PR.squash(t, land, .18, 3.0, 8)
+        cat_sv, tip = people.cat_shh76(cat_p[0], cat_p[1], ck, t, u_raise, tip=(mouth[0] + 6, mouth[1] + 4), st=st, side="l")
+        o.append(cat_sv)
+    o.append(PR.floor_mattress(mx, my, mk, sag=.1, sag_x=hx + 100, layer="front"))
+    if tip is not None and shh > .5:        # «тсс»: тихие штрихи у лапы
+        for j, a in enumerate((-2.5, -2.0, -1.5)):
+            r0, r1 = 46 + 10 * shh, 76 + 16 * shh
+            o.append(line([(tip[0] + r0 * math.cos(a), tip[1] + r0 * math.sin(a)), (tip[0] + r1 * math.cos(a), tip[1] + r1 * math.sin(a))], 4.5, INK,
+                          seed=7740 + j, op=clamp((shh - .5) * 2)))
+    o.append(tr["light"])
+    # камера: средний план, лёгкий наезд на лапу у губ
+    u = ease_io(clamp((t - t0) / (t1 - t0)))
+    cs = lerp(1.3, 1.4, u) + .03 * bump(t, T_SDEL, .3)
+    cx = lerp(500, 540, u) + 2 * math.sin(t * 1.4)
+    cy = lerp(990, 960, u) + 2 * math.sin(t * 1.1)
+    return frame_svg("".join(o), cx, cy, cs, lerp(.8, .2, u), bg="#efe0bc")
+
+
+SCENES = {"s02": s02, "s07": s07, "s10": s10, "s11": s11}
 
 
 def frame(sid, t):

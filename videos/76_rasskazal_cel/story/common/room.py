@@ -2541,11 +2541,13 @@ def drape74(view, t, u=1.0, swing=0.0, seed=0):
 #       к 0.35, гаснет за 0.25 с после t_end (конец «ничего», w8). Буквы y ≈ 160–445, x ≈ 40–655 — шнуры и луч правее.
 #   desk_evening(t) — вечерний стол у окна (s17–s18): desk_scene("evening") + полка над столом SHELF76 под кубок-стакан CUP76.
 #   lecture_room(t, shadow_u=0.0, lamp_l=1.0, lamp_r=1.0, dusk=0.5) — аудитория (s14–s16): окно на город, два стола, две лампы.
+#       LR76: WIN — окно (x0, y0, x1, y1), FL — пол у стены, DESK_L / DESK_R — (x0, x1, передний край столешницы y; верх
+#       на 70 глубже, ножки до y + 330), LAMP_L / LAMP_R — дно ламп на столе. Студенты сидят ЗА столами (рисовать до desks).
 R76_FL = 900.0                 # шов стены и пола (за матрасом)
 R76_CEIL = -620.0              # линия потолка (видна в широких планах)
 A76 = dict(MAT=(560.0, 1335.0, 1.25), HIP=(300.0, 1130.0), DK=1.0, TROPHY=(790.0, 1140.0, 2.0), HATCH=(1500.0, R76_CEIL),
            LAPTOP=(1180.0, 1330.0), FLOOR=R76_FL, CEIL=R76_CEIL, CLEAN=(-640.0, 40.0, 60.0, 560.0),
-           CAT_IN=(-900.0, 1420.0), CAT_SIT=(-200.0, 1430.0), LAMP=(1260.0, 1250.0), STICKY=(1180.0, 560.0))
+           CAT_IN=(-900.0, 1420.0), CAT_SIT=(-200.0, 1430.0), LAMP=(1010.0, 990.0), STICKY=(1180.0, 560.0))
 CAM76 = {"hook": (540.0, 960.0, 1.0), "wide": (600.0, 1000.0, .5), "mid": (620.0, 960.0, 1.2), "cat": (60.0, 900.0, .72),
          "top": (600.0, 1060.0, .95)}
 R76_DAY = dict(wall="#efe0bc", wall_hi="#f7ecd2", wall_sh="#ddc89c", wall_ln="#e2d1aa", base="#f6eedc", base_sh="#d8c9a8",
@@ -2574,8 +2576,8 @@ def _r76_shell(P, t, seed=0, window_mode="day"):
     o.append(shape(rect_pts(-2400, R76_FL - 40, 3600, R76_FL + 6), P["base"], blob(rect_pts(-2400, R76_FL - 8, 3600, R76_FL + 6), P["base_sh"]),
                    w=3.4, seed=7660 + seed))
     gf = lib.lin_grad([(0, P["floor"], 1), (1, P["floor_b"], 1)], 0, R76_FL, 0, 2600, units="userSpaceOnUse")
-    o.append(f'<rect x="-2400" y="{f(R76_FL + 6)}" width="6000" height="{f(2600 - R76_FL)}" fill="url(#{gf})"/>')
-    ys = [R76_FL + 6, 960, 1040, 1150, 1290, 1470, 1700, 2000, 2600]
+    o.append(f'<rect x="-2400" y="{f(R76_FL + 6)}" width="6000" height="{f(4400 - R76_FL)}" fill="url(#{gf})"/>')
+    ys = [R76_FL + 6, 960, 1040, 1150, 1290, 1470, 1700, 2000, 2400, 2900, 3500, 4400]
     for k, y in enumerate(ys[1:-1]):
         o.append(line([(-2400, y), (3600, y)], w=3.0, color=P["floor_ln"], taper=0.0, wmin=1, seed=7670 + k, op=.55))
     r = rs(7676)
@@ -2698,8 +2700,8 @@ def desk_evening(t):
 
 
 # ── аудитория (s14–s16, по заказу группы A) ──
-LR76 = dict(WIN=(150.0, 120.0, 930.0, 640.0), FL=1060.0, DESK_L=(40.0, 520.0, 1120.0), DESK_R=(580.0, 1060.0, 1120.0),
-            LAMP_L=(430.0, 1100.0), LAMP_R=(970.0, 1100.0))
+LR76 = dict(WIN=(150.0, 120.0, 930.0, 640.0), FL=1060.0, DESK_L=(40.0, 520.0, 1060.0), DESK_R=(580.0, 1060.0, 1060.0),
+            LAMP_L=(430.0, 1040.0), LAMP_R=(970.0, 1040.0))
 
 
 def _lamp76(x, y, on, t, seed):
@@ -2727,7 +2729,7 @@ def lecture_room(t, shadow_u=0.0, lamp_l=1.0, lamp_r=1.0, dusk=0.5):
     P = dict(wall="#d9d2bf", wall_hi="#e6dfcd", wall_sh="#c2b9a2", wall_ln="#cbc2ab")
     o.append(_wall_plain(-900, -600, 2000, LR76["FL"], P, seed=76))
     gf = lib.lin_grad([(0, "#9c8c74", 1), (1, "#7e6f58", 1)], 0, LR76["FL"], 0, 2600, units="userSpaceOnUse")
-    o.append(f'<rect x="-900" y="{f(LR76["FL"])}" width="2900" height="{f(2600 - LR76["FL"])}" fill="url(#{gf})"/>')
+    o.append(f'<rect x="-900" y="{f(LR76["FL"])}" width="2900" height="{f(3600 - LR76["FL"])}" fill="url(#{gf})"/>')
     o.append(shape(rect_pts(-900, LR76["FL"] - 34, 2000, LR76["FL"] + 4), "#e8e1cf", "", w=3.2, seed=7740))
     x0, y0, x1, y1 = LR76["WIN"]
     g = lib.lin_grad([(0, lib.mix("#7fa8d8", "#5a4f8a", dusk), 1), (.6, lib.mix("#bcd6ef", "#e98a6a", dusk), 1),
@@ -2754,7 +2756,7 @@ def lecture_room(t, shadow_u=0.0, lamp_l=1.0, lamp_r=1.0, dusk=0.5):
         d = shape(top, DESKW, blob([(a + 20, y - 70), (b - 20, y - 70), (b - 16, y - 58), (a + 24, y - 58)], DESKW_SH, .5), w=3.6, seed=7750 + int(a))
         d += shape(rect_pts(a, y, b, y + 34), DESKW_SH, "", w=3.4, seed=7751 + int(a))
         for lx in (a + 30, b - 30):
-            d += shape(rect_pts(lx - 10, y + 34, lx + 10, LR76["FL"] + 120), DESKW_SH, "", w=3, seed=7752 + int(lx))
+            d += shape(rect_pts(lx - 10, y + 34, lx + 10, y + 330), DESKW_SH, "", w=3, seed=7752 + int(lx))
         desks.append(d)
         lx, ly = LR76[lk]
         lp, lt = _lamp76(lx, ly - 70, on, t, 7760 + int(a))
