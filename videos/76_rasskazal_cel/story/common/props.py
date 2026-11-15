@@ -4853,3 +4853,362 @@ def tap_rings(x, y, u, k=1.0, col="#FFFFFF"):
         o.append(f'<circle cx="{f(x)}" cy="{f(y)}" r="{f(r)}" fill="none" stroke="{col}" stroke-width="{f(7 * k * (1 - q))}" opacity="{1 - q:.3f}"/>')
         o.append(f'<circle cx="{f(x)}" cy="{f(y)}" r="{f(r + 4 * k)}" fill="none" stroke="{lib.INK}" stroke-width="{f(2.4 * k * (1 - q))}" opacity="{.6 * (1 - q):.3f}"/>')
     return "".join(o)
+
+
+# ═══════════════════════════════════════ РИЛС 76 «РАССКАЗАЛ О ЦЕЛИ» (группа A) ═══════════════════════════════════════
+# Новое в 76 ((x, y) — ЦЕНТР ДНА, если не сказано иначе; k — масштаб; seed — своё зерно штрихов). Букв, цифр, гравировки нет нигде.
+#   trophy(x, y, k, glint, grow, t, seed, rot, inside, heavy)  золотой кубок 220×300·k: подставка, ножка, чаша, ДВЕ ручки-петли, блик
+#                 бежит по чаше (glint 0…1 — проход полосы света слева направо; 0 и 1 — полосы нет), grow — множитель роста (до гигантского),
+#                 rot — поворот вокруг центра дна; inside — SVG внутри чаши (локально, (0, 0) — центр края чаши, рисуется ПОД передней
+#                 стенкой: карандаши, конфетти); heavy 0…1 — золото темнеет и «наливается» (недобрый тон).
+#   trophy_handles(x, y, k, grow, rot) → ((xl, yl), (xr, yr)) — верх ручек-петель в мире (за них цепляются шнуры).
+#   trophy_cords(top, cup, k, t, sway)   два золотых шнура от точки top=(x, y) к ручкам кубка cup=(x, y, k[, grow, rot]); провисают
+#                 чуть-чуть, sway — поперечная волна (кубок качается).
+#   confetti(box, t, t0, n, seed, freeze, reverse, k, burst, life, gravity)  конфетти и серпантин в рамке box=(x0, y0, x1, y1): куски летят
+#                 с самого первого кадра (у каждого своя фаза), крутятся и переворачиваются; freeze — время ролика, после которого куски
+#                 замирают в воздухе (лёгкое дрожание); reverse=True — перемотка: летят ВВЕРХ; burst=(x, y) — залп веером из точки в t0
+#                 (life — сколько живёт залп).
+#   floor_mattress(x, y, k, sag, sink, w, seed, sag_x, layer)  напольный матрас (ЦЕНТР ДНА передней грани) в 3/4: верх в стёжку,
+#                 передняя грань-поролон; sag 0…1 — верх проседает у sag_x (мир), sink 0…1 — поролон «поглощает» фигуру: передний валик
+#                 растёт вверх. layer "back" — верх (рисовать ДО фигуры), "front" — передняя грань и валик (ПОСЛЕ фигуры), "all" — всё.
+#   chips_bag(x, y, k, rot, crunch, seed, open_)  пакет чипсов (ЦЕНТР) 150×200·k, однотонный оранжевый с пустым жёлтым овалом, зубчатые
+#                 швы; crunch 0…1 — сжат в руке (морщины, уже); open_ — верх открыт, торчат чипсы.
+#   chip(x, y, k, rot, seed) — один чипс (ЦЕНТР); chip_crumbs(x, y, k, u, seed, n) — крошки разлетаются и падают (u 0…1).
+#   party_horn(x, y, k, rot, unroll, t, seed)  праздничная дудка-«язычок»: (x, y) — мундштук; при rot=0 трубка идёт вправо; unroll 0…1 —
+#                 свёрнута в завиток → вытянута во всю длину 280·k с кисточкой.
+#   sealed_envelope(x, y, k, seal_u, shiver, t, seed, rot, col)  запечатанный конверт (ЦЕНТР) 210×136·k клапаном к нам; seal_u 0…1 —
+#                 сургучная печать (гладкий красный круг без знаков) шмякает на клапан; shiver 0…1 — конверт дрожит, уголок клапана
+#                 приподнимается (внутри не видно ничего).
+C_GOLD = "#E8B43A"
+C_GOLD_SH = "#B98322"
+C_GOLD_DEEP = "#8E5F14"
+C_GOLD_HI = "#FFE48E"
+C_WAX = "#C8352C"
+C_WAX_SH = "#8F2019"
+C_WAX_HI = "#EE7A66"
+C_FOAM = "#EDE6D6"
+C_FOAM_SH = "#CFC4AC"
+C_TICK = "#7FA3C9"
+C_CHIPS = "#E86A2C"
+C_CHIPS_SH = "#B54A18"
+C_CHIPS_HI = "#FF9A5C"
+C_CHIP = "#F2C55A"
+C_CHIP_SH = "#C9962E"
+CONFETTI_COLS = ("#E8473C", "#F2B632", "#4FA36A", "#4A8FD6", "#E86FB0", "#8E6CD1", "#F28A2E")
+
+
+def _rot_pt(px, py, rot):
+    c, s = math.cos(math.radians(rot)), math.sin(math.radians(rot))
+    return px * c - py * s, px * s + py * c
+
+
+def _trophy_local(glint, heavy, seed, inside):
+    sd = 76100 + seed
+    g = mix(C_GOLD, "#C99A3A", .5 * clamp(heavy))
+    gsh = mix(C_GOLD_SH, C_GOLD_DEEP, .6 * clamp(heavy))
+    o = []
+    # подставка: две ступени
+    o.append(shape(rrect(-92, -46, 92, 0, 8), "#5B3A24", line([(-80, -14), (80, -14)], 4, "#3E2616", taper=.2, seed=sd), w=4.4, seed=sd + 1))
+    o.append(shape(rrect(-70, -70, 70, -44, 6), gsh, blob(rect_pts(-70, -56, 70, -44), mix(gsh, C_GOLD_DEEP, .5), .7), w=4, seed=sd + 2))
+    # ножка с узлом
+    stem = [(-16, -70, 1), (-10, -120), (-22, -138), (-12, -160, 1), (12, -160, 1), (22, -138), (10, -120), (16, -70, 1)]
+    o.append(shape(stem, g, blob([(4, -70), (16, -70), (10, -120), (20, -138), (12, -160), (6, -160)], gsh, .8), w=4, seed=sd + 3))
+    # ручки — петли по бокам (рисуются ДО чаши: концы уходят за стенку)
+    for sx in (-1, 1):
+        hp = [(sx * 70, -268), (sx * 128, -262), (sx * 140, -222), (sx * 112, -186), (sx * 66, -182)]
+        o.append(line(hp, 22, INK, taper=0.0, wmin=1.0, seed=sd + 4 + sx))
+        o.append(line(hp, 14, g, taper=0.0, wmin=1.0, seed=sd + 6 + sx))
+        o.append(line(hp[:3], 4.5, C_GOLD_HI, taper=.5, wmin=.2, seed=sd + 8 + sx, op=.8))
+    # внутренность чаши (тёмный эллипс) + содержимое
+    o.append(shape(ellipse_pts(0, -276, 92, 20, 22), C_GOLD_DEEP, blob(ellipse_pts(0, -270, 80, 13, 18), "#6B440C"), w=4, seed=sd + 10))
+    if inside:
+        o.append(f'<g transform="translate(0 -276)">{inside}</g>')
+    # чаша: передняя стенка
+    bowl = [(-92, -276, 1), (-86, -230), (-62, -184), (-26, -164), (26, -164), (62, -184), (86, -230), (92, -276, 1), (0, -258)]
+    inner = blob([(30, -276), (92, -276), (86, -230), (62, -184), (26, -164), (40, -200), (52, -240)], gsh, .85)
+    inner += line([(-70, -258), (-64, -222), (-44, -190)], 8, C_GOLD_HI, taper=.5, wmin=.2, seed=sd + 11, op=.9)
+    gu = clamp(glint)
+    if 0.001 < gu < .999:
+        gx = -150 + 300 * gu
+        inner += blob([(gx - 18, -290), (gx + 22, -290), (gx - 18, -150), (gx - 58, -150)], "#FFF6D0", .85)
+        inner += blob([(gx + 36, -290), (gx + 46, -290), (gx + 6, -150), (gx - 4, -150)], "#FFF6D0", .6)
+    o.append(shape(bowl, g, inner, w=4.6, seed=sd + 12))
+    # ободок спереди
+    o.append(line([(-92, -276), (-46, -262), (0, -258), (46, -262), (92, -276)], 6, C_GOLD_HI, taper=.4, wmin=.3, seed=sd + 13, op=.9))
+    if gu > .001 and gu < .999:
+        o.append(star4(-150 + 300 * gu + 20, -284, 26 * math.sin(math.pi * gu), 1.0))
+    return "".join(o)
+
+
+def trophy(x, y, k=1.0, glint=0.0, grow=1.0, t=0.0, seed=0, rot=0.0, inside="", heavy=0.0):
+    return _tf(_trophy_local(glint, heavy, seed, inside), x, y, k * grow, rot)
+
+
+def trophy_handles(x, y, k=1.0, grow=1.0, rot=0.0):
+    out = []
+    for sx in (-1, 1):
+        px, py = _rot_pt(sx * 124 * k * grow, -262 * k * grow, rot)
+        out.append((x + px, y + py))
+    return tuple(out)
+
+
+def trophy_cords(top, cup, k=1.0, t=0.0, sway=0.0):
+    cx, cy, ck = cup[0], cup[1], cup[2]
+    grow = cup[3] if len(cup) > 3 else 1.0
+    rot = cup[4] if len(cup) > 4 else 0.0
+    o = []
+    for j, (hx, hy) in enumerate(trophy_handles(cx, cy, ck, grow, rot)):
+        pts = []
+        for i in range(9):
+            u = i / 8
+            px = top[0] + (hx - top[0]) * u
+            py = top[1] + (hy - top[1]) * u
+            px += math.sin(math.pi * u) * (14 * k + sway * 40 * k * math.sin(t * 7 + j))
+            pts.append((px, py))
+        o.append(line(pts, 11 * k, INK, taper=0.0, wmin=1.0, seed=76150 + j))
+        o.append(line(pts, 6 * k, C_GOLD, taper=0.0, wmin=1.0, seed=76152 + j))
+        o.append(line(pts[1:-1], 2.2 * k, C_GOLD_HI, taper=.3, wmin=.3, seed=76154 + j, op=.8))
+    return "".join(o)
+
+
+def _confetti_piece(px, py, k, ang, flip, col, kind, sd):
+    if kind == 2:   # серпантин-завиток
+        pts = [(px + (math.cos(ang + i * .9) * (10 + i * 5)) * k, py + (math.sin(ang + i * .9) * (10 + i * 5) + i * 6) * k) for i in range(5)]
+        return line(pts, 7 * k, col, taper=.2, wmin=.4, seed=sd)
+    w, h = (16, 10) if kind == 0 else (11, 11)
+    hh = h * max(.12, abs(flip))
+    c = mix(col, "#000000", .22) if flip < 0 else col
+    ca, sa = math.cos(ang), math.sin(ang)
+    pts = [(px + (dx * ca - dy * sa) * k, py + (dx * sa + dy * ca) * k) for dx, dy in ((-w / 2, -hh / 2), (w / 2, -hh / 2), (w / 2, hh / 2), (-w / 2, hh / 2))]
+    return f'<path d="M{pts[0][0]:.1f} {pts[0][1]:.1f}L{pts[1][0]:.1f} {pts[1][1]:.1f}L{pts[2][0]:.1f} {pts[2][1]:.1f}L{pts[3][0]:.1f} {pts[3][1]:.1f}Z" fill="{c}"/>'
+
+
+def confetti(box, t, t0=0.0, n=40, seed=0, freeze=None, reverse=False, k=1.0, burst=None, life=1.6, gravity=900.0):
+    x0, y0, x1, y1 = box
+    rs = _rs(76200 + seed)
+    te = t if freeze is None else min(t, freeze)
+    jit = 0.0 if freeze is None else max(0.0, t - freeze)
+    o = []
+    H = (y1 - y0)
+    for i in range(n):
+        col = CONFETTI_COLS[rs.randrange(len(CONFETTI_COLS))]
+        kind = 2 if rs.random() < .14 else (0 if rs.random() < .6 else 1)
+        sp = rs.uniform(.7, 1.2)
+        ph = rs.random()
+        bx = rs.uniform(x0, x1)
+        wob = rs.uniform(18, 46)
+        wf = rs.uniform(2.0, 4.2)
+        spin = rs.uniform(-7, 7)
+        fl = rs.uniform(5, 11)
+        sd = 76300 + seed * 97 + i
+        if burst is not None:
+            age = te - t0
+            if reverse:
+                age = life - (t - t0)
+            if age < 0 or age > life:
+                continue
+            a = math.radians(rs.uniform(-160, -20))
+            v = rs.uniform(500, 1100) * k
+            px = burst[0] + math.cos(a) * v * age * (1 - .35 * age / life)
+            py = burst[1] + math.sin(a) * v * age + .5 * gravity * k * age * age * .55
+            px += wob * k * math.sin(wf * age + ph * 6) * clamp(age * 2)
+            op = 1.0 if age < life * .75 else clamp((life - age) / (life * .25))
+        else:
+            v = 210 * sp * k
+            age = (te - t0) if not reverse else -(t - t0)
+            yy = (ph * (H + 80) + v * age) % (H + 80)
+            py = y0 - 40 + yy
+            px = bx + wob * k * math.sin(wf * age + ph * 6)
+            op = 1.0
+        if jit > 0:
+            px += 1.6 * k * math.sin(jit * 21 + i)
+            py += 1.6 * k * math.cos(jit * 17 + i * 1.3)
+        ang = spin * te + ph * 6
+        flip = math.cos(fl * te + ph * 9)
+        piece = _confetti_piece(px, py, k, ang, flip, col, kind, sd)
+        if op < 1:
+            piece = f'<g opacity="{op:.3f}">{piece}</g>'
+        o.append(piece)
+    return "".join(o)
+
+
+def floor_mattress(x, y, k=1.0, sag=0.0, sink=0.0, w=760.0, seed=0, sag_x=None, layer="all"):
+    sd = 76400 + seed
+    hw = w / 2 * k
+    th = 92 * k          # толщина
+    dp = 230 * k         # глубина верха в перспективе
+    sx = x if sag_x is None else sag_x
+    sg = 70 * k * clamp(sag)
+    o = []
+
+    def top_y(px, base, f_=1.0):
+        d = (px - sx) / (w * .42 * k)
+        return base + sg * f_ * math.exp(-d * d * 2.2)
+    if layer in ("all", "back"):
+        n = 16
+        back = [(x - hw + 40 * k + (2 * hw - 80 * k) * i / n, top_y(x - hw + 40 * k + (2 * hw - 80 * k) * i / n, y - th - dp, .25)) for i in range(n + 1)]
+        front = [(x + hw - 2 * hw * i / n, top_y(x + hw - 2 * hw * i / n, y - th)) for i in range(n + 1)]
+        pts = [back[0] + (1,)] + back[1:-1] + [back[-1] + (1,), front[0] + (1,)] + front[1:-1] + [front[-1] + (1,)]
+        inner = ""
+        # полосы тика по глубине
+        for j in range(-6, 7):
+            u0 = j / 6.5
+            a = (x + u0 * (hw - 40 * k), top_y(x + u0 * (hw - 40 * k), y - th - dp, .25))
+            b = (x + u0 * hw, top_y(x + u0 * hw, y - th))
+            inner += line([a, ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2 + sg * .25), b], 7 * k, C_TICK, taper=0.0, wmin=1.0, seed=sd + 20 + j, op=.55)
+        # стёжка-пуговки
+        for r_ in (.3, .7):
+            for j in range(-2, 3):
+                u0 = j / 2.5
+                px = x + u0 * (hw - 40 * k * (1 - r_))
+                py = top_y(px, y - th - dp * (1 - r_))
+                inner += blob(ellipse_pts(px, py, 7 * k, 4 * k, 8), C_FOAM_SH)
+        # тень проседания
+        if sg > 1:
+            inner += blob(ellipse_pts(sx, y - th - dp * .35 + sg * .6, w * .32 * k, dp * .45, 22), "#8C8270", .25 * clamp(sag))
+        o.append(shape(pts, C_FOAM, inner, w=4.6, seed=sd + 1))
+    if layer in ("all", "front"):
+        n = 16
+        topl = [(x - hw + 2 * hw * i / n, top_y(x - hw + 2 * hw * i / n, y - th)) for i in range(n + 1)]
+        lip = 0.0
+        if sink > 0:
+            lip = 120 * k * clamp(sink)
+            topl = [(px, py - lip * math.exp(-((px - sx) / (w * .3 * k)) ** 2 * 1.6)) for px, py in topl]
+        pts = [topl[0] + (1,)] + topl[1:-1] + [topl[-1] + (1,), (x + hw - 6 * k, y, 1), (x - hw + 6 * k, y, 1)]
+        inner = blob(rect_pts(x - hw, y - 26 * k, x + hw, y + 4), C_FOAM_SH, .9)
+        inner += line([(x - hw + 20 * k, y - th * .45), (x + hw - 20 * k, y - th * .45)], 3.4 * k, "#B9AE95", taper=.1, seed=sd + 40, op=.8)
+        if lip > 1:
+            inner += line([(sx - w * .28 * k, top_y(sx - w * .28 * k, y - th) - lip * .4), (sx, top_y(sx, y - th) - lip * .7),
+                           (sx + w * .28 * k, top_y(sx + w * .28 * k, y - th) - lip * .4)], 4 * k, C_FOAM_SH, taper=.4, seed=sd + 41)
+        o.append(shape(pts, mix(C_FOAM, C_FOAM_SH, .25), inner, w=4.6, seed=sd + 2))
+    return "".join(o)
+
+
+def chips_bag(x, y, k=1.0, rot=0.0, crunch=0.0, seed=0, open_=1.0):
+    sd = 76500 + seed
+    cu = clamp(crunch)
+    wk = 1 - .14 * cu
+    o = []
+    if open_ > 0:
+        for j, (cx, cy, r) in enumerate(((-30, -100, -20), (8, -112, 14), (40, -98, 30))):
+            o.append(chip(cx * wk, cy - 10 * open_, 1.0, r, seed + j))
+    zig = []
+    for i in range(9):
+        zig.append(((-72 + 18 * i) * wk, -92 - (8 if i % 2 else 0)))
+    body = [(-72 * wk, -92, 1)] + zig[1:-1] + [(72 * wk, -92, 1), (80 * wk - 6 * cu, -20), (76 * wk, 60), (70 * wk, 98, 1)]
+    for i in range(8, -1, -1):
+        body.append(((-72 + 18 * i) * wk * .97, 98 + (8 if i % 2 else 0)))
+    body += [(-70 * wk, 98, 1), (-76 * wk, 60), (-80 * wk + 6 * cu, -20)]
+    inner = blob(ellipse_pts(4, 6, 46 * wk, 34, 20), "#F7D24A")
+    inner += blob(ellipse_pts(4, 10, 38 * wk, 26, 18), "#F9DC6E", .6)
+    inner += blob([(30 * wk, -92), (80 * wk, -92), (76 * wk, 98), (30 * wk, 98), (48 * wk, 0)], C_CHIPS_SH, .5)
+    inner += line([(-56 * wk, -70), (-62 * wk, 0), (-54 * wk, 70)], 7, C_CHIPS_HI, taper=.5, wmin=.2, seed=sd + 1, op=.85)
+    if cu > .02:
+        for j in range(4):
+            yy = -60 + 38 * j
+            inner += line([(-50 * wk, yy), (-10 * wk, yy + 10 * cu), (30 * wk, yy - 6 * cu), (60 * wk, yy + 4)], 3.6, C_CHIPS_SH, taper=.5, seed=sd + 5 + j, op=.8 * cu)
+    o.append(shape(body, C_CHIPS, inner, w=4.4, seed=sd + 2))
+    o.append(line([(-70 * wk, -80), (70 * wk, -80)], 3, C_CHIPS_SH, taper=.1, seed=sd + 3, op=.8))
+    o.append(line([(-68 * wk, 86), (68 * wk, 86)], 3, C_CHIPS_SH, taper=.1, seed=sd + 4, op=.8))
+    return _tf("".join(o), x, y, k, rot)
+
+
+def chip(x, y, k=1.0, rot=0.0, seed=0):
+    sd = 76550 + seed
+    rs = _rs(sd)
+    pts = []
+    for i in range(10):
+        a = 2 * math.pi * i / 10
+        r = rs.uniform(25, 31)
+        pts.append((r * math.cos(a), r * .8 * math.sin(a)))
+    inner = line([(-14, -6), (0, -2), (14, -8)], 3, C_CHIP_SH, taper=.5, seed=sd + 1, op=.8)
+    inner += blob(ellipse_pts(-8, 6, 3, 2.4, 6), C_CHIP_SH) + blob(ellipse_pts(10, 4, 2.6, 2, 6), C_CHIP_SH)
+    return _tf(shape(pts, C_CHIP, inner, w=3.2, seed=sd + 2), x, y, k, rot)
+
+
+def chip_crumbs(x, y, k=1.0, u=1.0, seed=0, n=6):
+    u = clamp(u)
+    if u <= 0 or u >= 1:
+        return ""
+    rs = _rs(76580 + seed)
+    o = []
+    for i in range(n):
+        a = rs.uniform(-math.pi * .95, -math.pi * .05)
+        v = rs.uniform(120, 260)
+        px = x + math.cos(a) * v * u * k
+        py = y + (math.sin(a) * v * u + 520 * u * u) * k
+        if i < n // 2:
+            o.append(chip(px, py, k * rs.uniform(.35, .55), rs.uniform(-90, 90) + 300 * u, seed + 10 + i))
+        else:
+            o.append(blob(ellipse_pts(px, py, 5 * k, 4 * k, 6), C_CHIP))
+    return "".join(o)
+
+
+def party_horn(x, y, k=1.0, rot=0.0, unroll=0.0, t=0.0, seed=0):
+    sd = 76600 + seed
+    u = clamp(unroll)
+    L = 280.0
+    straight = 30 + (L - 30) * u
+    rest = L - straight
+    pts = [(46 + s, 0) for s in range(0, int(straight) + 1, 10)]
+    if rest > 1:
+        # завиток: спираль вниз-назад, длина rest
+        r0 = 34.0
+        ang = 0.0
+        px, py = pts[-1]
+        cx, cy = px, py + r0
+        s = 0.0
+        while s < rest:
+            ang += 10 / max(8.0, r0)
+            r = r0 * (1 - .55 * s / max(rest, 1))
+            pts.append((cx + r * math.sin(ang), cy - r * math.cos(ang)))
+            s += 10
+    o = []
+    wob = 3 * math.sin(t * 30) * u
+    pts = [(px, py + wob * (px - 46) / L) for px, py in pts]
+    o.append(line(pts, 30, INK, taper=0.0, wmin=1.0, seed=sd))
+    o.append(line(pts, 23, "#E8473C", taper=0.0, wmin=1.0, seed=sd + 1))
+    o.append(line(pts, 8, "#F2B632", taper=0.0, wmin=1.0, seed=sd + 2))
+    if u > .85:
+        tip = pts[-1]
+        for j in range(5):
+            a = math.radians(-40 + 20 * j)
+            o.append(line([tip, (tip[0] + 34 * math.cos(a), tip[1] + 34 * math.sin(a) + 4 * math.sin(t * 40 + j))], 5, "#F2B632", taper=.6, seed=sd + 5 + j))
+    # мундштук-раструб
+    mp = [(0, -9, 1), (48, -16, 1), (48, 16, 1), (0, 9, 1)]
+    o.append(shape(mp, "#4A8FD6", line([(6, -4), (42, -8)], 3, "#8FC0F0", taper=.4, seed=sd + 3), w=3.4, seed=sd + 4))
+    return _tf("".join(o), x, y, k, rot)
+
+
+def sealed_envelope(x, y, k=1.0, seal_u=0.0, shiver=0.0, t=0.0, seed=0, rot=0.0, col=None):
+    sd = 76700 + seed
+    c = col or "#F4E7C8"
+    csh = lib.mul(c, (.86, .82, .76))
+    sh = clamp(shiver)
+    jr = sh * 2.2 * math.sin(t * 47 + seed * 1.7)
+    jx = sh * 2.0 * math.sin(t * 61 + seed)
+    lift = sh * (6 + 4 * math.sin(t * 23 + seed))
+    o = []
+    body = rrect(-105, -68, 105, 68, 8)
+    inner = blob([(-105, 68), (0, 4), (105, 68)], csh, .7)
+    inner += line([(-104, 66), (0, 6), (104, 66)], 3.4, "#B9A47E", taper=.2, seed=sd + 1)
+    o.append(shape(body, c, inner, w=4.2, seed=sd + 2))
+    flap = [(-104, -66, 1), (0, 14 - lift, 1), (104, -66, 1)]
+    o.append(shape(flap, lib.mul(c, (.95, .93, .9)), "", w=3.8, seed=sd + 3))
+    su = clamp(seal_u)
+    if su > 0:
+        s = max(0.0, lib.spring(su * .55, 2.2, 6.0))
+        sq = 1 + .25 * math.exp(-8 * su) * math.cos(14 * su)
+        rs = _rs(sd + 4)
+        pts = [((26 + rs.uniform(-2.5, 2.5)) * math.cos(2 * math.pi * i / 14), (26 + rs.uniform(-2.5, 2.5)) * math.sin(2 * math.pi * i / 14)) for i in range(14)]
+        seal = shape(pts, C_WAX, blob(ellipse_pts(4, 5, 18, 16, 14), C_WAX_SH, .55) + blob(ellipse_pts(-8, -9, 7, 4, 8), C_WAX_HI, .9), w=3.4, seed=sd + 5)
+        if su < .5:
+            dy = -160 * (1 - ease_o(su / .5))
+        else:
+            dy = 0.0
+        o.append(f'<g transform="translate(0 {14 - lift + dy:.1f}) scale({s * sq:.4f} {s / sq:.4f})">{seal}</g>')
+    return _tf("".join(o), x + jx, y, k, rot + jr)
+
+
+def ease_o(u):
+    return lib.ease_out(u, 3)
