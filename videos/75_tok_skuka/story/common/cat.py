@@ -195,7 +195,7 @@ def head(st, t):
     return "".join(s)
 
 
-def body(walk=None, legs=0.0, paw=0.0, paw_dx=70.0, paw_l=0.0, paw_l_dx=70.0, cross=0.0, cross_tap=0.0):
+def body(walk=None, legs=0.0, paw=0.0, paw_dx=70.0, paw_l=0.0, paw_l_dx=70.0, cross=0.0, cross_tap=0.0, hide=()):
     """walk — фаза шага (передние лапы по очереди поднимаются, задние в противофазе); legs 0..1 — задние лапы вытянуты (толчок/полёт)."""
     s = []
     bd = [(760, 1296), (744, 1240), (756, 1180), (790, 1142), (880, 1142), (916, 1180), (928, 1240), (912, 1296)]
@@ -227,6 +227,8 @@ def body(walk=None, legs=0.0, paw=0.0, paw_dx=70.0, paw_l=0.0, paw_l_dx=70.0, cr
         if walk is not None:
             lift = max(0.0, math.sin(2 * math.pi * walk + (0 if sx < 0 else math.pi))) * 30
         lift += 26 * legs * (1 if sx < 0 else .8)      # в прыжке передние подобраны
+        if ("r" if sx > 0 else "l") in hide:     # рилс 75: эту переднюю лапу рисует вызывающий (тянется поверх головы/к зрителю)
+            continue
         dx = 0.0
         pw_ = paw if sx > 0 else paw_l
         pdx = paw_dx if sx > 0 else -paw_l_dx
@@ -295,7 +297,7 @@ def draw(x, y, k, st, t):
     o.append(f'<g transform="rotate({tail_a:.2f} {TAIL_PIVOT[0]} {TAIL_PIVOT[1]})">{tail_art()}{flame(t, 1.3 - .45 * sl, st.get("flame_e", 1.0))}</g>')
     sy = br * (1 - .2 * sl) * st.get("sy", 1.0)
     sx = (1 + .12 * sl) * st.get("sx", 1.0)
-    o.append(f'<g transform="translate({CX} {CBOT}) scale({sx:.4f} {sy:.4f}) translate({-CX} {-CBOT})">{body(st.get("walk"), st.get("legs", 0.0), st.get("paw", 0.0), st.get("paw_dx", 70.0), st.get("paw_l", 0.0), st.get("paw_l_dx", 70.0), st.get("cross", 0.0), st.get("cross_tap", 0.0))}</g>')
+    o.append(f'<g transform="translate({CX} {CBOT}) scale({sx:.4f} {sy:.4f}) translate({-CX} {-CBOT})">{body(st.get("walk"), st.get("legs", 0.0), st.get("paw", 0.0), st.get("paw_dx", 70.0), st.get("paw_l", 0.0), st.get("paw_l_dx", 70.0), st.get("cross", 0.0), st.get("cross_tap", 0.0), st.get("hide", ()))}</g>')
     hy = -(sy - 1) * (CBOT - NECK[1]) + 34 * sl + 70 * st.get("drop", 0.0)
     o.append(f'<g transform="translate({22 * sl:.2f} {hy:.2f}) rotate({tilt:.2f} {NECK[0]} {NECK[1]})">{head(st, t)}</g>')
     return f'<g transform="translate({x:.2f} {y:.2f}) rotate({st.get("rot", 0.0):.2f}) scale({k:.4f}) translate({-CX} {-CBOT})">{"".join(o)}</g>'

@@ -292,6 +292,8 @@ def dima_head(expr):
     s.append(line([(44, 70), (38, 80), (36, 88)], 2.2, C["SKIN_SH2"], seed=170, op=.75))
     s.append(dima_mouth(expr))
     hair = _bounce(HAIR_PTS, hb)
+    if expr.get("hair_up", 0.0) > .01:      # рилс 75: волосы дыбом от разряда (пряди-углы тянутся от макушки, дрожат)
+        hair = hair_spike(hair, expr["hair_up"], expr.get("hair_t", 0.0))
     inner = blob(_bounce([(-160, -190), (-20, -190), (-30, -130), (-70, -100), (-80, -40), (-160, -20)], hb), C["HAIR_SH"], .95)
     inner += blob(_bounce([(10, -150), (60, -120), (100, -80), (70, -112), (40, -128)], hb), C["HAIR_HI"], .9)
     inner += blob(_bounce([(-24, -170), (-4, -140), (-14, -120), (-30, -140)], hb), C["HAIR_HI"], .6)
@@ -3286,3 +3288,285 @@ def cat_back74(x, y, k=1.0, t=0.0, turn=0.0):
             o.append(line([(sx * 100 + dx, 30 + 12 * j), (sx * 150 + dx, 26 + 14 * j + wv), (sx * 190 + dx, 30 + 18 * j + wv)], 1.6, "#cfcbe0", seed=7495 + j + 3 * sx,
                           op=.9))
     return f'<g transform="translate({x:.2f} {y:.2f}) scale({k:.4f})">{"".join(o)}</g>'
+
+
+
+# ═════════════════════════════ РИЛС 75 «ТОК ИЛИ СКУКА» (автор — группа B) ═════════════════════════════
+# Дима — dima(x, y, s, expr, pose, **sit_kw(x, y, s)); мимика EXPR["dima"]: calm75 (спокойно смотрит на кнопку), zap75 (разряд: глаза
+#   распахнуты, рот «о»), dazed75 (ошалелая полуулыбка), shrink75 (ёжится, губы сжаты), smile75 (тёплая улыбка себе), window75 (смотрит
+#   вдаль, мягко). zapped(expr, hair_up, t, twitch) — та же мимика с волосами дыбом (hair_up 0…1, дрожат по t) и дёрганьем ближнего века.
+# press_at(who, x, y, s, target, reach, press, expr, t, **kw) — человек (Дима или участник) сидит и тянется ближней рукой к точке target:
+#   reach 0…1 — от колена до кнопки (кончик указательного пальца ложится в target), press 0…1 — кнопка утоплена (палец вниз на 10·s).
+#   Возвращает dict figure + "tip" (кончик пальца в мире). Дальняя рука на колене. who="dima" или "youth" / "curly" / "beard".
+# finger_fan(tip, s, t, u) — «пулемёт»: веер смазанных копий пальца над кнопкой (рисовать поверх руки).
+# hair_spikes(head, s, u, t, col) — волосы дыбом поверх ЛЮБОЙ головы (участники; у Димы — через zapped()).
+# head_smoke(head, s, t, u, seed) — дымок кольцами над макушкой (u — сила, гаснет к 0).
+# fidget(t, amp) — (lean_add, head_add, shrug): ёрзает на стуле. knee_tap(t) — кисть на колене стучит пальцами (hands для press_at/dima).
+# Кот: cat_mug(x, y, k, t, st, hold, lift, mug_col) — сидит и держит красную кружку обеими передними лапами у груди (lift 0…1 — к морде,
+#   отпивает); возвращает svg. cat_mug_at(x, y, k, lift) — где кружка (дно, мир) — чтобы выронить её своими силами (props.mug / mug_shatter).
+#   CAT75[...]: startle (вздрогнул: уши торчком, глаза-блюдца), gape (пустые лапы, отвисла челюсть), push (правая лапа вперёд на коробку —
+#   кончик cat_paw_tip), sly (хитрый наклон головы), point_you (лапа на зрителя), shrug (обе лапы в стороны ладонями вверх), lift (правая
+#   лапа высоко — уголок тряпицы), side_eye (смотрит из угла, уши в сторону), facepaw (закрыл морду правой лапой), approve (одобрительно,
+#   глаза мягкие — кивок cat_nod), window (смотрит вверх-вбок в окно). Лап всегда четыре: тянется та же передняя лапа (cat.body сам не
+#   рисует стоячую лапу, когда она вытянута).
+EXPR["dima"].update({
+    "calm75": {"brows": "calm", "mouth": "flat", "lid": .62, "look": (.75, .35), "bags": False},
+    "zap75": {"brows": "up", "mouth": "o", "open": .4, "lid": 1.0, "look": (0, -.1), "scale_n": 1.16, "scale_f": 1.16, "bags": False},
+    "dazed75": {"brows": "up", "mouth": "smile", "smile": .7, "lid": .55, "look": (.25, -.15), "bags": False},
+    "shrink75": {"brows": "worry", "mouth": "pressed", "lid": .7, "look": (.45, -.35), "bags": True},
+    "smile75": {"brows": "calm", "mouth": "smile", "smile": .55, "lid": .58, "look": (.55, .4), "bags": False},
+    "reach75": {"brows": "calm", "mouth": "flat", "lid": .55, "look": (.7, .55), "bags": False},
+    "window75": {"brows": "calm", "mouth": "smile", "smile": .3, "lid": .6, "look": (.6, -.25), "bags": False},
+})
+for _w in ("youth", "curly", "beard"):
+    EXPR.setdefault(_w, {}).update({
+        "bored75": {"brows": "calm", "mouth": "flat", "lid": .5, "look": (.4, .2)},
+        "ceiling75": {"brows": "worry", "mouth": "flat", "lid": .75, "look": (.15, -.95)},
+        "sigh75": {"brows": "sad", "mouth": "talk", "open": .25, "smile": 0, "lid": .35, "look": (.2, .3)},
+        "eye_btn75": {"brows": "frown", "mouth": "flat", "lid": .7, "look": (.85, .6)},
+        "yawn75": {"brows": "sad", "mouth": "talk", "open": 1.0, "smile": 0, "lid": .1, "closed": .85, "look": (0, 0)},
+        "zap75": {"brows": "up", "mouth": "talk", "open": .55, "smile": 0, "lid": 1.0, "look": (0, -.2)},
+        "manic75": {"brows": "frown", "mouth": "grin", "open": .4, "lid": 1.0, "look": (.8, .55)},
+        "idea75": {"brows": "up", "mouth": "grin", "open": .6, "lid": .95, "look": (.4, -.5)},
+    })
+
+
+def hair_spike(pts, u, t=0.0):
+    """Контур волос Димы (HAIR_PTS после _bounce) с прядями дыбом: углы прядей (флаг 1) над висками уходят вверх и наружу от макушки."""
+    out = []
+    for i, p in enumerate(pts):
+        x, y = p[0], p[1]
+        if y < -50:
+            dx, dy = x + 20, y + 10
+            L = math.hypot(dx, dy) + 1e-6
+            jit = 7 * u * math.sin(t * 47 + i * 1.7)
+            if len(p) > 2 and p[2]:
+                g = (80 + 30 * ((i * 37) % 5) / 4) * u
+                x, y = x + dx / L * g + jit, y + dy / L * g - 40 * u
+            else:
+                x, y = x + dx / L * 22 * u, y - 18 * u
+        out.append((x, y) + ((1,) if len(p) > 2 and p[2] else ()))
+    return out
+
+
+def zapped(expr, hair_up=0.0, t=0.0, twitch=0.0):
+    """Мимика (имя или dict) с волосами дыбом и дёрганьем ближнего века (twitch 0…1)."""
+    ex = dict(EXPR["dima"][expr]) if isinstance(expr, str) else dict(expr)
+    ex["hair_up"] = hair_up
+    ex["hair_t"] = t
+    if twitch > .01:
+        ex["closed_n"] = max(ex.get("closed_n", 0.0), .55 * twitch * (.5 + .5 * math.sin(t * 60)))
+    return ex
+
+
+def fidget(t, amp=1.0, seed=0):
+    """Ёрзает: (lean_add, head_add, shrug) — неровные покачивания (сумма двух синусов)."""
+    a = math.sin(t * 5.3 + seed) * .6 + math.sin(t * 8.9 + 2 * seed) * .4
+    b = math.sin(t * 4.1 + 1 + seed)
+    return .05 * amp * a, .08 * amp * b, max(0.0, .25 * amp * math.sin(t * 3.3 + seed))
+
+
+def knee_tap(t, rate=9.0):
+    """Кисть на колене стучит пальцами: hands-словарь для ближней руки."""
+    ph = [max(0.0, math.sin(t * rate - j * .9)) for j in range(4)]
+    return {"curl": tuple(.15 + .45 * p for p in ph), "thumb": .3}
+
+
+def _rest_wrist(x, y, sc):
+    return (x + 250 * sc, y - 40 * sc)
+
+
+def press_at(who, x, y, s, target, reach=1.0, press=0.0, expr=None, t=0.0, far_hand=None, fdir=(1.0, 0.55), **kw):
+    """Сидит и тянется ближней рукой к target. Кончик указательного пальца в target при reach=1 (палец смотрит по fdir).
+    Возвращает figure + tip (кончик пальца в мире)."""
+    sc = s * HEIGHT.get(who, 1.0)
+    rw = _rest_wrist(x, y, sc)
+    tgt = (target[0], target[1] + 12 * sc * press)
+    dl = math.hypot(*fdir)
+    du = (fdir[0] / dl, fdir[1] / dl)
+    FL = 140 * sc
+    w_t = (tgt[0] - du[0] * FL, tgt[1] - du[1] * FL)
+    u = lib.clamp(reach)
+    wr = (rw[0] + (w_t[0] - rw[0]) * u, rw[1] + (w_t[1] - rw[1]) * u - 50 * sc * math.sin(math.pi * u))
+    point = lib.smooth(.25, .75, u)
+    if u < .25:
+        hn = {"curl": (.35, .4, .45, .5), "thumb": .3}
+    else:
+        hn = {"curl": (.05 + .5 * (1 - point), .9, .92, .95), "thumb": .55, "spread": .05}
+        hd0 = (wr[0] - (x + 120 * sc), wr[1] - (y - 330 * sc))
+        hl = math.hypot(*hd0) + 1e-6
+        hn["dir"] = (hd0[0] / hl * (1 - point) + du[0] * point, hd0[1] / hl * (1 - point) + du[1] * point)
+    arms = {"n": ("ik", wr, -1), "f": ("ik", (x + 215 * sc, y - 45 * sc), -1)}
+    hands = {"n": hn, "f": far_hand or {"curl": (.35, .4, .45, .5), "thumb": .3}}
+    if expr is None:
+        expr = "calm75" if who == "dima" else "serious"
+    lean = kw.pop("lean_add", 0.0) + .1 * u
+    feet = kw.pop("feet", None) or sit_kw(x, y, s, who)["feet"]
+    fig = person(who, x, y, s, expr, arms=arms, hands=hands, lean_add=lean, feet=feet, **kw)
+    w = fig["wrist"]["n"]
+    d = hn.get("dir")
+    if d is None:
+        e = fig["elbow"]["n"]
+        d = (w[0] - e[0], w[1] - e[1])
+    LL = math.hypot(*d) + 1e-6
+    fig["tip"] = (w[0] + d[0] / LL * FL, w[1] + d[1] / LL * FL)
+    return fig
+
+
+def finger_fan(tip, s, t, u=1.0, col="#e2b48f", n=5):
+    """Веер смазанных пальцев над кнопкой: «пулемёт» нажатий. u — сила (0 — нет)."""
+    if u <= .01:
+        return ""
+    o = []
+    for j in range(n):
+        a = math.radians(-70 + 28 * j + 10 * math.sin(t * 37 + j))
+        L = (60 + 25 * math.sin(t * 53 + 2 * j)) * s * 2
+        p0 = (tip[0] - math.cos(a) * L * .2, tip[1] - 60 * s - math.sin(a) * L * .2)
+        p1 = (tip[0] + math.cos(a) * 18 * s, tip[1] - 6 * s + abs(math.sin(a)) * 10 * s)
+        o.append(line([p0, p1], 22 * s * 2, col, taper=.2, wmin=.6, seed=7600 + j, op=.28 * u))
+        o.append(line([p0, p1], 3.0, INK, taper=.4, wmin=.2, seed=7610 + j, op=.35 * u))
+    for j in range(3):      # штрихи скорости
+        y0 = tip[1] - (30 + 26 * j) * s * 2
+        o.append(line([(tip[0] - 70 * s * 2, y0), (tip[0] - 30 * s * 2, y0 + 6 * s)], 4, INK, seed=7620 + j, op=.6 * u))
+    return "".join(o)
+
+
+def hair_spikes(head, s, u, t=0.0, col="#2a1d14", sh="#1a120c", seed=0, n=7):
+    """Пряди дыбом над головой участника (head — центр головы figure, s — масштаб figure)."""
+    if u <= .01:
+        return ""
+    hx, hy = head
+    o = []
+    for j in range(n):
+        a = math.radians(-160 + 140 * j / (n - 1))
+        base_r = 120 * s
+        b0 = (hx + math.cos(a - .12) * base_r, hy - 40 * s + math.sin(a - .12) * base_r)
+        b1 = (hx + math.cos(a + .12) * base_r, hy - 40 * s + math.sin(a + .12) * base_r)
+        L = (110 + 40 * ((j * 7 + seed) % 3)) * s * u
+        jit = 8 * s * u * math.sin(t * 43 + j * 2.1)
+        tp = (hx + math.cos(a) * (base_r + L) + jit, hy - 40 * s + math.sin(a) * (base_r + L))
+        o.append(shape([(b0[0], b0[1], 1), (tp[0], tp[1], 1), (b1[0], b1[1], 1)], col, "", w=3.6, seed=7650 + j + seed))
+    return "".join(o)
+
+
+def head_smoke(head, s, t, u=1.0, seed=0, col="#8d939b"):
+    """Дымок колечками над макушкой: три кольца поднимаются и тают по кругу."""
+    if u <= .01:
+        return ""
+    hx, hy = head
+    o = []
+    for j in range(3):
+        ph = (t * .9 + j / 3 + seed * .13) % 1.0
+        y = hy - 200 * s - 260 * s * ph
+        x = hx - 20 * s + 40 * s * math.sin(t * 2.1 + j * 2)
+        r = (26 + 46 * ph) * s
+        op = u * (1 - ph) * .85
+        pts = [(x + r * math.cos(a) * (1 + .15 * math.sin(3 * a + t)), y + r * .55 * math.sin(a)) for a in [i * math.pi / 7 for i in range(15)]]
+        o.append(line(pts, 9 * s * 2.2, col, taper=.5, wmin=.2, seed=7680 + j + seed, op=op))
+    return "".join(o)
+
+
+# ─── кот рилса 75 ───
+CAT75 = {
+    "startle": {"perk": 1.0, "look": (0, -.2), "sy": 1.06, "sx": .96},
+    "gape": {"perk": .6, "look": (.0, .3)},
+    "push": {"paw": 1.0, "paw_dx": 60, "look": (0, .1)},
+    "sly": {"tilt": 12, "smug": .8, "look": (0, 0)},
+    "point_you": {"paw": 1.1, "paw_dx": 18, "tilt": 9, "smug": .7, "look": (0, 0)},
+    "shrug": {"paw": .55, "paw_l": .55, "paw_dx": 95, "paw_l_dx": 95, "tilt": -7, "smug": .6, "look": (0, 0)},
+    "lift": {"paw": 1.25, "paw_dx": 55, "look": (.4, -.2), "smug": .6},
+    "side_eye": {"turn": -.4, "look": (.9, 0), "flat_ears": .45},
+    "facepaw": {"paw": 1.55, "paw_dx": -18, "blink": .9, "flat_ears": .4},
+    "approve": {"blink": .45, "smile": 1.0, "look": (-.3, .1), "flame_e": 1.3},
+    "window": {"turn": .4, "look": (.6, -.7), "blink": .15},
+}
+
+
+def cat_gape(u=1.0):
+    """Отвисшая челюсть: тёмный открытый рот вместо «ω» (в координатах кота, рот ≈ (836, 1124))."""
+    h = 30 * u
+    return (f'<path d="M818 1121 Q836 1118 854 1121 Q850 {1124 + h:.1f} 836 {1128 + h:.1f} Q822 {1124 + h:.1f} 818 1121 Z" fill="#5a2b33" '
+            f'stroke="{INK}" stroke-width="3"/>' + f'<ellipse cx="836" cy="{1124 + h * .8:.1f}" rx="{9 * u:.1f}" ry="{5 * u:.1f}" fill="#e8808c"/>')
+
+
+def cat_st(name, **over):
+    st = dict(CAT75[name])
+    if name == "gape":
+        st["mouth_item"] = cat_gape(over.pop("gape_u", 1.0))
+    st.update(over)
+    return st
+
+
+def cat_mug_at(x, y, k, lift=0.0):
+    """Дно кружки в мире, пока кот держит её (lift 0 — у груди, 1 — у морды)."""
+    import cat
+    mx, my = cat.CX, 1236 - 70 * lift
+    return x + (mx - cat.CX) * k, y + (my - cat.CBOT) * k
+
+
+def cat_mug(x, y, k, t, st=None, hold=1.0, lift=0.0, mug_col="red", steam=1.0):
+    """Кот держит кружку обеими передними лапами (две лапы — те же передние, задние на опоре). hold<1 — лапы разжимаются (кружку рисует
+    вызывающий)."""
+    import cat
+    import props as PR
+    st = dict(st or {})
+    pw = .5 + .25 * lift
+    st.update(paw=pw * hold + .05, paw_l=pw * hold + .05, paw_dx=(12 + 80 * (1 - hold)), paw_l_dx=(12 + 80 * (1 - hold)))
+    if lift > .3:
+        st.setdefault("blink", .6 * lift)
+        st.setdefault("tilt", -6 * lift)
+    o = [cat.draw(x, y, k, st, t)]
+    if hold > .5:
+        bx, by = cat_mug_at(x, y, k, lift)
+        o.append(PR.mug(bx, by + 18 * k, 1.05 * k, rot=-8 * lift, col=mug_col, steam=steam * (1 - lift), t=t, handle=1))
+        for sx in (-1, 1):      # подушечки обхватывают бока кружки поверх (кончики тех же лап)
+            tp = cat_paw_tip(x, y, k, st, "r" if sx > 0 else "l")
+            o.append(shape(ellipse_pts(tp[0], tp[1] + 6 * k, 22 * k, 19 * k, 12), cat.CAT, blob(ellipse_pts(tp[0] + sx * 4 * k, tp[1] + 10 * k, 15 * k, 9 * k, 8), cat.CAT_SH, .55),
+                           w=4.2 * k, seed=7700 + sx))
+            o.append(blob(ellipse_pts(tp[0] + sx * 6 * k, tp[1] + 8 * k, 8 * k, 6 * k, 8), "#e8823a"))
+    return "".join(o)
+
+
+def cat_paw(x, y, k, st, t, tip, side="r", front=False, bend=18.0, seed=0):
+    """Кот, у которого передняя лапа side ("r" — правая от зрителя) тянется к tip (координаты РИСУНКА кота: морда ≈ (836, 1072), низ
+    1306) ПОВЕРХ головы и тела: та же лапа, не третья (cat.body её не рисует — st["hide"]). front=True — подушечкой к зрителю (лапа на
+    зрителя, закрыть морду): крупная подушечка и три пальца. (x, y, k) — как cat.draw."""
+    import cat
+    from ink import band as _band
+    st = dict(st or {})
+    st["hide"] = (side,)
+    sx = 1 if side == "r" else -1
+    o = [cat.draw(x, y, k, st, t)]
+    sh = (cat.CX + sx * 30, 1200)
+    mid = ((sh[0] + tip[0]) / 2 + sx * bend, (sh[1] + tip[1]) / 2 + bend * .6)
+    arm = _band([sh, mid, tip], 42, 36, step=4, cap=False)
+    a = [shape(arm, cat.CAT, blob([(sh[0] + sx * 4, sh[1] + 8), (mid[0] + sx * 14, mid[1]), (tip[0] + sx * 14, tip[1]), (tip[0], tip[1] + 10), (sh[0], sh[1] + 30)],
+                                  cat.CAT_SH, .6), w=4.6, seed=7720 + seed)]
+    ang = math.degrees(math.atan2(tip[1] - mid[1], tip[0] - mid[0]))
+    if front:
+        pp = ellipse_pts(tip[0], tip[1], 30, 28, 14)
+        a.append(shape(pp, cat.CAT, "", w=4.4, seed=7721 + seed))
+        a.append(blob(ellipse_pts(tip[0], tip[1] + 6, 14, 11, 10), "#e8823a"))
+        for j in (-1, 0, 1):
+            a.append(blob(ellipse_pts(tip[0] + j * 13, tip[1] - 13 + abs(j) * 3, 5.5, 5, 8), "#e8823a"))
+    else:
+        pp = ellipse_pts(tip[0], tip[1], 26, 21, 12, rot=ang)
+        a.append(shape(pp, cat.CAT, blob(ellipse_pts(tip[0], tip[1] + 6, 18, 11, 10, rot=ang), cat.CAT_SH, .5), w=4.4, seed=7722 + seed))
+        dx, dy = math.cos(math.radians(ang)), math.sin(math.radians(ang))
+        for kk in (-8, 6):
+            a.append(line([(tip[0] + dx * 10 - dy * kk, tip[1] + dy * 10 + dx * kk), (tip[0] + dx * 22 - dy * kk, tip[1] + dy * 22 + dx * kk)], 2.2,
+                          seed=7723 + seed + kk))
+    o.append(f'<g transform="translate({x:.2f} {y:.2f}) rotate({st.get("rot", 0.0):.2f}) scale({k:.4f}) translate({-cat.CX} {-cat.CBOT})">{"".join(a)}</g>')
+    return "".join(o)
+
+
+def cat_paw_world(x, y, k, p):
+    """Точка рисунка кота (как tip у cat_paw) → мир (без rot)."""
+    import cat
+    return x + (p[0] - cat.CX) * k, y + (p[1] - cat.CBOT) * k
+
+
+def cat_world_paw(x, y, k, w):
+    """Точка мира → координаты рисунка кота (обратное к cat_paw_world) — чтобы положить лапу на предмет."""
+    import cat
+    return cat.CX + (w[0] - x) / k, cat.CBOT + (w[1] - y) / k
