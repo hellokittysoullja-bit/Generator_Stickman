@@ -4853,3 +4853,334 @@ def tap_rings(x, y, u, k=1.0, col="#FFFFFF"):
         o.append(f'<circle cx="{f(x)}" cy="{f(y)}" r="{f(r)}" fill="none" stroke="{col}" stroke-width="{f(7 * k * (1 - q))}" opacity="{1 - q:.3f}"/>')
         o.append(f'<circle cx="{f(x)}" cy="{f(y)}" r="{f(r + 4 * k)}" fill="none" stroke="{lib.INK}" stroke-width="{f(2.4 * k * (1 - q))}" opacity="{.6 * (1 - q):.3f}"/>')
     return "".join(o)
+
+
+# ═══════════════════════════════ «ТОК ИЛИ СКУКА» (рилс 75, группа A) ═══════════════════════════════
+# (x, y) — как сказано у функции; k — масштаб; t — общее время ролика; seed — своё зерно. Букв и цифр нет нигде, КРОМЕ
+# цифр счётчика-барабана хука (drum_counter, шрифт IDB из base.html).
+#   shock_button(x, y, k, rot, press, glow, arc, heat, t, view, seed)
+#                       серая металлическая коробка 240×110·k с большой КРАСНОЙ кнопкой, (x, y) — ЦЕНТР ДНА коробки.
+#                       view "top" — кнопка сверху, коробка в три четверти (столик, рука сверху); "face" — кнопка на лицевой стороне,
+#                       смотрит прямо на зрителя (кругом); "side" — коробка сбоку, кнопка торчит вверх профилем.
+#                       press 0…1 — кнопка утоплена; glow 0…1 — кнопка светится (ореол, светлее); arc 0…1 — дуга-искра трещит над
+#                       кнопкой (мерцает от t); heat 0…1 — кнопка раскалена (красный → оранжево-жёлтый) и дымит (от 0.4).
+#                       Провод выходит слева сзади: shock_button_wire(x, y, k, rot, view) → (x, y) точка выхода провода в мире;
+#                       shock_button_top(x, y, k, rot, view, press) → центр верха кнопки в мире (куда ставить палец).
+#   cuff_wire(p0, p1, sway, t, k, seed, cuff, cuff_rot)  провод с провисом от p0 к p1 (качается: sway — размах px, t — фаза);
+#                       cuff=True — на p1 манжета (тёмная лента с пряжкой) повёрнута на cuff_rot (° — направление руки).
+#   drum_counter(x, y, k, value, roll, blank, cover, peek, t, seed)
+#                       механический счётчик в металлической коробке 330×170·k, (x, y) — ЦЕНТР; три барабана с крупными цифрами
+#                       value (0…999); roll 0…1 — докрутка к value+1 (меняющиеся барабаны уезжают вверх, перелёт и подскок к 1);
+#                       blank=True — цифр нет: барабаны крутятся размытой полосой (смаз от t); cover 0…1 — серая тряпица опускается
+#                       сверху и накрывает коробку; peek 0…1 — правый нижний уголок тряпицы приподнят, из-под неё тёплое свечение.
+#   zap(p0, p1, t, seed, u, w, branches)  молния-зигзаг p0 → p1 (жёлто-белая с тушью), перещёлкивается 15 раз в секунду; u 0…1 — сила
+#                       (толщина и яркость), branches — отростков.
+#   zap_net(x0, y0, x1, y1, t, seed, u, n)   сетка тонких молний по прямоугольнику (по одежде), u — сила.
+#   smoke_rings(x, y, k, u, t, seed, n)   дымок кольцами: кольца поднимаются от (x, y), растут и тают (u — сколько дыма, 0 — нет).
+#   mug_shatter(x, y, k, u, seed, col)    кружка разбивается о пол, (x, y) — точка удара на полу; u 0 — целая кружка стоит в точке,
+#                       u 0…1 — осколки разлетаются и ложатся, кофе брызгами и лужицей.
+C_BOX = "#9CA3AD"
+C_BOX_SH = "#717883"
+C_BOX_HI = "#C4CAD2"
+C_BTN = "#D9332B"
+C_BTN_SH = "#9C211B"
+C_BTN_HI = "#F27A6E"
+C_HOT = "#FFB43A"
+C_ZAP = "#FFF27A"
+C_ZAP_CORE = "#FFFFFF"
+C_CUFF = "#2E3136"
+C_RAG = "#A8A49B"
+C_RAG_SH = "#7F7B72"
+C_DRUM = "#F4F1E8"
+
+
+def _btn_col(glow, heat):
+    c = mix(C_BTN, C_BTN_HI, .45 * clamp(glow))
+    sh = mix(C_BTN_SH, C_BTN, .4 * clamp(glow))
+    if heat > 0:
+        h = clamp(heat)
+        c = mix(c, C_HOT, h)
+        sh = mix(sh, "#E0561F", h)
+    return c, sh
+
+
+def shock_button_top(x, y, k=1.0, rot=0.0, view="top", press=0.0):
+    if view == "face":
+        lx, ly = 0.0, -55.0
+    elif view == "side":
+        lx, ly = 10.0, -150.0 + 22 * press
+    else:
+        lx, ly = 10.0, -150.0 + 20 * press
+    c, s = math.cos(math.radians(rot)), math.sin(math.radians(rot))
+    return x + (lx * c - ly * s) * k, y + (lx * s + ly * c) * k
+
+
+def shock_button_wire(x, y, k=1.0, rot=0.0, view="top"):
+    lx, ly = (-120.0, -40.0) if view != "face" else (-122.0, -30.0)
+    c, s = math.cos(math.radians(rot)), math.sin(math.radians(rot))
+    return x + (lx * c - ly * s) * k, y + (lx * s + ly * c) * k
+
+
+def _arc_spark(cx, cy, r, t, seed, u):
+    if u <= 0.02:
+        return ""
+    fr = int(t * 15)
+    rs = _rs(15100 + seed + fr * 7)
+    o = []
+    for j in range(2 + int(2 * u)):
+        a0 = rs.uniform(-170, -10)
+        pts = []
+        L = r * rs.uniform(.6, 1.1)
+        for i in range(6):
+            q = i / 5
+            a = math.radians(a0 + rs.uniform(-25, 25))
+            pts.append((cx + math.cos(a) * L * q + rs.uniform(-6, 6), cy + math.sin(a) * L * q + rs.uniform(-6, 6)))
+        o.append(line(pts, 9 * u, lib.INK, taper=.3, wmin=.3, seed=15110 + j))
+        o.append(line(pts, 5 * u, C_ZAP, taper=.3, wmin=.3, seed=15120 + j))
+    return "".join(o)
+
+
+def shock_button(x, y, k=1.0, rot=0.0, press=0.0, glow=0.0, arc=0.0, heat=0.0, t=0.0, view="top", seed=0):
+    sd = 15000 + seed
+    press = clamp(press)
+    o = []
+    c, csh = _btn_col(glow, heat)
+    if view == "face":
+        # лицевая сторона к зрителю: прямоугольник с кнопкой-кругом в центре
+        if glow > .02 or heat > .02:
+            g = rad_grad([(0, mix(C_BTN_HI, C_HOT, heat), .55 * max(glow, heat)), (1, C_BTN_HI, 0)], 0, -55, 150)
+            o.append(f'<circle cx="0" cy="-55" r="150" fill="url(#{g})"/>')
+        o.append(shape(rrect(-125, -112, 125, 0, 12), C_BOX, blob(rect_pts(-125, -30, 125, 0), C_BOX_SH) +
+                       line([(-110, -100), (110, -100)], 3, C_BOX_HI, taper=.2, seed=sd + 1), w=4.4, seed=sd + 2))
+        for sx in (-104, 104):
+            o.append(shape(ellipse_pts(sx, -92, 6, 6, 8), C_BOX_SH, "", w=2, seed=sd + 3 + sx))
+        o.append(shape(ellipse_pts(0, -55, 54, 54, 22), "#3C4048", "", w=4, seed=sd + 5))
+        rr = 44 * (1 - .12 * press)
+        o.append(shape(ellipse_pts(0, -55 + 2 * press, rr, rr, 22), c,
+                       blob(ellipse_pts(8, -46, rr * .8, rr * .75, 16), csh) + blob(ellipse_pts(-14, -72, 12, 8, 10), "#FFFFFF", .7 - .4 * press),
+                       w=4.2, seed=sd + 6))
+        top = (0, -55)
+    else:
+        # коробка в три четверти: верхняя грань — параллелограмм, лицевая — прямоугольник
+        if view == "side":
+            front = rrect(-120, -80, 120, 0, 6)
+            topf = [(-120, -80, 1), (-100, -104, 1), (130, -104, 1), (120, -80, 1)]
+        else:
+            front = rrect(-120, -70, 120, 0, 6)
+            topf = [(-120, -70, 1), (-96, -118, 1), (124, -118, 1), (120, -70, 1)]
+        o.append(blob(ellipse_pts(4, 2, 136, 12, 18), "#6B5B3A", .18))
+        o.append(shape(front, C_BOX_SH, line([(-108, -14), (108, -14)], 3, lib.mul(C_BOX_SH, (.85, .85, .85)), taper=.2, seed=sd + 7),
+                       w=4.4, seed=sd + 8))
+        o.append(shape(topf, C_BOX, line([(-96, -78), (110, -78)], 3, C_BOX_HI, taper=.3, seed=sd + 9), w=4.2, seed=sd + 10))
+        cy0 = -94 if view == "top" else -92
+        if glow > .02 or heat > .02:
+            g = rad_grad([(0, mix(C_BTN_HI, C_HOT, heat), .5 * max(glow, heat)), (1, C_BTN_HI, 0)], 10, cy0 - 30, 160, 110)
+            o.append(f'<ellipse cx="10" cy="{cy0 - 30}" rx="160" ry="110" fill="url(#{g})"/>')
+        # гнездо
+        o.append(shape(ellipse_pts(10, cy0, 58, 20, 18), "#3C4048", "", w=3.6, seed=sd + 11))
+        hgt = 48 * (1 - .78 * press)
+        cyl = [(-38, cy0, 1), (-38, cy0 - hgt, 1)] + [(10 + 48 * math.cos(math.radians(180 - a)), cy0 - hgt + 16 * math.sin(math.radians(180 - a)) * -1)
+                                                       for a in range(0, 181, 20)][::1] + [(58, cy0 - hgt, 1), (58, cy0, 1)]
+        cyl = [(-38, cy0, 1), (-38, cy0 - hgt, 1), (58, cy0 - hgt, 1), (58, cy0, 1)] + \
+              [(10 + 48 * math.cos(math.radians(a)), cy0 + 16 * math.sin(math.radians(a))) for a in range(20, 161, 20)]
+        o.append(shape(cyl, csh, line([(-26, cy0 - hgt + 10), (-26, cy0 - 4)], 5, c, taper=.4, seed=sd + 12), w=4, seed=sd + 13))
+        o.append(shape(ellipse_pts(10, cy0 - hgt, 48, 17, 20), c, blob(ellipse_pts(-6, cy0 - hgt - 4, 16, 6, 10), "#FFFFFF", .65), w=4, seed=sd + 14))
+        top = (10, cy0 - hgt)
+    if arc > 0:
+        o.append(_arc_spark(top[0], top[1] - 8, 90, t, sd, clamp(arc)))
+    if heat > .4:
+        o.append(smoke_curls(top[0], top[1] - 14, 1.1, clamp((heat - .4) / .6), t, seed=sd, col="#C9CDD4", n=3))
+    return _tf("".join(o), x, y, k, rot)
+
+
+def cuff_wire(p0, p1, sway=0.0, t=0.0, k=1.0, seed=0, cuff=True, cuff_rot=0.0, sag=None):
+    x0, y0 = p0
+    x1, y1 = p1
+    L = math.hypot(x1 - x0, y1 - y0)
+    sg = (0.18 * L + 30 * k) if sag is None else sag
+    sw = sway * math.sin(t * 5.3 + seed)
+    pts = []
+    for i in range(17):
+        q = i / 16
+        px = x0 + (x1 - x0) * q + sw * math.sin(math.pi * q)
+        py = y0 + (y1 - y0) * q + sg * math.sin(math.pi * q)
+        pts.append((px, py))
+    o = cable(pts, w=8 * k, seed=15200 + seed)
+    if cuff:
+        a = cuff_rot
+        band = rrect(-22, -30, 22, 30, 8)
+        inner = line([(-22, -10), (22, -10)], 3, "#55595F", taper=.1, seed=15210 + seed) + \
+            shape(rrect(-10, 4, 10, 18, 2), C_METAL, "", w=2.4, seed=15211 + seed)
+        o += _tf(shape(band, C_CUFF, inner, w=3.6, seed=15212 + seed), x1, y1, k, a)
+    return o
+
+
+def _digit(ch, cx, cy, size, col="#1c1622"):
+    return (f'<text x="{f(cx)}" y="{f(cy + size * .36)}" font-family="IDB" font-weight="900" font-size="{f(size)}" '
+            f'text-anchor="middle" fill="{col}">{ch}</text>')
+
+
+def drum_counter(x, y, k=1.0, value=188, roll=0.0, blank=False, cover=0.0, peek=0.0, t=0.0, seed=0):
+    sd = 15300 + seed
+    o = []
+    # коробка
+    o.append(blob(ellipse_pts(6, 96, 160, 12, 16), "#6B5B3A", .15))
+    o.append(shape(rrect(-165, -85, 165, 85, 16), C_BOX, line([(-150, -72), (150, -72)], 3, C_BOX_HI, taper=.2, seed=sd + 1) +
+                   blob(rect_pts(-165, 50, 165, 85), C_BOX_SH), w=5, seed=sd + 2))
+    for sx, sy in ((-148, -68), (148, -68), (-148, 68), (148, 68)):
+        o.append(shape(ellipse_pts(sx, sy, 6, 6, 8), C_BOX_SH, "", w=2, seed=sd + 3))
+    # окна барабанов
+    v0 = int(value) % 1000
+    v1 = (v0 + 1) % 1000
+    d0, d1 = f"{v0:03d}", f"{v1:03d}"
+    r = clamp(roll)
+    ru = (lib.ease_io(r / .7) * 1.1 if r < .7 else 1 + .1 * math.exp(-9 * (r - .7)) * math.cos(14 * (r - .7))) if r > 0 else 0.0
+    for i in range(3):
+        cx = -96 + 96 * i
+        win = (cx - 40, -58, cx + 40, 58)
+        cid = clip_rect(win[0], win[1], 80, 116, 6)
+        inner = [f'<rect x="{f(win[0])}" y="-58" width="80" height="116" fill="{C_DRUM}"/>']
+        if blank:
+            ph = (t * 9.0 + i * .37) % 1.0
+            for j in range(-2, 4):
+                yy = -58 + (j + ph) * 46
+                inner.append(f'<rect x="{f(cx - 20)}" y="{f(yy)}" width="40" height="18" rx="9" fill="#5A5560" opacity=".55"/>')
+            inner.append(f'<rect x="{f(win[0])}" y="-58" width="80" height="116" fill="{C_DRUM}" opacity=".35"/>')
+        else:
+            moving = d0[i] != d1[i]
+            off = ru * 116 if moving else 0.0
+            inner.append(_digit(d0[i], cx, -off, 96))
+            if moving and r > 0:
+                inner.append(_digit(d1[i], cx, 116 - off, 96))
+        # тень барабана сверху и снизу (выпуклость)
+        g = lin_grad([(0, "#000000", .35), (.25, "#000000", 0), (.75, "#000000", 0), (1, "#000000", .35)], 0, 0, 0, 1)
+        inner.append(f'<rect x="{f(win[0])}" y="-58" width="80" height="116" fill="url(#{g})"/>')
+        o.append(f'<g clip-path="url(#{cid})">{"".join(inner)}</g>')
+        o.append(lib.line([(win[0], -58), (win[2], -58), (win[2], 58), (win[0], 58), (win[0], -58)], 4.2, lib.INK, taper=0, wmin=1, seed=sd + 10 + i))
+    # тряпица
+    cv = clamp(cover)
+    if cv > 0:
+        drop_ = (1 - lib.ease_out(cv, 2)) * 260
+        if peek > 0:
+            g = rad_grad([(0, "#FFE7A3", .9 * clamp(peek)), (1, "#FFC85A", 0)], 120, 110 - drop_, 190, 120)
+            o.append(f'<ellipse cx="120" cy="{f(110 - drop_)}" rx="190" ry="120" fill="url(#{g})"/>')
+        pk = clamp(peek)
+        wob = 4 * math.sin(t * 3.1)
+        rag = [(-185, -100 - drop_), (-60, -112 - drop_), (70, -106 - drop_), (185, -98 - drop_), (192, 30 - drop_), (196, 108 - drop_ - 70 * pk),
+               (160 - 40 * pk, 118 - drop_ - 60 * pk), (90, 112 - drop_ + wob), (10, 120 - drop_), (-80, 112 - drop_ - wob), (-150, 120 - drop_), (-194, 104 - drop_),
+               (-190, 0 - drop_)]
+        folds = "".join(line([(xx, -96 - drop_), (xx + 8, 0 - drop_), (xx - 4, 110 - drop_)], 4, C_RAG_SH, taper=.7, wmin=.1, seed=sd + 30 + j)
+                        for j, xx in enumerate((-120, -40, 50, 130)))
+        if pk > 0:
+            folds += blob([(196, 108 - drop_ - 70 * pk), (160 - 40 * pk, 118 - drop_ - 60 * pk), (150, 80 - drop_)], "#E8E4DA")
+        o.append(shape(rag, C_RAG, folds, w=4.6, seed=sd + 40))
+    return _tf("".join(o), x, y, k)
+
+
+def zap(p0, p1, t=0.0, seed=0, u=1.0, w=16.0, branches=2):
+    if u <= 0.02:
+        return ""
+    fr = int(t * 15)
+    rs = _rs(15400 + seed * 13 + fr * 31)
+    x0, y0 = p0
+    x1, y1 = p1
+    L = math.hypot(x1 - x0, y1 - y0) or 1
+    nx, ny = -(y1 - y0) / L, (x1 - x0) / L
+    n = max(4, int(L / 40))
+    pts = []
+    for i in range(n + 1):
+        q = i / n
+        off = 0 if i in (0, n) else rs.uniform(-.12, .12) * min(L, 300)
+        pts.append((x0 + (x1 - x0) * q + nx * off, y0 + (y1 - y0) * q + ny * off))
+    ww = w * clamp(u)
+    o = [line(pts, ww + 6, lib.INK, taper=.2, wmin=.4, seed=15410 + seed),
+         line(pts, ww, C_ZAP, taper=.2, wmin=.4, seed=15411 + seed),
+         line(pts, ww * .35, C_ZAP_CORE, taper=.2, wmin=.4, seed=15412 + seed)]
+    for b in range(branches):
+        i = rs.randint(1, n - 1)
+        bx, by = pts[i]
+        a = math.atan2(y1 - y0, x1 - x0) + rs.choice((-1, 1)) * rs.uniform(.5, 1.0)
+        bl = L * rs.uniform(.15, .3)
+        bp = [(bx, by), (bx + math.cos(a) * bl * .5 + rs.uniform(-8, 8), by + math.sin(a) * bl * .5 + rs.uniform(-8, 8)),
+              (bx + math.cos(a) * bl, by + math.sin(a) * bl)]
+        o.append(line(bp, ww * .6 + 4, lib.INK, taper=.6, wmin=.2, seed=15420 + b))
+        o.append(line(bp, ww * .6, C_ZAP, taper=.6, wmin=.2, seed=15430 + b))
+    return "".join(o)
+
+
+def zap_net(x0, y0, x1, y1, t=0.0, seed=0, u=1.0, n=5):
+    if u <= 0.02:
+        return ""
+    rs = _rs(15500 + seed + int(t * 15) * 17)
+    o = []
+    for j in range(n):
+        a = (rs.uniform(x0, x1), rs.uniform(y0, y1))
+        b = (a[0] + rs.uniform(-.5, .5) * (x1 - x0), a[1] + rs.uniform(-.5, .5) * (y1 - y0))
+        b = (clamp(b[0], x0, x1), clamp(b[1], y0, y1))
+        o.append(zap(a, b, t, seed + j * 3, u, 8.0, 1))
+    return "".join(o)
+
+
+def smoke_rings(x, y, k=1.0, u=1.0, t=0.0, seed=0, n=3):
+    if u <= 0.01:
+        return ""
+    o = []
+    for j in range(n):
+        ph = ((t * .9 + j / n + seed * .13) % 1.0)
+        a = (1 - ph) * clamp(u) * min(1, ph * 5)
+        if a < .03:
+            continue
+        cy = y - ph * 170 * k
+        cx = x + 14 * math.sin(t * 2 + j) * k
+        rx, ry = (16 + 30 * ph) * k, (7 + 11 * ph) * k
+        pts = [(cx + rx * math.cos(math.radians(d)), cy + ry * math.sin(math.radians(d))) for d in range(0, 361, 24)]
+        o.append(line(pts, 14 * k * a + 4, lib.INK, taper=.15, wmin=.5, seed=15600 + seed + j, op=min(1, a * 1.4)))
+        o.append(line(pts, 14 * k * a, "#D3D7DE", taper=.15, wmin=.5, seed=15610 + seed + j, op=min(1, a * 1.4)))
+    return "".join(o)
+
+
+def mug_shatter(x, y, k=1.0, u=0.0, seed=0, col="red"):
+    if u <= 0:
+        return mug(x, y, k, 0, col, True, 0.0, 0.0, 1, seed)
+    rs = _rs(15700 + seed)
+    c, csh, chi = MUG_COLS.get(col, MUG_COLS["red"])
+    o = []
+    uu = clamp(u)
+    # лужица кофе растёт
+    pr = 70 * lib.ease_out(clamp(uu * 1.6), 2)
+    o.append(blob(ellipse_pts(x + 6 * k, y + 4 * k, pr * k * 1.3, pr * k * .28, 18), C_COFFEE, .9))
+    # брызги кофе
+    for j in range(7):
+        a = math.radians(-170 + j * 26 + rs.uniform(-8, 8))
+        vv = rs.uniform(90, 160)
+        q = clamp(uu * 1.8)
+        px = x + math.cos(a) * vv * q * k
+        py = y - (math.sin(-a) * vv * 1.2 * q - 260 * q * q) * k
+        py = min(py, y + 4 * k)
+        if q < 1:
+            o.append(blob(ellipse_pts(px, py, 7 * k, 6 * k, 8), C_COFFEE))
+        else:
+            o.append(blob(ellipse_pts(px, y + 3 * k, 8 * k, 3 * k, 8), C_COFFEE, .85))
+    # осколки
+    for j in range(6):
+        a = math.radians(-160 + j * 28 + rs.uniform(-10, 10))
+        vv = rs.uniform(60, 130)
+        q = clamp(uu * 1.4)
+        land = q >= 1
+        px = x + math.cos(a) * vv * q * k
+        hh = 0 if land else (math.sin(-a) * vv * .9 * q - 200 * q * q)
+        py = y - max(0, hh) * k
+        rot_ = rs.uniform(-200, 200) * q
+        sz = rs.uniform(14, 24)
+        pts = [(rs.uniform(-1, -.4) * sz, rs.uniform(-1, -.3) * sz), (rs.uniform(.3, 1) * sz, rs.uniform(-1, -.4) * sz),
+               (rs.uniform(.4, 1) * sz, rs.uniform(.2, .8) * sz), (rs.uniform(-.8, -.2) * sz, rs.uniform(.3, .8) * sz)]
+        o.append(_tf(shape(pts, c if j % 3 else chi, "", w=3.2, seed=15720 + seed + j), px, py - 6 * k, k, rot_))
+    # кусок ручки
+    q = clamp(uu * 1.2)
+    o.append(_tf(line([(0, -18), (16, -14), (18, 4), (2, 10)], 9, lib.INK, taper=0, wmin=1, seed=15740) +
+                 line([(0, -18), (16, -14), (18, 4), (2, 10)], 5, c, taper=0, wmin=1, seed=15741),
+                 x + 40 * q * k, y - (60 * q - 60 * q * q) * k - 8 * k, k, 90 * q))
+    # штрихи удара в начале
+    if uu < .35:
+        o.append(clink(x, y - 20 * k, k * 1.6, uu / .35, seed, col="#1c1622"))
+    return "".join(o)
