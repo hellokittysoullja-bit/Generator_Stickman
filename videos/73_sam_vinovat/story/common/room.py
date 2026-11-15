@@ -1529,3 +1529,535 @@ def fire_scene(t, u=1.0, mode="wide"):
     fire = campfire(FIRE[0], FIRE[1], 1.0, u, t, seed=1) + _sparks(FIRE[0], FIRE[1] - 60, t, u, 12, 600, seed=1)
     return dict(sky=sky, bg="".join(b), ground="".join(g), stones_back=stones_back, fire=fire, stones_front=stones_front, log=log, front="",
                 cam=FIRE_CAMS.get(mode, FIRE_CAMS["wide"]), light=fl)
+
+
+# ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+# РИЛС 73 «Ты сам виноват» (группа C): холодная дневная комната с пробковой доской, спальня ночью (луна → ночник), пульс сердца.
+# Одна комната Димы, мир 1080×1920 по ширине −2600…2600 (стена анфас, пол FL73):
+#   стол с ноутбуком  DESK73_X (−2500…−1700), пробковая доска BOARD73 (−1350…−550), окно со шторами WIN73 (−250…350),
+#   кровать сбоку BED73 (изголовье справа, подушка у x≈1880), тумбочка с ночником NSTAND73 справа от изголовья, часы CLOCK73 над кроватью.
+# Днём (cold_room) — та же стена в холодном серо-голубом свете; ночью (bedroom) — тёмно-синяя луна или тёплый ночник.
+# Букв и цифр нет нигде (часы — props.clock без цифр, карточки и конверты пустые — их рисует сцена из props).
+#
+#   cold_room(t, mode="close"|"wide", curtain_u=0.0) -> dict:
+#       bg      — стена, доска (без предметов на ней), окно со шторами, пол; класть первым
+#       light   — полоса света из окна на полу (сужается по curtain_u до прожектора на STAND73); класть после bg, до Димы
+#       dim     — затемнение комнаты вне луча (растёт с curtain_u); класть ПОСЛЕ людей и кота (они тоже темнеют вне луча)
+#       front   — пусто (резерв); cam — камера режима (CAM73_BOARD_CLOSE / CAM73_COLD_WIDE)
+#       Предметы на доске (конверт на кнопке BOARD73_PIN, паутина BOARD73_WEB, паучок) — props группы A, ставит сцена.
+#   bedroom(t, light="moon"|"lamp"|число 0…1, mode, lamp_u=None) -> dict(bg, light, front, cam, k):
+#       light 0 — луна (тёмно-синий, лунный прямоугольник окна на стене и полу), 1 — ночник (тёплое пятно ФОРМЫ АБАЖУРА с
+#       мерцанием края, без огромных овалов); число — переход (s09: щелчок ночника за 4–5 кадров).
+#       mode — ракурс и его камера cam:
+#         "foot"  — s06/s07: ОТДЕЛЬНАЯ композиция в координатах кадра (камера (540, 960, 1)): вид от изножья кровати — потолок
+#                   сверху (CEIL73_Y), стена с часами CLOCK_F (центр, r), изголовье, подушка, голова Димы в FOOT_HEAD, одеяло
+#                   к зрителю (слой front — КЛАСТЬ ПОСЛЕ головы и плеч Димы). Тень судьи — на потолке/стене в FOOT_SHADOW.
+#                   Камеры: CAM73_CLOCK (часы крупно), CAM73_FOOT (кровать, Дима ≥ 45 %), CAM73_PILLOW (лицо на подушке).
+#         "wide"  — s08: кровать и окно с луной общим планом (CAM73_BED_WIDE); "bed" — s09–s11 кровать ближе (CAM73_BED);
+#         "cam"   — s12: тумбочка с ночником крупно у камеры (CAM73_NSTAND; чашку ставят на NSTAND73_TOP);
+#         "board" — s13/s15/s16/s17: доска на стене (CAM73_BOARD_MID, CAM73_BOARD_CLOSE); "desk" — s14 стол (CAM73_DESK).
+#       bg — всё за людьми; front — передний план (одеяло в "foot", иначе пусто); k — сила тепла 0…1 (для подкраски кота: warm_tint).
+#   board_close(t, light=…) — ракурс хука и петли: доска крупно (BOARD73_PIN в кадре сверху), стена без окна; dict(bg, light, cam).
+#   heart_pulse(t, t_beat, amp=1.0) -> SVG поверх кадра (координаты кадра): «удар сердца» — двойной толчок (тук-тук: t_beat и
+#       t_beat + 0.2), виньетка темнеет к краям и весь кадр коротко проседает в свете (до 15 % · amp). heart_k(t, t_beat) — сила 0…1
+#       (для «дыхания» камеры и дёрганья предметов).
+#   warm_tint(svg, k) / cold_tint(svg, k) — подкрасить героя под свет (матрица цвета; тушь остаётся тушью).
+# ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+FL73 = 1560.0
+WALL73_Y = 1440.0
+BOARD73 = (-1350.0, 300.0, -550.0, 960.0)        # пробковая доска (x0, y0, x1, y1) на стене
+BOARD73_PIN = (-860.0, 470.0)                    # кнопка, на которой висит пыльный конверт (хук, s13, петля — карточка)
+BOARD73_WEB = (-1350.0, 300.0)                   # угол доски, где паутина (верх-лево)
+BOARD73_CLEAN = (-1300.0, 40.0, -600.0, 260.0)   # чистая стена над доской (s15: рукописное «кот» — за буквами ничего)
+WIN73 = (-250.0, 220.0, 350.0, 1020.0)           # окно со шторами (рама)
+STAND73 = (-520.0, FL73)                         # где стоит Дима (s03): между доской и окном, свет окна падает на него
+BED73 = (1300.0, FL73, 1.9)                      # props.bed(x, y, k): ножки на FL, изголовье слева… — свою кровать рисуем здесь (см. _bed73)
+BED73_TOP = 1170.0                               # верх матраса
+BED73_X = (640.0, 1980.0)                        # матрас от изножья (слева) до изголовья (справа)
+BED73_PILLOW = (1860.0, 1150.0)                  # подушка (голова Димы лёжа) — у изголовья справа
+NSTAND73 = (2060.0, 2300.0)                      # тумбочка x0..x1 справа от изголовья
+NSTAND73_TOP = 1200.0                            # верх тумбочки (чашка, ночник — дном сюда)
+LAMP73 = (2200.0, NSTAND73_TOP)                  # ночник: дно абажурной лампы на тумбочке
+CLOCK73 = (1250.0, 430.0, 110.0)                 # часы на стене над кроватью (центр, r)
+DESK73_X = (-2500.0, -1700.0)                    # стол у стены слева от доски (s14)
+DESK73_TOP = 1000.0
+CEIL73_Y = -80.0                                 # линия потолка (выше — потолок)
+CAM73_BOARD_CLOSE = (-860.0, 760.0, 1.95)        # хук и петля: кнопка с конвертом сверху, морда кота перед доской снизу
+CAM73_BOARD_MID = (-950.0, 860.0, 1.15)          # доска средним планом (s13, s15, s16)
+CAM73_COLD_WIDE = (-420.0, 980.0, .9)            # s03: Дима посреди комнаты, доска слева, окно справа
+CAM73_BED_WIDE = (900.0, 1000.0, .78)            # s08: кровать и окно с луной
+CAM73_BED = (1450.0, 1080.0, 1.12)               # s09–s11: кровать с котом
+CAM73_NSTAND = (2150.0, 1060.0, 1.5)             # s12: тумбочка у камеры, кот садится рядом
+CAM73_DESK = (-2100.0, 980.0, 1.2)               # s14: стол с ноутбуком
+# ракурс «от изножья» (s06, s07) — координаты кадра
+CLOCK_F = (540.0, 330.0, 120.0)
+FOOT_HEAD = (540.0, 1060.0)                      # центр головы Димы на подушке (лицо вверх)
+FOOT_SHADOW = (540.0, 150.0)                     # где на потолке/верху стены встаёт тень кота-судьи
+FOOT_LAMP = (985.0, 960.0)                       # ночник на тумбочке справа от изголовья (s06–s07 выключен)
+CAM73_CLOCK = (540.0, 360.0, 2.1)
+CAM73_FOOT = (540.0, 900.0, 1.0)
+CAM73_PILLOW = (540.0, 1010.0, 1.75)
+
+PAL73 = {
+    "cold": dict(wall="#b5bfc9", wall_hi="#c6cfd7", wall_sh="#9aa6b2", wall_ln="#a6b0bb", base="#d0d7de", base_sh="#a9b3bd",
+                 floor="#958a82", floor_b="#7c736d", floor_ln="#625a55", shadow="#4f5866", ceil="#c2cad2", frame="#e3e7ea",
+                 cork="#b49a78", cork_sh="#96805f", cork_dot="#8a7354", wood="#8f7a68", wood_sh="#6e5c4e", sheet="#d9dde2", sheet_sh="#b6bec7",
+                 sky=("#a9b8c6", "#c3ced8", "#dde3e8"), cur="#7f93a6"),
+    "moon": dict(wall="#2a3354", wall_hi="#333d63", wall_sh="#1f2744", wall_ln="#252e4c", base="#384266", base_sh="#29314f",
+                 floor="#262a3e", floor_b="#1c1f31", floor_ln="#141626", shadow="#0d1120", ceil="#222a48", frame="#55608a",
+                 cork="#4a4652", cork_sh="#3a3744", cork_dot="#2e2c38", wood="#3d3a4e", wood_sh="#2b2a3a", sheet="#5f6a92", sheet_sh="#47507a",
+                 sky=("#0a1030", "#16225a", "#2a3a7a"), cur="#3a4670"),
+    "lamp": dict(wall="#7a5c55", wall_hi="#91705f", wall_sh="#5a4347", wall_ln="#6c514e", base="#9a7a68", base_sh="#76594e",
+                 floor="#6a4630", floor_b="#4e3424", floor_ln="#36241a", shadow="#2a1c18", ceil="#6a4e4c", frame="#c8a888",
+                 cork="#b98a5a", cork_sh="#966a42", cork_dot="#7e5634", wood="#9a6a42", wood_sh="#6e4a2c", sheet="#e8cfa6", sheet_sh="#c4a47e",
+                 sky=("#0c1232", "#1a2660", "#2e3e80"), cur="#a8584a"),
+}
+PAL73["moon"]["_u"], PAL73["lamp"]["_u"] = 0.0, 1.0
+LAMP_HOT, LAMP_GLOW = "#ffe2a0", "#ffc870"
+
+
+def _pal73(light):
+    """Палитра: "cold" — день; "moon" (0) … "lamp" (1) — ночь; число — смесь луна → ночник."""
+    if isinstance(light, str):
+        return PAL73[light], (1.0 if light == "lamp" else 0.0)
+    u = clamp01(float(light))
+    if u <= 0.0 or u >= 1.0:
+        return PAL73["lamp" if u >= 1 else "moon"], u
+    a, b = PAL73["moon"], PAL73["lamp"]
+    out = {"_u": u}
+    for k_, v in a.items():
+        if k_ == "_u":
+            continue
+        w_ = b[k_]
+        out[k_] = lib.mix(v, w_, u) if isinstance(v, str) else tuple(lib.mix(x, y, u) for x, y in zip(v, w_))
+    return out, u
+
+
+def _wall73(P, x0=-2700.0, x1=2700.0, ceil=True):
+    o = []
+    g = lib.lin_grad([(0, P["wall_sh"], 1), (.3, P["wall"], 1), (1, P["wall_hi"], 1)], 0, CEIL73_Y, 0, WALL73_Y, units="userSpaceOnUse")
+    o.append(f'<rect x="{f(x0)}" y="{f(CEIL73_Y)}" width="{f(x1 - x0)}" height="{f(WALL73_Y - CEIL73_Y)}" fill="url(#{g})"/>')
+    if ceil:
+        o.append(f'<rect x="{f(x0)}" y="-1400" width="{f(x1 - x0)}" height="{f(CEIL73_Y + 1400)}" fill="{P["ceil"]}"/>')
+        o.append(blob(rect_pts(x0, CEIL73_Y - 4, x1, CEIL73_Y + 22), P["base"]) + line([(x0, CEIL73_Y + 22), (x1, CEIL73_Y + 22)], 3.2, INK, taper=0, wmin=1, seed=7301))
+    d = "".join(f"M{f(x0 + 60 + i * 150)} {f(CEIL73_Y + 24)}L{f(x0 + 61.5 + i * 150)} {f(WALL73_Y - 40)}" for i in range(int((x1 - x0) // 150) + 1))
+    o.append(f'<path d="{d}" stroke="{P["wall_ln"]}" stroke-width="1.8" opacity=".55" fill="none"/>')
+    o.append(shape(rect_pts(x0, WALL73_Y - 46, x1, WALL73_Y + 6), P["base"], blob(rect_pts(x0, WALL73_Y - 8, x1, WALL73_Y + 6), P["base_sh"]), w=3.4, seed=7302))
+    gf = lib.lin_grad([(0, P["floor"], 1), (1, P["floor_b"], 1)], 0, WALL73_Y, 0, 2600, units="userSpaceOnUse")
+    o.append(f'<rect x="{f(x0)}" y="{f(WALL73_Y + 6)}" width="{f(x1 - x0)}" height="{f(2600 - WALL73_Y)}" fill="url(#{gf})"/>')
+    ys = [WALL73_Y + 6, 1510, 1600, 1720, 1880, 2080, 2340, 2600]
+    d = "".join(f"M{f(x0)} {f(y)}L{f(x1)} {f(y + 2)}" for y in ys[1:-1])
+    r = rs(7303)
+    for ya, yb in zip(ys[:-1], ys[1:]):
+        for _ in range(10):
+            x = r.uniform(x0, x1)
+            d += f"M{f(x)} {f(ya)}L{f(x + r.uniform(-4, 4))} {f(yb)}"
+    o.append(f'<path d="{d}" stroke="{P["floor_ln"]}" stroke-width="3" opacity=".6" fill="none"/>')
+    return "".join(o)
+
+
+def cork_board73(x0, y0, x1, y1, P, seed=0):
+    """Пробковая доска: props.cork_board группы A (центр, w, h), подкрашенная под свет палитры P; иначе — своя рамка с пробкой."""
+    try:
+        import props
+        if hasattr(props, "cork_board"):
+            return light_tint(props.cork_board((x0 + x1) / 2, (y0 + y1) / 2, x1 - x0, y1 - y0, seed), P)
+    except Exception:
+        pass
+    sd = 7310 + seed
+    fr = 34
+    o = [blob(rect_pts(x0 + 14, y0 + 18, x1 + 14, y1 + 22), P["shadow"], .35)]
+    o.append(shape(rect_pts(x0, y0, x1, y1), P["wood"], blob(rect_pts(x0, y1 - 14, x1, y1), P["wood_sh"]) + blob(rect_pts(x1 - 14, y0, x1, y1), P["wood_sh"]),
+                   w=4.6, seed=sd))
+    r = rs(sd)
+    inner = blob(rect_pts(x0 + fr, y0 + fr, x1 - fr, y0 + fr + 22), P["cork_sh"], .7)
+    d = ""
+    for _ in range(int((x1 - x0) * (y1 - y0) / 1800)):
+        x, y = r.uniform(x0 + fr, x1 - fr), r.uniform(y0 + fr, y1 - fr)
+        rr = r.uniform(2.0, 4.6)
+        d += f"M{f(x - rr)} {f(y)}a{f(rr)} {f(rr * .7)} 0 1 0 {f(2 * rr)} 0a{f(rr)} {f(rr * .7)} 0 1 0 {f(-2 * rr)} 0"
+    inner += f'<path d="{d}" fill="{P["cork_dot"]}" opacity=".55"/>'
+    o.append(shape(rect_pts(x0 + fr, y0 + fr, x1 - fr, y1 - fr), P["cork"], inner, w=3.4, seed=sd + 1))
+    return "".join(o)
+
+
+def _curtains73(x0, y0, x1, y1, u, col, t, seed=0):
+    """Две шторы на карнизе: u 0 — раздвинуты у краёв окна, 1 — сведены, между ними щель ~6 % ширины. Складки едут со шторой."""
+    sd = 7330 + seed
+    w = x1 - x0
+    xm = (x0 + x1) / 2
+    gap = w * (.5 - .03 * u)     # полуширина открытой части
+    gap = lib.lerp(w * .5, w * .035, smooth01(u)) if hasattr(lib, "lerp") else (w * .5 + (w * .035 - w * .5) * smooth01(u))
+    o = []
+    sh = lib.mul(col, (.78, .78, .8))
+    for sgn in (-1, 1):
+        outer = x0 - 70 if sgn < 0 else x1 + 70
+        inner_x = xm + sgn * gap
+        sw = 4 * math.sin(t * 1.3 + sgn) * (1 - u)
+        pts = [(outer, y0 - 30, 1), (inner_x - sgn * 4, y0 - 30, 1), (inner_x + sw, (y0 + y1) / 2), (inner_x - sgn * 10 + sw * 1.5, y1 + 60, 1),
+               (outer, y1 + 60, 1)]
+        folds = ""
+        n = 4
+        for i in range(n):
+            q = (i + .5) / n
+            fx = outer + (inner_x - outer) * q
+            folds += line([(fx, y0 - 20), (fx + sw * q, (y0 + y1) / 2), (fx + sw * 1.4 * q, y1 + 50)], 6, sh, taper=.4, wmin=.3, seed=sd + i + 10 * (sgn + 1))
+        folds += blob([(inner_x - sgn * 26, y0 - 30), (inner_x, y0 - 30), (inner_x + sw, (y0 + y1) / 2), (inner_x - sgn * 30 + sw, y1 + 60)], sh, .7)
+        o.append(shape(pts, col, folds, w=3.6, seed=sd + 5 + sgn))
+    o.append(shape(lib.rrect(x0 - 110, y0 - 50, x1 + 110, y0 - 30, 6), "#5d5048", "", w=3.0, seed=sd + 20))
+    return "".join(o), (xm - gap, xm + gap)
+
+
+def _window73(P, light_u, t, curtain_u=0.0, moon_phase=1.0, day=False):
+    """Окно WIN73: днём бледное серое небо (холодно, без солнца), ночью луна (moon_phase 0 — серп … 1 — полная). Шторы сводятся."""
+    x0, y0, x1, y1 = WIN73
+    fr = 18
+    ix0, iy0, ix1, iy1 = x0 + fr, y0 + fr, x1 - fr, y1 - fr
+    sky = P["sky"]
+    g = lib.lin_grad([(0, sky[0], 1), (.6, sky[1], 1), (1, sky[2], 1)], 0, 0, 0, 1)
+    inner = f'<path d="M{f(ix0 - 5)} {f(iy0 - 5)}H{f(ix1 + 5)}V{f(iy1 + 5)}H{f(ix0 - 5)}Z" fill="url(#{g})"/>'
+    w, h = ix1 - ix0, iy1 - iy0
+    if day:      # холодное пасмурное небо: длинные серые облака, силуэт крыш
+        for j in range(3):
+            cx = ix0 + ((j * 211 + t * 9) % (w + 200)) - 100
+            cy = iy0 + h * (.14 + .13 * j)
+            inner += blob([(cx - 140, cy + 10, 1), (cx - 90, cy - 18), (cx, cy - 26), (cx + 110, cy - 14), (cx + 150, cy + 10, 1)], "#e9edf0", .9)
+        hb = iy1 - h * .26
+        for j in range(4):
+            bx0 = ix0 - 10 + j * w / 3.4
+            inner += blob(rect_pts(bx0, hb + (j % 2) * 40, bx0 + w / 3.8, iy1 + 8), "#9aa6b1")
+    else:
+        r = rs(7340)
+        for i in range(10):
+            sx, sy = ix0 + 20 + r.uniform(0, w - 40), iy0 + 20 + r.uniform(0, h * .45)
+            tw = .55 + .45 * math.sin(t * 2.2 + i * 1.7)
+            inner += f'<circle cx="{f(sx)}" cy="{f(sy)}" r="{f(r.uniform(2, 3.6))}" fill="#e8ecff" opacity="{tw:.2f}"/>'
+        mx, my, mr = ix0 + w * .62, iy0 + h * .22, w * .12
+        inner += moon73(mx, my, mr, moon_phase, sky[1])
+        hb = iy1 - h * .24
+        for j in range(4):
+            bx0 = ix0 - 10 + j * w / 3.4
+            by = hb + (j % 2) * 40
+            inner += blob(rect_pts(bx0, by, bx0 + w / 3.8, iy1 + 8), "#0b1030")
+            if j % 2 == 0:
+                inner += blob(rect_pts(bx0 + 30, by + 30, bx0 + 50, by + 52), "#d9b45a", .8)
+    out = [shape(rect_pts(x0, y0, x1, y1), P["frame"], "", w=4.4, seed=7341)]
+    out.append(shape(rect_pts(ix0, iy0, ix1, iy1), sky[1], inner, w=3.4, seed=7342))
+    xm, ym = (x0 + x1) / 2, iy0 + h * .42
+    out.append(blob(rect_pts(xm - 7, iy0, xm + 7, iy1), P["frame"]) + line([(xm - 7, iy0), (xm - 7, iy1)], 2.6, INK, seed=7343)
+               + line([(xm + 7, iy0), (xm + 7, iy1)], 2.6, INK, seed=7344))
+    out.append(blob(rect_pts(ix0, ym - 7, ix1, ym + 7), P["frame"]) + line([(ix0, ym - 7), (ix1, ym - 7)], 2.6, INK, seed=7345)
+               + line([(ix0, ym + 7), (ix1, ym + 7)], 2.6, INK, seed=7346))
+    out.append(shape(lib.rrect(x0 - 30, y1, x1 + 30, y1 + 24, 5), P["frame"], blob(rect_pts(x0 - 34, y1 + 13, x1 + 34, y1 + 28), P["base_sh"]), w=3.4, seed=7347))
+    cur, gap = _curtains73(x0, y0, x1, y1, curtain_u, P["cur"], t)
+    out.append(cur)
+    return "".join(out), gap
+
+
+def moon73(x, y, r, phase=1.0, sky="#16225a"):
+    """Луна: phase 0 — тонкий серп, .5 — половина, 1 — полная (тень — круг цвета неба, наезжает справа)."""
+    o = shape(ellipse_pts(x, y, r, r, 26), "#f6efc6", blob(ellipse_pts(x - r * .3, y + r * .25, r * .22, r * .18, 10), "#e2d9a8"), w=2.6, seed=7350)
+    if phase < .98:
+        off = r * 2.1 * phase if phase > .5 else r * (.35 + 1.3 * phase)
+        if phase >= .5:      # «половина → полная»: тень уходит направо за край
+            o += blob(ellipse_pts(x + r * .1 + off, y, r * 1.02, r * 1.02, 26), sky)
+        else:
+            o += blob(ellipse_pts(x + off, y - r * .05, r * .98, r * .98, 26), sky)
+    return o
+
+
+def _light_pool73(cx, cy, rx, ry, t, col, op, seed, flick=1.0):
+    """Пятно света с чёткой неровной кромкой (два слоя: край и ядро), край колышется — не огромный мягкий овал."""
+    return (blob(_jag(cx, cy, rx, ry, t * flick, seed, amp=.035, speed=.8), col, op * .55)
+            + blob(_jag(cx, cy - ry * .05, rx * .62, ry * .62, t * flick, seed + 1, amp=.04, speed=1.1), col, op * .5))
+
+
+def night_lamp73(x, y, k=1.0, on=1.0, t=0.0, P=None):
+    """Ночник: props.night_lamp группы A, если есть; иначе — ножка, абажур-трапеция, свет ФОРМЫ абажура вверх и вниз (чёткие края)."""
+    try:
+        import props
+        if hasattr(props, "night_lamp"):
+            return props.night_lamp(x, y, k, on, t)
+    except Exception:
+        pass
+    o = []
+    on = clamp01(on)
+    fl = light(t, on)
+    if on > .01:      # конусы света формы абажура: вверх и вниз, ровные края, слегка мерцают
+        a = .42 * on * fl
+        o.append(blob([(x - 52 * k, y - 120 * k), (x + 52 * k, y - 120 * k), (x + 130 * k, y - 330 * k), (x - 130 * k, y - 330 * k)], LAMP_HOT, a * .55))
+        o.append(blob([(x - 70 * k, y - 46 * k), (x + 70 * k, y - 46 * k), (x + 150 * k, y + 2 * k), (x - 150 * k, y + 2 * k)], LAMP_HOT, a))
+    o.append(shape(ellipse_pts(x, y - 4 * k, 46 * k, 12 * k, 16), "#6e4a2c", "", w=3.4 * k, seed=7360))
+    o.append(line([(x, y - 8 * k), (x + 2 * k, y - 60 * k)], 9 * k, "#6e4a2c", taper=0, wmin=1, seed=7361))
+    shade = [(x - 46 * k, y - 120 * k, 1), (x + 46 * k, y - 120 * k, 1), (x + 72 * k, y - 50 * k, 1), (x - 72 * k, y - 50 * k, 1)]
+    sc = lib.mix("#c9b49a", LAMP_HOT, on * .9)
+    o.append(shape(shade, sc, blob([(x - 72 * k, y - 66 * k), (x + 72 * k, y - 66 * k), (x + 72 * k, y - 50 * k), (x - 72 * k, y - 50 * k)],
+                                   lib.mix("#a8957c", "#ffd27a", on), .9), w=3.8 * k, seed=7362))
+    if on > .01:
+        o.append(blob(ellipse_pts(x, y - 52 * k, 50 * k, 7 * k, 14), "#fff6d8", on))
+    return "".join(o)
+
+
+def _bed73(P, seed=0):
+    """Кровать сбоку у стены: изголовье справа (у тумбочки), низкая спинка слева, матрас, простыня. Постель (подушку, одеяло) — bed_linen73."""
+    x0, x1 = BED73_X
+    y = BED73_TOP
+    o = []
+    o.append(blob(rect_pts(x0 - 20, FL73 - 18, x1 + 40, FL73 + 26), P["shadow"], .45))
+    for lx in (x0 + 20, x1 - 30):
+        o.append(shape(rect_pts(lx - 14, y + 120, lx + 14, FL73), P["wood_sh"], "", w=3.4, seed=7370 + int(lx) % 7))
+    o.append(shape(lib.rrect(x0 - 10, y + 70, x1 + 20, y + 140, 8), P["wood"], blob(rect_pts(x0 - 10, y + 120, x1 + 20, y + 142), P["wood_sh"]), w=4.2, seed=7371))
+    o.append(shape(lib.rrect(x1 - 6, y - 330, x1 + 50, y + 140, 14), P["wood"], blob(rect_pts(x1 + 30, y - 330, x1 + 52, y + 140), P["wood_sh"]), w=4.4, seed=7372))
+    o.append(shape(lib.rrect(x0 - 40, y - 80, x0 + 10, y + 140, 12), P["wood"], blob(rect_pts(x0 - 12, y - 80, x0 + 12, y + 140), P["wood_sh"]), w=4.4, seed=7373))
+    o.append(shape(lib.rrect(x0, y, x1, y + 80, 18), P["sheet"], blob(rect_pts(x0, y + 54, x1, y + 82), P["sheet_sh"]), w=3.8, seed=7374))
+    return "".join(o)
+
+
+def bed_linen73(P, blanket=1.0, seed=0):
+    """Подушка у изголовья и одеяло (сцена кладёт Диму между подушкой и одеялом, если он лежит): dict(pillow, blanket)."""
+    px, py = BED73_PILLOW
+    pil = shape([(px - 150, py + 22, 1), (px - 160, py - 30), (px - 110, py - 70), (px + 60, py - 76), (px + 120, py - 50), (px + 118, py + 22, 1)],
+                lib.mix(P["sheet"], "#ffffff", .2), blob(rect_pts(px - 170, py + 4, px + 130, py + 26), P["sheet_sh"]), w=3.8, seed=7380)
+    x0, x1 = BED73_X
+    y = BED73_TOP
+    qc = lib.mix(P["cur"], P["sheet"], .25)
+    pts = [(x0 - 4, y + 96, 1), (x0 - 10, y - 8), (x0 + 200, y - 40 * blanket), (x0 + 700, y - 70 * blanket), (x1 - 360, y - 60 * blanket),
+           (x1 - 250, y - 10), (x1 - 240, y + 96, 1)]
+    inner = blob([(x0 - 20, y + 60), (x1, y + 60), (x1, y + 100), (x0 - 20, y + 100)], lib.mul(qc, (.78, .78, .8)))
+    for i in range(5):
+        xx = x0 + 120 + i * 210
+        inner += line([(xx, y - 30 * blanket), (xx + 10, y + 90)], 3, lib.mul(qc, (.82, .82, .85)), taper=.3, wmin=.5, seed=7381 + i)
+    bl = shape(pts, qc, inner, w=4.2, seed=7386)
+    return dict(pillow=pil, blanket=bl)
+
+
+def _nightstand73(P):
+    x0, x1 = NSTAND73
+    y = NSTAND73_TOP
+    o = [blob(rect_pts(x0 - 6, FL73 - 12, x1 + 20, FL73 + 18), P["shadow"], .45)]
+    o.append(shape(rect_pts(x0, y, x1, FL73 - 10), P["wood"], blob(rect_pts(x1 - 22, y, x1, FL73 - 10), P["wood_sh"]), w=4.2, seed=7390))
+    o.append(shape(lib.rrect(x0 - 14, y - 22, x1 + 14, y + 6, 5), lib.mix(P["wood"], "#ffffff", .08), "", w=3.8, seed=7391))
+    o.append(shape(lib.rrect(x0 + 24, y + 60, x1 - 24, y + 160, 6), P["wood"], blob(ellipse_pts((x0 + x1) / 2, y + 110, 10, 7, 8), P["wood_sh"]),
+                   w=3.4, seed=7392))
+    return "".join(o)
+
+
+def _desk73(P):
+    x0, x1 = DESK73_X
+    y = DESK73_TOP
+    o = [shape(rect_pts(x0, y, x1, y + 34), P["wood"], blob(rect_pts(x0, y + 22, x1, y + 34), P["wood_sh"]), w=4.2, seed=7395)]
+    for lx in (x0 + 30, x1 - 50):
+        o.append(shape(rect_pts(lx, y + 34, lx + 22, FL73), P["wood_sh"], "", w=3.4, seed=7396 + int(lx) % 5))
+    return "".join(o)
+
+
+def _moon_patch73(P, u, t):
+    """Лунный прямоугольник окна на полу и косо на стене справа (форма окна, крестовина тенью, чёткие края)."""
+    if u <= .01:
+        return ""
+    x0, y0, x1, y1 = WIN73
+    col = "#7f8fd0"
+    o = _sun_quad((x1 + 120, y0 + 260), (420, 60), (160, 620), col, "#9aa8e0", inset=.06)
+    o += _sun_quad((x0 + 80, WALL73_Y + 30), (560, 10), (520, 240), col, "#9aa8e0", inset=.08)
+    return f'<g opacity="{.42 * u:.3f}">{o}</g>'
+
+
+def _lamp_pools73(t, u):
+    """Свет ночника: пятно формы абажура на стене над тумбочкой и тёплый круг на тумбочке/полу (чёткие края, мерцание)."""
+    if u <= .01:
+        return ""
+    lx, ly = LAMP73
+    fl = light(t, u)
+    o = _light_pool73(lx - 60, ly - 330, 300 * fl, 230 * fl, t, LAMP_GLOW, .26 * u, 7400, 1.5)
+    o += _light_pool73(lx - 260, FL73 + 50, 460, 70, t, LAMP_GLOW, .24 * u, 7402, 1.5)
+    return o
+
+
+def board_items_layer():
+    """Резерв для сцен: пусто (предметы на доске ставит сцена из props)."""
+    return ""
+
+
+def cold_room(t, mode="close", curtain_u=0.0):
+    """Холодный дневной свет: серо-голубая стена, доска, окно с пасмурным небом и шторами. См. шапку раздела 73."""
+    P = PAL73["cold"]
+    bg = ['<rect x="-3000" y="-1800" width="7000" height="6000" fill="#9aa6b2"/>', _wall73(P)]
+    bg.append(cork_board73(*BOARD73, P))
+    win, gap = _window73(P, 0.0, t, curtain_u, day=True)
+    bg.append(win)
+    bg.append(_desk73(P))
+    # свет из окна: полоса формы щели штор на стене под окном и на полу, к Диме; сужается со шторами
+    gx0, gx1 = gap
+    y1 = WIN73[3]
+    sx, sy = STAND73
+    nar = smooth01(curtain_u)
+    fx0 = gx0 - 420 - 260 * (1 - nar)
+    fx1 = gx1 - 420 + 60 * (1 - nar)
+    lt = [blob([(gx0, y1 + 24), (gx1, y1 + 24), (gx1 + 10, WALL73_Y - 46), (gx0 - 10, WALL73_Y - 46)], "#eef3f6", .35)]
+    lt.append(blob([(gx0 - 10, WALL73_Y + 6), (gx1 + 10, WALL73_Y + 6), (fx1 + 40, FL73 + 300), (fx0 - 40, FL73 + 300)], "#e6edf2", .45 + .25 * nar))
+    # луч в воздухе (только когда шторы почти сведены — «прожектор»)
+    beam = [(gx0, WIN73[1] + 40), (gx1, WIN73[1] + 40), (fx1 + 80, FL73 + 60), (fx0 - 80, FL73 + 60)]
+    if nar > .3:
+        lt.append(blob(beam, "#f2f6f8", .16 * (nar - .3) / .7))
+    dim = ""
+    if curtain_u > .01:
+        big = "M-3000 -1800H4000V4200H-3000Z"
+        bp = "M" + "L".join(f"{f(x)} {f(y)}" for x, y in [(beam[0][0] - 30, beam[0][1]), (beam[1][0] + 30, beam[1][1]), (beam[2][0] + 90, beam[2][1] + 300),
+                                                           (beam[3][0] - 90, beam[3][1] + 300)]) + "Z"
+        dim = f'<path d="{big}{bp}" fill="#1b2433" fill-rule="evenodd" opacity="{.42 * nar:.3f}"/>'
+    cam = CAM73_BOARD_CLOSE if mode == "close" else CAM73_COLD_WIDE
+    return dict(bg="".join(bg), light="".join(lt), dim=dim, front="", cam=cam, gap=gap)
+
+
+def board_close(t, light="cold"):
+    """Ракурс хука (light="cold") и петли (light="lamp": тёплый ночник за кадром справа — пятно формы абажура на стене)."""
+    if light == "cold":
+        d = cold_room(t, "close", 0.0)
+        return dict(bg=d["bg"], light="", cam=CAM73_BOARD_CLOSE)
+    P, u = _pal73(light)
+    bg = ['<rect x="-3000" y="-1800" width="7000" height="6000" fill="#2a1c18"/>', _wall73(P), cork_board73(*BOARD73, P)]
+    lx, ly = BOARD73[2] + 260, BOARD73[1] + 520      # ночник за правым краем кадра: свет косым пятном на доску и стену
+    fl = light_(t, u)
+    lt = blob([(lx, ly - 60), (lx, ly + 60), (lx - 760, ly + 360 * fl), (lx - 760, ly - 420 * fl)], LAMP_GLOW, .13 * u)
+    lt += _light_pool73(lx - 330, ly - 20, 300 * fl, 260 * fl, t, LAMP_GLOW, .22 * u, 7410, 1.4)
+    return dict(bg="".join(bg), light=lt, cam=CAM73_BOARD_CLOSE)
+
+
+def light_(t, u=1.0):
+    return light(t, u)
+
+
+def _foot_view73(t, P, u, lamp_u):
+    """Вид от изножья кровати (координаты кадра): потолок, стена с часами, изголовье, подушка, одеяло к зрителю."""
+    o = [f'<rect x="-600" y="-600" width="2300" height="3200" fill="{P["wall"]}"/>']
+    # потолок трапецией сверху (стык со стеной — линия), стена ниже
+    cy = 130.0
+    o.append(blob([(-600, -600), (1700, -600), (1700, cy - 20), (1080 + 300, cy), (-300, cy), (-600, cy - 20)], P["ceil"]))
+    o.append(line([(-600, cy + 6), (1700, cy + 6)], 3.4, INK, taper=0, wmin=1, seed=7420))
+    g = lib.lin_grad([(0, P["wall_sh"], 1), (.5, P["wall"], 1), (1, P["wall_hi"], 1)], 0, cy, 0, 1100, units="userSpaceOnUse")
+    o.append(f'<rect x="-600" y="{f(cy + 8)}" width="2300" height="1000" fill="url(#{g})"/>')
+    d = "".join(f"M{f(-560 + i * 150)} {f(cy + 10)}L{f(-558.5 + i * 150)} 1000" for i in range(16))
+    o.append(f'<path d="{d}" stroke="{P["wall_ln"]}" stroke-width="1.8" opacity=".55" fill="none"/>')
+    # лунный прямоугольник окна косо на стене слева (окно за левым краем кадра)
+    if u < .99:
+        mq = _sun_quad((-40, 260), (330, 70), (90, 520), "#8494d4", "#a0acdf", inset=.06)
+        o.append(f'<g opacity="{.4 * (1 - u):.3f}">{mq}</g>')
+    # изголовье, тумбочка справа с ночником
+    o.append(shape(lib.rrect(120, 760, 960, 1080, 30), P["wood"], blob(rect_pts(120, 1040, 960, 1082), P["wood_sh"]) + line([(150, 800), (930, 800)], 3, P["wood_sh"], taper=0, wmin=1, seed=7421), w=4.6, seed=7422))
+    o.append(shape(rect_pts(930, 960, 1120, 1300), P["wood"], blob(rect_pts(1090, 960, 1120, 1300), P["wood_sh"]), w=4.0, seed=7423))
+    o.append(shape(lib.rrect(918, 940, 1130, 966, 5), lib.mix(P["wood"], "#ffffff", .08), "", w=3.6, seed=7424))
+    if lamp_u > .01:
+        lx, ly = FOOT_LAMP
+        fl = light(t, lamp_u)
+        o.append(_light_pool73(lx - 90, ly - 300, 260 * fl, 200 * fl, t, LAMP_GLOW, .26 * lamp_u, 7425, 1.5))
+    o.append(night_lamp73(FOOT_LAMP[0], FOOT_LAMP[1], .9, lamp_u, t, P))
+    # матрас и подушка
+    o.append(shape(lib.rrect(60, 1010, 1020, 1240, 30), P["sheet"], blob(rect_pts(60, 1190, 1020, 1242), P["sheet_sh"]), w=4.0, seed=7426))
+    hx, hy = FOOT_HEAD
+    pil = [(hx - 330, hy + 70, 1), (hx - 350, hy - 10), (hx - 290, hy - 92), (hx, hy - 112), (hx + 290, hy - 96), (hx + 350, hy - 10), (hx + 330, hy + 70, 1),
+           (hx, hy + 92)]
+    o.append(shape(pil, lib.mix(P["sheet"], "#ffffff", .18), blob(ellipse_pts(hx, hy + 10, 170, 60, 20), P["sheet_sh"], .8), w=4.0, seed=7427))
+    bg = "".join(o)
+    # одеяло к зрителю: от плеч Димы (hy + 120) расширяется к низу кадра (перспектива), складки к зрителю
+    qc = lib.mix(P["cur"], P["sheet"], .25)
+    top = hy + 125
+    bl = [(hx - 300, top + 10, 1), (hx - 150, top - 22), (hx, top - 10), (hx + 150, top - 24), (hx + 300, top + 10, 1), (hx + 560, 2000, 1), (hx - 560, 2000, 1)]
+    inner = blob([(hx + 120, top), (hx + 320, top), (hx + 620, 2000), (hx + 260, 2000)], lib.mul(qc, (.8, .8, .84)), .8)
+    for i in range(4):
+        a = -230 + 150 * i
+        inner += line([(hx + a * .5, top + 30), (hx + a * .9, top + 400), (hx + a * 1.5, 1990)], 4, lib.mul(qc, (.8, .8, .84)), taper=.4, wmin=.3, seed=7428 + i)
+    inner += line([(hx - 290, top + 60), (hx, top + 46), (hx + 290, top + 60)], 6, lib.mix(qc, "#ffffff", .3), taper=.3, wmin=.5, seed=7433)
+    front = shape(bl, qc, inner, w=4.6, seed=7434)
+    return bg, front
+
+
+def bedroom(t, light="moon", mode="wide", lamp_u=None, moon_phase=1.0):
+    """Спальня ночью (см. шапку раздела 73). lamp_u — включённость ночника (по умолчанию = доля тепла палитры)."""
+    P, u = _pal73(light)
+    lu = u if lamp_u is None else clamp01(lamp_u)
+    if mode == "foot":
+        bg, front = _foot_view73(t, P, u, lu)
+        return dict(bg=bg, light="", front=front, cam=CAM73_FOOT, k=u, P=P)
+    bg = [f'<rect x="-3000" y="-1800" width="7000" height="6000" fill="{P["shadow"]}"/>', _wall73(P)]
+    bg.append(cork_board73(*BOARD73, P))
+    win, _ = _window73(P, u, t, 0.0, moon_phase=moon_phase)
+    bg.append(win)
+    bg.append(_desk73(P))
+    bg.append(lib_clock73(*CLOCK73, t, P))
+    bg.append(_moon_patch73(P, 1 - u, t))
+    bg.append(_lamp_pools73(t, lu))
+    bg.append(_bed73(P))
+    bg.append(_nightstand73(P))
+    bg.append(night_lamp73(LAMP73[0], LAMP73[1], 1.0, lu, t, P))
+    lin = bed_linen73(P)
+    cams = {"wide": CAM73_BED_WIDE, "bed": CAM73_BED, "cam": CAM73_NSTAND, "board": CAM73_BOARD_MID, "desk": CAM73_DESK}
+    return dict(bg="".join(bg), pillow=lin["pillow"], blanket=lin["blanket"], light="", front="", cam=cams.get(mode, CAM73_BED_WIDE), k=u, P=P)
+
+
+def lib_clock73(x, y, r, t, P, h=3, m=12, tick=True):
+    """Часы без цифр и делений на 3:12; секундная стрелка дёргается раз в секунду. Ночью циферблат приглушён (читается)."""
+    import props
+    ah, am = props.clock_hm(h, m)
+    face = lib.mix("#c9cde0", "#f7f1e3", .35) if P is PAL73["moon"] else "#f7f1e3"
+    o = props.clock(x, y, r, ah, am, seed=73, face=face, rim="#4F78B5")
+    if tick:
+        sec = math.floor(t) + min(1.0, (t % 1.0) / .06) * 1.0      # рывок за 2 кадра в начале каждой секунды
+        a = math.radians(sec * 6 - 90 + 20)
+        o += line([(x - math.cos(a) * r * .14, y - math.sin(a) * r * .14), (x + math.cos(a) * r * .76, y + math.sin(a) * r * .76)], 3.2 * r / 90, "#c4413a",
+                  taper=.2, wmin=.6, seed=7440)
+    return o
+
+
+def heart_k(t, t_beat):
+    """Сила удара сердца 0…1: двойной толчок «тук-тук» (t_beat и t_beat + 0.2), резкий подъём, затухание."""
+    v = 0.0
+    for t0, a in ((t_beat, 1.0), (t_beat + .2, .65)):
+        q = t - t0
+        if q > 0:
+            v = max(v, a * min(1.0, q / .035) * math.exp(-q / .12))
+    return v
+
+
+def heart_pulse(t, t_beat, amp=1.0, col="#05070f"):
+    """Поверх кадра (координаты кадра 1080×1920): виньетка к краям и проседание света всего кадра на удар сердца."""
+    k = heart_k(t, t_beat) * amp
+    if k < .005:
+        return ""
+    g = lib.rad_grad([(0, col, 0), (.55, col, 0), (1, col, 1)], 540, 900, 820, 1250)
+    return (f'<rect width="1080" height="1920" fill="url(#{g})" opacity="{.75 * k:.3f}"/>'
+            f'<rect width="1080" height="1920" fill="{col}" opacity="{.15 * k:.3f}"/>')
+
+
+def light_tint(svg, P):
+    """Подкрасить предмет props (нарисован в дневных цветах) под свет палитры P: холодный день, луна или ночник (смесь)."""
+    if P is PAL73["cold"]:
+        return cold_tint(svg, 1.0)
+    u = P.get("_u", 0.0)
+    if u >= .99:
+        return warm_tint(svg, 1.0)
+    return warm_tint(cold_tint(svg, 0.0, 1 - u), u) if u > .01 else cold_tint(svg, 0.0, 1.0)
+
+
+def _tint(svg, m, tag):
+    fid = f"{tag}{abs(hash(m)) % 10 ** 8}"
+    if not any(f'id="{fid}"' in d for d in lib.DEFS):
+        lib.DEFS.append(f'<filter id="{fid}" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="{m}"/></filter>')
+    return f'<g filter="url(#{fid})">{svg}</g>'
+
+
+def warm_tint(svg, k=1.0):
+    """Тёплый свет ночника на герое: красный чуть выше, синий ниже (k 0…1)."""
+    k = clamp01(k)
+    if k < .01:
+        return svg
+    r, g, b = 1 + .06 * k, 1 - .02 * k, 1 - .16 * k
+    return _tint(svg, f"{r:.3f} 0 0 0 {.02 * k:.3f} 0 {g:.3f} 0 0 {.01 * k:.3f} 0 0 {b:.3f} 0 0 0 0 0 1 0", "wt")
+
+
+def cold_tint(svg, k=1.0, night=0.0):
+    """Холодный свет (день, k) или луна (night 0…1: темнее и синее, но контур читается)."""
+    k, n = clamp01(k), clamp01(night)
+    r = (1 - .06 * k) * (1 - .45 * n)
+    g = (1 - .02 * k) * (1 - .38 * n)
+    b = (1 + .05 * k) * (1 - .12 * n)
+    return _tint(svg, f"{r:.3f} 0 0 0 0 0 {g:.3f} 0 0 0 0 0 {b:.3f} 0 {.03 * n:.3f} 0 0 0 1 0", "ct")

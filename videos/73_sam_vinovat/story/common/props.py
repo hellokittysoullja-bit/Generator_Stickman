@@ -3895,3 +3895,413 @@ def bean_bag(x, y, k=1.0, sag=0.0, seed=0, col=None):
     inn += blob(ellipse_pts(-w * .5, -h * .82, 40, 16, 10, rot=-20), chi, .8)
     o = blob(ellipse_pts(0, 4, w * 1.05, 22, 16), "#000000", .16) + shape(pts, c, inn, w=4.6, seed=sd)
     return _tf(o, x, y, k)
+
+
+# ═══════════════════════════════ «ТЫ САМ ВИНОВАТ» (рилс 73, группа A) ═══════════════════════════════
+# (x, y) — как сказано у функции; k — масштаб; t — общее время ролика; seed — своё зерно. Букв и цифр нет нигде.
+#   cork_board(x, y, w, h, seed, frame=True)            пробковая доска, (x, y) — ЦЕНТР; деревянная рамка 26·, фактура пробки точками
+#   push_pin(x, y, k, col)                              кнопка (головка, блик, тень), (x, y) — точка прокола
+#   pinned_envelope(x, y, k, swing, dust, web, open_u, t, seed, pin=True)
+#                       пустой конверт 220×150·k на кнопке; (x, y) — кнопка (прокол в 22·k ниже верхнего края, конверт висит под ней);
+#                       swing — угол качания (°) вокруг кнопки; dust 0…1 — пыль на конверте и сыплется снизу; web 0…1 — паутинка
+#                       в верхнем левом углу к доске; open_u 0…1 — клапан отгибается вверх (через ребро). envelope_corner(...) → углы.
+#   pinned_card(x, y, k, swing, dust, web, t, seed, col, pin=True)   пустая карточка 170×120·k на кнопке (как конверт)
+#   cobweb(x, y, k, tremble, torn, t, ang, span, L, seed, col)
+#                       угловая паутина из точки (x, y): лучи от ang до ang+span (°; 0 — вправо, 90 — вниз), длина L·k;
+#                       tremble 0…1 — дрожит; torn 0…1 — рвётся: внешние нити пропадают, концы лучей обвисают вниз
+#   spider(x, y, k, drop, t, seed, look=0)               круглый милый паучок на нитке: (x, y) — где нить крепится, drop — длина нити (px·k);
+#                       восемь тонких лапок штрихом шевелятся; spider_body(x, y, k, drop) → центр тельца
+#   gavel(x, y, k, rot, t, seed)                         судейский молоток: (x, y) — ХВАТ (конец рукояти, где лапа), рукоять 200·k уходит
+#                       влево, боёк поперёк неё; rot (°, по часовой) поворачивает вокруг хвата; rot=0 — рукоять горизонтально, нижний торец
+#                       бойка — ударная грань. gavel_face(x, y, k, rot) → ударная грань в мире, gavel_head(...) → центр бойка
+#   gavel_block(x, y, k, bounce, seed)                   подставка, (x, y) — ЦЕНТР ДНА, верх в y−44·k; bounce 0…1 — удар: подскок, штрихи удара
+#   dust_puff(x, y, k, u, seed)                          облачко пыли (u 0…1 — вырастает и тает) с пылинками
+#   night_lamp(x, y, k, on_u, t, seed)                   ночник с абажуром, (x, y) — ЦЕНТР ДНА, высота 230·k; on_u 0…1 — свет: абажур светится,
+#                       чёткий конус вверх и вниз по форме абажура и пятно на тумбочке, лёгкое мерцание
+#   brain_scribble(x, y, k, u, eyes, burst, t, seed, glow=0)
+#                       холодный клубок-мозг: спутанный серый штрих без заливки (Ø ≈ 240·k, ЦЕНТР); u 0…1 — проступает (штрих
+#                       дорисовывается); eyes 0…1 — два прищуренных глазка открываются; glow 0…1 — глазки вспыхивают холодным светом;
+#                       burst 0…1 — рассыпается: куски штриха разлетаются и гаснут искрами
+C_CORK = "#C99A64"
+C_CORK_SH = "#A87A48"
+C_CORK_DOT = "#8E6438"
+C_ENV = "#EFE6D2"
+C_ENV_SH = "#D3C6AA"
+C_DUST = "#B9B3A8"
+C_WEB = "#E3E6EA"
+C_SPIDER = "#4A4248"
+C_GAVEL = "#8A5B32"
+C_GAVEL_SH = "#64401F"
+C_GAVEL_HI = "#B27C4C"
+C_SHADE = "#F3E2B8"
+C_SHADE_SH = "#D7BE86"
+C_BRAIN_GREY = "#8C93A0"
+C_BRAIN_EYE = "#DCEBF7"
+
+
+def cork_board(x, y, w=700.0, h=520.0, seed=0, frame=True):
+    sd = 73000 + seed
+    rs = _rs(sd)
+    x0, y0, x1, y1 = x - w / 2, y - h / 2, x + w / 2, y + h / 2
+    inn = blob(rect_pts(x0 - 4, y1 - h * .12, x1 + 4, y1 + 4), C_CORK_SH, .55)
+    inn += blob(rect_pts(x0 - 4, y0 - 4, x0 + w * .06, y1 + 4), C_CORK_SH, .45)
+    dots = []
+    n = int(w * h / 2600)
+    for _ in range(n):
+        px, py = rs.uniform(x0, x1), rs.uniform(y0, y1)
+        r = rs.uniform(1.6, 3.6)
+        dots.append(f'M{f(px - r)} {f(py)}a{f(r)} {f(r * .8)} 0 1 0 {f(2 * r)} 0a{f(r)} {f(r * .8)} 0 1 0 {f(-2 * r)} 0Z')
+    inn += f'<path d="{"".join(dots)}" fill="{C_CORK_DOT}" opacity=".55"/>'
+    dots = []
+    for _ in range(n // 2):
+        px, py = rs.uniform(x0, x1), rs.uniform(y0, y1)
+        r = rs.uniform(1.4, 2.6)
+        dots.append(f'M{f(px - r)} {f(py)}a{f(r)} {f(r)} 0 1 0 {f(2 * r)} 0a{f(r)} {f(r)} 0 1 0 {f(-2 * r)} 0Z')
+    inn += f'<path d="{"".join(dots)}" fill="#DDB582" opacity=".7"/>'
+    o = []
+    if frame:
+        fw = 26.0
+        o.append(blob(rect_pts(x0 - fw + 10, y0 - fw + 14, x1 + fw + 10, y1 + fw + 14), "#000000", .18))
+        fr = shape(rect_pts(x0 - fw, y0 - fw, x1 + fw, y1 + fw), C_WOOD,
+                   blob(rect_pts(x0 - fw, y1, x1 + fw, y1 + fw), C_WOOD_SH) + blob(rect_pts(x1, y0 - fw, x1 + fw, y1 + fw), C_WOOD_SH) +
+                   line([(x0 - fw + 8, y0 - fw + 9), (x1 + fw - 10, y0 - fw + 8)], 3.4, C_WOOD_HI, taper=.3, wmin=.5, seed=sd + 2),
+                   w=4.6, seed=sd + 1)
+        o.append(fr)
+    o.append(shape(rect_pts(x0, y0, x1, y1), C_CORK, inn, w=3.6, seed=sd + 3))
+    return "".join(o)
+
+
+def push_pin(x, y, k=1.0, col=None):
+    c = col or C_MARKER
+    sh = lib.mul(c, (.72, .72, .76))
+    o = blob(ellipse_pts(x + 7 * k, y + 8 * k, 14 * k, 11 * k, 12), "#000000", .22)
+    o += shape(ellipse_pts(x, y, 15 * k, 15 * k, 16), c, blob(ellipse_pts(x + 5 * k, y + 6 * k, 12 * k, 10 * k, 12), sh), w=3.0 * k, seed=73050)
+    o += blob(ellipse_pts(x - 5 * k, y - 5 * k, 4.6 * k, 3.4 * k, 8, rot=-30), "#FFFFFF", .85)
+    return o
+
+
+def _dust_specks(w, h, dust, seed):
+    """Пыль на плоском предмете (локально, центр (0, 0)): серый налёт по верхнему краю + крапинки."""
+    if dust <= 0.01:
+        return ""
+    rs = _rs(seed)
+    o = blob(rect_pts(-w / 2 - 4, -h / 2 - 4, w / 2 + 4, -h / 2 + h * .22), C_DUST, .55 * dust)
+    d = []
+    for _ in range(int(60 * dust)):
+        px, py = rs.uniform(-w / 2, w / 2), rs.uniform(-h / 2, h / 2) * rs.uniform(.3, 1.0) - h * .1
+        r = rs.uniform(1.2, 2.8)
+        d.append(f'M{f(px - r)} {f(py)}a{f(r)} {f(r)} 0 1 0 {f(2 * r)} 0a{f(r)} {f(r)} 0 1 0 {f(-2 * r)} 0Z')
+    o += f'<path d="{"".join(d)}" fill="#8F897F" opacity="{.7 * dust:.2f}"/>'
+    return o
+
+
+def _falling_dust(x, y, k, rot, bottom, half_w, dust, t, seed):
+    """Пылинки падают с нижнего края качающегося предмета (мир)."""
+    if dust <= 0.05:
+        return ""
+    rs = _rs(seed)
+    c, s = math.cos(math.radians(rot)), math.sin(math.radians(rot))
+    d = []
+    for j in range(int(9 * dust) + 2):
+        lx = rs.uniform(-half_w, half_w)
+        per = rs.uniform(.8, 1.4)
+        ph = ((t + rs.uniform(0, 3)) % per) / per
+        bx, by = x + k * (lx * c - bottom * s), y + k * (lx * s + bottom * c)
+        px = bx + 14 * k * math.sin(ph * 5 + j)
+        py = by + ph * 170 * k
+        r = (2.6 - 1.4 * ph) * k
+        d.append(f'M{f(px - r)} {f(py)}a{f(r)} {f(r)} 0 1 0 {f(2 * r)} 0a{f(r)} {f(r)} 0 1 0 {f(-2 * r)} 0Z')
+    return f'<path d="{"".join(d)}" fill="#A9A397" opacity="{min(1, .9 * dust):.2f}"/>'
+
+
+ENV_W, ENV_H, ENV_PIN = 220.0, 150.0, 22.0
+
+
+def envelope_corner(x, y, k=1.0, swing=0.0, which="tl"):
+    lx = -ENV_W / 2 if which[1] == "l" else ENV_W / 2
+    ly = -ENV_PIN if which[0] == "t" else ENV_H - ENV_PIN
+    c, s = math.cos(math.radians(swing)), math.sin(math.radians(swing))
+    return x + k * (lx * c - ly * s), y + k * (lx * s + ly * c)
+
+
+def pinned_envelope(x, y, k=1.0, swing=0.0, dust=0.0, web=0.0, open_u=0.0, t=0.0, seed=0, pin=True):
+    sd = 73100 + seed
+    hw, top, bot = ENV_W / 2, -ENV_PIN, ENV_H - ENV_PIN
+    o = []
+    body = rect_pts(-hw, top, hw, bot)
+    inn = blob(rect_pts(-hw - 4, bot - 16, hw + 4, bot + 4), C_ENV_SH)
+    # нижние клапаны-швы (V снизу и боковые)
+    inn += line([(-hw + 2, bot - 2), (0, top + ENV_H * .52), (hw - 2, bot - 2)], 3.0, C_ENV_SH, taper=.2, wmin=.6, seed=sd + 2)
+    inn += f'<g transform="translate(0 {f((top + bot) / 2)})">{_dust_specks(ENV_W, ENV_H, dust, sd + 5)}</g>'
+    o.append(shape(body, C_ENV, inn, w=3.6, seed=sd))
+    # клапан: треугольник от верхнего края; open_u — поворот вверх через ребро (масштаб по y = cos)
+    ou = clamp(open_u)
+    cy = math.cos(math.pi * ou)
+    flap = [(-hw, top, 1), (hw, top, 1), (0, top + ENV_H * .58, 1)]
+    if abs(cy) > .04:
+        fc = C_ENV if cy > 0 else lib.mul(C_ENV, (.9, .88, .84))
+        fin = f'<g transform="translate(0 {f((top + bot) / 2)})">{_dust_specks(ENV_W, ENV_H, dust * .8, sd + 7)}</g>' if cy > 0 else ""
+        fl = shape(flap, fc, fin, w=3.4, seed=sd + 3)
+        o.append(f'<g transform="translate(0 {f(top)}) scale(1 {cy:.4f}) translate(0 {f(-top)})">{fl}</g>')
+    else:
+        o.append(line([(-hw, top), (hw, top)], 4.2, lib.INK, taper=.1, wmin=.8, seed=sd + 4))
+    if ou > .5:   # внутри видно пустоту — тень в раскрытом конверте
+        o.insert(1, blob(rect_pts(-hw + 8, top + 2, hw - 8, top + 22), C_ENV_SH, .9))
+    if pin:
+        o.append(push_pin(0, 0, 1.0))
+    g = f'<g transform="translate({f(x)} {f(y)}) rotate({f(swing)}) scale({k:.5f})">{"".join(o)}</g>'
+    out = g + _falling_dust(x, y, k, swing, bot, hw * .8, dust, t, sd + 9)
+    if web > .01:
+        cx, cy2 = envelope_corner(x, y, k, swing, "tl")
+        out = cobweb(cx - 8 * k, cy2 - 6 * k, k * (.5 + .5 * web), tremble=min(1, abs(swing) / 8), t=t, ang=95, span=95, L=120, seed=seed + 3) + out
+    return out
+
+
+CARD_W, CARD_H, CARD_PIN = 170.0, 120.0, 18.0
+
+
+def pinned_card(x, y, k=1.0, swing=0.0, dust=0.0, web=0.0, t=0.0, seed=0, col=None, pin=True):
+    sd = 73200 + seed
+    hw, top, bot = CARD_W / 2, -CARD_PIN, CARD_H - CARD_PIN
+    cc = col or "#F6EFDC"
+    inn = blob(rect_pts(-hw - 4, bot - 14, hw + 4, bot + 4), lib.mul(cc, (.88, .87, .84)))
+    inn += line([(-hw + 4, top + 24), (hw - 6, top + 25)], 2.6, lib.mul(cc, (.86, .78, .78)), taper=.2, wmin=.6, seed=sd + 1)
+    inn += f'<g transform="translate(0 {f((top + bot) / 2)})">{_dust_specks(CARD_W, CARD_H, dust, sd + 5)}</g>'
+    o = [shape(rect_pts(-hw, top, hw, bot), cc, inn, w=3.4, seed=sd)]
+    if pin:
+        o.append(push_pin(0, 0, .9))
+    g = f'<g transform="translate({f(x)} {f(y)}) rotate({f(swing)}) scale({k:.5f})">{"".join(o)}</g>'
+    out = g + _falling_dust(x, y, k, swing, bot, hw * .8, dust, t, sd + 9)
+    if web > .01:
+        c, s = math.cos(math.radians(swing)), math.sin(math.radians(swing))
+        cx, cy = x + k * (-hw * c - top * s), y + k * (-hw * s + top * c)
+        out = cobweb(cx - 6 * k, cy - 6 * k, k * (.45 + .45 * web), tremble=min(1, abs(swing) / 8), t=t, ang=95, span=95, L=110, seed=seed + 5) + out
+    return out
+
+
+def cobweb(x, y, k=1.0, tremble=0.0, torn=0.0, t=0.0, ang=0.0, span=90.0, L=150.0, seed=0, col=None):
+    sd = 73300 + seed
+    rs = _rs(sd)
+    c = col or C_WEB
+    n = 5
+    tr = clamp(torn)
+    o = []
+    rays = []
+    for j in range(n):
+        a = math.radians(ang + span * j / (n - 1) + rs.uniform(-4, 4))
+        ll = L * k * rs.uniform(.82, 1.05)
+        wob = tremble * 5 * k * math.sin(t * 23 + j * 1.7)
+        rays.append((a, ll, wob))
+    rings = (.32, .55, .78, .97)
+    for j, (a, ll, wob) in enumerate(rays):
+        cut = 1.0 - tr * (.35 + .4 * ((j * 37) % 5) / 5)      # где луч порван (доля длины)
+        ex, ey = x + math.cos(a) * ll * cut, y + math.sin(a) * ll * cut + wob
+        pts = [(x, y), (ex, ey)]
+        if tr > .02:   # обрывок обвисает вниз
+            hang = 40 * k * tr
+            pts.append((ex + math.cos(a) * 8 * k, ey + hang))
+        o.append(line(pts, 2.2 * k, c, taper=.3, wmin=.5, seed=sd + 10 + j))
+    for i, rr in enumerate(rings):
+        if tr > 0 and rr > 1.0 - tr * .7:
+            continue
+        for j in range(n - 1):
+            a0, l0, w0 = rays[j]
+            a1, l1, w1 = rays[j + 1]
+            p0 = (x + math.cos(a0) * l0 * rr, y + math.sin(a0) * l0 * rr + w0 * rr)
+            p1 = (x + math.cos(a1) * l1 * rr, y + math.sin(a1) * l1 * rr + w1 * rr)
+            mx, my = (p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2
+            # провис нити к центру паутины и чуть вниз
+            sag = .18
+            mx += (x - mx) * sag
+            my += (y - my) * sag + 4 * k + tremble * 3 * k * math.sin(t * 19 + i + j)
+            o.append(line([p0, (mx, my), p1], 1.7 * k, c, taper=.25, wmin=.5, seed=sd + 40 + i * 7 + j))
+    return "".join(o)
+
+
+def spider_body(x, y, k=1.0, drop=60.0):
+    return x, y + drop * k + 18 * k
+
+
+def spider(x, y, k=1.0, drop=60.0, t=0.0, seed=0, look=0.0):
+    sd = 73400 + seed
+    bx, by = spider_body(x, y, k, drop)
+    o = [line([(x, y), (x + .5, by - 14 * k)], 1.8 * k, C_WEB, taper=.1, wmin=.7, seed=sd)]
+    legs = []
+    for side in (-1, 1):
+        for j in range(4):
+            a = math.radians(-50 + j * 30)
+            wig = 8 * math.sin(t * 14 + j * 1.3 + side)
+            ax, ay = bx + side * 10 * k, by - 2 * k + (j - 1.5) * 4 * k
+            kx, ky = ax + side * 18 * k * math.cos(a), ay - 12 * k + 18 * k * math.sin(a) + wig * .3 * k
+            fx, fy = kx + side * 12 * k, ky + (14 + j * 2) * k + wig * .4 * k
+            legs.append(line([(ax, ay), (kx, ky), (fx, fy)], 2.6 * k, lib.INK, taper=.4, wmin=.3, seed=sd + 5 + j + (side + 1) * 4))
+    o += legs
+    o.append(shape(ellipse_pts(bx, by, 17 * k, 16 * k, 16), C_SPIDER, blob(ellipse_pts(bx + 5 * k, by + 6 * k, 13 * k, 10 * k, 12), "#332D32"),
+                   w=2.6 * k, seed=sd + 2))
+    for s in (-1, 1):
+        ex = bx + s * 6 * k + look * 2 * k
+        o.append(blob(ellipse_pts(ex, by - 3 * k, 4.4 * k, 5 * k, 10), "#FFFFFF"))
+        o.append(blob(ellipse_pts(ex + look * 1.4 * k, by - 2.4 * k, 2.2 * k, 2.6 * k, 8), lib.INK))
+    return "".join(o)
+
+
+def gavel_head(x, y, k=1.0, rot=0.0):
+    c, s = math.cos(math.radians(rot)), math.sin(math.radians(rot))
+    return x + k * (-225 * c), y + k * (-225 * s)
+
+
+def gavel_face(x, y, k=1.0, rot=0.0):
+    c, s = math.cos(math.radians(rot)), math.sin(math.radians(rot))
+    lx, ly = -225, 64
+    return x + k * (lx * c - ly * s), y + k * (lx * s + ly * c)
+
+
+def gavel(x, y, k=1.0, rot=0.0, t=0.0, seed=0):
+    sd = 73500 + seed
+    o = []
+    # рукоять: от хвата (0, 0) влево, чуть сужается к бойку, шишечка на конце
+    o.append(shape([(6, -11, 1), (-196, -8, 1), (-196, 8, 1), (6, 11, 1)], C_GAVEL,
+                   blob([(6, 2), (-196, 2), (-196, 8), (6, 11)], C_GAVEL_SH) + line([(-10, -6), (-180, -4)], 2.6, C_GAVEL_HI, taper=.3, wmin=.4, seed=sd + 1),
+                   w=3.4, seed=sd))
+    o.append(shape(ellipse_pts(8, 0, 15, 15, 14), C_GAVEL, blob(ellipse_pts(12, 4, 10, 9, 10), C_GAVEL_SH), w=3.2, seed=sd + 2))
+    # боёк: цилиндр поперёк рукояти
+    hx = -225
+    head = rrect(hx - 30, -62, hx + 30, 62, 10)
+    hin = blob(rect_pts(hx + 10, -66, hx + 34, 66), C_GAVEL_SH) + line([(hx - 18, -50), (hx - 18, 50)], 3.0, C_GAVEL_HI, taper=.3, wmin=.4, seed=sd + 4)
+    for yy in (-36, 36):   # тёмные пояски
+        hin += blob(rect_pts(hx - 34, yy - 6, hx + 34, yy + 6), "#4A2F17")
+    o.append(shape(head, C_GAVEL, hin, w=3.8, seed=sd + 3))
+    o.append(shape(ellipse_pts(hx, 62, 30, 7, 14), C_GAVEL_SH, "", w=2.8, seed=sd + 5))
+    return _tf("".join(o), x, y, k, rot)
+
+
+def gavel_block(x, y, k=1.0, bounce=0.0, seed=0):
+    sd = 73550 + seed
+    b = clamp(bounce)
+    dy = -8 * b
+    o = [blob(ellipse_pts(x, y + 2 * k, 120 * k * (1 - .06 * b), 16 * k, 18), "#000000", .2)]
+    side = [(-100, -34, 1), (100, -34, 1), (100, -6), (70, 2), (0, 6), (-70, 2), (-100, -6, 1)]
+    side = [(x + p[0] * k, y + (p[1] + dy) * k) + p[2:] for p in side]
+    o.append(shape(side, C_GAVEL, blob([(x + 30 * k, y + (-34 + dy) * k), (x + 100 * k, y + (-34 + dy) * k), (x + 100 * k, y + (-4 + dy) * k),
+                                         (x + 30 * k, y + (4 + dy) * k)], C_GAVEL_SH), w=3.6 * k, seed=sd))
+    o.append(shape(ellipse_pts(x, y + (-36 + dy) * k, 100 * k, 18 * k, 22), C_GAVEL_HI,
+                   blob(ellipse_pts(x + 20 * k, y + (-32 + dy) * k, 70 * k, 10 * k, 16), C_GAVEL), w=3.4 * k, seed=sd + 1))
+    if b > .03:
+        for j, a in enumerate((-160, -128, -90, -52, -20)):
+            r = math.radians(a)
+            r0, r1 = (60 + 30 * (1 - b)) * k, (60 + 30 * (1 - b) + 70 * b) * k
+            cx, cy = x, y + (-44 + dy) * k
+            o.append(line([(cx + r0 * math.cos(r) * 1.4, cy + r0 * math.sin(r) * .7), (cx + r1 * math.cos(r) * 1.4, cy + r1 * math.sin(r) * .7)],
+                          7 * k * (.4 + .6 * b), lib.INK, taper=.6, wmin=.2, seed=sd + 10 + j))
+    return "".join(o)
+
+
+def dust_puff(x, y, k=1.0, u=1.0, seed=0):
+    if u <= 0.01 or u >= 1:
+        return ""
+    o = puff_cloud(x, y, k, u, seed + 31, col="#CFC9BE")
+    rs = _rs(73600 + seed)
+    d = []
+    for j in range(10):
+        a = rs.uniform(0, 2 * math.pi)
+        dd = (30 + 110 * lib.ease_out(u, 2)) * k * rs.uniform(.6, 1.1)
+        px, py = x + math.cos(a) * dd, y + math.sin(a) * dd * .7 + 40 * u * u * k
+        r = 3.2 * k * (1 - u)
+        if r > .6:
+            d.append(f'M{f(px - r)} {f(py)}a{f(r)} {f(r)} 0 1 0 {f(2 * r)} 0a{f(r)} {f(r)} 0 1 0 {f(-2 * r)} 0Z')
+    return o + (f'<path d="{"".join(d)}" fill="#A9A397"/>' if d else "")
+
+
+def night_lamp(x, y, k=1.0, on_u=1.0, t=0.0, seed=0):
+    sd = 73700 + seed
+    on = clamp(on_u) * (1 - .04 * (math.sin(t * 9.3) * .5 + .5) * math.sin(t * 2.1) ** 2)
+    o = []
+    st, sb = y - 230 * k, y - 140 * k        # верх и низ абажура
+    if on > .01:
+        g = lin_grad([(0, C_LIGHT_HOT, .5 * on), (1, C_LIGHT, 0)], 0, 1, 0, 0)
+        o.append(f'<path d="M{f(x - 42 * k)} {f(st)}L{f(x - 120 * k)} {f(st - 230 * k)}L{f(x + 120 * k)} {f(st - 230 * k)}L{f(x + 42 * k)} {f(st)}Z" '
+                 f'fill="url(#{g})" style="mix-blend-mode:screen"/>')
+        g2 = lin_grad([(0, C_LIGHT_HOT, .55 * on), (1, C_LIGHT, .25 * on)], 0, 0, 0, 1)
+        o.append(f'<path d="M{f(x - 82 * k)} {f(sb)}L{f(x - 150 * k)} {f(y - 2 * k)}L{f(x + 150 * k)} {f(y - 2 * k)}L{f(x + 82 * k)} {f(sb)}Z" '
+                 f'fill="url(#{g2})" style="mix-blend-mode:screen"/>')
+        o.append(blob(ellipse_pts(x, y - 2 * k, 150 * k, 16 * k, 24), lib.mix("#7A6A55", "#FFE7A3", on), .9))
+    # ножка и основание
+    o.append(shape(ellipse_pts(x, y - 12 * k, 52 * k, 14 * k, 18), "#C9B48A", blob(ellipse_pts(x + 14 * k, y - 8 * k, 36 * k, 8 * k, 12), "#A88F62"),
+                   w=3.2 * k, seed=sd))
+    o.append(shape(rect_pts(x - 8 * k, sb, x + 8 * k, y - 18 * k), "#BFA676", blob(rect_pts(x + 2 * k, sb, x + 9 * k, y - 18 * k), "#9C8458"), w=3.0 * k,
+                   seed=sd + 1))
+    o.append(shape(ellipse_pts(x, y - 46 * k, 26 * k, 34 * k, 18), "#D8C49B", blob(ellipse_pts(x + 8 * k, y - 40 * k, 18 * k, 26 * k, 12), "#B39D70"),
+                   w=3.2 * k, seed=sd + 2))
+    # абажур: трапеция, светится изнутри
+    shade_c = lib.mix(C_SHADE_SH, "#FFF1C6", on)
+    shade = [(x - 42 * k, st, 1), (x + 42 * k, st, 1), (x + 82 * k, sb, 1), (x - 82 * k, sb, 1)]
+    sin_ = blob([(x + 18 * k, st), (x + 42 * k, st), (x + 82 * k, sb), (x + 40 * k, sb)], lib.mix("#B79E66", "#F6D98E", on))
+    sin_ += line([(x - 30 * k, st + 14 * k), (x - 58 * k, sb - 10 * k)], 3 * k, lib.mix("#E4D2A4", "#FFFFFF", on), taper=.3, wmin=.4, seed=sd + 4)
+    o.append(shape(shade, shade_c, sin_, w=3.6 * k, seed=sd + 3))
+    o.append(blob(ellipse_pts(x, sb, 82 * k, 9 * k, 18), lib.mix("#8C7650", "#FFF6D8", on)))
+    return "".join(o)
+
+
+def _scribble_pts(seed, r=115.0, n=150):
+    rs = _rs(seed)
+    pts = []
+    a, rr = 0.0, r * .6
+    cx, cy = 0.0, 0.0
+    for i in range(n):
+        a += rs.uniform(.25, .65)
+        rr = clamp(rr + rs.uniform(-12, 12), r * .6, r)
+        cx += rs.uniform(-5, 5)
+        cy += rs.uniform(-5, 5)
+        cx, cy = cx * .85, cy * .85
+        pts.append((cx + rr * math.cos(a), cy + rr * math.sin(a) * .85))
+    return pts
+
+
+def brain_scribble(x, y, k=1.0, u=1.0, eyes=0.0, burst=0.0, t=0.0, seed=0, glow=0.0):
+    sd = 73800 + seed
+    u, b = clamp(u), clamp(burst)
+    if u <= .01 or b >= .999:
+        return ""
+    pts = _scribble_pts(sd)
+    m = max(2, int(len(pts) * u))
+    jig = [(px + 2.2 * math.sin(t * 7 + i * .9), py + 2.2 * math.cos(t * 6 + i * 1.1)) for i, (px, py) in enumerate(pts[:m])]
+    o = []
+    if b <= .01:
+        for s in range(0, m - 1, 24):        # штрих кусками (так рука ведёт клубок) — без заливки
+            seg = jig[s:s + 26]
+            if len(seg) > 1:
+                o.append(line(seg, 4.4, C_BRAIN_GREY, taper=.15, wmin=.45, seed=sd + s))
+    else:
+        rs = _rs(sd + 1)
+        for s in range(0, m - 1, 12):
+            seg = jig[s:s + 13]
+            if len(seg) < 2:
+                continue
+            mx = sum(p[0] for p in seg) / len(seg)
+            my = sum(p[1] for p in seg) / len(seg)
+            dirx, diry = mx / (math.hypot(mx, my) + 1e-3), my / (math.hypot(mx, my) + 1e-3)
+            fly = lib.ease_out(b, 2) * (160 + rs.uniform(0, 120))
+            sh = 1 - lib.ease_in(b, 1.6)
+            seg2 = [(mx + dirx * fly + (p[0] - mx) * sh, my + diry * fly + (p[1] - my) * sh + 50 * b * b) for p in seg]
+            if sh > .12:
+                o.append(line(seg2, 4.4 * (.4 + .6 * sh), C_BRAIN_GREY, taper=.2, wmin=.4, seed=sd + s))
+            if b > .25:
+                tw = math.sin(math.pi * clamp((b - .25) / .75))
+                o.append(star4(mx + dirx * fly * 1.1, my + diry * fly * 1.1 + 50 * b * b, 16 * tw, tw))
+    e = clamp(eyes) * (1 - b)
+    if e > .02:
+        gl = clamp(glow)
+        if gl > .02:
+            for sx in (-1, 1):
+                o.append(blob(ellipse_pts(sx * 34, -8, 30 * (1 + gl * .4), 18 * (1 + gl * .4), 16), "#BFD9F0", .35 * gl))
+        for sx in (-1, 1):
+            ex, ey = sx * 30, -6
+            hh = 11 * e
+            o.append(blob(ellipse_pts(ex, ey, 27 * e, 17 * e, 14), "#2B3140"))
+            eye = [(ex - 22, ey + 2, 1), (ex, ey - hh), (ex + 22, ey + 2, 1), (ex, ey + hh * .55)]
+            o.append(blob(eye, lib.mix(C_BRAIN_EYE, "#FFFFFF", gl)))
+            o.append(blob(ellipse_pts(ex + sx * -2, ey, 3.4, max(1.2, hh * .5), 8), lib.INK))
+            # прищур: верхнее веко прямой тяжёлой чертой, наклон к переносице
+            o.append(line([(ex - 24, ey - hh * .6 - sx * 4), (ex + 24, ey - hh * .6 + sx * 4)], 5.2, lib.INK, taper=.3, wmin=.5, seed=sd + 90 + sx))
+            o.append(line([(ex - 15, ey + hh * .6 + 1), (ex + 15, ey + hh * .6 + 1)], 2.4, lib.INK, taper=.4, wmin=.3, seed=sd + 95 + sx))
+    return _tf("".join(o), x, y, k)
