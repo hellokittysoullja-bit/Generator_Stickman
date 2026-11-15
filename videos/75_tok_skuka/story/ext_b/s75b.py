@@ -218,7 +218,7 @@ def s09(t):
     lib.dyn_begin()
     t_15, t_min, t_only, t_btn, t_tok = ws(44), ws(45), ws(46), ws(49), ws(50)
     lp = ease_io(win(t, S09["t0"] - .2, t_min + .9))
-    L = R.lab_room(t, "wide", light_patch=lp)
+    L = R.lab_room(t, "wide", light_patch=lp, sun=.8)
     x, y = R.LAB_SIT
     s = 1.0
     bx, by = R.LAB_BOX

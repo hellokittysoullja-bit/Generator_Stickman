@@ -483,7 +483,7 @@ def s07(t):
         tip = None
     else:
         u_raise = ease_io(clamp((t - (T_POKA - .05)) / .2)) * .45 + .55 * ease_io(clamp((t - (T_SDEL - .2)) / .2))
-        st = {"look": (-.8, .1), "perk": 1.0 - shh * .5, "squint": .8 * shh, "smile": .5 * shh, "tilt": -6 * shh}
+        st = {"look": (-.8, .1), "perk": 1.0 - shh * .5, "blink": .55 * shh, "smile": .5 * shh, "tilt": -6 * shh}
         st["sx"], st["sy"] = PR.squash(t, land, .18, 3.0, 8)
         cat_sv, tip = people.cat_shh76(cat_p[0], cat_p[1], ck, t, u_raise, tip=(mouth[0] + 6, mouth[1] + 4), st=st, side="l")
         o.append(cat_sv)
@@ -502,7 +502,104 @@ def s07(t):
     return frame_svg("".join(o), cx, cy, cs, lerp(.8, .2, u), bg="#efe0bc")
 
 
-SCENES = {"s02": s02, "s07": s07, "s10": s10, "s11": s11}
+# ═══════════════════════════════ s08: дудка снова и снова, ноутбук в пыли ═══════════════════════════════
+def horn_unroll(t, blows, up=.13, down=.4):
+    """Развёрнутость дудки 0…1: на каждом выдуве быстро разворачивается и медленнее сворачивается обратно."""
+    v = 0.0
+    for tb in blows:
+        if t >= tb:
+            e = t - tb
+            v = max(v, ease_out(clamp(e / up), 2) if e < up else 1 - ease_io(clamp((e - up - .08) / down)))
+    return v
+
+
+def dusty_laptop(x, y, k, t, seed=0):
+    """Закрытый ноутбук на полу (крышка в перспективе) под слоем пыли: серая пелена и пылинки на крышке, пылинки в воздухе."""
+    o = [PR.laptop(x, y, k, open_=0.0)]
+    rs = __import__("random").Random(7750 + seed)
+    lid = [(x - 232 * k, y - 132 * k), (x + 232 * k, y - 132 * k), (x + 255 * k, y - 4 * k), (x - 255 * k, y - 4 * k)]
+    o.append(blob(lid, "#e2dccf", .45))
+    for j in range(70):
+        v, w_ = rs.uniform(0, 1), rs.uniform(-1, 1)
+        px = x + w_ * (232 + 23 * v) * k
+        py = y - 132 * k + v * 126 * k
+        o.append(blob(ellipse_pts(px, py, rs.uniform(2.2, 4.4) * k, rs.uniform(1.4, 2.6) * k, 6), "#a8a194", .75))
+    for j in range(10):        # пылинки в воздухе над ноутбуком
+        ph = rs.uniform(0, 6.28)
+        px = x + rs.uniform(-220, 220) * k + 14 * k * math.sin(t * .7 + ph)
+        py = y - rs.uniform(170, 380) * k + 10 * k * math.sin(t * .5 + ph)
+        o.append(blob(ellipse_pts(px, py, 4 * k, 4 * k, 6), "#d9d1c0", .95))
+    return "".join(o)
+
+
+def s08(t):
+    lib.dyn_begin()
+    sh = SH["s08"]
+    t0, t1 = sh["t0"], sh["t1"]
+    T_NE, T_NAP, T_BUD, T_TOL, T_OBE = ws(34), ws(35), ws(38), ws(39), ws(40)
+    tr = R.trophy_room(t, "hook", light="day")
+    mx, my, mk = A["MAT"]
+    hx, hy = 290.0, 1175.0
+    k = .95
+    sc = k * people.HEIGHT["dima_pj"]
+    o = [tr["bg"], PR.floor_mattress(mx, my, mk, sag=.1, sag_x=hx + 100, layer="back")]
+    lap = (780.0, 1470.0)
+    lap_svg = dusty_laptop(lap[0], lap[1], .85, t) + PR.dust_puff(lap[0], lap[1] - 80, 1.1, (t - (T_OBE - .05)) / .9, seed=4)
+    # кот на дальнем краю матраса: уши опущены, медленно моргает (лапу у губ Дима отвёл на «Не»)
+    cat_p = (745.0, 965.0)
+    ck = .84
+    away = ease_io(clamp((t - (T_NE - .05)) / .25))
+    st = dict(people.CAT_ST76["sad"])
+    st["blink"] = .45 + .55 * max(0.0, math.sin(2 * math.pi * (t - T_NAP) / 1.6)) ** 6
+    st["paw_l"] = .9 * (1 - away)
+    st["paw_l_dx"] = 80
+    st["look"] = (-.6, .2)
+    st["drop"] = .08 * away
+    o.append(people.cat_svg(cat_p[0], cat_p[1], ck, st, t))
+    # Дима: сидит, ближняя рука держит дудку у рта; на «Не» отводит лапу кота дальней рукой
+    blows = [T_NAP - .05, T_BUD - .05, T_TOL - .02, T_OBE - .02]
+    un = horn_unroll(t, blows)
+    blowing = un > .05
+    lean = .12 + .03 * math.sin(t * 2.2) + .05 * un
+    P_h = people.pose_kw("horn76", hx, hy, k, "dima_pj")
+    f_push = ("ik", (hx + 470 * sc, hy - 500 * sc), -1)
+    f_rest = P_h["arms"]["f"]
+    pu = bump(t, T_NE - .1, .55)
+    arms = {"f": ("ik", lerp2(f_rest[1], f_push[1], pu), -1), "n": P_h["arms"]["n"]}
+    hold = ease_io(clamp((t - (T_NE + .05)) / .3))
+    arms["n"] = ("ik", lerp2((hx + 300 * sc, hy - 80 * sc), P_h["arms"]["n"][1], hold), -1)
+    hands = {"f": P_h["hands"]["f"] if pu < .3 else {"dir": (1, -.2), "spread": .3, "curl": (.1, .15, .2, .25), "thumb": .2},
+             "n": P_h["hands"]["n"] if hold > .5 else {"dir": (1, .4), "curl": (.62, .66, .7, .74), "thumb": .55}}
+    if blowing:
+        ex = dict(people.EXPR["dima"]["blow76"])
+        ex["puff"] = .6 + .4 * un
+    else:
+        ex = dict(people.EXPR["dima"]["shh76"])
+        ex.update(mouth="o", open=.25, look=(.6, .05), brows="up")
+    ex["closed"] = blink(t, .4) * (1 - un)
+    head_add = .04 - .06 * un
+    kwd = dict(arms=arms, hands=hands, lean_add=lean - P_h["lean"], head_add=head_add, **people.sit_mat_kw(hx, hy, k))
+    fig = people.dima_pj(hx, hy, k, ex, "horn76", layers=("legs", "pelvis", "arm_f", "body"), **kwd)
+    o.append(fig["svg"])
+    mp = people.mouth_pt(fig, lean, head_add)
+    if hold > .02:
+        hk = .95 * hold
+        o.append(PR.party_horn(mp[0] - 4, mp[1] + 2, hk, rot=-36 + 8 * un, unroll=un, t=t))
+    o.append(people.dima_pj(hx, hy, k, ex, "horn76", layers=("arm_n",), **kwd)["svg"])
+    o.append(PR.floor_mattress(mx, my, mk, sag=.1, sag_x=hx + 100, layer="front"))
+    o.append(lap_svg)
+    o.append(tr["light"])
+    # камера: чуть сверху (наклон), дрейф вниз-вправо к ноутбуку на «только обещать» и обратно, толчок на каждом выдуве
+    u = ease_io(clamp((t - t0) / (t1 - t0)))
+    to_lap = ease_io(clamp((t - (T_TOL - .2)) / .45)) * (1 - ease_io(clamp((t - (T_OBE + .35)) / .4)) * .6)
+    kick = sum(.025 * bump(t, tb, .22) for tb in blows)
+    cs = lerp(1.24, 1.3, u) - .18 * to_lap + kick
+    cx = lerp(560, 590, u) + 60 * to_lap + 2 * math.sin(t * 1.3)
+    cy = lerp(930, 920, u) + 300 * to_lap + 2 * math.sin(t * 1.0)
+    return frame_svg("".join(o), cx, cy, cs, lerp(2.0, 1.4, u), bg="#efe0bc")
+
+
+SCENES = {"s02": s02, "s07": s07, "s08": s08, "s10": s10, "s11": s11}
 
 
 def frame(sid, t):
