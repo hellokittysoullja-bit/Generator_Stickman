@@ -123,9 +123,9 @@ def s14(t):
              parts["body"], env, lp["svg"], parts["arm_n"], shadow, cat, fl, f'<g transform="translate(150 0)">{sc["lamp"]}</g>', light]
     # камера: медленный дрейф к ноутбуку, на «вместе» лёгкий удар +3 %
     u = sm(t, T_A14 - .2, 20.25)
-    s = lerp(1.05, 1.13, u) + .03 * bump(t, T_VME, .3)
-    ccx = lerp(700, 735, u) + 4 * math.sin(t * 1.4)
-    ccy = lerp(760, 790, u) + 3 * math.sin(t * 1.7)
+    s = lerp(1.08, 1.15, u) + .04 * bump(t, T_VME, .3)
+    ccx = lerp(705, 720, u) + 4 * math.sin(t * 1.4)
+    ccy = lerp(900, 880, u) + 3 * math.sin(t * 1.7)
     set_ink(s)
     warm_ = '<rect x="-3000" y="-3000" width="8000" height="8000" fill="#ff9a40" opacity=".32" style="mix-blend-mode:soft-light"/>'
     return f'<g transform="{lib.cam(ccx, ccy, s, lerp(-.3, .3, u))}">{"".join(world)}{warm_}</g>', BG

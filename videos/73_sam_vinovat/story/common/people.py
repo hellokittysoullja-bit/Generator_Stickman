@@ -2931,7 +2931,7 @@ def cat_forearm(base, tip, k=1.0, claw=0.0, seed=0):
 #   roll 0…1 — поворачивается на бок (к зрителю): голова поворачивается, бугор плеча и бедра растёт, ближняя рука ложится поверх одеяла
 #   к подушке (три позы через промежуточные кадры, без сжатия фигуры); sit 0…1 — садится (туловище поднимается из-под одеяла, ноги
 #   остаются под ним); cover "chest" | "nose" (одеяло до носа) | доля 0…1 между ними; arm "out" (ближняя рука поверх одеяла) | "in";
-#   expr — имя или dict. Возвращает dict(svg, head=(x, y) центр головы, wrist, pillow) как figure().
+#   expr — имя или dict; flip=True — голова на подушке СПРАВА (кровать room.BED73: изголовье справа). Возвращает dict(svg, head, wrist, pillow).
 # cat_judge_shadow(x, y, k, st, t, col, w) — ТЕНЬ кота-судьи ЛИНИЕЙ (контур силуэта той же позы cat.draw, без заливки): для потолка.
 # Кот — новые ключи cat.py st: cold 0…1 (холодный судья: веки наполовину, узкие зрачки-щёлки, прямой рот, уши прижаты), flat_ears
 #   0…1 (только уши прижаты). CAT_ST: judge (холодный, смотрит на зрителя), judge_tap (холодный, правая лапа на конверт/стол),
@@ -2999,7 +2999,7 @@ def _blanket_lying(sc, top_y, roll, front_x, seed, col):
     return lib.shape(pts, c, inner, w=4.6 * sc * 2, seed=seed)
 
 
-def dima_bed(x, y, k=0.5, expr="awake73", roll=0.0, sit=0.0, t=0.0, cover="chest", arm=None, col="blue", seed=0, pillow_col=None):
+def dima_bed(x, y, k=0.5, expr="awake73", roll=0.0, sit=0.0, t=0.0, cover="chest", arm=None, col="blue", seed=0, pillow_col=None, flip=False):
     sc = k * HEIGHT["dima"]
     r, s_ = lib.clamp(roll), lib.clamp(sit)
     cov = {"chest": 0.0, "nose": 1.0}.get(cover, cover) if isinstance(cover, str) else lib.clamp(cover)
@@ -3042,8 +3042,13 @@ def dima_bed(x, y, k=0.5, expr="awake73", roll=0.0, sit=0.0, t=0.0, cover="chest
 
     def W_(p, a):
         ca, sa = math.cos(math.radians(a)), math.sin(math.radians(a))
-        return (x + p[0] * ca - p[1] * sa, y + p[0] * sa + p[1] * ca)
-    return dict(svg="".join(out), head=W_((hx, hy), a_body), wrist={kk: W_(v, a_body) for kk, v in fig["wrist"].items()}, pillow=pw, scale=sc)
+        q = (x + p[0] * ca - p[1] * sa, y + p[0] * sa + p[1] * ca)
+        return (2 * x - q[0], q[1]) if flip else q
+    svg = "".join(out)
+    if flip:      # голова на подушке СПРАВА, ноги влево
+        svg = f'<g transform="translate({2 * x:.2f} 0) scale(-1 1)">{svg}</g>'
+        pw = (2 * x - pw[0], pw[1])
+    return dict(svg=svg, head=W_((hx, hy), a_body), wrist={kk: W_(v, a_body) for kk, v in fig["wrist"].items()}, pillow=pw, scale=sc)
 
 
 def cat_judge_shadow(x, y, k, st=None, t=0.0, col="#8FA3C8", w=5.0, op=0.85):

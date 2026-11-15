@@ -155,7 +155,7 @@ FRAMES["s15"] = s15
 T_A19 = 25.30
 T_I19, T_VSE = wt(57), wt(58)                 # 25.36, 25.52
 HIP19 = R.DIMA_LOG
-CAT19_A, CAT19_B = (640.0, 1506.0), (548.0, 1502.0)
+CAT19_A, CAT19_B = (612.0, 1506.0), (548.0, 1502.0)
 CAT19_K = .74
 
 
@@ -265,8 +265,8 @@ T_A20 = 26.42
 T_NAP, T_KOM, T_VIS = wt(59), wt(61), wt(63)       # 26.42, 27.00, 27.66
 KOT_T0, KOT_DUR = 27.2, .6                          # дописано к 27.8, звук «слово дописано» 27.95
 KOT20 = (455.0, 318.0, 1.42)                        # чистое небо R.SKY_CLEAN: за буквами ни звёзд, ни веток
-CAT20 = (770.0, 1740.0)
-CAT20_K = 2.05
+CAT20 = (745.0, 1770.0)
+CAT20_K = 2.15
 
 
 def sack_motion(t):
@@ -289,14 +289,14 @@ def s20(t):
     beck = .08 * math.sin(max(0.0, t - T_KOM) * 7.5) * sm(t, T_KOM - .1, T_KOM + .1) * (1 - sm(t, T_VIS - .2, T_VIS))
     up = bump(t, T_VIS - .05, .6)
     done = sm(t, KOT_T0 + KOT_DUR, KOT_T0 + KOT_DUR + .25)
-    st = dict(turn=lerp(-.55, 0.0, tu) + .15 * up, look=(lerp(-.8, 0.0, tu) + .3 * up, lerp(.1, -.05, tu) - .9 * up),
-              tilt=lerp(-7, 2, tu) + 3 * math.sin(t * 1.5) - 4 * up, blink=max(blinks(t, (26.3, 28.3)), .45 * done),
-              smile=1.0 if (tu > .7 and up < .3) else 0.0, tail=-15 + 6 * math.sin(t * 2.3),
+    st = dict(turn=lerp(-.55, 0.0, tu) + .15 * up, look=(lerp(-.8, 0.0, tu) + .3 * up, lerp(.1, -.05, tu) - .55 * up),
+              tilt=lerp(-7, 2, tu) + 3 * math.sin(t * 1.5) - 4 * up, blink=max(blinks(t, (26.3, 28.3)), .3 * done),
+              smile=1.0 if tu > .7 else 0.0, tail=-15 + 6 * math.sin(t * 2.3),
               ear=6 * bump(t, T_VIS, .3) + 2 * math.sin(t * 3.2), perk=.5 * bump(t, T_NAP, .5) + .6 * up,
               paw=.15 + .85 * reach + beck, paw_dx=50, flame_e=1.0 + .4 * done)
     cx, cy = CAT20
     cat = warm_cat(CAT.draw(cx, cy, CAT20_K, st, t), t)
-    cshadow = blob(ellipse_pts(cx + 30, cy + 6, 270, 24, 16), "#000000", .3)
+    cshadow = blob(ellipse_pts(cx + 30, cy + 6, 280, 24, 16), "#000000", .3)
     kot = hand_kot.kot(t, KOT_T0, KOT_DUR, KOT20[0], KOT20[1], KOT20[2], col="#F3E7C8")
     world = [back, sack, sc["fire"], sc["stones_front"], sc["log"], dima, kot, cshadow, cat]
     # камера: хлёст, лёгкий наезд на кота, перо видно; мини-удар, когда слово дописано
@@ -311,6 +311,133 @@ def s20(t):
 
 
 FRAMES["s20"] = s20
+
+
+# ═════════════════════════ s21: мешок падает → глыба льда → кот раскалывает → кубики в ряд к зрителю ═════════════════════════
+T_A21 = 28.62
+T_YA, T_RAZ, T_SHA = wt(66), wt(67), wt(70)        # 28.68, 28.92, 29.66
+T_FALL0, T_LAND = 28.60, 28.86
+T_HIT = 29.0                                         # «разломаю» (ударный слог)
+T_SPLIT0, T_SPLIT1 = 29.56, 29.92
+BLOCK21 = (930.0, 1560.0)
+BLOCK_K = 1.05
+CAT21 = (930.0, 1440.0)
+CAT21_K = 1.5
+N_CUBES = 5
+
+
+def cube_pos(i, u):
+    """Кубик i: из глыбы (u=0) — в ряд по земле к зрителю (u=1): каждый следующий ближе, ниже и крупнее; прыжок дугой."""
+    bx, by = BLOCK21
+    a = (bx - 90 + 45 * (i % 3), by - 150 + 70 * (i // 3))
+    b = (bx - 70 - 118 * i, by + 30 + 58 * i)
+    e = lib.ease_out(clamp(u), 2.4)
+    x = a[0] + (b[0] - a[0]) * e
+    y = a[1] + (b[1] - a[1]) * e - 170 * math.sin(math.pi * clamp(u)) * (1 - .1 * i)
+    k = lerp(1.0, 1.2 + .17 * i, e)
+    return x, y, k
+
+
+def cloth(x, y, k, u, seed=0):
+    """Ткань мешка развернулась и легла на землю вокруг глыбы (u 0…1 — раскрытие)."""
+    w, h = 210 * (.55 + .45 * u), 46 * (.6 + .4 * u)
+    pts = [(-w, 0, 1), (-w * .7, -h * .9), (-w * .15, -h), (w * .4, -h * .95), (w, -h * .1, 1), (w * .8, h * .7), (0, h), (-w * .8, h * .65)]
+    inn = blob([(0, -h), (w, -h * .1), (w * .8, h * .7), (w * .1, h * .4)], "#A88A5C", .7)
+    inn += line([(-w * .5, -h * .2), (-w * .1, h * .4)], 3, "#8A6A3E", taper=.6, wmin=.2, seed=7310 + seed)
+    o = lib.shape(pts, "#C9A874", inn, w=4.2, seed=7300 + seed)
+    for sx in (-1, 1):       # ушки узла лежат по краям
+        o += lib.shape([(sx * w * .95, -h * .2, 1), (sx * (w + 50), -h * .9), (sx * (w + 40), h * .3), (sx * w * .9, h * .4, 1)], "#C9A874", "", w=3.6,
+                       seed=7320 + seed + sx)
+    return f'<g transform="translate({x:.1f} {y:.1f}) scale({k:.4f})">{o}</g>'
+
+
+def s21(t):
+    sc, back = fire_branch(t, 1.0, "branch", 10.0 * (1 - sm(t, T_FALL0, T_FALL0 + .25)))
+    bx, by = BLOCK21
+    # мешок: срывается с ветки, падает с ускорением, чуть кувыркаясь, к месту глыбы
+    fu = clamp((t - T_FALL0) / (T_LAND - T_FALL0))
+    land = t >= T_LAND
+    items = []
+    if not land:
+        e = fu * fu
+        sx_, sy_ = R.BRANCH[0] + (bx - R.BRANCH[0]) * fu, R.BRANCH[1] + 10 + (by - 196 * .9 - 150 - R.BRANCH[1] - 10) * e
+        sack = sack_only(0, 0, .9, 6 * math.sin(t * 2.6), t)
+        items.append(f'<g transform="translate({sx_:.1f} {sy_:.1f}) rotate({-25 * e:.2f})">{sack}</g>')
+    # приземление: ткань разворачивается, глыба вырастает из мешка с пружиной
+    op = lib.ease_out(clamp((t - T_LAND) / .18), 2.5)
+    pop = 1 + .12 * H.decay(t, T_LAND + .1, 7.0, 3.0) if land else 1.0
+    crack = sm(t, T_HIT - .02, T_HIT + .3)
+    split = t >= T_SPLIT0
+    cl = cloth(bx - 20, by + 4, 1.0, op) if land else ""
+    block = ""
+    if land and not split:
+        kb = BLOCK_K * (.55 + .45 * op) * pop
+        sq = 1 - .08 * H.decay(t, T_HIT, 8.0, 5.0)
+        block = f'<g transform="translate({bx:.1f} {by:.1f}) scale({1 / sq:.4f} {sq:.4f}) translate({-bx:.1f} {-by:.1f})">{PR.ice_block(bx, by, kb, crack=crack, t=t, seed=1)}</g>'
+    cubes = []
+    if split:
+        su = clamp((t - T_SPLIT0) / (T_SPLIT1 - T_SPLIT0))
+        for i in range(N_CUBES):
+            ui = clamp(su * 1.25 - .06 * i)
+            x, y, k = cube_pos(i, ui)
+            sh = blob(ellipse_pts(x, cube_pos(i, 1)[1] + 48 * k if ui > .95 else y + 48 * k, 50 * k, 9 * k, 10), "#000000", .2 * ui)
+            spin = (1 - ui) * (25 - 10 * i) + 3 * math.sin(t * 3 + i)
+            glint = blob(ellipse_pts(x - 18 * k, y - 22 * k, 7 * k, 4 * k, 8), "#FFE6A8", .5 + .4 * math.sin(t * 9 + i * 1.7))
+            cubes.append((y, sh + PR.ice_cube(x, y, k, spin, seed=i) + glint))
+        cubes.sort()
+    # осколки и искорки льда на ударе
+    chips = ""
+    q = clamp((t - T_HIT) / .5)
+    if 0 < q < 1:
+        import numpy as np
+        r_ = np.random.RandomState(2107)
+        for _j in range(9):
+            a = math.radians(r_.uniform(-175, -5))
+            r0 = 40 + r_.uniform(150, 330) * lib.ease_out(q, 2)
+            x, y = bx + 20 + math.cos(a) * r0, by - 290 * BLOCK_K + math.sin(a) * r0 + 380 * q * q
+            chips += blob(ellipse_pts(x, y, 9 * (1 - q) + 2, 6 * (1 - q) + 2, 6), "#EAF8FD", 1 - q)
+    # кот за глыбой: смотрит, как падает мешок → обе лапы вверх → «разломаю» удар обеими лапами по верху глыбы → щурится на кубики
+    raise_ = sm(t, T_LAND + .02, T_HIT - .06)
+    hit = sm(t, T_HIT - .06, T_HIT)
+    paw = .4 + .6 * raise_ - .28 * hit + .06 * H.decay(t, T_HIT, 9.0, 6.0)
+    away = sm(t, T_SPLIT0 - .1, T_SPLIT0 + .15)
+    paw = lerp(paw, .12, away)
+    watch = 1 - sm(t, T_LAND - .1, T_LAND + .1)
+    happy = sm(t, T_SHA, T_SHA + .2)
+    st = dict(paw=paw, paw_l=paw, paw_dx=40, paw_l_dx=40, perk=.8 * watch + .6 * bump(t, T_HIT, .4), ear=6 * bump(t, T_LAND, .3) + 2 * math.sin(t * 3),
+              look=(lerp(-.2, -.4, happy), lerp(.7, .35, happy) - 1.3 * watch), turn=-.15 * happy, tilt=-3 * happy + 2 * math.sin(t * 1.4),
+              tail=-10 + 8 * math.sin(t * 2.4), blink=blinks(t, (29.35,)), smile=1.0 if happy > .3 else 0.0,
+              flame_e=1.0 + .6 * bump(t, T_HIT, .5) + .3 * happy, sy=1 - .05 * bump(t, T_HIT, .25))
+    cx, cy = CAT21
+    cat_svg = warm_cat(CAT.draw(cx, cy, CAT21_K, st, t), t)
+    cshadow = blob(ellipse_pts(cx + 20, cy + 4, 200, 18, 14), "#000000", .25)
+    # лапы на верхней грани: кот (за глыбой) повторяется поверх неё, обрезанный по переднему верхнему краю глыбы
+    over = ""
+    if land and not split:
+        kb = BLOCK_K * (.55 + .45 * op) * pop
+        cid = lib.uid("cp")
+        tips = [people.cat_paw_tip(cx, cy, CAT21_K, st, side) for side in ("r", "l")]
+        circ = "".join(f'<ellipse cx="{p_[0]:.1f}" cy="{p_[1]:.1f}" rx="{46 * CAT21_K:.1f}" ry="{40 * CAT21_K:.1f}"/>' for p_ in tips)
+        lib.DEFS.append(f'<clipPath id="{cid}">{circ}</clipPath>')
+        over = f'<g clip-path="url(#{cid})">{cat_svg}</g>'
+    world = [back, sc["fire"], sc["stones_front"], sc["log"], cshadow, cat_svg, cl, "".join(it for it in items if land), block, over,
+             chips, "".join(c for _, c in cubes), "".join(it for it in items if not land)]
+    # камера: от ветки за мешком вниз, удар-наезд на раскол, потом дрейф вдоль ряда кубиков
+    u1 = sm(t, T_FALL0 - .05, T_LAND + .05)
+    u2 = sm(t, T_SPLIT0 - .05, 30.2)
+    s = lerp(.95, 1.12, u1) + .16 * bump(t, T_HIT - .02, .45) + .05 * sm(t, T_HIT, T_SPLIT0) - .06 * u2
+    ccx = lerp(lerp(800, 900, u1), 760, u2) + 4 * math.sin(t * 1.4)
+    ccy = lerp(lerp(900, 1270, u1), 1535, u2) + 3 * math.sin(t * 1.7)
+    shx, shy = shake(t, T_LAND, 12)
+    hx2, hy2 = shake(t, T_HIT, 18)
+    set_ink(s)
+    g = f'<g transform="{lib.cam(ccx + shx + hx2, ccy + shy + hy2, s, lerp(.3, -.4, u2))}">{"".join(world)}</g>'
+    warmth = f'<rect width="1080" height="1920" fill="#ff9a40" opacity="{.05 * sc["light"]:.3f}"/>'
+    flash = f'<rect width="1080" height="1920" fill="#EAF8FD" opacity="{.25 * bump(t, T_HIT, .12):.3f}"/>' if bump(t, T_HIT, .12) > .01 else ""
+    return g + warmth + flash, BG
+
+
+FRAMES["s21"] = s21
 
 
 def frame(sid, t):
