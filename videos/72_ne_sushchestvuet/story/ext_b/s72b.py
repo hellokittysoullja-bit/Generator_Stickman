@@ -65,7 +65,7 @@ def screen_glow(head, u, t, flash=0.0):
     if u <= .01:
         return ""
     fl = .5 + .5 * math.sin(t * 17) * .1
-    return (P.glow(head[0] + 50, head[1] + 30, 150 + 120 * flash, (.6 + .5 * flash) * u * (1 + fl * .1), "#D6E4FF", ry=130 + 90 * flash))
+    return (P.glow(head[0] + 34, head[1] + 6, 82 + 40 * flash, (.55 + .45 * flash) * u * (1 + fl * .1), "#D6E4FF", ry=96 + 40 * flash))
 
 
 # ═══════════════════════════════ s03: Дима в кресле-мешке с телефоном ═══════════════════════════════
@@ -103,7 +103,7 @@ def s03(t):
                           6, "#8FB2F0", taper=.6, wmin=.1, seed=3300 + j, op=.9))
     # кот слева: показывает лапой на Диму, на «телефон» — самодовольно кивает
     pw = .7 + .3 * ease_out(clamp((t - 2.3) / .25))
-    st = dict(smug=.4 + .5 * clamp((t - T3_T + .1) / .2), paw=pw, paw_dx=105 + 8 * math.sin(t * 5), look=(.8, -.2), tilt=-4,
+    st = dict(smug=.4 + .5 * clamp((t - T3_T + .1) / .2), paw=pw, paw_dx=52 + 5 * math.sin(t * 5), look=(.8, -.2), tilt=-4,
               drop=people.cat_nod(t, T3_T + .08, .3, .26) + people.cat_nod(t, T3_T + .5, .3, .2), tail=6 * math.sin(t * 2.3),
               blink=1.0 if abs(t - 2.95) < .05 else 0.0)
     o.append(blob(ellipse_pts(CAT3[0], CAT3[1] + 4, 120 * CAT3_K, 16, 14), "#000000", .12))
@@ -134,7 +134,7 @@ def _cat4(t):
     # «Ну правда» — разводит лапами
     sp = ease_out(clamp((t - T4_N) / .18), 2) * (1 - ease_in(clamp((t - 4.6) / .2)))
     if sp > 0:
-        st.update(paw=.85 * sp, paw_l=.85 * sp, paw_dx=95, paw_l_dx=95, tilt=7 * sp, smug=.85)
+        st.update(paw=.62 * sp, paw_l=.62 * sp, paw_dx=44, paw_l_dx=44, tilt=7 * sp, smug=.85)
     # «просто положи» — левая лапа тянется к телефону, берёт, опускает на пол
     reach = ease_out(clamp((t - T4_P + .05) / .2), 2)
     lower = ease_io(clamp((t - T4_POL - .05) / .3))
@@ -145,6 +145,28 @@ def _cat4(t):
         st.update(paw_l=p, paw_l_dx=dx, paw=0.0, tilt=-5 * reach, look=(-.7, -.6 + 1.1 * lower), smug=.5)
         tip = people.cat_paw_tip(cx, CAT4[1], CAT4_K, st, "l")
     return st, cx, tip
+
+
+def _held_phone(x, y, k, tip, lay):
+    """Телефон в лапе: подушечка лежит поверх нижней трети корпуса (хват, а не «молоток» за середину);
+    lay 0…1 — по пути к полу поворачивается плашмя."""
+    import cat
+    bx, by = x + (cat.CX - 25 - cat.CX) * k, y + (1236 - cat.CBOT) * k
+    ux, uy = tip[0] - bx, tip[1] - by
+    L = math.hypot(ux, uy) + 1e-6
+    ux, uy = ux / L, uy / L
+    rot = lerp(-28, -95, ease_io(lay))
+    a = math.radians(rot)
+    up = (math.sin(a), -math.cos(a))
+    kk = 1.35 * DS
+    ph = (tip[0] + up[0] * 26 * kk, tip[1] + up[1] * 26 * kk)
+    o = people.mobilnik(ph[0], ph[1], kk, rot, seed=951)
+    pad = ellipse_pts(tip[0] + ux * 4, tip[1] + uy * 4, 24 * k, 21 * k, 12, rot=math.degrees(math.atan2(uy, ux)))
+    o += cat.shape(pad, cat.CAT, "", w=4.4 * k, seed=295)
+    o += blob(ellipse_pts(tip[0] + ux * 9 * k, tip[1] + uy * 9 * k + 3 * k, 9 * k, 7 * k, 8), "#e8823a")
+    for kq in (-7, 6):
+        o += line([(tip[0] + kq * k - 5 * k, tip[1] - 12 * k), (tip[0] + kq * k + 2 * k, tip[1] - 3 * k)], 2.2 * k, seed=296 + kq)
+    return o
 
 
 def s04(t):
@@ -158,7 +180,7 @@ def s04(t):
     taken = t > T4_P + .2
     on_floor = t > T4_POL + .33
     # рука Димы: держит телефон у живота; после — зависла в воздухе, пальцы полусогнуты
-    hand_t = (hx + 285 * DS, hy - 75 * DS)
+    hand_t = (hx + 105 * DS, hy - 200 * DS)
     look_follow = clamp((t - T4_P - .15) / .3)
     ex = dict(people.EXPR["dima"]["glassy"])
     ex["look"] = (lerp(.45, .75, look_follow), lerp(.55, .85, clamp((t - T4_POL) / .3)))
@@ -167,23 +189,20 @@ def s04(t):
     drift = 10 * ease_out(clamp((t - T4_P - .2) / .2)) * math.sin((t - T4_P) * 7) * math.exp(-max(0, t - T4_P - .2) * 2)
     fig = people.dima(hx, hy, DS, ex, "phone_face" if not taken else "hand_hang", head_add=.18, lean_add=-.04,
                       **people.beanbag_kw(hx, hy, DS, sag),
-                      arms={"n": ("ik", (hand_t[0] + drift + 14 * taken, hand_t[1] - 18 * taken), -1)},
+                      arms={"n": ("ik", (hand_t[0] + drift - 30 * taken, hand_t[1] - 70 * taken), -1)},
                       hands={"n": {"dir": (1, -.35), "curl": (.6, .62, .66, .7) if not taken else (.35, .45, .5, .55), "thumb": .55}})
     o.append(fig["svg"])
     ph = people.hand_pos(fig, "n", 36)
     # телефон: в руке → в лапе → на полу экраном вниз
     if not taken:
-        o.append(people.mobilnik(ph[0], ph[1], 1.35 * DS, -70, seed=951))
-        o.append(screen_glow(fig["head"], .7, t))
+        o.append(people.mobilnik(ph[0], ph[1], 1.35 * DS, -28, seed=951))
     o.append(blob(ellipse_pts(cx, CAT4[1] + 4, 130 * CAT4_K, 18, 14), "#000000", .12))
     if on_floor:
         land = P.squash(t, T4_POL + .33, .18, 3, 9)
         o.append(P.phone_flat(PHONE_FLOOR[0], PHONE_FLOOR[1], .62 * land[0], 0, 18, face_down=True, seed=2))
     o.append(people.cat_svg(cx, CAT4[1], CAT4_K, st, t))
     if taken and not on_floor and tip is not None:
-        rot = lerp(-70, -150, clamp((t - T4_POL) / .3))
-        o.append(people.mobilnik(tip[0] - 10, tip[1] - 20, 1.35 * DS, rot, seed=951))
-        o.append(P.glow(tip[0] - 10, tip[1] - 20, 120, .25, "#D6E4FF", ry=90))
+        o.append(_held_phone(cx, CAT4[1], CAT4_K, tip, clamp((t - T4_POL) / .3)))
     if on_floor and t < T4_POL + .7:
         u = clamp((t - T4_POL - .33) / .3)
         for j in range(4):
@@ -206,7 +225,7 @@ T5_LAND = 5.62
 T5_S = wt("сделай")        # 6.06
 TOWER5 = (985.0, 1540.0)
 TOWER5_K = 1.25
-CAT5 = (190.0, 1535.0)
+CAT5 = (285.0, 1540.0)
 CAT5_K = .74
 
 
@@ -267,7 +286,7 @@ def s05(t):
             o.append(P.paper(fx, fy, .55, 80 * u * (j - 1) + 30 * math.sin(t * 12 + j), seed=40 + j, kind="blank", bend=.5 * math.sin(t * 15 + j)))
     # кот слева: показывает лапой на башню
     pw = ease_out(clamp((t - T5_LAND - .05) / .2)) * (1 - .0)
-    st = dict(paw=.4 + .6 * pw, paw_dx=110, look=(.9, -.5), perk=1.0 if t > T5_LAND else 0.0, tail=8 * math.sin(t * 3), smug=.3 * (1 - pw),
+    st = dict(paw=.4 + .6 * pw, paw_dx=56, look=(.9, -.5), perk=1.0 if t > T5_LAND else 0.0, tail=8 * math.sin(t * 3), smug=.3 * (1 - pw),
               tilt=-5)
     o.append(blob(ellipse_pts(CAT5[0], CAT5[1] + 4, 120 * CAT5_K, 16, 14), "#000000", .12))
     o.append(people.cat_svg(CAT5[0], CAT5[1], CAT5_K, st, t))
@@ -276,7 +295,7 @@ def s05(t):
     sh = P.shake(t, T5_LAND, 26, .4, seed=5)
     punch = .1 * ease_out(clamp((t - T5_S) / .1)) - .03 * ease_io(clamp((t - T5_S - .1) / .3))
     s = 1.0 + punch + .02 * ease_io(clamp((t - 5.2) / 1.2))
-    cx_ = lerp(640, 600, ease_out(clamp((t - T5_S) / .15)))
+    cx_ = lerp(700, 715, ease_out(clamp((t - T5_S) / .15)))
     cy_ = lerp(1180, 1120, ease_out(clamp((t - T5_S) / .15)))
     white = .32 * ease_in(clamp((t - 5.4) / 1.05), 2)
     return frame_svg("".join(o), cx_ + sh[0], cy_ + sh[1], s, .8 * math.sin(t * 1.4) + sh[0] * .04, white)
