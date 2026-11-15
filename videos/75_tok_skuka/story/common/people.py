@@ -3527,16 +3527,17 @@ def cat_mug(x, y, k, t, st=None, hold=1.0, lift=0.0, mug_col="red", steam=1.0):
     return "".join(o)
 
 
-def cat_paw(x, y, k, st, t, tip, side="r", front=False, bend=18.0, seed=0):
+def cat_paw(x, y, k, st, t, tip, side="r", front=False, bend=18.0, seed=0, body=True):
     """Кот, у которого передняя лапа side ("r" — правая от зрителя) тянется к tip (координаты РИСУНКА кота: морда ≈ (836, 1072), низ
     1306) ПОВЕРХ головы и тела: та же лапа, не третья (cat.body её не рисует — st["hide"]). front=True — подушечкой к зрителю (лапа на
-    зрителя, закрыть морду): крупная подушечка и три пальца. (x, y, k) — как cat.draw."""
+    зрителя, закрыть морду): крупная подушечка и три пальца. (x, y, k) — как cat.draw. body=False — только лапа (кот уже нарисован
+    с тем же st и st["hide"]=(side,), а между ними — предмет, на который лапа ложится)."""
     import cat
     from ink import band as _band
     st = dict(st or {})
     st["hide"] = (side,)
     sx = 1 if side == "r" else -1
-    o = [cat.draw(x, y, k, st, t)]
+    o = [cat.draw(x, y, k, st, t)] if body else []
     sh = (cat.CX + sx * 30, 1200)
     mid = ((sh[0] + tip[0]) / 2 + sx * bend, (sh[1] + tip[1]) / 2 + bend * .6)
     arm = _band([sh, mid, tip], 42, 36, step=4, cap=False)
