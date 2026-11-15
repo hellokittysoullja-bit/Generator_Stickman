@@ -3286,3 +3286,426 @@ def cat_back74(x, y, k=1.0, t=0.0, turn=0.0):
             o.append(line([(sx * 100 + dx, 30 + 12 * j), (sx * 150 + dx, 26 + 14 * j + wv), (sx * 190 + dx, 30 + 18 * j + wv)], 1.6, "#cfcbe0", seed=7495 + j + 3 * sx,
                           op=.9))
     return f'<g transform="translate({x:.2f} {y:.2f}) scale({k:.4f})">{"".join(o)}</g>'
+
+
+# ═════════════════════════════ РИЛС 78 «ЛЕНТА, ТЫ СЛАБАК» (автор — группа B) ═════════════════════════════
+# Все люди рилса — отсюда, кот — только common/cat.py (cat_svg / cat_walk / cat_jump / cat_curl / cat_forearm). Дима смотрит вправо.
+# dima_reach78(x, y, k, tip, pull, t, expr, full, clasp, ...) — ХУК s01 и ПЕТЛЯ s18 (один ракурс): Дима по пояс (full=False, (x, y) — таз,
+#   голова ≈ 300·k) или во весь рост (full=True, стоит, упирается пяткой — s02). Ближняя (правая) рука вытянута по диагонали к точке
+#   tip (мир) — указательный палец вытянут, кончик пальца ровно в tip (возвращается "finger"); pull 0…1 — насколько его тянет туда:
+#   0 — рука согнута ближе к телу, 1 — плечо вперёд, рука в струну; clasp=True — дальняя рука вцепилась в своё ближнее запястье и тянет
+#   на себя (хук: «отпусти!»), False — дальняя спокойно на колене/подлокотнике (петля). hair_jit, strings_jit — дёрганье волос и шнурков.
+#   Возвращает dict(svg, head, finger, finger_dir, wrist, elbow, scale). Мимика EXPR["dima"]: letgo78 («отпусти!»: зубы стиснуты,
+#   брови сведены, глаза прищурены), strain78 (тянет изо всех сил, зажмурен), fall78 (летит в подушку: глаза зажмурены, рот «о»),
+#   shout78 (кричит, зажмурен, рот открыт), cower78 (вжимает голову, брови домиком), turn78 (повернулся к экрану, сдался: усталый
+#   взгляд вбок-вниз), lit78 (лицо в свете экрана, пусто смотрит), nod78 (кивает на нитях: веки опущены, рот приоткрыт),
+#   calm_pet78 (гладит кота: мягкая улыбка, взгляд вниз-вправо), stretch78 (потягивается: глаза закрыты, улыбка), read78 (читает),
+#   carry78 (несёт телефон: спокойно, взгляд вперёд), relief78 (выдох облегчения).
+# dima_faceplant78(x, y, k, u, t, tip) — s02: u 0…1 — срывается и летит лицом вперёд (вправо) в подушку: фигура падает вокруг стоп,
+#   руки вперёд, ноги отрываются; (x, y) — таз в начале (стоит). Возвращает dict(svg, head, finger, angle).
+# dima_carry78(x, y, k, phase, t, expr) — s16: идёт (phase — фаза шага; x двигает вызывающий), ближняя рука вытянута вперёд, телефон
+#   экраном вниз лежит на ладони ("palm" — точка, куда класть телефон, "palm_rot"); arm_u 0…1 — рука вытянута (1) … опущена (0).
+# dima_door78(x, y, k, u, t) — s16: стоит, ближняя рука тянется вперёд к ручке двери в точке knob (мир); u — доля пути руки.
+# dima_chair78(x, y, k, u_stretch, u_book, t, expr) — s17: сидит в кресле (кресло рисует room), (x, y) — таз; потягивается (руки вверх,
+#   u_stretch) и берёт книгу с подлокотника (u_book; ближняя кисть идёт к точке "book_at"; книгу рисует вызывающий в "book_hand").
+# dima_lap78(x, y, k, tip, t, stroke) — s18: = dima_reach78(clasp=False, мимика calm_pet78), палец гладит: stroke 0…1 — фаза поглаживания.
+# reflection78(svg, col, op) — отражение в ночном окне (s03): только тёмные линии туши рисунка, цвет стекла col, без заливки.
+# finger_walker78(base, tip, k, phase, t, lift) — s04: рука из-под одеяла (рукав худи от base) и кисть, у которой указательный и средний
+#   пальцы «шагают» как две ножки к точке tip; phase — фаза шага (1 = два шага). Средний план: рукав не толще предплечья.
+# inventor(x, y, k, pose, t, expr, u) — изобретатель (без имени): седые кудри, очки подняты на лоб, голубая рубашка с закатанными рукавами,
+#   фартук. pose: "sew" (сшивает карточки двумя руками перед грудью), "raise" (гордо поднимает конец ленты ближней рукой, "hold"),
+#   "slap" (хлопает ладонью по рулону — "palm"), "sit" (сидит на куче ленты, руки на коленях), "head" (хватается за голову обеими
+#   руками), "pull" (тянет ленту обеими руками на себя — "hold"). u — переход из предыдущей позы (pose=(a, b), u). Сидит — full=False
+#   (по пояс) или feet="stand"/"sit". Мимика EXPR["inventor"]: proud, busy, slap, look, turn, regret, tug.
+EXPR["dima"].update({
+    "letgo78": {"brows": "pinch", "mouth": "grin", "open": .15, "lid": .55, "look": (.6, .55), "bags": False, "hair": 8},
+    "strain78": {"brows": "pinch", "mouth": "pressed", "lid": .3, "squeeze": 1.0, "look": (.6, .5), "bags": False, "hair": 10},
+    "fall78": {"brows": "up", "mouth": "o", "open": .9, "squeeze": 1.0, "bags": False, "hair": 14},
+    "shout78": {"brows": "pinch", "mouth": "o", "open": 1.0, "squeeze": 1.0, "look": (.3, -.5)},
+    "cower78": {"brows": "sad", "mouth": "frown", "lid": .55, "look": (.6, -.6)},
+    "turn78": {"brows": "tired", "mouth": "flat", "lid": .5, "look": (.6, .35)},
+    "lit78": {"brows": "tired", "mouth": "flat", "lid": .62, "look": (.5, .45)},
+    "nod78": {"brows": "tired", "mouth": "o", "open": .12, "lid": .3, "look": (.4, .6)},
+    "calm_pet78": {"brows": "calm", "mouth": "smile", "smile": .8, "lid": .5, "look": (.55, .6), "bags": False},
+    "stretch78": {"brows": "calm", "mouth": "smile", "smile": 1.0, "shut": 1.0, "bags": False},
+    "read78": {"brows": "calm", "mouth": "smile", "smile": .4, "lid": .55, "look": (.6, .5), "bags": False},
+    "carry78": {"brows": "calm", "mouth": "flat", "lid": .7, "look": (.6, .2), "bags": False},
+    "relief78": {"brows": "calm", "mouth": "o", "open": .25, "lid": .35, "look": (.3, .2), "bags": False},
+})
+
+
+def _reach_arm(x, y, sc, tip, pull, hand_dir=None):
+    """Цель запястья, чтобы кончик вытянутого указательного пальца лёг в tip (мир). Возвращает (wrist, d)."""
+    sh = np.array([x + 10 * sc, y - 400 * sc])          # плечо ~ (10, −400)·sc от таза
+    tp = np.array(tip, float)
+    v = tp - sh
+    L = np.linalg.norm(v) + 1e-6
+    d = np.array(hand_dir, float) if hand_dir is not None else v / L
+    d = d / (np.linalg.norm(d) + 1e-6)
+    n = np.array([-d[1], d[0]])
+    wr = tp - d * 138 * sc + n * 25 * sc                 # кончик указательного: запястье + 138·d − 25·n (hand.FING, k=1)
+    reach = UPPER + FORE - 6
+    wv = wr - sh
+    wl = np.linalg.norm(wv)
+    if wl > reach * sc:                                  # дальше руки не дотянуться: запястье на пределе
+        wr = sh + wv / wl * reach * sc
+    return wr, d
+
+
+def dima_reach78(x, y, k, tip, pull=1.0, t=0.0, expr="letgo78", full=False, clasp=True, hair_jit=0.0, strings_jit=0.0, lean=None,
+                 hand_dir=None, heel=0.0, head_add=0.0):
+    sc = k * HEIGHT["dima"]
+    pl = lib.clamp(pull)
+    ln = (-0.10 + 0.16 * pl) if lean is None else lean   # тянет на себя — корпус назад; рука в струну — плечо вперёд
+    wr, d = _reach_arm(x, y, sc, tip, pl, hand_dir)
+    ex = dict(EXPR["dima"].get(expr, {})) if isinstance(expr, str) else dict(expr)
+    if hair_jit:
+        ex["hair"] = ex.get("hair", 0) + hair_jit
+    arms = {"n": ("ik", (float(wr[0]), float(wr[1])), -1)}
+    hands = {"n": {"dir": (float(d[0]), float(d[1])), "curl": (0.0, .82, .88, .9), "spread": .05, "thumb": .75, "bend": .04}}
+    if clasp:       # дальняя кисть обхватывает ближнее предплечье у запястья и тянет на себя
+        tmp = figure("dima", x, y, k, ex, lean=ln, arms={"n": arms["n"], "f": ("ang", .18, .18)}, layers=("arm_n",))
+        el = np.array(tmp["elbow"]["n"])
+        gp = el + (wr - el) * .62
+        arms["f"] = ("ik", (float(gp[0]), float(gp[1])), -1)
+        hands["f"] = {"dir": (float(d[0] * .3 + .2), float(d[1] * .3 - 1)), "curl": (.7, .72, .75, .78), "thumb": .6}
+    else:           # дальняя рука спокойно опущена к колену
+        arms["f"] = ("ik", (x + 170 * sc, y - 70 * sc), -1)
+        hands["f"] = {"dir": (1, .4), "curl": (.35, .4, .45, .5), "thumb": .35}
+    kw = {}
+    if full:
+        st = stand_kw(x, y, k, spread=120)
+        # упор: передняя (ближняя) нога вперёд пяткой в пол, задняя согнута
+        fa, ff = st["feet"]["n"], st["feet"]["f"]
+        kw["feet"] = {"n": ((fa[0][0] + 90 * sc * heel, fa[0][1]), -.45 * heel), "f": ((ff[0][0] - 40 * sc * heel, ff[0][1]), .15 * heel)}
+    strings = (6 * strings_jit, 4 * abs(strings_jit))
+    fig = figure("dima", x, y, k, ex, lean=ln, head_ang=0.06 - 0.1 * pl + head_add, arms=arms, hands=hands,
+                 layers=("legs", "pelvis", "arm_f", "body", "arm_n") if full else ("pelvis", "body", "arm_n", "arm_f") if clasp else
+                 ("pelvis", "arm_f", "body", "arm_n"), extra={"strings": strings}, **kw)
+    wn = np.array(fig["wrist"]["n"])
+    dn = np.array(d)
+    nn = np.array([-dn[1], dn[0]])
+    fig["finger"] = tuple(map(float, wn + dn * 138 * sc - nn * 25 * sc))
+    fig["finger_dir"] = (float(dn[0]), float(dn[1]))
+    return fig
+
+
+def dima_faceplant78(x, y, k, u, t=0.0, tip=None):
+    """Срыв и падение лицом вперёд вокруг стоп: 0–.25 рывок назад (ещё держит), .25–1 летит вперёд (ease_in), в конце шлепок."""
+    sc = k * HEIGHT["dima"]
+    u = lib.clamp(u)
+    foot = (x + 20 * sc, y + (LEG_LEN - 12) * sc)
+    if u < .25:
+        a = -10 * math.sin(u / .25 * math.pi / 2)
+    else:
+        e = lib.ease_in((u - .25) / .75, 2.2)
+        a = -10 + 92 * e
+    ex = "strain78" if u < .25 else "fall78"
+    tp = tip if tip is not None else (x + 520 * sc, y - 180 * sc)
+    if u >= .25:        # руки вперёд-вверх, ладони раскрыты — летит
+        ln = .1 + .2 * lib.clamp((u - .25) / .5)
+        arms = {"n": ("ang", 2.25 - .35 * u, -.2), "f": ("ang", 2.05 - .35 * u, -.3)}
+        hands = {"n": {"spread": .4, "curl": (.05, .05, .1, .15), "thumb": .1}, "f": {"spread": .35, "curl": (.1, .1, .15, .2), "thumb": .2}}
+        st = stand_kw(x, y, k, spread=100)
+        lift = lib.clamp((u - .55) / .45)
+        fa, ff = st["feet"]["n"], st["feet"]["f"]
+        feet = {"n": ((fa[0][0] - 120 * sc * lift, fa[0][1] - 160 * sc * lift), .6 * lift), "f": ((ff[0][0] - 200 * sc * lift, ff[0][1] - 90 * sc * lift), .4 * lift)}
+        fig = figure("dima", x, y, k, EXPR["dima"][ex], lean=ln, head_ang=.2, arms=arms, hands=hands, feet=feet)
+        fig["finger"] = None
+    else:
+        fig = dima_reach78(x, y, k, tp, 1.0, t, ex, full=True, clasp=True, heel=1.0, hair_jit=6 * math.sin(t * 30))
+    g = f'<g transform="rotate({a:.2f} {foot[0]:.2f} {foot[1]:.2f})">{fig["svg"]}</g>'
+    ca, sa = math.cos(math.radians(a)), math.sin(math.radians(a))
+
+    def R(p):
+        dx, dy = p[0] - foot[0], p[1] - foot[1]
+        return (foot[0] + dx * ca - dy * sa, foot[1] + dx * sa + dy * ca)
+    return dict(svg=g, head=R(fig["head"]), finger=R(fig["finger"]) if fig.get("finger") else None, angle=a, scale=sc)
+
+
+def dima_carry78(x, y, k, phase=0.0, t=0.0, expr="carry78", arm_u=1.0, walk=True):
+    sc = k * HEIGHT["dima"]
+    w = walk_kw(x, y, k, phase) if walk else dict(stand_kw(x, y, k), hip=(x, y))
+    hx, hy = w["hip"]
+    au = lib.clamp(arm_u)
+    tgt = (hx + (180 + 280 * au) * sc, hy - (150 + 170 * au) * sc)
+    swing = .25 * math.sin(2 * math.pi * phase) if walk else 0.0
+    arms = {"n": ("ik", tgt, -1), "f": ("ang", .18 + swing, .2)}
+    hands = {"n": {"dir": (1, .05), "flip": -1, "curl": (.15, .18, .22, .28), "spread": .1, "thumb": .2}, "f": {"curl": (.4, .45, .5, .55), "thumb": .4}}
+    fig = figure("dima", hx, hy, k, EXPR["dima"].get(expr, expr) if isinstance(expr, str) else expr, lean=.04, head_ang=.04, arms=arms, hands=hands,
+                 feet=w["feet"])
+    wn = np.array(fig["wrist"]["n"])
+    fig["palm"] = (float(wn[0] + 60 * sc), float(wn[1] - 26 * sc))
+    fig["palm_rot"] = 0.0
+    return fig
+
+
+def dima_door78(x, y, k, knob, u=1.0, t=0.0, expr="carry78"):
+    sc = k * HEIGHT["dima"]
+    st = stand_kw(x, y, k)
+    u = lib.clamp(u)
+    rest = np.array([x + 120 * sc, y - 40 * sc])
+    tg = rest + (np.array(knob, float) - np.array([0, 0]) - rest - np.array([40 * sc, 0])) * u
+    arms = {"n": ("ik", (float(tg[0]), float(tg[1])), -1), "f": ("ang", .15, .2)}
+    hands = {"n": {"dir": (1, .1), "curl": (.6 * u, .65 * u, .7 * u, .72 * u), "thumb": .5 * u}, "f": {"curl": (.4, .45, .5, .55), "thumb": .4}}
+    return figure("dima", x, y, k, EXPR["dima"].get(expr, expr) if isinstance(expr, str) else expr, lean=.06 * u, arms=arms, hands=hands,
+                  feet=st["feet"])
+
+
+def dima_chair78(x, y, k, u_stretch=0.0, u_book=0.0, t=0.0, expr=None, book_at=None):
+    """Сидит в кресле (ноги вперёд на пол). Потягивание: обе руки вверх над головой, корпус назад; книга: ближняя кисть к book_at."""
+    sc = k * HEIGHT["dima"]
+    us, ub = lib.clamp(u_stretch), lib.clamp(u_book)
+    up = math.sin(math.pi * us) if us < 1 else 0.0       # потянулся и опустил
+    ex = expr or ("stretch78" if up > .3 else "read78" if ub > .5 else "calm_pet78")
+    ba = np.array(book_at if book_at is not None else (x + 330 * sc, y - 60 * sc), float)
+    rest_n = np.array([x + 240 * sc, y - 120 * sc])
+    rest_f = np.array([x + 160 * sc, y - 130 * sc])
+    hold = np.array([x + 300 * sc, y - 300 * sc])        # книга перед грудью
+    if ub < .5:
+        n_t = rest_n + (ba - rest_n) * lib.ease_io(ub / .5)
+    else:
+        n_t = ba + (hold - ba) * lib.ease_io((ub - .5) / .5)
+    f_t = rest_f + (hold + np.array([-60 * sc, 10 * sc]) - rest_f) * lib.ease_io(lib.clamp((ub - .5) / .5))
+    top_n, top_f = np.array([x - 10 * sc, y - 930 * sc]), np.array([x - 90 * sc, y - 920 * sc])
+    n_t = n_t + (top_n - n_t) * up
+    f_t = f_t + (top_f - f_t) * up
+    arms = {"n": ("ik", tuple(n_t), -1 if up < .5 else 1), "f": ("ik", tuple(f_t), -1 if up < .5 else 1)}
+    hands = {"n": {"dir": (.3, -1) if up > .5 else (1, -.3), "curl": (.3, .35, .4, .45) if up > .3 else (.55, .58, .62, .66), "thumb": .5},
+             "f": {"dir": (.2, -1) if up > .5 else (1, -.2), "curl": (.3, .35, .4, .45) if up > .3 else (.55, .58, .62, .66), "thumb": .5}}
+    fig = figure("dima", x, y, k, EXPR["dima"][ex] if isinstance(ex, str) else ex, lean=-.12 * up - .04, head_ang=-.18 * up + .1 * ub, arms=arms,
+                 hands=hands, feet=beanbag_kw(x, y, k, .3)["feet"], layers=("legs", "pelvis", "arm_f", "arm_n", "body") if up > .45 else None)
+    fig["book_hand"] = hand_pos(fig, "n", 70)
+    return fig
+
+
+def dima_lap78(x, y, k, tip, t=0.0, stroke=0.0, expr="calm_pet78"):
+    """Петля s18: ракурс хука, указательный палец гладит кота (кончик ходит вдоль ±30·k)."""
+    sc = k * HEIGHT["dima"]
+    ph = math.sin(2 * math.pi * stroke)
+    tp = (tip[0] + 34 * sc * ph, tip[1] + 10 * sc * ph)
+    return dima_reach78(x, y, k, tp, pull=.55, t=t, expr=expr, clasp=False, lean=.04, hand_dir=(.62, .78))
+
+
+def reflection78(svg_, col="#7f93c4", op=0.75, th=0.33, gain=4.0):
+    """Отражение в тёмном стекле: только тёмная тушь рисунка (L < th) цветом стекла col, заливки прозрачны."""
+    fid = lib.uid("refl")
+    c = col.lstrip("#")
+    r, g, b = (int(c[i:i + 2], 16) / 255 for i in (0, 2, 4))
+    lib.DEFS.append(f'<filter id="{fid}" color-interpolation-filters="sRGB" x="-5%" y="-5%" width="110%" height="110%">'
+                    f'<feColorMatrix type="matrix" values="0 0 0 0 {r:.3f} 0 0 0 0 {g:.3f} 0 0 0 0 {b:.3f} '
+                    f'{-gain * .3:.3f} {-gain * .59:.3f} {-gain * .11:.3f} 0 {gain * th:.3f}" result="m"/>'
+                    f'<feComposite in="m" in2="SourceAlpha" operator="in"/>'
+                    f'<feComponentTransfer><feFuncA type="linear" slope="{op:.3f}"/></feComponentTransfer></filter>')
+    return f'<g filter="url(#{fid})">{svg_}</g>'
+
+
+def finger_walker78(base, tip, k=1.0, phase=0.0, t=0.0, lift=1.0, seed=7800, shadow="#0b1024"):
+    """Рука ползёт по одеялу (вид сверху, ладонь вниз): рукав худи от base к запястью, тыльная сторона кисти, указательный и средний —
+    «ножки»: опорный прямой, кончик на ткани; шагающий приподнят к камере (короче, ноготь крупнее, тень под ним). tip — куда смотрят
+    пальцы (направление и «нос» кисти: кончик опорного пальца ≈ tip). Безымянный и мизинец поджаты, большой палец прижат сбоку."""
+    global C
+    C = PAL["dima"]
+    b, tp = np.array(base, float), np.array(tip, float)
+    v = tp - b
+    L_ = np.linalg.norm(v) + 1e-6
+    d = v / L_
+    n = np.array([-d[1], d[0]])
+    wr = tp - d * 200 * k
+    ph = 2 * math.pi * phase
+    bob = abs(math.sin(ph)) * 6 * k * lift
+    up = -d * bob * .3 - np.array([0, bob])
+
+    def Q(x_, y_):
+        q = wr + d * x_ * k + n * y_ * k + up
+        return (float(q[0]), float(q[1]))
+    o = []
+    # рукав (ширина предплечья) с манжетой
+    mid = b + (wr - b) * .5 + n * 8 * k
+    sl = band([tuple(b), tuple(mid), tuple(wr - d * 22 * k)], 104 * k, 92 * k, step=4, cap=False)
+    sh = blob([tuple(b + n * 52 * k), tuple(wr + n * 46 * k - d * 22 * k), tuple(wr + n * 10 * k - d * 22 * k), tuple(b + n * 10 * k)], C["TOP_SH"], .8)
+    fold = line([tuple(b + d * L_ * .3 + n * 40 * k), tuple(b + d * L_ * .32), tuple(b + d * L_ * .3 - n * 36 * k)], 2.6, C["FOLD"], seed=seed + 1, op=.8)
+    o.append(shape(sl, C["TOP"], sh + fold, w=4.8, seed=seed))
+    cf = band([tuple(wr - d * 36 * k), tuple(wr + d * 2 * k)], 96 * k, 92 * k, step=3, cap=False)
+    o.append(shape(cf, C["TOP_SH"], "".join(line([tuple(wr - d * (30 - 7 * j) * k + n * 46 * k), tuple(wr - d * (30 - 7 * j) * k - n * 46 * k)], 1.6,
+                                                   C["TOP_SH2"], seed=seed + 3 + j, op=.8) for j in range(4)), w=4.0, seed=seed + 2))
+    # пальцы-ножки
+    legs = []
+    for j, (off, pz) in enumerate(((-17, 0.0), (8, .5))):
+        u = (phase + pz) % 1.0
+        root = np.array([84.0, off])
+        if u < .5:      # опора: прямой, кончик на ткани (относительно кисти едет назад — кисть идёт вперёд)
+            s_ = u / .5
+            foot = np.array([212 - 40 * s_, off * 1.25])
+            knee = (root + foot) / 2 + np.array([0, off * .08])
+            wf, swing = 24.0, 0.0
+        else:           # шаг: приподнят к камере — короче, шире, ноготь крупнее
+            s_ = (u - .5) / .5
+            hgt = math.sin(math.pi * s_) * lift
+            foot = np.array([172 + 40 * s_ - 46 * hgt, off * 1.25])
+            knee = (root + foot) / 2 + np.array([-6 * hgt, off * .1])
+            wf, swing = 24.0 * (1 + .18 * hgt), hgt
+        legs.append((j, root, knee, foot, wf, swing))
+    legs.sort(key=lambda q: q[5])
+    for j, root, knee, foot, wf, sw in legs:
+        if sw > .05:      # тень под приподнятым кончиком
+            tq = Q(foot[0] + 26 * sw, foot[1] + 10 * sw)
+            o.append(blob(ellipse_pts(tq[0], tq[1] + 10 * k * sw, 16 * k, 10 * k, 10), shadow, .35 * sw))
+        fp = lib.band([Q(*root), Q(*knee), Q(*foot)], wf * k, wf * .86 * k, step=3)
+        dd = (foot - knee) / (np.linalg.norm(foot - knee) + 1e-6)
+        nl = ellipse_pts(*Q(*(foot - dd * 11)), (8 + 3 * sw) * k, (6.5 + 2 * sw) * k, 8, rot=math.degrees(math.atan2(*(d * dd[0] + n * dd[1])[::-1])))
+        crease = line([Q(*(knee + np.array([0, -wf * .4]))), Q(*(knee + np.array([0, wf * .4])))], 1.8, C["SKIN_SH2"], seed=seed + 30 + j, op=.75)
+        o.append(shape(fp, C["SKIN"] if j == 0 or sw > .05 else C["SKIN_SH"], crease + blob(nl, C["NAIL"], .95), w=4.0, seed=seed + 20 + j))
+    # поджатые безымянный и мизинец — костяшки под краем кисти
+    for j, (off, ln) in enumerate(((28, 30), (44, 24))):
+        c0 = Q(88 + ln * .3, off)
+        o.append(shape(ellipse_pts(c0[0], c0[1], ln * .7 * k, 12 * k, 10, rot=math.degrees(math.atan2(d[1], d[0]))), C["SKIN_SH"], "", w=3.6,
+                       seed=seed + 10 + j))
+    # большой палец прижат сбоку
+    o.append(shape(lib.band([Q(30, -42), Q(62, -50), Q(84, -46)], 26 * k, 20 * k, step=3), C["SKIN"],
+                   blob([Q(36, -40), Q(80, -42), Q(80, -36), Q(36, -34)], C["SKIN_SH"], .5), w=3.8, seed=seed + 12))
+    # тыльная сторона кисти поверх корней пальцев: костяшки, тень с внешней стороны
+    pp = [Q(-4, -40), Q(40, -46), Q(78, -38), Q(94, -18), Q(96, 4), Q(92, 30), Q(70, 46), Q(30, 48), Q(-4, 42)]
+    knuck = "".join(line([Q(86, o_ - 6), Q(92, o_), Q(86, o_ + 6)], 1.8, C["SKIN_SH2"], seed=seed + 40 + i, op=.7) for i, o_ in enumerate((-17, 8, 30)))
+    tend = "".join(line([Q(10, o_ * .5), Q(70, o_)], 1.4, C["SKIN_SH"], seed=seed + 44 + i, op=.6) for i, o_ in enumerate((-17, 8)))
+    o.append(shape(pp, C["SKIN"], blob([pp[5], pp[6], pp[7], pp[8], Q(-4, 20), Q(70, 26)], C["SKIN_SH"], .5) + knuck + tend, w=4.4, seed=seed + 41))
+    return "".join(o)
+
+
+# ─── изобретатель (без имени, не портрет): седые кудри, очки подняты на лоб, голубая рубашка с закатанными рукавами, фартук ───
+PAL["inventor"] = dict(SKIN="#efc8a8", SKIN_SH="#d6a487", SKIN_SH2="#bd8b72", HAIR="#8f8a92", HAIR_SH="#625e68", HAIR_HI="#c4c0c8",
+                       TOP="#9cc3e0", TOP_SH="#77a2c4", TOP_SH2="#5b84a8", FOLD="#46698c", STITCH="#e8f2fa", FRAME="#4a3a30",
+                       APRON="#a97e55", APRON_SH="#85603c",
+                       LEGS="#5b5048", LEGS_SH="#433a34", LEGS_SEAM="#786b61", SHOE="#5a3e2c", SHOE_SH="#3f2b1e", SOLE="#2e231c", SOLE_SH="#1f1813",
+                       STRIPE="#a76a3e", NAIL="#f3d2c0")
+HEIGHT["inventor"] = 1.02
+HEADS64 = HEADS64 + ("inventor",)
+FRIENDLIKE = FRIENDLIKE + ("inventor",)
+FACES = FACES + ("inventor",)
+
+
+def _inventor_head(expr):
+    """Голова изобретателя: лицо F_FACE (как у youth), короткие седые кудри шапкой, морщинки у глаз, очки на лбу (линзы — блик)."""
+    s = [_ear64()]
+    inner = [blob([(-120, -210), (-40, -210), (-60, -40), (-56, 40), (-30, 160), (-120, 160)], C["SKIN_SH"], .95),
+             blob(ellipse_pts(56, -16, 100, 60, 14), "#e5a99a", .3), blob(ellipse_pts(100, 38, 22, 12, 10), "#e98a86", .3)]
+    s.append(shape(F_FACE, C["SKIN"], "".join(inner), w=5.6, seed=471))
+    s.append(_wrinkles64(mouth_=True, forehead=1, op=.6))
+    s.append(_nose())
+    s.append(_mouth_gen(expr, INK, seed=391))
+    s.append(eyes(expr, F_EYE_N, F_EYE_F, bags=False))
+    s.append(_brows(expr, C["HAIR_SH"], 1.2, sd=362))
+    base = [(118, -84), (116, -128), (84, -170), (30, -190), (-34, -188), (-92, -166), (-130, -120), (-140, -64), (-124, -30), (-104, -56),
+            (-86, -96), (-40, -112), (0, -108), (44, -114), (86, -102), (108, -80)]
+    hi = blob([(-160, -200), (-40, -200), (-50, -120), (-90, -90), (-110, -30), (-160, -30)], C["HAIR_SH"], .8)
+    hi += blob([(0, -180), (60, -160), (96, -120), (60, -142), (30, -160)], C["HAIR_HI"], .9)
+    for i, (cx_, cy_) in enumerate([(-80, -150), (-30, -162), (24, -164), (70, -140), (-112, -96), (-50, -124), (10, -130), (-120, -50)]):
+        hi += line([(cx_ - 12, cy_ + 6), (cx_ - 4, cy_ - 10), (cx_ + 10, cy_ - 6), (cx_ + 6, cy_ + 8)], 2.6, C["HAIR_SH"], seed=880 + i, op=.85)
+    s.append(shape(fur(base, depth=20, every=7, seed=870), C["HAIR"], hi, w=5.2, seed=871))
+    s.append(f'<g transform="translate(6 -112) scale(.86 .62)">{_glasses64("round", C["FRAME"], sd=890, w=6.4)}</g>')
+    return "".join(s)
+
+
+def inventor_shirt_parts():
+    """Голубая рубашка + фартук мастерской (кармашек с карандашом), острый воротник."""
+    body = [(-112, 34), (-120, -40), (-132, -170), (-128, -280), (-112, -360), (-78, -410), (-20, -432), (40, -426),
+            (84, -398), (112, -330), (126, -230), (124, -120), (116, -20), (110, 34)]
+    inner = blob([(30, -440), (130, -380), (140, 40), (60, 40), (80, -200)], C["TOP_SH"], .8)
+    inner += blob([(-140, -300), (-100, -320), (-104, -100), (-140, -60)], C["TOP_SH"], .5)
+    ap = [(-60, -300), (70, -306), (96, -200), (112, 40, 1), (-110, 40, 1), (-90, -200)]
+    ai = blob([(40, -310), (110, -200), (120, 40), (60, 40)], C["APRON_SH"], .8)
+    ai += shape([(-30, -150), (40, -152), (42, -80, 1), (-28, -78, 1)], C["APRON"], line([(-26, -146), (38, -148)], 1.6, C["APRON_SH"], seed=905, op=.9),
+                w=3.0, seed=904)
+    ai += shape([(-4, -200), (8, -202), (10, -144), (-2, -142)], "#e6c25a", blob([(-4, -200), (8, -202), (8, -190), (-4, -188)], "#d76a5a"), w=2.4, seed=906)
+    inner += shape(ap, C["APRON"], ai, w=4.4, seed=903)
+    inner += line([(-56, -300), (-40, -380), (-20, -428)], 4.0, C["APRON_SH"], seed=907, taper=.1, wmin=.8)
+    inner += line([(66, -306), (60, -380), (44, -424)], 4.0, C["APRON_SH"], seed=908, taper=.1, wmin=.8)
+    torso = shape(body, C["TOP"], inner, w=5.2, seed=902)
+    col = [(-60, -440), (-20, -462), (40, -452), (78, -424), (96, -380), (60, -398), (24, -424), (-30, -426), (-70, -410)]
+    back = shape(col, C["TOP_SH"], "", w=4.0, seed=909)
+    tip = shape([(30, -440), (80, -420), (100, -372), (66, -390), (40, -420)], C["TOP"], "", w=3.4, seed=910)
+    return back, torso, tip
+
+
+CLOTHES64["inventor"] = inventor_shirt_parts
+_head64_orig = head64
+
+
+def head64(expr, style):        # noqa: F811 — тот же вызов, плюс стиль изобретателя
+    if style == "inventor":
+        return _inventor_head(expr)
+    return _head64_orig(expr, style)
+
+
+_sleeve_orig = sleeve
+
+
+def sleeve(S, E, Wr, far, seed, who):       # noqa: F811 — у изобретателя рукав закатан выше локтя, предплечье голое
+    if who != "inventor":
+        return _sleeve_orig(S, E, Wr, far, seed, who)
+    S, E, Wr = np.array(S, float), np.array(E, float), np.array(Wr, float)
+    s = [limb_band(E - (E - S) * .1, Wr, 96, 80, C["SKIN"], far, seed + 8,
+                   lambda a, b, d, n: blob([P(np.array(a) - n * 40), P(np.array(b) - n * 32), P(np.array(b) - n * 10), P(np.array(a) - n * 12)],
+                                           far_c(C["SKIN_SH"], far), .8)),
+         limb_band(S, E + (Wr - E) * .08, 132, 116, C["TOP"], far, seed + 7,
+                   lambda a, b, d, n: blob([P(np.array(a) - n * 60), P(np.array(b) - n * 50), P(np.array(b) - n * 14), P(np.array(a) - n * 18)],
+                                           far_c(C["TOP_SH"], far), .85))]
+    d = (Wr - E) / np.linalg.norm(Wr - E)
+    c0 = E + d * 4
+    roll = band([P(c0 - d * 18), P(c0 + d * 26)], 128, 124, step=3, cap=False)
+    s.append(shape(roll, far_c(C["TOP_SH"], far), line([P(c0 + np.array([-d[1], d[0]]) * 58), P(c0 - np.array([-d[1], d[0]]) * 58)], 1.8,
+                                                        far_c(C["FOLD"], far), seed=seed + 21, op=.8), w=4.0, seed=seed + 20))
+    return "".join(s)
+
+
+EXPR["inventor"] = {
+    "proud": {"brows": "up", "mouth": "grin", "open": .6, "lid": .8, "look": (.3, -.6)},
+    "busy": {"brows": "frown", "mouth": "flat", "lid": .6, "look": (.5, .6)},
+    "slap": {"brows": "up", "mouth": "smile", "smile": 1.0, "lid": .7, "look": (.5, .5)},
+    "look": {"brows": "worry", "mouth": "open", "open": .35, "lid": .9, "look": (.7, -.3)},
+    "turn": {"brows": "worry", "mouth": "flat", "lid": .75, "look": (-.4, 0)},
+    "regret": {"brows": "sad", "mouth": "wobble", "lid": .3, "closed": .7, "look": (0, .3)},
+    "tug": {"brows": "frown", "mouth": "pursed", "lid": .4, "squeeze": .6, "look": (.6, .4)},
+}
+_INV_P = {
+    "sew": (.14, .16, {"f": ("ik", (215, -270), -1), "n": ("ik", (300, -262), -1)},
+            {"f": {"dir": (.9, -.3), "curl": (.55, .6, .65, .7), "thumb": .6}, "n": {"dir": (-.2, -1), "curl": (.5, .6, .65, .7), "thumb": .65}}),
+    "raise": (-.04, -.16, {"f": ("ik", (190, -230), -1), "n": ("ik", (330, -700), -1)},
+              {"f": {"dir": (1, .2), "curl": (.4, .45, .5, .55), "thumb": .4}, "n": {"dir": (.3, -1), "curl": (.6, .65, .7, .72), "thumb": .65}}),
+    "slap": (.2, .22, {"f": ("ik", (190, -230), -1), "n": ("ik", (380, -150), -1)},
+             {"f": {"dir": (1, .2), "curl": (.4, .45, .5, .55), "thumb": .4}, "n": {"dir": (1, .35), "curl": (.05, .05, .1, .12), "spread": .2, "thumb": .15}}),
+    "sit": (.1, .14, {"f": ("ik", (220, -110), -1), "n": ("ik", (290, -100), -1)},
+            {"f": {"dir": (1, .4), "curl": (.4, .45, .5, .55), "thumb": .4}, "n": {"dir": (1, .4), "curl": (.35, .4, .45, .5), "thumb": .35}}),
+    "head": (.06, .3, {"f": ("ik", (-40, -700), 1), "n": ("ik", (60, -760), 1)},
+             {"f": {"dir": (.9, -.2), "curl": (.3, .35, .4, .45), "spread": .2, "thumb": .35}, "n": {"dir": (-.9, .1), "flip": -1, "curl": (.3, .35, .4, .45), "spread": .2, "thumb": .3}}),
+    "pull": (-.14, -.04, {"f": ("ik", (300, -260), -1), "n": ("ik", (380, -250), -1)},
+             {"f": {"dir": (1, 0), "curl": (.75, .78, .8, .82), "thumb": .7}, "n": {"dir": (1, 0), "curl": (.75, .78, .8, .82), "thumb": .7}}),
+}
+POSE.update({"inv_" + k_: v_ for k_, v_ in _INV_P.items()})
+
+
+def inventor(x, y, k, pose="sew", t=0.0, expr=None, u=1.0, feet=None, flip=False, head_add=0.0, lean_add=0.0):
+    """Изобретатель. pose — имя или (из, в) с u; feet: None (по пояс), "stand", "sit" (на куче ленты: ноги вперёд-вниз) или dict."""
+    if isinstance(pose, (tuple, list)):
+        pa, pb = "inv_" + pose[0], "inv_" + pose[1]
+        name = pose[1] if u > .5 else pose[0]
+        pk = mix_pose(pa, pb, u, x, y, k, "inventor")
+    else:
+        name = pose
+        pk = pose_kw("inv_" + pose, x, y, k, "inventor")
+    ex = EXPR["inventor"].get(expr or {"sew": "busy", "raise": "proud", "slap": "slap", "sit": "look", "head": "regret", "pull": "tug"}[name], {}) \
+        if not isinstance(expr, dict) else expr
+    ex = dict(ex)
+    if feet == "stand":
+        ft = stand_kw(x, y, k, "inventor")["feet"]
+    elif feet == "sit":
+        ft = knees_kw(x, y, k, .3, 150, "inventor")["feet"]
+    else:
+        ft = feet
+    breath = .012 * math.sin(t * 2 * math.pi / 3.4)
+    lay = ("legs", "pelvis", "body", "arm_f", "arm_n") if name == "head" else None
+    fig = figure("inventor", x, y, k, ex, lean=pk["lean"] + lean_add + breath, head_ang=pk["head_ang"] + head_add, arms=pk["arms"], hands=pk["hands"],
+                 feet=ft, flip=flip, layers=lay)
+    fig["hold"] = hand_pos(fig, "n", 70)
+    fig["palm"] = hand_pos(fig, "n", 60)
+    return fig
