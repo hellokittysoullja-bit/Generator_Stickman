@@ -4853,3 +4853,406 @@ def tap_rings(x, y, u, k=1.0, col="#FFFFFF"):
         o.append(f'<circle cx="{f(x)}" cy="{f(y)}" r="{f(r)}" fill="none" stroke="{col}" stroke-width="{f(7 * k * (1 - q))}" opacity="{1 - q:.3f}"/>')
         o.append(f'<circle cx="{f(x)}" cy="{f(y)}" r="{f(r + 4 * k)}" fill="none" stroke="{lib.INK}" stroke-width="{f(2.4 * k * (1 - q))}" opacity="{.6 * (1 - q):.3f}"/>')
     return "".join(o)
+
+
+# ═══════════════════════════════ «ЛЕНТА, ТЫ СЛАБАК» (рилс 78, группа A) ═══════════════════════════════
+# t — общее время ролика; k — масштаб; seed — своё зерно. Букв, цифр, значков, делений нет нигде.
+#   feed_ribbon(path, t, speed, seed, w=90, card=120, gap=10, edge=True, op=1, start=0, end=1)
+#                       лента-полоса вдоль кривой path (точки мира): светлая основа с тушью по краям и цветные карточки
+#                       (у каждой бледное «фото» внутри), бегут вдоль кривой от начала к концу со скоростью speed px/с
+#                       (отрицательная — назад); start/end 0…1 — какая часть кривой проявлена. ribbon_point(path, u) → точка
+#                       кривой на доле длины u. feed_cards(x0, y0, x1, y1, scroll, seed, card=70, gap=10, dim=0) — карточки на
+#                       прямоугольнике экрана (вертикальная прокрутка вниз на scroll px), без рамки.
+#   phone_biter(x0, y0, x1, y1, k, bite, stretch, scroll_t, glow, t=0, face=.45, layer="all", seed=0)
+#                       телефон-кусака: низ прилип в (x0, y0) (подошва-присоска шире), щель-рот с зубками — в (x1, y1) (туда
+#                       ставить кончик пальца); над щелью «верхняя челюсть» 40·k. Корпус тянется резинкой: ширина 150·k при длине
+#                       290·k, длиннее — уже (объём держится), шейка сужается; stretch 0…1 — сила «жвачки» (шейка, волна боков,
+#                       дрожь от t). bite 0…1 — зубки сжаты (щель закрыта до толщины пальца). Экран смотрит к Диме: виден под
+#                       острым углом полосой ширины face (0…1) с бегущими вниз карточками (scroll_t — px прокрутки), остальное — тёмный
+#                       бок. glow 0…1 — холодный свет экрана (небольшое пятно). layer: "back" — корпус, щель, нижние зубки;
+#                       "front" — верхняя челюсть с верхними зубками (класть ПОСЛЕ пальца); "all" — всё.
+#   rubber_leash(p0, p1, tension, t, k=1, seed=0, cuff=True)   красный резиновый поводок от p0 (телефон) к p1 (запястье): tension 0 —
+#                       провис дугой, 1 — струна (тоньше) и дрожит; cuff — петля-манжета на p1.
+#   phone_puppeteer(x, y, k, t, pull, ends=None, seed=0)   телефон-кукловод 300×600·k (ЦЕНТР), висит над сценой, щель с зубками
+#                       ухмылкой, холодный тусклый экран; снизу деревянная вага-крестовина, от неё вниз ленты-нити (узкие
+#                       feed_ribbon) к точкам ends (мир; по умолчанию четыре точки на 760·k ниже); pull 0…1 — рывок: вага и телефон
+#                       уходят вверх на 50·k, нити натягиваются. puppeteer_bar(x, y, k, pull) → концы ваги (для своих нитей).
+#   phone_curtain(x, y, k, open_u, t, side=1, seed=0)   телефон 300×600·k экраном к зрителю (ЦЕНТР): экран — гибкий лист-шторка;
+#                       open_u 0…1 — шторка собирается складками к стороне side (1 — вправо), под ней темнота, из глубины
+#                       выползает лента (длина растёт с open_u). curtain_edge(x, y, k, open_u, side) → середина подвижного края
+#                       шторки в мире (туда коготь кота).
+#   toggle_rows(x, y, k, on=(0, 0, 0), t=0, scroll=0, feed=1, seed=0)   телефон 300×600·k экраном к зрителю (ЦЕНТР): фоном бледно
+#                       бегут карточки ленты (scroll px; feed 0…1 — насколько видны), поверх три пустые строки-плашки с тумблером-
+#                       пилюлей справа, БЕЗ значков; on[i] 0…1 — кружок переезжает вправо и пилюля теплеет (дробное — в пути).
+#                       toggle_knob(x, y, k, i, u) → центр кружка i в мире (для лапы).
+#   ribbon_lasso(cx, cy, k, loose_u, t=0, layer="all", rw=120, feet=330, tail_to=None, rewind=0, seed=0)
+#                       лента-лассо на фигуре: (cx, cy) — середина корпуса, три петли на −95/−20/+55·k (грудь, руки, пояс), полуширина
+#                       rw·k; loose_u 0…1 — петли ослабевают (шире) и по очереди спадают кольцами на пол (cy + feet·k);
+#                       rewind 0…1 — кольца уползают к tail_to и исчезают. tail_to=(x, y) — хвост ленты к телефону.
+#                       layer "back" — задние половины петель (под фигурой), "front" — передние (поверх), "all".
+#   bottomless_well(x, y, k, t, depth=2600, flare=1, seed=0)   колодец без дна: (x, y) — центр устья; каменное кольцо 520·k,
+#                       внутри воронка сужается вниз на depth·k в темноту, кольца глубины бегут вниз (падение); flare 0…1 —
+#                       аккуратный гладкий раструб у устья с бликами (видно, что сделано нарочно). well_axis(x, y, k, u, depth) →
+#                       точка на оси колодца на доле глубины u (для ленты).
+#   wood_board(x, y, k, rot=0, seed=0)          деревянная доска 360×46·k (ЦЕНТР) с волокнами
+#   ribbon_board(x, y, k, u, t=0, top=-900, board=True, run=1, seed=0)   лента сверху (из y + top·k) бежит вниз на доску-дно в (x, y)
+#                       (доска — wood_board, если board); u 0…1 — лента утыкается и складывается гармошкой (стопка растёт), бег
+#                       останавливается (run — множитель скорости до удара). Без доски (board=False, u=0) лента уходит вниз дальше.
+#   bell_timer(x, y, k, hand_a, sector_u, ring, t=0, seed=0)   латунный будильник-колокольчик (ЦЕНТР циферблата, Ø 260·k): два колокольчика
+#                       с молоточком, ножки, пустой кремовый циферблат БЕЗ цифр и делений, одна стрелка под углом hand_a (° от «12»,
+#                       по часовой); тёплый сектор от «12» до стрелки, sector_u 0…1 — его сила; ring 0…1 — вздрагивание (корпус
+#                       дрожит, молоточек бьёт, дуги звона). bell_hand_tip(x, y, k, hand_a) → кончик стрелки в мире.
+#   basket(x, y, k, seed=0, lining=True)        плетёная корзинка 300×170·k (ЦЕНТР ДНА) с мягкой подкладкой; basket_rim(x, y, k) → центр устья
+#   ribbon_roll(x, y, k, unroll, t, trail=None, seed=0)   огромный рулон ленты на оси (ЦЕНТР оси), торец Ø 300·k со спиралью витков,
+#                       крутится; лента сходит снизу по trail (точки мира; по умолчанию по полу вправо на 900·k), unroll 0…1 — сколько
+#                       trail уже покрыто; рулон не худеет (не кончается).
+C_FEED_BASE = "#EEF0F4"
+C_FEED = ("#F28B82", "#FBBC57", "#7FC8A9", "#8AB4F8", "#C58AF9", "#F6A6C8", "#9AD3E6")
+C_BRASS = "#D4A73A"
+C_BRASS_SH = "#9E7522"
+C_BRASS_HI = "#F3D47E"
+C_WICKER = "#C8955A"
+C_WICKER_SH = "#956634"
+C_LEASH = "#D9483B"
+C_LEASH_SH = "#A5322A"
+C_PHONE = "#2B2E35"
+C_PHONE_SIDE = "#3D424D"
+C_TOOTH = "#FFFDF6"
+C_MOUTH = "#3A1418"
+_light = glow
+
+
+def _feed_col(n, seed):
+    return C_FEED[(n * 5 + seed * 3 + (n * n) % 3) % len(C_FEED)]
+
+
+def _strip(path, step=4.0):
+    import numpy as np
+    S = lib.sample(path, False, step)
+    d = np.gradient(S, axis=0)
+    d /= (np.linalg.norm(d, axis=1)[:, None] + 1e-9)
+    N = np.stack([-d[:, 1], d[:, 0]], 1)
+    cl = np.concatenate([[0.0], np.cumsum(np.linalg.norm(np.diff(S, axis=0), axis=1))])
+    return S, N, cl
+
+
+def _seg(S, N, cl, a, b, f0, f1, w):
+    """Полигон куска полосы между длинами a…b и долями ширины f0…f1 (−.5….5)."""
+    import numpy as np
+    if b - a < 1:
+        return None
+    ss = np.concatenate([[a], cl[(cl > a) & (cl < b)], [b]])
+    xs, ys = np.interp(ss, cl, S[:, 0]), np.interp(ss, cl, S[:, 1])
+    nx, ny = np.interp(ss, cl, N[:, 0]), np.interp(ss, cl, N[:, 1])
+    L = [(x + nx_ * w * f0, y + ny_ * w * f0) for x, y, nx_, ny_ in zip(xs, ys, nx, ny)]
+    R = [(x + nx_ * w * f1, y + ny_ * w * f1) for x, y, nx_, ny_ in zip(xs, ys, nx, ny)]
+    pts = L + R[::-1]
+    pts[0] = pts[0] + (1,)
+    pts[len(L) - 1] = pts[len(L) - 1] + (1,)
+    pts[len(L)] = pts[len(L)] + (1,)
+    pts[-1] = pts[-1] + (1,)
+    return pts
+
+
+def _poly_d(pts):
+    return "M" + "L".join(f"{p[0]:.1f} {p[1]:.1f}" for p in pts) + "Z"
+
+
+def ribbon_point(path, u):
+    import numpy as np
+    S, N, cl = _strip(path)
+    s = clamp(u) * cl[-1]
+    return float(np.interp(s, cl, S[:, 0])), float(np.interp(s, cl, S[:, 1]))
+
+
+def feed_ribbon(path, t, speed=300.0, seed=0, w=90.0, card=120.0, gap=10.0, edge=True, op=1.0, start=0.0, end=1.0, ink_w=3.4):
+    S, N, cl = _strip(path)
+    tot = cl[-1]
+    a0, a1 = clamp(start) * tot, clamp(end) * tot
+    if a1 - a0 < 2:
+        return ""
+    o = []
+    base = _seg(S, N, cl, a0, a1, -.5, .5, w)
+    o.append(f'<path d="{_poly_d(base)}" fill="{C_FEED_BASE}"/>')
+    per = card + gap
+    off = t * speed
+    n0 = int(math.floor((a0 + off) / per)) - 1
+    n1 = int(math.ceil((a1 + off) / per)) + 1
+    for n in range(n0, n1 + 1):
+        s = n * per - off
+        a, b = max(a0, s + gap / 2), min(a1, s + per - gap / 2)
+        p = _seg(S, N, cl, a, b, -.40, .40, w)
+        if not p:
+            continue
+        col = _feed_col(n, seed)
+        o.append(f'<path d="{_poly_d(p)}" fill="{col}"/>')
+        pa, pb = max(a0, s + gap / 2 + card * .16), min(a1, s + per - gap / 2 - card * .16)
+        q = _seg(S, N, cl, pa, pb, -.26, .26, w)
+        if q:
+            o.append(f'<path d="{_poly_d(q)}" fill="#FFFFFF" opacity=".42"/>')
+    if edge:
+        for fr in (-.5, .5):
+            import numpy as np
+            m = (cl >= a0) & (cl <= a1)
+            E = S[m] + N[m] * w * fr
+            if len(E) > 2:
+                o.append(line([tuple(e) for e in E[::3]] + [tuple(E[-1])], ink_w, lib.INK, taper=.08, wmin=.6, seed=seed + (7 if fr > 0 else 3)))
+    g = "".join(o)
+    return f'<g opacity="{op:.3f}">{g}</g>' if op < 1 else g
+
+
+def feed_cards(x0, y0, x1, y1, scroll, seed=0, card=70.0, gap=10.0, dim=0.0):
+    o = []
+    per = card + gap
+    n0 = int(math.floor((-scroll) / per)) - 1
+    n1 = int(math.ceil((y1 - y0 - scroll) / per)) + 1
+    for n in range(n0, n1 + 1):
+        ya = y0 + n * per + scroll
+        col = _feed_col(-n, seed)
+        o.append(blob(rrect(x0 + 8, ya, x1 - 8, ya + card, 8), col))
+        o.append(blob(rrect(x0 + 8 + (x1 - x0) * .14, ya + card * .2, x1 - 8 - (x1 - x0) * .14, ya + card * .8, 6), "#FFFFFF", .42))
+    if dim > 0:
+        o.append(f'<rect x="{f(x0)}" y="{f(y0)}" width="{f(x1 - x0)}" height="{f(y1 - y0)}" fill="{C_FEED_BASE}" opacity="{dim:.3f}"/>')
+    return "".join(o)
+
+
+def _teeth(x0, x1, y, h, down, n, col=C_TOOTH, seed=0):
+    o = []
+    if x1 - x0 < 4:
+        return ""
+    wv = (x1 - x0) / n
+    pts = []
+    for i in range(n):
+        a = x0 + wv * i
+        pts += [(a, y, 1), (a + wv / 2, y + (h if down else -h), 1)]
+    pts += [(x1, y, 1)]
+    poly = pts + [(x1, y - (3 if down else -3), 1), (x0, y - (3 if down else -3), 1)]
+    o.append(blob(poly, col))
+    o.append(line([p[:2] for p in pts], 2.2, lib.INK, taper=.1, wmin=.6, seed=seed))
+    return "".join(o)
+
+
+def phone_biter(x0, y0, x1, y1, k=1.0, bite=1.0, stretch=0.5, scroll_t=0.0, glow=0.6, t=0.0, face=.45, layer="all", seed=0):
+    sd = 78100 + seed
+    dx, dy = x1 - x0, y1 - y0
+    dist = max(60.0, math.hypot(dx, dy))
+    ang = math.degrees(math.atan2(dx, -dy))
+    L = dist / k
+    s = L / 290.0
+    W = 150.0 / math.sqrt(max(s, .55))
+    st = clamp(stretch)
+    pinch = clamp((s - 1) * .30 + .12 * st, 0, .38)
+    n = 16
+    left, right = [], []
+    for i in range(n + 1):
+        u = i / n
+        y = -L * u
+        hw = W / 2 * (1 - pinch * math.sin(math.pi * u) ** 1.4)
+        if u < .12:
+            hw *= 1 + .16 * (1 - u / .12) ** 2                     # подошва-присоска шире
+        wob = st * 7 * math.sin(u * math.pi * 3 + t * 23) * math.sin(math.pi * u)
+        left.append((-hw + wob, y))
+        right.append((hw + wob, y))
+    topw = W / 2 * 0.98
+    gap = 8 + 24 * (1 - clamp(bite))
+    yb = -L + gap / 2                                              # верх нижней челюсти
+    lower = [(left[0][0], 6, 1)] + left[1:-1] + [(-topw, yb, 1), (topw, yb, 1)] + right[-2:0:-1] + [(right[0][0], 6, 1)]
+    cap_top = -L - gap / 2 - 40
+    upper = [(-topw, -L - gap / 2, 1), (-topw, cap_top + 16), (-topw + 10, cap_top + 3), (-topw + 24, cap_top, 1), (topw - 24, cap_top, 1),
+             (topw - 10, cap_top + 3), (topw, cap_top + 16), (topw, -L - gap / 2, 1)]
+    out = []
+    if layer in ("all", "back"):
+        o = []
+        # тень-лужица прилипшей подошвы
+        o.append(blob(ellipse_pts(0, 8, W * .72, 12, 16), "#000000", .16))
+        # щель-рот (тёмное нутро между челюстями)
+        o.append(blob(rrect(-topw + 6, -L - gap / 2 - 6, topw - 6, -L + gap / 2 + 6, 6), C_MOUTH))
+        # экран под острым углом: полоса шириной face у ЛЕВОГО края, остальное — бок
+        g = clamp(glow)
+        scr_col = mix("#1A1E27", "#DCE7FF", .25 + .75 * g)
+        inner = []
+        sx0 = -W / 2 - 4
+        sx1 = sx0 + (W + 8) * clamp(face)
+        inner.append(f'<rect x="{f(-W)}" y="{f(-L - 60)}" width="{f(2 * W)}" height="{f(L + 80)}" fill="{C_PHONE_SIDE}"/>')
+        scr = [(sx0 + 14, -12, 1), (sx1, -12, 1), (sx1, yb - 14, 1), (sx0 + 14, yb - 14, 1)]
+        cid = lib.clip_of(scr)
+        inner.append(f'<path d="{_poly_d(scr)}" fill="{scr_col}"/>')
+        inner.append(f'<g clip-path="url(#{cid})" opacity="{.55 + .45 * g:.3f}">{feed_cards(sx0 + 14, yb - 14, sx1, 0, scroll_t, seed=seed, card=46, gap=8)}</g>')
+        inner.append(line([(sx1, -10), (sx1, yb - 12)], 3.0, "#15171C", taper=.1, wmin=.6, seed=sd + 5))
+        inner.append(line([(sx1 + 16, -30), (sx1 + 22, yb - 30)], 4, "#5A616E", taper=.5, wmin=.3, seed=sd + 6, op=.7))
+        o.append(shape(lower, C_PHONE, "".join(inner), w=4.4, seed=sd))
+        o.append(_teeth(-topw + 10, topw - 10, yb, 9 + 3 * clamp(bite), False, 6, seed=sd + 9))
+        if g > .02:
+            o.append(_light(sx0 + (sx1 - sx0) * .5 - 40, -L * .45, 120 + 60 * g, .35 * g, "#DCE7FF", ry=L * .45))
+        out.append("".join(o))
+    if layer in ("all", "front"):
+        o = []
+        o.append(shape(upper, C_PHONE, line([(-topw + 18, cap_top + 14), (topw - 30, cap_top + 12)], 3, "#5A616E", taper=.5, wmin=.3, seed=sd + 11, op=.7),
+                       w=4.4, seed=sd + 10))
+        o.append(_teeth(-topw + 10, topw - 10, -L - gap / 2, 9 + 3 * clamp(bite), True, 6, seed=sd + 12))
+        # штрихи злости над челюстью при сильном укусе
+        if bite > .6:
+            for j, xx in enumerate((-topw * .45, topw * .45)):
+                o.append(line([(xx - 10 * (1 if xx < 0 else -1), cap_top - 14), (xx + 8 * (1 if xx < 0 else -1), cap_top - 4)], 4.0, lib.INK, taper=.4,
+                              wmin=.3, seed=sd + 20 + j))
+        out.append("".join(o))
+    return _tf("".join(out), x0, y0, k, ang)
+
+
+def rubber_leash(p0, p1, tension=0.5, t=0.0, k=1.0, seed=0, cuff=True):
+    sd = 78200 + seed
+    (ax, ay), (bx, by) = p0, p1
+    dist = math.hypot(bx - ax, by - ay) + 1e-6
+    tn = clamp(tension)
+    sag = (1 - tn) * .28 * dist
+    nx, ny = -(by - ay) / dist, (bx - ax) / dist
+    if ny < 0:
+        nx, ny = -nx, -ny
+    pts = []
+    m = 14
+    for i in range(m + 1):
+        u = i / m
+        b = 4 * u * (1 - u)
+        vib = tn * 6 * k * math.sin(t * 61 + u * 9) * math.sin(math.pi * u)
+        pts.append((ax + (bx - ax) * u + nx * (sag * b + vib), ay + (by - ay) * u + ny * (sag * b + vib)))
+    w = (20 - 8 * tn) * k
+    o = [shape(lib.band(pts, w * 1.15, w), C_LEASH, line([(p[0] - nx * w * .2, p[1] - ny * w * .2) for p in pts[1:-1]], 3 * k, "#F08A7C",
+                                                          taper=.3, wmin=.4, seed=sd + 1), w=3.6 * k, seed=sd)]
+    if cuff:
+        o.append(f'<ellipse cx="{f(bx)}" cy="{f(by)}" rx="{f(25 * k)}" ry="{f(33 * k)}" fill="none" stroke="{C_LEASH}" stroke-width="{f(10 * k)}"/>')
+    return "".join(o)
+
+
+def puppeteer_bar(x, y, k=1.0, pull=0.0):
+    yy = y + (330 - 50 * clamp(pull)) * k
+    return (x - 230 * k, yy), (x + 230 * k, yy), (x, yy - 10 * k), (x, yy + 90 * k)
+
+
+def phone_puppeteer(x, y, k=1.0, t=0.0, pull=0.0, ends=None, seed=0):
+    sd = 78300 + seed
+    pu = clamp(pull)
+    yy = y - 50 * pu * k
+    sway = 2.5 * math.sin(t * 1.7)
+    o = []
+    # нити-ленты от ваги вниз
+    a, b, c, d = puppeteer_bar(x, y, k, pull)
+    if ends is None:
+        ends = [(x - 260 * k, y + 1090 * k), (x - 90 * k, y + 1000 * k), (x + 90 * k, y + 1000 * k), (x + 260 * k, y + 1090 * k)]
+    anchors = [a, (x - 80 * k, a[1] + 4 * k), (x + 80 * k, b[1] + 4 * k), b]
+    if len(ends) != 4:
+        anchors = [(a[0] + (b[0] - a[0]) * i / max(1, len(ends) - 1), a[1]) for i in range(len(ends))]
+    rib = []
+    for i, (p, q) in enumerate(zip(anchors, ends)):
+        sagx = (1 - pu) * 18 * k * math.sin(t * 2.3 + i)
+        mid = ((p[0] + q[0]) / 2 + sagx, (p[1] + q[1]) / 2)
+        rib.append(feed_ribbon([p, mid, q], t, speed=-120 - 160 * pu, seed=seed + i, w=26 * k, card=40 * k, gap=6 * k, ink_w=2.2 * k))
+    o.append("".join(rib))
+    # вага-крестовина
+    o.append(shape(lib.band([a, b], 22 * k, 22 * k, cap=False), C_WOOD, "", w=3.4 * k, seed=sd + 1))
+    o.append(shape(lib.band([c, d], 20 * k, 20 * k, cap=False), C_WOOD_SH, "", w=3.4 * k, seed=sd + 2))
+    # подвес от телефона к ваге
+    o.append(line([(x, yy + 300 * k), (c[0], c[1])], 4 * k, lib.INK, taper=.1, wmin=.6, seed=sd + 3))
+    # телефон
+    ph = []
+    ph.append(shape(rrect(-150, -300, 150, 300, 40), C_PHONE, "", w=4.6, seed=sd + 4))
+    ph.append(blob(rrect(-132, -282, 132, 282, 30), "#26304A"))
+    cid = lib.clip_rect(-132, -282, 264, 564, 30)
+    ph.append(f'<g clip-path="url(#{cid})" opacity=".55">{feed_cards(-132, -282, 132, 282, t * 90, seed=seed + 5, card=80, gap=12)}</g>')
+    ph.append(f'<rect x="-132" y="-282" width="264" height="564" rx="30" fill="#0E1426" opacity=".45"/>')
+    # щель-ухмылка с зубками
+    ph.append(blob(rrect(-104, -150, 104, -118, 14), C_MOUTH))
+    ph.append(_teeth(-96, 96, -150, 11, True, 7, seed=sd + 6))
+    ph.append(_teeth(-96, 96, -118, 9, False, 7, seed=sd + 7))
+    ph.append(line([(-110, -214), (-56, -196)], 7, lib.INK, taper=.4, wmin=.3, seed=sd + 8))
+    ph.append(line([(110, -214), (56, -196)], 7, lib.INK, taper=.4, wmin=.3, seed=sd + 9))
+    ph.append(line([(-112, -262), (-120, 250)], 6, "#FFFFFF", taper=.5, wmin=.2, seed=sd + 10, op=.12))
+    o.append(_tf("".join(ph), x, yy, k, sway))
+    o.append(glow(x, yy + 60 * k, 260 * k, .22, "#BFD3FF", ry=360 * k))
+    return "".join(o)
+
+
+def curtain_edge(x, y, k=1.0, open_u=0.0, side=1):
+    u = lib.ease_io(clamp(open_u))
+    xe = -134 + 268 * .84 * u
+    return x + (xe if side > 0 else -xe) * k, y
+
+
+def phone_curtain(x, y, k=1.0, open_u=0.0, t=0.0, side=1, seed=0):
+    sd = 78400 + seed
+    u = lib.ease_io(clamp(open_u))
+    o = []
+    o.append(shape(rrect(-150, -300, 150, 300, 40), C_PHONE, "", w=4.6, seed=sd))
+    cid = lib.clip_rect(-134, -284, 268, 568, 30)
+    inner = []
+    g = lin_grad([(0, "#1C2342", 1), (.5, "#0A0D1C", 1), (1, "#03040A", 1)], 0, 0, 0, 1)
+    inner.append(f'<rect x="-134" y="-284" width="268" height="568" fill="url(#{g})"/>')
+    rs = _rs(sd)
+    for j in range(5):                                            # кольца глубины
+        q = ((t * .5 + j / 5) % 1)
+        r = 40 + 140 * q
+        inner.append(f'<ellipse cx="0" cy="40" rx="{f(r)}" ry="{f(r * 1.5)}" fill="none" stroke="#3A4670" stroke-width="{f(3 * q + .5)}" opacity="{.5 * (1 - q):.3f}"/>')
+    # лента выползает из глубины вниз через край
+    if u > .05:
+        L = clamp((u - .05) / .95)
+        path = [(0, 30), (-30, 110), (20, 200), (-10, 290), (30, 380)]
+        inner.append(feed_ribbon(path, t, speed=140, seed=seed + 3, w=60, card=70, gap=8, end=L * .98 + .02, ink_w=2.6))
+    # шторка: лист экрана собирается складками к стороне side
+    W = 268 * (1 - .84 * u)
+    if W > 2:
+        xa = 134 - W
+        sheet = []
+        nf = 3 + int(9 * u)
+        top = []
+        bot = []
+        m = 24
+        for i in range(m + 1):
+            v = i / m
+            xx = xa + W * v
+            amp = (4 + 10 * u) * math.sin(v * nf * math.pi)
+            top.append((xx, -284 + amp * .3 + (16 * u * (1 - v) if True else 0)))
+            bot.append((xx + amp, 284 - 10 * u * (1 - v)))
+        edge_wave = [(xa + 6 * u * math.sin(i / 6 * math.pi * 2 + t * 6), -284 + 568 * i / 6) for i in range(7)]
+        poly = [(p[0], p[1]) for p in top] + [(p[0], p[1]) for p in bot[::-1]] + edge_wave[::-1][1:-1]
+        shade = []
+        for i in range(1, nf):
+            xx = xa + W * i / nf
+            if u > .02:
+                shade.append(line([(xx, -280), (xx + 4 * u, 0), (xx, 280)], 3 + 3 * u, "#9FB0D0", taper=.3, wmin=.4, seed=sd + 20 + i, op=min(.75, u * 4)))
+        cards = feed_cards(xa, -284, 134, 284, t * 60, seed=seed + 7, card=80, gap=12, dim=.25 + .4 * u)
+        sheet.append(shape(poly, mix("#E4ECFF", "#C9D6F2", u), cards + "".join(shade), w=3.2, seed=sd + 30))
+        sh = "".join(sheet)
+        if side < 0:
+            sh = f'<g transform="scale(-1 1)">{sh}</g>'
+        inner.append(sh)
+    o.append(f'<g clip-path="url(#{cid})">{"".join(inner)}</g>')
+    return _tf("".join(o), x, y, k, 0)
+
+
+def toggle_knob(x, y, k=1.0, i=0, u=0.0):
+    yy = -150 + 150 * i
+    return x + (56 + 52 * lib.ease_io(clamp(u))) * k, y + yy * k
+
+
+def toggle_rows(x, y, k=1.0, on=(0.0, 0.0, 0.0), t=0.0, scroll=0.0, feed=1.0, seed=0):
+    sd = 78500 + seed
+    o = []
+    o.append(shape(rrect(-150, -300, 150, 300, 40), C_PHONE, "", w=4.6, seed=sd))
+    o.append(blob(rrect(-134, -284, 134, 284, 30), C_SCREEN))
+    o.append(blob(rrect(-34, -276, 34, -264, 6), C_PHONE))
+    cid = lib.clip_rect(-134, -284, 268, 568, 30)
+    o.append(f'<g clip-path="url(#{cid})" opacity="{.25 + .45 * clamp(feed):.3f}">{feed_cards(-134, -284, 134, 284, scroll, seed=seed, card=90, gap=12)}</g>')
+    for i in range(3):
+        yy = -150 + 150 * i
+        u = lib.ease_io(clamp(on[i] if i < len(on) else 0))
+        o.append(shape(rrect(-118, yy - 50, 118, yy + 50, 22), "#FFFFFF", "", w=3.2, seed=sd + 10 + i))
+        o.append(line(_wavy(-96, 10, yy, sd + 30 + i, amp=0.8, per=60), 12, "#D5D9E1", taper=.1, wmin=.7, seed=sd + 40 + i))
+        pill = mix("#C3C8D2", "#F2A33A", u)
+        o.append(shape(rrect(36, yy - 26, 128, yy + 26, 26), pill, "", w=3.2, seed=sd + 50 + i))
+        kx = 56 + 52 * u
+        o.append(shape(ellipse_pts(kx, yy, 21, 21, 16), "#FFFFFF", "", w=3.0, seed=sd + 60 + i))
+        if 0 < u < 1:
+            o.append(line([(kx - 30, yy - 8), (kx - 48, yy - 8)], 3, lib.INK, taper=.5, wmin=.2, seed=sd + 70 + i, op=.6))
+        if u >= 1:
+            o.append(glow(82, yy, 70, .25, "#FFD27A", ry=40))
+    o.append(line([(-112, -262), (-118, 250)], 6, "#FFFFFF", taper=.5, wmin=.2, seed=sd + 90, op=.3))
+    return _tf("".join(o), x, y, k, 0)
