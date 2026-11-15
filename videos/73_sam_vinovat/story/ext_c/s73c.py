@@ -152,8 +152,8 @@ def cat_draw(x, y, k, st, t, judge=None):
 
 
 # ═════════════════════════ s01: хук ═════════════════════════
-S0 = 1.95                    # базовый масштаб камеры хука и петли
-CAM_HOOK = (-950.0, 700.0)   # центр камеры (мир)
+S0 = 2.4                     # базовый масштаб камеры хука и петли (доска на весь кадр до зоны субтитров)
+CAM_HOOK = (-950.0, 675.0)   # центр камеры (мир)
 
 
 def W(fx, fy):
@@ -164,7 +164,7 @@ def W(fx, fy):
 SHELF_FY = 1172.0                        # кадр: верх полочки под котом (слева; доска справа уходит ниже неё)
 SHELF_X1 = 600.0                         # кадр: правый край полочки
 CAT_F = (318.0, SHELF_FY, 3.05)          # кадр: точка между задних лап кота и масштаб рисунка в кадре
-ENV_F = (842.0, 1034.0, 2.0)             # кадр: кнопка конверта (низ конверта ≈ 1290) и масштаб
+ENV_F = (842.0, 983.0, 2.4)              # кадр: кнопка конверта (низ конверта ≈ 1290) и масштаб
 SPIDER_F = (985.0, 700.0)                # кадр: точка крепления нитки паучка на доске (над конвертом справа)
 T_IF = wt("если")            # 0.34 — голова встаёт на зрителя, удар камерой
 T_DE = wt("дело")            # 0.70 — коготь стукает по конверту, удар камерой +8 %
@@ -190,39 +190,54 @@ def shelf(fy_top, P_cold=True):
 
 
 def s01_cat(t):
-    st = dict(_t=t)
+    st = dict(_t=t, cold=1.0)       # cat.py: холодный судья — веки наполовину, зрачки-щёлки, прямой рот, уши прижаты
     # поворот головы к зрителю: в кадре 0 уже на середине (голова к конверту, скорость с кадра 0), встаёт на зрителя к «Если»
     u = clamp(t / T_IF)
     e = 1 - (1 - u) ** 2.2                      # *.out: максимальная скорость в кадре 0
-    turn = lerp(-.62, 0.0, e) + damp(t, T_IF, -.09, 3.2, 7)
-    st["turn"] = turn
+    st["turn"] = lerp(-.62, 0.0, e) + damp(t, T_IF, -.09, 3.2, 7)
     st["tilt"] = lerp(-9.0, 0.0, e) + damp(t, T_IF, 2.6, 3.0, 7) + damp(t, T_TAP, -1.6, 3.4, 8)
-    st["look"] = (lerp(.9, 0.0, e) + .55 * bump(t, T_TAP - .2, .5), lerp(.25, 0.0, e) + .35 * bump(t, T_TAP - .2, .5) + .5 * bump(t, T_VI, .4))
-    lid = .44 + .26 * sm(t, T_ME, T_ME + .3) - .06 * bump(t, T_IF, .18)
-    st["blink_L"] = lid + .04
+    st["look"] = (lerp(.9, 0.0, e) + .7 * bump(t, T_TAP - .3, .55), lerp(.25, 0.0, e) + .4 * bump(t, T_TAP - .3, .55) + .5 * bump(t, T_VI, .4))
+    lid = .5 + .32 * sm(t, T_ME, T_ME + .3) - .08 * bump(t, T_IF, .2)
+    st["blink_L"] = lid + .03
     st["blink_R"] = lid
-    # уши: уже прижимаются в кадре 0, на «Если» — сильнее, с отдачей
-    st["ear"] = lerp(8, 24, e) + damp(t, T_IF, 6, 4.5, 6) + 3 * math.sin(t * 13) * (1 - sm(t, .2, .6))
+    # уши прижаты (cold) и ещё дёргаются: в кадре 0 — дрожь, на «Если» — прижим с отдачей
+    st["ear"] = lerp(-10, 4, e) + damp(t, T_IF, 7, 4.5, 6) + 4 * math.sin(t * 13) * (1 - sm(t, .2, .6))
     st["perk"] = 0.0
-    # хвост хлещет: резкие рывки туда-обратно (не синус с остановками) в зоне справа над конвертом
-    lash = -24 + 10 * math.sin(2 * math.pi * 1.55 * t + 1.9) + 4 * math.sin(2 * math.pi * 3.1 * t + .4)
-    st["tail"] = lash + damp(t, T_TAP, -6, 3, 6)
+    # хвост хлещет рывками (не синус с остановками) справа от тела, выше конверта; на стук — вскидывается
+    lash = -29 + 7 * math.sin(2 * math.pi * 1.55 * t + 1.9) + 3 * math.sin(2 * math.pi * 3.1 * t + .4)
+    st["tail"] = lash - 17 * sm(t, T_TAP - .36, T_TAP - .12) * (1 - sm(t, T_TAP + .25, T_TAP + .55)) + damp(t, T_TAP, -4, 3, 6)
     st["flame_e"] = 1.0 + .3 * math.sin(t * 7)
-    # лапа: тянется к конверту, стук на T_TAP, назад
+    # правая передняя лапа (та же, вторая на полке): замах, удар коготком по краю конверта на T_TAP, задержка, назад
     pw = 0.0
-    if t > T_TAP - .26:
-        if t < T_TAP:
-            pw = .39 * ease_out(clamp((t - (T_TAP - .26)) / .26), 2)
+    if t > T_TAP - .32:
+        if t < T_TAP - .1:
+            pw = .62 * ease_out(clamp((t - (T_TAP - .32)) / .22), 2)
+        elif t < T_TAP:
+            pw = lerp(.62, .353, clamp((t - (T_TAP - .1)) / .1) ** 2)
         else:
-            pw = .39 * (1 - ease_io(clamp((t - T_TAP - .12) / .28)))
-    st["paw"] = pw
-    st["paw_dx"] = 128.0
+            pw = .353 * (1 - ease_io(clamp((t - T_TAP - .16) / .3))) + damp(t, T_TAP, .03, 4, 9)
+    st["paw"] = max(0.0, pw)
+    st["paw_dx"] = lerp(60.0, 172.0, clamp((t - (T_TAP - .2)) / .2)) if t < T_TAP + .2 else 172.0
     # тело: вдох-рывок на поворот, сжатие на ударах
     sq = damp(t, T_IF, .025, 3.0, 7) + damp(t, T_TAP, .02, 3.2, 8)
     st["sy"] = 1 - sq
     st["sx"] = 1 + .5 * sq
     st["rot"] = lerp(-2.2, 0.0, e) + damp(t, T_IF, .8, 2.5, 6)
-    return st, dict(slit=.35 + .65 * sm(t, .05, T_IF) - 0 * t, flat_mouth=1.0)
+    return st, None
+
+
+def shoulder_patch(x, y, k, st, t):
+    """Плечо над началом вытянутой лапы (cat.body рисует лапу трубкой с обрезом у груди): мех поверх обреза, без контура."""
+    if st.get("paw", 0.0) < .02:
+        return ""
+    br = 1 + 0.012 * math.sin(t * 2 * math.pi / 3.1)
+    sy = br * st.get("sy", 1.0)
+    sx = st.get("sx", 1.0)
+    fx = CAT.CX + 25
+    g = (blob(ellipse_pts(fx + 4, 1236, 30, 26, 16), lib.mix(CAT.CAT, CAT.CAT_FUR, .25))
+         + line([(fx - 14, 1222), (fx - 8, 1240)], 2.2, CAT.CAT_EDGE, seed=7520, op=.8))
+    return (f'<g transform="translate({x:.2f} {y:.2f}) rotate({st.get("rot", 0.0):.2f}) scale({k:.4f}) translate({-CAT.CX} {-CAT.CBOT})">'
+            f'<g transform="translate({CAT.CX} {CAT.CBOT}) scale({sx:.4f} {sy:.4f}) translate({-CAT.CX} {-CAT.CBOT})">{g}</g></g>')
 
 
 def s01_env(t):
@@ -257,15 +272,15 @@ def s01_world(t, warm=False):
     # паутина в углу доски у кнопки, дрожит от удара и на «месяц»
     tremble = clamp(.35 + .9 * bump(t, T_TAP, .5) + 1.0 * sm(t, T_ME, T_ME + .12) * (1 - sm(t, T_ME + .5, T_ME + .9)))
     wx, wy = W(1080, 560)
-    web = PR.cobweb(wx, wy, 1.6, tremble=tremble, t=t, ang=100, span=80, L=170, seed=731)
+    web = PR.cobweb(wx, wy, 1.3, tremble=tremble, t=t, ang=100, span=80, L=170, seed=731)
     sx_, sy_ = W(*SPIDER_F)
     drop, sway = s01_spider(t)
-    spd = PR.spider(sx_ + sway / S0, sy_, 1.05, drop=drop / S0 * 1.0, t=t, seed=73, look=-.6)
+    spd = PR.spider(sx_ + sway / S0, sy_, .88, drop=drop / S0 * 1.0, t=t, seed=73, look=-.6)
     thread = line([(sx_, sy_ - 60), (sx_ + sway / S0, sy_)], 1.6, "#d9dde2", taper=.1, wmin=.7, seed=7510, op=.9)
     # облачко пыли от стука
-    puff = PR.dust_puff(*W(680, 1010), 1.15, clamp((t - T_TAP) / .5), seed=73) if t > T_TAP else ""
+    puff = PR.dust_puff(*W(640, 960), 1.15, clamp((t - T_TAP) / .5), seed=73) if t > T_TAP else ""
     puff2 = PR.dust_puff(*W(860, 1300), .8, clamp((t - T_TAP - .06) / .55), seed=74) if t > T_TAP + .06 else ""
-    cat = cat_draw(cx, cy, k, st, t, judge=jd)
+    cat = cat_draw(cx, cy, k, st, t, judge=jd) + shoulder_patch(cx, cy, k, st, t)
     if warm:
         return st, (cx, cy, k), env, web, thread + spd, cat
     cat = R.cold_tint(cat, .7)

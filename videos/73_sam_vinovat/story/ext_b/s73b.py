@@ -172,7 +172,10 @@ CAM8 = (1070.0, 1000.0, .6)
 PHASES8 = (.08, .22, .5, 1.0)
 POSES8 = (dict(roll=0.0, expr="awake73"), dict(roll=1.0, expr="stare73"), dict(roll=.35, expr="sag73"), dict(roll=.85, expr="awake73"))
 SC8 = .78
-HEAD8 = (1835.0, 1112.0)
+HEAD8 = (1745.0, 1102.0)
+_hb = people.dima_bed(0.0, 0.0, SC8, "awake73", flip=True)
+_H8 = _hb["head"]
+lib.DEFS.clear()
 
 
 def _night8(t):
@@ -199,8 +202,7 @@ def s08(t):
     m = ease_io(clamp(since / .1))
     roll = lerp(a["roll"], b["roll"], m)
     ex = b["expr"] if m > .5 else a["expr"]
-    sc = SC8 * people.HEIGHT["dima"]
-    hip = (HEAD8[0] - 548 * sc, HEAD8[1] + 50 * sc)
+    hip = (HEAD8[0] - _H8[0], HEAD8[1] - _H8[1])
     db = people.dima_bed(hip[0], hip[1], SC8, people.awake_blink(ex, .0), roll=roll, t=t, cover=.25, col="blue", flip=True, seed=8)
     o.append(R.cold_tint(db["svg"], 0.0, 1.0))
     # камера: фиксированная крупность, на каждом щелчке микросдвиг 1.5 % и вспышка темноты 2 кадра

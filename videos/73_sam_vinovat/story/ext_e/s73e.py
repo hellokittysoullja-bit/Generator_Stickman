@@ -136,3 +136,55 @@ def s10(t):
 
 
 FRAMES["s10"] = s10
+
+
+# ═════════════════════════ s11: «и ты не один» — кот бодает, ладонь на спине ═════════════════════════
+T_A11 = 14.90
+T_I11, T_ODIN = wt(40), wt(43)              # 15.01, 15.45
+DIMA11 = (700.0, BT + 6)                     # таз Димы на краю кровати у изножья, лицом вправо, ступни на полу; окно с луной слева
+CAT11 = (1010.0, BT - 40)                    # кот сидит на кровати рядом, чуть глубже (за его коленями)
+CAT11_K = 1.05
+
+
+def s11(t):
+    sc = R.bedroom(t, "lamp", "wide")
+    bump_ = bump(t, T_ODIN - .04, .55)
+    near = sm(t, T_ODIN - .14, T_ODIN + .04)
+    pet = sm(t, T_ODIN + .1, T_ODIN + .42)
+    flare = sm(t, T_ODIN, T_ODIN + .3) * (1 - .4 * sm(t, 15.9, 16.3))
+    # кот: сидит рядом и смотрит на Диму; на «один» подаётся к нему и бодает головой в плечо (глаза закрыты), потом жмурится под ладонью
+    cx = CAT11[0] - 55 * near - 25 * bump_
+    cy = CAT11[1]
+    st = dict(turn=lerp(-.5, -.8, near), look=(-.8, -.4), tilt=lerp(-4, -16, near) - 6 * bump_, rot=lerp(0, -8, near) - 6 * bump_,
+              blink=max(blinks(t, (14.95,)), bump_, .55 * pet), smile=1.0, tail=-6 + 8 * math.sin(t * 2.1),
+              ear=-5 * bump_ + 2 * math.sin(t * 3), perk=.2 * pet, flame_e=1.0 + 1.3 * flare, sy=1 + .06 * bump_)
+    cat = R.warm_tint(CAT.draw(cx, cy, CAT11_K, st, t), .25)
+    flx, fly = flame_world(cx, cy, CAT11_K, st["tail"])
+    glow = PR.glow(flx, fly - 50, 80 + 90 * flare, .4 + .45 * flare, "#ffb347") + PR.sparkles(flx, fly - 70, .9, flare, t, seed=11, n=4, r=70)
+    # Дима: сидит, смотрит вниз; на «один» его качнуло назад от толчка, улыбка краешком рта, ближняя ладонь ложится коту на спину
+    hx, hy = DIMA11
+    if t > T_ODIN - .02:
+        e = ex("smile73", look=(.8, .6), closed=blinks(t, (15.9,)))
+    else:
+        e = ex("sag73", look=(.6, .5), lid=.55, closed=blinks(t, (15.15,)))
+    back = (cx - 5 * CAT11_K, cy - 168 * CAT11_K)
+    rest_n = (hx + 215, hy - 24)
+    Wn = lerp2(rest_n, (back[0] - 24, back[1] + 10), pet)
+    hn = {"dir": (1, .45), "curl": (.12, .15, .2, .25), "spread": .12, "thumb": .25} if pet > .5 else {"dir": (1, .3), "curl": (.3, .35, .4, .45), "thumb": .35}
+    feet = {"n": ((hx + 300, R.FL73 - 40), 0.0), "f": ((hx + 250, R.FL73 - 36), 0.0)}
+    kw = dict(feet=feet, arms={"f": ("ik", (hx + 175, hy - 20), -1), "n": ("ik", Wn, -1)},
+              hands={"f": {"dir": (1, .3), "curl": (.3, .35, .4, .45), "thumb": .35}, "n": hn},
+              lean_add=.04 - .07 * bump_ + .03 * pet + .01 * math.sin(t * 2.2), head_add=.05 * pet - .04 * bump_)
+    dima = {k: R.warm_tint(people.dima(hx, hy, 1.0, e, None, layers=(k,), **kw)["svg"], .6) for k in ("legs", "pelvis", "arm_f", "body", "arm_n")}
+    world = [sc["bg"], sc["pillow"], sc["blanket"], dima["arm_f"], dima["pelvis"], dima["body"], cat, dima["legs"], dima["arm_n"], glow]
+    # камера: медленный наезд 5 %, на «один» тёплая вспышка (огонёк) и мини-толчок
+    u = sm(t, T_A11 - .2, 16.25)
+    s = lerp(.86, .9, u) + .015 * bump(t, T_ODIN, .4)
+    ccx = lerp(640, 680, u) + 4 * math.sin(t * 1.4)
+    ccy = lerp(960, 945, u) + 3 * math.sin(t * 1.7)
+    set_ink(s)
+    flash = f'<rect width="1080" height="1920" fill="#ffcf80" opacity="{.16 * bump(t, T_ODIN + .05, .5):.3f}" style="mix-blend-mode:screen"/>'
+    return f'<g transform="{lib.cam(ccx, ccy, s, lerp(-.3, .3, u))}">{"".join(world)}</g>{flash}', BG
+
+
+FRAMES["s11"] = s11
