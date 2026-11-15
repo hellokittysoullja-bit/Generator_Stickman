@@ -3286,3 +3286,334 @@ def cat_back74(x, y, k=1.0, t=0.0, turn=0.0):
             o.append(line([(sx * 100 + dx, 30 + 12 * j), (sx * 150 + dx, 26 + 14 * j + wv), (sx * 190 + dx, 30 + 18 * j + wv)], 1.6, "#cfcbe0", seed=7495 + j + 3 * sx,
                           op=.9))
     return f'<g transform="translate({x:.2f} {y:.2f}) scale({k:.4f})">{"".join(o)}</g>'
+
+
+# ═════════════════════════════ РИЛС 76 «РАССКАЗАЛ О ЦЕЛИ» (автор — группа B) ═════════════════════════════
+# Дима в ПИЖАМЕ (s01–s09, сегодня) — who="dima_pj": та же голова, волосы, щетина и мимика EXPR["dima"], пижама (pajama_parts) голубая
+#   со звёздочками, штаны пижамы, носки. dima_pj(x, y, scale, expr, pose, **kw) — как dima(); в худи (s10–s11, s17–s19) — dima().
+# Позы POSE (цели рук — в долях масштаба от таза, Дима смотрит вправо; ноги на матрасе — mattress_kw):
+#   chips76      — полулёжа: дальняя кисть держит пакет на животе (центр пакета ≈ (175, −215)·sc), ближняя подносит чипс ко рту
+#                  (чипс — в hand_pos(fig, "n", 55)); chew76 — ближняя кисть ниже, у подбородка (жуёт)
+#   shrug76      — пакет в дальней руке, ближняя ладонь вверх в сторону (+ shrug=0.4…0.7) — «а что такого»
+#   spread76     — обе руки разведены в стороны ладонями вверх (разводит руками)
+#   pinned76     — придавлен кубком: руки по бокам упираются в матрас, плечи вверх (expr "pinned76"); кубок кладёт сцена на (220, −260)·sc
+#   boast76      — сел, ближняя рука вверх раскрытой ладонью, дальняя упёрта в колено: «вот-вот похвастаюсь» (expr "boast76")
+#   horn76       — дует в дудку: ближняя кисть у рта (мундштук — mouth_pt(fig) ; дудку кладёт сцена ПОСЛЕ фигуры), дальняя на колене
+#   tell76       — стоит, обе руки впереди: рисует прямоугольник (цели рук — rect_hands(u, x, y, scale)), point_up76 — палец вверх
+#   trophy_up76  — обе руки над головой держат кубок (центр кубка ≈ (150, −760)·sc, хваты — trophy_grip76)
+#   shh76        — указательный палец ближней руки у губ (цель — arms={"n": ("ik", lips76(...), -1)}: локоть ВНИЗ; есть у любого who)
+#   type76       — печатает за столом (сидит: sit_kw), turn76 — обе кисти по бокам ноутбука, разворачивают его вправо
+#   laptop_lap76 — сидит на матрасе, ноутбук на коленях (экран к Диме), руки на клавиатуре
+#   clap76       — хлопает перед грудью (u 0…1: 0 — ладони врозь, 1 — сомкнуты) — clap_arms(u, …) для любого who
+#   thumb76      — большой палец вверх (слушатель/преподаватель), write76 — пишет, склонившись над столом (студенты справа),
+#   relax76      — откинулся, руки за голову (рисовать layers=LAYERS_BEHIND), gesture76 — рассказывает, ладонь вперёд
+# Ноги: mattress_kw (полулёжа на низком матрасе, ноги вытянуты вперёд), sit_mat_kw (сидит на матрасе, колени чуть согнуты),
+#   rise_kw(u) — встаёт с матраса (u 0 сидит … 1 стоит; для перемотки сцена ведёт u назад), stand_kw / sit_kw — из 63/70.
+# Мимика EXPR["dima"] (годится и для dima_pj): bored76 (равнодушно-довольный), brow76 (одна бровь вверх), chew76 (жуёт, chew 0…1 —
+#   фаза рта), shrug76 (уголок рта, «а что»), pinned76 (первое беспокойство, косится вниз на кубок), boast76 (рот открыт, глаза горят),
+#   puffed76 (замер с надутыми щеками, глаза круглые), blow76 (дует в дудку — щёки шариком), tell76 (рассказывает, глаза горят),
+#   dream76 (мечтательно вверх), beam76 (сияет с кубком), shh76 (палец у губ, хитро), glance76 (взгляд на кубок вверх),
+#   screen76 (лицо в свете экрана, губы сжаты), laugh76 (смеётся).
+# Толпа хука: crowd_backs(x, y, w, t, clap_phase, n=4, k=1.0, seed=0) — затылки и поднятые ладони (3–5 силуэтов, хлопают вразнобой);
+#   (x, y) — левый нижний угол полосы толпы (низ = край кадра), w — ширина. clap_phase — сдвиг ритма (с; на «замирании» сцена держит).
+# Студенты: STUDENTS76 = (who, …) — шесть разных лиц: girl, cap, bob (слева), pal, curly, youth (справа); преподаватель — "psych".
+# Кот (cat.py): cat_clap76(x, y, k, t, u, st) — стоит на задних лапах и хлопает передними (u 0…1 — сомкнуты на 1);
+#   cat_shh76(x, y, k, t, u, tip) — кот на задних лапах тянет правую переднюю лапу к точке tip (губы Димы), u 0…1;
+#   CAT_ST76: sniff (нюхает, нос вниз), no (качает головой — сцена ведёт turn по ±), cam_paw (в камеру, лапа приподнята),
+#   sad (уши опущены, медленно моргает), poke (тычет лапой вперёд — paw 0…1 ведёт сцена), sill (сидит, кивает — drop=cat_nod),
+#   watch (следит вниз-вправо за пальцами), wow (глаза широко, улыбка — звёздочки props.sparkles кладёт сцена).
+PAL["dima_pj"] = dict(PAL["dima"], TOP="#8fb3d9", TOP_SH="#6f93bd", TOP_SH2="#5779a3", FOLD="#3f5d85", STITCH="#e6eef8",
+                      LEGS="#8fb3d9", LEGS_SH="#6f93bd", LEGS_SEAM="#b5cdea",
+                      SHOE="#d9d4cb", SHOE_SH="#b4ada2", SOLE="#c9c2b6", SOLE_SH="#a39c90", STRIPE="#8fb3d9")
+CLOTHES64["dima_pj"] = pajama_parts
+HEIGHT["dima_pj"] = 1.0
+EXPR["dima_pj"] = EXPR["dima"]          # тот же словарь мимики
+HEADS64 = HEADS64 + ("dima_pj",)
+_head64_76 = head64
+
+
+def head64(expr, style):        # noqa: F811 — Дима в пижаме: голова Димы
+    if style == "dima_pj":
+        return dima_head(expr)
+    return _head64_76(expr, style)
+
+
+def dima_pj(x, y, scale, expr="bored76", pose=None, **kw):
+    """Взрослый Дима в пижаме (тот же Дима: лохматый, щетина)."""
+    return person("dima_pj", x, y, scale, expr, pose, **kw)
+
+
+EXPR["dima"].update({
+    "bored76": {"brows": "calm", "mouth": "side", "lid": .5, "look": (.35, .1), "bags": False},
+    "brow76": {"brows": "one_up", "mouth": "flat", "lid": .62, "look": (.45, .35), "bags": False},
+    "chew76": {"brows": "calm", "mouth": "smack", "chew": .5, "lid": .48, "look": (.3, .05), "bags": False},
+    "shrug76": {"brows": "one_up", "mouth": "side", "lid": .6, "look": (.0, 0.0), "bags": False},
+    "pinned76": {"brows": "worry", "mouth": "o", "open": .2, "lid": .9, "look": (.35, .8), "bags": False},
+    "boast76": {"brows": "up", "mouth": "o", "open": .55, "lid": 1.0, "look": (.5, -.1), "hair": 4, "bags": False},
+    "puffed76": {"brows": "up", "mouth": "puff", "puff": 1.0, "lid": 1.0, "look": (.55, .15), "bags": False},
+    "blow76": {"brows": "up", "mouth": "puff", "puff": 1.0, "lid": .55, "look": (.6, .1), "bags": False},
+    "tell76": {"brows": "up", "mouth": "talk", "open": .6, "smile": .5, "lid": .95, "look": (.4, 0), "hair": 3, "bags": False},
+    "dream76": {"brows": "up", "mouth": "smile", "smile": .9, "lid": .7, "look": (.4, -.8), "bags": False},
+    "beam76": {"brows": "up", "mouth": "grin", "open": .7, "lid": .8, "look": (.2, -.6), "hair": 6, "bags": False},
+    "shh76": {"brows": "calm", "mouth": "pressed", "lid": .62, "look": (-.3, 0), "bags": False},
+    "glance76": {"brows": "calm", "mouth": "side", "lid": .8, "look": (.2, -.8), "bags": False},
+    "screen76": {"brows": "det", "mouth": "pressed", "lid": .66, "look": (.55, .5), "bags": False},
+    "laugh76": {"brows": "up", "mouth": "laugh", "open": .6, "laugh": 1.0, "hair": 4, "bags": False},
+})
+for _w in ("mama", "granny", "friend", "girl", "cap", "bob", "pal", "curly", "youth", "psych", "bald"):
+    EXPR.setdefault(_w, {}).update({
+        "cheer76": {"brows": "up", "mouth": "grin", "open": .7, "lid": .85, "look": (.3, -.1), "hair": 3},
+        "listen76": {"brows": "up", "mouth": "smile", "smile": .6, "lid": .9, "look": (.4, 0)},
+        "tell_s76": {"brows": "up", "mouth": "talk", "open": .55, "smile": .6, "lid": .95, "look": (.4, 0), "hair": 2},
+        "smug_s76": {"brows": "calm", "mouth": "smile", "smile": 1.0, "lid": .55, "look": (.2, -.2)},
+        "write_s76": {"brows": "calm", "mouth": "flat", "lid": .45, "look": (.4, .9)},
+        "shh_s76": {"brows": "calm", "mouth": "smile", "smile": .5, "lid": .6, "look": (-.4, 0)},
+        "proud76": {"brows": "up", "mouth": "smile", "smile": 1.0, "lid": .7, "look": (.3, 0)},
+    })
+
+_HOLD = {"dir": (.4, -1), "curl": (.62, .66, .7, .74), "thumb": .55}
+_PALM_UP = {"dir": (1, -.2), "flip": -1, "spread": .35, "curl": (.05, .1, .15, .2), "thumb": .15}
+POSE.update({
+    "chips76": (-0.38, 0.12, {"f": ("ik", (175, -215), -1), "n": ("ik", (-5, -360), -1)},
+                {"f": {"dir": (1, -.3), "curl": (.6, .64, .68, .72), "thumb": .55},
+                 "n": {"dir": (-.4, -1), "curl": (.15, .7, .78, .8), "spread": .05, "thumb": .65}}),
+    "chew76": (-0.38, 0.1, {"f": ("ik", (175, -215), -1), "n": ("ik", (60, -300), -1)},
+               {"f": {"dir": (1, -.3), "curl": (.6, .64, .68, .72), "thumb": .55}, "n": {"dir": (.3, -1), "curl": (.4, .5, .55, .6), "thumb": .4}}),
+    "shrug76": (-0.3, -0.06, {"f": ("ik", (175, -215), -1), "n": ("ik", (330, -300), -1)},
+                {"f": {"dir": (1, -.3), "curl": (.6, .64, .68, .72), "thumb": .55}, "n": dict(_PALM_UP)}),
+    "spread76": (-0.22, -0.05, {"f": ("ik", (-260, -260), 1), "n": ("ik", (380, -330), -1)},
+                 {"f": {"dir": (-1, -.4), "flip": -1, "spread": .4, "curl": (0, .05, .1, .15), "thumb": .1}, "n": dict(_PALM_UP)}),
+    "pinned76": (-0.42, 0.18, {"f": ("ik", (-60, 40), 1), "n": ("ik", (330, -40), -1)},
+                 {"f": {"dir": (-.3, 1), "spread": .35, "curl": (.1, .1, .15, .2), "thumb": .2},
+                  "n": {"dir": (.5, 1), "spread": .35, "curl": (.1, .1, .15, .2), "thumb": .2}}),
+    "boast76": (0.08, -0.06, {"f": ("ik", (380, -40), -1), "n": ("ik", (300, -560), -1)},
+                {"f": {"dir": (.5, 1), "curl": (.4, .45, .5, .55), "thumb": .4}, "n": {"dir": (.3, -1), "spread": .35, "curl": (.05, .05, .1, .15), "thumb": .2}}),
+    "horn76": (0.0, 0.02, {"f": ("ik", (380, -40), -1), "n": ("ik", (150, -375), -1)},
+               {"f": {"dir": (.5, 1), "curl": (.4, .45, .5, .55), "thumb": .4}, "n": {"dir": (.3, -1), "curl": (.62, .66, .7, .74), "thumb": .6}}),
+    "tell76": (0.04, -0.04, {"f": ("ik", (260, -380), -1), "n": ("ik", (340, -380), -1)},
+               {"f": {"dir": (.6, -1), "spread": .3, "curl": (.1, .15, .2, .25), "thumb": .2},
+                "n": {"dir": (.6, -1), "spread": .3, "curl": (.1, .15, .2, .25), "thumb": .2}}),
+    "point_up76": (0.0, -0.18, {"f": ("ang", 0.2, 0.25), "n": ("ik", (260, -620), -1)},
+                   {"n": {"dir": (.15, -1), "curl": (0, .85, .9, .9), "spread": .05, "thumb": .7}}),
+    "trophy_up76": (-0.04, -0.3, {"f": ("ik", (100, -760), -1), "n": ("ik", (205, -760), -1)},
+                    {"f": {"dir": (.9, -.3), "curl": (.62, .66, .7, .74), "thumb": .55}, "n": {"dir": (-.9, -.3), "flip": -1, "curl": (.62, .66, .7, .74), "thumb": .55}}),
+    "shh76": (0.02, 0.0, {"f": ("ang", 0.18, 0.2), "n": ("ik", (121, -304), -1)},
+              {"n": {"dir": (.1, -1), "curl": (0, .88, .92, .92), "spread": .03, "thumb": .75}}),
+    "type76": (0.12, 0.12, {"f": ("ik", (250, -215), -1), "n": ("ik", (330, -212), -1)},
+               {"f": {"dir": (1, .35), "curl": (.3, .35, .4, .45), "thumb": .3}, "n": {"dir": (1, .35), "curl": (.25, .3, .35, .4), "thumb": .3}}),
+    "turn76": (0.1, 0.05, {"f": ("ik", (230, -250), -1), "n": ("ik", (400, -250), -1)},
+               {"f": {"dir": (.4, 1), "curl": (.5, .55, .6, .65), "thumb": .5}, "n": {"dir": (-.2, 1), "curl": (.5, .55, .6, .65), "thumb": .5}}),
+    "laptop_lap76": (0.1, 0.18, {"f": ("ik", (250, -170), -1), "n": ("ik", (330, -170), -1)},
+                     {"f": {"dir": (1, .35), "curl": (.3, .35, .4, .45), "thumb": .3}, "n": {"dir": (1, .35), "curl": (.25, .3, .35, .4), "thumb": .3}}),
+    "thumb76": (0.0, 0.0, {"f": ("ang", 0.18, 0.2), "n": ("ik", (300, -380), -1)},
+                {"n": {"dir": (1, 0), "curl": (.9, .9, .92, .92), "spread": .02, "thumb": -.6}}),
+    "write76": (0.42, 0.35, {"f": ("ik", (240, -150), -1), "n": ("ik", (330, -160), -1)},
+                {"f": {"dir": (1, .5), "curl": (.2, .25, .3, .35), "thumb": .2}, "n": {"dir": (1, .4), "curl": (.62, .66, .7, .74), "thumb": .6}}),
+    "relax76": (-0.2, -0.15, {"f": ("ik", (-30, -560), 1), "n": ("ik", (-10, -580), 1)},
+                {"f": {"kind": "none"}, "n": {"kind": "none"}}),
+    "gesture76": (0.1, 0.0, {"f": ("ik", (230, -200), -1), "n": ("ik", (350, -330), -1)},
+                  {"f": {"dir": (1, .3), "curl": (.4, .42, .46, .5), "thumb": .4}, "n": {"dir": (1, -.4), "spread": .35, "curl": (.05, .1, .15, .2), "thumb": .2}}),
+})
+STUDENTS76 = ("girl", "cap", "bob", "pal", "curly", "youth")
+
+
+def mattress_kw(x, y, scale, who="dima_pj"):
+    """Полулёжа на низком матрасе: таз на матрасе, ноги вытянуты вперёд, пятки на матрасе (чуть ниже таза)."""
+    sc = scale * HEIGHT.get(who, 1.0)
+    return {"feet": {"n": ((x + 590 * sc, y + 60 * sc), -.75), "f": ((x + 545 * sc, y + 72 * sc), -.75)}}
+
+
+def sit_mat_kw(x, y, scale, who="dima_pj"):
+    """Сидит на матрасе: колени чуть согнуты вверх, стопы на матрасе."""
+    sc = scale * HEIGHT.get(who, 1.0)
+    return {"feet": {"n": ((x + 440 * sc, y + 70 * sc), -.15), "f": ((x + 400 * sc, y + 80 * sc), -.15)}}
+
+
+def rise_kw(u, x, y, scale, who="dima_pj"):
+    """Встаёт с матраса: u 0 — сидит (таз на (x, y)), 1 — стоит (таз выше на (THIGH+SHIN)·sc). Возвращает (hip_y, feet)."""
+    sc = scale * HEIGHT.get(who, 1.0)
+    u = lib.clamp(u)
+    e = u * u * (3 - 2 * u)
+    hy = y - (THIGH + SHIN - 30) * sc * e
+    ax0, ay0 = 440 * sc, 70 * sc
+    ax1, ay1 = 60 * sc, (THIGH + SHIN - 40) * sc
+    ax = ax0 + (ax1 - ax0) * e
+    ay = (y + ay0) + ((hy + ay1) - (y + ay0)) * e
+    return hy, {"feet": {"n": ((x + ax, ay), -.15 * (1 - e)), "f": ((x + ax - 40 * sc, ay + 6 * sc), -.15 * (1 - e))}}
+
+
+def mouth_pt(fig, lean=0.0, head_ang=0.0, flip=False):
+    """Точка губ героя в мире (по fig["head"] и наклону головы lean*.5+head_ang; голова 300·scale)."""
+    a = lean * .5 + head_ang
+    v = rot(np.array([64.0, 92.0]), a) * fig["scale"]
+    hx, hy = fig["head"]
+    return (hx - v[0], hy + v[1]) if flip else (hx + v[0], hy + v[1])
+
+
+def lips76(x, y, scale, lean=0.0, head_ang=0.0, who="dima"):
+    """Цель ближней руки «палец у губ» в мире: запястье ниже-левее губ так, чтобы указательный стоял вертикально на губах."""
+    f = figure(who, x, y, scale, {}, lean=lean, head_ang=head_ang, layers=())
+    m = mouth_pt(f, lean, head_ang)
+    sc = f["scale"]
+    return (m[0] - 6 * sc, m[1] + 150 * sc)
+
+
+def rect_hands(u, x, y, scale, who="dima", w=300.0, h=210.0):
+    """Руками рисует в воздухе прямоугольник: u 0…1 — обе кисти из верхней середины расходятся к верхним углам, вниз, сходятся внизу.
+    Возвращает arms для person(..., arms=...)."""
+    sc = scale * HEIGHT.get(who, 1.0)
+    cx, top = 300.0, -520.0
+    u = lib.clamp(u)
+
+    def path(side):
+        s = -1 if side == "f" else 1
+        pts = [(cx, top), (cx + s * w / 2, top), (cx + s * w / 2, top + h), (cx, top + h)]
+        seg = min(2, int(u * 3))
+        e = u * 3 - seg
+        a, b = pts[seg], pts[seg + 1]
+        return (a[0] + (b[0] - a[0]) * e, a[1] + (b[1] - a[1]) * e)
+    A = {}
+    for side in ("f", "n"):
+        px, py = path(side)
+        A[side] = ("ik", (x + px * sc, y + py * sc), -1)
+    return A
+
+
+def clap_arms(u, x, y, scale, who="dima", hy=-380.0, cx=300.0):
+    """Хлопок перед грудью: u 0 — ладони врозь (≈ 160 L), 1 — сомкнуты. Возвращает (arms, hands)."""
+    sc = scale * HEIGHT.get(who, 1.0)
+    g = 80 * (1 - lib.clamp(u)) + 6
+    arms = {"f": ("ik", (x + (cx - g - 40) * sc, y + hy * sc), -1), "n": ("ik", (x + (cx + g - 40) * sc, y + (hy + 6) * sc), -1)}
+    hands = {"f": {"dir": (.35, -1), "spread": .08, "curl": (.05, .08, .1, .12), "thumb": .25},
+             "n": {"dir": (.15, -1), "flip": -1, "spread": .08, "curl": (.05, .08, .1, .12), "thumb": .25}}
+    return arms, hands
+
+
+def clap_u(t, t0, period=0.42, phase=0.0):
+    """Фаза хлопка 0…1 (1 — удар): быстро сходятся, медленнее расходятся."""
+    p = ((t - t0) / period + phase) % 1.0
+    return (p / .3) ** 2 if p < .3 else (1 - (p - .3) / .7) ** 1.5
+
+
+def trophy_grip76(fig):
+    """Точки хвата кубка над головой (поза trophy_up76): (левая ручка, правая ручка) в мире — ручки кубка ставить сюда."""
+    return fig["wrist"]["f"], fig["wrist"]["n"]
+
+
+# ─── толпа хука: затылки и поднятые ладони ───
+_CROWD = [("#3a2a22", "#241914", "#c4382c", "#efc8a6"), ("#d4672a", "#a04818", "#4f9a8f", "#f6d6bd"),
+          ("#2c2228", "#1a1418", "#7d8a50", "#dfae8a"), ("#dcdce4", "#aeb0c0", "#a283c4", "#f2d6c0"),
+          ("#6e4a38", "#4c3024", "#5d86b6", "#f0cdb2")]
+
+
+def _palm_back(cx, cy, k, ang, spread, seed, skin, sh):
+    """Ладонь, поднятая для хлопка (видна тыльной стороной: четыре пальца вверх и большой сбоку)."""
+    o = []
+    R = lambda px, py: (cx + (px * math.cos(ang) - py * math.sin(ang)) * k, cy + (px * math.sin(ang) + py * math.cos(ang)) * k)  # noqa: E731
+    palm = [R(-34, 30), R(-38, -10), R(-30, -40), R(30, -42), R(38, -8), R(34, 34), R(0, 46)]
+    fingers = []
+    for i, fx in enumerate((-24, -8, 8, 24)):
+        L_ = (54, 62, 60, 50)[i]
+        dx = (i - 1.5) * spread * 10
+        fingers.append(band([R(fx, -36), R(fx + dx * .5, -36 - L_ * .5), R(fx + dx, -36 - L_)], 17 * k, 14 * k, step=4))
+    thumb = band([R(-32, 10), R(-54, -8), R(-64, -34)], 18 * k, 14 * k, step=4)
+    o.append(shape(thumb, skin, "", w=3.6 * k, seed=seed))
+    for j, fp in enumerate(fingers):
+        o.append(shape(fp, skin, blob(fp[len(fp) // 2:], sh, .35), w=3.4 * k, seed=seed + 1 + j))
+    o.append(shape(palm, skin, blob([R(10, -40), R(36, -8), R(32, 34), R(4, 40)], sh, .6), w=3.8 * k, seed=seed + 6))
+    for j, fx in enumerate((-16, 0, 16)):
+        o.append(line([R(fx, -34), R(fx, -26)], 2.2 * k, sh, seed=seed + 10 + j, op=.8))
+    return "".join(o)
+
+
+def crowd_backs(x, y, w, t, clap_phase=0.0, n=4, k=1.0, seed=0, freeze=None):
+    """Затылки и поднятые ладони хлопающей толпы на переднем плане. (x, y) — левый нижний угол полосы (низ — за краем кадра),
+    w — ширина полосы, k — масштаб (голова ≈ 230·k). Каждый хлопает в свой ритм; freeze — время, на котором ритм замирает
+    (ладони стоят, как конфетти), None — без замирания. Возвращает SVG."""
+    o = []
+    tt = t if freeze is None else min(t, freeze)
+    for i in range(n):
+        hair, hair_sh, top, skin = _CROWD[(i + seed) % len(_CROWD)]
+        sh = lib.mix(skin, "#8a5a4a", .35)
+        cx = x + w * (i + .5) / n + 26 * math.sin(i * 2.3 + seed)
+        hk = k * (1.0 + .12 * math.sin(i * 1.7 + seed))
+        bob = 8 * hk * math.sin(tt * 6.0 + i * 1.3)
+        cy = y - 330 * hk + 40 * (i % 2) * hk + bob
+        # плечи и спина
+        sh_pts = [(cx - 260 * hk, y + 40), (cx - 240 * hk, cy + 210 * hk), (cx - 140 * hk, cy + 140 * hk), (cx + 140 * hk, cy + 140 * hk),
+                  (cx + 240 * hk, cy + 210 * hk), (cx + 260 * hk, y + 40)]
+        inner = blob([(cx + 40 * hk, cy + 140 * hk), (cx + 240 * hk, cy + 210 * hk), (cx + 260 * hk, y + 40), (cx + 60 * hk, y + 40)],
+                     lib.mul(top, (.8, .8, .8)), .7)
+        inner += line([(cx - 60 * hk, cy + 150 * hk), (cx, cy + 175 * hk), (cx + 60 * hk, cy + 150 * hk)], 3.4 * hk, lib.mul(top, (.6, .6, .6)), seed=seed + 7600 + i, op=.8)
+        o.append(shape(sh_pts, top, inner, w=5 * hk, seed=seed + 7610 + i))
+        # шея и уши
+        o.append(shape([(cx - 52 * hk, cy + 150 * hk), (cx - 46 * hk, cy + 60 * hk), (cx + 46 * hk, cy + 60 * hk), (cx + 52 * hk, cy + 150 * hk)], skin,
+                       blob([(cx + 10 * hk, cy + 60 * hk), (cx + 46 * hk, cy + 60 * hk), (cx + 52 * hk, cy + 150 * hk), (cx + 14 * hk, cy + 150 * hk)], sh, .6),
+                       w=4.2 * hk, seed=seed + 7620 + i))
+        for s in (-1, 1):
+            o.append(shape(ellipse_pts(cx + s * 98 * hk, cy + 10 * hk, 20 * hk, 30 * hk, 10), skin, blob(ellipse_pts(cx + s * 96 * hk, cy + 12 * hk, 9 * hk, 18 * hk, 8), sh, .7),
+                           w=3.6 * hk, seed=seed + 7630 + i * 2 + (s > 0)))
+        # затылок: волосы
+        hp = ellipse_pts(cx, cy - 10 * hk, 104 * hk, 118 * hk, 20)
+        hinner = blob(ellipse_pts(cx + 30 * hk, cy + 10 * hk, 70 * hk, 100 * hk, 14), hair_sh, .7)
+        for j in range(5):
+            a0 = -2.4 + j * .55
+            hinner += line([(cx + 30 * hk * math.cos(a0), cy - 60 * hk + 20 * hk * math.sin(a0)), (cx + 90 * hk * math.cos(a0 + .3), cy + 40 * hk * math.sin(a0 + .3) + 30 * hk)],
+                           2.6 * hk, hair_sh, seed=seed + 7640 + i * 7 + j, op=.8)
+        o.append(shape(hp, hair, hinner, w=5 * hk, seed=seed + 7650 + i))
+        # руки вверх: два предплечья из-за плеч к ладоням, ладони сходятся на хлопке
+        u = clap_u(tt, 0.0, period=.38 + .05 * (i % 3), phase=clap_phase + i * .37)
+        gap = (95 - 70 * u) * hk
+        ly = cy - (150 + 40 * (i % 2)) * hk
+        lx = cx + (20 if i % 2 else -15) * hk
+        for s in (-1, 1):
+            px, py = lx + s * gap, ly
+            elbow = (cx + s * 150 * hk, cy + 110 * hk)
+            arm = band([elbow, ((elbow[0] + px) / 2 + s * 14 * hk, (elbow[1] + py) / 2), (px, py + 40 * hk)], 54 * hk, 46 * hk, step=6)
+            o.append(shape(arm, top, blob(arm[:len(arm) // 2], lib.mul(top, (.8, .8, .8)), .6), w=4.4 * hk, seed=seed + 7660 + i * 2 + (s > 0)))
+            o.append(_palm_back(px, py, hk * 1.15, s * (.22 - .14 * u), .4 * (1 - u), seed + 7680 + i * 10 + (s > 0) * 5, skin, sh))
+    return "".join(o)
+
+
+# ─── кот рилса 76 ───
+CAT_ST76 = {
+    "sniff": {"drop": .45, "look": (0, .9), "perk": .6, "tilt": -4},
+    "no": {"look": (0, .1), "smug": .2, "flat_ears": .3},
+    "cam_paw": {"paw": .45, "paw_dx": 40, "look": (0, 0), "perk": .5},
+    "sad": {"flat_ears": .8, "blink": .45, "look": (.3, .5), "flame_e": .6},
+    "poke": {"paw": 1.0, "paw_dx": 120, "look": (.8, .1), "perk": .8},
+    "sill": {"look": (-.6, .3), "smile": .6, "blink": .3},
+    "watch": {"look": (.6, .8), "perk": .6},
+    "wow": {"look": (0, 0), "perk": 1.0, "smile": 1.0, "flame_e": 1.6},
+}
+
+
+def cat_clap76(x, y, k, t, u, st=None):
+    """Кот стоит на задних лапах и хлопает передними: u 0 — лапы врозь, 1 — подушечки сомкнуты над грудью. (x, y) — между задних лап."""
+    st = dict(st or {})
+    g = 46 * (1 - lib.clamp(u)) + 4
+    st.setdefault("sy", 1.1)
+    st.setdefault("sx", .96)
+    st.update(paw=.95, paw_l=.95, paw_dx=g / 1.6 - 15, paw_l_dx=g / 1.6 - 15)
+    st.setdefault("perk", 1.0)
+    st.setdefault("smile", 1.0)
+    st.setdefault("look", (0, 0))
+    st.setdefault("flame_e", 1.0 + .6 * u)
+    return cat_svg(x, y, k, st, t)
+
+
+def cat_shh76(x, y, k, t, u, tip=None, st=None):
+    """Кот тянет правую переднюю лапу вверх-вбок (к губам Димы): u 0…1. tip — цель (мир) для подбора paw_dx, иначе вправо-вверх."""
+    st = dict(st or {})
+    e = lib.clamp(u)
+    st["paw"] = e
+    if tip is not None:
+        import cat
+        dx = (tip[0] - x) / k - (cat.CX + 25 - cat.CX)
+        st["paw_dx"] = max(10.0, dx / 1.6)
+    else:
+        st.setdefault("paw_dx", 110)
+    st.setdefault("look", (.7, -.3))
+    st.setdefault("squint", .5 * e)
+    st.setdefault("sy", 1 + .08 * e)
+    return cat_svg(x, y, k, st, t)
