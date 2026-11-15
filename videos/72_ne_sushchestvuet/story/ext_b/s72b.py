@@ -49,15 +49,15 @@ def frame_svg(body, cx, cy, s, rot, white=0.0):
     return svg(f'<rect width="1080" height="1920" fill="#e9ecea"/><g transform="{lib.cam(cx, cy, s, rot)}">{body}</g>{w}')
 
 
-BAG = (500.0, 1500.0)
-BAG_K = 1.05
+BAG = (560.0, 1500.0)
+BAG_K = 1.3
 DS = .85                          # масштаб Димы
 CAT_COL = None
 
 
 def hip_of(sag, slide=0.0):
     x, y = P.bean_seat(BAG[0], BAG[1], BAG_K, sag)
-    return x + 30 * slide, y + 34 * slide
+    return x + 40 + 40 * slide, y + 40 + 50 * slide
 
 
 def screen_glow(head, u, t, flash=0.0):
@@ -65,14 +65,14 @@ def screen_glow(head, u, t, flash=0.0):
     if u <= .01:
         return ""
     fl = .5 + .5 * math.sin(t * 17) * .1
-    return (P.glow(head[0] + 40, head[1] + 30, 150 + 120 * flash, (.42 + .5 * flash) * u * (1 + fl * .1), "#D6E4FF", ry=130 + 90 * flash))
+    return (P.glow(head[0] + 50, head[1] + 30, 150 + 120 * flash, (.6 + .5 * flash) * u * (1 + fl * .1), "#D6E4FF", ry=130 + 90 * flash))
 
 
 # ═══════════════════════════════ s03: Дима в кресле-мешке с телефоном ═══════════════════════════════
 T3_L = wt("лень")          # 2.68
 T3_T = wt("телефон")       # 3.17
-CAT3 = (215.0, 1535.0)
-CAT3_K = .78
+CAT3 = (215.0, 1560.0)
+CAT3_K = 1.0
 
 
 def s03(t):
@@ -89,8 +89,8 @@ def s03(t):
         ex = dict(people.EXPR["dima"]["glassy"], lid=.62 - .2 * clamp((t - T3_T - .4) / .4))
     ex["look"] = (.35, -.35)
     thumb = 6 * math.sin(t * 9) * (1 - slump * .5)       # большой палец листает — кисть чуть подрагивает
-    fig = people.dima(hx, hy, DS, ex, "phone_face", lean_add=-.08 * slump, head_add=.08 * slump, **people.beanbag_kw(hx, hy, DS, sag),
-                      arms={"n": ("ik", (hx + 200 * DS * people.HEIGHT["dima"], hy - (395 - 40 * slump) * DS + thumb), -1)})
+    fig = people.dima(hx, hy, DS, ex, "phone_face", lean_add=-.12 - .14 * slump, head_add=.14 + .1 * slump, **people.beanbag_kw(hx, hy, DS, sag),
+                      arms={"n": ("ik", (hx + (90 + 30 * slump) * DS, hy - (420 - 60 * slump) * DS + thumb), -1)})
     o.append(fig["svg"])
     ph = people.hand_pos(fig, "n", 38)
     o.append(people.mobilnik(ph[0], ph[1], 1.35 * DS, -12 + 3 * math.sin(t * 3), seed=951))
@@ -112,7 +112,7 @@ def s03(t):
     wx, wr = whip_in(t, 2.18, .22, 180)
     cy = 1235 + 40 * ease_io(clamp((t - 2.4) / 1.6))
     s = 1.13 + .025 * ease_io(clamp((t - 2.4) / 1.6))
-    return frame_svg("".join(o), 545 + wx, cy, s, wr + .4 * math.sin(t * 1.2))
+    return frame_svg("".join(o), 585 + wx, cy, s, wr + .4 * math.sin(t * 1.2))
 
 
 # ═══════════════════════════════ s04: кот забирает телефон ═══════════════════════════════

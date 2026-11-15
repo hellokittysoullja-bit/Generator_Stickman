@@ -251,8 +251,8 @@ def s10(t):
     fx, fy = R.FIRE
     u = clamp(.3 + (t - 10.98) / .4)
     loom = sm(t, T_SEB - .1, T_SEB + .35)
-    k = .66 + .2 * loom
-    bx, by = lerp(SM_BASE[0] + 190, SM_BASE[0] + 140, loom), SM_BASE[1] + 60 + 30 * loom
+    k = .5 + .14 * loom
+    bx, by = lerp(SM_BASE[0] + 150, SM_BASE[0] + 115, loom), SM_BASE[1] + 30 + 30 * loom
     fig = people.smoke_figure("self", bx, by, k, u=u, t=t, seed=10)
     col = smoke_column(fx + 6, fy - 170, by + 10, t, u=1.0, seed=10)
     hide = sm(t, T_SEB - .15, T_SEB + .45)
@@ -260,7 +260,7 @@ def s10(t):
     dsvg, dfig = dima_seated(t, "hug_knees", "chin_knees", hide, e=e, shrug=.6 * hide)
     world = [back, sc["fire"], col, fig, sc["stones_front"], sc["log"], warm(dsvg, t)]
     q = sm(t, 10.98, 12.6)
-    cx = lerp(470.0, 440.0, q)
+    cx = lerp(520.0, 500.0, q)
     cy = lerp(1000.0, 1060.0, q)
     s = lerp(1.18, 1.34, q)
     set_ink(s)
