@@ -223,5 +223,162 @@ def s01(t):
     return lib.svg(f'<g transform="{lib.cam(ccx, ccy, s, rc)}">{"".join(world)}</g>')
 
 
+# ═════════════════════════ s06: поворот ═════════════════════════
+T6 = 6.25                    # всполох-сбой
+T_CROWN = 6.90               # корона падает
+T_JUMP = 6.96                # кот отталкивается (толчок), приземление на стол T_LAND
+T_LAND = 7.30
+T_SCREEN = 7.40              # загорается экран телефона
+RCAM = (560.0, 1000.0, 1.25)               # камера мира комнаты (Дима за столом) → кадр
+FT = (880.0, 1560.0, .7)                   # трон «front» (координаты вида) → кадр: точка сиденья (540, 1452) встаёт в (880, 1560)
+DESK_CAT_W = (760.0, 930.0)                # где кот садится на стол (мир)
+DESK_CAT_K = .8
+
+
+def w2f(x, y):
+    cx, cy, s = RCAM
+    return 540 + (x - cx) * s, 960 + (y - cy) * s
+
+
+def t2f(x, y):
+    X, Y, s = FT
+    return X + (x - 540) * s, Y + (y - 1452) * s
+
+
+def _ft(svg):
+    X, Y, s = FT
+    return f'<g transform="translate({X - 540 * s:.2f} {Y - 1452 * s:.2f}) scale({s})">{svg}</g>'
+
+
+def s06_cat(t):
+    """Кот: на троне (королём) → в темноте настораживается, расцепляет лапы → прыжок с кресла на стол → садится рядом с Димой.
+    Возвращает (x, y, k, st) в координатах кадра."""
+    st = dict(PE.CAT_ST.get("king74", dict(cross=1.0, smug=1.0, cold=.55)))
+    sx0, sy0 = t2f(540, 1452)
+    k0 = 2.5 * FT[2]
+    x1, y1 = w2f(*DESK_CAT_W)
+    k1 = DESK_CAT_K * RCAM[2]
+    st["cross"] = 1 - sm(t, 6.58, 6.84)
+    st["smug"] = 1 - sm(t, 6.4, 6.7)
+    st["cold"] = .55 * (1 - sm(t, 6.4, 6.7))
+    st["perk"] = sm(t, 6.36, 6.5)
+    st["ear"] = 6 * bump(t, 6.36, .3) + 4 * math.sin(t * 9)
+    st["turn"] = -.45 * sm(t, 6.45, 6.75) + .2 * sm(t, T_LAND, T_LAND + .25)
+    st["look"] = (-.8 * sm(t, 6.45, 6.75) - .1 * sm(t, T_LAND, T_LAND + .3), .1 + .3 * sm(t, T_LAND + .1, T_LAND + .4))
+    st["blink"] = .9 * bump(t, 6.38, .12)
+    st["tail"] = 8 * math.sin(2 * math.pi * 1.1 * t) + 10 * bump(t, 6.36, .4)
+    st["flame_e"] = .8 + .2 * math.sin(t * 8)
+    if t < T_JUMP:
+        cr = bump(t, T_JUMP - .12, .2) if t > T_JUMP - .12 else 0.0     # присел перед толчком
+        st["sy"] = 1 - .13 * cr
+        st["sx"] = 1 + .06 * cr
+        st["tilt"] = -6 * cr
+        return sx0, sy0, k0, st
+    if t < T_LAND:
+        u = (t - T_JUMP) / (T_LAND - T_JUMP)
+        e = ease_io(u)
+        x = lerp(sx0, x1, e)
+        y = lerp(sy0, y1, e) - 330 * math.sin(math.pi * u)
+        k = lerp(k0, k1, e)
+        st["legs"] = 1.0 if u < .8 else 1 - (u - .8) / .2
+        st["rot"] = -18 * math.sin(math.pi * u) - 6 * (1 - u)
+        st["sy"] = 1 + .08 * math.sin(math.pi * u)
+        st["sx"] = 1 - .04 * math.sin(math.pi * u)
+        st["tail"] = -24 * math.sin(math.pi * u)
+        return x, y, k, st
+    land = bump(t, T_LAND, .2)
+    st["sy"] = 1 - .14 * land + damp(t, T_LAND + .12, .03, 3, 6)
+    st["sx"] = 1 + .07 * land
+    st["drop"] = .15 * land
+    return x1, y1, k1, st
+
+
+def s06_crown(t, st, cx, cy, ck):
+    """Корона: на голове кота дрожит, на T_CROWN съезжает и падает, бьётся о подлокотник, катится вниз за край кадра."""
+    if t < T_CROWN:
+        wob = 4 * math.sin(t * 17) * sm(t, 6.4, 6.6) + 9 * sm(t, 6.7, T_CROWN)
+        return crown_on(cx, cy, ck, st, t, slide=18 * sm(t, 6.6, T_CROWN), rot=wob, kc=.56)
+    # слетает с головы (точка схода — над левым ухом), падает на левый подлокотник, отскакивает, катится вниз-влево
+    x0, y0, a0 = head_pt(*t2f(540, 1452), 2.5 * FT[2], st, T_CROWN, 836 + 20, 990)
+    ax, ay = t2f(230, 1383 - 30)
+    kk = 2.5 * FT[2] * .56
+    u = t - T_CROWN
+    if u < .18:
+        q = u / .18
+        x = lerp(x0, ax, q)
+        y = y0 + (ay - y0) * q * q
+        rot = a0 - 140 * q
+    elif u < .42:
+        q = (u - .18) / .24
+        x = ax - 160 * q
+        y = ay - 120 * math.sin(math.pi * q) + 60 * q
+        rot = a0 - 140 - 220 * q
+    else:
+        q = u - .42
+        x = ax - 160 - 420 * q
+        y = ay + 60 + 900 * q * q + 260 * q
+        rot = a0 - 360 - 400 * q
+    return PR.crown(x, y, kk, rot, bounce=.5 * bump(t, T_CROWN + .18, .12), shine=bump(t, T_CROWN + .18, .3), seed=1)
+
+
+def s06(t):
+    lib.dyn_begin()
+    pre = t < T6
+    # ── комната: Дима за столом (мир) ──
+    nd = R.night_desk(t, "screen", "mid")
+    sx, sy = R.SIT
+    br = 1 + .006 * math.sin(2 * math.pi * t / 3.2)
+    lit = sm(t, T_SCREEN, T_SCREEN + .08) * (1 - .25 * bump(t, T_SCREEN + .1, .08))
+    fig = PE.dima_phone(sx, sy, 1.0, "screen74", "phone_chest74", **PE.sit_kw(sx, sy, 1.0))
+    dima = f'<g transform="translate({sx} {sy}) scale(1 {br:.4f}) translate({-sx} {-sy})">{fig["svg"]}</g>'
+    room = nd["bg"] + nd["chair_back"] + nd["desk_top"] + dima + nd["desk_legs"] + nd["chair_seat"] + nd["lamp"]
+    hx, hy = fig["head"]
+    px, py = fig["phone"]
+    room_f = f'<g transform="{lib.cam(*RCAM)}">{room}</g>'
+    # затемнение с вырезом света экрана на лице и у телефона; контур светлее фона поверх
+    fx, fy = w2f(hx + 10, hy + 20)
+    pfx, pfy = w2f(px, py)
+    dark = f'<rect x="-600" y="-600" width="2280" height="3120" fill="#04060e" opacity=".88"/>'
+    rim_room = R.rim74(f'<g transform="{lib.cam(*RCAM)}">{dima}{nd["desk_top"]}{nd["chair_back"]}</g>', "#3c4a78", 2.5, .9, only=True)
+    glow = ""
+    if lit > .01:
+        # свет экрана: освещённая копия Димы поверх темноты только там, куда бьёт экран (лицо и кисти), стена остаётся тёмной
+        mid_ = lib.uid("mk")
+        g1 = lib.rad_grad([(0, "#ffffff", 1), (.55, "#ffffff", .85), (1, "#ffffff", 0)], fx + 20, fy, 150, 175)
+        g2 = lib.rad_grad([(0, "#ffffff", 1), (.6, "#ffffff", .7), (1, "#ffffff", 0)], pfx, pfy, 130, 105)
+        lib.DEFS.append(f'<mask id="{mid_}" maskUnits="userSpaceOnUse" x="-600" y="-600" width="2280" height="3120">'
+                        f'<rect x="-600" y="-600" width="2280" height="3120" fill="#000"/>'
+                        f'<ellipse cx="{fx + 20:.1f}" cy="{fy:.1f}" rx="150" ry="175" fill="url(#{g1})"/>'
+                        f'<ellipse cx="{pfx:.1f}" cy="{pfy:.1f}" rx="130" ry="105" fill="url(#{g2})"/></mask>')
+        lit_d = R.cold_tint(f'<g transform="{lib.cam(*RCAM)}">{dima}</g>', .9)
+        glow = f'<g mask="url(#{mid_})" opacity="{lit:.3f}">{lit_d}</g>'
+        glow += R.screen_light74(fx + 34, fy + 14, 150, 190, .8 * lit, t, rot=-10)
+        glow += R.motes(t, (pfx - 260, pfy - 420, pfx + 160, pfy + 60), n=10, u=.8 * lit, seed=76)
+    # ── трон на переднем плане (вид front, свой масштаб) ──
+    th = R.throne_scene(t, "regal" if pre else "dark", "front", 0.0)
+    drape_u = 1 - sm(t, 7.0, 7.42)
+    drape = R.drape74("front", t, drape_u, 10 + 14 * bump(t, 7.0, .4)) if drape_u > -1 else ""
+    if not pre:
+        drape = R.rim74(R.cold_tint(drape, 0, .8), "#3c4a78", 2.5)
+    cx, cy, ck, st = s06_cat(t)
+    cat = CAT.draw(cx, cy, ck, st, t)
+    crown = s06_crown(t, st, cx, cy, ck)
+    if not pre:
+        cat = R.rim74(R.cold_tint(cat, 0, .75 * (1 - .35 * lit)), "#46548a", 2.5)
+        crown = R.rim74(R.cold_tint(crown, 0, .55), "#46548a", 2.0)
+    throne = _ft(th["back"] + drape + th["seat"]) + (cat if t < T_JUMP + .05 else "") + _ft(th["arms"])
+    on_top = crown + (cat if t >= T_JUMP + .05 else "")
+    body = room_f + dark + rim_room + glow + throne + on_top
+    # ── камера: медленный дрейф к столу, после экрана — мягкий наезд к лицу ──
+    z = 1 + .02 * sm(t, T6, T_SCREEN) + .04 * sm(t, T_SCREEN, 7.95)
+    tx = lerp(540, fx, .25 * sm(t, T6, 7.9))
+    ty = lerp(960, fy, .3 * sm(t, T6, 7.9))
+    sh = shake2(t, T_CROWN + .18, 5)
+    out = f'<g transform="translate(540 960) scale({z:.4f}) translate({-tx - sh[0]:.2f} {-ty - sh[1]:.2f})">{body}</g>'
+    out += R.glitch_flash(t, T6, 0.0)
+    set_ink(1.0)
+    return lib.svg(out)
+
+
 def frame(sid, t):
-    return {"s01": s01}[sid](t)
+    return {"s01": s01, "s06": s06}[sid](t)

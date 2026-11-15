@@ -4338,6 +4338,7 @@ def brain_scribble(x, y, k=1.0, u=1.0, eyes=0.0, burst=0.0, t=0.0, seed=0, glow=
 #   cracker(x, y, k, crack_u, broken_u, seed, n=7, rot=0)   большой круглый крекер Ø 300·k с дырочками и волнистым краем, (x, y) — ЦЕНТР;
 #                       crack_u 0…1 — трещины бегут от центра; broken_u 0…1 — крекер разлетается на n кусочков (расходятся, подпрыгивают,
 #                       крутятся, крошки). cracker_piece_c(x, y, k, i, broken_u, seed, n) → центр кусочка i в мире (i = n−1 — самый маленький).
+#   cracker_piece(x, y, k, i, rot, seed, n=7)    кусочек i того же крекера отдельно, (x, y) — его ЦЕНТР (для «шага», который катится сам)
 #   cracker_bit(x, y, k, rot, seed, size=1)       один кусочек крекера (ЦЕНТР), ≈ 70×60·k·size — для лап, рук, ряда «шагов»
 #   cracker_bits(x, y, k, u, seed, n=6)           n кусочков разлетаются из точки, подпрыгивают и ложатся (u 0…1), крошки
 #   tap_rings(x, y, u, k=1, col)                  кольца касания стекла: два-три кольца расходятся из точки и тают (u 0…1)
@@ -4796,6 +4797,16 @@ def cracker(x, y, k=1.0, crack_u=0.0, broken_u=0.0, seed=0, n=7, rot=0.0, hide=(
                 hy = -120 * math.sin(math.pi * min(1, bu * 1.2)) * rs.uniform(.4, 1)
                 o.append(blob(ellipse_pts(math.cos(a) * d, math.sin(a) * d * .7 + hy, 5, 4, 6), C_CRACKER_SH, 1 - bu))
     return _tf("".join(o), x, y, k, rot)
+
+
+def cracker_piece(x, y, k=1.0, i=0, rot=0.0, seed=0, n=7):
+    sd = 74700 + seed
+    pieces, _ = _cracker_pieces(sd, n)
+    pts, c = pieces[i]
+    loc = [(p[0] - c[0], p[1] - c[1]) for p in pts]
+    hin = blob([(p[0] + 8, p[1] + 8) for p in loc], C_CRACKER_SH, .45)
+    g = shape(loc, C_CRACKER, hin + f'<g transform="translate({-c[0]:.1f} {-c[1]:.1f})">{_holes(sd + 1)}</g>', w=4.2, seed=sd + 20 + i)
+    return _tf(g, x, y, k, rot)
 
 
 def cracker_bit(x, y, k=1.0, rot=0.0, seed=0, size=1.0):

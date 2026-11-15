@@ -2158,14 +2158,16 @@ def _throne_pal(light):
     return out
 
 
-def rim74(svg, col="#56628f", r=3.0, op=1.0):
-    """Светлый контур вокруг силуэта (расширенная альфа под рисунком): в темноте силуэт читается, тушь остаётся тушью."""
-    fid = f"rim{abs(hash((col, r, op))) % 10 ** 7}"
+def rim74(svg, col="#56628f", r=3.0, op=1.0, only=False):
+    """Светлый контур вокруг силуэта (расширенная альфа под рисунком): в темноте силуэт читается, тушь остаётся тушью.
+    only=True — только кольцо контура без самого рисунка (класть поверх затемнения, чтобы контур не гас вместе со сценой)."""
+    fid = f"rim{abs(hash((col, r, op, only))) % 10 ** 7}"
     if not any(f'id="{fid}"' in d for d in lib.DEFS):
+        tail = ('<feComposite in="c" in2="SourceAlpha" operator="out"/>' if only else
+                '<feMerge><feMergeNode in="c"/><feMergeNode in="SourceGraphic"/></feMerge>')
         lib.DEFS.append(f'<filter id="{fid}" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">'
                         f'<feMorphology in="SourceAlpha" operator="dilate" radius="{r}" result="d"/>'
-                        f'<feFlood flood-color="{col}" flood-opacity="{op}"/><feComposite in2="d" operator="in" result="c"/>'
-                        f'<feMerge><feMergeNode in="c"/><feMergeNode in="SourceGraphic"/></feMerge></filter>')
+                        f'<feFlood flood-color="{col}" flood-opacity="{op}"/><feComposite in2="d" operator="in" result="c"/>{tail}</filter>')
     return f'<g filter="url(#{fid})">{svg}</g>'
 
 
