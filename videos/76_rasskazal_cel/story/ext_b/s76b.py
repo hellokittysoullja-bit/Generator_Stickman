@@ -438,7 +438,285 @@ def s02(t):
     return svg(whip_wrap('<rect width="1080" height="1920" fill="#efe0bc"/>' + body + over, t, t0, dx=-260, dur=.18) + title)
 
 
-SCENES = {"s02": s02, "s10": s10, "s11": s11}
+# ═══════════════════════════════ s07: лапа кота у губ — «тсс» ═══════════════════════════════
+def s07(t):
+    """Дима сидит, ноги вытянуты, наклонился к коту — вот-вот похвастается; кот на дальнем краю матраса (у стены) тянет лапу к его губам."""
+    lib.dyn_begin()
+    sh = SH["s07"]
+    t0, t1 = sh["t0"], sh["t1"]
+    T_POKA, T_SDEL = ws(31), ws(33)
+    tr = R.trophy_room(t, "hook", light="day")
+    mx, my, mk = A["MAT"]
+    hx, hy = 270.0, 1170.0
+    k = .9
+    sc = k * people.HEIGHT["dima_pj"]
+    o = [tr["bg"], PR.floor_mattress(mx, my, mk, sag=.1, sag_x=hx + 100, layer="back")]
+    o.append(PR.laptop_closed(940, 925, 1.0, rot=-4))
+    cat_p = (735.0, 965.0)
+    ck = .84
+    land = t0 + .14
+    ju = clamp((t - (t0 - .26)) / (land - (t0 - .26)))
+    shh = ease_out(clamp((t - (T_SDEL - .06)) / .16), 2)
+    lean = .5 + .04 * math.sin(2 * math.pi * 1.1 * (t - t0)) * (1 - shh) - .06 * shh
+    head_add = .18 + .03 * math.sin(t * 2.0) * (1 - shh)
+    # ближняя ладонь хлопает себя по груди («вот я какой!»), дальняя опирается о матрас позади
+    pat = 14 * abs(math.sin(2 * math.pi * 2.2 * (t - t0))) * (1 - shh)
+    chest = people.rot(people.np.array([150.0 - pat, -250.0]), lean) * sc
+    arms = {"f": ("ik", (hx - 60 * sc, hy + 30 * sc), 1), "n": ("ik", (hx + chest[0], hy + chest[1]), -1)}
+    hands = {"f": {"dir": (-.3, 1), "spread": .3, "curl": (.1, .1, .15, .2), "thumb": .2},
+             "n": {"dir": (-.5, -.6), "spread": .15, "curl": (.1, .12, .15, .2), "thumb": .25}}
+    if shh > .3:
+        ex = dict(people.EXPR["dima"]["puffed76"])
+        ex["look"] = (.75, .1)
+    else:
+        ex = dict(people.EXPR["dima"]["boast76"])
+        ex["open"] = .45 + .2 * math.sin(t * 9)
+        ex["look"] = (.7, .1)
+    ex["closed"] = blink(t, 1.3) * (1 - shh)
+    ex["hair"] = 4 * bump(t, T_SDEL, .25)
+    kwd = dict(arms=arms, hands=hands, lean_add=lean, head_add=head_add, **people.plop_kw(hx, hy, k))
+    fig = people.dima_pj(hx, hy, k, ex, None, **kwd)
+    mouth = people.mouth_pt(fig, lean, head_add)
+    o.append(fig["svg"])
+    if ju < 1:
+        o.append(people.cat_jump((1000.0, 1300.0), cat_p, ck, ju, t, {"look": (-.4, 0)}))
+        tip = None
+    else:
+        u_raise = ease_io(clamp((t - (T_POKA - .05)) / .2)) * .45 + .55 * ease_io(clamp((t - (T_SDEL - .2)) / .2))
+        st = {"look": (-.8, .1), "perk": 1.0 - shh * .5, "blink": .55 * shh, "smile": .5 * shh, "tilt": -6 * shh}
+        st["sx"], st["sy"] = PR.squash(t, land, .18, 3.0, 8)
+        cat_sv, tip = people.cat_shh76(cat_p[0], cat_p[1], ck, t, u_raise, tip=(mouth[0] + 6, mouth[1] + 4), st=st, side="l")
+        o.append(cat_sv)
+    o.append(PR.floor_mattress(mx, my, mk, sag=.1, sag_x=hx + 100, layer="front"))
+    if tip is not None and shh > .5:        # «тсс»: тихие штрихи у лапы
+        for j, a in enumerate((-2.5, -2.0, -1.5)):
+            r0, r1 = 46 + 10 * shh, 76 + 16 * shh
+            o.append(line([(tip[0] + r0 * math.cos(a), tip[1] + r0 * math.sin(a)), (tip[0] + r1 * math.cos(a), tip[1] + r1 * math.sin(a))], 4.5, INK,
+                          seed=7740 + j, op=clamp((shh - .5) * 2)))
+    o.append(tr["light"])
+    # камера: средний план, лёгкий наезд на лапу у губ
+    u = ease_io(clamp((t - t0) / (t1 - t0)))
+    cs = lerp(1.3, 1.4, u) + .03 * bump(t, T_SDEL, .3)
+    cx = lerp(500, 540, u) + 2 * math.sin(t * 1.4)
+    cy = lerp(990, 960, u) + 2 * math.sin(t * 1.1)
+    return frame_svg("".join(o), cx, cy, cs, lerp(.8, .2, u), bg="#efe0bc")
+
+
+# ═══════════════════════════════ s08: дудка снова и снова, ноутбук в пыли ═══════════════════════════════
+def horn_unroll(t, blows, up=.13, down=.4):
+    """Развёрнутость дудки 0…1: на каждом выдуве быстро разворачивается и медленнее сворачивается обратно."""
+    v = 0.0
+    for tb in blows:
+        if t >= tb:
+            e = t - tb
+            v = max(v, ease_out(clamp(e / up), 2) if e < up else 1 - ease_io(clamp((e - up - .08) / down)))
+    return v
+
+
+def dusty_laptop(x, y, k, t, seed=0):
+    """Закрытый ноутбук на полу (крышка в перспективе) под слоем пыли: серая пелена и пылинки на крышке, пылинки в воздухе."""
+    o = [PR.laptop(x, y, k, open_=0.0)]
+    rs = __import__("random").Random(7750 + seed)
+    lid = [(x - 232 * k, y - 132 * k), (x + 232 * k, y - 132 * k), (x + 255 * k, y - 4 * k), (x - 255 * k, y - 4 * k)]
+    o.append(blob(lid, "#e2dccf", .45))
+    for j in range(70):
+        v, w_ = rs.uniform(0, 1), rs.uniform(-1, 1)
+        px = x + w_ * (232 + 23 * v) * k
+        py = y - 132 * k + v * 126 * k
+        o.append(blob(ellipse_pts(px, py, rs.uniform(2.2, 4.4) * k, rs.uniform(1.4, 2.6) * k, 6), "#a8a194", .75))
+    for j in range(10):        # пылинки в воздухе над ноутбуком
+        ph = rs.uniform(0, 6.28)
+        px = x + rs.uniform(-220, 220) * k + 14 * k * math.sin(t * .7 + ph)
+        py = y - rs.uniform(170, 380) * k + 10 * k * math.sin(t * .5 + ph)
+        o.append(blob(ellipse_pts(px, py, 4 * k, 4 * k, 6), "#d9d1c0", .95))
+    return "".join(o)
+
+
+def s08(t):
+    lib.dyn_begin()
+    sh = SH["s08"]
+    t0, t1 = sh["t0"], sh["t1"]
+    T_NE, T_NAP, T_BUD, T_TOL, T_OBE = ws(34), ws(35), ws(38), ws(39), ws(40)
+    tr = R.trophy_room(t, "hook", light="day")
+    mx, my, mk = A["MAT"]
+    hx, hy = 290.0, 1175.0
+    k = .95
+    sc = k * people.HEIGHT["dima_pj"]
+    o = [tr["bg"], PR.floor_mattress(mx, my, mk, sag=.1, sag_x=hx + 100, layer="back")]
+    lap = (780.0, 1470.0)
+    lap_svg = dusty_laptop(lap[0], lap[1], .85, t) + PR.dust_puff(lap[0], lap[1] - 80, 1.1, (t - (T_OBE - .05)) / .9, seed=4)
+    # кот на дальнем краю матраса: уши опущены, медленно моргает (лапу у губ Дима отвёл на «Не»)
+    cat_p = (745.0, 965.0)
+    ck = .84
+    away = ease_io(clamp((t - (T_NE - .05)) / .25))
+    st = dict(people.CAT_ST76["sad"])
+    st["blink"] = .45 + .55 * max(0.0, math.sin(2 * math.pi * (t - T_NAP) / 1.6)) ** 6
+    st["paw_l"] = .9 * (1 - away)
+    st["paw_l_dx"] = 80
+    st["look"] = (-.6, .2)
+    st["drop"] = .08 * away
+    o.append(people.cat_svg(cat_p[0], cat_p[1], ck, st, t))
+    # Дима: сидит, ближняя рука держит дудку у рта; на «Не» отводит лапу кота дальней рукой
+    blows = [T_NAP - .05, T_BUD - .05, T_TOL - .02, T_OBE - .02]
+    un = horn_unroll(t, blows)
+    blowing = un > .05
+    lean = .12 + .03 * math.sin(t * 2.2) + .05 * un
+    P_h = people.pose_kw("horn76", hx, hy, k, "dima_pj")
+    f_push = ("ik", (hx + 470 * sc, hy - 500 * sc), -1)
+    f_rest = P_h["arms"]["f"]
+    pu = bump(t, T_NE - .1, .55)
+    arms = {"f": ("ik", lerp2(f_rest[1], f_push[1], pu), -1), "n": P_h["arms"]["n"]}
+    hold = ease_io(clamp((t - (T_NE + .05)) / .3))
+    arms["n"] = ("ik", lerp2((hx + 300 * sc, hy - 80 * sc), P_h["arms"]["n"][1], hold), -1)
+    hands = {"f": P_h["hands"]["f"] if pu < .3 else {"dir": (1, -.2), "spread": .3, "curl": (.1, .15, .2, .25), "thumb": .2},
+             "n": P_h["hands"]["n"] if hold > .5 else {"dir": (1, .4), "curl": (.62, .66, .7, .74), "thumb": .55}}
+    if blowing:
+        ex = dict(people.EXPR["dima"]["blow76"])
+        ex["puff"] = .6 + .4 * un
+    else:
+        ex = dict(people.EXPR["dima"]["shh76"])
+        ex.update(mouth="o", open=.25, look=(.6, .05), brows="up")
+    ex["closed"] = blink(t, .4) * (1 - un)
+    head_add = .04 - .06 * un
+    kwd = dict(arms=arms, hands=hands, lean_add=lean - P_h["lean"], head_add=head_add, **people.sit_mat_kw(hx, hy, k))
+    fig = people.dima_pj(hx, hy, k, ex, "horn76", layers=("legs", "pelvis", "arm_f", "body"), **kwd)
+    o.append(fig["svg"])
+    mp = people.mouth_pt(fig, lean, head_add)
+    if hold > .02:
+        hk = .95 * hold
+        o.append(PR.party_horn(mp[0] - 4, mp[1] + 2, hk, rot=-36 + 8 * un, unroll=un, t=t))
+    o.append(people.dima_pj(hx, hy, k, ex, "horn76", layers=("arm_n",), **kwd)["svg"])
+    o.append(PR.floor_mattress(mx, my, mk, sag=.1, sag_x=hx + 100, layer="front"))
+    o.append(lap_svg)
+    o.append(tr["light"])
+    # камера: чуть сверху (наклон), дрейф вниз-вправо к ноутбуку на «только обещать» и обратно, толчок на каждом выдуве
+    u = ease_io(clamp((t - t0) / (t1 - t0)))
+    to_lap = ease_io(clamp((t - (T_TOL - .2)) / .45)) * (1 - ease_io(clamp((t - (T_OBE + .35)) / .4)) * .6)
+    kick = sum(.025 * bump(t, tb, .22) for tb in blows)
+    cs = lerp(1.24, 1.3, u) - .18 * to_lap + kick
+    cx = lerp(560, 590, u) + 60 * to_lap + 2 * math.sin(t * 1.3)
+    cy = lerp(930, 920, u) + 300 * to_lap + 2 * math.sin(t * 1.0)
+    return frame_svg("".join(o), cx, cy, cs, lerp(2.0, 1.4, u), bg="#efe0bc")
+
+
+def laptop_side76(x, y, k=1.0, open_=1.0, glow=0.0, face=-1, t=0.0, seed=0):
+    """Ноутбук сбоку в три четверти: экран смотрит ВЛЕВО (face=-1, к сидящему слева Диме) или вправо (face=1); зритель видит торец
+    корпуса и тыльную сторону крышки, экрана не видно. (x, y) — центр низа корпуса на столе; open_ 0 — закрыт, 1 — открыт
+    (крышка от петли на дальнем от хозяина краю, чуть откинута назад); glow — свет экрана, падает в сторону хозяина."""
+    sd = 7760 + seed
+    Ld, th = 300 * k, 16 * k
+    dv = (80 * k, -34 * k)                   # глубина корпуса (вглубь сцены)
+    xl, xr = x - Ld / 2, x + Ld / 2
+    o = []
+    o.append(blob(ellipse_pts(x + dv[0] / 2, y + 4 * k, Ld * .6, 12 * k, 16), "#000000", .18))
+    top = [(xl, y - th), (xr, y - th), (xr + dv[0], y - th + dv[1]), (xl + dv[0], y - th + dv[1])]
+    keys = ""
+    for r_ in range(3):
+        v = .25 + r_ * .25
+        p0 = (xl + 26 * k + dv[0] * v, y - th + dv[1] * v)
+        p1 = (xr - 70 * k + dv[0] * v, y - th + dv[1] * v)
+        keys += line([p0, p1], 5 * k, "#4a505c", taper=0.0, wmin=1.0, seed=sd + r_, op=.75)
+    o.append(shape([pt + (1,) for pt in top], "#c9cdd5", keys, w=3.6 * k, seed=sd + 10))
+    o.append(shape(lib.rrect(xl, y - th, xr, y, 4 * k), "#9fa4ae", line([(xl + 8 * k, y - th * .5), (xr - 8 * k, y - th * .5)], 2 * k, "#7f8590",
+                                                                     taper=.1, wmin=.8, seed=sd + 11), w=3.6 * k, seed=sd + 12))
+    # крышка: петля на дальнем от хозяина крае; угол от «лежит на корпусе» до «открыта, откинута назад»
+    hx = xr if face < 0 else xl
+    a0 = math.pi if face < 0 else 0.0
+    a1 = math.radians(285) if face < 0 else math.radians(255)
+    a = a0 + (a1 - a0) * clamp(open_)
+    L = 280 * k
+    u = (math.cos(a) * L, math.sin(a) * L)
+    h0 = (hx, y - th)
+    lid = [h0, (h0[0] + u[0], h0[1] + u[1]), (h0[0] + u[0] + dv[0], h0[1] + u[1] + dv[1]), (h0[0] + dv[0], h0[1] + dv[1])]
+    inner = blob(ellipse_pts(h0[0] + u[0] * .55 + dv[0] * .5, h0[1] + u[1] * .55 + dv[1] * .5, 16 * k, 12 * k, 10), "#c6cad2", .9)
+    o.append(shape([pt + (1,) for pt in lid], "#aeb3bd", inner, w=4 * k, seed=sd + 13))
+    edge = [(h0[0] + u[0], h0[1] + u[1]), (h0[0] + u[0] + dv[0], h0[1] + u[1] + dv[1])]
+    o.append(line(edge, 6 * k, "#2e323a", taper=0.0, wmin=1.0, seed=sd + 14))
+    if glow > .01 and open_ > .5:             # свет экрана стекает в сторону хозяина (влево), с чётким краем у крышки
+        sgn = -1 if face < 0 else 1
+        cx_ = h0[0] + u[0] * .5 + sgn * 40 * k
+        cy_ = h0[1] + u[1] * .5
+        fl = 1 + .05 * math.sin(t * 11)
+        o.append(f'<g {lib.blur(10)}>{blob([(cx_, cy_ - 140 * k), (cx_ + sgn * 260 * k, cy_ - 210 * k), (cx_ + sgn * 260 * k, cy_ + 170 * k), (cx_, cy_ + 120 * k)], "#cfe6ff", .12 * glow * fl)}</g>')
+    return "".join(o)
+
+
+# ═══════════════════════════════ s17: сейчас — кубок-стакан, палец у губ, ноутбук к себе ═══════════════════════════════
+LAP17_TURN = .72           # экран к Диме (Дима слева, лицом вправо; зритель видит крышку сзади-сбоку)
+
+
+def s17(t):
+    lib.dyn_begin()
+    sh = SH["s17"]
+    t0, t1 = sh["t0"], sh["t1"]
+    T_POET, T_DIMA, T_SNACH, T_MOLCH = ws(86), ws(88), ws(89), ws(90)
+    bs = .9                   # Дима чуть меньше и ниже: голова не заходит на картину на стене
+    sx, sy = R.SIT[0], R.seat_y(bs)
+    de = R.desk_evening(t)
+    Ad = de["A"]
+    sc_ = R.desk_scene(t, "evening", sit=(sx, sy), bs=bs)
+    sc_["bg"] += de["shelf"]
+    settle = 1 - ease_out(clamp((t - (t0 - .2)) / .45), 3)
+    hipy = sy - 60 * settle
+    feet = {"n": ((sx + 300 * bs, R.FL - 50 * bs), 0.0), "f": ((sx + 250 * bs, R.FL - 48 * bs), 0.0)}
+    glance = ease_io(clamp((t - (T_DIMA - .25)) / .25)) * (1 - ease_io(clamp((t - (T_SNACH - .05)) / .2)))
+    shh = ease_io(clamp((t - (T_SNACH - .1)) / .25))
+    open_u = ease_io(clamp((t - (T_MOLCH - .15)) / .35))
+    # руки: ближняя — к губам («тсс»), дальняя — на крышке ноутбука, открывает её к себе
+    lx, ly = 680.0, R.DESK_TOP + 6          # ноутбук ближе к Диме (у края стола под его руками)
+    lk = .8
+    desk_arms = people.pose_kw("type76", sx, hipy, bs)
+    tgt_lips = people.lips76(sx, hipy, bs, desk_arms["lean"], .08 - .1 * glance)
+    arms = dict(desk_arms["arms"])
+    arms["n"] = ("ik", lerp2(arms["n"][1], tgt_lips, shh), -1)
+    a_l = math.pi + math.radians(105) * open_u
+    lid_pt = (lx + 150 * lk + math.cos(a_l) * 280 * lk * .55, ly + 36 - 16 * lk + math.sin(a_l) * 280 * lk * .55 + 20)
+    reach_lid = ease_io(clamp((t - (T_MOLCH - .3)) / .2))
+    arms["f"] = ("ik", lerp2(arms["f"][1], lid_pt, reach_lid), -1)
+    hands = dict(desk_arms["hands"])
+    if shh > .4:
+        hands["n"] = {"dir": (.1, -1), "curl": (0, .88, .92, .92), "spread": .03, "thumb": .75}
+    if reach_lid > .4:
+        hands["f"] = {"dir": (.6, -.5), "curl": (.3, .35, .4, .45), "thumb": .3}
+    if shh > .3:
+        ex = dict(people.EXPR["dima"]["shh76"])
+        ex["look"] = (.55, .45) if open_u > .3 else (.1, 0)
+    elif glance > .3:
+        ex = dict(people.EXPR["dima"]["glance76"])
+        ex["look"] = (.6, -.85)
+    else:
+        ex = dict(people.EXPR["dima"]["screen76"])
+        ex.update(look=(.5, .4), mouth="flat")
+    ex["closed"] = blink(t, 2.1) * (1 - shh)
+    head_add = .08 - .14 * glance + .04 * shh
+    kw = dict(arms=arms, hands=hands, head_add=head_add, feet=feet)
+    parts = {kk: people.dima(sx, hipy, bs, ex, "type76", layers=(kk,), **kw) for kk in ("legs", "pelvis", "arm_f", "body", "arm_n")}
+    glow = .85 * open_u
+    lap = laptop_side76(lx, ly + 36, lk, open_u, glow=glow, face=-1, t=t)
+    # свет экрана на лице (пятно по форме, мерцает)
+    hd = parts["body"]["head"]
+    face_light = (f'<g {lib.blur(22)}>{blob(ellipse_pts(hd[0] + 70, hd[1] + 30, 70, 110, 20), "#cfe6ff", .16 * glow * (1 + .05 * math.sin(t * 11)))}</g>'
+                  if glow > .02 else "")
+    # кубок-стакан с карандашами на полке
+    cx_, cy_ = Ad["CUP"]
+    cup = PR.trophy_pencils(cx_, cy_, .55, t=t)
+    cup += PR.sparkles(cx_, cy_ - 120, .7, glance, t, seed=8, n=3, r=70)
+    # кот на подоконнике слева, кивает на «молча»
+    cat_st = dict(people.CAT_ST76["sill"])
+    cat_st["drop"] = people.cat_nod(t, T_SNACH + .1, .34, .3) + people.cat_nod(t, T_MOLCH + .05, .34, .25)
+    cat_st["look"] = (.8, .3)
+    cat_sv = people.cat_svg(-185, 1146, .68, cat_st, t)
+    body = (sc_["bg"] + cat_sv + cup + sc_["chair_back"] + sc_["desk_top"] + sc_["pool"] + parts["legs"]["svg"] + sc_["desk_legs"] + sc_["chair_seat"]
+            + parts["pelvis"]["svg"] + parts["arm_f"]["svg"] + parts["body"]["svg"] + face_light + lap + parts["arm_n"]["svg"] + sc_["lamp"])
+    u = ease_io(clamp((t - t0) / (t1 - t0)))
+    cs = lerp(.88, .95, u) + .02 * bump(t, T_MOLCH, .3)
+    cx = lerp(345, 415, ease_io(clamp((t - (T_SNACH - .1)) / .5))) + 2 * math.sin(t * 1.4)
+    cy = lerp(960, 930, u) + 2 * math.sin(t * 1.1)
+    return svg(whip_wrap(f'<rect width="1080" height="1920" fill="#2a2440"/><g transform="{lib.cam(cx, cy, cs, lerp(-.5, .3, u))}">{body}</g>',
+                         t, t0, dx=640))
+
+
+SCENES = {"s02": s02, "s07": s07, "s08": s08, "s17": s17, "s10": s10, "s11": s11}
 
 
 def frame(sid, t):
