@@ -123,8 +123,8 @@ def s05(t):
     # камера: дрейф, затем наезд с разгоном к стыку прямо в склейку 6.25
     drift = sm(t, T_A05 - .2, 5.8)
     rush = ease_in(clamp((t - 5.62) / (T_B05 - 5.62)), 2.6)
-    s = lerp(1.0, 1.06, drift) + .72 * rush + .04 * max(0.0, t - T_B05)
-    cx = 540 + 6 * math.sin(t * 1.8) * (1 - rush)
+    s = lerp(1.0, 1.06, drift) + .55 * rush + .04 * max(0.0, t - T_B05)
+    cx = 548 + 6 * math.sin(t * 1.8) * (1 - rush)
     cy = lerp(910, 860, drift) + (FY - 860) * rush
     set_ink(s)
     rot = lerp(-.6, .4, drift) + 1.4 * rush
