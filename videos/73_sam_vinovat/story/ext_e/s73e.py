@@ -188,3 +188,106 @@ def s11(t):
 
 
 FRAMES["s11"] = s11
+
+
+# ═════════════════════════ s13: одно маленькое действие — конверт снят и открыт ═════════════════════════
+T_A13 = 17.40
+T_ODNO, T_MAL, T_DEY = wt(49), wt(50), wt(51)       # 17.58, 17.82, 18.30
+PIN13 = R.BOARD73_PIN                                # кнопка с пыльным конвертом
+ENV_K13 = 1.15
+CAT13 = (-650.0, R.FL73 - 8)                         # кот сидит у ног Димы, под доской справа
+CAT13_K = 1.0
+
+
+def s13(t):
+    sc = R.bedroom(t, "lamp", "board")
+    P = sc["P"]
+    px, py = PIN13
+    hip_x = px - 330
+    sc_d = people.HEIGHT["dima"]
+    hip_y = R.FL73 - 26 - (people.LEG_LEN - 12) * sc_d
+    # кот дует на конверт: вдох (грудь шире) → выдох струйкой вверх → облако пыли с конверта, паучок убегает вверх
+    inhale = bump(t, T_ODNO - .22, .3)
+    blow = bump(t, T_ODNO - .02, .5)
+    dust_t = T_ODNO + .06
+    # Дима: смотрит на конверт; «маленькое» — ближняя рука вверх щепотью, двумя пальцами снимает конверт с кнопки,
+    # опускает к груди; «действие» — отгибает клапан, внутри чистый лист, лёгкая улыбка
+    reach = sm(t, T_MAL - .05, T_MAL + .18)
+    down = sm(t, T_MAL + .2, T_DEY - .04)
+    openu = ease_out(clamp((t - (T_DEY - .03)) / .26), 2)
+    if openu > .3:
+        e = ex("smile73", look=(.55, .6), closed=blinks(t, (18.75,)))
+    elif reach > .05:
+        e = ex("unpin73", look=(.5, lerp(-.6, .5, down)))
+    else:
+        e = ex("lost73", look=(.55, -.5), closed=blinks(t, (17.3,)))
+    if down < .02:
+        kw = people.pose_kw("unpin73", hip_x, hip_y, 1.0)
+        rest = people.pose_kw("sag73", hip_x, hip_y, 1.0)
+        # до «маленького» рука внизу, потом поднимается к кнопке
+        nA = rest["arms"]["n"]
+        kw["arms"] = dict(kw["arms"])
+        if reach < .99:
+            tgt = kw["arms"]["n"][1]
+            low = (hip_x + 120, hip_y + 40)
+            kw["arms"]["n"] = ("ik", lerp2(low, tgt, reach), -1) if reach > .01 else nA
+        if reach < .3:
+            kw["hands"] = {"n": {"curl": (.25, .3, .35, .4), "thumb": .3}}
+    else:
+        kw = people.mix_pose("unpin73", "open73", down, hip_x, hip_y, 1.0)
+    kw.update(people.stand_kw(hip_x, hip_y, 1.0))
+    kw["lean"] = kw["lean"] + .01 * math.sin(t * 2.0)
+    fig = people.figure("dima", hip_x, hip_y, 1.0, e, **kw)
+    grab = people.hand_pos(fig, "n", 62)
+    parts = {k: people.figure("dima", hip_x, hip_y, 1.0, e, layers=(k,), **kw)["svg"] for k in ("legs", "pelvis", "arm_f", "body", "arm_n")}
+    parts = {k: R.warm_tint(v, .6) for k, v in parts.items()}
+    # конверт: качается от выдоха кота; снят — едет за щепотью (верх конверта у пальцев), у груди клапан отгибается
+    sw = 9 * math.exp(-3 * max(0.0, t - dust_t)) * math.sin(2 * math.pi * 2.2 * max(0.0, t - dust_t)) if t > dust_t else 2 * math.sin(t * 3)
+    held = reach > .97
+    if not held:
+        env = PR.pinned_envelope(px, py, ENV_K13, swing=sw, dust=lerp(1.0, .4, sm(t, dust_t, dust_t + .4)), web=1.0 - sm(t, dust_t, dust_t + .3),
+                                 open_u=0.0, t=t, seed=1)
+        pin = ""
+    else:
+        ex_, ey_ = grab
+        ex_, ey_ = ex_ + 6, ey_ + 6
+        sheet = ""
+        if openu > .2:     # чистый лист выглядывает из раскрытого конверта
+            sheet = PR.letter(ex_, ey_ + 30 * ENV_K13 - 40 * openu, .62 * ENV_K13, rot=-2, write=0.0, seed=7)
+        env = sheet + PR.pinned_envelope(ex_, ey_, ENV_K13, swing=-4 * down, dust=.25, web=0.0, open_u=openu, t=t, seed=1, pin=False)
+        pin = PR.push_pin(px, py, ENV_K13)
+    env = R.light_tint(env, P)
+    # паучок: висит на нитке под конвертом; на выдох — проворно бежит по нитке вверх и прячется за край доски
+    up = sm(t, dust_t, dust_t + .55)
+    sp = PR.spider(px + 150, R.BOARD73[1] + 60, .95, drop=lerp(150, -40, up), t=t, seed=2, look=-.6) if up < .99 else ""
+    web = PR.cobweb(R.BOARD73_WEB[0] + 30, R.BOARD73_WEB[1] + 30, 1.1, tremble=blow, t=t, ang=0, span=90, seed=4)
+    puffs = PR.dust_puff(px, py + 60, 1.25, clamp((t - dust_t) / .55), seed=3)
+    # кот: смотрит вверх на конверт, вдыхает и дует, потом смотрит на Диму и щурится
+    cx, cy = CAT13
+    look_d = sm(t, T_MAL + .2, T_DEY)
+    st = dict(turn=lerp(-.2, -.5, look_d), look=(lerp(-.3, -.8, look_d), lerp(-1.0, -.3, look_d)), tilt=lerp(-10, -4, look_d) + 2 * math.sin(t * 1.7),
+              sx=1 + .05 * inhale, sy=1 + .04 * inhale - .02 * blow, blink=max(.7 * blow, blinks(t, (18.6,))), smile=1.0 if t > T_DEY else 0.0,
+              tail=-6 + 7 * math.sin(t * 2.2), ear=3 * math.sin(t * 2.6), flame_e=1.0 + .3 * blow)
+    cat = R.warm_tint(CAT.draw(cx, cy, CAT13_K, st, t), .25)
+    # струйка выдоха: три волнистые линии от рта кота вверх к конверту
+    air = ""
+    if blow > .03:
+        mx, my = cx - 2, cy - (CAT.CBOT - 1128) * CAT13_K
+        for j in range(3):
+            q = clamp(blow * 1.5 - j * .15)
+            pts = [(mx + (j - 1) * 14 + 30 * math.sin(i * .9 + t * 18 + j) * (i / 8), my - i * 90 * q) for i in range(9)]
+            pts = [(x_ + (px - mx) * (i / 8) * q, y_) for i, (x_, y_) in enumerate(pts)]
+            air += line(pts, 7.0, "#fbf0dc", taper=.6, wmin=.3, seed=9300 + j, op=.85 * blow)
+    world = [sc["bg"], web, pin, sp if not held else "", env if not held else "", puffs, parts["legs"], parts["pelvis"], parts["arm_f"], parts["body"],
+             env if held else "", parts["arm_n"], sp if held else "", cat, air]
+    # камера: хлёст вправо, затем медленный наезд к конверту
+    u = sm(t, T_A13 - .1, 19.05)
+    s = lerp(1.12, 1.2, u) + .02 * bump(t, dust_t, .35)
+    ccx = lerp(-930, -900, u) + 4 * math.sin(t * 1.4)
+    ccy = lerp(930, 880, u) + 3 * math.sin(t * 1.7)
+    set_ink(s)
+    g = f'<g transform="{lib.cam(ccx, ccy, s, lerp(.4, -.3, u))}">{"".join(world)}</g>'
+    return whip(g, t, T_A13, side=1), BG
+
+
+FRAMES["s13"] = s13

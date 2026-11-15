@@ -132,3 +132,74 @@ def s14(t):
 
 
 FRAMES["s14"] = s14
+
+
+# ═════════════════════════ s15: призыв — лапа к зрителю, «кот», карточка на кнопке ═════════════════════════
+T_A15 = 20.05
+T_NAP, T_VIS = wt(54), wt(56)            # 20.09, 21.11
+KOT_T0, KOT_DUR = 20.35, .5              # дописано к 20.85 (звук «дописано» 20.90), стоит до склейки 21.62
+CAM15 = (-950.0, 860.0, 1.15)
+CAT15 = (-1125.0, 1175.0)                # кот в самом переднем плане, перед доской (крупнее мира комнаты)
+CAT15_K = 2.15
+KOT15 = (-1135.0, 262.0, 1.55)           # чистая стена над доской (room.BOARD73_CLEAN): за буквами ничего
+CARD15 = (-662.0, 455.0)                 # новая кнопка с пустой карточкой справа от головы кота
+
+
+def whip_v(g, t, t_in, amp=300.0, blur=30.0, dur=.2, side=-1):
+    """Хлёст вниз на входе плана: картинка приезжает сверху (side=-1) с вертикальным размытием, гаснет за dur."""
+    e = ease_out(clamp((t - t_in) / dur), 2)
+    dy, b = side * amp * (1 - e), blur * (1 - e)
+    g = f'<g transform="translate(0 {dy:.1f})">{g}</g>'
+    if b > .5:
+        fid = lib.uid("wv")
+        lib.DEFS.append(f'<filter id="{fid}" x="-5%" y="-20%" width="110%" height="140%"><feGaussianBlur stdDeviation="0 {b:.1f}"/></filter>')
+        g = f'<g filter="url(#{fid})">{g}</g>'
+    return g
+
+
+def s15(t):
+    sc = R.bedroom(t, "lamp", "board")
+    P = sc["P"]
+    # кот: смотрит на зрителя; «Напиши» тянет правую (от зрителя) переднюю лапу к камере (вторая на полу), держит, опускает к «висит»;
+    # на «висит» поворачивает морду к карточке, потом снова на зрителя, медленно моргает
+    reach = sm(t, T_NAP - .05, T_NAP + .3) * (1 - sm(t, 20.95, 21.2))
+    look_card = bump(t, T_VIS - .05, .6)
+    done = sm(t, KOT_T0 + KOT_DUR, KOT_T0 + KOT_DUR + .25)
+    st = dict(turn=.45 * look_card, look=(.9 * look_card, -.1 - .4 * look_card), tilt=-5 * reach + 6 * look_card + 2 * math.sin(t * 1.6),
+              paw=reach, paw_dx=26, smile=1.0, blink=blinks(t, (20.0, 21.45), .22),
+              tail=-6 + 8 * math.sin(t * 2.2), ear=4 * bump(t, T_NAP, .3) + 2 * math.sin(t * 3.1), perk=.4 * reach,
+              flame_e=1.2 + .4 * reach, sx=1 + .04 * reach, sy=1 + .03 * reach)
+    cx, cy = CAT15
+    cat = CAT.draw(cx, cy, CAT15_K, st, t)
+    if reach > .05:      # та же правая передняя лапа тянется к камере: живая лапа с подушечками, растёт навстречу зрителю
+        k_ = CAT15_K
+        sh_ = (cx + (25 - 4) * k_, cy + (1238 - CAT.CBOT) * k_)
+        tip_ = people.cat_paw_tip(cx, cy, k_, st, side="r")
+        tip_ = (tip_[0] + 10 * k_ * reach, tip_[1] + 6 * k_ * reach)
+        cat += people.cat_forearm(sh_, tip_, k=(.55 + .35 * reach) * k_, seed=15)
+        cat += blob(ellipse_pts(sh_[0] - 6 * k_, sh_[1], 28 * k_, 24 * k_, 14), CAT.CAT)
+    cat = R.warm_tint(cat, .25)
+    flx, fly = flame_world(cx, cy, CAT15_K, st["tail"])
+    glow = PR.glow(flx, fly - 80, 150, .45, "#ffb347")
+    # карточка: на «висит» новая кнопка втыкается (с отскоком), пустая карточка повисает на ней и качается
+    ca = clamp((t - (T_VIS - .08)) / .12)
+    card = ""
+    if ca > 0:
+        q = max(0.0, t - (T_VIS - .08))
+        swing = 14 * math.exp(-2.6 * q) * math.sin(2 * math.pi * 1.7 * q + .6)
+        k_ = 1.25 * (1 + .25 * (1 - ease_out(ca, 3)))
+        card = R.light_tint(PR.pinned_card(CARD15[0], CARD15[1], k_, swing=swing, dust=0.0, web=0.0, t=t, seed=5), P)
+    kot = hand_kot.kot(t, KOT_T0, KOT_DUR, KOT15[0], KOT15[1], KOT15[2], col="#f6e7c8")
+    shadow = blob(ellipse_pts(cx, cy + 6, 200 * CAT15_K * .7, 22, 18), "#1a100c", .35)
+    world = [sc["bg"], kot, card, shadow, cat, glow]
+    # камера: хлёст вниз, затем медленный наезд 4 % к коту; мини-удар, когда слово дописано
+    u = sm(t, T_A15 - .1, 21.82)
+    s = lerp(1.15, 1.2, u) + .02 * bump(t, KOT_T0 + KOT_DUR, .35)
+    ccx = lerp(-950, -960, u) + 4 * math.sin(t * 1.3)
+    ccy = lerp(770, 790, u) + 3 * math.sin(t * 1.6)
+    set_ink(s)
+    g = f'<g transform="{lib.cam(ccx, ccy, s, lerp(.4, -.2, u))}">{"".join(world)}</g>'
+    return whip_v(g, t, T_A15), BG
+
+
+FRAMES["s15"] = s15
