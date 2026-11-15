@@ -5256,3 +5256,266 @@ def toggle_rows(x, y, k=1.0, on=(0.0, 0.0, 0.0), t=0.0, scroll=0.0, feed=1.0, se
             o.append(glow(82, yy, 70, .25, "#FFD27A", ry=40))
     o.append(line([(-112, -262), (-118, 250)], 6, "#FFFFFF", taper=.5, wmin=.2, seed=sd + 90, op=.3))
     return _tf("".join(o), x, y, k, 0)
+
+
+def _ring_pts(cx, cy, rx, ry, a0, a1, n=24):
+    return [(cx + rx * math.cos(math.radians(a0 + (a1 - a0) * i / n)), cy + ry * math.sin(math.radians(a0 + (a1 - a0) * i / n))) for i in range(n + 1)]
+
+
+def ribbon_lasso(cx, cy, k=1.0, loose_u=0.0, t=0.0, layer="all", rw=120.0, feet=330.0, tail_to=None, rewind=0.0, seed=0):
+    lu = clamp(loose_u)
+    rw_ = clamp(rewind)
+    back, front = [], []
+    rings = []
+    for j, dy in enumerate((-95.0, -20.0, 55.0)):
+        q = clamp(lu * 1.5 - (2 - j) * .25)                       # нижняя петля спадает первой
+        fall = lib.ease_in(q, 2)
+        y = cy + (dy + (feet - 8 * j - dy) * fall) * k
+        rx = (rw * (1 + .25 * clamp(lu * 2)) + 40 * fall) * k
+        ry = (22 + 10 * fall) * k
+        rx += 3 * k * math.sin(t * 9 + j) * (1 - fall) * clamp(lu * 3)
+        x = cx
+        if tail_to is not None and rw_ > 0:
+            v = lib.ease_io(clamp(rw_ * 1.6 - j * .3))
+            x = cx + (tail_to[0] - cx) * v
+            y = y + (tail_to[1] - y) * v
+            rx *= 1 - .8 * v
+            ry *= 1 - .8 * v
+            if v >= .98:
+                continue
+        rings.append((x, y, rx, ry, j))
+    for (x, y, rx, ry, j) in rings:
+        wv = 34 * k
+        bp = _ring_pts(x, y, rx, ry, 180, 360)
+        fp = _ring_pts(x, y, rx, ry, 0, 180)
+        back.append(feed_ribbon(bp, t, speed=0, seed=seed + j * 3, w=wv * .8, card=46 * k, gap=6 * k, ink_w=2.4 * k))
+        front.append(feed_ribbon(fp, t, speed=0, seed=seed + j * 3 + 1, w=wv, card=52 * k, gap=6 * k, ink_w=2.6 * k))
+    if tail_to is not None and rings:
+        x, y, rx, ry, j = rings[-1]
+        st = (x + rx * .96, y + ry * .3)
+        mid = ((st[0] + tail_to[0]) / 2, max(st[1], tail_to[1]) + 60 * k * (1 - lu * .5))
+        front.append(feed_ribbon([st, mid, tail_to], t, speed=-200 * rw_, seed=seed + 20, w=30 * k, card=46 * k, gap=6 * k, ink_w=2.4 * k))
+    if layer == "back":
+        return "".join(back)
+    if layer == "front":
+        return "".join(front)
+    return "".join(back) + "".join(front)
+
+
+def well_axis(x, y, k=1.0, u=0.0, depth=2600.0):
+    return x, y + depth * k * clamp(u) ** 1.1
+
+
+def bottomless_well(x, y, k=1.0, t=0.0, depth=2600.0, flare=1.0, seed=0):
+    sd = 78600 + seed
+    R = 260 * k
+    D = depth * k
+    o = []
+    # стенки шахты: сужаются вниз в темноту (перспектива), тон — от камня к почти чёрному
+    m = 30
+    lw, rw_ = [], []
+    for i in range(m + 1):
+        u = i / m
+        hw = R * (.86 * (1 - u) ** 1.6 + .03)
+        lw.append((x - hw, y + D * u))
+        rw_.append((x + hw, y + D * u))
+    g = lin_grad([(0, "#3A3A52", 1), (.18, "#1B1D33", 1), (.55, "#0A0B16", 1), (1, "#020205", 1)], 0, 0, 0, 1)
+    shaft = lw + rw_[::-1]
+    o.append(f'<path d="{_poly_d(shaft)}" fill="url(#{g})"/>')
+    # кольца глубины бегут вниз (падение), сужаются
+    for j in range(14):
+        q = ((j / 14) + t * .35) % 1.0
+        u = q ** 1.35
+        hw = R * (.86 * (1 - u) ** 1.6 + .03)
+        yy = y + D * u
+        op = .55 * (1 - u) ** .8
+        o.append(f'<ellipse cx="{f(x)}" cy="{f(yy)}" rx="{f(hw)}" ry="{f(hw * .22)}" fill="none" stroke="#5A6090" stroke-width="{f(max(1.2, 5 * k * (1 - u)))}" opacity="{op:.3f}"/>')
+    # штрихи глубины по стенкам
+    rs = _rs(sd)
+    for j in range(16):
+        u0 = rs.uniform(0, .7)
+        u1 = u0 + rs.uniform(.08, .2)
+        side = -1 if j % 2 else 1
+        f0 = rs.uniform(.6, .95)
+        pts = []
+        for i in range(6):
+            u = u0 + (u1 - u0) * i / 5
+            hw = R * (.86 * (1 - u) ** 1.6 + .03)
+            pts.append((x + side * hw * f0, y + D * u))
+        o.append(line(pts, 3.4 * k * (1 - u0), "#7078A8", taper=.5, wmin=.2, seed=sd + 10 + j, op=.55 * (1 - u0)))
+    o.append(line(lw[:20], 4 * k, lib.INK, taper=.9, wmin=.1, seed=sd + 1))
+    o.append(line(rw_[:20], 4 * k, lib.INK, taper=.9, wmin=.1, seed=sd + 2))
+    # каменное кольцо устья
+    stones = []
+    n = 14
+    for i in range(n):
+        a0, a1 = 360 * i / n + 2, 360 * (i + 1) / n - 2
+        outer = _ring_pts(x, y, R * 1.18, R * .30, a0, a1, 4)
+        inner = _ring_pts(x, y, R * .92, R * .22, a1, a0, 4)
+        stones.append(shape(outer + inner, "#8C8A86" if i % 3 else "#A09D97", "", w=3.2 * k, seed=sd + 30 + i))
+    # раструб: гладкая латунно-серая воронка внутри устья — сделано нарочно
+    fu = clamp(flare)
+    if fu > .01:
+        lip_o = _ring_pts(x, y + 4 * k, R * .92, R * .22, 0, 180, 20)
+        lip_i = _ring_pts(x, y + 120 * k, R * .52, R * .12, 180, 0, 20)
+        o.append(f'<g opacity="{fu:.3f}">' + shape(lip_o + lip_i, "#9AA3B8", "", w=3.0 * k, seed=sd + 50))
+        for j in range(5):
+            a = 30 + 30 * j
+            p0 = (x + R * .92 * math.cos(math.radians(a)), y + 4 * k + R * .22 * math.sin(math.radians(a)))
+            p1 = (x + R * .52 * math.cos(math.radians(a)), y + 120 * k + R * .12 * math.sin(math.radians(a)))
+            o.append(line([p0, p1], 3 * k, "#E6ECF7", taper=.5, wmin=.2, seed=sd + 60 + j, op=.8))
+        o.append(line(_ring_pts(x, y + 4 * k, R * .92, R * .22, 15, 165, 16), 4 * k, "#FFFFFF", taper=.6, wmin=.2, seed=sd + 70, op=.6) + "</g>")
+    # задняя половина кольца — до шахты не видно разницы, кладём кольцо целиком поверх стенок
+    o.append("".join(stones))
+    return "".join(o)
+
+
+def wood_board(x, y, k=1.0, rot=0.0, seed=0):
+    sd = 78700 + seed
+    inner = "".join(line(_wavy(-170, 170, yy, sd + i, amp=2.0, per=80), 2.6, C_WOOD_SH, taper=.3, wmin=.4, seed=sd + 10 + i, op=.8)
+                    for i, yy in enumerate((-10, 4, 14)))
+    inner += blob(rect_pts(-180, -23, 180, -15), C_WOOD_HI, .7)
+    body = shape(rrect(-180, -23, 180, 23, 6), C_WOOD, inner, w=4.0, seed=sd)
+    body += shape([(-180, 23, 1), (180, 23, 1), (176, 34, 1), (-176, 34, 1)], C_WOOD_SH, "", w=3.0, seed=sd + 1)
+    return _tf(body, x, y, k, rot)
+
+
+def ribbon_board(x, y, k=1.0, u=0.0, t=0.0, top=-900.0, board=True, run=1.0, seed=0, w=110.0):
+    uu = clamp(u)
+    o = []
+    hit = uu > 0
+    W = w * k
+    if not (board and hit):
+        path = [(x, y + top * k), (x + 6 * k, y + (top / 2) * k), (x, y + 700 * k)]
+        o.append(feed_ribbon(path, t, speed=420 * run, seed=seed, w=W, card=130 * k, gap=10 * k))
+        if board:
+            o.append(wood_board(x, y + 40 * k, k * W / (110 * k) * 1.0 if False else k, 0, seed))
+        return "".join(o)
+    # гармошка: n складок растёт, стопка над доской
+    nf = 1 + 7 * lib.ease_out(uu, 2)
+    fold_h = 22 * k
+    stack_h = fold_h * nf
+    ybase = y + 17 * k
+    # бег сверху тормозит до нуля
+    off = t * 420 * run * (1 - lib.ease_out(uu, 2)) + 420 * run * .3 * lib.ease_out(uu, 2)
+    path = [(x, y + top * k), (x + 4 * k, y + (top / 2) * k), (x, ybase - stack_h)]
+    o.append(feed_ribbon(path, off / 420 if run else 0, speed=420, seed=seed, w=W, card=130 * k, gap=10 * k))
+    o.append(wood_board(x, y + 40 * k, k, 0, seed))
+    i = 0
+    while i < nf:
+        hi = min(1.0, nf - i)
+        y0 = ybase - fold_h * (i + hi)
+        y1 = ybase - fold_h * i
+        dx = (8 if i % 2 else -8) * k
+        col = _feed_col(i + 3, seed)
+        pts = [(x - W / 2 - 10 * k + dx, y1, 1), (x + W / 2 + 10 * k + dx, y1, 1), (x + W / 2 + 4 * k - dx, y0, 1), (x - W / 2 - 4 * k - dx, y0, 1)]
+        o.append(shape(pts, col, blob([(x - W * .26 + dx * .3, y1 - 6 * k), (x + W * .26 + dx * .3, y1 - 6 * k), (x + W * .26, y0 + 6 * k),
+                                     (x - W * .26, y0 + 6 * k)], "#FFFFFF", .4), w=2.6 * k, seed=seed + 40 + i))
+        i += 1
+    return "".join(o)
+
+
+def bell_hand_tip(x, y, k=1.0, hand_a=0.0):
+    a = math.radians(hand_a)
+    return x + 96 * k * math.sin(a), y - 96 * k * math.cos(a)
+
+
+def bell_timer(x, y, k=1.0, hand_a=0.0, sector_u=0.0, ring=0.0, t=0.0, seed=0):
+    sd = 78800 + seed
+    rg = clamp(ring)
+    jit = rg * 6 * math.sin(t * 90)
+    o = []
+    # ножки
+    for s_ in (-1, 1):
+        o.append(shape(lib.band([(s_ * 70, 100), (s_ * 98, 150)], 20, 14), C_BRASS_SH, "", w=3.0, seed=sd + 1 + s_))
+    # колокольчики и молоточек
+    for s_ in (-1, 1):
+        cx, cy = s_ * 78, -122
+        bell = [(cx - 52 * s_ * 0 - 50, cy + 28, 1), (cx - 44, cy - 6), (cx - 18, cy - 34), (cx + 18, cy - 34), (cx + 44, cy - 6), (cx + 50, cy + 28, 1)]
+        o.append(f'<g transform="rotate({f(s_ * 22 + jit * s_)} {f(cx)} {f(cy + 20)})">' +
+                 shape(bell, C_BRASS, blob(ellipse_pts(cx - 14, cy - 12, 10, 16, 10), C_BRASS_HI, .8), w=3.6, seed=sd + 4 + s_) + "</g>")
+    o.append(shape(ellipse_pts(0, -150, 9, 9, 10), C_BRASS_SH, "", w=2.6, seed=sd + 8))
+    ham = -14 * math.sin(t * 70) * rg
+    o.append(f'<g transform="rotate({f(ham)} 0 -110)">' + line([(0, -110), (0, -160)], 6, lib.INK, taper=.1, wmin=.8, seed=sd + 9) +
+             shape(rrect(-14, -176, 14, -156, 6), C_BRASS_SH, "", w=2.6, seed=sd + 10) + "</g>")
+    # корпус и циферблат
+    o.append(shape(ellipse_pts(0, 0, 130, 130, 36), C_BRASS, blob(ellipse_pts(-50, -70, 40, 24, 16, rot=-35), C_BRASS_HI, .7), w=4.4, seed=sd + 11))
+    o.append(shape(ellipse_pts(0, 0, 106, 106, 36), "#FBF3DC", "", w=3.2, seed=sd + 12))
+    su = clamp(sector_u)
+    a = hand_a
+    if su > .01 and abs(a) > .5:
+        pts = [(0, 0, 1)]
+        n = max(3, int(abs(a) / 6))
+        for i in range(n + 1):
+            aa = math.radians(a * i / n)
+            pts.append((100 * math.sin(aa), -100 * math.cos(aa)))
+        o.append(blob(pts, "#F2A33A", .35 + .5 * su))
+    tip = (96 * math.sin(math.radians(a)), -96 * math.cos(math.radians(a)))
+    o.append(line([(-12 * math.sin(math.radians(a)), 12 * math.cos(math.radians(a))), tip], 8, lib.INK, taper=.2, wmin=.4, seed=sd + 13))
+    o.append(shape(ellipse_pts(0, 0, 11, 11, 12), C_BRASS_SH, "", w=2.4, seed=sd + 14))
+    o.append(line([(-62, -60), (-30, -84)], 5, "#FFFFFF", taper=.5, wmin=.2, seed=sd + 15, op=.55))
+    body = "".join(o)
+    if rg > 0:
+        body = f'<g transform="translate({f(jit * .6)} 0) rotate({f(jit * .4)} 0 150)">{body}</g>'
+        for s_ in (-1, 1):
+            for j in range(2):
+                r = 50 + 34 * j + 20 * rg
+                o2 = line(_ring_pts(s_ * 120, -150, r, r * .8, -60 if s_ > 0 else 120, 30 if s_ > 0 else 210, 8), 5 * rg, lib.INK, taper=.6,
+                          wmin=.1, seed=sd + 20 + j + s_)
+                body += f'<g opacity="{rg:.3f}">{o2}</g>'
+    return _tf(body, x, y, k, 0)
+
+
+def basket_rim(x, y, k=1.0):
+    return x, y - 150 * k
+
+
+def basket(x, y, k=1.0, seed=0, lining=True):
+    sd = 78900 + seed
+    o = []
+    # задний край устья
+    o.append(shape(_ring_pts(0, -150, 150, 30, 180, 360, 20) + _ring_pts(0, -150, 134, 22, 360, 180, 20), C_WICKER_SH, "", w=3.0, seed=sd))
+    if lining:
+        o.append(blob(_ring_pts(0, -150, 134, 22, 180, 360, 16) + [(120, -130), (-120, -130)], "#E9D8C1"))
+    body = [(-150, -150, 1), (150, -150, 1), (124, -6, 1), (110, 0), (-110, 0), (-124, -6, 1)]
+    inner = []
+    for i in range(6):
+        yy = -138 + 24 * i
+        inner.append(line(_wavy(-160, 160, yy, sd + i, amp=4, per=18), 9, C_WICKER_SH, taper=.1, wmin=.7, seed=sd + 10 + i, op=.75))
+    for i in range(9):
+        xx = -130 + 32.5 * i
+        inner.append(line([(xx, -150), (xx * .86, 0)], 4, C_WICKER_SH, taper=.1, wmin=.7, seed=sd + 30 + i, op=.6))
+    o.append(shape(body, C_WICKER, "".join(inner), w=4.2, seed=sd + 1))
+    o.append(shape(_ring_pts(0, -150, 152, 30, 0, 180, 20) + _ring_pts(0, -150, 140, 22, 180, 0, 20), C_WICKER, "", w=3.4, seed=sd + 2))
+    return _tf("".join(o), x, y, k, 0)
+
+
+def ribbon_roll(x, y, k=1.0, unroll=0.0, t=0.0, trail=None, seed=0):
+    sd = 79000 + seed
+    R = 150 * k
+    o = []
+    if trail is None:
+        trail = [(x - 10 * k, y + R), (x + 450 * k, y + R + 6 * k), (x + 900 * k, y + R)]
+    uu = clamp(unroll)
+    if uu > .005:
+        o.append(feed_ribbon([(x, y + R * .9)] + list(trail), t, speed=-260, seed=seed, w=110 * k, card=130 * k, gap=10 * k, end=uu))
+    # тело рулона: виден торец (эллипс) и бок
+    depth = 120 * k
+    side = [(x - R * .35, y - R, 1), (x - R * .35 + depth, y - R, 1), (x - R * .35 + depth, y + R, 1), (x - R * .35, y + R, 1)]
+    stripes = "".join(blob(rect_pts(x - R * .35, y - R + (2 * R) * i / 7, x - R * .35 + depth, y - R + (2 * R) * (i + .8) / 7), _feed_col(i, seed), .9)
+                      for i in range(7))
+    o.append(shape(side, C_FEED_BASE, stripes, w=3.8 * k, seed=sd))
+    o.append(shape(ellipse_pts(x - R * .35, y, R * .42, R, 30), "#F4F1EA", "", w=4.2 * k, seed=sd + 1))
+    # спираль витков на торце, крутится
+    ph = t * 5
+    pts = []
+    for i in range(160):
+        a = ph + i * .25
+        r = 1 - i / 175
+        pts.append((x - R * .35 + R * .38 * r * math.cos(a), y + R * .92 * r * math.sin(a)))
+    o.append(line(pts, 2.6 * k, "#9C927C", taper=.2, wmin=.5, seed=sd + 2))
+    o.append(shape(ellipse_pts(x - R * .35, y, R * .12, R * .26, 14), "#5A4A3A", "", w=3 * k, seed=sd + 3))
+    # ось-стойки
+    for s_ in (0,):
+        o.append(shape(lib.band([(x - R * .35, y), (x - R * .35 - 30 * k, y + R * 1.05)], 18 * k, 22 * k), C_WOOD_SH, "", w=3 * k, seed=sd + 4 + s_))
+    return "".join(o)
