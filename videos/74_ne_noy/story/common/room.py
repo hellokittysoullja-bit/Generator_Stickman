@@ -2060,3 +2060,450 @@ def cold_tint(svg, k=1.0, night=0.0):
     g = (1 - .04 * k) * (1 - .38 * n)
     b = (1 + .06 * k) * (1 - .12 * n)
     return _tint(svg, f"{r:.3f} 0 0 0 0 0 {g:.3f} 0 0 0 0 0 {b:.3f} 0 {.03 * n:.3f} 0 0 0 1 0", "ct")
+
+
+# ══════════════════════════════════════════════════════════════════════════════════════
+# РИЛС 74 «ПРЕКРАТИ НЫТЬ» (пишет группа C; берут все). Трон из офисного кресла, стол ночью, всполох-сбой.
+#
+# ТРОН — throne_scene(t, light="regal", view="low", sway=0.0) -> dict, КООРДИНАТЫ КАДРА 1080×1920 (камера по умолчанию
+#   CAM74_FRAME = (540, 960, 1.0); влёт/наезд — lib.cam вокруг точки кадра). Офисное кресло Димы: высокая спинка с
+#   подголовником, подлокотники, сиденье, газлифт и крестовина с колёсиками; накидку (props.throne_drape группы A) и корону
+#   ставит сцена по якорям ниже. light: "regal" (холодный фиолетово-синий луч сверху, тёмный фон, пылинки в луче),
+#   "dark" (почти чёрный синий, контур туши светлее фона — rim74()), "warm" (тёплая настольная лампа справа за кадром)
+#   или число 0…2 — смесь regal(0) → dark(1) → warm(2). sway — качание кресла (градусы, кресло на газлифте пружинит).
+#   view: "low"   — снизу крупно (s01, s17): кот k = 3.0, кот+корона ≈ 66 % высоты; крестовина за нижним краем;
+#         "front" — фронтально средний план (s04): кот k = 2.5, видно газлифт и крестовину на полу;
+#         "top"   — сверху из-за плеча кота на стол Димы (s02): ВНИЗУ кадра пол и стол с Димой, у верхнего края —
+#                   край сиденья с накидкой и подлокотник (передний план, крупно). Дима — people.dima(…) в TOP74_DIMA.
+#   Слои (класть по порядку): bg → back (спинка) → [накидка на спинку] → seat (сиденье) → [кот] → arms (подлокотники,
+#   ПОСЛЕ кота: лапа лежит на подлокотнике — сцена кладёт лапу после arms) → light (луч/пятно поверх всего) → motes.
+#   Якоря в dict: cat=(x, y, k) — точка между задних лап кота на сиденье и масштаб cat.draw; arm_r / arm_l = (x, y) — верх
+#   подлокотника справа/слева от зрителя (стук когтем); back_top=(x, y) — середина верха спинки; seat_front=(x, y) —
+#   середина переднего края сиденья (накидка свисает отсюда); floor_y — пол (корона катится по нему, только "front");
+#   drape_k — масштаб накидки под этот вид; cam — камера.
+#   rim74(svg, col, r) — светлый контур вокруг силуэта (для темноты s06: «контур туши светлее фона»).
+#
+# СТОЛ НОЧЬЮ — night_desk(t, light="lamp", view="mid", sky_u=None) -> dict, МИРОВЫЕ координаты комнаты рилса 64/70
+#   (стол DESK_X у стены, Дима на стуле слева от стола в SIT лицом вправо, лампа LAMP справа; см. шапку файла), но над
+#   столом ОКНО WIN74 (небо по sky_u). light: "lamp" (тёплая лампа горит), "screen" (лампа выключена, в комнате почти
+#   темно, светится только телефон — свет экрана на лице кладёт сцена: screen_light74()), число 0…1 — screen → lamp.
+#   sky_u — небо в окне: None — ночь со звёздами; число — день-ночь «перелистываются»: целая часть — номер суток,
+#   дробная 0…0.5 — день (солнце дугой слева направо), 0.5…1 — ночь (луна дугой), между ними короткий закат/рассвет.
+#   Порядок слоёв как у desk_scene: bg → chair_back → desk_top → pool → [Дима: legs] → desk_legs → chair_seat →
+#   [тело Димы] → предметы → [ближняя рука] → lamp → dark (затемнение "screen", ПОСЛЕ всего, кроме света экрана).
+#   view (камера в dict "cam"): "mid" — Дима средним планом с котом на столе (s06 после 7.40, s08, s10, s13), Дима ≈ 55 %;
+#         "wide" — стол общим планом с окном, без людей (s09); "cat" — кот крупно на столе (s15, s16), морда ≈ 45–50 %;
+#         "shoulder" — через плечо на экран (s07, s14): отдельная композиция в КООРДИНАТАХ КАДРА (cam = CAM74_FRAME):
+#         тёмная стена, край окна слева сверху, столешница внизу; Дима со спины — people.dima_back(SH74_DIMA…), телефон
+#         в его руках около SH74_PHONE (props.phone_draft группы A).
+#   Точки на столе (мир): PHONE74 (телефон лежит), PLANT74 (горшок цветка дном), JAR74 (банка дном), CAT74 (кот: точка между
+#   задних лап, k = CAT74_K), CRACKER74 (крекер/кусочки).
+#   screen_light74(x, y, w, h, u, t) — холодный прямоугольник света экрана на лице (наклонный, с чётким краем, лёгкое мерцание).
+#
+# ВСПЫШКА — glitch_flash(t, t0) -> SVG поверх кадра (координаты кадра): 2 кадра белого (t0 … t0 + 2/30) со смещёнными
+#   полосами-сбоем, затем почти чёрный синий, который за 0.12 с уступает сцене до уровня dark_k (сцена кладёт её последней).
+# ══════════════════════════════════════════════════════════════════════════════════════
+CAM74_FRAME = (540.0, 960.0, 1.0)
+THRONE74 = {
+    "low": dict(cat=(540.0, 1478.0, 3.0), seat_y=1478.0, back=(268.0, 812.0, 210.0), arm_y=1262.0, arm_x=(196.0, 884.0), floor=None, drape_k=1.55),
+    "front": dict(cat=(540.0, 1452.0, 2.5), seat_y=1452.0, back=(300.0, 780.0, 470.0), arm_y=1268.0, arm_x=(230.0, 850.0), floor=1840.0, drape_k=1.25),
+}
+TOP74_DIMA = (470.0, 1330.0)        # s02: таз сидящего Димы (вид сверху-спереди, стол перед ним ниже); scale ≈ 0.8
+TOP74_DESK = (90.0, 1360.0, 990.0, 1600.0)   # s02: передний край столешницы (x0, y0, x1, y1 — верх и низ видимой плоскости)
+TOP74_PHONE = (520.0, 1300.0)       # s02: где Дима держит телефон у груди
+WIN74 = (720.0, 200.0, 1180.0, 700.0)
+PHONE74 = (700.0, DESK_TOP - 30.0)
+PLANT74 = (1090.0, DESK_TOP - 84.0)
+JAR74 = (1010.0, DESK_TOP - 40.0)
+CAT74 = (900.0, DESK_TOP - 40.0)
+CAT74_K = 1.0
+CRACKER74 = (790.0, DESK_TOP - 34.0)
+CAM74_MID = (640.0, 720.0, 1.32)
+CAM74_WIDE = (900.0, 640.0, 1.18)
+CAM74_CAT = (960.0, 760.0, 2.15)
+SH74_DIMA = (260.0, 1560.0)         # «через плечо»: основание шеи Димы для people.dima_back(…, scale≈1.9)
+SH74_PHONE = (640.0, 1040.0)        # «через плечо»: центр телефона в руках
+SH74_DESK_Y = 1330.0                # «через плечо»: дальний край столешницы
+
+THRONE_PAL = {
+    "regal": dict(wall0="#17132e", wall1="#2a2350", wall2="#3a3170", floor="#211b3a", beam="#cfc6ff", beam_op=.2,
+                  k=(.62, .6, .9), mote=1.0, rim=0.0),
+    "dark": dict(wall0="#05070f", wall1="#0a0e1d", wall2="#0f1528", floor="#070a14", beam="#cfc6ff", beam_op=0.0,
+                 k=(.3, .32, .46), mote=.25, rim=1.0),
+    "warm": dict(wall0="#4a302c", wall1="#6c4a42", wall2="#8a6450", floor="#53382a", beam="#ffd890", beam_op=0.0,
+                 k=(1.0, .93, .82), mote=.6, rim=0.0),
+}
+CHAIR74 = dict(fab="#4b505d", fab_sh="#30343e", fab_hi="#666d7e", metal="#9aa0ab", metal_sh="#5f6570", plastic="#2a2d34")
+
+
+def _throne_pal(light):
+    if isinstance(light, str):
+        light = {"regal": 0.0, "dark": 1.0, "warm": 2.0}[light]
+    u = max(0.0, min(2.0, float(light)))
+    a, b = (THRONE_PAL["regal"], THRONE_PAL["dark"]) if u <= 1 else (THRONE_PAL["dark"], THRONE_PAL["warm"])
+    w = u if u <= 1 else u - 1
+    out = {}
+    for k_, v in a.items():
+        bv = b[k_]
+        if isinstance(v, str):
+            out[k_] = lib.mix(v, bv, w)
+        elif isinstance(v, tuple):
+            out[k_] = tuple(x + (y - x) * w for x, y in zip(v, bv))
+        else:
+            out[k_] = v + (bv - v) * w
+    out["_warm"] = max(0.0, u - 1)
+    out["_dark"] = max(0.0, 1 - abs(u - 1))
+    return out
+
+
+def rim74(svg, col="#56628f", r=3.0, op=1.0):
+    """Светлый контур вокруг силуэта (расширенная альфа под рисунком): в темноте силуэт читается, тушь остаётся тушью."""
+    fid = f"rim{abs(hash((col, r, op))) % 10 ** 7}"
+    if not any(f'id="{fid}"' in d for d in lib.DEFS):
+        lib.DEFS.append(f'<filter id="{fid}" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">'
+                        f'<feMorphology in="SourceAlpha" operator="dilate" radius="{r}" result="d"/>'
+                        f'<feFlood flood-color="{col}" flood-opacity="{op}"/><feComposite in2="d" operator="in" result="c"/>'
+                        f'<feMerge><feMergeNode in="c"/><feMergeNode in="SourceGraphic"/></feMerge></filter>')
+    return f'<g filter="url(#{fid})">{svg}</g>'
+
+
+def _chair_cols(P):
+    k = P["k"]
+    return {n: lib.mul(c, k) for n, c in CHAIR74.items()}
+
+
+def _caster(x, y, s, C, seed):
+    return (shape(ellipse_pts(x, y, 26 * s, 20 * s, 12), C["plastic"], blob(ellipse_pts(x + 6 * s, y + 6 * s, 16 * s, 10 * s, 10), "#000000", .3), w=3.0, seed=seed)
+            + blob(ellipse_pts(x - 8 * s, y - 6 * s, 8 * s, 5 * s, 8), C["fab_hi"], .5))
+
+
+def _office_chair(v, P, t, sway=0.0, view="low"):
+    """Офисное кресло в кадре (координаты кадра): dict(back, seat, arms, base). v — THRONE74[view]."""
+    C = _chair_cols(P)
+    cx = 540.0
+    sy = v["seat_y"]
+    bx0, bx1, btop = v["back"]
+    low = view == "low"
+    o_back, o_seat, o_arms, o_base = [], [], [], []
+    # спинка: высокая, чуть шире кверху (снизу видно — верх дальше, но спинка откинута к нам), подголовник
+    back = lib.rrect(bx0, btop + 120, bx1, sy + 10, 46)
+    stitch = "".join(line([(bx0 + 40, y), (bx1 - 40, y + 2)], 2.2, C["fab_sh"], taper=0, wmin=1, seed=7741 + i, op=.8)
+                     for i, y in enumerate(range(int(btop + 260), int(sy - 60), 150)))
+    inner = blob([(bx1 - 70, btop + 120), (bx1, btop + 120), (bx1, sy), (bx1 - 90, sy)], C["fab_sh"], .9) + stitch
+    inner += blob([(bx0 + 30, btop + 150), (bx0 + 90, btop + 150), (bx0 + 70, sy - 80), (bx0 + 30, sy - 80)], C["fab_hi"], .55)
+    o_back.append(shape(back, C["fab"], inner, w=5.0, seed=7740))
+    hw = (bx1 - bx0) * .34
+    head = lib.rrect(cx - hw, btop, cx + hw, btop + 150, 40)
+    o_back.append(shape(head, C["fab"], blob(rect_pts(cx + hw - 50, btop, cx + hw, btop + 150), C["fab_sh"], .9), w=4.6, seed=7742))
+    o_back.append(blob(rect_pts(cx - 40, btop + 146, cx + 40, btop + 126 + 40), C["plastic"]))
+    # сиденье: верх (куда сел кот) и передняя кромка; снизу — видна нижняя плоскость и механизм
+    sw = (bx1 - bx0) * .62 + 40
+    top_ = [(cx - sw, sy - 30, 1), (cx + sw, sy - 30, 1), (cx + sw + 20, sy + 6), (cx - sw - 20, sy + 6)]
+    o_seat.append(shape(top_, C["fab"], blob([(cx + sw - 60, sy - 30), (cx + sw + 20, sy + 6), (cx + sw - 80, sy + 6)], C["fab_sh"], .9), w=4.6, seed=7743))
+    lip = lib.rrect(cx - sw - 20, sy - 4, cx + sw + 20, sy + 64, 30)
+    o_seat.append(shape(lip, C["fab"], blob(rect_pts(cx - sw - 20, sy + 40, cx + sw + 20, sy + 64), C["fab_sh"], .9)
+                        + line([(cx - sw + 10, sy + 22), (cx + sw - 10, sy + 22)], 2.2, C["fab_hi"], taper=0, wmin=1, seed=7744, op=.6), w=4.8, seed=7745))
+    if low:
+        under = ellipse_pts(cx, sy + 70, sw - 10, 46, 18)
+        o_seat.append(shape(under, C["plastic"], blob(ellipse_pts(cx, sy + 80, sw * .6, 26, 14), "#000000", .3), w=4.0, seed=7746))
+        o_base.append(shape(rect_pts(cx - 70, sy + 96, cx + 70, sy + 150), C["plastic"], "", w=3.6, seed=7747))
+        o_base.append(shape(rect_pts(cx - 28, sy + 150, cx + 28, 1990), C["metal"], blob(rect_pts(cx + 6, sy + 150, cx + 28, 1990), C["metal_sh"], .9)
+                            + line([(cx - 14, sy + 170), (cx - 14, 1990)], 3, "#ffffff", taper=0, wmin=1, seed=7748, op=.25), w=3.6, seed=7749))
+    else:
+        fl = v["floor"]
+        o_base.append(shape(rect_pts(cx - 60, sy + 60, cx + 60, sy + 104), C["plastic"], "", w=3.4, seed=7747))
+        o_base.append(shape(rect_pts(cx - 20, sy + 104, cx + 20, fl - 90), C["metal"], blob(rect_pts(cx + 4, sy + 104, cx + 20, fl - 90), C["metal_sh"], .9), w=3.4, seed=7749))
+        hub = (cx, fl - 80)
+        for i, (dx, dy) in enumerate(((-260, 40), (260, 40), (-150, 70), (150, 70), (0, 24))):
+            leg = [(hub[0] - 18, hub[1] - 10, 1), (hub[0] + 18, hub[1] - 10, 1), (hub[0] + dx + 14, hub[1] + dy, 1), (hub[0] + dx - 14, hub[1] + dy + 10, 1)]
+            o_base.append(shape(leg, C["plastic"], "", w=3.2, seed=7750 + i))
+            o_base.append(_caster(hub[0] + dx, hub[1] + dy + 28, 1.0, C, 7756 + i))
+        o_base.insert(0, blob(ellipse_pts(cx, fl + 20, 330, 34, 20), "#000000", .25))
+    # подлокотники: стойка от сиденья, накладка; снизу видна нижняя плоскость накладки
+    ay = v["arm_y"]
+    for i, ax in enumerate(v["arm_x"]):
+        sgn = -1 if ax < cx else 1
+        post = [(ax - 20, ay + 30, 1), (ax + 20, ay + 30, 1), (ax + 16 - sgn * 30, sy + 30, 1), (ax - 16 - sgn * 30, sy + 30, 1)]
+        o_arms.append(shape(post, C["plastic"], blob([(ax + 4, ay + 30), (ax + 20, ay + 30), (ax + 16 - sgn * 30, sy + 30), (ax - sgn * 30, sy + 30)], "#000000", .3),
+                            w=3.6, seed=7760 + i))
+        pad = lib.rrect(ax - 92, ay - 26, ax + 92, ay + 30, 26)
+        o_arms.append(shape(pad, C["fab"], blob(rect_pts(ax - 92, ay + 8, ax + 92, ay + 30), C["plastic"], .9)
+                            + blob(rect_pts(ax - 80, ay - 22, ax + 60, ay - 12), C["fab_hi"], .5), w=4.4, seed=7762 + i))
+    tf = f'rotate({sway:.2f} {cx} {sy + 150})'
+    g = lambda L: f'<g transform="{tf}">{"".join(L)}</g>' if L else ""  # noqa: E731
+    return dict(back=g(o_back), seat=g(o_seat), arms=g(o_arms), base=g(o_base))
+
+
+def _throne_bg(P, t, view):
+    o = ['<rect x="-600" y="-600" width="2280" height="3120" fill="%s"/>' % P["wall0"]]
+    g = lib.rad_grad([(0, P["wall2"], 1), (.55, P["wall1"], 1), (1, P["wall0"], 1)], 540, 520, 900, 1200)
+    o.append(f'<rect x="-600" y="-600" width="2280" height="3120" fill="url(#{g})"/>')
+    # стена: вертикальные полосы обоев и угол комнаты — чтобы фон не был пустым пятном
+    d = "".join(f"M{f(x)} -600L{f(x + 1.5)} 2600" for x in range(-420, 1600, 140))
+    o.append(f'<path d="{d}" stroke="{P["wall0"]}" stroke-width="2" opacity=".5" fill="none"/>')
+    if view == "low":
+        # потолок с карнизом сверху (ракурс снизу): тёмная полоса и линия угла
+        o.append(blob([(-600, -600), (1680, -600), (1680, 70), (-600, 120)], lib.mix(P["wall0"], "#000000", .3)))
+        o.append(line([(-600, 120), (1680, 70)], 4.0, INK, taper=0, wmin=1, seed=7770))
+    else:
+        fl = THRONE74[view]["floor"]
+        o.append(blob([(-600, fl - 110), (1680, fl - 110), (1680, 2600), (-600, 2600)], P["floor"]))
+        o.append(line([(-600, fl - 110), (1680, fl - 110)], 3.6, INK, taper=0, wmin=1, seed=7771))
+        o.append(blob([(-600, fl - 150), (1680, fl - 150), (1680, fl - 110), (-600, fl - 110)], lib.mix(P["wall1"], "#ffffff", .08)))
+    return "".join(o)
+
+
+def _throne_light(P, t, view):
+    """Свет: (за героем — луч/пятно на стене, поверх — лёгкая дымка луча, не выбеливает кота)."""
+    beh, over = [], []
+    if P["beam_op"] > .005:
+        sway = 14 * math.sin(t * .9)
+        top = -40 if view == "low" else 60
+        beam = [(380 + sway, top), (700 + sway, top), (980, 1560), (100, 1560)]
+        beh.append(blob(beam, P["beam"], P["beam_op"] * .75))
+        beh.append(blob([(470 + sway, top), (610 + sway, top), (780, 1500), (300, 1500)], P["beam"], P["beam_op"] * .6))
+        over.append(blob([(470 + sway, top), (610 + sway, top), (780, 1500), (300, 1500)], P["beam"], P["beam_op"] * .18))
+    if P["_warm"] > .01:
+        u = P["_warm"]
+        fl = light(t, u)
+        beh.append(blob([(1180, 360), (1180, 980), (320, 1640 * fl), (280, 160)], LAMP_GLOW, .12 * u))
+        beh.append(_light_pool73(820, 700, 380 * fl, 320 * fl, t, LAMP_GLOW, .26 * u, 7780, 1.3))
+        over.append(blob([(1180, 360), (1180, 980), (320, 1640 * fl), (280, 160)], LAMP_GLOW, .05 * u))
+    return "".join(beh), "".join(over)
+
+
+def throne_scene(t, light="regal", view="low", sway=0.0):
+    """Трон из офисного кресла Димы (координаты кадра). См. шапку раздела 74."""
+    P = _throne_pal(light)
+    if view == "top":
+        return _throne_top(t, P)
+    v = THRONE74[view]
+    ch = _office_chair(v, P, t, sway, view)
+    cx, cy, ck = v["cat"]
+    bx0, bx1, btop = v["back"]
+    beh, lt = _throne_light(P, t, view)
+    mt = motes(t, (300.0, 120.0 if view == "low" else 300.0, 860.0, 1250.0), n=22, u=P["mote"], seed=74) if P["mote"] > .01 else ""
+    back, seat, arms, base = ch["back"], ch["seat"], ch["arms"], ch["base"]
+    if P["rim"] > .01:
+        col = lib.mix("#0f1528", "#56628f", P["rim"])
+        back, seat, arms, base = (rim74(x, col, 3.0) for x in (back, seat, arms, base))
+    return dict(bg=_throne_bg(P, t, view) + beh, back=base + back, seat=seat, arms=arms, light=lt, motes=mt, cam=CAM74_FRAME, cat=(cx, cy, ck),
+                arm_l=(v["arm_x"][0], v["arm_y"] - 26), arm_r=(v["arm_x"][1], v["arm_y"] - 26), back_top=(540.0, btop + 120),
+                seat_front=(540.0, v["seat_y"]), floor_y=v["floor"], drape_k=v["drape_k"], pal=P)
+
+
+def _throne_top(t, P):
+    """s02: сверху с трона из-за плеча кота вниз-вперёд на стол Димы. Пол в перспективе, стол, стул Димы; у верхнего края кадра
+    передний план — край сиденья кресла и подлокотник (крупно, мягче резкостью: ближе камеры)."""
+    k = P["k"]
+    fl0, fl1 = lib.mul("#6a4a34", k), lib.mul("#4e3624", k)
+    o = [f'<rect x="-600" y="-600" width="2280" height="3120" fill="{fl1}"/>']
+    g = lib.lin_grad([(0, fl0, 1), (1, fl1, 1)], 0, 300, 0, 1920, units="userSpaceOnUse")
+    o.append(f'<rect x="-600" y="300" width="2280" height="2300" fill="url(#{g})"/>')
+    # стена с плинтусом вдали (верх кадра за передним планом)
+    o.append(blob([(-600, -600), (1680, -600), (1680, 380), (-600, 420)], lib.mul("#7e7aa0", k)))
+    o.append(shape([(-600, 380), (1680, 340), (1680, 380), (-600, 420)], lib.mul("#a7a2c0", k), "", w=3.0, seed=7790))
+    # доски пола сходятся к стене (вид сверху)
+    d = ""
+    for i in range(-6, 14):
+        x = 540 + i * 150
+        d += f"M{f(540 + (x - 540) * .45)} 400L{f(540 + (x - 540) * 1.9)} 2000"
+    for y in (620, 900, 1260, 1700):
+        d += f"M-600 {y}L1680 {y - 10}"
+    o.append(f'<path d="{d}" stroke="{lib.mul("#43291a", k)}" stroke-width="3" opacity=".55" fill="none"/>')
+    # стол Димы: столешница сверху (трапеция), передний торец; ножки
+    x0, y0, x1, y1 = TOP74_DESK
+    dk = lib.mul(DESKW, k)
+    o.append(blob([(x0 - 20, y1 + 30), (x1 + 20, y1 + 30), (x1 + 50, y1 + 380), (x0 - 50, y1 + 380)], "#000000", .22))
+    for i, lx in enumerate((x0 + 30, x1 - 30)):
+        o.append(shape(rect_pts(lx - 14, y1, lx + 14, y1 + 300), lib.mul(DESKW_SH, k), "", w=3.0, seed=7791 + i))
+    front = ""
+    front += shape([(x0 + 40, y0, 1), (x1 - 40, y0, 1), (x1, y1, 1), (x0, y1, 1)], dk, blob([(x0 + 40, y0), (x1 - 40, y0), (x1 - 30, y0 + 20), (x0 + 50, y0 + 20)],
+                                                                                          lib.mul(DESKW_SH, k), .4), w=4.0, seed=7793)
+    front += shape(rect_pts(x0, y1, x1, y1 + 34), lib.mul(DESKW_SH, k), "", w=3.6, seed=7794)
+    # стул Димы за столом (спинка видна над его плечами — ставит сцена до Димы: chair_back)
+    sx, sy = TOP74_DIMA
+    cb = shape(lib.rrect(sx - 150, sy - 520, sx + 150, sy - 330, 24), lib.mul(WOOD, k), blob(rect_pts(sx + 90, sy - 520, sx + 150, sy - 330), lib.mul(WOOD_SH, k), .8),
+               w=3.6, seed=7795)
+    cb += shape(rect_pts(sx - 140, sy - 340, sx - 116, sy + 20), lib.mul(WOOD_SH, k), "", w=3.0, seed=7796)
+    cb += shape(rect_pts(sx + 116, sy - 340, sx + 140, sy + 20), lib.mul(WOOD_SH, k), "", w=3.0, seed=7797)
+    # передний план: край сиденья трона с бархатом (накидку можно положить поверх — PR.throne_drape) и подлокотник слева
+    C = _chair_cols(P)
+    fg = shape([(-600, -600), (1680, -600), (1680, -40), (900, 30, 1), (300, 60, 1), (-600, 40)], C["fab"],
+               blob([(-600, -10), (1680, -60), (1680, -40), (900, 30), (300, 60), (-600, 40)], C["fab_sh"], .9), w=6.0, seed=7798)
+    fg += shape(lib.rrect(-200, 150, 140, 260, 40), C["fab"], blob(rect_pts(-200, 210, 140, 260), C["plastic"], .9), w=6.0, seed=7799)
+    beh, lt = _throne_light(P, t, "front")
+    o.append(beh)
+    return dict(bg="".join(o), chair_back=cb, desk=front, fg=fg, light=lt, motes=motes(t, (200.0, 300.0, 900.0, 1300.0), n=16, u=P["mote"], seed=75),
+                cam=CAM74_FRAME, dima=TOP74_DIMA, phone=TOP74_PHONE, desk_box=TOP74_DESK, pal=P,
+                back="", seat="", arms="", cat=None, arm_l=None, arm_r=None, back_top=None, seat_front=(540.0, 40.0), floor_y=None, drape_k=1.8)
+
+
+# ───────────────────────────── стол ночью ─────────────────────────────
+def _sky74(sky_u):
+    """Цвета неба и положение светила по sky_u. Возвращает (верх, середина, низ, ('sun'|'moon', x01, y01), stars 0…1)."""
+    if sky_u is None:
+        return "#0c1232", "#1a2660", "#2e3e80", ("moon", .7, .3), 1.0
+    fr = sky_u - math.floor(sky_u)
+    DAY = ("#5fa6e6", "#9fd0f2", "#e2f2fb")
+    DUSK = ("#3b4c8c", "#c97a8a", "#f2a86e")
+    NIGHT = ("#0c1232", "#1a2660", "#2e3e80")
+
+    def mx(A, B, u):
+        return tuple(lib.mix(a, b, clamp01(u)) for a, b in zip(A, B))
+    if fr < .5:
+        q = fr / .5
+        cols = mx(NIGHT, DAY, q / .12) if q < .12 else (mx(DAY, DUSK, (q - .82) / .18) if q > .82 else DAY)
+        body = ("sun", .1 + .8 * q, .75 - .55 * math.sin(math.pi * q))
+        stars = clamp01(1 - q / .1) if q < .1 else 0.0
+    else:
+        q = (fr - .5) / .5
+        cols = mx(DUSK, NIGHT, q / .15) if q < .15 else (mx(NIGHT, NIGHT, 0) if q < .9 else mx(NIGHT, NIGHT, 0))
+        body = ("moon", .1 + .8 * q, .75 - .55 * math.sin(math.pi * q))
+        stars = clamp01((q - .08) / .15)
+    return cols[0], cols[1], cols[2], body, stars
+
+
+def window74(x0, y0, x1, y1, sky_u=None, t=0.0, dark=0.0):
+    """Окно над столом: рама, крестовина, подоконник; небо «перелистывается» по sky_u (см. night_desk), дома силуэтом."""
+    top, mid, bot, (kind, bxu, byu), stars = _sky74(sky_u)
+    fr = 18
+    ix0, iy0, ix1, iy1 = x0 + fr, y0 + fr, x1 - fr, y1 - fr
+    g = lib.lin_grad([(0, top, 1), (.6, mid, 1), (1, bot, 1)], 0, 0, 0, 1)
+    inner = f'<path d="M{f(ix0 - 5)} {f(iy0 - 5)}H{f(ix1 + 5)}V{f(iy1 + 5)}H{f(ix0 - 5)}Z" fill="url(#{g})"/>'
+    bx, by = ix0 + (ix1 - ix0) * bxu, iy0 + (iy1 - iy0) * byu
+    if stars > .01:
+        r = rs(7811)
+        for i in range(14):
+            sx_, sy_ = r.uniform(ix0, ix1), r.uniform(iy0, iy0 + (iy1 - iy0) * .6)
+            a = stars * (.55 + .45 * math.sin(t * 3 + i))
+            inner += f'<circle cx="{f(sx_)}" cy="{f(sy_)}" r="{f(r.uniform(2.2, 4))}" fill="#fff6d6" opacity="{a:.3f}"/>'
+    if kind == "sun":
+        inner += f'<circle cx="{f(bx)}" cy="{f(by)}" r="70" fill="#ffe9a0" opacity=".45"/>'
+        inner += shape(ellipse_pts(bx, by, 44, 44, 18), "#ffd45a", blob(ellipse_pts(bx - 10, by - 10, 22, 20, 12), "#fff1b0", .8), w=3.4, seed=7812)
+        r = rs(7813)
+        for i in range(3):
+            cx_ = ix0 + ((t * 22 + i * 170 + r.uniform(0, 90)) % (ix1 - ix0 + 200)) - 100
+            cy_ = iy0 + 70 + i * 60
+            inner += shape(ellipse_pts(cx_, cy_, 70, 22, 14), "#ffffff", "", w=2.6, seed=7814 + i, var=.2)
+    else:
+        inner += f'<circle cx="{f(bx)}" cy="{f(by)}" r="62" fill="#c9d4ff" opacity=".18"/>'
+        inner += shape(ellipse_pts(bx, by, 38, 38, 18), "#f4efd8", blob(ellipse_pts(bx + 12, by + 6, 14, 10, 10), "#d8d2b8", .8), w=3.2, seed=7815)
+    # дома силуэтом внизу окна, окошки — тёплые квадраты ночью
+    night = clamp01(1.0 if kind == "moon" else 0.0) * (1 if sky_u is None else 1)
+    hc = lib.mix("#7d8fa6", "#141a36", night)
+    r = rs(7816)
+    x = ix0 - 10
+    while x < ix1:
+        w_ = r.uniform(70, 130)
+        h_ = r.uniform(70, 170)
+        inner += blob(rect_pts(x, iy1 - h_, x + w_, iy1 + 10), hc)
+        for j in range(2):
+            wy = iy1 - h_ + 24 + j * 44
+            if wy < iy1 - 20:
+                inner += blob(rect_pts(x + 18, wy, x + 34, wy + 18), "#ffd87a" if night > .5 else "#b9c7d6", .9 if night > .5 else .7)
+        x += w_ + r.uniform(4, 16)
+    c = lib.clip_rect(ix0, iy0, ix1 - ix0, iy1 - iy0)
+    o = [f'<g clip-path="url(#{c})">{inner}</g>']
+    frm = "#e8e2d4" if dark < .5 else "#7c86a8"
+    rim_ = rect_pts(x0, y0, x1, y1)
+    hole = rect_pts(ix0, iy0, ix1, iy1)
+    d = lib.fill_d(rim_) if hasattr(lib, "fill_d") else ""
+    o.append(f'<path d="{d}{lib.fill_d(hole[::-1])}" fill="{frm}" fill-rule="evenodd"/>')
+    o.append(line(rim_ + [rim_[0]], 4.2, INK, taper=0, wmin=1, seed=7817) + line(hole + [hole[0]], 3.2, INK, taper=0, wmin=1, seed=7818))
+    mxx, myy = (ix0 + ix1) / 2, (iy0 + iy1) / 2
+    o.append(shape(rect_pts(mxx - 7, iy0, mxx + 7, iy1), frm, "", w=2.8, seed=7819))
+    o.append(shape(rect_pts(ix0, myy - 7, ix1, myy + 7), frm, "", w=2.8, seed=7820))
+    o.append(shape(rect_pts(x0 - 26, y1, x1 + 26, y1 + 28), frm, blob(rect_pts(x0 - 26, y1 + 18, x1 + 26, y1 + 28), "#000000", .2), w=3.6, seed=7821))
+    return "".join(o)
+
+
+def screen_light74(x, y, w=150.0, h=190.0, u=1.0, t=0.0, rot=-8.0):
+    """Свет экрана на лице: холодный наклонный прямоугольник с чётким краем и ядро; мерцание еле заметное."""
+    if u <= .01:
+        return ""
+    fl = 1 + .03 * math.sin(t * 9.1) + .02 * math.sin(t * 15.3)
+    pts = lib.T(lib.rrect(x - w / 2, y - h / 2, x + w / 2, y + h / 2, 22), 0, 0, 1, rot, x, y)
+    core = lib.T(lib.rrect(x - w * .32, y - h * .32, x + w * .32, y + h * .32, 16), 0, 0, 1, rot, x, y)
+    return blob(pts, "#bfe0ff", .22 * u * fl) + blob(core, "#e6f4ff", .2 * u * fl)
+
+
+def night_desk(t, light="lamp", view="mid", sky_u=None):
+    """Стол ночью (мир) или «через плечо» (кадр). См. шапку раздела 74."""
+    lu = 1.0 if light == "lamp" else (0.0 if light == "screen" else clamp01(float(light)))
+    if view == "shoulder":
+        return _shoulder74(t, lu, sky_u)
+    d = desk_scene(t, "night", lamp_on=lu)
+    # своё: стена без окна слева — высокое окно WIN_TALL остаётся (оно далеко за краем кадра в "mid"/"cat"), над столом WIN74
+    bg = [d["bg"], window74(*WIN74, sky_u=sky_u, t=t, dark=1 - lu)]
+    if lu > .01:   # свет лампы: пятно формы абажура на стене над лампой
+        fl = light_(t, lu)
+        bg.append(_light_pool73(LAMP[0] - 90, LAMP[1] - 260, 230 * fl, 170 * fl, t, LAMP_GLOW, .2 * lu, 7830, 1.2))
+    dark = ""
+    if lu < .99:
+        dark = f'<rect x="-3000" y="-1800" width="8000" height="6000" fill="#060914" opacity="{.8 * (1 - lu):.3f}"/>'
+    cam = {"mid": CAM74_MID, "wide": CAM74_WIDE, "cat": CAM74_CAT}[view]
+    return dict(bg="".join(bg), chair_back=d["chair_back"], chair_seat=d["chair_seat"], desk_top=d["desk_top"], desk_legs=d["desk_legs"],
+                desk=d["desk"], pool=d["pool"], lamp=d["lamp"], dark=dark, cam=cam, sit=SIT, phone=PHONE74, plant=PLANT74, jar=JAR74,
+                cat=(CAT74[0], CAT74[1], CAT74_K), cracker=CRACKER74)
+
+
+def _shoulder74(t, lu, sky_u):
+    """Через плечо Димы на экран телефона (координаты кадра): тёмная стена, край окна слева сверху, столешница внизу, лампа справа."""
+    M = _M("night")
+    k = (.55 + .45 * lu, .55 + .45 * lu, .65 + .35 * lu)
+    o = [f'<rect x="-600" y="-600" width="2280" height="3120" fill="{lib.mul(M["wall_sh"], k)}"/>']
+    g = lib.lin_grad([(0, lib.mul(M["wall_sh"], k), 1), (1, lib.mul(M["wall"], k), 1)], 0, 0, 0, 1400, units="userSpaceOnUse")
+    o.append(f'<rect x="-600" y="-600" width="2280" height="2000" fill="url(#{g})"/>')
+    o.append(window74(-260, 120, 300, 820, sky_u=sky_u, t=t, dark=1 - lu))
+    if lu > .01:
+        fl = light_(t, lu)
+        o.append(_light_pool73(900, 760, 330 * fl, 260 * fl, t, LAMP_GLOW, .24 * lu, 7840, 1.2))
+    # столешница сверху: дальний край SH74_DESK_Y, к зрителю — ниже края кадра
+    dk, dsh = lib.mul(DESKW, k), lib.mul(DESKW_SH, k)
+    y = SH74_DESK_Y
+    desk_ = shape([(-600, y, 1), (1680, y, 1), (1680, 2600, 1), (-600, 2600, 1)], dk,
+                  blob([(-600, y), (1680, y), (1680, y + 26), (-600, y + 26)], dsh, .6)
+                  + "".join(line([(x, y + 60 + i * 37), (x + 140, y + 62 + i * 37)], 2, dsh, seed=7841 + i, op=.5) for i, x in enumerate((60, 520, 820, 300))),
+                  w=4.0, seed=7845)
+    pool = ""
+    if lu > .01:
+        pool = blob(ellipse_pts(880, y + 160, 260, 70, 20), "#ffe7a0", .3 * lu)
+    lamp = ""
+    if lu > .01 or True:
+        lx, ly = 1010.0, y + 80
+        col = lib.mul("#3f6f7a", k)
+        lamp = shape(ellipse_pts(lx, ly, 70, 16, 16), col, "", w=3.2, seed=7846)
+        lamp += line([(lx, ly - 10), (lx - 30, ly - 300), (lx - 150, ly - 380)], 15, lib.mul("#5a95a2", k), taper=0, wmin=1, seed=7847)
+        head = [(lx - 230, ly - 420, 1), (lx - 120, ly - 430, 1), (lx - 60, ly - 300, 1), (lx - 260, ly - 290, 1)]
+        lamp += shape(head, col, blob([(lx - 120, ly - 430), (lx - 60, ly - 300), (lx - 110, ly - 296)], lib.mul("#2c535c", k), .85), w=3.6, seed=7848)
+        lamp += shape(ellipse_pts(lx - 160, ly - 294, 100, 16, 16), lib.mix("#5d6070", "#fff3c8", lu), "", w=2.8, seed=7849)
+    dark = ""
+    if lu < .99:
+        dark = f'<rect x="-600" y="-600" width="2280" height="3120" fill="#060914" opacity="{.72 * (1 - lu):.3f}"/>'
+    return dict(bg="".join(o), desk=desk_, desk_top=desk_, pool=pool, lamp=lamp, dark=dark, cam=CAM74_FRAME, dima=SH74_DIMA, phone=SH74_PHONE,
+                chair_back="", chair_seat="", desk_legs="")
+
+
+def glitch_flash(t, t0, dark_k=0.0):
+    """Всполох-сбой: 2 кадра белого со смещёнными полосами (t0 … t0 + 2/30), затем почти чёрный синий, тающий к dark_k за 0.12 с."""
+    u = t - t0
+    if u < -1e-6:
+        return ""
+    if u < 2 / 30 - 1e-6:
+        r = rs(7850, int(u * 300))
+        o = ['<rect x="0" y="0" width="1080" height="1920" fill="#f6f7ff"/>']
+        y = 0.0
+        while y < 1920:
+            h = r.uniform(30, 160)
+            dx = r.uniform(-90, 90)
+            col = ["#ffffff", "#d9e4ff", "#ffe8f2", "#c9d6ff"][r.randint(4)]
+            o.append(f'<rect x="{f(dx)}" y="{f(y)}" width="1080" height="{f(h)}" fill="{col}" opacity="{r.uniform(.4, .9):.2f}"/>')
+            if r.rand() < .35:
+                o.append(f'<rect x="0" y="{f(y + h * .4)}" width="1080" height="{f(r.uniform(3, 9))}" fill="#3b4fd8" opacity=".5"/>')
+            y += h
+        return "".join(o)
+    a = 1.0 - (1.0 - dark_k) * smooth01((u - 2 / 30) / .12)
+    if a <= .005:
+        return ""
+    return f'<rect x="0" y="0" width="1080" height="1920" fill="#04060e" opacity="{a:.3f}"/>'
