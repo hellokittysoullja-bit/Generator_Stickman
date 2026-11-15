@@ -4749,7 +4749,7 @@ def _piece_off(i, c, bu, seed):
     L = math.hypot(*c) + 1e-3
     ux, uy = c[0] / L, c[1] / L
     e = lib.ease_out(bu, 2)
-    d = (60 + rs.uniform(10, 70)) * e
+    d = (40 + rs.uniform(10, 50)) * e
     hop_ = -90 * math.sin(math.pi * min(1, bu * 1.3)) * rs.uniform(.6, 1.1) if bu < .77 else 0.0
     rot = rs.uniform(-35, 35) * e
     return ux * d, uy * d * .8 + hop_, rot

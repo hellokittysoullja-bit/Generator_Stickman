@@ -142,7 +142,7 @@ T11_E = wt("и", 15.5)        # 15.64
 T11_R = wt("разные")        # 15.90
 T11_V = wt("вещи")          # 16.24
 SC11 = (540.0, 1250.0)
-SC11_K = 1.55
+SC11_K = 1.6
 TILT_MAX = 17.0
 
 
@@ -167,7 +167,7 @@ def s11(t):
     x, y = SC11
     k = SC11_K
     tilt = tilt11(t)
-    o.append(shadow(x, y + 4, 260, .15))
+    o.append(shadow(x, y + 4, 300, .15))
     o.append(P.scales(x, y, k, tilt, seed=1))
     # упор на стойке справа: в него бьётся коромысло
     o.append(lib.shape(lib.rect_pts(x + 12 * k, y - 312 * k, x + 48 * k, y - 292 * k), "#A08332", "", w=3.0, seed=1101))
@@ -178,7 +178,7 @@ def s11(t):
         u = clamp((t - tf) / (T11_R - tf))
         py = lerp(-200, ly - 2 * k, u * u)
         sw = 20 * (1 - u) * math.sin(t * 9)
-        o.append(P.tissue(lx + sw, py, 1.35, 18 * (1 - u) * math.sin(t * 7), seed=1))
+        o.append(P.tissue(lx + sw, py, 1.7, 18 * (1 - u) * math.sin(t * 7), seed=1))
         if t > T11_R:
             o.append(impact(lx, ly - 30, clamp((t - T11_R) / .3), 90, 4, -160, 140, 4, 1120, .4))
     # банка: тяжело падает на правую чашу
@@ -187,7 +187,7 @@ def s11(t):
         u = clamp((t - tj) / (T11_V - tj))
         py = lerp(-300, ry - 2 * k, u * u)
         sq = P.squash(t, T11_V, .14, 3, 8)
-        jar = P.jar(0, 0, .78, 2 * (1 - u), 0, 0, 0, seed=2, t=t)
+        jar = P.jar(0, 0, .95, 2 * (1 - u), 0, 0, 0, seed=2, t=t)
         o.append(f'<g transform="translate({rx:.1f} {py:.1f}) scale({sq[0]:.4f} {sq[1]:.4f})">{jar}</g>')
         if t < T11_V:
             for j in range(3):
@@ -210,8 +210,8 @@ T12_K = wt("когда")         # 16.87
 T12_S = wt("становится")    # 17.32
 T12_KR = wt("крошечным")    # 17.80
 T12_KR_HIT = T12_KR + .05   # ударный «кро»
-CR12 = (540.0, 1010.0)
-CR12_K = 2.0
+CR12 = (540.0, 830.0)
+CR12_K = 1.6
 N12 = 7
 SMALL = N12 - 1
 ROLL0 = T12_KR_HIT + .28
@@ -245,16 +245,16 @@ def s12(t):
             o.append(P.cracker_piece(px, py, k, SMALL, r0, seed=1, n=N12))
         else:
             u = ease_out(clamp((t - ROLL0) / (ROLL1 - ROLL0)), 2)
-            fx, fy = lerp(px, 560, u), lerp(py, 1200, u) - 50 * math.sin(math.pi * u)
-            kk = k * (1 + .55 * u)
-            o.append(shadow(fx, 1200 + 70 * kk * .5, 70 * kk * u, .14 * u))
+            fx, fy = lerp(px, 600, u), lerp(py, 1262, u) - 60 * math.sin(math.pi * u)
+            kk = k * (1 + .75 * u)
+            o.append(shadow(fx, 1262 + 70 * kk * .5, 70 * kk * u, .14 * u))
             o.append(P.cracker_piece(fx, fy, kk, SMALL, r0 + 360 * u, seed=1, n=N12))
             if t > ROLL1:
                 o.append(P.sparkles(fx, fy - 20, 1.3, clamp((t - ROLL1) / .15), t, seed=5, n=4, r=110))
     # лапа кота: занесена с кадра 0, на «Когда шаг» нажимает, на «крошечным» отдёргивается вверх
     lift = ease_in(clamp((t - T12_KR_HIT) / .25), 2)
     hover = (1 - press)
-    tip = (lerp(620, 575, press) + 10 * math.sin(t * 3.3) * hover, lerp(640, 760, press) - 26 * hover * (.5 + .5 * math.sin(t * 4.1)))
+    tip = (lerp(620, 575, press) + 10 * math.sin(t * 3.3) * hover, lerp(510, 615, press) - 26 * hover * (.5 + .5 * math.sin(t * 4.1)))
     tip = (tip[0] + 160 * lift, tip[1] - 900 * lift)
     if lift < 1:
         o.append(people.cat_forearm((920 + 80 * lift, -120 - 400 * lift), tip, 1.7, claw=0.0, seed=3))
@@ -263,7 +263,7 @@ def s12(t):
     sh = P.shake(t, T12_KR_HIT, 26, .38, seed=6)
     b = .04 * math.sin(math.pi * clamp((t - T12_KR_HIT) / .3))
     s = (1.0 + push) * (1 - b * .5)
-    return frame_svg("".join(o), 540 + sh[0], 990 + sh[1] - 600 * b, s, .3 * math.sin(t * 1.1) + sh[0] * .04)
+    return frame_svg("".join(o), 540 + sh[0], 960 + sh[1] - 600 * b, s, .3 * math.sin(t * 1.1) + sh[0] * .04)
 
 
 SCENES = {"s03": s03, "s11": s11, "s12": s12}

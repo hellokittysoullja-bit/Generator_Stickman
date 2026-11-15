@@ -181,7 +181,7 @@ def s01_crown(t):
     return dict(rot=rot, hop=hop, slide=slide, bounce=bounce, shine=min(1.0, shine))
 
 
-def throne_world(t, light, st, crown=None, sway=0.0, drape_u=1.0, tassel=18.0, extra_front="", cat_extra=""):
+def throne_world(t, light, st, crown=None, sway=0.0, drape_u=1.0, tassel=18.0, extra_front="", cat_extra="", floor=""):
     """Мир хука/петли (кадр): кресло вида low, накидка, кот, корона, подлокотники, свет. -> (слои, (x, y, k))."""
     d = R.throne_scene(t, light, "low", 0.0)
     x, y, k = d["cat"]
@@ -191,7 +191,7 @@ def throne_world(t, light, st, crown=None, sway=0.0, drape_u=1.0, tassel=18.0, e
     drape = R.drape74("low", t, drape_u, tassel) if drape_u > .001 else ""
     tf = f'rotate({sway:.3f} 540 1640)'
     fg = f'<g transform="{tf}">{d["back"]}{drape}{d["seat"]}{cat}{d["arms"]}{extra_front}</g>'
-    return [d["bg"], fg, d["light"], d["motes"]], (x, y, k), d
+    return [d["bg"] + floor, fg, d["light"], d["motes"]], (x, y, k), d
 
 
 def s01(t):
@@ -230,8 +230,8 @@ T_JUMP = 6.96                # кот отталкивается (толчок),
 T_LAND = 7.30
 T_SCREEN = 7.40              # загорается экран телефона
 RCAM = (560.0, 1000.0, 1.25)               # камера мира комнаты (Дима за столом) → кадр
-FT = (880.0, 1560.0, .7)                   # трон «front» (координаты вида) → кадр: точка сиденья (540, 1452) встаёт в (880, 1560)
-DESK_CAT_W = (760.0, 930.0)                # где кот садится на стол (мир)
+FT = (880.0, 1650.0, .7)                   # трон «front» (координаты вида) → кадр: точка сиденья (540, 1452) встаёт сюда
+DESK_CAT_W = (735.0, 925.0)                # где кот садится на стол (мир)
 DESK_CAT_K = .8
 
 
@@ -380,5 +380,139 @@ def s06(t):
     return lib.svg(out)
 
 
+# ═════════════════════════ s17: петля ═════════════════════════
+T_BR = 25.15                 # «разлО-маю»: крекер ломается
+T_STEPS = (wt("на", 25.5) + .03, wt("шаги") + .02, wt("шаги") + .22)    # кусочки встают в ряд на подлокотнике
+T_FLICK = 26.40              # «пришлю»: щелчок, кусочек летит к зрителю
+T_NOD = 26.85
+SLOTS = (928.0, 952.0, 976.0)                 # места кусочков на подлокотнике (ед. рисунка кота, x; верх подлокотника y≈1268)
+CR_SEED = 3
+
+
+def cat_u(x, y, k, ux, uy):
+    """Точка тела кота (ед. рисунка) → мир (без поворота и сжатия тела — в s17 их нет)."""
+    return x + (ux - CAT.CX) * k, y + (uy - CAT.CBOT) * k
+
+
+def paw_over(x, y, k, st, side):
+    """Подушечка вытянутой передней лапы ПОВЕРХ крекера — та же лапа, что cat.body рисует под ним (тот же кончик), без новой лапы."""
+    sx = 1 if side == "r" else -1
+    fx = CAT.CX + sx * 25
+    pw = st.get("paw" if side == "r" else "paw_l", 0.0)
+    pdx = st.get("paw_dx", 70.0) if side == "r" else -st.get("paw_l_dx", 70.0)
+    if pw <= .02:
+        return ""
+    tip = (fx + pdx * pw * 1.6, 1306 - 150 * pw)
+    pp = ellipse_pts(tip[0] + 4 * sx, tip[1], 24, 21, 12, rot=-30 * pw * sx)
+    o = shape(pp, CAT.CAT, "", w=4.4, seed=245 + (0 if sx > 0 else -1) + 50)
+    o += blob(ellipse_pts(tip[0] + 10 * sx, tip[1] + 4, 9, 7, 8), "#e8823a")
+    for kk in (-8, 6):
+        o += line([(tip[0] + kk - 6, tip[1] - 14), (tip[0] + kk + 2, tip[1] - 4)], 2.2, seed=245 + kk)
+    return f'<g transform="translate({x:.2f} {y:.2f}) scale({k:.4f}) translate({-CAT.CX} {-CAT.CBOT})">{o}</g>'
+
+
+def s17_cat(t):
+    st = dict(PE.CAT_ST.get("warm74", dict(blink=.3, smile=1.0, flame_e=1.4)))
+    st["perk"] = .8
+    st["look"] = (.0 + .5 * sm(t, 25.55, 25.7) * (1 - sm(t, 26.2, 26.35)), .1 + .4 * sm(t, 25.55, 25.7) * (1 - sm(t, 26.2, 26.35)))
+    st["blink"] = .3 + .65 * bump(t, 24.95, .16) + .65 * bump(t, T_NOD + .05, .3)
+    st["tilt"] = 5 * math.sin(2 * math.pi * .45 * t) + damp(t, T_BR, 2.5, 3, 6) + 6 * bump(t, T_NOD - .05, .5)
+    st["drop"] = PE.cat_nod(t, T_NOD, .45, .3) if hasattr(PE, "cat_nod") else .3 * bump(t, T_NOD, .45)
+    st["ear"] = 3 * math.sin(t * 2.1) + damp(t, T_BR, 5, 4, 6)
+    st["tail"] = -6 + 12 * math.sin(2 * math.pi * .7 * t + .4)
+    st["flame_e"] = 1.4 + .9 * bump(t, T_NOD, .5) + .3 * bump(t, T_BR, .3)
+    # лапы: держат крекер у груди → отпускают при разломе → правая раскладывает кусочки → щелчок → на месте
+    hold = 1 - sm(t, T_BR + .02, T_BR + .25)
+    st["paw"] = .45 * hold
+    st["paw_dx"] = 54.0
+    st["paw_l"] = .45 * hold
+    st["paw_l_dx"] = 54.0
+    # правая лапа к подлокотнику: к каждому месту кусочка, потом к щелчку
+    reach = 0.0
+    tx = SLOTS[0]
+    marks = [(ts - .14, ts + .06, SLOTS[i]) for i, ts in enumerate(T_STEPS)] + [(T_FLICK - .16, T_FLICK + .02, SLOTS[2] + 4)]
+    for a, b, sx_ in marks:
+        if a - .06 <= t <= b + .14:
+            reach = max(reach, sm(t, a, a + .1) * (1 - sm(t, b, b + .12)))
+            tx = sx_
+    if T_STEPS[0] - .2 < t < T_FLICK + .2:
+        reach = max(reach, .55)
+    if reach > .01:
+        pw = .253 * reach
+        st["paw"] = pw
+        st["paw_dx"] = (tx - 861) / (1.6 * .253)
+    st["sy"] = 1 + damp(t, T_BR, .02, 3, 7)
+    return st
+
+
+def s17_floor(t):
+    """Пол спереди (ракурс снизу): тёплые доски, ком накидки и корона на боку — «трон» снят."""
+    o = [blob([(-600, 1700), (1700, 1680), (1700, 2600), (-600, 2600)], "#6a4630")]
+    o.append(line([(-600, 1700), (1700, 1680)], 4, INK, taper=0, wmin=1, seed=7901))
+    d = "".join(f"M{x} 1700L{x * 1.25 - 120:.0f} 2600" for x in range(-500, 1700, 170))
+    o.append(f'<path d="{d}" stroke="#4e3424" stroke-width="3" opacity=".6" fill="none"/>')
+    o.append(f'<g transform="translate(790 1205) scale(1.3)">{PR.throne_drape(0, 0, 1.0, 0.0, 0.0, t, 0)}</g>')
+    o.append(PR.crown(230, 1790, 1.15, -62, shine=.25 + .25 * math.sin(t * 3), seed=1))
+    return "".join(o)
+
+
+def s17(t):
+    lib.dyn_begin()
+    st = s17_cat(t)
+    x, y, k = R.THRONE74["low"]["cat"]
+    # крекер: у груди → трещина → разлом, кусочки разлетаются и падают на колени
+    crack = sm(t, T_BR - .2, T_BR - .02)
+    bu = clamp((t - T_BR) / .45)
+    cy_u = 1222 + 66 * ease_in_(bu)
+    ccx, ccy = cat_u(x, y, k, 836, cy_u - 4 * math.sin(t * 2.4) * (1 - bu))
+    hide = tuple(i for i, ts in enumerate(T_STEPS) if t >= ts - .05)
+    cr = PR.cracker(ccx, ccy, k * .42, crack, bu, seed=CR_SEED, rot=-8 + 10 * bu, hide=hide)
+    cr += PR.cracker_bits(ccx, ccy - 20, k * .6, clamp((t - T_BR) / .5), seed=CR_SEED, n=6) if T_BR < t < T_BR + .5 else ""
+    over = paw_over(x, y, k, st, "r") + paw_over(x, y, k, st, "l") if t < T_BR + .25 else ""
+    # кусочки на подлокотнике (верх подлокотника y≈1268 ед.), один улетает к зрителю
+    bits = ""
+    fly = ""
+    for i, ts in enumerate(T_STEPS):
+        if t < ts - .05:
+            continue
+        bx, by = cat_u(x, y, k, SLOTS[i], 1262)
+        pop_ = PR.pop(t, ts - .05, .3, .25) if hasattr(PR, "pop") else 0.0
+        if i == 2 and t > T_FLICK:
+            q = clamp((t - T_FLICK) / .38)
+            e = q * q
+            fx_ = lerp(bx, 470, e)
+            fy_ = lerp(by, 760, e) - 160 * math.sin(math.pi * q * .8)
+            fly = PR.cracker_bit(fx_, fy_, k * .62 * (1 + 9 * e), 40 + 400 * q, seed=CR_SEED + i)
+            if q >= 1:
+                fly = ""
+            continue
+        bits += PR.cracker_bit(bx, by, k * .62 * (1 + (pop_ if isinstance(pop_, float) else 0)), -10 + 14 * i, seed=CR_SEED + i)
+    sway = .5 * math.sin(2 * math.pi * .4 * t) + damp(t, T_BR, .5, 2.5, 5)
+    world, (x, y, k), d = throne_world(t, "warm", st, None, sway, 0.0, 8.0, extra_front=bits, cat_extra=cr + over, floor=s17_floor(t))
+    world = [R.warm_tint(w_, .5) if i == 1 else w_ for i, w_ in enumerate(world)]
+    if os.environ.get("MASK"):
+        g = '<rect x="-3000" y="-3000" width="8000" height="8000" fill="#fff"/>'
+        g += mask_svg(CAT.draw(x, y, k, st, t) + cr, "both")
+        world = [g]
+    if os.environ.get("NOCAM"):
+        set_ink(S0)
+        return lib.svg(f'<g transform="{lib.cam(CAMH[0], CAMH[1], S0)}">{"".join(world)}</g>')
+    z = 1 + .03 * sm(t, 24.65, 27.1) + .03 * bump(t, T_BR, .35) + .02 * bump(t, T_FLICK + .1, .45)
+    s = S0 * z
+    set_ink(s)
+    body = f'<g transform="{lib.cam(CAMH[0] + 2 * math.sin(t * 1.3), CAMH[1] - 30 * sm(t, 24.65, 27.1), s)}">{"".join(world)}</g>'
+    return lib.svg(body + (f'<g>{fly_cam(fly, CAMH, s, t)}</g>' if fly else ""))
+
+
+def fly_cam(svg, camh, s, t):
+    """Летящий кусочек — поверх всего, в той же камере (он ближе всего к зрителю)."""
+    return f'<g transform="{lib.cam(camh[0] + 2 * math.sin(t * 1.3), camh[1] - 30 * sm(t, 24.65, 27.1), s)}">{svg}</g>'
+
+
+def ease_in_(u):
+    u = clamp(u)
+    return u * u
+
+
 def frame(sid, t):
-    return {"s01": s01, "s06": s06}[sid](t)
+    return {"s01": s01, "s06": s06, "s17": s17}[sid](t)

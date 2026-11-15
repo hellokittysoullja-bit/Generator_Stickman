@@ -212,7 +212,7 @@ def _cat8(t):
     st = dict(people.CAT_ST["warm74"])
     st.update(look=(-.75, -.55), turn=-.45, tail=6 * math.sin(t * 2.2), blink=0.0, smile=0.0)
     if nz > 0:
-        st.update(tilt=-12 * nz, rot=-7 * nz, blink=.45 * nz, smile=1.0 if nz > .5 else 0.0)
+        st.update(tilt=-12 * nz, rot=-7 * nz, blink=.3 * nz, smile=1.0 if nz > .5 else 0.0, look=(lerp(-.75, -.45, nz), lerp(-.55, -.2, nz)))
     for tb in (9.4, 10.9):
         if abs(t - tb) < .07:
             st["blink"] = 1.0
