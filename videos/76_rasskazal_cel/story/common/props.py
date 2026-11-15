@@ -5270,7 +5270,7 @@ _HEAD_HAIR = [(-262, -60), (-282, -140), (-246, -170), (-262, -240), (-196, -262
 
 
 def head_anchor(x, y, k=1.0):
-    return dict(ear=(x - 70 * k, y + 0 * k), shelf=(x - 130 * k, x + 170 * k, y + 70 * k), cab=(x + 20 * k, y + 196 * k))
+    return dict(ear=(x - 70 * k, y + 0 * k), shelf=(x - 40 * k, x + 170 * k, y + 70 * k), cab=(x - 105 * k, y + 168 * k))
 
 
 def head_outline(x, y, k=1.0, u=1.0, seed=0, t=0.0):
@@ -5307,8 +5307,8 @@ def head_outline(x, y, k=1.0, u=1.0, seed=0, t=0.0):
             py = rs.uniform(110, 200) if px > 150 else rs.uniform(150, 205)
             o.append(line([(px, py), (px + 3, py + 8)], 3.2, INK, taper=.5, seed=sd + 20 + j, op=.75))
     # полочка внутри
-    o.append(part([(-130, 70), (170, 70)], 7, .65, 1.0, sd + 12, taper=.1))
-    o.append(part([(-120, 70), (-120, 92)], 5, .8, 1.0, sd + 13))
+    o.append(part([(-40, 70), (170, 70)], 7, .65, 1.0, sd + 12, taper=.1))
+    o.append(part([(-30, 70), (-30, 92)], 5, .8, 1.0, sd + 13))
     o.append(part([(160, 70), (160, 92)], 5, .8, 1.0, sd + 14))
     return _tf("".join(o), x, y, k)
 
