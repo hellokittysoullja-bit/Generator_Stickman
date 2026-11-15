@@ -46,27 +46,15 @@ def frame(sid, t):
 
 
 # ═════════════════════════ s14: давай вместе — лапа на запястье, печатают ═════════════════════════
-# Стол комнаты (room.bedroom mode="desk", DESK73_X). Дима сидит у правого конца стола лицом ВЛЕВО: группа «стул + Дима + ноутбук»
-# рисуется лицом вправо и отражается вокруг таза (ноутбук экраном к Диме — h73.laptop_side); кот рисуется без отражения (загнутое
-# левое ухо остаётся левым).
 T_A14 = 18.85
 T_DAV, T_VME = wt(52), wt(53)            # 18.93, 19.20
-SX14 = -1470.0                           # таз Димы (ось отражения)
-SY14 = R.seat_y(1.0)
-FEET14 = {"n": ((SX14 + 300, R.FL73 - 52), 0.0), "f": ((SX14 + 250, R.FL73 - 50), 0.0)}
-LAP14 = (SX14 + 280, R.DESK73_TOP - 6)   # в координатах до отражения: перед Димой на столе
+SX14, SY14 = R.SIT
+FEET14 = {"n": ((SX14 + 300, R.FL - 52), 0.0), "f": ((SX14 + 250, R.FL - 50), 0.0)}
+LAP14 = (640.0, R.DESK_TOP - 66)
 LAP14_K = .8
-CAT14 = (-2150.0, R.DESK73_TOP + 4)      # кот на столе за ноутбуком (дальний от Димы конец), ближе к камере, чем крышка
+CAT14 = (1000.0, R.DESK_TOP - 4)          # кот на ближнем крае стола справа от рук, ближе к камере, чем ноутбук
 CAT14_K = .9
-ENV14 = (-2400.0, R.DESK73_TOP - 2)      # открытый конверт лежит на столе за котом
-
-
-def mirror(svg, x0=SX14):
-    return f'<g transform="translate({2 * x0:.2f} 0) scale(-1 1)">{svg}</g>'
-
-
-def mx(p, x0=SX14):
-    return (2 * x0 - p[0], p[1])
+ENV14 = (1210.0, R.DESK_TOP - 40)        # открытый конверт на столе за котом
 
 
 def type_hand(t, base, phase, amp=1.0):
@@ -77,16 +65,15 @@ def type_hand(t, base, phase, amp=1.0):
 
 
 def s14(t):
-    sc = R.bedroom(t, "lamp", "desk")
-    P = sc["P"]
+    sc = R.desk_scene(t, "night", lamp_on=1.0)
     warmth = sm(t, T_VME, T_VME + .5)
     lp = laptop_side(LAP14[0], LAP14[1], LAP14_K, 1.0, on=1.0, lines=clamp(.15 + (t - T_VME) * .9) if t > T_VME else .15, t=t, seed=3)
     kc = lp["keys"]
-    # руки: до «вместе» лежат у клавиатуры (Дима не решается), ближнее запястье ждёт лапу; «вместе» — печатает
+    # руки: до «вместе» — лежат у клавиатуры неподвижно (Дима не решается), ближнее запястье ждёт лапу; «вместе» — печатает
     typ = sm(t, T_VME - .02, T_VME + .2)
     lean = sm(t, T_VME - .05, T_VME + .35)
     Wf_rest = (kc[0] - 95, kc[1] + 8)
-    Wn_rest = (kc[0] - 25, kc[1] + 16)
+    Wn_rest = (kc[0] + 5, kc[1] + 16)
     Wf_t, hf_t = type_hand(t, (kc[0] - 75, kc[1] + 2), 0.0, typ)
     Wn_t, hn_t = type_hand(t, (kc[0] - 20, kc[1] + 10), 1.9, typ)
     rest_h = {"dir": (1, .3), "curl": (.3, .35, .4, .45), "thumb": .35, "spread": .1}
@@ -94,57 +81,54 @@ def s14(t):
     Wn = lerp2(Wn_rest, Wn_t, typ)
     hf = hf_t if typ > .5 else rest_h
     hn = hn_t if typ > .5 else rest_h
-    # Дима: смотрит на экран неуверенно → на «давай» переводит взгляд на лапу → «вместе» наклоняется к экрану, улыбка
+    # Дима: смотрит на экран неуверенно → на «давай» переводит взгляд на лапу и кота → «вместе» наклоняется к экрану, улыбка
     look_cat = bump(t, T_DAV + .02, .32)
     if typ > .3:
-        e = ex("type73", closed=blinks(t, (19.75,)))
+        e = ex("focus_smile", look=(.6, .45), closed=blinks(t, (19.75,)))
     elif look_cat > .2:
-        e = ex("smile73", look=(.7, .7), closed=0.0)
+        e = ex("relief71", look=(.7, .7), closed=0.0)
     else:
         e = ex("focus", look=(.6, .4), lid=.55, brows="worry", closed=blinks(t, (18.72,)))
     kw = dict(feet=FEET14, arms={"f": ("ik", Wf, -1), "n": ("ik", Wn, -1)}, hands={"f": hf, "n": hn},
               lean_add=.06 + .1 * lean + .012 * math.sin(t * 2.3), head_add=.04 + .05 * lean - .05 * look_cat + .015 * math.sin(t * 1.9))
     parts = {k: people.dima(SX14, SY14, 1.0, e, "type", layers=(k,), **kw)["svg"] for k in LAYERS}
     head = people.dima(SX14, SY14, 1.0, e, "type", **kw)["head"]
-    ch = R.chair(SX14, SY14, 1.0, 0.0, "day")
-    # свет экрана на лице: холодно-белый → теплеет на «вместе»
-    light = PR.glow(head[0] + 70, head[1] + 10, 140, .45, lib.mix("#DDE8FF", "#FFE2B0", warmth), ry=160)
-    grp = [ch["back"], parts["legs"], ch["seat"], parts["pelvis"], parts["arm_f"], parts["body"], lp["svg"], parts["arm_n"], light]
-    dima_grp = R.warm_tint(mirror("".join(grp[:6])), .6)
-    lap_grp = R.light_tint(mirror(lp["svg"]), P)
-    arm_grp = R.warm_tint(mirror(parts["arm_n"]), .6) + mirror(light)
-    # кот: смотрит на Диму; «давай» — правая (от зрителя) передняя лапа ложится на ближнее запястье Димы (та же лапа, вторая на столе);
+    # кот: смотрит на Диму, «давай» — левая (от зрителя) передняя лапа ложится на ближнее запястье (та же лапа, вторая на столе);
     # «вместе» — лапа уходит назад на стол, кот наклоняется к экрану вместе с Димой
     cx, cy = CAT14
     reach = sm(t, T_DAV - .1, T_DAV + .12) * (1 - sm(t, T_VME + .15, T_VME + .45))
-    wr = mx(Wn)
-    pw = max(.05, (cy - (wr[1] - 14)) / (150 * CAT14_K))
-    dxw = max(10.0, (((wr[0] - 4) - cx) / CAT14_K - 25) / (1.6 * pw))
-    st = dict(turn=lerp(.6, .85, reach) - .25 * lean, look=(lerp(.7, .9, reach), lerp(-.2, .2, reach)),
-              tilt=4 * lean + 3 * math.sin(t * 1.6) + 3 * reach, blink=blinks(t, (19.45,)), smile=1.0,
-              paw=pw * reach, paw_dx=dxw, tail=-8 + 6 * math.sin(t * 2.1), rot=6 * lean, ear=2 * math.sin(t * 3.1), flame_e=1.0 + .5 * warmth)
+    # кончик лапы — на ближнее запястье (сверху); подъём и вынос лапы считаются от кончика
+    pw = max(.05, (cy - (Wn[1] - 14)) / (150 * CAT14_K))
+    dxw = max(10.0, ((cx - (Wn[0] + 4)) / CAT14_K - 25) / (1.6 * pw))
+    st = dict(turn=lerp(-.6, -.85, reach) + .25 * lean, look=(lerp(-.7, -.9, reach), lerp(-.2, .2, reach)),
+              tilt=-4 * lean + 3 * math.sin(t * 1.6) - 3 * reach, blink=blinks(t, (19.45,)), smile=1.0,
+              paw_l=pw * reach, paw_l_dx=dxw,
+              tail=-8 + 6 * math.sin(t * 2.1), rot=-6 * lean, ear=2 * math.sin(t * 3.1), flame_e=1.0 + .5 * warmth)
     cat = CAT.draw(cx, cy, CAT14_K, st, t)
-    if reach > .05:      # та же правая передняя лапа поверх трубки рига: живая форма с изгибом и подушечками (people.cat_forearm)
+    if reach > .05:      # та же левая передняя лапа поверх трубки рига: живая форма с изгибом и подушечками (people.cat_forearm)
         k_ = CAT14_K
-        sh_ = (cx + (25 - 4) * k_, cy + (1238 - CAT.CBOT) * k_)
-        tip_ = people.cat_paw_tip(cx, cy, k_, st, side="r")
+        sh_ = (cx + (-25 + 4) * k_, cy + (1238 - CAT.CBOT) * k_)
+        tip_ = people.cat_paw_tip(cx, cy, k_, st, side="l")
         cat += people.cat_forearm(sh_, tip_, k=.6 * k_, seed=14)
-        cat += blob(ellipse_pts(sh_[0] - 6 * k_, sh_[1], 30 * k_, 26 * k_, 14), CAT.CAT)      # плечо закрывает срез лапы
-    cat = R.warm_tint(cat, .25)
+        cat += blob(ellipse_pts(sh_[0] + 6 * k_, sh_[1], 30 * k_, 26 * k_, 14), CAT.CAT)      # плечо закрывает срез лапы
     flx, fly = flame_world(cx, cy, CAT14_K, st["tail"])
     fl = PR.glow(flx, fly - 40, 70, .35 + .25 * warmth, "#ffb347")
     shadow = blob(ellipse_pts(cx, cy + 4, 150, 12, 16), "#2a1a12", .3)
-    # открытый конверт с чистым листом лежит на столе за котом
-    env = R.light_tint(PR.letter(ENV14[0] + 20, ENV14[1] - 60, .45, rot=-6, write=0.0, seed=4)
-                       + PR.pinned_envelope(ENV14[0], ENV14[1] - 70, .8, swing=-90, dust=.2, web=0.0, open_u=1.0, t=t, seed=1, pin=False), P)
-    world = [sc["bg"], dima_grp, env, lap_grp, arm_grp, shadow, cat, fl]
+    # открытый конверт: лежит на столе за котом (клапан отогнут, внутри чистый лист)
+    env = PR.letter(ENV14[0], ENV14[1] - 30, .5, rot=-8, write=0.0, seed=4)
+    # свет экрана на лице: холодно-белый → теплеет на «вместе»
+    hx, hy = head
+    light = PR.glow(hx + 70, hy + 10, 140, .45, lib.mix("#DDE8FF", "#FFE2B0", warmth), ry=160)
+    world = [sc["bg"], sc["chair_back"], sc["desk_top"], parts["legs"], sc["desk_legs"], sc["chair_seat"], parts["pelvis"], parts["arm_f"],
+             parts["body"], env, lp["svg"], parts["arm_n"], shadow, cat, fl, f'<g transform="translate(150 0)">{sc["lamp"]}</g>', light]
     # камера: медленный дрейф к ноутбуку, на «вместе» лёгкий удар +3 %
     u = sm(t, T_A14 - .2, 20.25)
-    s = lerp(1.08, 1.15, u) + .03 * bump(t, T_VME, .3)
-    ccx = lerp(-1810, -1840, u) + 4 * math.sin(t * 1.4)
-    ccy = lerp(870, 850, u) + 3 * math.sin(t * 1.7)
+    s = lerp(1.08, 1.15, u) + .04 * bump(t, T_VME, .3)
+    ccx = lerp(705, 720, u) + 4 * math.sin(t * 1.4)
+    ccy = lerp(900, 880, u) + 3 * math.sin(t * 1.7)
     set_ink(s)
-    return f'<g transform="{lib.cam(ccx, ccy, s, lerp(.3, -.3, u))}">{"".join(world)}</g>', BG
+    warm_ = '<rect x="-3000" y="-3000" width="8000" height="8000" fill="#ff9a40" opacity=".32" style="mix-blend-mode:soft-light"/>'
+    return f'<g transform="{lib.cam(ccx, ccy, s, lerp(-.3, .3, u))}">{"".join(world)}{warm_}</g>', BG
 
 
 FRAMES["s14"] = s14
