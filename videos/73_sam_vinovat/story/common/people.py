@@ -2915,3 +2915,154 @@ def cat_forearm(base, tip, k=1.0, claw=0.0, seed=0):
         L2 = 30 * k * claw
         o += shape([(cx - nx * 6 * k, cy - ny * 6 * k, 1), (cx + ux * L2, cy + uy * L2, 1), (cx + nx * 6 * k, cy + ny * 6 * k, 1)], "#F4F1EA", "", w=2.6 * k, seed=seed + 7412)
     return o
+
+
+# ═════════════════════════════ РИЛС 73 «ТЫ САМ ВИНОВАТ» (автор — группа B) ═════════════════════════════
+# Дима (горчичное худи) — dima(x, y, scale, expr, pose, **ноги); стоит — **stand_kw(x, y, scale); смотрит вправо (flip=True — влево).
+# Мимика EXPR["dima"]: lost73 (растерянно смотрит вверх-вправо на доску), glance73 (оглядывается назад-влево), sag73 (плечи опустились,
+#   взгляд вниз), awake73 (лежит без сна, глаза открыты, взгляд в потолок), stare73 (лицо на подушке, взгляд в сторону, мешки),
+#   exhale73 (выдыхает: веки прикрыты, губы трубочкой), smile73 (улыбка краешком рта), unpin73 (сосредоточенно на конверте),
+#   type73 (печатает с лёгкой улыбкой). awake_blink(base, u) — та же мимика с веками, прикрытыми на u (медленное моргание).
+# Позы POSE: sag73 (руки повисли, голова опущена), glance73 (полуоборот головы назад), unpin73 (ближняя рука вверх-вперёд щепотью —
+#   снимает конверт с кнопки ≈ (330, −560)·sc; кончики пальцев — hand_pos(fig, "n", 70)), open73 (держит конверт обеими руками у груди,
+#   ближняя отгибает клапан), «pinch», «pet», «type» — из прошлых рилсов.
+# dima_bed(x, y, k, expr, roll, sit, t, cover, arm, col, seed, pillow_col) — Дима в кровати (кровать и матрас — room.bedroom группы C):
+#   (x, y) — таз на матрасе; голова на подушке СЛЕВА, ноги под одеялом вправо, лицом вверх; k — масштаб фигуры (голова ≈ 300·k).
+#   roll 0…1 — поворачивается на бок (к зрителю): голова поворачивается, бугор плеча и бедра растёт, ближняя рука ложится поверх одеяла
+#   к подушке (три позы через промежуточные кадры, без сжатия фигуры); sit 0…1 — садится (туловище поднимается из-под одеяла, ноги
+#   остаются под ним); cover "chest" | "nose" (одеяло до носа) | доля 0…1 между ними; arm "out" (ближняя рука поверх одеяла) | "in";
+#   expr — имя или dict. Возвращает dict(svg, head=(x, y) центр головы, wrist, pillow) как figure().
+# cat_judge_shadow(x, y, k, st, t, col, w) — ТЕНЬ кота-судьи ЛИНИЕЙ (контур силуэта той же позы cat.draw, без заливки): для потолка.
+# Кот — новые ключи cat.py st: cold 0…1 (холодный судья: веки наполовину, узкие зрачки-щёлки, прямой рот, уши прижаты), flat_ears
+#   0…1 (только уши прижаты). CAT_ST: judge (холодный, смотрит на зрителя), judge_tap (холодный, правая лапа на конверт/стол),
+#   challenge (наклон головы с вызовом, «бровь» вверх), warm73 (тёплый, глаза мягкие, огонёк ярче), nuzzle (бодает: голова наклонена,
+#   глаза закрыты), sit_wrap (сидит, хвост обвит вокруг лап). Лап у кота всегда четыре: тянется ТА ЖЕ передняя лапа (paw/paw_l), вторая
+#   стоит на опоре (cat.body сам не рисует стоячую лапу, когда она вытянута).
+EXPR["dima"].update({
+    "lost73": {"brows": "worry", "mouth": "flat", "lid": .85, "look": (.55, -.55)},
+    "glance73": {"brows": "worry", "mouth": "flat", "lid": .8, "look": (-.8, -.1)},
+    "sag73": {"brows": "sad", "mouth": "tired", "lid": .42, "look": (.25, .75)},
+    "awake73": {"brows": "tired", "mouth": "flat", "lid": .82, "look": (.3, -.7)},
+    "stare73": {"brows": "tired", "mouth": "flat", "lid": .7, "look": (.6, -.2)},
+    "exhale73": {"brows": "calm", "mouth": "o", "open": .3, "lid": .35, "look": (.2, .2)},
+    "smile73": {"brows": "calm", "mouth": "smile", "smile": .45, "lid": .55, "look": (.4, .45), "bags": False},
+    "unpin73": {"brows": "det", "mouth": "flat", "lid": .75, "look": (.6, -.5), "bags": False},
+    "type73": {"brows": "calm", "mouth": "smile", "smile": .35, "lid": .62, "look": (.55, .45), "bags": False},
+})
+
+
+def awake_blink(base="awake73", u=0.0):
+    """Мимика base с веками, прикрытыми на u (0 — как base, 1 — закрыты): медленное моргание без смены лица."""
+    e = dict(EXPR["dima"][base]) if isinstance(base, str) else dict(base)
+    u = lib.clamp(u)
+    if u > .9:
+        e["closed"] = 1.0
+    else:
+        e["lid"] = e.get("lid", .8) * (1 - u)
+    return e
+
+
+POSE.update({
+    "sag73": (0.12, 0.28, {"f": ("ang", 0.08, 0.06), "n": ("ang", -0.02, 0.08)},
+              {"f": {"curl": (.25, .3, .35, .4), "thumb": .3}, "n": {"curl": (.2, .25, .3, .35), "thumb": .25}}),
+    "glance73": (-0.04, -0.12, {"f": ("ang", 0.2, 0.22), "n": ("ang", -0.15, 0.3)}, {}),
+    "unpin73": (0.04, -0.2, {"f": ("ang", 0.2, 0.22), "n": ("ik", (330, -560), -1)},
+                {"n": {"dir": (.5, -1), "curl": (.35, .7, .95, .95), "spread": .0, "thumb": .85}}),
+    "open73": (0.06, 0.16, {"f": ("ik", (215, -320), -1), "n": ("ik", (330, -350), -1)},
+               {"f": {"dir": (.9, -.2), "curl": (.55, .55, .6, .62), "thumb": .5}, "n": {"dir": (.3, -1), "curl": (.3, .65, .9, .9), "thumb": .8}}),
+})
+
+
+def _blanket_lying(sc, top_y, roll, front_x, seed, col):
+    """Одеяло в «лежачей» системе (до поворота на −90°): тело вдоль −y от таза, перед — +x. top_y — край у головы."""
+    c, csh, chi = C_COCOON[0], C_COCOON[1], C_COCOON[2]
+    if col == "blue":
+        c, csh, chi = "#4A6FA5", "#34507D", "#6E92C9"
+    elif col == "green":
+        c, csh, chi = "#5C9A78", "#41735A", "#7FBF98"
+    r = lib.clamp(roll)
+    fx = front_x
+    # контур спереди: грудь/плечо, живот, бедро (растёт на боку), колени, стопы
+    front = [(fx + 10 * sc + 40 * r * sc, top_y + 30 * sc), (fx + 30 * sc + 70 * r * sc, top_y + 140 * sc), (fx - 10 * sc + 30 * r * sc, top_y + 300 * sc),
+             (fx - 20 * sc + 110 * r * sc, 20 * sc), (fx - 50 * sc + 60 * r * sc, 260 * sc), (fx - 10 * sc + 40 * r * sc, 430 * sc),
+             (fx - 40 * sc + 20 * r * sc, 590 * sc), (fx - 20 * sc, 680 * sc), (fx - 70 * sc, 730 * sc), (-40 * sc, 750 * sc)]
+    back = [(-120 * sc, 745 * sc, 1), (-120 * sc, top_y + 10 * sc, 1)]
+    pts = [(fx - 10 * sc, top_y, 1)] + front + back
+    inner = blob([(-260 * sc, top_y), (fx + 200 * sc, top_y), (fx + 200 * sc, top_y + 46 * sc), (-260 * sc, top_y + 40 * sc)], chi)      # подвёрнутая кромка
+    inner += lib.line([(-110 * sc, top_y + 48 * sc), (fx + 120 * sc, top_y + 50 * sc)], 3.2 * sc * 2, csh, taper=.2, wmin=.5, seed=seed + 2)
+    inner += blob([(-260 * sc, top_y + 60 * sc), (-40 * sc, top_y + 60 * sc), (-40 * sc, 780 * sc), (-260 * sc, 780 * sc)], csh)
+    for i, yy in enumerate((top_y + 200 * sc, 120 * sc, 380 * sc, 560 * sc)):      # складки поперёк
+        if yy < top_y + 90 * sc:
+            continue
+        inner += lib.line([(fx - 150 * sc, yy + 20 * sc), (fx - 40 * sc, yy - 10 * sc), (fx + 60 * sc, yy + 10 * sc)], 3.0 * sc * 2, csh, taper=.4,
+                          wmin=.3, seed=seed + 10 + i)
+    return lib.shape(pts, c, inner, w=4.6 * sc * 2, seed=seed)
+
+
+def dima_bed(x, y, k=0.5, expr="awake73", roll=0.0, sit=0.0, t=0.0, cover="chest", arm=None, col="blue", seed=0, pillow_col=None):
+    sc = k * HEIGHT["dima"]
+    r, s_ = lib.clamp(roll), lib.clamp(sit)
+    cov = {"chest": 0.0, "nose": 1.0}.get(cover, cover) if isinstance(cover, str) else lib.clamp(cover)
+    if arm is None:
+        arm = "in" if cov > .5 else "out"
+    br = math.sin(t * 2 * math.pi / 4.2)                       # дыхание: грудь под одеялом
+    # руки: лёжа ближняя вдоль тела поверх одеяла; на боку — ладонь к подушке у лица; сидя — на одеяле на коленях
+    if s_ > .01:
+        arms = {"f": ("ik", (190 * sc, -60 * sc), -1), "n": ("ik", (250 * sc, -50 * sc), -1)}
+    else:
+        tgt = (60 + 120 * r, -40 - 380 * r)
+        arms = {"f": ("ang", 0.05, 0.1), "n": ("ik", (tgt[0] * sc, tgt[1] * sc), -1)}
+    hands = {"n": {"dir": (.3 + .4 * r, -.2 - .8 * r), "curl": (.35, .4, .45, .5), "thumb": .35}, "f": {"curl": (.3, .3, .35, .4), "thumb": .3}}
+    ha = -0.1 + 0.38 * r - 0.1 * s_
+    fig = figure("dima", 0.0, 0.0, k, EXPR["dima"].get(expr, {}) if isinstance(expr, str) else dict(expr), lean=0.0, head_ang=ha, arms=arms, hands=hands,
+                 layers=("pelvis", "body") if s_ < .5 else ("pelvis", "arm_f", "body"))
+    fig_n = figure("dima", 0.0, 0.0, k, EXPR["dima"].get(expr, {}) if isinstance(expr, str) else dict(expr), lean=0.0, head_ang=ha, arms=arms,
+                   hands=hands, layers=("arm_n",))
+    a_body = -90.0 + 82.0 * s_
+    hx, hy = fig["head"]
+    # край одеяла: грудь (−330) … нос (голова + 40), сидя — пояс (−40)
+    top_lying = (-330 * sc) * (1 - cov) + (hy + 40 * sc) * cov
+    top_y = top_lying * (1 - s_) + (-150 * sc) * s_
+    front_x = 125 * sc + 6 * sc * br
+    blank = _blanket_lying(sc, top_y, r, front_x, 73900 + seed, col)
+    # подушка: за затылком (в лежачей системе — выше и позади головы)
+    pc = pillow_col
+    pil_local = (hx - 120 * sc, hy - 40 * sc)
+    c, sn = math.cos(math.radians(-90)), math.sin(math.radians(-90))
+    pw = (x + pil_local[0] * c - pil_local[1] * sn, y + pil_local[0] * sn + pil_local[1] * c)
+    import props as _P
+    pillow_svg = _P.pillow(pw[0] + 30 * sc, pw[1] + 150 * sc, k * 2.6, 0, col=pc, seed=seed + 3)
+    tb = f'translate({x:.2f} {y:.2f}) rotate({a_body:.2f})'
+    tl_ = f'translate({x:.2f} {y:.2f}) rotate(-90)'
+    out = [pillow_svg, f'<g transform="{tb}">{fig["svg"]}</g>']
+    show_arm = arm == "out" and (cov < .5 or r > .3 or s_ > .1)
+    out.append(f'<g transform="{tl_}">{blank}</g>')
+    if show_arm:
+        out.append(f'<g transform="{tb}">{fig_n["svg"]}</g>')
+
+    def W_(p, a):
+        ca, sa = math.cos(math.radians(a)), math.sin(math.radians(a))
+        return (x + p[0] * ca - p[1] * sa, y + p[0] * sa + p[1] * ca)
+    return dict(svg="".join(out), head=W_((hx, hy), a_body), wrist={kk: W_(v, a_body) for kk, v in fig["wrist"].items()}, pillow=pw, scale=sc)
+
+
+def cat_judge_shadow(x, y, k, st=None, t=0.0, col="#8FA3C8", w=5.0, op=0.85):
+    """Тень кота-судьи на потолке/стене ЛИНИЕЙ: контур силуэта той же позы (морфология SVG), без заливки. w — толщина линии в px экрана·."""
+    import cat
+    fid = lib.uid("csh")
+    r = max(1.0, w / max(k, 1e-3) / 2)
+    lib.DEFS.append(f'<filter id="{fid}" x="-20%" y="-20%" width="140%" height="140%"><feMorphology in="SourceAlpha" operator="dilate" '
+                    f'radius="{r:.2f}" result="d"/><feComposite in="d" in2="SourceAlpha" operator="out" result="ring"/>'
+                    f'<feFlood flood-color="{col}" flood-opacity="{op:.2f}"/><feComposite in2="ring" operator="in"/></filter>')
+    inner = cat.draw(x, y, k, dict(st or {}), t)
+    return f'<g filter="url(#{fid})">{inner}</g>'
+
+
+CAT_ST.update({
+    "judge": {"cold": 1.0, "look": (0, 0), "tilt": 0.0},
+    "judge_tap": {"cold": 1.0, "paw": .7, "paw_dx": 40, "look": (.2, .5)},
+    "challenge": {"cold": .6, "smug": .6, "tilt": -9, "look": (0, 0)},
+    "warm73": {"blink": .35, "smile": 1.0, "look": (0, .1), "flame_e": 1.5},
+    "nuzzle": {"blink": 1.0, "smile": 1.0, "tilt": 18, "rot": 8, "flame_e": 1.6},
+    "sit_wrap": {"blink": .3, "smile": 1.0, "tail": -6, "look": (0, 0)},
+})

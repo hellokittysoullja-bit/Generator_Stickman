@@ -75,8 +75,10 @@ def flame(t, k=1.3, energy=1.0):
     return o
 
 
-def ears(ear_r=0.0, perk=0.0):
-    """ear_r — поворот правого (стоячего) уха, градусы; perk 0..1 — «торчком»: оба уха выше, загнутое расправляется чуть-чуть."""
+def ears(ear_r=0.0, perk=0.0, flat=0.0):
+    """ear_r — поворот правого (стоячего) уха, градусы; perk 0..1 — «торчком»: оба уха выше, загнутое расправляется чуть-чуть.
+    flat 0..1 (рилс 73) — уши прижаты: стоячее ложится вбок-назад, загнутое опускается к голове."""
+    ear_r = ear_r + 34 * flat
     s = []
     re_out = [(864, 1004), (902, 922 - 10 * perk, 1), (932, 1016)]
     re_fill = re_out + [(934, 1046), (866, 1046)]
@@ -87,7 +89,7 @@ def ears(ear_r=0.0, perk=0.0):
              blob([(904, 924), (940, 1000), (936, 1016), (918, 1014)], CAT_SH, .7) +
              line([(888, 1004), (898, 972)], 2, "#d79a84", seed=252, op=.8) + "</g>")
     g.append(line(re_out, 5, seed=251, taper=.25, wmin=.3))
-    s.append(f'<g transform="rotate({ear_r:.2f} 898 1030)">{"".join(g)}</g>')
+    s.append(f'<g transform="translate(0 {10 * flat:.2f}) rotate({ear_r:.2f} 898 1030)">{"".join(g)}</g>')
     lift = -8 * perk
     le_out = [(752, 1014), (744, 986 + lift), (728, 994 + lift * 1.4, 1), (728, 966 + lift), (746, 948 + lift), (772, 940 + lift), (796, 948 + lift),
               (808, 968 + lift * .5), (814, 1006)]
@@ -99,11 +101,11 @@ def ears(ear_r=0.0, perk=0.0):
              line([(770, 998), (776, 984 + lift)], 2, "#d79a84", seed=256, op=.8) + "</g>")
     g.append(line([(740, 980 + lift), (770, 972 + lift), (800, 970 + lift)], 2.4, seed=255, op=.85))
     g.append(line(le_out, 5, seed=253, taper=.25, wmin=.3))
-    s.append(f'<g transform="rotate({-ear_r * .3:.2f} 780 1030)">{"".join(g)}</g>')
+    s.append(f'<g transform="translate(0 {12 * flat:.2f}) rotate({-ear_r * .3 - 22 * flat:.2f} 780 1030)">{"".join(g)}</g>')
     return "".join(s)
 
 
-def eye(ex, ey, rx, ry, look, blink, sd, squash=1.0):
+def eye(ex, ey, rx, ry, look, blink, sd, squash=1.0, slit=0.0):
     rx = rx * squash
     ep = ellipse_pts(ex, ey, rx, ry, 14)
     if blink > 0.97:
@@ -116,7 +118,7 @@ def eye(ex, ey, rx, ry, look, blink, sd, squash=1.0):
     o.append(blob(ellipse_pts(ex - rx * .52, ey + 8, 10 * squash, 20, 8), "#c8ee6a", .5))
     lx, ly = look
     px, py = ex + lx * 12 * squash, ey + 2 + ly * 10
-    o.append(f'<ellipse cx="{px:.1f}" cy="{py:.1f}" rx="{11.5 * squash:.1f}" ry="24" fill="#0b0a10"/>')
+    o.append(f'<ellipse cx="{px:.1f}" cy="{py:.1f}" rx="{11.5 * squash * (1 - .62 * slit):.1f}" ry="24" fill="#0b0a10"/>')
     o.append(f'<circle cx="{px - 8 * squash:.1f}" cy="{py - 16:.1f}" r="7" fill="#f4f8ff"/>')
     o.append(f'<circle cx="{px + 10 * squash:.1f}" cy="{py + 14:.1f}" r="3.2" fill="#ffd9a0"/>')
     if blink > 0.01:
@@ -141,7 +143,8 @@ def head(st, t):
     for i, st_ in enumerate([[(800, 1004), (806, 1016)], [(836, 996), (838, 1010)], [(870, 1002), (866, 1014)]]):
         inner += line(st_, 2, CAT_EDGE, seed=258 + i, op=.8)
     s.append(shape(hp, CAT, inner, w=5.2, seed=250))
-    s.append(ears(st.get("ear", 0.0), st.get("perk", 0.0)))
+    cold = st.get("cold", 0.0)      # рилс 73: холодный судья
+    s.append(ears(st.get("ear", 0.0), st.get("perk", 0.0), max(cold, st.get("flat_ears", 0.0))))
     CXH = CX + FX
     for sx in (-1, 1):
         for k, dy in enumerate((0, 14)):
@@ -153,7 +156,9 @@ def head(st, t):
         bl_ = st.get("blink_" + nm, blink)
         if st.get("smug", 0.0) > .02:     # тяжёлые веки надменности
             bl_ = max(bl_, (.5 if nm == "L" else .38) * st["smug"])
-        s.append(eye(ex, 1072, 34, 38, look, bl_, sd, sq))     # рилс 64: blink_L / blink_R — один глаз отдельно
+        if cold > .02:
+            bl_ = max(bl_, .5 * cold)
+        s.append(eye(ex, 1072, 34, 38, look, bl_, sd, sq, slit=cold))     # рилс 64: blink_L / blink_R — один глаз отдельно
     sm = st.get("smug", 0.0)
     if sm > .02:      # рилс 72: надменность — штрих-брови над глазами: над правым (от зрителя) взлетела, над левым опущена к носу
         s.append(line([(CXH - 76, 1022), (CXH - 46, 1024 + 4 * sm), (CXH - 16, 1030 + 6 * sm)], 5.0, INK, seed=290, op=min(1.0, sm * 1.5)))
@@ -166,6 +171,8 @@ def head(st, t):
         tp = [(824 + FX, 1124, 1), (848 + FX, 1124, 1), (850 + FX, 1124 + L_ * .6), (844 + FX, 1124 + L_), (836 + FX, 1124 + L_ + 4), (828 + FX, 1124 + L_), (822 + FX, 1124 + L_ * .6)]
         s.append(shape([(818 + FX, 1121), (854 + FX, 1121), (846 + FX, 1131), (826 + FX, 1131)], "#5a2b33", w=2.4, seed=266))
         s.append(shape(tp, "#e8808c", line([(836 + FX, 1128), (836 + FX, 1124 + L_)], 1.6, "#c4565f", seed=267), w=2.8, seed=268))
+    elif cold > .5 and st.get("smug", 0) <= .5 and st.get("smile", 0) <= .5:     # рилс 73: прямой рот судьи
+        s.append(line([(818 + FX, 1127), (836 + FX, 1128), (854 + FX, 1127)], 4.2, seed=264))
     elif st.get("smug", 0) > .5:     # ухмылка краем рта: правый уголок вверх
         s.append(line([(818 + FX, 1126), (836 + FX, 1129), (852 + FX, 1123), (864 + FX, 1110)], 4.6, seed=269))
         s.append(line([(862 + FX, 1106), (868 + FX, 1116)], 2.6, seed=268, op=.8))
