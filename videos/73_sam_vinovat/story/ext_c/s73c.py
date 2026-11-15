@@ -161,10 +161,10 @@ def W(fx, fy):
     return CAM_HOOK[0] + (fx - 540) / S0, CAM_HOOK[1] + (fy - 960) / S0
 
 
-SHELF_FY = 1172.0                        # кадр: верх полочки под котом (слева; доска справа уходит ниже неё)
+SHELF_FY = 1190.0                        # кадр: верх полочки под котом (слева; доска справа уходит ниже неё)
 SHELF_X1 = 600.0                         # кадр: правый край полочки
-CAT_F = (318.0, SHELF_FY, 3.05)          # кадр: точка между задних лап кота и масштаб рисунка в кадре
-ENV_F = (842.0, 983.0, 2.4)              # кадр: кнопка конверта (низ конверта ≈ 1290) и масштаб
+CAT_F = (318.0, SHELF_FY, 3.3)           # кадр: точка между задних лап кота и масштаб рисунка в кадре
+ENV_F = (838.0, 1013.0, 2.2)              # кадр: кнопка конверта (низ конверта ≈ 1290) и масштаб
 SPIDER_F = (985.0, 700.0)                # кадр: точка крепления нитки паучка на доске (над конвертом справа)
 T_IF = wt("если")            # 0.34 — голова встаёт на зрителя, удар камерой
 T_DE = wt("дело")            # 0.70 — коготь стукает по конверту, удар камерой +8 %
@@ -197,14 +197,14 @@ def s01_cat(t):
     st["turn"] = lerp(-.62, 0.0, e) + damp(t, T_IF, -.09, 3.2, 7)
     st["tilt"] = lerp(-9.0, 0.0, e) + damp(t, T_IF, 2.6, 3.0, 7) + damp(t, T_TAP, -1.6, 3.4, 8)
     st["look"] = (lerp(.9, 0.0, e) + .7 * bump(t, T_TAP - .3, .55), lerp(.25, 0.0, e) + .4 * bump(t, T_TAP - .3, .55) + .5 * bump(t, T_VI, .4))
-    lid = .5 + .32 * sm(t, T_ME, T_ME + .3) - .08 * bump(t, T_IF, .2)
+    lid = .5 + .16 * sm(t, T_ME, T_ME + .3) - .08 * bump(t, T_IF, .2)
     st["blink_L"] = lid + .03
     st["blink_R"] = lid
     # уши прижаты (cold) и ещё дёргаются: в кадре 0 — дрожь, на «Если» — прижим с отдачей
     st["ear"] = lerp(-10, 4, e) + damp(t, T_IF, 7, 4.5, 6) + 4 * math.sin(t * 13) * (1 - sm(t, .2, .6))
     st["perk"] = 0.0
     # хвост хлещет рывками (не синус с остановками) справа от тела, выше конверта; на стук — вскидывается
-    lash = -29 + 7 * math.sin(2 * math.pi * 1.55 * t + 1.9) + 3 * math.sin(2 * math.pi * 3.1 * t + .4)
+    lash = -29 + 8 * math.sin(2 * math.pi * 1.55 * t + 1.9) + 3.5 * math.sin(2 * math.pi * 3.1 * t + .4)
     st["tail"] = lash - 17 * sm(t, T_TAP - .36, T_TAP - .12) * (1 - sm(t, T_TAP + .25, T_TAP + .55)) + damp(t, T_TAP, -4, 3, 6)
     st["flame_e"] = 1.0 + .3 * math.sin(t * 7)
     # правая передняя лапа (та же, вторая на полке): замах, удар коготком по краю конверта на T_TAP, задержка, назад
@@ -213,11 +213,11 @@ def s01_cat(t):
         if t < T_TAP - .1:
             pw = .62 * ease_out(clamp((t - (T_TAP - .32)) / .22), 2)
         elif t < T_TAP:
-            pw = lerp(.62, .353, clamp((t - (T_TAP - .1)) / .1) ** 2)
+            pw = lerp(.62, .323, clamp((t - (T_TAP - .1)) / .1) ** 2)
         else:
-            pw = .353 * (1 - ease_io(clamp((t - T_TAP - .16) / .3))) + damp(t, T_TAP, .03, 4, 9)
+            pw = .323 * (1 - ease_io(clamp((t - T_TAP - .16) / .3))) + damp(t, T_TAP, .03, 4, 9)
     st["paw"] = max(0.0, pw)
-    st["paw_dx"] = lerp(60.0, 172.0, clamp((t - (T_TAP - .2)) / .2)) if t < T_TAP + .2 else 172.0
+    st["paw_dx"] = lerp(60.0, 170.0, clamp((t - (T_TAP - .2)) / .2)) if t < T_TAP + .2 else 170.0
     # тело: вдох-рывок на поворот, сжатие на ударах
     sq = damp(t, T_IF, .025, 3.0, 7) + damp(t, T_TAP, .02, 3.2, 8)
     st["sy"] = 1 - sq
@@ -245,13 +245,14 @@ def s01_env(t):
     sw = -9.0 * math.cos(2 * math.pi * 1.35 * t + .9) * math.exp(-.6 * t)
     sw += damp(t, T_MID, 5.0, 2.4, 3.5)
     sw += damp(t, T_TAP, 13.0, 1.7, 1.9)
-    hop = 14 * bump(t, T_MID - .06, .2) + 10 * bump(t, T_TAP, .18)
+    sw += damp(t, .5, 4.0, 2.6, 4.0)
+    hop = 14 * bump(t, T_MID - .06, .2) + 12 * bump(t, .46, .2) + 10 * bump(t, T_TAP, .18)
     return sw, hop
 
 
 def s01_spider(t):
     """Паучок: качается на нитке (кадр 0 — уже в движении), рывок вверх T_MID, на «висит» падает вниз перед конвертом."""
-    drop = 120 + 18 * math.sin(2 * math.pi * 2.1 * t + 1.1) - 40 * bump(t, T_MID - .05, .22)
+    drop = 120 + 18 * math.sin(2 * math.pi * 2.1 * t + 1.1) - 40 * bump(t, T_MID - .05, .22) - 34 * bump(t, .5, .2)
     if t > T_VI:
         q = t - T_VI
         drop += 300 * clamp(q / .16) ** 2 - damp(t, T_VI + .16, 40, 2.6, 4.0)
@@ -281,8 +282,6 @@ def s01_world(t, warm=False):
     puff = PR.dust_puff(*W(640, 960), 1.15, clamp((t - T_TAP) / .5), seed=73) if t > T_TAP else ""
     puff2 = PR.dust_puff(*W(860, 1300), .8, clamp((t - T_TAP - .06) / .55), seed=74) if t > T_TAP + .06 else ""
     cat = cat_draw(cx, cy, k, st, t, judge=jd) + shoulder_patch(cx, cy, k, st, t)
-    if warm:
-        return st, (cx, cy, k), env, web, thread + spd, cat
     cat = R.cold_tint(cat, .7)
     cat_sh = blob([(cx - 150 * k, cy - 4), (cx + 160 * k, cy - 4), (cx + 180 * k, cy + 10), (cx - 140 * k, cy + 10)], "#5a6068", .55)
     bc = R.board_close(t, "cold")
@@ -299,8 +298,10 @@ def s01(t):
         world = ['<rect x="-3000" y="-3000" width="8000" height="8000" fill="#fff"/>']
         if mk in ("face", "both"):
             world.append(face_mask(cx, cy, k, st, t))
-        if mk in ("env", "both"):
-            world.append(mask_svg(env, "env"))
+        if mk in ("env", "both"):      # конверт с кнопкой — без пыли и паутины
+            ex, ey = W(ENV_F[0], ENV_F[1])
+            sw, hop = s01_env(t)
+            world.append(mask_svg(PR.pinned_envelope(ex, ey - hop / S0, ENV_F[2] / S0, swing=sw, t=t, seed=73), "env"))
     if os.environ.get("NOCAM"):
         set_ink(S0)
         return lib.svg(f'<g transform="{lib.cam(CAM_HOOK[0], CAM_HOOK[1], S0)}">{"".join(world)}</g>')
@@ -313,5 +314,156 @@ def s01(t):
     return lib.svg(f'<g transform="{lib.cam(ccx, ccy, s, rc)}">{"".join(world)}</g>')
 
 
+# ═════════════════════════ s06: поворот — сбой, темнота, часы 3:12, удар сердца, кровать, тень судьи ═════════════════════════
+T_CUT = 6.90
+T_BEAT = 7.30
+T_VOT = wt("вот", 7.0)          # 7.82 — проезд вниз к кровати
+T_GOV = wt("говорит", 7.0)      # 8.38 — тень судьи на потолке
+
+
+def s06_dima(t):
+    """Дима лежит на спине (вид от изножья): голова на подушке, глаза открыты, взгляд в потолок, медленное моргание."""
+    import people as PP
+    PP.C = PP.PAL["dima"]
+    hx, hy = R.FOOT_HEAD
+    bl = bump(t, 7.95, .5) * .95 + bump(t, 8.6, .45) * .9
+    ex = PP.awake_blink("awake73", bl)
+    rot = -7 + 1.5 * math.sin(t * .9) - 3 * sm(t, T_GOV, T_GOV + .4)
+    head = f'<g transform="translate({hx:.1f} {hy - 40:.1f}) rotate({rot:.2f}) scale(1.55)">{PP.dima_head(ex)}</g>'
+    return R.cold_tint(head, 0.0, .55)
+
+
+def s06_shadow(t):
+    """Тень холодного кота-судьи линией на потолке и верху стены слева над кроватью (та же поза, что в хуке)."""
+    import people as PP
+    u = sm(t, T_GOV - .05, T_GOV + .3)
+    if u < .01:
+        return ""
+    st = dict(cold=1.0, look=(0, 0), tilt=-2 + 2 * math.sin(t * 1.3), tail=-20 + 8 * math.sin(t * 2.4), ear=4 * math.sin(t * 5))
+    k = 1.35 * (1.06 - .06 * u)
+    sh = PP.cat_judge_shadow(250, 520 + 30 * (1 - u), k, st, t, col="#93a6d6", w=5.5, op=.9)
+    # тень шевелит губами: короткий штрих рта открывается и закрывается в такт словам
+    mo = abs(math.sin(2 * math.pi * 3.2 * (t - T_GOV))) * (1 if t < 8.73 else 0)
+    mx, my = 250 + 0 * k, 520 + (1124 - 1306) * k + 30 * (1 - u)
+    mouth = line([(mx - 14 * k, my), (mx, my + 10 * k * mo), (mx + 14 * k, my)], 4, "#93a6d6", taper=.3, wmin=.5, seed=7530, op=.9 * u)
+    return f'<g opacity="{u:.3f}">{sh}</g>' + mouth
+
+
+def s06(t):
+    lib.dyn_begin()
+    if t < T_CUT + 2 / 30:      # хвост холодного дня (кот-судья у доски) и белый всполох-сбой 2 кадра
+        _, _, _, world = s01_world(t - 5.0)
+        set_ink(S0)
+        day = f'<g transform="{lib.cam(CAM_HOOK[0], CAM_HOOK[1], S0 * 1.06)}">{"".join(world)}</g>'
+        if t < T_CUT:
+            return lib.svg(day)
+        g = (t - T_CUT) * 30
+        out = []
+        for i, (y0, h, dx) in enumerate(((120, 160, 70), (520, 90, -110), (900, 210, 140), (1380, 120, -60))):
+            c = lib.clip_rect(0, y0, 1080, h)
+            out.append(f'<g clip-path="url(#{c})"><g transform="translate({dx * (1 + g):.1f} 0)">{day}</g></g>')
+        return lib.svg(day + "".join(out) + f'<rect width="1080" height="1920" fill="#ffffff" opacity="{.75 + .2 * g:.2f}"/>'
+                       + f'<rect y="{700 + 300 * g:.0f}" width="1080" height="26" fill="#0b0f1e" opacity=".7"/>')
+    bd = R.bedroom(t, "moon", "foot")
+    cxk, cyk, rk = R.CLOCK_F
+    clock = R.lib_clock73(cxk, cyk, rk, t, R.PAL73["moon"])
+    world = [bd["bg"], clock, s06_dima(t), bd["front"], s06_shadow(t)]
+    # темнота: почти чёрная синяя вуаль, проступает к удару сердца; часы и лунный прямоугольник видны сквозь неё
+    q = t - T_CUT
+    dk = .9 - .3 * sm(t, T_CUT + .1, T_BEAT) - .25 * sm(t, T_BEAT, T_BEAT + .6) - .1 * sm(t, T_VOT, T_VOT + .5)
+    holes = [(PR.circle_d(cxk, cyk, rk * 1.1), .85), (PR.circle_d(160, 520, 260, 330), .6 * sm(t, T_BEAT - .05, T_BEAT + .3))]
+    world.append(PR.darkness(dk, "#03050d", holes=holes, blur_sd=7, box=(-800, -800, 1900, 2800)))
+    # камера: часы крупно с микродрейфом → на «Вот так» плавный проезд вниз к кровати → на «говорит» наклон к тени
+    cx0, cy0, s0 = R.CAM73_CLOCK
+    cx1, cy1, s1 = R.CAM73_FOOT
+    u = ease_io(clamp((t - T_VOT) / .7))
+    cx = lerp(cx0, cx1, u) + 5 * math.sin(t * 1.7) - 40 * sm(t, T_GOV, T_GOV + .5)
+    cy = lerp(cy0, cy1, u) + 4 * math.sin(t * 1.3 + 1) - 90 * sm(t, T_GOV, T_GOV + .5)
+    s = lerp(s0, s1, u) * (1 + .025 * q) * (1 + .04 * R.heart_k(t, T_BEAT))
+    rot = -1.2 * sm(t, T_GOV, T_GOV + .5)
+    set_ink(s)
+    body = f'<g transform="{lib.cam(cx, cy, s, rot)}">{"".join(world)}</g>' + R.heart_pulse(t, T_BEAT, 1.2)
+    if q < .2:      # след всполоха: синий отсвет гаснет
+        body += f'<rect width="1080" height="1920" fill="#6f86d8" opacity="{.35 * (1 - q / .2):.3f}"/>'
+    return lib.svg(body)
+
+
+# ═════════════════════════ s17: петля — ракурс хука в тепле, карточка снята с кнопки, тёплый кивок ═════════════════════════
+T_RAZ = wt("разберу", 23.0)     # 23.25
+T_PER = wt("первым", 23.0)      # 23.72
+T_TAP17 = T_RAZ + .2            # коготь поддевает карточку
+T_FALL = T_RAZ + .3             # карточка соскальзывает с кнопки
+CARD_F = (838.0, 1030.0, 2.6)   # кадр: кнопка карточки (низ ≈ 1295), масштаб
+
+
+def s17_cat(t):
+    import people as PP
+    st = dict(_t=t, blink=.28, smile=1.0, perk=.25, look=(.5 * sm(t, 23.0, T_TAP17) * (1 - sm(t, T_FALL + .1, T_FALL + .4)), .35))
+    st["look"] = (st["look"][0], .2 + .5 * sm(t, T_FALL, T_FALL + .2) * (1 - sm(t, T_PER, T_PER + .3)))
+    st["drop"] = PP.cat_nod(t, T_PER, .55, .32)
+    st["tilt"] = 3 * math.sin(t * 1.4) + 5 * bump(t, T_PER, .55)
+    st["blink"] = max(.28, .9 * bump(t, T_PER + .05, .4), bump(t, 24.2, .2))
+    st["ear"] = 5 * math.sin(t * 3.1) + damp(t, T_TAP17, 6, 4, 6)
+    st["tail"] = -30 + 5 * math.sin(2 * math.pi * .8 * t)
+    st["flame_e"] = 1.2 + 1.3 * bump(t, T_PER + .05, .6) + .2 * math.sin(t * 8)
+    pw = 0.0
+    a = T_TAP17 - .25
+    if t > a:
+        if t < T_TAP17:
+            pw = .323 * ease_out(clamp((t - a) / .25), 2)
+        else:
+            pw = .323 * (1 - ease_io(clamp((t - T_TAP17 - .15) / .3)))
+    st["paw"] = pw
+    st["paw_dx"] = 170.0
+    return st
+
+
+def s17_card(t):
+    """Карточка: качается на кнопке, коготь поддевает, соскальзывает и падает на полочку к лапам кота (кнопка остаётся)."""
+    px, py = W(CARD_F[0], CARD_F[1])
+    k = CARD_F[2] / S0
+    if t < T_FALL:
+        sw = 3 * math.sin(2 * math.pi * 1.1 * t) + damp(t, T_TAP17, 8, 2.2, 3)
+        return PR.pinned_card(px, py, k, swing=sw, dust=.5, t=t, seed=73), PR.push_pin(px, py, k)
+    q = clamp((t - T_FALL) / .32)
+    tx, ty = W(470, SHELF_FY - 8)
+    x = lerp(px, tx, ease_io(q))
+    y = lerp(py, ty - 60 * k, q * q) - 40 * k * math.sin(math.pi * q) + 6 * bump(t, T_FALL + .32, .18)
+    rot = lerp(4, -12, q) + damp(t, T_FALL + .32, 4, 3, 6)
+    sy = lerp(1.0, .45, ease_io(q))      # ложится на полочку (вид сверху сжимается)
+    card = PR.pinned_card(0, 0, k, swing=0, dust=.5, t=t, seed=73, pin=False)
+    return f'<g transform="translate({x:.2f} {y:.2f}) rotate({rot:.2f}) scale(1 {sy:.3f})">{card}</g>', PR.push_pin(px, py, k)
+
+
+def s17(t):
+    lib.dyn_begin()
+    st = s17_cat(t)
+    cx, cy = W(CAT_F[0], CAT_F[1])
+    k = CAT_F[2] / S0
+    bc = R.board_close(t, "lamp")
+    card, pin = s17_card(t)
+    cat = R.warm_tint(CAT.draw(cx, cy, k, st, t) + shoulder_patch(cx, cy, k, st, t), .5)
+    cat_sh = blob([(cx - 150 * k, cy - 4), (cx + 160 * k, cy - 4), (cx + 180 * k, cy + 10), (cx - 140 * k, cy + 10)], "#3a2418", .5)
+    sh = shelf(SHELF_FY, P_cold=False)
+    if t < T_FALL + .2:
+        world = [bc["bg"], R.warm_tint(pin, .4), R.warm_tint(card, .5), bc["light"], sh, cat_sh, cat]
+    else:
+        world = [bc["bg"], R.warm_tint(pin, .4), bc["light"], sh, cat_sh, cat, R.warm_tint(card, .5)]
+    mk = os.environ.get("MASK")
+    if mk:
+        world = ['<rect x="-3000" y="-3000" width="8000" height="8000" fill="#fff"/>']
+        if mk in ("face", "both"):
+            world.append(face_mask(cx, cy, k, st, t))
+        if mk in ("env", "both"):
+            world.append(mask_svg(card, "env"))
+    s = S0 * (1 + .03 * sm(t, 23.02, 24.5) + .025 * bump(t, T_PER, .6))
+    set_ink(s)
+    body = f'<g transform="{lib.cam(CAM_HOOK[0], CAM_HOOK[1] - 8 * bump(t, T_PER, .6), s)}">{"".join(world)}</g>'
+    fl = bump(t, T_PER + .05, .6)
+    if fl > .01 and not mk:
+        body += f'<rect width="1080" height="1920" fill="#ffb054" opacity="{.05 * fl:.3f}" style="mix-blend-mode:screen"/>'
+    return lib.svg(body)
+
+
 def frame(sid, t):
-    return {"s01": s01}[sid](t)
+    return {"s01": s01, "s06": s06, "s17": s17}[sid](t)

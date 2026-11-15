@@ -4305,3 +4305,540 @@ def brain_scribble(x, y, k=1.0, u=1.0, eyes=0.0, burst=0.0, t=0.0, seed=0, glow=
             o.append(line([(ex - 24, ey - hh * .6 - sx * 4), (ex + 24, ey - hh * .6 + sx * 4)], 5.2, lib.INK, taper=.3, wmin=.5, seed=sd + 90 + sx))
             o.append(line([(ex - 15, ey + hh * .6 + 1), (ex + 15, ey + hh * .6 + 1)], 2.4, lib.INK, taper=.4, wmin=.3, seed=sd + 95 + sx))
     return _tf("".join(o), x, y, k)
+
+
+# ═══════════════════════════════ «ПРЕКРАТИ НЫТЬ» (рилс 74, группа A) ═══════════════════════════════
+# (x, y) — как сказано у функции; k — масштаб; t — общее время ролика; seed — своё зерно. Букв и цифр нет нигде.
+#   crown(x, y, k, rot, bounce, shine)          маленькая золотая корона 150×100·k, (x, y) — ЦЕНТР НИЗА ободка; три зубца с шариками,
+#                       без камней-надписей (три круглых камушка цветом). rot — наклон (°) вокруг низа; bounce 0…1 — подскок: вытяжка
+#                       вверх и сжатие на приземлении (знак: bounce < 0 — сплющена); shine 0…1 — «звяк»: штрихи блеска и искры у зубцов.
+#   throne_drape(x, y, k, u, swing, t, seed)     красная бархатная накидка на офисное кресло: (x, y) — ЦЕНТР ВЕРХА СПИНКИ кресла (кресло
+#                       рисует room.throne_scene); накрывает спинку 300×420·k и сиденье (до y+470·k), по углам золотые кисти на шнурах;
+#                       swing — размах кистей (°, знак — фаза), t — кисти и ткань живут; u 1 → 0 — накидка сползает вниз и на пол
+#                       (при u = 0 лежит комом у ножек, y+640·k). throne_drape_tassels(...) — только кисти (для переднего плана).
+#   jar(x, y, k, rot, lid_rot, lid_off, strain, seed)   пустая стеклянная банка 170×230·k без этикетки, (x, y) — ЦЕНТР ДНА; блик стекла,
+#                       тугая металлическая крышка с рифлением: lid_rot — поворот крышки (°; рифление бежит), lid_off 0…1 — крышка
+#                       слетает вверх с пружинкой (до 230·k, кувырок), strain 0…1 — штрихи усилия и дрожь крышки.
+#                       jar_lid_c(x, y, k, rot) → центр крышки в мире (для хвата пальцами).
+#   tissue(x, y, k, rot, seed)                  скомканный бумажный платочек 110×70·k, (x, y) — ЦЕНТР ДНА
+#   face_icon(x, y, k, kind, pop, t, seed)      смайлик-пиктограмма Ø 220·k, (x, y) — ЦЕНТР; kind "smile" — жёлтый, улыбается и кивает,
+#                       "pout" — синий, надутые щёки, губы бантиком, отворачивается (глаза вбок); pop 0…1 — выскакивает (пружина);
+#                       только лицо, без букв.
+#   phone_draft(x, y, k, rot, glow, cursor_t, hl, send_u, sent_u, tick_u, dust_u, seed)
+#                       экран телефона анфас (глазами Димы через плечо), (x, y) — ЦЕНТР, корпус 300×600·k (как phone_flat, mobilnik):
+#                       сверху значок конверта (письмо), под ним две серые волнистые строки черновика и мигающий курсор (cursor_t —
+#                       время для мигания, None — курсора нет), справа внизу круглая кнопка со стрелкой «отправить»: hl 0…1 —
+#                       подсветка кнопки (палец над ней), send_u 0…1 — кнопка вдавлена; sent_u 0…1 — строки и конверт улетают вверх-вправо
+#                       и тают; tick_u 0…1 — рисуется зелёная галочка в центре; dust_u 0…1 — серые пылинки на значке конверта (давность);
+#                       glow 0…1 — яркость экрана. phone_draft_btn(x, y, k, rot) → центр кнопки «отправить» в мире (для пальца).
+#   houseplant(x, y, k, droop, fallen, perk, t, seed)   комнатный цветок в терракотовом горшке, (x, y) — ЦЕНТР ДНА горшка, высота ≈ 520·k;
+#                       шесть листьев на стеблях: droop 0…1 — никнут (стебли гнутся вниз, листья бледнеют), perk 0…1 — распрямляются
+#                       обратно (droop·(1−perk)), fallen 0…3 — сколько листьев лежит на столе у горшка (дробное — последний ещё падает;
+#                       с ветки они пропадают по одному); t — лёгкое покачивание.
+#   cracker(x, y, k, crack_u, broken_u, seed, n=7, rot=0)   большой круглый крекер Ø 300·k с дырочками и волнистым краем, (x, y) — ЦЕНТР;
+#                       crack_u 0…1 — трещины бегут от центра; broken_u 0…1 — крекер разлетается на n кусочков (расходятся, подпрыгивают,
+#                       крутятся, крошки). cracker_piece_c(x, y, k, i, broken_u, seed, n) → центр кусочка i в мире (i = n−1 — самый маленький).
+#   cracker_bit(x, y, k, rot, seed, size=1)       один кусочек крекера (ЦЕНТР), ≈ 70×60·k·size — для лап, рук, ряда «шагов»
+#   cracker_bits(x, y, k, u, seed, n=6)           n кусочков разлетаются из точки, подпрыгивают и ложатся (u 0…1), крошки
+#   tap_rings(x, y, u, k=1, col)                  кольца касания стекла: два-три кольца расходятся из точки и тают (u 0…1)
+C_GOLD = "#E8B83A"
+C_GOLD_SH = "#B98A1E"
+C_GOLD_HI = "#FBE08A"
+C_VELVET = "#B42A35"
+C_VELVET_SH = "#7E1722"
+C_VELVET_HI = "#D9505A"
+C_JAR_LID = "#C9463A"
+C_JAR_LID_SH = "#8F2E25"
+C_SMILE_Y = "#F6C93C"
+C_SMILE_Y_SH = "#D9A51E"
+C_POUT_B = "#6E9BD8"
+C_POUT_B_SH = "#4A73B0"
+C_POT = "#C9714A"
+C_POT_SH = "#9C5233"
+C_PLANT = "#4E9A52"
+C_PLANT_SH = "#357539"
+C_PLANT_PALE = "#9DAE6A"
+C_CRACKER = "#E7B866"
+C_CRACKER_SH = "#C38F3E"
+C_CRACKER_HI = "#F6D99A"
+C_SCREEN = "#F3F6FB"
+C_SCREEN_LINE = "#A9B0BC"
+C_SEND = "#3E8EDB"
+
+
+def crown(x, y, k=1.0, rot=0.0, bounce=0.0, shine=0.0, seed=0):
+    sd = 74000 + seed
+    sy = 1 + .22 * bounce
+    sx = 1 - .12 * bounce
+    o = []
+    band_ = [(-72, 0, 1), (-70, -34), (70, -34), (72, 0, 1)]
+    teeth = [(-72, -30, 1), (-80, -92, 1), (-40, -50), (0, -104, 1), (40, -50), (80, -92, 1), (72, -30, 1)]
+    o.append(shape(teeth, C_GOLD, blob([(10, -110), (90, -96), (72, -30), (20, -40)], C_GOLD_SH, .8) +
+                   line([(-60, -40), (-70, -80)], 4, C_GOLD_HI, taper=.4, wmin=.3, seed=sd + 2), w=4.2, seed=sd))
+    for i, (px, py) in enumerate(((-80, -96), (0, -110), (80, -96))):
+        o.append(shape(ellipse_pts(px, py, 11, 11, 10), C_GOLD, blob(ellipse_pts(px + 4, py + 3, 7, 7, 8), C_GOLD_SH, .8), w=3.2, seed=sd + 5 + i))
+        o.append(blob(ellipse_pts(px - 4, py - 4, 3, 3, 6), "#FFFFFF", .9))
+    o.append(shape(band_, C_GOLD, blob([(10, -36), (74, -36), (74, 2), (20, 2)], C_GOLD_SH, .85) +
+                   line([(-60, -24), (50, -26)], 3.4, C_GOLD_HI, taper=.4, wmin=.3, seed=sd + 3), w=4.4, seed=sd + 1))
+    for i, (px, col) in enumerate(((-42, "#C2384A"), (0, "#3F6FB0"), (42, "#2FA45A"))):
+        o.append(shape(ellipse_pts(px, -17, 9, 9, 10), col, blob(ellipse_pts(px - 3, -20, 3, 3, 6), "#FFFFFF", .85), w=2.6, seed=sd + 10 + i))
+    sh = clamp(shine)
+    if sh > .02:
+        for j, (a, r0) in enumerate(((-150, 70), (-110, 118), (-70, 118), (-30, 70), (-90, 128))):
+            ar = math.radians(a)
+            r1 = r0 + 34 * sh
+            o.append(line([(math.cos(ar) * r0, -50 + math.sin(ar) * r0 * .9), (math.cos(ar) * r1, -50 + math.sin(ar) * r1 * .9)],
+                          5.0 * sh, C_GOLD_SH, taper=.5, wmin=.15, seed=sd + 20 + j))
+        o.append(star4(-30, -78, 16 * sh, sh))
+        o.append(star4(56, -60, 11 * sh, sh))
+    inner = f'<g transform="scale({sx:.4f} {sy:.4f})">{"".join(o)}</g>'
+    return _tf(inner, x, y, k, rot)
+
+
+def _tassel(px, py, ang, sd, k=1.0):
+    """Кисть на шнуре: (px, py) — крепление, ang — отклонение шнура (°) от вертикали."""
+    a = math.radians(ang)
+    L = 70 * k
+    ex, ey = px + math.sin(a) * L, py + math.cos(a) * L
+    o = line([(px, py), ((px + ex) / 2 + 3 * k, (py + ey) / 2), (ex, ey)], 4.2 * k, C_GOLD_SH, taper=.1, wmin=.7, seed=sd)
+    o += shape(ellipse_pts(ex, ey + 6 * k, 12 * k, 10 * k, 10), C_GOLD, "", w=3.0 * k, seed=sd + 1)
+    fr = lib.T([(-14, 10, 1), (14, 10, 1), (18, 60), (0, 66), (-18, 60)], ex, ey, k, -ang)
+    o += shape(fr, C_GOLD, "".join(line(lib.T([(q, 16), (q * 1.2, 58)], ex, ey, k, -ang), 2.2 * k, C_GOLD_SH, taper=.2, wmin=.4, seed=sd + 3 + i)
+                                    for i, q in enumerate((-9, 0, 9))), w=3.2 * k, seed=sd + 2)
+    return o
+
+
+def throne_drape_tassels(x, y, k=1.0, u=1.0, swing=0.0, t=0.0, seed=0):
+    sd = 74100 + seed
+    u = clamp(u)
+    dy = (1 - u) * 520 * k
+    o = []
+    for i, (px, py) in enumerate(((-176, 140), (176, 140), (-196, 470), (196, 470))):
+        ph = i * 1.3
+        ang = swing * math.sin(t * 5.2 + ph) + 6 * math.sin(t * 2.1 + ph) * (1 if px > 0 else -1)
+        o.append(_tassel(x + px * k, y + py * k + dy * (1.0 if py < 300 else .45), ang, sd + 10 * i, k))
+    return "".join(o)
+
+
+def throne_drape(x, y, k=1.0, u=1.0, swing=0.0, t=0.0, seed=0, tassels=True):
+    sd = 74100 + seed
+    u = clamp(u)
+    s = 1 - u
+    o = []
+    wv = 6 * math.sin(t * 1.7)
+    if u > .02:
+        # спинка: ткань накрывает верх спинки и свисает складками до сиденья
+        top = [(-150, 0), (-120, -26), (0, -36), (120, -26), (150, 0)]
+        back = top + [(176, 140, 1), (168, 300), (182, 420 + wv * .5), (120, 404), (60, 430), (0, 410), (-60, 432), (-120, 406), (-182, 420 - wv * .5),
+                      (-168, 300), (-176, 140, 1)]
+        inner = blob([(60, -40), (190, 140), (190, 440), (90, 440), (110, 200)], C_VELVET_SH, .8)
+        for j, xx in enumerate((-110, -50, 20, 90)):
+            inner += line([(xx, 40), (xx + 8 + wv * .3, 220), (xx - 4, 400)], 4.0, C_VELVET_SH, taper=.3, wmin=.3, seed=sd + 20 + j, op=.85)
+        inner += line([(-120, -10), (-40, -26), (40, -26)], 5, C_VELVET_HI, taper=.5, wmin=.2, seed=sd + 30, op=.8)
+        inner += blob(rect_pts(-200, 120, 200, 150), C_GOLD, .95) + blob(rect_pts(-200, 146, 200, 152), C_GOLD_SH, .9)
+        # сиденье: ткань на сиденье спереди, бахрома по краю
+        seat = [(-200, 420), (200, 420), (226, 470, 1), (214, 540 + wv * .4), (100, 556), (0, 548), (-100, 558), (-214, 540 - wv * .4), (-226, 470, 1)]
+        sin_ = blob([(60, 420), (230, 470), (220, 560), (90, 560)], C_VELVET_SH, .75)
+        sin_ += line([(-180, 466), (0, 476), (180, 466)], 4, C_VELVET_HI, taper=.5, wmin=.2, seed=sd + 31, op=.7)
+        fr = "".join(line([(xx, 540 + 6 * math.sin(xx * .05)), (xx + 2 * math.sin(t * 4 + xx), 572)], 3.4, C_GOLD, taper=.2, wmin=.5, seed=sd + 40 + i)
+                     for i, xx in enumerate(range(-200, 210, 20)))
+        g_back = shape(back, C_VELVET, inner, w=5.0, seed=sd)
+        g_seat = shape(seat, C_VELVET, sin_, w=4.8, seed=sd + 1) + fr
+        rot = 18 * s * s
+        o.append(f'<g transform="translate(0 {s * 520:.2f}) rotate({rot:.2f} 0 470) scale(1 {1 - .55 * s:.4f})" opacity="{min(1.0, u * 3):.3f}">'
+                 f'{g_seat}{g_back}</g>')
+    if s > .02:
+        # ком на полу — проявляется по мере сползания
+        heap = [(-230, 640), (-210, 600), (-120, 572 + 20 * u), (0, 566 + 24 * u), (120, 574 + 20 * u), (220, 596), (240, 640)]
+        hin = blob([(40, 560), (250, 600), (250, 650), (60, 650)], C_VELVET_SH, .8)
+        hin += line([(-150, 610), (-60, 596), (40, 606)], 4, C_VELVET_SH, taper=.4, wmin=.3, seed=sd + 50, op=.85)
+        hin += line([(-200, 628), (200, 630)], 4, C_GOLD, taper=.3, wmin=.5, seed=sd + 51)
+        o.append(f'<g opacity="{min(1.0, s * 2.5):.3f}">{shape(heap, C_VELVET, hin, w=4.8, seed=sd + 52)}</g>')
+    body = _tf("".join(o), x, y, k)
+    if tassels and u > .02:
+        body += f'<g opacity="{min(1.0, u * 3):.3f}">{throne_drape_tassels(x, y, k, u, swing, t, seed)}</g>'
+    return body
+
+
+def jar_lid_c(x, y, k=1.0, rot=0.0):
+    a = math.radians(rot)
+    return x + math.sin(a) * 248 * k, y - math.cos(a) * 248 * k
+
+
+def jar(x, y, k=1.0, rot=0.0, lid_rot=0.0, lid_off=0.0, strain=0.0, seed=0, t=0.0):
+    sd = 74200 + seed
+    o = []
+    body_pts = [(-70, -230), (70, -230), (84, -206), (86, -40), (78, -10), (60, 0, 1), (-60, 0, 1), (-78, -10), (-86, -40), (-84, -206)]
+    glass_in = blob([(30, -226), (86, -200), (86, -20), (40, 0)], "#BFD6DE", .55)
+    glass_in += line([(-56, -196), (-60, -60)], 9, "#FFFFFF", taper=.4, wmin=.3, seed=sd + 1, op=.85)
+    glass_in += line([(-36, -200), (-38, -150)], 4, "#FFFFFF", taper=.5, wmin=.3, seed=sd + 2, op=.7)
+    glass_in += blob(ellipse_pts(0, -8, 64, 10, 14), "#C6DEE6", .7)
+    o.append(shape(body_pts, "#E4F0F4", glass_in, w=4.2, seed=sd))
+    o.append(line([(-70, -228), (0, -220), (70, -228)], 3, "#9DB8C2", taper=.3, wmin=.4, seed=sd + 3))
+    # горлышко с резьбой
+    o.append(shape(rect_pts(-72, -246, 72, -228), "#D6E8EE", line([(-66, -238), (66, -236)], 2.4, "#9DB8C2", taper=.2, wmin=.5, seed=sd + 5), w=3.4,
+                   seed=sd + 4))
+    # крышка
+    lo = clamp(lid_off)
+    jit = strain * 2.2 * math.sin(t * 61 + seed)
+    if lo > 0:
+        fly = lib.spring(lo * .9, 1.6, 4.2)
+        ldy = -230 * (math.sin(math.pi * min(lo, 1.0) * .62) * 1.25) + 30 * lo * lo
+        ldx = 60 * fly
+        lrot = 200 * lib.ease_out(lo, 2)
+    else:
+        ldx, ldy, lrot = jit, 0.0, 0.0
+    lid = []
+    lid.append(shape(rect_pts(-80, -26, 80, 0, 6), C_JAR_LID, blob(rect_pts(20, -26, 80, 0), C_JAR_LID_SH, .85), w=4.2, seed=sd + 10))
+    ph = (lid_rot % 24) / 24.0 * 20
+    for i in range(9):
+        xx = -76 + i * 20 + ph
+        if -78 < xx < 78:
+            lid.append(line([(xx, -22), (xx, -4)], 2.6, C_JAR_LID_SH, taper=.2, wmin=.5, seed=sd + 11 + i))
+    lid.append(shape([(-76, -26, 1), (-70, -40), (70, -40), (76, -26, 1)], "#D9574A", line([(-50, -34), (30, -36)], 3.4, "#F08A7C", taper=.4, wmin=.3,
+                                                                                         seed=sd + 21), w=3.8, seed=sd + 20))
+    o.append(f'<g transform="translate({ldx:.2f} {ldy - 246:.2f}) rotate({lrot:.2f} 0 -20)">{"".join(lid)}</g>')
+    st = clamp(strain)
+    if st > .02:
+        for j, (sx_, a) in enumerate(((-1, -160), (-1, -200), (1, -20), (1, 20))):
+            ar = math.radians(a)
+            r0 = 108 + 8 * math.sin(t * 30 + j)
+            o.append(line([(math.cos(ar) * r0, -262 + math.sin(ar) * r0 * .5), (math.cos(ar) * (r0 + 40 * st), -262 + math.sin(ar) * (r0 + 40 * st) * .5)],
+                          5.4 * st, lib.INK, taper=.6, wmin=.1, seed=sd + 30 + j))
+    if 0 < lo < .7:      # искры «легко»
+        tw = math.sin(math.pi * lo / .7)
+        for j, (px, py) in enumerate(((-110, -300), (110, -330), (-60, -380), (90, -250))):
+            o.append(star4(px, py - 60 * lo, 18 * tw, tw))
+    return _tf("".join(o), x, y, k, rot)
+
+
+def tissue(x, y, k=1.0, rot=0.0, seed=0):
+    sd = 74300 + seed
+    rs = _rs(sd)
+    pts = []
+    for i in range(12):
+        a = math.pi * (1 + i / 11)
+        r = rs.uniform(.82, 1.08)
+        pts.append((55 * r * math.cos(a), -34 + 36 * r * math.sin(a)) + ((1,) if i % 3 == 0 else ()))
+    pts += [(56, -10), (40, 0, 1), (-40, 0, 1), (-56, -10)]
+    inner = blob([(10, -70), (60, -40), (56, 0), (14, 0)], "#DCE2EA", .8)
+    for j in range(4):
+        a, b = rs.uniform(-40, 30), rs.uniform(-60, -20)
+        inner += line([(a, b), (a + rs.uniform(10, 26), b + rs.uniform(-10, 14)), (a + rs.uniform(20, 40), b + rs.uniform(4, 20))], 2.4, "#B9C2CE",
+                      taper=.4, wmin=.3, seed=sd + 10 + j)
+    return _tf(shape(pts, "#FBFCFE", inner, w=3.8, seed=sd + 1), x, y, k, rot)
+
+
+def face_icon(x, y, k=1.0, kind="smile", pop=1.0, t=0.0, seed=0):
+    sd = 74400 + seed
+    p = clamp(pop)
+    if p <= .01:
+        return ""
+    s = lib.back_out(p, 2.2)
+    R = 110
+    o = []
+    if kind == "smile":
+        nod = 6 * math.sin(t * 7.0)
+        col, csh = C_SMILE_Y, C_SMILE_Y_SH
+        face = ellipse_pts(0, 0, R, R, 24)
+        inner = blob([(30, -110), (115, -40), (100, 90), (20, 112), (70, 20)], csh, .75)
+        inner += blob(ellipse_pts(-44, -54, 30, 16, 12, rot=-30), "#FFF0B0", .8)
+        fx = 0
+        for ex in (-38, 38):
+            inner += blob(ellipse_pts(ex + fx, -18 + nod * .3, 11, 17, 10), lib.INK)
+        inner += line([(-54, 22), (-28, 52), (0, 60), (28, 52), (54, 22)], 7, lib.INK, taper=.3, wmin=.4, seed=sd + 2)
+        for ex in (-66, 66):
+            inner += blob(ellipse_pts(ex, 30, 16, 9, 10), "#F29B6E", .55)
+        g = shape(face, col, inner, w=5.2, seed=sd)
+        body = f'<g transform="translate(0 {nod:.2f}) rotate({nod * .6:.2f} 0 100)">{g}</g>'
+    else:
+        turn = 10 * math.sin(t * 2.4)
+        col, csh = C_POUT_B, C_POUT_B_SH
+        face = [(-R * 1.12, 10), (-R, -50), (-60, -102), (0, -112), (60, -102), (R, -50), (R * 1.12, 10), (R * .92, 70), (50, 108), (-50, 108), (-R * .92, 70)]
+        inner = blob([(30, -112), (130, -40), (110, 90), (20, 112), (70, 20)], csh, .75)
+        inner += blob(ellipse_pts(-40, -60, 28, 14, 12, rot=-30), "#BCD3F2", .8)
+        dx = 22 + turn
+        for ex in (-36, 36):
+            inner += line([(ex + dx - 18, -24), (ex + dx + 16, -16)], 6, lib.INK, taper=.3, wmin=.4, seed=sd + 5 + ex)
+            inner += blob(ellipse_pts(ex + dx + 6, -6, 8, 11, 10), lib.INK)
+        inner += blob(ellipse_pts(-70 + dx * .3, 34, 26, 22, 12), C_POUT_B_SH, .6)
+        inner += blob(ellipse_pts(70 + dx * .3, 34, 26, 22, 12), C_POUT_B_SH, .6)
+        inner += shape(ellipse_pts(dx * .6, 50, 14, 10, 10), "#E4706A", "", w=3.4, seed=sd + 8)
+        g = shape(face, col, inner, w=5.2, seed=sd)
+        body = f'<g transform="rotate({turn * .5:.2f} 0 100)">{g}</g>'
+    return f'<g transform="translate({f(x)} {f(y)}) scale({k * s:.5f})">{body}</g>'
+
+
+def phone_draft_btn(x, y, k=1.0, rot=0.0):
+    a = math.radians(rot)
+    px, py = 82, 196
+    return x + (px * math.cos(a) - py * math.sin(a)) * k, y + (px * math.sin(a) + py * math.cos(a)) * k
+
+
+def phone_draft(x, y, k=1.0, rot=0.0, glow=1.0, cursor_t=None, hl=0.0, send_u=0.0, sent_u=0.0, tick_u=0.0, dust_u=0.0, seed=0):
+    sd = 74500 + seed
+    o = []
+    o.append(shape(rrect(-150, -300, 150, 300, 40), "#24272E", "", w=4.4, seed=sd))
+    g = clamp(glow)
+    scr = mix("#1A1E27", C_SCREEN, g)
+    o.append(blob(rrect(-134, -284, 134, 284, 30), scr))
+    o.append(blob(rrect(-34, -276, 34, -264, 6), "#24272E"))
+    cid = lib.clip_rect(-134, -284, 268, 568, 30)
+    sc = []
+    su = clamp(sent_u)
+    fly = lib.ease_in(su, 2)
+    op = 1 - lib.ease_in(su, 1.5)
+    if op > .01:
+        dx, dy = 260 * fly, -340 * fly
+        env = [(-46, -32, 1), (46, -32, 1), (46, 32, 1), (-46, 32, 1)]
+        ein = line([(-44, -30), (0, 4), (44, -30)], 3.6, "#7C8594", taper=.2, wmin=.5, seed=sd + 3)
+        e_svg = shape(env, "#FFFFFF", ein, w=3.6, seed=sd + 2)
+        d = clamp(dust_u)
+        if d > .02:
+            rs = _rs(sd + 4)
+            for j in range(7):
+                px, py = rs.uniform(-40, 40), rs.uniform(-28, 26)
+                e_svg += blob(ellipse_pts(px, py, 3.4, 2.6, 6), "#9C9488", d * .9)
+        sc.append(f'<g transform="translate({-60 + dx:.1f} {-160 + dy:.1f}) rotate({30 * fly:.1f}) scale({1 - .4 * fly:.3f})" opacity="{op:.3f}">{e_svg}</g>')
+        for i, (x0, x1, yy) in enumerate(((-104, 104, -60), (-104, 40, 0))):
+            pts = _wavy(x0, x1, yy, sd + 10 + i, amp=6.0, per=34.0)
+            pts = [(p[0] + dx * (1 + .2 * i), p[1] + dy * (1 + .2 * i)) for p in pts]
+            sc.append(line(pts, 9, C_SCREEN_LINE, taper=.15, wmin=.6, seed=sd + 12 + i, op=op))
+        if cursor_t is not None and su < .05 and (cursor_t % 1.0) < .55:
+            sc.append(blob(rect_pts(50, -18, 57, 20), "#3E8EDB"))
+    # кнопка «отправить»
+    bx, by = 82, 196
+    hv = clamp(hl)
+    pr = clamp(send_u)
+    if hv > .02:
+        sc.append(blob(ellipse_pts(bx, by, 52 + 10 * hv, 52 + 10 * hv, 18), "#9CC8F2", .55 * hv))
+    r = 36 * (1 - .14 * pr)
+    sc.append(shape(ellipse_pts(bx, by + 3 * pr, r, r, 18), mix(C_SEND, "#2A6FB8", pr), "", w=3.4, seed=sd + 20))
+    ar = [(bx - 14 * (1 - .14 * pr), by + 12 + 3 * pr), (bx + 14 * (1 - .14 * pr), by + 3 * pr), (bx - 14 * (1 - .14 * pr), by - 12 + 3 * pr)]
+    sc.append(blob([(p[0], p[1], 1) for p in ar] + [(bx - 6, by + 3 * pr)], "#FFFFFF"))
+    tk = clamp(tick_u)
+    if tk > .01:
+        sc.append(blob(ellipse_pts(0, -40, 74 * lib.back_out(min(1, tk * 1.6), 2), 74 * lib.back_out(min(1, tk * 1.6), 2), 22), "#DDF3E4", .9))
+        sc.append(check_mark(-8, -36, 2.4, clamp((tk - .15) / .85), w=8.0, seed=sd))
+    o.append(f'<g clip-path="url(#{cid})">{"".join(sc)}</g>')
+    if g > .02:
+        o.append(line([(-110, -250), (-118, 240)], 6, "#FFFFFF", taper=.5, wmin=.2, seed=sd + 30, op=.18 * g))
+    return _tf("".join(o), x, y, k, rot)
+
+
+def _leaf_pts(L, W):
+    return [(0, 0, 1), (L * .25, -W * .5), (L * .6, -W * .55), (L, 0, 1), (L * .6, W * .5), (L * .25, W * .45)]
+
+
+_PLANT_LEAVES = [(-60, 250, -1), (55, 290, 1), (-40, 330, -1), (45, 360, 1), (-20, 380, -1), (15, 400, 1)]   # угол от вертикали, длина стебля, сторона
+
+
+def houseplant(x, y, k=1.0, droop=0.0, fallen=0.0, perk=0.0, t=0.0, seed=0):
+    sd = 74600 + seed
+    dr = clamp(droop) * (1 - clamp(perk))
+    o = []
+    nf = clamp(fallen, 0, 3)
+    gone = int(math.floor(nf + 1e-6))
+    frac = nf - gone
+    order = [0, 3, 1]          # какие листья опадают по очереди
+    for i, (a0, L, sgn) in enumerate(_PLANT_LEAVES):
+        if i in order[:gone]:
+            continue
+        sway = 3 * math.sin(t * 1.6 + i)
+        bend = sgn * dr * (165 - abs(a0))
+        top_y = -150
+        pts = [(0.0, top_y)]
+        px, py = 0.0, top_y
+        for j in range(1, 9):
+            q = j / 8
+            aa = math.radians(a0 + sway + bend * q ** 1.4)
+            px += math.sin(aa) * L * .9 / 8
+            py -= math.cos(aa) * L * .9 / 8
+            pts.append((px, py))
+        stem = [(p[0], p[1] - 0) for p in pts]
+        tip = stem[-1]
+        tang = math.degrees(math.atan2(stem[-1][1] - stem[-2][1], stem[-1][0] - stem[-2][0]))
+        falling = (i == order[gone] if gone < 3 else False) and frac > 0
+        lcol = mix(C_PLANT, C_PLANT_PALE, dr * .8)
+        lsh = mix(C_PLANT_SH, "#7C8A4E", dr * .8)
+        o.append(line(stem, 5, "#3F7A3A", taper=.2, wmin=.6, seed=sd + i))
+        if falling:
+            continue
+        lf = lib.T(_leaf_pts(110, 56), tip[0], tip[1], 1.0, tang)
+        vein = line(lib.T([(6, 0), (90, 0)], tip[0], tip[1], 1.0, tang), 2.4, lsh, taper=.3, wmin=.4, seed=sd + 20 + i)
+        o.append(shape(lf, lcol, blob(lib.T([(10, 2), (60, 30), (100, 4)], tip[0], tip[1], 1.0, tang), lsh, .6) + vein, w=3.6, seed=sd + 10 + i))
+    # опавшие листья на столе и падающий
+    rests = [(-170, -4, 168), (160, -4, 14), (-270, -2, 190)]
+    for j in range(gone):
+        rx, ry, ra = rests[j]
+        lf = lib.T([(p[0], p[1] * .45) + p[2:] for p in _leaf_pts(100, 50)], rx - 50, ry, 1.0, ra * 0 + (180 if rx < 0 else 0))
+        o.append(shape(lf, C_PLANT_PALE, "", w=3.2, seed=sd + 40 + j))
+    if gone < 3 and frac > 0:
+        rx, ry, _ = rests[gone]
+        a0, L, sgn = _PLANT_LEAVES[order[gone]]
+        sx0, sy0 = sgn * 120, -150 - L * .8
+        u = lib.ease_in(frac, 1.6)
+        px = sx0 + (rx - sx0) * u + 40 * math.sin(frac * 9)
+        py = sy0 + (ry - sy0) * u
+        lf = lib.T(_leaf_pts(100, 50), px - 50, py, 1.0, 40 * math.sin(frac * 8))
+        o.append(shape(lf, C_PLANT_PALE, "", w=3.2, seed=sd + 50))
+    # горшок
+    pot = [(-110, -170, 1), (110, -170, 1), (92, -6), (80, 0, 1), (-80, 0, 1), (-92, -6)]
+    pin = blob([(30, -170), (112, -170), (90, 0), (40, 0)], C_POT_SH, .85)
+    pin += line([(-80, -120), (-72, -30)], 4, "#E39A72", taper=.4, wmin=.3, seed=sd + 61, op=.8)
+    o.append(shape(pot, C_POT, pin, w=4.6, seed=sd + 60))
+    o.append(shape(rect_pts(-122, -192, 122, -162, 6), C_POT, blob(rect_pts(40, -192, 122, -162), C_POT_SH, .85), w=4.4, seed=sd + 62))
+    o.append(blob(ellipse_pts(0, -190, 106, 12, 18), "#5A3A26"))
+    return _tf("".join(o), x, y, k)
+
+
+def _cracker_pieces(seed, n=7):
+    """Кусочки крекера R=150: n клиньев с неровными рваными краями (последний — самый маленький)."""
+    rs = _rs(seed)
+    angs = []
+    a = rs.uniform(0, 2 * math.pi)
+    w = [rs.uniform(.8, 1.25) for _ in range(n)]
+    w[-1] = .45
+    tot = sum(w)
+    for wi in w:
+        angs.append(a)
+        a += 2 * math.pi * wi / tot
+    angs.append(angs[0] + 2 * math.pi)
+    cx, cy = rs.uniform(-12, 12), rs.uniform(-12, 12)
+    rays = []
+    for i in range(n):
+        aa = angs[i]
+        ray = [(cx, cy)]
+        for j in range(1, 5):
+            r = 150 * j / 4
+            jit = rs.uniform(-.09, .09)
+            ray.append((cx * (1 - j / 4) + r * math.cos(aa + jit), cy * (1 - j / 4) + r * math.sin(aa + jit)))
+        rays.append(ray)
+    pieces = []
+    for i in range(n):
+        r0, r1 = rays[i], rays[(i + 1) % n]
+        arc = []
+        a0, a1 = angs[i], angs[i + 1]
+        m = max(3, int((a1 - a0) / .18))
+        for j in range(m + 1):
+            aa = a0 + (a1 - a0) * j / m
+            rr = 150 + 5 * math.sin(aa * 14)
+            arc.append((rr * math.cos(aa), rr * math.sin(aa)))
+        pts = r0[:-1] + arc + r1[-2:0:-1]
+        cxp = sum(p[0] for p in pts) / len(pts)
+        cyp = sum(p[1] for p in pts) / len(pts)
+        pieces.append((pts, (cxp, cyp)))
+    return pieces, rays
+
+
+def _holes(sd, R=150):
+    rs = _rs(sd)
+    o = []
+    for i in range(-2, 3):
+        for j in range(-2, 3):
+            px, py = i * 50 + rs.uniform(-4, 4), j * 50 + rs.uniform(-4, 4)
+            if px * px + py * py < (R - 30) ** 2:
+                o.append(blob(ellipse_pts(px, py, 6, 6, 8), C_CRACKER_SH))
+                o.append(blob(ellipse_pts(px - 1.5, py - 2, 2.4, 2.4, 6), "#8E6428", .8))
+    return "".join(o)
+
+
+def _piece_off(i, c, bu, seed):
+    rs = _rs(seed + 100 + i)
+    L = math.hypot(*c) + 1e-3
+    ux, uy = c[0] / L, c[1] / L
+    e = lib.ease_out(bu, 2)
+    d = (60 + rs.uniform(10, 70)) * e
+    hop_ = -90 * math.sin(math.pi * min(1, bu * 1.3)) * rs.uniform(.6, 1.1) if bu < .77 else 0.0
+    rot = rs.uniform(-35, 35) * e
+    return ux * d, uy * d * .8 + hop_, rot
+
+
+def cracker_piece_c(x, y, k=1.0, i=0, broken_u=1.0, seed=0, n=7):
+    pieces, _ = _cracker_pieces(74700 + seed, n)
+    pts, c = pieces[i]
+    dx, dy, _ = _piece_off(i, c, clamp(broken_u), 74700 + seed)
+    return x + (c[0] + dx) * k, y + (c[1] + dy) * k
+
+
+def cracker(x, y, k=1.0, crack_u=0.0, broken_u=0.0, seed=0, n=7, rot=0.0, hide=()):
+    sd = 74700 + seed
+    pieces, rays = _cracker_pieces(sd, n)
+    bu = clamp(broken_u)
+    o = []
+    holes = _holes(sd + 1)
+    if bu <= 0.001:
+        rim = [((150 + 5 * math.sin(a * 14)) * math.cos(a), (150 + 5 * math.sin(a * 14)) * math.sin(a)) for a in [2 * math.pi * j / 90 for j in range(90)]]
+        inner = blob([(40, -150), (160, -60), (140, 120), (30, 160), (100, 40)], C_CRACKER_SH, .55)
+        inner += line([(-110, -40), (-90, -90), (-40, -118)], 6, C_CRACKER_HI, taper=.4, wmin=.3, seed=sd + 2, op=.9)
+        inner += holes
+        cu = clamp(crack_u)
+        if cu > .01:
+            for i, ray in enumerate(rays):
+                S = lib.sample(ray, False, 2.0)
+                m = max(2, int(len(S) * clamp(cu * 1.3 - i * .05)))
+                inner += line([tuple(p) for p in S[:m]], 4.4, "#6B4A1E", taper=.2, wmin=.4, seed=sd + 10 + i)
+        o.append(shape(rim, C_CRACKER, inner, w=4.6, seed=sd + 3))
+    else:
+        for i, (pts, c) in enumerate(pieces):
+            if i in hide:
+                continue
+            dx, dy, r = _piece_off(i, c, bu, sd)
+            loc = [(p[0] - c[0], p[1] - c[1]) for p in pts]
+            hin = blob([(p[0] + 8, p[1] + 8) for p in loc], C_CRACKER_SH, .45)
+            g = shape(loc, C_CRACKER, hin + f'<g transform="translate({-c[0]:.1f} {-c[1]:.1f})">{holes}</g>', w=4.2, seed=sd + 20 + i)
+            o.append(f'<g transform="translate({c[0] + dx:.1f} {c[1] + dy:.1f}) rotate({r:.1f})">{g}</g>')
+        if bu < .9:
+            rs = _rs(sd + 5)
+            for j in range(14):
+                a = rs.uniform(0, 2 * math.pi)
+                d = (40 + rs.uniform(30, 160)) * lib.ease_out(bu, 2)
+                hy = -120 * math.sin(math.pi * min(1, bu * 1.2)) * rs.uniform(.4, 1)
+                o.append(blob(ellipse_pts(math.cos(a) * d, math.sin(a) * d * .7 + hy, 5, 4, 6), C_CRACKER_SH, 1 - bu))
+    return _tf("".join(o), x, y, k, rot)
+
+
+def cracker_bit(x, y, k=1.0, rot=0.0, seed=0, size=1.0):
+    sd = 74800 + seed
+    rs = _rs(sd)
+    pts = []
+    for i in range(7):
+        a = 2 * math.pi * i / 7 + rs.uniform(-.2, .2)
+        r = rs.uniform(26, 36)
+        pts.append((r * math.cos(a), r * .85 * math.sin(a)) + ((1,) if i % 2 else ()))
+    inner = blob([(6, -30), (40, -10), (30, 30), (4, 30)], C_CRACKER_SH, .55)
+    inner += blob(ellipse_pts(-6, -2, 5, 5, 8), C_CRACKER_SH) + blob(ellipse_pts(12, 10, 4.4, 4.4, 8), C_CRACKER_SH)
+    return _tf(shape(pts, C_CRACKER, inner, w=3.6, seed=sd + 1), x, y, k * size, rot)
+
+
+def cracker_bits(x, y, k=1.0, u=1.0, seed=0, n=6):
+    sd = 74850 + seed
+    rs = _rs(sd)
+    u = clamp(u)
+    o = []
+    for i in range(n):
+        a = rs.uniform(-math.pi, 0) if i % 2 else rs.uniform(0, math.pi)
+        d = rs.uniform(60, 180) * lib.ease_out(u, 2)
+        hy = -110 * math.sin(math.pi * min(1, u * 1.25)) * rs.uniform(.5, 1)
+        o.append(cracker_bit(x + math.cos(a) * d * k, y + (math.sin(a) * d * .5 + hy) * k, k * rs.uniform(.6, 1.0), rs.uniform(-60, 60) * u, seed + i))
+    if u < .9:
+        for j in range(10):
+            a = rs.uniform(0, 2 * math.pi)
+            d = rs.uniform(30, 140) * lib.ease_out(u, 2)
+            o.append(blob(ellipse_pts(x + math.cos(a) * d * k, y + (math.sin(a) * d * .5 - 60 * math.sin(math.pi * u)) * k, 4 * k, 3.4 * k, 6), C_CRACKER_SH, 1 - u))
+    return "".join(o)
+
+
+def tap_rings(x, y, u, k=1.0, col="#FFFFFF"):
+    u = clamp(u)
+    if u <= 0 or u >= 1:
+        return ""
+    o = []
+    for j in range(3):
+        q = clamp(u * 1.4 - j * .2)
+        if q <= 0 or q >= 1:
+            continue
+        r = (20 + 110 * lib.ease_out(q, 2)) * k
+        o.append(f'<circle cx="{f(x)}" cy="{f(y)}" r="{f(r)}" fill="none" stroke="{col}" stroke-width="{f(7 * k * (1 - q))}" opacity="{1 - q:.3f}"/>')
+        o.append(f'<circle cx="{f(x)}" cy="{f(y)}" r="{f(r + 4 * k)}" fill="none" stroke="{lib.INK}" stroke-width="{f(2.4 * k * (1 - q))}" opacity="{.6 * (1 - q):.3f}"/>')
+    return "".join(o)

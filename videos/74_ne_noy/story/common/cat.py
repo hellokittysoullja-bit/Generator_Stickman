@@ -133,6 +133,10 @@ def head(st, t):
     turn = st.get("turn", 0.0)          # −1 — смотрит влево, +1 — вправо (черты смещаются)
     look = st.get("look", (0.0, 0.0))
     blink = st.get("blink", 0.0)
+    roll = st.get("roll", 0.0)       # рилс 74: закатывает глаза — зрачки уходят вверх под веко
+    if roll > .01:
+        look = (look[0] * (1 - roll), look[1] * (1 - roll) - 1.9 * roll)
+        blink = max(blink, .3 * roll)
     FX = 22 * turn
     s = []
     hd = [(744, 1062), (760, 1012), (800, 990), (870, 990), (914, 1014), (930, 1062), (922, 1112), (884, 1146), (788, 1146), (750, 1112)]
@@ -191,7 +195,7 @@ def head(st, t):
     return "".join(s)
 
 
-def body(walk=None, legs=0.0, paw=0.0, paw_dx=70.0, paw_l=0.0, paw_l_dx=70.0):
+def body(walk=None, legs=0.0, paw=0.0, paw_dx=70.0, paw_l=0.0, paw_l_dx=70.0, cross=0.0, cross_tap=0.0):
     """walk — фаза шага (передние лапы по очереди поднимаются, задние в противофазе); legs 0..1 — задние лапы вытянуты (толчок/полёт)."""
     s = []
     bd = [(760, 1296), (744, 1240), (756, 1180), (790, 1142), (880, 1142), (916, 1180), (928, 1240), (912, 1296)]
@@ -226,6 +230,9 @@ def body(walk=None, legs=0.0, paw=0.0, paw_dx=70.0, paw_l=0.0, paw_l_dx=70.0):
         dx = 0.0
         pw_ = paw if sx > 0 else paw_l
         pdx = paw_dx if sx > 0 else -paw_l_dx
+        if cross > .02 and pw_ <= .02:    # рилс 74: передние лапы скрещены на груди (те же две лапы, без третьей)
+            s.append(_cross_paw(sx, cross, cross_tap if sx > 0 else 0.0, sd))
+            continue
         if pw_ > .02:    # рилс 64: правая (от зрителя) передняя лапа тянется вперёд-вверх (тянет ящик, трогает)
             from ink import band as _band
             tip = (fx + pdx * pw_ * 1.6, 1306 - 150 * pw_)
@@ -246,9 +253,40 @@ def body(walk=None, legs=0.0, paw=0.0, paw_dx=70.0, paw_l=0.0, paw_l_dx=70.0):
     return "".join(s)
 
 
+def _cross_paw(sx, u, tap, sd):
+    """Передняя лапа скрещена на груди (u 0…1 — от стоячей к скрещённой); правая (sx>0) лежит сверху, tap 0…1 — она отрывается и стукает
+    когтем по подлокотнику справа (≈ (948, 1270))."""
+    from ink import band as _band
+    fx = CX + sx * 25
+    sh = (fx + sx * 4, 1196)
+    stand = (fx, 1290)
+    crossed = (CX - sx * 50, 1222 + (6 if sx > 0 else -4))
+    tip = (stand[0] + (crossed[0] - stand[0]) * u, stand[1] + (crossed[1] - stand[1]) * u)
+    if tap > 0:
+        tgt = (950, 1268)
+        tip = (tip[0] + (tgt[0] - tip[0]) * tap, tip[1] + (tgt[1] - tip[1]) * tap)
+    mid = ((sh[0] + tip[0]) / 2 + sx * 18 * u, (sh[1] + tip[1]) / 2 + 10 * u)
+    arm = _band([sh, mid, tip], 42, 36, step=4, cap=False)
+    o = shape(arm, CAT, blob([(sh[0], sh[1] + 10), (mid[0], mid[1] + 8), (tip[0], tip[1] + 14), (tip[0], tip[1] + 22), (sh[0], sh[1] + 30)], CAT_SH, .6),
+              w=4.6, seed=sd)
+    ang = math.degrees(math.atan2(tip[1] - mid[1], tip[0] - mid[0]))
+    pp = ellipse_pts(tip[0], tip[1], 26, 21, 12, rot=ang)
+    o += shape(pp, CAT, blob(ellipse_pts(tip[0], tip[1] + 6, 20, 12, 10, rot=ang), CAT_SH, .5), w=4.4, seed=sd + 50)
+    dx, dy = math.cos(math.radians(ang)), math.sin(math.radians(ang))
+    for kk in (-8, 6):
+        o += line([(tip[0] + dx * 10 - dy * kk, tip[1] + dy * 10 + dx * kk), (tip[0] + dx * 22 - dy * kk, tip[1] + dy * 22 + dx * kk)], 2.2, seed=sd + kk)
+    if tap > .3:
+        c = (tip[0] + dx * 26, tip[1] + dy * 26)
+        L2 = 22 * min(1.0, (tap - .3) / .4)
+        o += shape([(c[0] - dy * 5, c[1] + dx * 5, 1), (c[0] + dx * L2, c[1] + dy * L2, 1), (c[0] + dy * 5, c[1] - dx * 5, 1)], "#F4F1EA", "", w=2.4, seed=sd + 60)
+    return o
+
+
 def draw(x, y, k, st, t):
     """st: tilt (град), turn, look, blink, ear, perk, tail (град), breath (0..1), smile, flame_e, sleep (0..1: свернулся, голова опущена),
-    walk (фаза шага, None — стоит), legs 0..1 (задние лапы вытянуты: толчок, полёт), sx/sy (сжатие-растяжение от лап), rot (град, вокруг лап)."""
+    walk (фаза шага, None — стоит), legs 0..1 (задние лапы вытянуты: толчок, полёт), sx/sy (сжатие-растяжение от лап), rot (град, вокруг лап).
+    Рилс 74: cross 0..1 — передние лапы скрещиваются на груди (правая сверху; те же две лапы), cross_tap 0..1 — верхняя (правая) лапа
+    из скрещения тянется к подлокотнику справа (≈ (950, 1268) рисунка) и выпускает коготь; roll 0..1 — закатывает глаза."""
     sl = st.get("sleep", 0.0)
     br = 1 + 0.012 * math.sin(t * 2 * math.pi / 3.1) * (1 + 1.5 * sl)
     tail_a = st.get("tail", 0.0) + 14 * sl
@@ -257,7 +295,7 @@ def draw(x, y, k, st, t):
     o.append(f'<g transform="rotate({tail_a:.2f} {TAIL_PIVOT[0]} {TAIL_PIVOT[1]})">{tail_art()}{flame(t, 1.3 - .45 * sl, st.get("flame_e", 1.0))}</g>')
     sy = br * (1 - .2 * sl) * st.get("sy", 1.0)
     sx = (1 + .12 * sl) * st.get("sx", 1.0)
-    o.append(f'<g transform="translate({CX} {CBOT}) scale({sx:.4f} {sy:.4f}) translate({-CX} {-CBOT})">{body(st.get("walk"), st.get("legs", 0.0), st.get("paw", 0.0), st.get("paw_dx", 70.0), st.get("paw_l", 0.0), st.get("paw_l_dx", 70.0))}</g>')
+    o.append(f'<g transform="translate({CX} {CBOT}) scale({sx:.4f} {sy:.4f}) translate({-CX} {-CBOT})">{body(st.get("walk"), st.get("legs", 0.0), st.get("paw", 0.0), st.get("paw_dx", 70.0), st.get("paw_l", 0.0), st.get("paw_l_dx", 70.0), st.get("cross", 0.0), st.get("cross_tap", 0.0))}</g>')
     hy = -(sy - 1) * (CBOT - NECK[1]) + 34 * sl + 70 * st.get("drop", 0.0)
     o.append(f'<g transform="translate({22 * sl:.2f} {hy:.2f}) rotate({tilt:.2f} {NECK[0]} {NECK[1]})">{head(st, t)}</g>')
     return f'<g transform="translate({x:.2f} {y:.2f}) rotate({st.get("rot", 0.0):.2f}) scale({k:.4f}) translate({-CX} {-CBOT})">{"".join(o)}</g>'

@@ -3071,3 +3071,181 @@ CAT_ST.update({
     "nuzzle": {"blink": 1.0, "smile": 1.0, "tilt": 18, "rot": 8, "flame_e": 1.6},
     "sit_wrap": {"blink": .3, "smile": 1.0, "tail": -6, "look": (0, 0)},
 })
+
+
+# ═════════════════════════════ РИЛС 74 «ПРЕКРАТИ НЫТЬ» (автор — группа B) ═════════════════════════════
+# Дима (горчичное худи) — dima(x, y, scale, expr, pose, **ноги); сидит за столом — **sit_kw(x, y, scale); смотрит вправо (flip — влево).
+# Мимика EXPR["dima"]: guilty74 (смотрит вверх виновато), shrink74 (вжимает голову, взгляд вверх-исподлобья), screen74 (лицо в свете
+#   экрана, смотрит в телефон, усталый), rub74 (трёт щетину: глаза почти закрыты), straight74 (выпрямился, усталый взгляд вперёд),
+#   halfsmile74 (усталая полуулыбка прямо в камеру), look_cat74 (смотрит вниз-вправо на кота), jar74 (лицо сморщено от усилия, зажмурен),
+#   slip74 (руки соскользнули: брови домиком, рот приоткрыт), chew74 (жуёт кусочек, глаза в телефон), type_up74 (печатает: брови вверх,
+#   улыбка краешком рта).
+# Позы POSE (цели рук — в долях масштаба от таза; Дима смотрит вправо):
+#   phone_chest74 — телефон двумя руками у груди (центр телефона ≈ (262, −335)·sc, экран к Диме) — рисовать dima_phone(...);
+#   phone_belly74 — прячет телефон к животу (≈ (232, −230)·sc); place74 — ближняя рука кладёт телефон экраном вниз на стол (≈ (345, −205)·sc,
+#   кисть ладонью вниз), дальняя на столе; desk74 — обе руки спокойно на столе; rub74 — ближняя ладонь трёт щетину (≈ (262, −398)·sc;
+#   сцена водит цель вверх-вниз), shrug74 — дальняя рука на столе, ближняя кисть чуть приподнята ладонью вверх (пожимает плечом:
+#   + shrug=0.3); jar74 — дальняя кисть держит банку за бок (≈ (300, −235)·sc), ближняя обхватывает крышку (≈ (318, −405)·sc) — точные цели
+#   даёт сцена из props.jar_lid_c; eat74 — ближняя кисть у рта с кусочком (≈ (258, −392)·sc), дальняя держит телефон у груди.
+# dima_phone(x, y, scale, expr, pose="phone_chest74", phone_k=None, phone_rot=-12, thumb=0.0, **kw) — Дима с телефоном в обеих руках:
+#   тело и дальняя рука → телефон (спинкой к зрителю, экран к Диме) → ближняя рука поверх, пальцы огибают край; thumb 0…1 — большой
+#   палец ближней руки ходит по экрану (печатает). Возвращает dict фигуры + phone=(x, y) центр телефона.
+# dima_over_shoulder(x, y, k, phone_c, phone_k, phone_rot, phone_svg, thumb_u, press, jit, t, tilt, shade) — ВИД ЧЕРЕЗ ПЛЕЧО (s07, s14):
+#   (x, y) — основание шеи Димы (голова и плечо худи СО СПИНЫ, крупно на переднем плане, обычно у левого нижнего края кадра), k — масштаб
+#   (голова ≈ 300·k); телефон держат ОБЕ руки: рукава худи поднимаются снизу кадра к бокам телефона, ладони за корпусом, пальцы огибают
+#   края, большие пальцы на экране. phone_c — центр телефона, phone_svg — сам экран (props.phone_draft(phone_c…, k=phone_k, rot=phone_rot));
+#   thumb_u 0…1 — большой палец правой руки идёт от края экрана к кнопке «отправить» (props.phone_draft_btn), press 0…1 — нажимает,
+#   jit — дрожь пальца в px; tilt — наклон головы; shade 0…1 — спина и затылок в тени (свет только от экрана спереди).
+#   Возвращает dict(svg, thumb_tip=(x, y), head=(x, y)).
+# Кот (cat.py, новые ключи st): cross 0…1 — передние лапы скрещены на груди (правая сверху), cross_tap 0…1 — верхняя лапа из скрещения
+#   стукает когтем по подлокотнику справа; roll 0…1 — закатывает глаза. CAT_ST: king74 (надменный король: лапы скрещены, веки наполовину,
+#   нос задран, прямой рот), roll74 (закатил глаза; лапа «вниз» — cat_forearm), warm74 (тёплый после поворота),
+#   happy74 (довольный, жмурится, огонёк ярче — звёздочки props.sparkles кладёт сцена), no74 (мотает головой — turn/tilt сцена качает
+#   по ±), reach74 (лапа к зрителю), nuzzle74 (прижимается боком: наклон, глаза прикрыты).
+#   Лап всегда ЧЕТЫРЕ: тянется/стукает ТА ЖЕ передняя лапа, вторая на опоре.
+EXPR["dima"].update({
+    "guilty74": {"brows": "worry", "mouth": "flat", "lid": .9, "look": (.35, -.75), "blush": .35},
+    "shrink74": {"brows": "worry", "mouth": "frown", "lid": .7, "look": (.4, -.85), "blush": .4},
+    "screen74": {"brows": "tired", "mouth": "flat", "lid": .55, "look": (.45, .55)},
+    "rub74": {"brows": "tired", "mouth": "tired", "lid": .2, "look": (.2, .3)},
+    "straight74": {"brows": "calm", "mouth": "flat", "lid": .62, "look": (.3, 0)},
+    "halfsmile74": {"brows": "tired", "mouth": "side", "lid": .58, "look": (-.4, .02)},
+    "look_cat74": {"brows": "calm", "mouth": "flat", "lid": .8, "look": (.65, .7)},
+    "jar74": {"brows": "pinch", "mouth": "pressed", "lid": .3, "squeeze": 1.0, "look": (.5, .5)},
+    "slip74": {"brows": "worry", "mouth": "o", "open": .22, "lid": .85, "look": (.6, .55)},
+    "chew74": {"brows": "calm", "mouth": "flat", "lid": .62, "look": (.45, .55)},
+    "type_up74": {"brows": "up", "mouth": "side", "lid": .78, "look": (.5, .5), "bags": False},
+})
+
+_PH_HOLD_N = {"dir": (-.55, -.85), "curl": (.62, .66, .7, .74), "thumb": .55}
+_PH_HOLD_F = {"dir": (.85, -.4), "curl": (.6, .62, .66, .7), "thumb": .5}
+POSE.update({
+    "phone_chest74": (0.06, 0.08, {"f": ("ik", (215, -330), -1), "n": ("ik", (300, -322), -1)}, {"f": dict(_PH_HOLD_F), "n": dict(_PH_HOLD_N)}),
+    "phone_belly74": (0.1, 0.16, {"f": ("ik", (190, -232), -1), "n": ("ik", (268, -226), -1)}, {"f": dict(_PH_HOLD_F), "n": dict(_PH_HOLD_N)}),
+    "place74": (0.14, 0.14, {"f": ("ik", (215, -205), -1), "n": ("ik", (345, -205), -1)},
+                {"f": {"dir": (1, .3), "curl": (.35, .4, .45, .5), "thumb": .35}, "n": {"dir": (1, .25), "curl": (.15, .2, .25, .3), "spread": .1, "thumb": .3}}),
+    "desk74": (0.08, 0.04, {"f": ("ik", (205, -200), -1), "n": ("ik", (275, -198), -1)},
+               {"f": {"dir": (1, .3), "curl": (.4, .42, .46, .5), "thumb": .4}, "n": {"dir": (1, .3), "curl": (.35, .38, .42, .46), "thumb": .35}}),
+    "rub74": (0.04, 0.1, {"f": ("ik", (215, -200), -1), "n": ("ik", (262, -398), -1)},
+              {"f": {"dir": (1, .3), "curl": (.4, .42, .46, .5), "thumb": .4}, "n": {"dir": (.15, -1), "curl": (.25, .3, .35, .4), "spread": .08, "thumb": .4}}),
+    "shrug74": (-0.02, -0.04, {"f": ("ik", (210, -200), -1), "n": ("ik", (300, -255), -1)},
+                {"f": {"dir": (1, .3), "curl": (.4, .42, .46, .5), "thumb": .4}, "n": {"dir": (1, -.35), "flip": -1, "spread": .3, "curl": (.1, .15, .2, .25), "thumb": .2}}),
+    "jar74": (0.12, 0.12, {"f": ("ik", (300, -235), -1), "n": ("ik", (318, -405), -1)},
+              {"f": {"dir": (.3, -1), "curl": (.7, .72, .75, .78), "thumb": .6}, "n": {"dir": (1, .15), "curl": (.72, .75, .78, .8), "thumb": .65}}),
+    "eat74": (0.04, 0.08, {"f": ("ik", (240, -300), -1), "n": ("ik", (258, -392), -1)},
+              {"f": dict(_PH_HOLD_F), "n": {"dir": (.3, -1), "curl": (.55, .6, .7, .75), "thumb": .7}}),
+})
+
+
+def dima_phone(x, y, scale, expr="screen74", pose="phone_chest74", phone_k=None, phone_rot=-12.0, thumb=0.0, t=0.0, **kw):
+    """Дима держит телефон ДВУМЯ руками (экран к нему, нам — спинка). Телефон — между кистями, чуть выше и правее ближнего запястья."""
+    lay_body = kw.pop("layers_body", ("legs", "pelvis", "arm_f", "body"))
+    base = dima(x, y, scale, expr, pose, layers=lay_body, **kw)
+    arm = dima(x, y, scale, expr, pose, layers=("arm_n",), **kw)
+    sc = base["scale"]
+    wn, wf = np.array(base["wrist"]["n"]), np.array(base["wrist"]["f"])
+    c = (wn + wf) / 2 + np.array([14, -58]) * sc
+    pk = phone_k if phone_k is not None else 1.45 * sc
+    ph = mobilnik(float(c[0]), float(c[1]), pk, phone_rot, seed=952)
+    th = ""
+    if thumb > .01:      # большой палец ближней руки над краем экрана: короткий штрих-фаланга, ходит вверх-вниз
+        ph_top = (float(c[0]) - 6 * sc, float(c[1]) - 40 * sc - 14 * sc * math.sin(t * 14) * thumb)
+        th = shape(lib.T(lib.rrect(-9, -26, 9, 18, 8), ph_top[0], ph_top[1], sc * 1.4, -25), C.get("SKIN", "#ecc4a2"), "", w=3.2, seed=953)
+    base["svg"] = base["svg"] + ph + arm["svg"] + th
+    base["wrist"] = arm["wrist"]
+    base["phone"] = (float(c[0]), float(c[1]))
+    return base
+
+
+def _shade_filter(u):
+    fid = "shd74_%d" % int(round(u * 100))
+    if not any(f'id="{fid}"' in d for d in lib.DEFS):
+        a = 1 - .55 * u
+        b = .02 * u
+        lib.DEFS.append(f'<filter id="{fid}"><feComponentTransfer><feFuncR type="linear" slope="{a:.3f}" intercept="{b:.3f}"/>'
+                        f'<feFuncG type="linear" slope="{a:.3f}" intercept="{b:.3f}"/><feFuncB type="linear" slope="{a * 1.05:.3f}" intercept="{b * 2:.3f}"/>'
+                        f'</feComponentTransfer></filter>')
+    return fid
+
+
+def _thumb(base, tip, w, sd, skin, skin_sh):
+    """Большой палец сверху на экране: фаланга от основания к кончику, ноготь."""
+    bx, by = base
+    tx, ty = tip
+    L = math.hypot(tx - bx, ty - by) + 1e-6
+    ux, uy = (tx - bx) / L, (ty - by) / L
+    nx, ny = -uy, ux
+    pts = lib.band([(bx, by), ((bx + tx) / 2 + nx * w * .1, (by + ty) / 2 + ny * w * .1), (tx, ty)], w, w * .82, step=3)
+    o = shape(pts, skin, blob([(bx + nx * w * .5, by + ny * w * .5), (tx + nx * w * .4, ty + ny * w * .4), (tx, ty), (bx, by)], skin_sh, .6), w=4.2, seed=sd)
+    nl = ellipse_pts(tx - ux * w * .28, ty - uy * w * .28, w * .3, w * .22, 10, rot=math.degrees(math.atan2(uy, ux)))
+    o += shape(nl, "#f1cdbd", "", w=2.4, seed=sd + 1)
+    return o
+
+
+def dima_over_shoulder(x, y, k, phone_c, phone_k=1.0, phone_rot=0.0, phone_svg="", thumb_u=0.0, press=0.0, jit=0.0, t=0.0, tilt=0.0, shade=0.0,
+                       who="dima"):
+    global C
+    C = PAL[who]
+    pc = np.array(phone_c, float)
+    a = math.radians(phone_rot)
+    ca, sa = math.cos(a), math.sin(a)
+
+    def P(px, py):          # точка корпуса телефона (локально, центр 0, корпус 300×600) → мир
+        return (pc[0] + (px * ca - py * sa) * phone_k, pc[1] + (px * sa + py * ca) * phone_k)
+    skin, skin_sh = C["SKIN"], C["SKIN_SH"]
+    hk = phone_k * 1.55           # кисть ≈ 1/3 лица Димы: ладонь под стать телефону
+    o = []
+    back = dima_back(x, y, k, tilt=tilt, look_up=0.0, shrug=.1, t=t, who=who)
+    shl = back["shoulders"]
+    # рукава: от плеч (под спиной) вперёд-вверх к запястьям у нижних углов корпуса
+    for side in (-1, 1):
+        wr = P(side * 150, 210)
+        root = (shl[0 if side < 0 else 1][0] - side * 60 * k, shl[0 if side < 0 else 1][1] + 40 * k)
+        el = ((root[0] + wr[0]) / 2 + side * 90 * phone_k, (root[1] + wr[1]) / 2 + 60 * phone_k)
+        sl = lib.band([root, el, (wr[0] + side * 26 * phone_k, wr[1] + 70 * phone_k)], 120 * phone_k, 96 * phone_k, step=5, cap=False)
+        sh = blob([(root[0] + side * 60 * phone_k, root[1]), (el[0] + side * 46 * phone_k, el[1]), (wr[0] + side * 40 * phone_k, wr[1] + 70 * phone_k),
+                   (wr[0] + side * 10 * phone_k, wr[1] + 70 * phone_k), (el[0], el[1]), (root[0], root[1])], C["TOP_SH"], .85)
+        cuff = line([(wr[0] + side * 26 * phone_k - 50 * phone_k, wr[1] + 84 * phone_k), (wr[0] + side * 26 * phone_k + 50 * phone_k, wr[1] + 64 * phone_k)],
+                    4, C["FOLD"], taper=.2, wmin=.5, seed=7420 + side)
+        o.append(shape(sl, C["TOP"], sh + cuff, w=5.0, seed=7410 + side))
+        # ладонь за корпусом: тыльная сторона кисти у бока телефона, пальцы уходят за корпус
+        palm = lib.T([(-40, -10), (-30, -70), (10, -96), (52, -80), (64, -20), (46, 40), (0, 56), (-34, 40)], wr[0] - side * 4 * phone_k,
+                     wr[1] - 16 * phone_k, hk * .62, -side * 12 + phone_rot)
+        if side < 0:
+            palm = [(2 * (wr[0] - 4 * phone_k * side) - p[0], p[1]) for p in palm]
+        o.append(shape(palm, skin, blob([(p[0] + side * 10 * phone_k, p[1] + 8 * phone_k) for p in palm[:5]], skin_sh, .55), w=4.4, seed=7430 + side))
+    o.append(phone_svg)
+    # пальцы, огибающие края корпуса (кончики на торце спереди): по три с каждой стороны
+    for side in (-1, 1):
+        for j, py in enumerate((40, 100, 160)):
+            ex = P(side * 150, py)
+            tip = (ex[0] - side * 16 * phone_k * ca, ex[1] - side * 16 * phone_k * sa)
+            fp = ellipse_pts((ex[0] + tip[0]) / 2 + side * 4 * phone_k, (ex[1] + tip[1]) / 2, 22 * phone_k, 26 * phone_k, 10)
+            o.append(shape(fp, skin, blob(ellipse_pts((ex[0] + tip[0]) / 2 + side * 12 * phone_k, (ex[1] + tip[1]) / 2 + 6 * phone_k, 12 * phone_k,
+                                                     18 * phone_k, 8), skin_sh, .6), w=3.4, seed=7440 + j + 10 * side))
+    # большие пальцы на экране: левый лежит у нижнего левого края, правый идёт к кнопке
+    lb = P(-150, 230)
+    o.append(_thumb(lb, P(-92, 120), 44 * phone_k, 7450, skin, skin_sh))
+    rb = P(150, 250)
+    rest = P(70, 70)
+    btn = P(82, 196)
+    u = lib.ease_io(lib.clamp(thumb_u))
+    tip = (rest[0] + (btn[0] - rest[0]) * u + jit, rest[1] + (btn[1] - rest[1]) * u - (1 - press) * 26 * phone_k * u + jit * .6)
+    o.append(_thumb(rb, tip, 46 * phone_k * (1 + .06 * press), 7460, skin, skin_sh))
+    # голова и плечо со спины на переднем плане
+    bsvg = back["svg"]
+    if shade > .02:
+        bsvg = f'<g filter="url(#{_shade_filter(round(shade, 2))})">{bsvg}</g>'
+    o.append(bsvg)
+    return dict(svg="".join(o), thumb_tip=tip, head=back["head"])
+
+
+CAT_ST.update({
+    "king74": {"cross": 1.0, "smug": 1.0, "look": (0, .35), "tilt": -4, "cold": .55, "ear": -4},
+    "roll74": {"cross": 1.0, "smug": .8, "roll": 1.0, "tilt": 8, "cold": .4},
+    "warm74": {"blink": .3, "smile": 1.0, "look": (0, .1), "flame_e": 1.4},
+    "happy74": {"blink": .75, "smile": 1.0, "perk": 1.0, "look": (0, 0), "flame_e": 1.8},
+    "no74": {"perk": .6, "look": (0, 0), "smile": 0.0},
+    "reach74": {"paw": 1.0, "paw_dx": 30, "look": (0, 0), "smile": 1.0, "perk": .5},
+    "nuzzle74": {"blink": .85, "smile": 1.0, "tilt": 14, "rot": 6, "flame_e": 1.5},
+})
