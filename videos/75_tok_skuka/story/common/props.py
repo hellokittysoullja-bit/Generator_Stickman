@@ -4877,6 +4877,28 @@ def tap_rings(x, y, u, k=1.0, col="#FFFFFF"):
 #                       (толщина и яркость), branches — отростков.
 #   zap_net(x0, y0, x1, y1, t, seed, u, n)   сетка тонких молний по прямоугольнику (по одежде), u — сила.
 #   smoke_rings(x, y, k, u, t, seed, n)   дымок кольцами: кольца поднимаются от (x, y), растут и тают (u — сколько дыма, 0 — нет).
+#   shock_box_old(x, y, k, needle, switch, t, seed)  старый аппарат 380×280·k (ЦЕНТР ДНА): оливково-серый корпус, две круглые шкалы
+#                       с делениями БЕЗ чисел и стрелкой (needle −1…1, левая; правая — эхо с запаздыванием), тумблер (switch 0 — вниз,
+#                       1 — вверх), две ручки, клемма слева. shock_box_old_wire(x, y, k) → клемма провода в мире.
+#   rotunda(x, y, k, lights, door, seed)  белое здание с колоннами и круглым куполом (ЦЕНТР ДНА ступеней), ≈ 760×640·k: портик из шести
+#                       колонн, фронтон без надписей, барабан и купол, крылья с окнами; lights 0…1 — окна загораются тёплым; door 0…1 —
+#                       двери портика открыты (тёмный проём). rotunda_door(x, y, k) → центр дверей, rotunda_window(x, y, k, i) → центр окна i
+#                       (0…3 слева направо по крыльям).
+#   bus_red(x, y, k, t, seed, speed)   красный двухэтажный автобус сбоку, едет вправо, ≈ 620×390·k (ЦЕНТР ДНА — между колёс на дороге);
+#                       окна двух этажей, двери, фары, колёса крутятся от t·speed; без номеров и надписей.
+#   rain_streaks(x0, y0, x1, y1, t, seed, n, k, slant, col)   косой дождь штрихами в прямоугольнике (падает от t)
+#   phone_book(x, y, k, rot, flip, seed)   толстый раскрытый справочник сверху-спереди (ЦЕНТР), 460×300·k: две страницы с волнистыми серыми
+#                       строками в три колонки (ни одной цифры), толстый блок страниц снизу; flip 0…1 — правая страница перелистывается влево.
+#                       sheet_lines(x, y, k, w, h, write, seed) — лист, на котором пишутся волнистые строки (write 0…1).
+#   plastic_cup(x, y, k, rot, col, seed)   пластиковый стаканчик 70×90·k (ЦЕНТР ДНА; rot 180 — вверх дном, шляпа); col "white" | "blue" | "red"
+#   cups(x, y, k, n, seed)                стопка из n вложенных стаканчиков (ЦЕНТР ДНА)
+#   cup_phone(p0, p1, k, sag, seed)        телефон-банка: два стаканчика донцами к центру и нитка между (p0, p1 — центры стаканчиков)
+#   cup_sprout(x, y, k, grow, t, seed)     стаканчик-горшок с землёй и ростком (ЦЕНТР ДНА), grow 0…1 — росток вырастает и раскрывает листья
+#   thought_clouds(cx, cy, k, n, spin, t, scatter, poke, seed)   серые штрихованные тучки-каракули кружат вокруг (cx, cy) по эллипсу;
+#                       spin — скорость (обороты в секунду), рокочут (дрожь); poke 0…1 — ближняя тучка тыкается к центру; scatter 0…1 —
+#                       разлетаются наружу, мельчают и исчезают. thought_cloud_pos(...) → [(x, y, s)] те же места.
+#   idea_spark(x, y, k, u, t, seed)   лампочка-искра идеи (ЦЕНТР): маленькая лампочка с тёплым ореолом и лучами, u 0…1 — выскок (pop
+#                       задаёт сцена через u как масштаб), мерцает от t; без букв.
 #   mug_shatter(x, y, k, u, seed, col)    кружка разбивается о пол, (x, y) — точка удара на полу; u 0 — целая кружка стоит в точке,
 #                       u 0…1 — осколки разлетаются и ложатся, кофе брызгами и лужицей.
 C_BOX = "#9CA3AD"
@@ -5184,3 +5206,332 @@ def mug_shatter(x, y, k=1.0, u=0.0, seed=0, col="red"):
     if uu < .35:
         o.append(clink(x, y - 20 * k, k * 1.6, uu / .35, seed, col="#1c1622"))
     return "".join(o)
+
+
+C_OLIVE = "#8E9478"
+C_OLIVE_SH = "#676C55"
+C_OLIVE_HI = "#AEB496"
+C_DIAL = "#F3EEDD"
+C_BUS = "#D2372C"
+C_BUS_SH = "#9A2219"
+C_BUS_HI = "#EA6A5C"
+C_GLASS_BL = "#BFDCEB"
+C_GLASS_BL_SH = "#93BCD2"
+C_STONE = "#F2EEE4"
+C_STONE_SH = "#D5CEBE"
+C_STONE_HI = "#FFFFFF"
+C_BRICK = "#EEE8DA"
+C_BRICK_SH = "#D3CAB6"
+C_DOME = "#E9E6DD"
+C_CUP = {"white": ("#F4F6F8", "#C9D0D8"), "blue": ("#9CC7EA", "#6E9FCB"), "red": ("#F08A7E", "#C95E52"), "yellow": ("#F6D46A", "#D3AE3E")}
+C_THINK = "#8F949D"
+C_THINK_SH = "#6C717A"
+
+
+def _dial(cx, cy, r, needle, sd):
+    o = [shape(ellipse_pts(cx, cy, r + 10, r + 10, 22), "#3C4048", "", w=4, seed=sd),
+         shape(ellipse_pts(cx, cy, r, r, 22), C_DIAL, "", w=3.2, seed=sd + 1)]
+    for i in range(11):
+        a = math.radians(-150 + i * 12)
+        r0 = r * (.72 if i % 5 == 0 else .8)
+        o.append(line([(cx + math.cos(a) * r0, cy + math.sin(a) * r0), (cx + math.cos(a) * r * .9, cy + math.sin(a) * r * .9)],
+                      3.6 if i % 5 == 0 else 2.4, lib.INK, taper=0, wmin=1, seed=sd + 10 + i))
+    o.append(line([(cx + math.cos(math.radians(-150 + j * 6)) * r * .62, cy + math.sin(math.radians(-150 + j * 6)) * r * .62) for j in range(21)],
+                  2.2, "#C8553D", taper=0, wmin=1, seed=sd + 30))
+    a = math.radians(-90 + 55 * clamp(needle, -1, 1))
+    o.append(line([(cx, cy + 6), (cx + math.cos(a) * r * .85, cy + math.sin(a) * r * .85)], 5, "#B42A20", taper=.7, wmin=.2, seed=sd + 40))
+    o.append(blob(ellipse_pts(cx, cy, 7, 7, 10), lib.INK))
+    return "".join(o)
+
+
+def shock_box_old_wire(x, y, k=1.0):
+    return x - 200 * k, y - 120 * k
+
+
+def shock_box_old(x, y, k=1.0, needle=0.0, switch=0.0, t=0.0, seed=0):
+    sd = 16000 + seed
+    o = [blob(ellipse_pts(0, 4, 210, 14, 16), "#3A2E1E", .25)]
+    o.append(shape(rrect(-190, -280, 190, 0, 14), C_OLIVE, blob(rect_pts(-190, -40, 190, 0), C_OLIVE_SH) +
+                   line([(-176, -266), (176, -266)], 4, C_OLIVE_HI, taper=.2, seed=sd + 1), w=5, seed=sd + 2))
+    for sx, sy in ((-172, -262), (172, -262), (-172, -20), (172, -20)):
+        o.append(shape(ellipse_pts(sx, sy, 6, 6, 8), C_OLIVE_SH, "", w=2, seed=sd + 3))
+    o.append(_dial(-82, -170, 62, needle, sd + 100))
+    n2 = math.sin(t * 4.3) * .3 + needle * .6
+    o.append(_dial(82, -170, 62, n2, sd + 200))
+    # тумблер
+    o.append(shape(rrect(-30, -84, 30, -40, 6), "#3C4048", "", w=3, seed=sd + 5))
+    a = math.radians(-90 + (-35 if switch < .5 else 35) * (1 - 2 * abs(switch - .5) * 0) )
+    a = math.radians(90 - 70 * clamp(switch) * 2 + 35) if False else math.radians(55 - 110 * clamp(switch) + 180)
+    tip = (math.cos(a) * 38, -62 + math.sin(a) * 38)
+    o.append(line([(0, -62), tip], 11, lib.INK, taper=0, wmin=1, seed=sd + 6))
+    o.append(line([(0, -62), tip], 6, C_METAL, taper=0, wmin=1, seed=sd + 7))
+    o.append(shape(ellipse_pts(tip[0], tip[1], 9, 9, 10), "#D9332B", "", w=2.6, seed=sd + 8))
+    for sx in (-130, 130):
+        o.append(shape(ellipse_pts(sx, -62, 20, 20, 14), "#3C4048", line([(sx, -62), (sx + 12, -76)], 3.5, C_METAL, seed=sd + 9), w=3, seed=sd + 10))
+    # клемма слева
+    o.append(shape(rrect(-206, -132, -188, -108, 3), C_METAL, "", w=2.6, seed=sd + 11))
+    return _tf("".join(o), x, y, k)
+
+
+def _column(x0, x1, y0, y1, sd):
+    o = [shape(rect_pts(x0, y0, x1, y1), C_STONE, line([(x0 + (x1 - x0) * .7, y0 + 6), (x0 + (x1 - x0) * .7, y1 - 6)], (x1 - x0) * .22, C_STONE_SH,
+                                                     taper=0, wmin=1, seed=sd) +
+               line([(x0 + (x1 - x0) * .35, y0 + 6), (x0 + (x1 - x0) * .35, y1 - 6)], 2.4, C_STONE_SH, taper=.2, seed=sd + 1), w=3.4, seed=sd + 2),
+         shape(rect_pts(x0 - 8, y0 - 14, x1 + 8, y0), C_STONE, "", w=3, seed=sd + 3),
+         shape(rect_pts(x0 - 8, y1, x1 + 8, y1 + 12), C_STONE, "", w=3, seed=sd + 4)]
+    return "".join(o)
+
+
+def rotunda_door(x, y, k=1.0):
+    return x, y - 130 * k
+
+
+def rotunda_window(x, y, k=1.0, i=0):
+    xs = (-330, -250, 250, 330)[i % 4]
+    return x + xs * k, y - 190 * k
+
+
+def rotunda(x, y, k=1.0, lights=0.0, door=0.0, seed=0):
+    sd = 16300 + seed
+    o = [blob(ellipse_pts(0, 6, 420, 20, 18), "#6B5B3A", .16)]
+    lw = mix("#3E4A5E", "#FFD36B", clamp(lights))
+    # крылья
+    for side in (-1, 1):
+        x0, x1 = sorted((side * 190, side * 380))
+        inner = blob(rect_pts(x0, -60, x1, 0), C_BRICK_SH)
+        for i, cxw in enumerate((side * 250, side * 330)):
+            inner += shape(rrect(cxw - 26, -250, cxw + 26, -130, 8), lw, line([(cxw, -250), (cxw, -130)], 3, C_STONE, taper=0, seed=sd + 5 + i) +
+                           line([(cxw - 26, -190), (cxw + 26, -190)], 3, C_STONE, taper=0, seed=sd + 7 + i), w=3.4, seed=sd + 9 + i)
+        o.append(shape(rect_pts(x0, -320, x1, 0), C_BRICK, inner, w=4.2, seed=sd + 20 + side))
+        o.append(shape(rect_pts(x0 - 8, -336, x1 + 8, -318), C_STONE, "", w=3.4, seed=sd + 22 + side))
+    # барабан и купол
+    o.append(shape(rect_pts(-210, -500, 210, -330), C_STONE, line([(-210, -470), (210, -470)], 3, C_STONE_SH, seed=sd + 30), w=4.2, seed=sd + 31))
+    dome = [(-230, -496, 1)] + [(230 * math.cos(math.radians(a)), -496 - 190 * math.sin(math.radians(a))) for a in range(170, 9, -10)] + [(230, -496, 1)]
+    dome_in = blob([(60, -500), (230, -500)] + [(230 * math.cos(math.radians(a)), -496 - 190 * math.sin(math.radians(a))) for a in range(10, 80, 10)] +
+                   [(60, -680)], lib.mul(C_DOME, (.88, .88, .9)))
+    for j in range(5):
+        dome_in += line([(-180 + j * 90, -500), (-120 + j * 60, -620), (-40 + j * 20, -680)], 2.4, C_STONE_SH, taper=.4, seed=sd + 40 + j)
+    o.append(shape(dome, C_DOME, dome_in, w=4.6, seed=sd + 32))
+    o.append(shape(rrect(-24, -712, 24, -684, 6), C_STONE, "", w=3, seed=sd + 33))
+    # ступени
+    for i in range(3):
+        o.append(shape(rect_pts(-230 + i * 16, -24 * (i + 1), 230 - i * 16, -24 * i), C_STONE, "", w=3.2, seed=sd + 50 + i))
+    # портик: фронтон, антаблемент, колонны, двери
+    o.append(shape(rect_pts(-230, -330, 230, -72), "#E0D9C8", "", w=0.1, ink=False, seed=sd + 59))
+    dw = 48 + 10 * door
+    dcol = mix("#7A5232", "#1F1A16", clamp(door))
+    o.append(shape(rrect(-dw, -210, dw, -72, 6), dcol, line([(0, -205), (0, -72)], 3, lib.INK, taper=0, seed=sd + 60) if door < .5 else "", w=3.6, seed=sd + 61))
+    for i in range(6):
+        cx = -200 + i * 80
+        o.append(_column(cx - 17, cx + 17, -316, -84, sd + 70 + i * 7))
+    o.append(shape(rect_pts(-240, -350, 240, -316), C_STONE, line([(-236, -334), (236, -334)], 2.6, C_STONE_SH, seed=sd + 120), w=4, seed=sd + 121))
+    o.append(shape([(-252, -350, 1), (0, -440, 1), (252, -350, 1)], C_STONE, shape([(-200, -358, 1), (0, -420, 1), (200, -358, 1)], C_STONE_SH, "", w=2.6,
+                                                                                    seed=sd + 122), w=4.2, seed=sd + 123))
+    return _tf("".join(o), x, y, k)
+
+
+def _wheel(cx, cy, r, ang, sd):
+    o = [shape(ellipse_pts(cx, cy, r, r, 20), "#2A2C31", "", w=4, seed=sd),
+         shape(ellipse_pts(cx, cy, r * .52, r * .52, 16), C_METAL, "", w=3, seed=sd + 1)]
+    for j in range(5):
+        a = math.radians(ang + j * 72)
+        o.append(line([(cx, cy), (cx + math.cos(a) * r * .48, cy + math.sin(a) * r * .48)], 4, C_METAL_SH, taper=0, wmin=1, seed=sd + 2 + j))
+    o.append(blob(ellipse_pts(cx, cy, 6, 6, 8), lib.INK))
+    return "".join(o)
+
+
+def bus_red(x, y, k=1.0, t=0.0, seed=0, speed=1.0):
+    sd = 16600 + seed
+    bob = 3 * math.sin(t * 17)
+    o = [blob(ellipse_pts(0, 6, 320, 16, 16), "#1E2433", .3)]
+    body = rrect(-310, -390 + bob, 310, -40 + bob, 34)
+    inner = blob(rect_pts(-310, -110 + bob, 310, -40 + bob), C_BUS_SH)
+    inner += blob(rect_pts(-310, -222 + bob, 310, -206 + bob), "#F2EEE4")
+    for row, (y0, y1) in enumerate(((-370, -250), (-196, -120))):
+        for i in range(5):
+            xa = -270 + i * 104
+            if row == 1 and i == 4:
+                continue
+            inner += shape(rrect(xa, y0 + bob, xa + 86, y1 + bob, 10), C_GLASS_BL, line([(xa + 14, y0 + 14 + bob), (xa + 34, y0 + 4 + bob)], 4, "#FFFFFF",
+                                                                                       taper=.3, seed=sd + i) +
+                           blob(rect_pts(xa + 52, y0 + bob, xa + 86, y1 + bob), C_GLASS_BL_SH, .7), w=3.4, seed=sd + 10 + row * 10 + i)
+    inner += shape(rrect(196, -200 + bob, 290, -50 + bob, 6), C_GLASS_BL, line([(243, -200 + bob), (243, -50 + bob)], 3, lib.INK, seed=sd + 30), w=3.4, seed=sd + 31)
+    o.append(shape(body, C_BUS, inner, w=5, seed=sd + 40))
+    o.append(shape(ellipse_pts(296, -90 + bob, 14, 12, 10), "#FFF2B8", "", w=3, seed=sd + 41))
+    o.append(shape(rrect(-318, -84 + bob, -296, -56 + bob, 4), "#E2412F", "", w=2.4, seed=sd + 42))
+    ang = t * 360 * 1.6 * speed
+    for wx in (-200, 200):
+        o.append(blob(ellipse_pts(wx, -40 + bob, 64, 40, 14), "#3A1410"))
+        o.append(_wheel(wx, -40, 50, ang, sd + 50 + wx))
+    return _tf("".join(o), x, y, k)
+
+
+def rain_streaks(x0, y0, x1, y1, t=0.0, seed=0, n=40, k=1.0, slant=.25, col="#7FA6C9"):
+    rs = _rs(16900 + seed)
+    o = []
+    H = y1 - y0
+    for j in range(n):
+        px = rs.uniform(x0, x1)
+        sp = rs.uniform(1.6, 2.2) * 900
+        py = y0 + (rs.uniform(0, H) + t * sp) % H
+        L = rs.uniform(40, 70) * k
+        o.append(line([(px + slant * (py - y0), py), (px + slant * (py - y0 + L), py + L)], 3.2 * k, col, taper=.6, wmin=.2, seed=16910 + j))
+    return "".join(o)
+
+
+def _wavy_rows(x0, y0, x1, y1, rows, seed, col="#9AA0A8", w=3.0, cols=1, upto=1.0):
+    rs = _rs(seed)
+    o = []
+    cw = (x1 - x0) / cols
+    total = rows * cols
+    m = upto * total
+    idx = 0
+    for c in range(cols):
+        for r in range(rows):
+            if idx >= m:
+                return "".join(o)
+            q = min(1.0, m - idx)
+            yy = y0 + (y1 - y0) * (r + .5) / rows
+            xa = x0 + c * cw + 8
+            xb = xa + (cw - 16) * rs.uniform(.65, 1.0) * q
+            pts = [(xa + (xb - xa) * i / 8, yy + 2.2 * math.sin(i * 1.7 + r)) for i in range(9)]
+            o.append(line(pts, w, col, taper=.3, wmin=.4, seed=seed + 7 + idx))
+            idx += 1
+    return "".join(o)
+
+
+def sheet_lines(x, y, k=1.0, w=240.0, h=300.0, write=1.0, seed=0, rot=0.0):
+    sd = 17000 + seed
+    o = [shape(rect_pts(-w / 2, -h / 2, w / 2, h / 2), "#FFFFFF", _wavy_rows(-w / 2 + 6, -h / 2 + 14, w / 2 - 6, h / 2 - 14, 9, sd + 1, "#4A5060",
+                                                                               3.4, 1, clamp(write)), w=3.6, seed=sd)]
+    return _tf("".join(o), x, y, k, rot)
+
+
+def sheet_tip(x, y, k=1.0, w=240.0, h=300.0, write=1.0, rot=0.0):
+    rows = 9
+    m = clamp(write) * rows
+    r = min(rows - 1, int(m))
+    q = m - r if write < 1 else 1.0
+    lx = -w / 2 + 14 + (w - 28) * .85 * q
+    ly = -h / 2 + 14 + (h - 28) * (r + .5) / rows
+    c, s = math.cos(math.radians(rot)), math.sin(math.radians(rot))
+    return x + (lx * c - ly * s) * k, y + (lx * s + ly * c) * k
+
+
+def phone_book(x, y, k=1.0, rot=0.0, flip=0.0, seed=0):
+    sd = 17100 + seed
+    o = [blob(ellipse_pts(0, 120, 250, 18, 16), "#3A2E1E", .2)]
+    # толстый блок
+    o.append(shape([(-236, 60, 1), (236, 60, 1), (236, 112, 1), (-236, 112, 1)], "#EDE7D6",
+                   "".join(line([(-230, 68 + j * 8), (230, 68 + j * 8)], 1.6, "#BEB59C", taper=0, seed=sd + j) for j in range(6)), w=4, seed=sd + 10))
+    o.append(shape(rect_pts(-240, 106, 240, 118), "#C79A2E", "", w=3.4, seed=sd + 11))
+    pages = []
+    for side in (-1, 1):
+        x0, x1 = sorted((0, side * 230))
+        pg = [(x0, -150, 1), (x1, -150 + (8 if side < 0 else 8), 1), (x1, 62, 1), (x0, 66, 1)]
+        pages.append(shape(pg, "#FBF8EE", _wavy_rows(x0 + 6, -136, x1 - 6, 52, 13, sd + 20 + side * 5, "#A3A8B0", 2.6, 3), w=3.6, seed=sd + 30 + side))
+    o += pages
+    o.append(line([(0, -150), (0, 66)], 4, "#B8AF97", taper=.2, seed=sd + 40))
+    fl = clamp(flip)
+    if 0 < fl < 1:
+        # перелистываемая страница: правая половина сжимается по x к корешку и уходит на левую
+        sx = math.cos(math.pi * fl)
+        lift = math.sin(math.pi * fl) * 50
+        pg = [(0, -150, 1), (230 * sx, -150 - lift, 1), (230 * sx, 62 - lift, 1), (0, 66, 1)]
+        col = "#FFFFFF" if sx > 0 else "#F1ECDD"
+        o.append(shape(pg, col, _wavy_rows(min(0, 230 * sx) + 6, -136 - lift * .5, max(0, 230 * sx) - 6, 52 - lift * .5, 13, sd + 50, "#A3A8B0", 2.6, 3)
+                       if abs(sx) > .25 else "", w=3.6, seed=sd + 51))
+    return _tf("".join(o), x, y, k, rot)
+
+
+def plastic_cup(x, y, k=1.0, rot=0.0, col="white", seed=0):
+    sd = 17300 + seed
+    c, csh = C_CUP.get(col, C_CUP["white"])
+    body = [(-35, -90, 1), (35, -90, 1), (25, 0, 1), (-25, 0, 1)]
+    inner = blob([(12, -90), (35, -90), (25, 0), (8, 0)], csh, .8) + line([(-22, -80), (-16, -10)], 5, "#FFFFFF", taper=.4, seed=sd + 1)
+    inner += line([(-33, -78), (33, -78)], 2.4, csh, taper=0, seed=sd + 2)
+    o = shape(body, c, inner, w=3.6, seed=sd) + shape(ellipse_pts(0, -90, 36, 8, 14), lib.mul(csh, (.95, .95, .95)), "", w=3, seed=sd + 3)
+    return _tf(o, x, y, k, rot)
+
+
+def cups(x, y, k=1.0, n=5, seed=0, col="white"):
+    return "".join(plastic_cup(x, y - i * 16 * k, k, 0, col, seed + i) for i in range(n))
+
+
+def cup_phone(p0, p1, k=1.0, sag=20.0, seed=0, col=("red", "blue")):
+    (x0, y0), (x1, y1) = p0, p1
+    a = math.degrees(math.atan2(y1 - y0, x1 - x0))
+    pts = [(x0 + (x1 - x0) * q / 12, y0 + (y1 - y0) * q / 12 + sag * math.sin(math.pi * q / 12)) for q in range(13)]
+    o = line(pts, 3.4, "#7A5A3A", taper=0, wmin=1, seed=17400 + seed)
+    o += plastic_cup(x0, y0, k, a - 90, col[0], seed + 1)
+    o += plastic_cup(x1, y1, k, a + 90, col[1], seed + 2)
+    return o
+
+
+def cup_sprout(x, y, k=1.0, grow=1.0, t=0.0, seed=0, col="yellow"):
+    sd = 17500 + seed
+    o = [plastic_cup(0, 0, 1, 0, col, seed)]
+    o.append(blob(ellipse_pts(0, -88, 30, 6, 12), "#5A3F2A"))
+    g = clamp(grow)
+    if g > 0:
+        sw = 4 * math.sin(t * 3)
+        top = (sw * g, -88 - 110 * g)
+        o.append(line([(0, -88), (sw * .5 * g, -88 - 55 * g), top], 7, lib.INK, taper=.2, wmin=.5, seed=sd + 1))
+        o.append(line([(0, -88), (sw * .5 * g, -88 - 55 * g), top], 4, C_PLANT, taper=.2, wmin=.5, seed=sd + 2))
+        lu = clamp((g - .4) / .6)
+        if lu > 0:
+            for side in (-1, 1):
+                L = 46 * lu
+                leaf = [(top[0], top[1], 1), (top[0] + side * L * .5, top[1] - L * .45), (top[0] + side * L, top[1] - L * .1, 1), (top[0] + side * L * .5, top[1] + L * .12)]
+                o.append(shape(leaf, C_PLANT, line([(top[0], top[1]), (top[0] + side * L * .8, top[1] - L * .12)], 2, C_PLANT_SH, seed=sd + 5), w=3.2, seed=sd + 3 + side))
+    return _tf("".join(o), x, y, k)
+
+
+def thought_cloud_pos(cx, cy, k=1.0, n=5, spin=.3, t=0.0, scatter=0.0, seed=0):
+    out = []
+    sc = clamp(scatter)
+    for j in range(n):
+        a = 2 * math.pi * (j / n + t * spin) + seed
+        rx, ry = 230 * k * (1 + 1.8 * lib.ease_out(sc, 2)), 120 * k * (1 + 1.8 * lib.ease_out(sc, 2))
+        jit = 4 * k * math.sin(t * 37 + j * 2.3)
+        out.append((cx + math.cos(a) * rx + jit, cy + math.sin(a) * ry - 10 * k * math.sin(t * 5 + j) + jit * .6, (1 - sc) * (.8 + .25 * ((j * 7) % 3) / 2)))
+    return out
+
+
+def thought_clouds(cx, cy, k=1.0, n=5, spin=.3, t=0.0, scatter=0.0, poke=0.0, seed=0):
+    o = []
+    pos = thought_cloud_pos(cx, cy, k, n, spin, t, scatter, seed)
+    # ближняя к центру по горизонтали — тычется
+    for j, (px, py, s) in enumerate(pos):
+        if s <= .03:
+            continue
+        if poke > 0 and j == 0:
+            px, py = px + (cx - px) * .45 * clamp(poke), py + (cy - py) * .45 * clamp(poke)
+        sd = 17600 + seed * 11 + j * 5
+        rs = _rs(sd)
+        w, h = 120 * k * s, 74 * k * s
+        pts = []
+        nb = 7
+        for i in range(nb * 4):
+            a = 2 * math.pi * i / (nb * 4)
+            bump = 1 + .16 * abs(math.sin(nb * a / 2 + rs.uniform(0, 1)))
+            pts.append((px + math.cos(a) * w / 2 * bump, py + math.sin(a) * h / 2 * bump))
+        hatch = "".join(line([(px - w / 2 + i * w / 6 - 10 * k * s, py + h / 2), (px - w / 2 + i * w / 6 + 26 * k * s, py - h / 2)], 3 * s * k + .6,
+                             C_THINK_SH, taper=.4, wmin=.2, seed=sd + 1 + i) for i in range(7))
+        # каракуля внутри
+        sc_pts = [(px + math.cos(i * 1.9) * w * .22 * (1 - i / 30), py + math.sin(i * 2.3) * h * .22) for i in range(28)]
+        hatch += line(sc_pts, 3.4 * s * k + .5, "#4E535C", taper=.3, wmin=.2, seed=sd + 9)
+        o.append(shape(pts, C_THINK, hatch, w=4.4 * max(.5, s), seed=sd + 2))
+    return "".join(o)
+
+
+def idea_spark(x, y, k=1.0, u=1.0, t=0.0, seed=0):
+    if u <= 0.02:
+        return ""
+    s = k * u
+    fl = .85 + .15 * math.sin(t * 11 + seed)
+    g = rad_grad([(0, "#FFE7A3", .75 * fl), (1, "#FFD36B", 0)], x, y, 110 * s)
+    o = f'<circle cx="{f(x)}" cy="{f(y)}" r="{f(110 * s)}" fill="url(#{g})"/>'
+    o += idea_bulb(x, y, .62 * s, 1.0, t, seed, None, True)
+    o += sparkles(x, y - 10 * s, s * .9, 1.0, t, seed=seed + 3, n=3, col="#F2B632", r=95)
+    return o
