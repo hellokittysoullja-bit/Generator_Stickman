@@ -83,7 +83,7 @@ S05 = SHOTS["s05"]
 C05 = (790.0, R.LAB_TOP - 44.0, 1.43)          # кот: точка между задних лап, k
 BOX05 = (585.0, R.LAB_TOP - 8.0, .9)          # коробка кнопкой к зрителю: центр дна, k
 CNT05 = (560.0, 640.0, .44)                    # маленький счётчик на стене слева от головы кота, под «кот»
-KOT05 = (462.0, 548.0, .7)                    # рукописное «кот»: x0, низ строки, size (мир)
+KOT05 = (500.0, 548.0, .66)                   # рукописное «кот»: x0, низ строки, size (мир)
 
 
 def s05(t):
@@ -174,6 +174,7 @@ def s06(t):
     paw_side = "l"
     tip = None
     front = False
+    bend = -16.0
     if shr > 0:
         st.update(paw=.5 * shr + .03, paw_l=.5 * shr + .03, paw_dx=95, paw_l_dx=95, tilt=-7 * shr, smug=.6 * shr, look=(0, 0))
     elif t < t_bo - .2:                                   # толкает коробку левой лапой
@@ -188,12 +189,13 @@ def s06(t):
         cw = people.cat_world_paw(cx_, cy_, k_, corner)
         up = ease_out(win(t, t_bo - .25, t_bo + .2)) * (1 - ease_in(win(t, t_ot + .05, t_ot + .4)))
         tip = lerp2((811.0, 1292.0), cw, up)
+        bend = -16 + 100 * up
         st.update(smug=.8 * up, look=(-.2 * up, 0.0), tilt=12 * up, turn=.15 * up, sy=1 + .18 * up)
         if t > t_ot:                                      # хитро щурится
             sq = ease_out(win(t, t_ot + .1, t_ot + .4))
             st.update(blink=.5 * sq, smile=1.0 if sq > .5 else 0.0, smug=.9)
     if tip is not None:
-        cat_svg = people.cat_paw(cx_, cy_, ck, st, t, tip, side=paw_side, bend=-16 + 100 * (t > t_bo - .2), seed=6)
+        cat_svg = people.cat_paw(cx_, cy_, ck, st, t, tip, side=paw_side, bend=bend, seed=6)
     else:
         cat_svg = CAT.draw(cx_, cy_, ck, st, t)
     dust = ""
@@ -216,7 +218,7 @@ def s09(t):
     lib.dyn_begin()
     t_15, t_min, t_only, t_btn, t_tok = ws(44), ws(45), ws(46), ws(49), ws(50)
     lp = ease_io(win(t, S09["t0"] - .2, t_min + .9))
-    L = R.lab_room(t, "wide", light_patch=lp)
+    L = R.lab_room(t, "wide", light_patch=lp, sun=.8)
     x, y = R.LAB_SIT
     s = 1.0
     bx, by = R.LAB_BOX
