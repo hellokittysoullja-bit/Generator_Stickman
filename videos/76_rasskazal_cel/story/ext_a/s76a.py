@@ -155,7 +155,7 @@ def s06(t):
     pu = ease_io(ramp(t, a, T1(sid) + .2 - a))
     s = 1.02 + .05 * pu
     cx = 520 + 40 * pu - wx + dx + pdx
-    cy = 900 - 20 * pu + dy + pdy
+    cy = 800 - 20 * pu + dy + pdy
     return frame_svg("".join(o), cx, cy, s, -.8 + 1.3 * pu)
 
 
