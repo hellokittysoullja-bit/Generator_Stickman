@@ -100,7 +100,7 @@ def poke(t, t_on, taps, t_off=None):
 T_PI = wt("пиши")            # 3.96 — лапа в камеру
 T_KO = wt("комменты")        # 4.28 — первый стук
 TAPS4 = (T_KO + .02, T_KO + .26)
-CAM4 = (548.0, 900.0, 1.62)
+CAM4 = (548.0, 960.0, 1.62)
 
 
 def s04(t):
@@ -156,26 +156,26 @@ def crown_tilted(x, y, k, st, t):
 # ═════════════════════════ s15: довольный кот ═════════════════════════
 T_USH = wt("ушло")           # 21.84 — потягивается
 T_MIN = wt("минуты")         # 22.31 — звёздочки вспыхивают, кивок
-CAT15 = (1000.0, R.DESK_TOP - 40.0, 1.0)
-CAM15 = (1035.0, 720.0, 3.9)
+CAT15 = (957.0, R.DESK_TOP - 40.0, 1.0)
+CAM15 = (998.0, 720.0, 3.9)
 
 
-def desk_room(t, cat_svg="", front="", plant=None):
+def desk_room(t, cat_svg="", front="", plant=None, plant_at=None):
     d = R.night_desk(t, "lamp", "cat")
-    px, py = R.PLANT74
-    pl = PR.houseplant(px, py, .9, **(plant or {}), t=t, seed=1) if plant is not None else ""
-    return d["bg"] + d["desk_top"] + d["pool"] + pl + cat_svg + d["lamp"] + front
+    px, py = plant_at or R.PLANT74
+    pl = PR.houseplant(px, py, .75, **(plant or {}), t=t, seed=1) if plant is not None else ""
+    return d["bg"] + d["lamp"] + d["desk_top"] + d["pool"] + pl + cat_svg + front      # лампа у стены — за котом
 
 
 def s15(t):
     lib.dyn_begin()
     x, y, k = CAT15
     st = dict(PE.CAT_ST.get("happy74", dict(blink=.75, smile=1.0, perk=1.0, flame_e=1.8)))
-    st["blink"] = .78 + .2 * bump(t, T_MIN, .35)
+    st["blink"] = 1.0 - .35 * bump(t, 21.62, .3)      # жмурится от удовольствия (глаза-дуги), на миг приоткрывает
     st["tongue"] = .22 + .06 * math.sin(t * 6)
     st["tilt"] = 6 * math.sin(2 * math.pi * .55 * t + .5) + damp(t, T_MIN, 4, 2.5, 5)
     st["drop"] = PE.cat_nod(t, T_MIN + .05, .4, .3)
-    st["tail"] = -4 + 14 * math.sin(2 * math.pi * .8 * t)
+    st["tail"] = 6 + 10 * math.sin(2 * math.pi * .8 * t)
     st["flame_e"] = 1.6 + .6 * sm(t, 21.6, 22.6) + .5 * bump(t, T_MIN, .4) + .2 * math.sin(t * 9)
     # потягивается: обе передние лапы вперёд-вверх и обратно (те же две лапы)
     stretch = bump(t, T_USH - .08, .5)
@@ -191,7 +191,7 @@ def s15(t):
     sp = PR.sparkles(hx, hy, 1.0, .75 + .6 * bump(t, T_MIN, .4), t, seed=15, n=6, r=150 + 30 * bump(t, T_MIN, .4))
     sp += PR.star4(hx - 120, hy - 110, 9 + 9 * bump(t, T_MIN, .4), 1.0) + PR.star4(hx + 130, hy - 90, 7 + 8 * bump(t, T_MIN + .08, .4), 1.0)
     perk = sm(t, 21.75, 22.7)
-    world = desk_room(t, cat + sp, plant=dict(droop=1.0, fallen=3.0, perk=perk))
+    world = desk_room(t, cat + sp, plant=dict(droop=1.0, fallen=3.0, perk=perk), plant_at=(1065.0, R.DESK_TOP - 92.0))   # цветок за правым плечом кота
     cx, cy, s = CAM15
     z = 1 + .04 * sm(t, 21.5, 23.15) + .02 * bump(t, T_MIN, .5)
     set_ink(s * z)
