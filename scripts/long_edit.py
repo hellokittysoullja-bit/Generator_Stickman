@@ -12,6 +12,8 @@
   "whip"  "left" | "right" — хлёсткая склейка: смаз уходящего и входящего плана по направлению;
   "parallax" true | {"dx", "dz"} — объём по карте глубины (depth_parallax.py): редкий эффект, только где за котом
           чистая бумага или стол (владелец 02.11: «на очень малом количестве кадров, где реально подходит»);
+  "transition" {"kind": "move"|"through"|"light", "why", …} — переход по смыслу на склейке к этому плану
+          (long_transitions.py; только по желанию — без поля сборка прежняя);
   "why"   зачем этот план — обязательно (монтаж со смыслом, а не ради склейки).
 Кадр с edit.json монтирует оркестратор целиком: автоматическая раскладка планов для него не используется, а надписи
 (главная мысль, акцент) раскладываются заново в окне того плана, где их пишут."""
@@ -111,6 +113,9 @@ def segments(fr, shots, words, D):
                    parallax=_parallax(s.get("parallax")),
                    sound=s.get("sound"), sound_gain=float(s.get("sound_gain", 0.0)), sound_why=s.get("sound_why"),
                    stage=_stage(s.get("stage"), words, t0), tear=_tear(s.get("tear")))
+        if s.get("transition"):                        # переход по смыслу (long_transitions); без поля — ключа нет,
+            import long_transitions                    # и подпись клипа прежняя
+            seg["trans"] = long_transitions.spec(s)
         segs.append(seg)
         prev = win_to
     for a, b in zip(segs, segs[1:]):          # хлёст смазывает и уходящий план
@@ -118,6 +123,8 @@ def segments(fr, shots, words, D):
             a["whip_out"] = b["whip"]
         if b.get("tear") and a.get("stage"):  # лист рвётся вместе с подписями: они не тают перед разрывом
             a["stage"]["hold_labels"] = True
+        if b.get("trans"):                    # уходящий план доигрывает свою половину перехода до стыка
+            a["trans_out"] = b["trans"]
     return segs
 
 

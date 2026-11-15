@@ -819,6 +819,8 @@ def hook_build(video_dir):
     err += generic_whys(video_dir)
     err += head_cuts(video_dir)
     err += stage_checks(video_dir)
+    import long_montage                 # переходы по смыслу (edit.json "transition") — форма, why, звук; без поля — ничего
+    err += long_montage.transition_checks(video_dir)
     # 5. надписи — только где добавляют то, чего нет ни в картинке, ни сразу на слух, и не чаще лимита (владелец 04.11,
     # вечер: «рисунков карандашом слишком много… даже там, где не надо»; L03: 65 надписей на 7 мин — раз в 6,5 с)
     fp = os.path.join(video_dir, "fx.json")

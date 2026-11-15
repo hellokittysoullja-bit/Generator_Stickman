@@ -559,6 +559,44 @@ def _stage_frame(seg, t):
     return _STAGES[key].frame(t - seg["t0"])
 
 
+def _screen_pad(world, win, scale):
+    """Как _screen, но окно может выходить за холст: снаружи — кремовая бумага (переходы move/through)."""
+    x0, y0, x1, y1 = win
+    sh, sw = world.shape[:2]
+    if x0 >= 0 and y0 >= 0 and x1*scale <= sw and y1*scale <= sh:
+        return _screen(world, win, scale)
+    k = W/(x1 - x0)
+    out = np.empty((H, W, 3), np.float32)
+    out[:] = canvas.CREAM
+    ix0, iy0 = max(0.0, x0), max(0.0, y0)
+    ix1, iy1 = min(sw/scale, x1), min(sh/scale, y1)
+    if ix1 - ix0 < 1 or iy1 - iy0 < 1:
+        return out
+    X0, Y0 = int(round((ix0 - x0)*k)), int(round((iy0 - y0)*k))
+    X1, Y1 = min(W, int(round((ix1 - x0)*k))), min(H, int(round((iy1 - y0)*k)))
+    if X1 - X0 < 1 or Y1 - Y0 < 1:
+        return out
+    piece = Image.fromarray(world).resize((X1 - X0, Y1 - Y0), Image.LANCZOS,
+                                          box=(ix0*scale, iy0*scale, ix1*scale, iy1*scale))
+    out[Y0:Y1, X0:X1] = np.asarray(piece, np.float32)
+    return out
+
+
+def edge_colors(fr, p, D, fps=24):
+    """(средний тон первого кадра, средний тон последнего кадра) клипа без надписей — для перехода света на стыке
+    картинок (long_transitions "light"): соседнему клипу нужен тон другой стороны. Считается в процессе сборщика ДО
+    пула клипов: пул потоков OpenCV, поднятый здесь, после fork вешал дочерний клип на cv2.setNumThreads (кукла
+    кота-ведущего; L03 15.11, фраза 43) — поэтому OpenCV здесь однопоточный."""
+    import cv2
+    cv2.setNumThreads(1)
+    out = []
+    for t in (0.0, max(0.0, D - 1.0/fps)):
+        seg = next((s for s in p["segments"] if s["t0"] <= t < s["t1"]), p["segments"][-1])
+        g = _stage_frame(seg, t) if seg.get("stage") else _screen(fr["world"], shots.window_at(p, t, fr["SW"], fr["SH"]), UPSCALE)
+        out.append([round(float(v), 2) for v in np.asarray(g, np.float32).reshape(-1, 3).mean(0)])
+    return out
+
+
 def _warp(alpha, src_win, dst_win):
     """Альфа в экранных координатах окна src_win -> экранные координаты окна dst_win."""
     s_src = W/(src_win[2] - src_win[0]); s_dst = W/(dst_win[2] - dst_win[0])
@@ -632,6 +670,42 @@ def render(fr, p, D, out, fps=24, end_fade=False, crf="18", anim=None, fx=None):
             full = mascot_live.bake_shadow(full, p["mascot"], SW, SH, UPSCALE)
     prev_world, fade_from, fade_len = None, None, shots.LABEL_FADE_SEC
     torn = {"last": None, "seg": None, "img": None}
+    trans_on = any(s_.get("trans") or s_.get("trans_out") for s_ in p["segments"])
+    light_cache = {}
+
+    def moved_window(seg, t, win):
+        """Окно камеры на кадре перехода move/through (сдвиг по миру рисунка) или None."""
+        if not trans_on or seg.get("stage"):
+            return None
+        import long_transitions as lt
+        return lt.camera_window(seg, t, fps, win, fr["off"])
+
+    def with_transition(f, seg, t, win, moved=False):
+        """Переход по смыслу на склейке (edit.json "transition", long_transitions) — только у планов, где он задан."""
+        if not trans_on:
+            return f
+        import long_transitions as lt
+        if not lt.active(seg, t, fps):
+            return f
+        other = None
+        if lt.needs_light(seg):
+            side_in = seg.get("trans") and t - seg["t0"] < 0.5
+            key = (id(seg), bool(side_in))
+            if key not in light_cache:
+                given = seg.get("light_from" if side_in else "light_to")
+                if given is not None:
+                    light_cache[key] = given
+                else:                                  # тон кадра по другую сторону стыка внутри клипа
+                    tt = seg["t0"] - 1.0/fps if side_in else seg["t1"]
+                    if 0 <= tt < D:
+                        s2 = next((x for x in p["segments"] if x["t0"] <= tt < x["t1"]), p["segments"][-1])
+                        g = _stage_frame(s2, tt) if s2.get("stage") else \
+                            _screen(world, shots.window_at(p, tt, SW, SH), UPSCALE)
+                        light_cache[key] = lt.mean_rgb(g)
+                    else:
+                        light_cache[key] = None
+            other = light_cache[key]
+        return lt.apply(f, seg, t, fps, win, fr["off"], other, moved=moved)
 
     def emit(f, seg, t):
         """Кадр в ffmpeg; план с "tear" открывается рваной бумагой: рвётся последний кадр прошлого плана."""
@@ -676,6 +750,7 @@ def render(fr, p, D, out, fps=24, end_fade=False, crf="18", anim=None, fx=None):
             if seg.get("stage"):                       # сцена на бумаге (long_stage) вместо окна рисунка
                 f = _stage_frame(seg, t)
                 f = long_edit.whip(f, seg, t)
+                f = with_transition(f, seg, t, win)
                 if track is not None:
                     f = track.apply(np.asarray(f, np.float32), t)
                 if end_fade and t > D - END_FADE_SEC:
@@ -688,7 +763,12 @@ def render(fr, p, D, out, fps=24, end_fade=False, crf="18", anim=None, fx=None):
                 if dx or dy:
                     win = _cam_window(win, {"dx": dx, "dy": dy}, SW, SH)
             base = anim.frame(t, world) if anim is not None else world
-            f = _screen(base, win, UPSCALE)
+            mwin = moved_window(seg, t, win)
+            if mwin is not None:                       # переход move/through: камера едет по миру рисунка
+                win = mwin
+                f = _screen_pad(base, win, UPSCALE)
+            else:
+                f = _screen(base, win, UPSCALE)
             if manual and seg.get("parallax"):          # объём по глубине — редкий эффект ручного плана (02.11)
                 f = _parallax_frame(f, fr, win, seg, t)
             if prev_world is not None and t - fade_from < fade_len:
@@ -738,6 +818,7 @@ def render(fr, p, D, out, fps=24, end_fade=False, crf="18", anim=None, fx=None):
                 f = _roll(f, cam["rot"])
             if manual:                                 # прожектор и хлёст — поверх картинки, под затемнением конца
                 f = long_edit.whip(long_edit.spot(f, seg, t, win, W, H), seg, t)
+                f = with_transition(f, seg, t, win, moved=mwin is not None)
             if track is not None:                      # кот-ведущий и жирный текст — поверх всего, под затемнением конца
                 f = track.apply(np.asarray(f, np.float32), t)
             if end_fade and t > D - END_FADE_SEC:

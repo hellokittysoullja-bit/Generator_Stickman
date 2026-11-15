@@ -180,29 +180,39 @@ def speed_metrics(sc, plans):
                 plans_measured=len(sig), plans_total=len(plans), per_plan=per_plan)
 
 
-def direction_metrics(sc, plans, picture_starts, total):
-    """Смена знака зума внутри ОДНОЙ картинки — нарушение §1.3."""
+def direction_metrics(sc, plans, picture_starts, total, narrator=(), stages=()):
+    """Смена знака зума внутри ОДНОЙ картинки — нарушение §1.3. Кот-ведущий (растёт поверх размытой сцены) — не ход
+    камеры: его планы не меряются (L03: два из трёх «переворотов» — ведущий во фразе 7). Сцена на бумаге (стикеры,
+    карточки, доска) — своя картинка: её начало и конец — границы картинки (L03: третий — стикеры фразы 56 → рисунок)."""
     fps, k = sc["fps"], ZOOM_STEP_FRAMES
     if not picture_starts:                        # без карты картинок смена знака между картинками законна — сигнала нет
-        return dict(direction_flips_excess=None, pictures_measured=0)
-    pics = sorted(set([0.0] + [p for p in picture_starts if 0 < p < total])) + [total]
-    flips = 0; measured = 0
+        return dict(direction_flips_excess=None, pictures_measured=0, direction_flips=[])
+    bounds = [p for p in picture_starts if 0 < p < total] + [x for ab in stages for x in ab if 0 < x < total]
+    pics = sorted(set([0.0] + bounds)) + [total]
+    plans = [(a, b) for a, b in plans if not any(a < n1 and b > n0 and min(b, n1) - max(a, n0) > 0.5*(b - a)
+                                                 for n0, n1 in narrator)]
+    flips = 0; measured = 0; where = []
     for pa, pb in zip(pics, pics[1:]):
-        signs = []
+        signs, at = [], []
         for (a, b) in plans:
             if a < pa or b > pb + 1e-6:
                 continue
             j0, j1 = int(np.ceil(a * fps / k)), int(np.floor(b * fps / k))
             zs = [np.log(z) for z in sc["zoom"][j0:j1] if z is not None]
             if len(zs) >= 4 and abs(np.sum(zs)) > 1e-4:
-                signs.append(np.sign(np.sum(zs)))
+                signs.append(np.sign(np.sum(zs))); at.append(round(a, 3))
         if len(signs) >= 2:
             measured += 1
-            flips += int(np.sum(np.array(signs[1:]) != np.array(signs[:-1])))
-    return dict(direction_flips_excess=flips if measured else None, pictures_measured=measured)
+            fl = [at[i + 1] for i in range(len(signs) - 1) if signs[i + 1] != signs[i]]
+            flips += len(fl)
+            where += [{"picture_at": round(pa, 3), "plan_at": t} for t in fl]
+    return dict(direction_flips_excess=flips if measured else None, pictures_measured=measured, direction_flips=where)
 
 
 PAPER_L_MIN = 85.0            # пиксели бумаги: L* выше этого (чернила и герой — ниже)
+PAPER_CHROMA_MAX = 30.0       # …и без сильного цвета: крем канала — C* ≈ 4–6, пожелтевшая бумага (#F5E6B0) — 27, а
+                              # светло-зелёные глаза кота — 44 (L* 89, a* −19, b* +40). Без этого на крупном плане кота
+                              # «бумагой» считалась радужка: L03 15.11 — ΔE 20 на склейке «морда крупно → общий план»
 CUT_PAPER_DE_MAX = 2.0        # ΔE2000 тона бумаги между соседними планами; замер эп.01 08.10 — максимум 1.05 на 13 склейках,
                               # заметная глазом разница ~1.0 на плоском поле, порог с запасом на шум сжатия (гипотеза)
 CUT_MATCH_SEC = 0.15          # склейки двух детекторов считаются одной, если ближе этого
@@ -218,24 +228,32 @@ def _rgb_frame_at(video_path, t, w=64, h=36):
     return np.frombuffer(r.stdout[:w*h*3], np.uint8).reshape(h, w, 3).astype(np.float32)/255
 
 
+def paper_mask(lab):
+    """Пиксели бумаги на кадре Lab: светлые и почти без цвета (не радужка, не жёлтая лампа, не голубая вода)."""
+    return (lab[..., 0] > PAPER_L_MIN) & (np.hypot(lab[..., 1], lab[..., 2]) < PAPER_CHROMA_MAX)
+
+
 def paper_tone_jumps(video_path, cuts, fps):
     """ΔE2000 (Lab) среднего тона БУМАГИ по обе стороны каждой склейки. Средняя яркость кадра на
     склейке «чёрный кот крупно → чистая бумага» прыгает на 47 и это содержание, а не дефект; тон
     бумаги между планами одного ролика обязан совпадать — его дрейф и есть то, что ловится здесь
     (замер эп.01 08.10: ΔE бумаги ≤1.05 при ΔY до 47). None — нечего мерить."""
     from skimage import color
-    out = []
+    out, per = [], []
     for c in cuts:
         a, b = _rgb_frame_at(video_path, c - 1.5/fps), _rgb_frame_at(video_path, c + 1.5/fps)
         if a is None or b is None:
             continue
         la, lb = color.rgb2lab(a), color.rgb2lab(b)
-        ma, mb = la[..., 0] > PAPER_L_MIN, lb[..., 0] > PAPER_L_MIN
+        ma, mb = paper_mask(la), paper_mask(lb)
         if ma.sum() < 50 or mb.sum() < 50:
             continue
         pa, pb = la[ma].mean(0), lb[mb].mean(0)
         out.append(float(color.deltaE_ciede2000(pa[None, None, :], pb[None, None, :])[0, 0]))
-    return dict(cut_paper_de=float(max(out)) if out else None, cut_paper_de_median=float(np.median(out)) if out else None)
+        per.append({"t": round(c, 3), "de": round(out[-1], 2), "lab_a": [round(float(x), 1) for x in pa],
+                    "lab_b": [round(float(x), 1) for x in pb]})
+    return dict(cut_paper_de=float(max(out)) if out else None, cut_paper_de_median=float(np.median(out)) if out else None,
+                paper_per_cut=per)
 
 
 def scenedetect_cuts(video_path):
@@ -267,7 +285,7 @@ def cuts_crosscheck(cuts, other):
 
 def cut_metrics(sc, cuts):
     fps = sc["fps"]
-    lj, sh = [], []
+    lj, sh, per = [], [], []
     for c in cuts:
         i = int(round(c * fps))
         if 1 <= i < sc["n"]:
@@ -275,8 +293,10 @@ def cut_metrics(sc, cuts):
             a, b = sc["cx"][i - 1], sc["cx"][i]
             if a is not None and b is not None:
                 sh.append(abs(a - b))
+            per.append({"t": round(c, 3), "luma": [round(sc["luma"][i - 1], 1), round(sc["luma"][i], 1)],
+                        "cx": [None if a is None else round(a, 3), None if b is None else round(b, 3)]})
     return dict(cut_luma_jump=float(max(lj)) if lj else None, cut_luma_jump_median=float(np.median(lj)) if lj else None,
-                cut_attention_shift=float(max(sh)) if sh else None, cuts=len(cuts))
+                cut_attention_shift=float(max(sh)) if sh else None, cuts=len(cuts), cut_per_cut=per)
 
 
 def sharpness_metrics(sc, plans):
@@ -321,6 +341,21 @@ def narrator_windows(video_dir):
         if "duration" not in c:
             continue
         out += [(t0 + float(a), t0 + float(b)) for a, b in c.get("narrator") or []]
+        t0 += float(c["duration"])
+    return out
+
+
+def stage_windows(video_dir):
+    """[(начало, конец)] сцен на бумаге (long_stage, long_board) в глобальном времени — из shots_report.json."""
+    try:
+        clips = json.load(open(os.path.join(video_dir, "media_plan", "shots_report.json"), encoding="utf-8"))["clips"]
+    except (OSError, ValueError, KeyError):
+        return []
+    out, t0 = [], 0.0
+    for c in clips:
+        if "duration" not in c:
+            continue
+        out += [(t0 + float(a), t0 + float(b)) for a, b in c.get("stage") or []]
         t0 += float(c["duration"])
     return out
 
@@ -402,7 +437,7 @@ def build(video_dir, video_path=None):
     plans = plan_bounds(cuts, total, pic)
     m = {}
     m.update(length_metrics(plans, writing_windows(video_dir), narrator_windows(video_dir))); m.update(speed_metrics(sc, plans))
-    m.update(direction_metrics(sc, plans, pic, total))
+    m.update(direction_metrics(sc, plans, pic, total, narrator_windows(video_dir), stage_windows(video_dir)))
     m.update(cut_metrics(sc, cuts)); m.update(sharpness_metrics(sc, plans)); m.update(hook_metrics(plans, cuts, silences))
     m.update(paper_tone_jumps(video_path, cuts, fps_d)); m.update(cuts_crosscheck(cuts, scenedetect_cuts(video_path)))
     sm = vt.speech_cut_metrics(video_dir, video_path, cuts, pic[1:] if pic else [])
@@ -413,7 +448,9 @@ def build(video_dir, video_path=None):
     warns = [k for k, c in checks.items() if c["state"] == "violation" and k not in blocks]
     nosig = [k for k, c in checks.items() if c["state"] == "no_signal"]
     rep.update(checks=checks, blocks=blocks, warnings=warns, no_signal=nosig,
-               measured={k: v for k, v in m.items() if k not in ("per_plan",)}, per_plan=m.get("per_plan"),
+               measured={k: v for k, v in m.items() if k not in ("per_plan", "paper_per_cut", "cut_per_cut", "direction_flips")},
+               per_plan=m.get("per_plan"), per_cut={"paper": m.get("paper_per_cut"), "frame": m.get("cut_per_cut"),
+                                                    "direction_flips": m.get("direction_flips")},
                plans=[[round(a, 3), round(b, 3)] for a, b in plans], cuts=[round(c, 3) for c in cuts],
                qc_seconds=round(time.time() - t0, 1), video_seconds=round(total, 1))
     rep["verdict"] = "blocked" if blocks else ("warnings" if warns else "ok")

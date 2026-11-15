@@ -489,6 +489,25 @@ def main(video_dir):
     edits = long_edit.load(video_dir)
     prepare_stages(video_dir, edits, report)
     manual_labels = os.path.exists(os.path.join(video_dir, "storyboard.json"))   # надписи по смыслу, без таймера
+    trans_used = any(sh.get("transition") for v in edits.values() for sh in v.get("shots") or [])
+
+    def _clip_out(job, k):
+        """Файл клипа по подписи всего, что видно на нём (смена любого поля плана — новый клип)."""
+        p = job["plan"]
+        h = hashlib.sha256(open(job["src"], "rb").read()).hexdigest()[:12]
+        scene_sig = hashlib.sha256(open(job["anim"], "rb").read()).hexdigest()[:12] if job.get("anim") else None
+        head = [h, scene_sig] if scene_sig else [h]          # клипы без сцены — прежний ключ кэша
+        if job["fx"]:                                         # клипы без эффектов — прежний ключ кэша
+            head += [frame_clip.without_sound(job["fx"]), hashlib.sha256(open(long_fx.__file__, "rb").read()
+                                                                        + open(easing.__file__, "rb").read()).hexdigest()[:12]]
+        if trans_used:                                        # клипы ролика без переходов — прежний ключ кэша
+            import long_transitions
+            head += [hashlib.sha256(open(long_transitions.__file__, "rb").read()).hexdigest()[:12]]
+        sig = hashlib.sha256(json.dumps(head + [job["recs"], job["objects"], frame_clip.plan_record(p), job["dur"],
+                                         job["end_fade"], job["seed"], FPS, CRF, frame_clip.RENDER_VERSION,
+                                         canvas.TEXTURE, frame_clip.UPSCALE, frame_clip.upscale_sig()],
+                                        sort_keys=True, default=str).encode()).hexdigest()[:16]
+        return os.path.join(work, f"clip_{k:04d}_{sig}.mp4")
     last_punch, last_key, shot_log, written = -1e9, -1e9, [], []
     for k, job in enumerate(jobs):                         # план — по порядку: наезды и мысли не чаще порога
         fr = _prepare(job)
@@ -516,17 +535,18 @@ def main(video_dir):
         if job.get("hand"):                                # рукописные подписи со стрелкой (fx.json hand, 04.11)
             frame_clip.hand_plan(fr, p, job["hand"], D=job["dur"])
         job["plan"] = p
-        h = hashlib.sha256(open(job["src"], "rb").read()).hexdigest()[:12]
-        scene_sig = hashlib.sha256(open(job["anim"], "rb").read()).hexdigest()[:12] if job.get("anim") else None
-        head = [h, scene_sig] if scene_sig else [h]          # клипы без сцены — прежний ключ кэша
-        if job["fx"]:                                         # клипы без эффектов — прежний ключ кэша
-            head += [frame_clip.without_sound(job["fx"]), hashlib.sha256(open(long_fx.__file__, "rb").read()
-                                                                        + open(easing.__file__, "rb").read()).hexdigest()[:12]]
-        sig = hashlib.sha256(json.dumps(head + [job["recs"], job["objects"], frame_clip.plan_record(p), job["dur"],
-                                         job["end_fade"], job["seed"], FPS, CRF, frame_clip.RENDER_VERSION,
-                                         canvas.TEXTURE, frame_clip.UPSCALE, frame_clip.upscale_sig()],
-                                        sort_keys=True, default=str).encode()).hexdigest()[:16]
-        job["out"] = os.path.join(work, f"clip_{k:04d}_{sig}.mp4")
+        if trans_used:                                     # переход на стыке картинок (edit.json "transition" у первого
+            job["edge_rgb"] = frame_clip.edge_colors(fr, p, job["dur"], FPS)   # плана): уходящая половина — в прошлом
+            first = p["segments"][0] if p["segments"] else {}                  # клипе, тон — с другой стороны стыка
+            if k and first.get("trans"):
+                prev = jobs[k - 1]
+                last = prev["plan"]["segments"][-1]
+                last["trans_out"] = first["trans"]
+                if first["trans"]["kind"] == "light":
+                    last["light_to"] = job["edge_rgb"][0]
+                    first["light_from"] = prev["edge_rgb"][1]
+                prev["out"] = _clip_out(prev, k - 1)
+        job["out"] = _clip_out(job, k)
         shot_log.append({"index": kept[k], "duration": round(job["dur"], 3),
                          "views": [[round(s_["t0"], 2), "lean" if s_.get("lean") else ("assemble" if s_.get("pushes")
                                                                                      else s_["kind"])]
@@ -542,6 +562,9 @@ def main(video_dir):
                          # кот-ведущий перед размытой сценой: живой персонаж говорит со зрителем, склеек под ним нет
                          "narrator": [[round(e["t0"], 2), round(e["t1"], 2)] for e in job.get("fx") or []
                                       if e["kind"] == "narrator"],
+                         # сцена на бумаге (стикеры, карточки, доска) — своя картинка: приёмка меряет направление
+                         # камеры внутри неё отдельно от рисунка (montage_qc.stage_windows)
+                         "stage": [[round(s_["t0"], 2), round(s_["t1"], 2)] for s_ in p["segments"] if s_.get("stage")],
                          "notes": p["notes"]})
 
     if manual_labels and os.path.basename(video_dir) not in long_rules.LEGACY:
