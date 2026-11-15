@@ -2568,8 +2568,8 @@ LAB_TD = 70.0                              # видимая глубина ст�
 LAB_BOX = (600.0, LAB_TOP - 24.0)          # дно коробки с кнопкой (центр) — на столешнице, ближе к Диме
 LAB_CAT = (765.0, LAB_TOP - 14.0)          # кот на правом краю столика
 LAB_CAT_K = .78
-LAB_COUNTER = (650.0, 600.0)               # центр счётчика на стене (справа у головы Димы)
-LAB_WIN = (-200.0, 120.0, 80.0, 760.0)     # высокое окно (за кадром хука, видно на "wide")
+LAB_COUNTER = (690.0, 600.0)               # центр счётчика на стене (справа у головы Димы)
+LAB_WIN = (-400.0, 120.0, -130.0, 760.0)   # высокое окно (за кадром хука, видно на "wide")
 LAB_CORNER = 1180.0                        # угол комнаты справа (дальше — боковая стена в перспективе)
 LAB_CLEAN = (380.0, 300.0, 540.0, 470.0)   # чистая стена слева от счётчика (s05: рукописное «кот»)
 EMPTY_CHAIR = (2400.0, 1180.0)             # пустой стул анфас: центр передней кромки сиденья
@@ -2579,8 +2579,8 @@ EMPTY_BOX = (2700.0, 1072.0)               # дно коробки на тумб
 HOME_WIN = (540.0, 420.0, 800.0, 790.0)    # окно на месте счётчика (петля s18)
 HOME_DRAWER = (560.0, 800.0)               # ящик столика по x (лицевая панель — под столешницей)
 
-LAB_CAMS = {"hook": (520.0, 811.0, 1.35), "close": (500.0, 693.0, 2.2), "cat_box": (680.0, 860.0, 2.0),
-            "cat_wall": (700.0, 720.0, 2.0), "wide": (420.0, 960.0, .88), "empty": (2520.0, 1000.0, 1.45)}
+LAB_CAMS = {"hook": (560.0, 740.0, 1.35), "close": (554.0, 650.0, 1.7), "cat_box": (680.0, 860.0, 2.0),
+            "cat_wall": (700.0, 720.0, 2.0), "wide": (330.0, 960.0, .82), "empty": (2520.0, 1000.0, 1.45)}
 HOME_CAMS = {"hook": LAB_CAMS["hook"], "mid": (540.0, 880.0, 1.15), "desk": (680.0, 900.0, 2.0)}
 
 
@@ -2935,7 +2935,7 @@ def window_day(t, cloud_speed=1.0, cloud_shift=None, warm=0.0, bird=True):
     o.append(blob(rect_pts(x0 + 16, y0 + 20, x1 + 30, y1 + 30), P["wall_sh"], .55))
     o.append(shape(rect_pts(x0, y0, x1, y1), "#f4ede0", "", w=4.4, seed=8270))
     o.append(f'<g clip-path="url(#{clipw})">{sky}</g>')
-    o.append(line([(ix0, iy0), (ix1, iy0), (ix1, iy1), (ix0, iy1), (ix0, iy0)], 3.2, INK, taper=0, wmin=1, seed=8271))
+    o.append(f'<rect x="{f(ix0)}" y="{f(iy0)}" width="{f(ix1 - ix0)}" height="{f(iy1 - iy0)}" fill="none" stroke="{INK}" stroke-width="3.4"/>')
     xm = (x0 + x1) / 2
     o.append(blob(rect_pts(xm - 10, iy0, xm + 10, iy1), "#f4ede0") + line([(xm - 10, iy0), (xm - 10, iy1)], 2.8, INK, seed=8272)
              + line([(xm + 10, iy0), (xm + 10, iy1)], 2.8, INK, seed=8273))
@@ -3044,7 +3044,7 @@ def old_lab(t, swing=0.0):
     for i, lx in enumerate((x0 + 40, x1 - 40)):
         tb += shape(rect_pts(lx - 16, top + 40, lx + 16, 2000), "#4a3626", w=3.0, seed=8512 + i)
     a = math.radians(swing)
-    L = 760.0
+    L = 430.0
     hx, hy = OLD_LAMP[0] + L * math.sin(a), OLD_LAMP[1] + L * math.cos(a)
     lamp = line([OLD_LAMP, (hx, hy - 30)], 4, "#151824", taper=0, wmin=1, seed=8520)
     shade = [(hx - 26, hy - 34, 1), (hx + 26, hy - 34, 1), (hx + 90, hy + 40, 1), (hx - 90, hy + 40, 1)]
