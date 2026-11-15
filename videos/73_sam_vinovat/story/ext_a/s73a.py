@@ -75,18 +75,18 @@ def _gavel_state(t):
     """(хват x, y, угол) молотка."""
     gx, gy = GRIP0
     if t < T2_SAM:
-        a = -5 - 2.5 * math.sin(t * 31) - 1.5 * math.sin(t * 17)            # дрожит, чуть приподнят
+        a = 5 + 2.5 * math.sin(t * 31) + 1.5 * math.sin(t * 17)            # дрожит, чуть приподнят
         if t > T2_TY + .2:
-            a = lerp(a, -9, clamp((t - T2_TY - .2) / .1))
+            a = lerp(a, 9, clamp((t - T2_TY - .2) / .1))
         return gx, gy - 6, a
     if t < T2_HIT - .09:
         u = ease_out(clamp((t - T2_SAM) / (T2_HIT - .09 - T2_SAM)), 2)
-        return gx + 40 * u, gy - 6 - 110 * u, lerp(-9, -46, u)
+        return gx + 40 * u, gy - 6 - 110 * u, lerp(9, 50, u)
     if t < T2_HIT:
         u = ease_in(clamp((t - (T2_HIT - .09)) / .09), 3)
-        return gx + 40 * (1 - u), gy - 116 * (1 - u), lerp(-46, 0, u)
+        return gx + 40 * (1 - u), gy - 116 * (1 - u), lerp(50, 0, u)
     q = t - T2_HIT
-    return gx, gy, -9 * math.exp(-q * 7) * abs(math.sin(q * 15))           # отскок
+    return gx, gy, 9 * math.exp(-q * 7) * abs(math.sin(q * 15))           # отскок
 
 
 def s02(t):
@@ -101,19 +101,19 @@ def s02(t):
     e = ease_out(clamp((t - T2_TY) / .2), 3)
     if e > 0:
         tip = (gx + 4, gy - 4)
-        base = (tip[0] + 260, tip[1] - 900)
+        base = (tip[0] + 230, tip[1] - 620)
         tip = (lerp(base[0] - 60, tip[0], e), lerp(base[1] + 200, tip[1], e))
         o.append(people.cat_forearm(base, tip, PAW_K, claw=.6 * e, seed=21))
     # пыль на ударе
     if q >= 0:
         fx, fy = P.gavel_face(gx, gy, KG, a)
-        o.append(P.dust_puff(fx - 60, fy + 10, 1.4, clamp(q / .6), seed=4))
-        o.append(P.dust_puff(fx + 90, fy + 20, 1.1, clamp((q - .03) / .55), seed=9))
+        o.append(P.dust_puff(fx - 70, fy, 1.0, clamp(q / .6), seed=4))
+        o.append(P.dust_puff(fx + 80, fy + 6, .8, clamp((q - .03) / .55), seed=9))
     # камера: микродрейф вниз, на ударе тряска и отскок 4 %
     sx, sy = P.shake(t, T2_HIT, 22, .3, seed=3)
-    s = 1.0 + .04 * math.exp(-max(0, q) * 8) * (q >= 0)
-    cy = 900 + 40 * clamp((t - 1.5) / 1.5)
-    return frame_svg("".join(o), 560 - sx, cy - sy, s, 0.0, PAPER)
+    s = 1.42 * (1.0 + .04 * math.exp(-max(0, q) * 8) * (q >= 0))
+    cy = BLOCK[1] - 200 + 25 * clamp((t - 1.5) / 1.5)
+    return frame_svg("".join(o), BLOCK[0] + 175 - sx / 1.42, cy - sy / 1.42, s, 0.0, PAPER)
 
 
 # ═══════════════════════════════ s05: пузырь комментария ═══════════════════════════════
@@ -126,13 +126,13 @@ T5_CUT = 6.90
 def _bubble_state(t):
     """(x, y, k, wobble)."""
     if t < T5_PISH:
-        x, y, k = 640, 960, .85
+        x, y, k = 600, 900, 2.1
     else:
         u = ease_out(clamp((t - T5_PISH) / .3), 3)
-        x, y, k = lerp(640, 540, u), lerp(960, 820, u), lerp(.85, 1.55, u)
+        x, y, k = lerp(600, 520, u), lerp(900, 760, u), lerp(2.1, 3.3, u)
         u2 = ease_out(clamp((t - T5_CHTO) / .2), 2)
         y -= 20 * u2
-        k += .3 * u2
+        k += .45 * u2
     wb = .5 * math.sin(t * 9) * math.exp(-max(0, t - 5.6) * 1.4)            # качается на кадре 0
     for t0, amp in ((T5_PISH, .45), (T5_CHTO, .35), (T5_TAP, .7)):
         q = t - t0
@@ -168,14 +168,14 @@ def s05(t):
         qq = t - t0
         if -.08 < qq < .25:
             push = max(push, math.sin(math.pi * clamp((qq + .08) / .33)))
-    tip = (x + 112 * k + 16 - 18 * push, y + 44 * k + 10 - 6 * push)
-    base = (tip[0] + 380, tip[1] + 760)
+    tip = (x + 100 * k + 20 - 30 * push, y + 50 * k + 16 - 10 * push)
+    base = (tip[0] + 260, tip[1] + 520)
     claw = clamp(push * 1.5)
-    o.append(people.cat_forearm(base, tip, 1.35, claw=claw, seed=51))
+    o.append(people.cat_forearm(base, tip, 2.3, claw=claw, seed=51))
     # камера: наезд с разгоном к пузырю в склейку 6.90
     u = ease_in(clamp((t - 6.2) / (T5_CUT - 6.2)), 2.4)
-    s = 1.0 + .55 * u
-    cx = lerp(560, x, .6 * u)
+    s = 1.0 + .35 * u
+    cx = lerp(600, x + 90, .5 * u)
     cy = lerp(900, y, .8 * u)
     dark = .25 + .75 * ease_in(clamp((t - 6.1) / .8), 1.6)
     return frame_svg("".join(o), cx, cy, s, -.6 * u, PAPER, vignette(dark))
@@ -186,18 +186,18 @@ T16_DOL = wt("дольше")            # 21.65
 T16_SAM = wt("самое")             # 22.55
 T16_OLD = wt("старое")            # 22.86
 SHELF_Y = 1000.0
-KC = .85
+KC = 1.0
 CARDS16 = [   # (тип, x, y, swing0, dust, col, seed)
     ("card", -1235, 400, -3, .15, "#F7DC6F", 1),
     ("env", -1035, 370, 2, .35, None, 2),
     ("card", -830, 420, 4, .1, "#9FD0EA", 3),
     ("card", -650, 390, -2, .2, "#F4A6B7", 4),
-    ("card", -1160, 640, 3, .3, "#B6DE8E", 5),
+    ("card", -700, 660, 3, .3, "#B6DE8E", 5),
 ]
-OLD_PIN = (-810.0, 805.0)
-OVER16 = ("env", -925, 690, -3, .45, None, 6)       # конверт, под которым прячется старая карточка
-CAT_X0, CAT_X1 = -1330.0, -880.0
-PAW_DX = 34.0
+OLD_PIN = (-1125.0, 800.0)
+OVER16 = ("env", -1010, 690, -3, .45, None, 6)       # конверт, под которым прячется старая карточка
+CAT_X0, CAT_X1 = -560.0, -880.0
+PAW_DX = 110.0
 
 
 def _cat16(t):
@@ -205,16 +205,16 @@ def _cat16(t):
     wu = clamp((t - 21.42) / (22.25 - 21.42))
     x = lerp(CAT_X0, CAT_X1, ease_io(wu) * .2 + wu * .8)
     walking = wu < 1
-    st = {"turn": .55, "look": (.6, -.5), "tail": 6 * math.sin(t * 5), "flame_e": 1.3}
+    st = {"turn": -.55, "look": (-.6, -.5), "tail": 6 * math.sin(t * 5), "flame_e": 1.3}
     if not walking:
         sn = clamp((t - 22.25) / .3)
-        st.update(tilt=-6 * sn + 2 * math.sin(t * 14) * sn, look=(.5, -.9), turn=.4)
+        st.update(tilt=6 * sn + 2 * math.sin(t * 14) * sn, look=(-.5, -.9), turn=-.4)
     reach = 0.0
     if t >= T16_SAM:
         reach = ease_out(clamp((t - T16_SAM) / .22), 2)
         pull = ease_io(clamp((t - T16_OLD) / .3))
         reach = reach * (1 - .45 * pull)
-        st.update(paw=reach, paw_dx=PAW_DX, look=(.5, -.6 + .9 * pull), smile=1.0 if t > T16_OLD + .2 else 0.0)
+        st.update(paw_l=reach, paw_l_dx=PAW_DX, look=(-.5, -.6 + .9 * pull), smile=1.0 if t > T16_OLD + .2 else 0.0)
     return x, st, walking
 
 
@@ -235,38 +235,42 @@ def s16(t):
                      P.pinned_card(x, y, 1.0, sw, dust, 0.0, t=t, seed=sd, col=col))
     # самая старая карточка: в паутине, под конвертом; на «старое» паутина рвётся и карточка уезжает с лапой
     x, st, walking = _cat16(t)
-    tip = people.cat_paw_tip(x, SHELF_Y, KC, st, "r") if st.get("paw", 0) > .02 else None
+    tip = people.cat_paw_tip(x, SHELF_Y, KC, st, "l") if st.get("paw_l", 0) > .02 else None
     pull = ease_io(clamp((t - T16_OLD) / .3))
     torn = clamp((t - T16_OLD) / .18)
     cx_, cy_ = OLD_PIN
     if pull > 0 and tip is not None:
-        cx_ = lerp(OLD_PIN[0], tip[0] + 6, pull)
+        cx_ = lerp(OLD_PIN[0], tip[0] - 6, pull)
         cy_ = lerp(OLD_PIN[1], tip[1] - P.CARD_H + P.CARD_PIN + 18, pull)
-    sw_old = 1.5 * math.sin(t * 3) + 14 * pull
+    sw_old = 1.5 * math.sin(t * 3) - 14 * pull
     tug = 0.0
     if T16_SAM + .2 < t < T16_OLD:
         tug = 3 * math.sin((t - T16_SAM) * 40)
     web_l = P.cobweb(OLD_PIN[0] - 95, OLD_PIN[1] - 26, 1.0, tremble=min(1, abs(tug) / 2 + .2), torn=torn, t=t, ang=10, span=80, L=150, seed=61)
     web_r = P.cobweb(OLD_PIN[0] + 95, OLD_PIN[1] - 26, .9, tremble=min(1, abs(tug) / 2 + .2), torn=torn, t=t, ang=100, span=80, L=140, seed=62)
     o.append(R.light_tint("".join(items), Pl))
-    o.append(R.light_tint(P.pinned_card(cx_, cy_ + tug * .5, 1.0, sw_old + tug, 1.0, 0.0, t=t, seed=7, col="#E9E1CC", pin=pull < .05), Pl))
-    if pull >= .05:
+    old_card = R.light_tint(P.pinned_card(cx_, cy_ + tug * .5, 1.0, sw_old + tug, 1.0, 0.0, t=t, seed=7, col="#E9E1CC", pin=pull < .05), Pl)
+    if pull < .05:
+        o.append(old_card)
+    else:
         o.append(R.light_tint(P.push_pin(*OLD_PIN, .9), Pl))
     kind, ox, oy, osw, odust, ocol, osd = OVER16
     o.append(R.light_tint(P.pinned_envelope(ox, oy, .9, osw + 1.2 * math.sin(t * 2.2) + tug * .4, odust, 0.0, t=t, seed=osd), Pl))
     o.append(web_l + web_r)
-    o.append(P.dust_puff(OLD_PIN[0], OLD_PIN[1] + 40, 1.3, clamp((t - T16_OLD) / .7), seed=16))
     # кот
     if walking:
         cs = people.cat_walk(x, SHELF_Y, KC, t, st, period=.42)
     else:
         cs = people.cat_svg(x, SHELF_Y, KC, st, t)
     o.append(R.warm_tint(cs, 1.0))
+    if pull >= .05:      # вытянутая карточка — перед котом, в лапе
+        o.append(old_card)
+    o.append(P.dust_puff(OLD_PIN[0] - 40, OLD_PIN[1] + 10, .9, clamp((t - T16_OLD) / .7), seed=16))
     # камера: панорама за котом, на «старое» наезд 5 %
-    cam_x = lerp(-1080, -860, ease_io(clamp((t - 21.42) / 1.2)))
+    cam_x = x - 120
     q = t - T16_OLD
-    s = 1.12 * (1 + .05 * ease_out(clamp(q / .25), 2)) if q > 0 else 1.12
-    cam_y = 820 + 20 * ease_out(clamp(q / .25), 2) * (q > 0)
+    s = 1.75 * (1 + .05 * ease_out(clamp(q / .25), 2)) if q > 0 else 1.75
+    cam_y = 790 + 25 * ease_out(clamp(q / .25), 2) * (q > 0)
     return frame_svg("".join(o), cam_x, cam_y, s, 0.0, "#2a1c18")
 
 
