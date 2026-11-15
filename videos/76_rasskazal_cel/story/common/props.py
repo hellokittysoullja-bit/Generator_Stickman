@@ -5212,3 +5212,209 @@ def sealed_envelope(x, y, k=1.0, seal_u=0.0, shiver=0.0, t=0.0, seed=0, rot=0.0,
 
 def ease_o(u):
     return lib.ease_out(u, 3)
+
+
+# ── РИЛС 76, часть 2 ──
+#   rubber_stamp(x, y, k, down, seed)  деревянная печать: (x, y) — центр НИЖНЕЙ грани (резина); ручка-шар, шейка, колодка, зелёная
+#                 резина; down 0…1 — сжатие резины в момент удара.
+#   check_seal(x, y, k, u, seed)       оттиск: зелёный круг + галочка внутри, БЕЗ букв (ЦЕНТР); u 0…1 — проявляется (сочный → ровный).
+#   head_outline(x, y, k, u, seed, t)  профиль головы Димы ТОЛЬКО контуром тушью (смотрит вправо, ЦЕНТР черепа): лохматая макушка, нос,
+#                 губы, подбородок со щетиной-штрихами, ухо, шея; внутри пусто, полочка. u 0…1 — контур дорисовывается.
+#   head_anchor(x, y, k) → dict: ear (вход в ухо, мир), shelf (x0, x1, y — верх полочки), cab (центр низа места под картотеку).
+#   card_file(x, y, k, out, seed)      ящик-картотека (ЦЕНТР ДНА) 230×150·k без ярлыков: корпус и ящик; out 0…1 — ящик выдвинут.
+#   card_file_slot(x, y, k, out) → (x, y) — середина открытого ящика (куда въезжает лист).
+#   city_skyline(x, y, w, t, dusk, seed)  силуэт большого города (ЦЕНТР линии воды): высотки с огоньками окон, подвесной мост, статуя
+#                 Свободы с факелом на островке; без вывесок; dusk 0…1 — от вечера к сумеркам (окна ярче).
+#   trophy_pencils(x, y, k, t, seed)    тот же кубок как стакан для карандашей (карандаши торчат из чаши).
+
+
+def rubber_stamp(x, y, k=1.0, down=0.0, seed=0):
+    sd = 76800 + seed
+    d = clamp(down)
+    o = []
+    o.append(shape(rrect(-78, -6 + 4 * d, 78, 4, 4), "#3F8F55", blob(rect_pts(-78, -2, 78, 4), "#2E6E40"), w=3.6, seed=sd))
+    o.append(shape(rrect(-86, -60, 86, -6 + 4 * d, 8), C_WOOD, blob(rect_pts(-86, -26, 86, -6), C_WOOD_SH, .8) +
+                   line([(-70, -48), (60, -48)], 3, C_WOOD_HI, taper=.3, seed=sd + 1), w=4.2, seed=sd + 2))
+    o.append(shape([(-22, -60, 1), (-16, -130), (16, -130), (22, -60, 1)], C_WOOD_SH, blob([(4, -60), (22, -60), (16, -130), (6, -130)], "#6E4626", .8), w=3.8, seed=sd + 3))
+    o.append(shape(ellipse_pts(0, -168, 50, 46, 20), C_WOOD, blob(ellipse_pts(14, -158, 34, 30, 16), C_WOOD_SH, .7) +
+                   blob(ellipse_pts(-16, -184, 12, 8, 10), C_WOOD_HI, .9), w=4.2, seed=sd + 4))
+    return _tf("".join(o), x, y, k)
+
+
+def check_seal(x, y, k=1.0, u=1.0, seed=0):
+    u = clamp(u)
+    if u <= 0:
+        return ""
+    sd = 76850 + seed
+    rs = _rs(sd)
+    col = mix("#1F8A45", C_GREEN_OK, u)
+    s = 1.12 - .12 * lib.ease_out(u, 3)
+    o = []
+    ring = [((70 + rs.uniform(-2, 2)) * math.cos(2 * math.pi * i / 40), (70 + rs.uniform(-2, 2)) * math.sin(2 * math.pi * i / 40)) for i in range(41)]
+    o.append(line(ring, 11, col, taper=0.0, wmin=.7, seed=sd + 1))
+    ring2 = [(56 * math.cos(2 * math.pi * i / 40), 56 * math.sin(2 * math.pi * i / 40)) for i in range(41)]
+    o.append(line(ring2, 4, col, taper=0.0, wmin=.5, seed=sd + 2, op=.8))
+    o.append(check_mark(-4, 4, 1.6, 1.0, col, 10, seed))
+    for j in range(5):
+        a = rs.uniform(0, 2 * math.pi)
+        o.append(blob(ellipse_pts(84 * math.cos(a), 84 * math.sin(a), 3.5, 3, 6), col, .7))
+    return f'<g opacity="{.6 + .4 * u:.3f}">{_tf("".join(o), x, y, k * s)}</g>'
+
+
+_HEAD_OUT = [(-250, -80), (-236, -190), (-170, -270), (-60, -318), (60, -312), (160, -258), (205, -170), (214, -90), (222, -40),
+             (262, 0), (292, 30), (270, 46), (232, 52), (240, 72), (234, 92), (244, 110), (228, 132), (222, 168), (196, 200),
+             (130, 214), (60, 206)]
+_HEAD_BACK = [(-250, -80), (-252, 20), (-222, 110), (-170, 168)]
+_HEAD_HAIR = [(-262, -60), (-282, -140), (-246, -170), (-262, -240), (-196, -262), (-200, -330), (-120, -318), (-90, -380), (-20, -336),
+              (40, -390), (80, -326), (160, -350), (168, -278), (236, -268), (214, -206), (250, -170), (206, -150)]
+
+
+def head_anchor(x, y, k=1.0):
+    return dict(ear=(x - 70 * k, y + 0 * k), shelf=(x - 130 * k, x + 170 * k, y + 70 * k), cab=(x + 20 * k, y + 196 * k))
+
+
+def head_outline(x, y, k=1.0, u=1.0, seed=0, t=0.0):
+    sd = 76900 + seed
+    u = clamp(u)
+    o = []
+
+    def part(pts, w, a, b, sd_, op=1.0, taper=.3):
+        q = clamp((u - a) / (b - a))
+        if q <= 0:
+            return ""
+        S = lib.sample(pts, False, 3.0)
+        m = max(2, int(len(S) * q))
+        return line([tuple(p) for p in S[:m]], w, INK, taper=taper, wmin=.35, seed=sd_, op=op)
+    o.append(part(_HEAD_OUT, 9, 0, .7, sd + 1))
+    o.append(part(_HEAD_BACK, 9, 0, .4, sd + 2))
+    o.append(part(_HEAD_HAIR, 8, .1, .8, sd + 3))
+    # шея
+    o.append(part([(150, 210), (156, 300), (170, 400)], 8, .3, .8, sd + 4))
+    o.append(part([(-170, 168), (-150, 280), (-160, 400)], 8, .3, .8, sd + 5))
+    # ухо
+    o.append(part([(-50, -40), (-96, -52), (-118, -10), (-104, 40), (-62, 52), (-48, 30)], 7, .4, .85, sd + 6))
+    o.append(part([(-70, -20), (-92, -6), (-84, 22)], 4.5, .5, .9, sd + 7))
+    # глаз и бровь линией
+    o.append(part([(150, -72), (176, -78), (196, -70)], 6, .5, .9, sd + 8))
+    o.append(part([(166, -40), (182, -46), (194, -40)], 5, .55, .9, sd + 9))
+    o.append(part([(232, 66), (212, 76)], 4, .6, .95, sd + 10))
+    # щетина штрихами
+    if u > .7:
+        rs = _rs(sd + 11)
+        q = clamp((u - .7) / .3)
+        for j in range(int(18 * q)):
+            px = rs.uniform(90, 220)
+            py = rs.uniform(110, 200) if px > 150 else rs.uniform(150, 205)
+            o.append(line([(px, py), (px + 3, py + 8)], 3.2, INK, taper=.5, seed=sd + 20 + j, op=.75))
+    # полочка внутри
+    o.append(part([(-130, 70), (170, 70)], 7, .65, 1.0, sd + 12, taper=.1))
+    o.append(part([(-120, 70), (-120, 92)], 5, .8, 1.0, sd + 13))
+    o.append(part([(160, 70), (160, 92)], 5, .8, 1.0, sd + 14))
+    return _tf("".join(o), x, y, k)
+
+
+def card_file(x, y, k=1.0, out=0.0, seed=0):
+    sd = 77000 + seed
+    o = [shape(rrect(-115, -150, 115, 0, 8), C_WOOD_SH, blob(rect_pts(-115, -150, 115, -132), C_WOOD_HI, .6), w=4.2, seed=sd)]
+    o.append(drawer(0, -70, 186, 92, out, seed=sd + 1, col=C_WOOD))
+    o.append(shape(ellipse_pts(0, -70 + 30 * clamp(out), 16, 9, 10), C_METAL, "", w=3, seed=sd + 2))
+    return _tf("".join(o), x, y, k)
+
+
+def card_file_slot(x, y, k=1.0, out=0.0):
+    px, py = drawer_slot(0, -70, 186, 92, out)
+    return x + px * k, y + py * k
+
+
+def city_skyline(x, y, w=1080.0, t=0.0, dusk=0.5, seed=0):
+    sd = 77100 + seed
+    rs = _rs(sd)
+    d = clamp(dusk)
+    far = mix("#7B6C9E", "#4E4775", d)
+    near = mix("#5A4E7E", "#332E55", d)
+    win = mix("#FFD98A", "#FFE9A8", d)
+    o = []
+    x0, x1 = x - w / 2, x + w / 2
+    # дальний ряд
+    px = x0 - 20
+    while px < x1:
+        bw = rs.uniform(50, 90)
+        bh = rs.uniform(160, 330)
+        o.append(blob(rect_pts(px, y - bh, px + bw, y + 2), far))
+        px += bw - 6
+    # ближний ряд с огоньками и шпилями
+    px = x0 + 140
+    j = 0
+    while px < x1 - 40:
+        bw = rs.uniform(56, 110)
+        bh = rs.uniform(220, 520) if j % 3 else rs.uniform(420, 600)
+        top = [(px, y - bh, 1), (px + bw, y - bh, 1)]
+        if j % 4 == 1:
+            top = [(px, y - bh, 1), (px + bw * .5 - 8, y - bh - 40, 1), (px + bw * .5, y - bh - 90, 1), (px + bw * .5 + 8, y - bh - 40, 1), (px + bw, y - bh, 1)]
+        o.append(blob(top + [(px + bw, y + 2, 1), (px, y + 2, 1)], near))
+        for r_ in range(int(bh / 46) - 1):
+            for c_ in range(int(bw / 26)):
+                if rs.random() < .4:
+                    tw = .55 + .45 * math.sin(t * 3 + r_ * 1.7 + c_ * 2.3 + j)
+                    o.append(blob(rect_pts(px + 10 + c_ * 26, y - bh + 30 + r_ * 46, px + 22 + c_ * 26, y - bh + 46 + r_ * 46), win, (.45 + .5 * d) * tw))
+        px += bw + rs.uniform(6, 30)
+        j += 1
+    front = mix(near, "#1B1734", .45)
+    # вода
+    o.append(blob(rect_pts(x0 - 40, y, x1 + 40, y + 200), mix("#6D6A9C", "#3F3D6B", d)))
+    for i in range(12):
+        wy = y + 18 + i * 15
+        wx = x0 + rs.uniform(0, w)
+        o.append(line([(wx, wy), (wx + rs.uniform(40, 120), wy)], 3, win, taper=.5, seed=sd + 40 + i, op=.35 + .2 * math.sin(t * 2 + i)))
+    # мост над водой (ближе города): две опоры, тросы
+    bx0, bx1 = x0 + w * .50, x0 + w * 1.04
+    deck = y + 46
+    for tx in (bx0 + 70, bx1 - 70):
+        o.append(blob(rect_pts(tx - 14, deck - 240, tx + 14, y + 120), front))
+        o.append(blob(rect_pts(tx - 22, deck - 170, tx + 22, deck - 154), front))
+    o.append(blob(rect_pts(bx0 - 80, deck, bx1 + 80, deck + 16), front))
+    cab = []
+    for i in range(21):
+        u = i / 20
+        cx = bx0 + 70 + (bx1 - bx0 - 140) * u
+        cab.append((cx, deck - 240 + 220 * (1 - (2 * u - 1) ** 2)))
+    o.append(line(cab, 4.5, front, taper=0.0, wmin=1.0, seed=sd + 1))
+    for i in range(1, 20):
+        o.append(line([cab[i], (cab[i][0], deck)], 1.8, front, taper=0.0, wmin=1.0, seed=sd + 2 + i, op=.85))
+    # островок и статуя Свободы (слева, в воде, ближе всего)
+    sx, sy = x0 + w * .2, y + 120
+    o.append(blob([(sx - 130, sy, 1), (sx - 70, sy - 28), (sx + 70, sy - 28), (sx + 130, sy, 1)], front))
+    o.append(blob(rect_pts(sx - 34, sy - 120, sx + 34, sy - 20), front))
+    o.append(blob([(sx - 48, sy - 40, 1), (sx + 48, sy - 40, 1), (sx + 30, sy - 70, 1), (sx - 30, sy - 70, 1)], front))
+    fig = [(sx - 22, sy - 120, 1), (sx - 26, sy - 190), (sx - 16, sy - 240), (sx - 12, sy - 262), (sx - 6, sy - 270), (sx + 10, sy - 266),
+           (sx + 16, sy - 250), (sx + 20, sy - 236), (sx + 34, sy - 300), (sx + 44, sy - 300), (sx + 30, sy - 226), (sx + 22, sy - 190),
+           (sx + 24, sy - 120, 1)]
+    o.append(blob(fig, front))
+    for a in range(-60, 61, 30):   # корона-лучи
+        aa = math.radians(a - 90)
+        o.append(line([(sx - 1, sy - 268), (sx - 1 + 26 * math.cos(aa), sy - 268 + 26 * math.sin(aa))], 4, front, taper=.6, seed=sd + 60 + a))
+    o.append(blob(rect_pts(sx - 34, sy - 220, sx - 18, sy - 190), front))   # скрижаль
+    fx, fy = sx + 39, sy - 304
+    fl = 1 + .12 * math.sin(t * 13)
+    o.append(glow(fx, fy - 10, 70, .8, "#FFC66A"))
+    o.append(blob([(fx - 9, fy), (fx, fy - 30 * fl), (fx + 9, fy)], "#FFB238"))
+    o.append(blob([(fx - 4, fy), (fx, fy - 16 * fl), (fx + 4, fy)], "#FFF0B0"))
+    return "".join(o)
+
+
+def trophy_pencils(x, y, k=1.0, t=0.0, seed=0):
+    rs = _rs(77200 + seed)
+    ins = []
+    cols = ("#E8473C", "#4A8FD6", "#F2B632", "#4FA36A")
+    for j in range(4):
+        a = -18 + 12 * j + rs.uniform(-3, 3)
+        ca, sa = math.cos(math.radians(a - 90)), math.sin(math.radians(a - 90))
+        L = rs.uniform(150, 200)
+        bx = -48 + 32 * j
+        tip = (bx + ca * L, sa * L)
+        body = [(bx, 10), (bx + ca * (L - 30), sa * (L - 30))]
+        ins.append(line(body, 22, INK, taper=0.0, wmin=1.0, seed=77210 + j))
+        ins.append(line(body, 15, cols[j], taper=0.0, wmin=1.0, seed=77220 + j))
+        ins.append(line([body[1], tip], 13, "#E9C99A", taper=.9, wmin=.1, seed=77230 + j))
+        ins.append(line([((body[1][0] * 2 + tip[0]) / 3 * 0 + tip[0] * .6 + body[1][0] * .4, tip[1] * .6 + body[1][1] * .4), tip], 6, INK, taper=.9, wmin=.1, seed=77240 + j))
+    return trophy(x, y, k, 0.0, 1.0, t, seed, 0.0, "".join(ins))
