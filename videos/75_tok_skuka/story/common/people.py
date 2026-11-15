@@ -3376,9 +3376,9 @@ def _rest_wrist(x, y, sc):
     return (x + 250 * sc, y - 40 * sc)
 
 
-def press_at(who, x, y, s, target, reach=1.0, press=0.0, expr=None, t=0.0, far_hand=None, fdir=(1.0, 0.55), **kw):
+def press_at(who, x, y, s, target, reach=1.0, press=0.0, expr=None, t=0.0, far_hand=None, fdir=(1.0, 0.55), near_rest=None, **kw):
     """Сидит и тянется ближней рукой к target. Кончик указательного пальца в target при reach=1 (палец смотрит по fdir).
-    Возвращает figure + tip (кончик пальца в мире)."""
+    near_rest — кисть ближней руки на колене, пока она не тянется (например, knee_tap(t)). Возвращает figure + tip (кончик пальца в мире)."""
     sc = s * HEIGHT.get(who, 1.0)
     rw = _rest_wrist(x, y, sc)
     tgt = (target[0], target[1] + 12 * sc * press)
@@ -3390,7 +3390,7 @@ def press_at(who, x, y, s, target, reach=1.0, press=0.0, expr=None, t=0.0, far_h
     wr = (rw[0] + (w_t[0] - rw[0]) * u, rw[1] + (w_t[1] - rw[1]) * u - 50 * sc * math.sin(math.pi * u))
     point = lib.smooth(.25, .75, u)
     if u < .25:
-        hn = {"curl": (.35, .4, .45, .5), "thumb": .3}
+        hn = dict(near_rest or {"curl": (.35, .4, .45, .5), "thumb": .3})
     else:
         hn = {"curl": (.05 + .5 * (1 - point), .9, .92, .95), "thumb": .55, "spread": .05}
         hd0 = (wr[0] - (x + 120 * sc), wr[1] - (y - 330 * sc))

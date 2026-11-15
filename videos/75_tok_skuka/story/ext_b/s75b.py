@@ -140,8 +140,8 @@ def s05(t):
     body = "".join([L["bg"], L["chair_back"], L["table_top"], L["table_legs"], kot, cnt, cat_body, box, paw, L["light"]])
     # камера: лёгкий наезд, на толчке — ещё ближе к коробке
     u = win(t, S05["t0"] - .2, S05["t1"] + .2)
-    s = 1.75 * (1 + .035 * u + .06 * push)
-    cx = 760 - 40 * push + 10 * math.sin(t * .9)
+    s = 1.75 * (1 + .03 * u + .045 * push)
+    cx = 768 - 12 * push + 6 * math.sin(t * .9)
     cy = 820 + 30 * push
     dx, dy = shake(t, t_uz + .42, 6)
     return frame_svg(body, cx + dx, cy + dy, s, .4 * math.sin(t * 1.1))
@@ -183,17 +183,17 @@ def s06(t):
         tip = lerp2((811.0, 1292.0), edge, a)
         st["look"] = (-.6 * a, .3 * a)
     else:                                                 # правая лапа к уголку тряпицы
-        paw_side = "r"
+        paw_side = "l"
         k_ = ck
         cw = people.cat_world_paw(cx_, cy_, k_, corner)
         up = ease_out(win(t, t_bo - .25, t_bo + .2)) * (1 - ease_in(win(t, t_ot + .05, t_ot + .4)))
-        tip = lerp2((861.0, 1292.0), cw, up)
-        st.update(smug=.8 * up, look=(-.1 * up, 0.0), tilt=-8 * up, turn=-.15 * up, sy=1 + .2 * up, rot=3 * up)
+        tip = lerp2((811.0, 1292.0), cw, up)
+        st.update(smug=.8 * up, look=(-.2 * up, 0.0), tilt=12 * up, turn=.15 * up, sy=1 + .18 * up)
         if t > t_ot:                                      # хитро щурится
             sq = ease_out(win(t, t_ot + .1, t_ot + .4))
             st.update(blink=.5 * sq, smile=1.0 if sq > .5 else 0.0, smug=.9)
     if tip is not None:
-        cat_svg = people.cat_paw(cx_, cy_, ck, st, t, tip, side=paw_side, bend=-16 if paw_side == "l" else 48, seed=6)
+        cat_svg = people.cat_paw(cx_, cy_, ck, st, t, tip, side=paw_side, bend=-16 + 100 * (t > t_bo - .2), seed=6)
     else:
         cat_svg = CAT.draw(cx_, cy_, ck, st, t)
     dust = ""
@@ -226,7 +226,7 @@ def s09(t):
     btn = P.shock_button_top(bx, by, bk, view="top")
     # ёрзает, пока ползёт свет; потом замирает и смотрит на кнопку
     calm = win(t, t_only - .1, t_only + .3)
-    la, ha, shr = people.fidget(t, 1.7 * (1 - calm), seed=3)
+    la, ha, shr = people.fidget(t, 2.2 * (1 - calm), seed=3)
     if t < t_min:
         ex = "bored75"
     elif t < t_min + .55:
@@ -240,7 +240,7 @@ def s09(t):
     head_add = ha - (.25 if ex == "ceiling75" else 0.0) + .08 * calm
     far = people.knee_tap(t) if t < t_only else None
     lay, fig = seated("youth", x, y, s, btn, reach, 0.0, ex, t, ("legs", "torso", "arm"), lean_add=la, head_add=head_add, shrug=shr,
-                      far_hand=far)
+                      near_rest=far)
     # вздох — облачко выдоха
     sig = ""
     if ex == "sigh75":
@@ -251,10 +251,10 @@ def s09(t):
     body = "".join([L["bg"], L["chair_back"], L["table_top"], lay["legs"], L["table_legs"], L["chair_seat"], lay["torso"], box, wire,
                     lay["arm"], sig, L["light"]])
     u = win(t, S09["t0"] - .2, S09["t1"] + .2)
-    sc = 1.08 * (1 + .1 * ease_io(u))
+    sc = 1.3 * (1 + .08 * ease_io(u))
     tilt = ease_out(win(t, t_tok - .1, t_tok + .35))
-    cx = 470 + 60 * tilt
-    cy = lerp(930, 880, ease_io(u)) + 20 * tilt
+    cx = 450 + 50 * tilt
+    cy = lerp(880, 850, ease_io(u)) + 20 * tilt
     return frame_svg(body, cx, cy, sc * (1 + .03 * tilt), -1.2 * tilt)
 
 
@@ -429,15 +429,16 @@ def s16(t):
     nod = people.cat_nod(t, t_tel + .5, .4, .32)
     st = dict(people.cat_st("approve"), drop=nod, look=(-.6, .3), tail=8 * math.sin(t * 2.1)) if t > t_tel + .3 else \
         dict(look=(-.7, .25), tail=8 * math.sin(t * 2.1), perk=.5 * buzz)
-    cat_svg = CAT.draw(860.0, R.LAB_TOP - 14.0, .7, st, t)
+    cat_svg = CAT.draw(830.0, R.LAB_TOP - 14.0, .64, st, t)
     o = [L["bg"], L["chair_back"], L["table_top"], btn_in, ph_svg if ph_layer == "drawer" else "", L.get("drawer_front", ""),
          lay["legs"], L["table_legs"], L["chair_seat"], lay["torso"], ph_svg if ph_layer == "table" else "", cat_svg, ph_svg if ph_layer == "hand" else "",
          lay["arm"], L["light"]]
     body = "".join(o)
     # хлёст на входе: камера влетает сбоку, дальше дрейф за рукой
     wu = ease_out(win(t, S16["t0"] - .2, S16["t0"] + .12), 3)
-    s = 1.3 * (1 + .05 * ease_io(win(t, t_tep, t_tel + .4)))
-    cx = 520 + 260 * (1 - wu) + 40 * reach - 30 * into
+    uu = win(t, S16["t0"] - .2, S16["t1"] + .2)
+    s = 1.3 * (1 + .07 * uu + .03 * ease_io(win(t, t_tep, t_tel + .4)))
+    cx = 545 + 260 * (1 - wu) + 25 * reach - 25 * into + 12 * math.sin(t * 1.3)
     cy = 860 + 30 * into
     return frame_svg(body, cx, cy, s, -2.5 * (1 - wu))
 
