@@ -397,6 +397,7 @@ def s12(t):
         pose, u, ex = ("bucket", "head_hands"), ease_out(clamp((t - (T_LEN - .04)) / .26), 2), "sad"
     slap = bump(t, T_RUG, .16)
     fig = people.father(hip_x, hip_y, k, ex, pose, t, u, feet=feet, lean_add=-.05 * flinch + .06 * slap, head_add=-.12 * flinch - .1 * slap)
+    o.append(g["light"])        # лучи ламп — за отцом (поверх него ноги просвечивали)
     o.append(fig["svg"])
     if T_RUG - .02 < t < T_RUG + .25:       # шлепок: штрихи у лба
         hx, hy = fig["head"]
@@ -405,7 +406,6 @@ def s12(t):
             a_ = math.radians(-120 + 35 * j)
             o.append(line([(hx + 60 + 70 * math.cos(a_), hy - 80 + 70 * math.sin(a_)), (hx + 60 + 120 * math.cos(a_), hy - 80 + 120 * math.sin(a_))],
                           6 * (1 - uu) + 1, INK, taper=.6, wmin=.2, seed=7300 + j, op=1 - uu))
-    o.append(g["light"])
     # камера: медленный наезд, удар-наезд на «ругал», к концу проседает за отцом
     u_ = ease_io(clamp((t - (t0 - .2)) / (t1 - t0 + .4)))
     pk = max(0.0, kick(t, T_RUG, .3, .9, 4))
@@ -479,9 +479,9 @@ def s14(t):
         pose, u = ("shoulder", "fall"), fall
     push = .05 * math.sin(t * 17) * strain + .07 * bump(t, T_SIL, .2) + .07 * bump(t, T_VOL, .2)
     fig = people.father(hip_x, hip_y, k, ex, pose, t, u, feet=feet, flip=True, lean_add=push, head_add=(-.5 * clamp((t - (T_PRI + .45)) / .25)))
+    o.append(g["light"])
     o.append(fig["svg"])
     o.append(people.strain_marks(fig["head"], sc, t, strain, flip=True))
-    o.append(g["light"])
     flash = bump(t, T_PRI + .15, .7)
     if flash > .01:
         o.append(P.glow(dx, FL - 400, 900, .5 * flash, "#ffd890"))
