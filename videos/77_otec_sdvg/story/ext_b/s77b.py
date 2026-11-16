@@ -595,7 +595,181 @@ def s15(t):
     return frame_svg(body, cx, cy, s, lerp(.3, -.3, u_), bg="#e2928a")
 
 
-SCENES = {"s07": s07, "s09": s09, "s12": s12, "s14": s14, "s15": s15}
+def stool(x, y, k=1.0, h=200.0, seed=0):
+    """Табурет на четырёх ножках (видны три), верх сиденья — (x, y − h·k)."""
+    sd = 7600 + seed
+    o = []
+    for j, lx in enumerate((-70, 64, -20)):
+        o.append(shape([(lx - 9, -h + 20), (lx + 9, -h + 20), (lx + 12 + (lx > 0) * 8, 0, 1), (lx - 6 + (lx > 0) * 8, 0, 1)],
+                       P.C_WOOD_SH if j == 2 else P.C_WOOD, "", w=3.4, seed=sd + j))
+    o.append(shape(lib.rrect(-96, -h - 6, 96, -h + 22, 10), P.C_WOOD, blob(lib.rrect(-96, -h + 10, 96, -h + 22, 8), P.C_WOOD_SH, .8) +
+                   line([(-70, -h + 2), (40, -h)], 3, P.C_WOOD_HI, seed=sd + 5, op=.8), w=4.2, seed=sd + 4))
+    o.append(line([(-60, -h * .45), (66, -h * .45)], 6, P.C_WOOD_SH, taper=.1, wmin=.8, seed=sd + 6))
+    return f'<g transform="translate({x:.1f} {y:.1f}) scale({k:.3f})">{"".join(o)}</g>'
+
+
+def tool_rot(d):
+    """Угол для P.screwdriver / P.paint_brush: локальная ось (0, 1) смотрит по d."""
+    return math.degrees(math.atan2(-d[0], d[1]))
+
+
+# ═══════════════════════════════ s17: гостиная, последний шуруп, полка держится, руки вверх ═══════════════════════════════
+def s17(t):
+    lib.dyn_begin()
+    t0, t1 = T0("s17"), T1("s17")
+    T_VP, T_DOD, T_REM = ws(84), ws(85), ws(86)
+    g = R.living77(t)
+    FL = g["floor"]
+    o = [g["bg"]]
+    # за окном справа — забор целиком зелёный
+    c = lib.clip_rect(1210, 210, 400, 860)
+    out = grad_rect(1210, 210, 1610, 1070, [(0, "#a6d0ec"), (1, "#f6e2b8")])
+    out += P.fence(1150, 1080, .6, painted_u=1.0, t=t, n=10)
+    out += blob([(1210, 1000), (1610, 990), (1610, 1080), (1210, 1080)], "#7fb35a", .9)
+    o.append(f'<g clip-path="url(#{c})">{out}</g>')
+    o.append(shape([(1398, 210, 1), (1422, 210, 1), (1422, 1070, 1), (1398, 1070, 1)], "#f8ead0", "", w=3.0, seed=7841))
+    # полка
+    shx, shy, shk = 560.0, 430.0, 1.0
+    settle = .8 * math.exp(-6 * max(0.0, t - T_DOD)) * math.sin(14 * max(0.0, t - T_DOD)) if t > T_DOD else 0.0
+    tilt0 = 1.6 * (1 - ease_out(clamp((t - (t0 - .2)) / max(.2, T_VP + .2 - (t0 - .2))), 2))
+    o.append(f'<g transform="rotate({tilt0 + settle:.2f} {shx} {shy})">{P.shelf(shx, shy, shk, boards=1)}</g>')
+    screw_pt = (shx + (260 - 60) * shk, shy + 70 * shk)
+    # табурет у правого кронштейна
+    stx = 1010.0
+    sth = 230.0
+    o.append(stool(stx, FL, 1.0, sth))
+    # отец (лицом влево): на табурете крутит отвёртку → отпускает полку → спрыгивает и поднимает руки
+    k = .7
+    sc = k * people.HEIGHT["father77"]
+    jump = clamp((t - (T_REM - .08)) / .32)
+    land_x = 1060.0
+    if jump <= 0:
+        hip_x, hip_y = stx - 10, FL - sth - (people.LEG_LEN - 12) * sc
+    else:
+        e = ease_io(jump)
+        hip_x = lerp(stx - 10, land_x, e)
+        hip_y = lerp(FL - sth, FL, e) - (people.LEG_LEN - 12) * sc - 90 * math.sin(math.pi * jump) + 30 * bump(t, T_REM + .24, .2)
+    feet = stand_feet(hip_x, hip_y, k)
+    ks = .9
+    turn = math.sin((t - t0) * 2 * math.pi * 2.2) * (1 if t < T_VP + .3 else 0)
+    last = bump(t, T_VP, .45)
+    wr_target = (screw_pt[0] + 120 * ks + 70 * sc - 6 * turn, screw_pt[1] + 4 * turn)
+    rel = ease_io(clamp((t - T_DOD) / .3))
+    wr_target = lerp2(wr_target, (hip_x - 160 * sc, hip_y - 330 * sc), rel)
+    wr_unf = (2 * hip_x - wr_target[0], wr_target[1])
+    up = ease_out(clamp((t - (T_REM + .12)) / .25), 2)
+    if t < T_REM:
+        exf = dict(people.EXPR["father77"]["busy"], look=(.6, -.2)) if t < T_DOD else dict(people.EXPR["father77"]["proud"], look=(.5, -.6))
+        far_t = (shx + 120, shy - 6)       # дальняя ладонь лежит на доске, придерживает
+        far_unf = (2 * hip_x - far_t[0], far_t[1])
+        fig_f = people.father(hip_x, hip_y, k, exf, "screw", t, feet=feet, flip=True, arms={"n": ("ik", wr_unf, 1), "f": ("ik", far_unf, 1)},
+                              hands={"n": {"dir": (1, .1), "curl": (.75, .8, .82, .82), "thumb": .7},
+                                     "f": {"dir": (1, .15), "curl": (.15, .15, .2, .25), "spread": .1, "thumb": .2}})
+    else:
+        exf = "joy" if up > .4 else "proud"
+        fig_f = people.father(hip_x, hip_y, k, exf, ("hold_shelf", "arms_up"), t, up, feet=feet, flip=True)
+    # Дима (лицом вправо): держит полку снизу, потом обнимает отца за плечо
+    dk_ = .7
+    dsc = dk_ * people.HEIGHT["dima"]
+    hug = ease_io(clamp((t - (T_REM + .14)) / .3))
+    dhx = lerp(470.0, 800.0, hug)
+    dhy = FL - (people.LEG_LEN - 12) * dsc
+    dfeet = stand_feet(dhx, dhy, dk_, "dima")
+    hold_u = 1 - ease_io(clamp((t - (T_DOD + .12)) / .35))
+    hands_y = shy + 26
+    arms_d = {"f": ("ik", (shx - 120, hands_y + 40 * (1 - hold_u) + 30), 1), "n": ("ik", (shx + 20, hands_y + 60 * (1 - hold_u) + 10), 1)}
+    if hug > 0:
+        sh_ = (fig_f["head"][0] + 30, fig_f["head"][1] + 230 * sc)
+        arms_d = {"f": ("ang", 0.2, 0.25), "n": ("ik", lerp2(arms_d["n"][1], (sh_[0] - 60 * dsc, sh_[1]), hug), -1)}
+    exd = "hold77" if t < T_DOD + .1 else ("glance77" if t < T_REM + .1 else "proud77")
+    if t >= T_REM + .1:
+        exd = dict(people.EXPR["dima"]["laugh77"]) if up > .7 else "proud77"
+    fig_d = people.dima77(dhx, dhy, dk_, exd, "di_shelf" if hug <= 0 else "di_hug", t, feet=dfeet, arms=arms_d,
+                          hands={"n": {"dir": (.3, -1) if hug <= 0 else (1, .5), "curl": (.2, .2, .25, .3) if hug <= 0 else (.35, .4, .45, .5), "thumb": .25}},
+                          layers=("legs", "pelvis", "arm_f", "arm_n", "body") if hug <= 0 else None)
+    o.append(fig_d["svg"])
+    o.append(fig_f["svg"])
+    if t < T_DOD + .3:      # отвёртка в руке отца
+        hx, hy = fig_f["hold"]
+        d = np.array(screw_pt) - np.array([hx, hy])
+        d /= np.linalg.norm(d) + 1e-9
+        o.append(P.screwdriver(hx, hy, ks, tool_rot(d) + 10 * turn))
+    if T_VP - .02 < t < T_VP + .3:       # последний оборот: щелчок
+        uu = (t - (T_VP - .02)) / .32
+        for j in range(4):
+            a_ = math.radians(-135 + 90 * j)
+            o.append(line([(screw_pt[0] + 30 * math.cos(a_), screw_pt[1] + 30 * math.sin(a_)), (screw_pt[0] + 70 * math.cos(a_), screw_pt[1] + 70 * math.sin(a_))],
+                          6 * (1 - uu) + 1, INK, taper=.6, wmin=.2, seed=7610 + j, op=1 - uu))
+    if T_DOD < t < T_DOD + .6:      # полка ровная: искра по доске
+        uu = (t - T_DOD) / .6
+        xx = lerp(shx - 240, shx + 240, ease_io(uu))
+        o.append(blob(ellipse_pts(xx, shy + 6, 40, 8, 12), "#fffbe8", .8 * (1 - uu)))
+    o.append(g["light"])
+    warm = bump(t, T_REM + .1, .7)
+    if warm > .01:
+        o.append(P.glow(fig_f["head"][0], fig_f["head"][1] + 100, 700, .55 * warm, "#ffd890"))
+    # камера: медленный отъезд, на «ремонт» удар-наезд и тёплая вспышка
+    u_ = ease_io(clamp((t - (t0 - .2)) / (t1 - t0 + .4)))
+    pk = max(0.0, kick(t, T_REM + .1, .35, .9, 4))
+    s = lerp(1.08, .98, u_) * (1 + .08 * pk)
+    cx = lerp(720, 780, u_)
+    cy = lerp(860, 880, u_)
+    return frame_svg("".join(o), cx, cy, s, lerp(-.3, .3, u_), bg="#cfe0c4")
+
+
+# ═══════════════════════════════ s18: кот запрыгивает на новую полку, огонёк золотом ═══════════════════════════════
+def s18(t):
+    lib.dyn_begin()
+    t0, t1 = T0("s18"), T1("s18")
+    T_KOT, T_SID, T_POL = ws(87), ws(88), ws(91)
+    g = R.living77(t)
+    o = [g["bg"]]
+    shx, shy, shk = 560.0, 930.0, 1.7
+    land = 1.6 * math.exp(-7 * max(0.0, t - T_KOT)) * math.sin(16 * max(0.0, t - T_KOT)) if t > T_KOT else 0.0
+    o.append(f'<g transform="rotate({land:.2f} {shx} {shy})">{P.shelf(shx, shy, shk, boards=1)}</g>')
+    # фото на полке справа (рамкой к нам), отражает свет
+    o.append(P.photo_frame(shx + 270, shy - 100, 1.2, t=t, glint=clamp((t - (T_POL + .1)) / .5)))
+    ck = 1.3
+    cpos = (shx - 150, shy + 2)
+    start = (shx - 420, shy + 900)
+    u_j = lerp(.47, .85, clamp((t - (t0 - .2)) / max(.1, T_KOT - (t0 - .2))))
+    if t >= T_KOT:
+        u_j = .85 + .15 * clamp((t - T_KOT) / .16)
+    sit = ease_io(clamp((t - (T_SID - .06)) / .3))
+    gold = ease_io(clamp((t - (T_POL - .04)) / .35))
+    st = dict(turn=.15 * math.sin(t * 1.2), look=(.15, .1), tilt=3 * math.sin(t * 1.4) + 4 * gold, tail=-6 + 26 * sit + 4 * math.sin(t * 2.0),
+              ear=4 * math.sin(t * 2.7), perk=.4, smile=1.0 if gold > .4 else 0.0, flame_e=1.0 + 1.6 * gold,
+              blink=.0)
+    if gold > .4:      # довольно щурится: глаза почти закрыты
+        st["blink"] = .78
+    if u_j < 1:
+        o.append(people.cat_jump(start, cpos, ck, u_j, t, st, height=330))
+    else:
+        o.append(blob(ellipse_pts(cpos[0], cpos[1] + 4, 120, 12, 16), "#5c4430", .25))
+        o.append(CAT.draw(cpos[0], cpos[1] + 10 * bump(t, T_SID, .25), ck, dict(st, sy=1 - .05 * bump(t, T_SID, .25)), t))
+    if gold > .01:
+        fx, fy = flame_world(cpos[0], cpos[1], ck, st)
+        o.append(P.glow(fx, fy, 260, .9 * gold, "#ffd36a"))
+        if gold > .5:      # золотые искры
+            for j in range(5):
+                ph = (t * 1.3 + j * .2) % 1
+                ax = fx + 50 * math.sin(j * 2.1 + t * 2)
+                ay = fy - 40 - 120 * ph
+                r = 8 * (1 - ph)
+                o.append(shape([(ax, ay - r * 2), (ax + r * .5, ay - r * .5), (ax + r * 2, ay), (ax + r * .5, ay + r * .5), (ax, ay + r * 2),
+                                (ax - r * .5, ay + r * .5), (ax - r * 2, ay), (ax - r * .5, ay - r * .5)], "#ffe27a", "", w=1.6, seed=7700 + j,
+                               attrs=f'opacity="{1 - ph:.2f}"'))
+    o.append(g["light"])
+    # камера: ловит кота в прыжке, подскакивает на приземлении
+    cu = clamp((t - (t0 - .2)) / max(.1, T_KOT - (t0 - .2)))
+    hop = kick(t, T_KOT, .3, 1.5, 5)
+    s = lerp(1.18, 1.28, ease_io(clamp((t - T_KOT) / (t1 - T_KOT + .2))))
+    cx = lerp(440, 520, ease_out(cu, 2))
+    cy = lerp(1100, 800, ease_out(cu, 2)) - 26 * hop
+    return frame_svg("".join(o), cx, cy, s, .5 * hop, bg="#cfe0c4")
+
+
+SCENES = {"s07": s07, "s09": s09, "s12": s12, "s14": s14, "s15": s15, "s17": s17, "s18": s18}
 
 
 def frame(sid, t):
