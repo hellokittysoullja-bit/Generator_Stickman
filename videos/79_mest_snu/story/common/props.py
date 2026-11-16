@@ -5663,12 +5663,15 @@ def _peel_geom(cx, cy, r, peel, pull):
     return W_, nx, ny, h, lo
 
 
-def attic_clock(x, y, r=300.0, hour_a=0.0, min_a=0.0, blur=0.0, sector_u=0.0, peel_u=0.0, t=0.0, seed=0, pull=(0.25, 1.0), wood=True):
+def attic_clock(x, y, r=300.0, hour_a=0.0, min_a=0.0, blur=0.0, sector_u=0.0, peel_u=0.0, t=0.0, seed=0, pull=(0.25, 1.0), wood=True,
+                flap_off=(0.0, 0.0), flap_layer=False):
     """Большие круглые часы мансарды (ЦЕНТР), радиус r: деревянный обод, кремовый циферблат, две стрелки и точка — БЕЗ цифр и делений.
     hour_a/min_a — углы стрелок в градусах по часовой от «12» (clock_hm). blur 0…1 — стрелки крутятся: смаз-веер позади каждой.
     sector_u 0…1 — тёплый сектор «11→3» проступает светом; peel_u 0…1 — сектор отклеивается, как наклейка: край, дальний от руки,
     загибается и ложится изнанкой к руке (pull — направление тяги в мире), на месте — бледный «пустой» след.
-    При peel_u ≥ 1 сектора на часах нет (дальше его несёт сцена — sector_piece). sector_peel_tip() → кончик загиба (куда ставить пальцы)."""
+    При peel_u = 1 сектор целиком отклеен и висит загибом у руки; flap_off=(dx, dy) — дальше его несёт рука (сдвиг загиба).
+    Загиб — тёплой стороной (читается «тёплое время уносят»). flap_layer=True — вернуть ТОЛЬКО загиб (чтобы сцена положила его поверх руки
+    или под неё). sector_peel_tip() → кончик загиба (куда ставить пальцы)."""
     sd = 79000 + seed
     o = []
     # тень на стене
@@ -5685,7 +5688,7 @@ def attic_clock(x, y, r=300.0, hour_a=0.0, min_a=0.0, blur=0.0, sector_u=0.0, pe
     if su > 0.01:
         if pu > 0.001:      # след: циферблат под наклейкой чуть холоднее и пустой
             o.append(blob(_wedge(x, y, r * .8, SECTOR_A0, SECTOR_A1), "#E4E0D6"))
-        if pu < 1.0:
+        if True:
             W_, nx, ny, h, lo = _peel_geom(x - x, y - y, r, pu, pull)
             Wm = [(p[0] + x, p[1] + y) for p in W_]
             hw = h + nx * x + ny * y
@@ -5694,18 +5697,22 @@ def attic_clock(x, y, r=300.0, hour_a=0.0, min_a=0.0, blur=0.0, sector_u=0.0, pe
             # свет сектора
             g = rad_grad([(0, "#FFD27A", .55 * su * (1 - pu)), (1, "#FFD27A", 0)], *_apt(x, y, r * .42, 30), r * .7)
             o.append(f'<circle cx="{f(_apt(x, y, r * .42, 30)[0])}" cy="{f(_apt(x, y, r * .42, 30)[1])}" r="{f(r * .7)}" fill="url(#{g})"/>')
-            if su < 1:
-                o.append(f'<g opacity="{su:.3f}">{_sector_fill(stay, 1.0, sd + 5)}</g>')
-            else:
-                o.append(_sector_fill(stay, 1.0, sd + 5))
+            if pu < 1.0:
+                if su < 1:
+                    o.append(f'<g opacity="{su:.3f}">{_sector_fill(stay, 1.0, sd + 5)}</g>')
+                else:
+                    o.append(_sector_fill(stay, 1.0, sd + 5))
             if flap and pu > 0.001:
                 fl = []
                 for p in flap:
                     v = nx * p[0] + ny * p[1] - hw
-                    fl.append((p[0] - 2 * v * nx, p[1] - 2 * v * ny))
-                # тень загиба на циферблате
-                o.append(blob([(p[0] + 6, p[1] + 10) for p in fl], "#000000", .18))
-                o.append(_sector_fill(fl, 1.0, sd + 6, back=True))
+                    fl.append((p[0] - 2 * v * nx + flap_off[0], p[1] - 2 * v * ny + flap_off[1]))
+                fo = [blob([(p[0] + 6, p[1] + 10) for p in fl], "#000000", .18)]
+                fo.append(shape(fl, C_SECTOR_SH, blob([(p[0] + 6, p[1] + 8) for p in fl], C_SECTOR, .0), w=3.4, seed=sd + 6, var=.2))
+                fo.append(line([fl[len(fl) // 3], fl[len(fl) // 2]], r * .018, C_SECTOR_HI, taper=.5, wmin=.2, seed=sd + 7, op=.8))
+                if flap_layer:
+                    return "".join(fo)
+                o.append("".join(fo))
     # стрелки: смаз-веер позади при вращении
     bl = clamp(blur)
     for ang, L, wd, sk in ((hour_a, .5, 15.0, 0), (min_a, .74, 10.0, 1)):

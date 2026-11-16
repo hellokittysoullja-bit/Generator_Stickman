@@ -612,5 +612,169 @@ def s10(t):
 SCENES["s10"] = s10
 
 
+# ═══════════════════════════════ мансарда: общее для s11 и s14 ═══════════════════════════════
+import room  # noqa: E402
+
+PH_BLUE = "#7FB4FF"
+
+
+def arm_hand(wrist, d, k, curl=(0, .1, .2, .25), thumb=.3, spread=.15, elbow_back=420.0, w_sleeve=86.0, seed=7900, blue=1.0):
+    """Предплечье в рукаве худи (рукав не толще предплечья) + кисть: wrist — запястье, d — направление пальцев (мир), k — масштаб кисти
+    (1 — голова 300). Локоть — назад по оси на elbow_back·k. Свет экрана снизу — голубой отсвет на коже и рукаве."""
+    dx, dy = d
+    L = math.hypot(dx, dy) or 1.0
+    dx, dy = dx / L, dy / L
+    nx, ny = -dy, dx
+    el = (wrist[0] - dx * elbow_back * k + nx * 16 * k, wrist[1] - dy * elbow_back * k + ny * 16 * k)
+    mid = ((el[0] + wrist[0]) / 2 + nx * 6 * k, (el[1] + wrist[1]) / 2 + ny * 6 * k)
+    C = people.PAL["dima"]
+    sl = lib.band([el, mid, (wrist[0] - dx * 18 * k, wrist[1] - dy * 18 * k)], w_sleeve * k, w_sleeve * .86 * k)
+    inner = blob(lib.band([(el[0] + nx * 22 * k, el[1] + ny * 22 * k), (wrist[0] - dx * 18 * k + nx * 20 * k, wrist[1] - dy * 18 * k + ny * 20 * k)],
+                          30 * k, 26 * k), C["TOP_SH"], .9)
+    inner += line([(mid[0] - nx * 10 * k, mid[1] - ny * 10 * k), (mid[0] + dx * 30 * k - nx * 26 * k, mid[1] + dy * 30 * k - ny * 26 * k)],
+                  3.2 * k, C["FOLD"], taper=.5, wmin=.2, seed=seed + 1, op=.7)
+    o = [shape(sl, C["TOP"], inner, w=4.0 * k, seed=seed)]
+    cuff = lib.band([(wrist[0] - dx * 34 * k, wrist[1] - dy * 34 * k), (wrist[0] - dx * 10 * k, wrist[1] - dy * 10 * k)], w_sleeve * .9 * k, w_sleeve * .88 * k)
+    o.append(shape(cuff, C["TOP_SH"], "".join(line([(wrist[0] - dx * (32 - 5 * j) * k + nx * 36 * k, wrist[1] - dy * (32 - 5 * j) * k + ny * 36 * k),
+                                                      (wrist[0] - dx * (32 - 5 * j) * k - nx * 36 * k, wrist[1] - dy * (32 - 5 * j) * k - ny * 36 * k)],
+                                                     1.6 * k, C["FOLD"], taper=.1, wmin=.6, seed=seed + 10 + j, op=.6) for j in range(5)),
+                   w=3.4 * k, seed=seed + 2))
+    o.append(people.hand_svg("dima", wrist, (dx, dy), k=k, curl=curl, thumb=thumb, spread=spread, seed=seed + 3))
+    return "".join(o)
+
+
+def phone_light_from(x, y, r, u=1.0):
+    g = lib.rad_grad([(0, PH_BLUE, .38 * u), (.6, PH_BLUE, .12 * u), (1, PH_BLUE, 0)], x, y, r)
+    return f'<rect x="{x - r:.1f}" y="{y - r:.1f}" width="{2 * r:.1f}" height="{2 * r:.1f}" fill="url(#{g})"/>'
+
+
+def sleepy_sky_overlay(t, u):
+    """Сонная луна в колпаке в люке (поверх неба «empty»), со звёздами; u — проявление (качнулась в люк)."""
+    box = room.AT_SKY
+    cid = lib.clip_of([(x, y, 1) for x, y in box])
+    o = []
+    for j in range(9):
+        sx = 670 + 40 * j + 10 * math.sin(j * 3.1)
+        sy = 500 + 34 * ((j * 5) % 7) + .2 * (sx - 660)
+        o.append(P.star4(sx, sy, 7 + 2 * math.sin(t * 3 + j), .5 + .5 * math.sin(t * 2.2 + j)))
+    if u > .01:
+        mx = 850 + 8 * math.sin(t * 1.4)
+        my = lerp(900, 640, ease_out(u, 2.4)) + 4 * math.sin(t * 2.0)
+        o.append(P.moon_cap(mx, my, 58, t=t, mood="sleepy"))
+    return f'<g clip-path="url(#{cid})">{"".join(o)}</g>'
+
+
+# ═══════════════════════════════ s11: часы крупно, сектор отклеивается ═══════════════════════════════
+def s11(t):
+    lib.dyn_begin()
+    a = A0("s11")
+    t_n = ws(49)         # «ночью» — сонная луна в люке
+    t_m = ws(50)         # «мозг» — рука тянется
+    t_o = ws(51)         # «отбирает» — отклеивает и тянет вниз
+    cx0, cy0, R = room.AT_CLOCK
+    push = ease_io(ramp(t, t_n + .15, t_m - t_n + .05))
+    s_ = lerp(1.0, 3.3, push) + .04 * ramp(t, a, 1.0)
+    lib.INK_K[0] = 1.0 / (1 + .55 * (s_ - 1))
+    at = room.attic(t, "night_phone", sky="empty")
+    sector_u = ease_out(ramp(t, a, .7), 2)
+    peel = ease_io(ramp(t, t_o, .38))
+    pull_dir = (.22, 1.0)
+    away = ease_in(ramp(t, t_o + .38, .55), 2)
+    # стрелки медленно тикают около «без десяти три»
+    hm = 2 + 50 / 60 + (t - a) * .01
+    ha, ma = hm * 30, (hm % 1) * 360 + 6 * math.floor((t - a) * 2) * .0
+    o = [at["bg"], at["sky"], sleepy_sky_overlay(t, ease_out(ramp(t, t_n - .25, .5))), at["frame"]]
+    # рука: вход снизу к кончику сектора, щипок, отрыв вниз (загиб тёплой стороной едет с рукой)
+    reach = ease_out(ramp(t, t_m - .1, t_o - t_m + .1), 2.4)
+    off = (30 * away, 520 * away)
+    kw = dict(blur=0.0, sector_u=sector_u, peel_u=peel, t=t, pull=pull_dir, flap_off=off)
+    o.append(P.attic_clock(cx0, cy0, R, ha, ma, **kw))
+    tip = P.sector_peel_tip(cx0, cy0, R, peel, pull_dir)
+    kh = .45
+    tip = (tip[0] + off[0], tip[1] + off[1])
+    start = (cx0 + R * 1.3, cy0 + R * 3.2)
+    tgt = (lerp(start[0], tip[0], reach), lerp(start[1], tip[1], reach))
+    d = (-.42 + .15 * peel, -1.0)
+    dn = math.hypot(*d)
+    wr = (tgt[0] - d[0] / dn * 120 * kh - 20 * kh, tgt[1] - d[1] / dn * 120 * kh)
+    if reach > .01:
+        o.append(arm_hand(wr, d, kh, curl=(.35 + .2 * peel, .45, .55, .6), thumb=.75, spread=.08, elbow_back=520, seed=7951))
+    o.append(at["bed"])
+    o.append(phone_light_from(cx0 + 60, cy0 + R * 1.9, R * 2.2, .9))
+    o.append(at["light"])
+    o.append(at["shade"])
+    hd = .0
+    cy = lerp(cy0 + 120, cy0 + 70, push) + 70 * away / s_ * 3
+    cx = lerp(545, cx0 + 8, push)
+    shk = P.shake(t, t_o, 7, .25, seed=11)
+    out = frame_svg("".join(o), cx - shk[0] / s_, cy - shk[1] / s_ + hd, s_, .5 * math.sin((t - a) * 1.2) * (1 - push) + 1.2 * away, "#1a1f3d")
+    lib.INK_K[0] = 1.0
+    return out
+
+
+SCENES["s11"] = s11
+
+
+# ═══════════════════════════════ s14: подушка-сон на полке, три щелчка ═══════════════════════════════
+def s14(t):
+    lib.dyn_begin()
+    a = A0("s14")
+    sx0, sy, sx1 = room.AT_SHELF
+    f1, f2, f3 = ws(65), wm(65), ws(66)
+    lib.INK_K[0] = .72
+    at = room.attic(t, "night_phone", sky="empty")
+    # позиция подушки: три толчка с трением
+    xs = [sx0 + 120, sx0 + 205, sx0 + 290, sx1 - 4]
+
+    def pos(tt):
+        x_ = xs[0]
+        for i, tf in enumerate((f1, f2, f3)):
+            u = ease_out(ramp(tt, tf + .03, .3 if i < 2 else .45), 2.6)
+            x_ += (xs[i + 1] - xs[i]) * u
+        return x_
+    px = pos(t)
+    plag = pos(t - .22)
+    hang = ease_out(ramp(t, f3 + .3, .4), 2)
+    squash = 0.0
+    for tf in (f1, f2, f3):
+        q = P.squash(t, tf + .02, .3, 3.0, 8.0)
+        squash += (q[0] - 1) * 1.6
+    tilt = 14 * hang
+    mood = "sad" if t > f3 + .15 else "calm"
+    o = [at["bg"], at["sky"], at["frame"]]
+    o.append(P.sleep_pillow(px, sy + 2 + 14 * hang, .95, squash=squash, mood=mood, t=t, tilt=tilt, hang=hang, breathe=1.0))
+    if t < f3 + .2:
+        o.append(P.zzz(px + 80, sy - 260, .9, t=t, u=1.0 - ramp(t, f1, .2) * .5))
+    # палец слева: подлетает к подушке перед каждым щелчком, щёлкает (указательный распрямляется), отходит
+    kh = .62
+    hand_x = plag - 150 - 10 * math.sin(t * 2.0) - 60 * (1 - ease_out(ramp(t, a, .5), 2))
+    flick = 0.0
+    for tf in (f1, f2, f3):
+        flick = max(flick, bump(t, tf - .12, .1, .0, .14))
+    snap = 0.0
+    for tf in (f1, f2, f3):
+        snap = max(snap, bump(t, tf, .04, .02, .2))
+    wr = (hand_x - 70 + 34 * flick - 10 * snap, sy - 64 + 6 * math.sin(t * 3))
+    d = (1.0, .02)
+    curl_i = .75 * (1 - snap) * flick + .1
+    o.append(arm_hand(wr, d, kh, curl=(curl_i, .82, .86, .88), thumb=.85 - .3 * snap, spread=.05, elbow_back=560, seed=7961))
+    for tf in (f1, f2, f3):
+        u = clamp((t - tf) / .3)
+        if 0 < u < 1:
+            o.append(P.click(px - 128, sy - 70, 1.0, u, seed=int(tf * 10)))
+    o.append(phone_light_from(px - 260, sy + 160, 520, 1.0))
+    o.append(at["light"])
+    cx = pos(t - .12) - 40 + 90 * ease_io(ramp(t, f3 + .2, .5))
+    cy = sy - 10 + 6 * math.sin((t - a) * 1.6)
+    s_ = 2.6 + .08 * ramp(t, a, 1.5)
+    shk = P.shake(t, f3 + .02, 6, .25, seed=14)
+    out = frame_svg("".join(o), cx - shk[0] / s_, cy - shk[1] / s_, s_, .4 * math.sin((t - a) * 1.3), "#1a1f3d", vignette("#05081a", .45))
+    lib.INK_K[0] = 1.0
+    return out
+
+
+SCENES["s14"] = s14
+
+
 def frame(sid, t):
     return SCENES[sid](t)
