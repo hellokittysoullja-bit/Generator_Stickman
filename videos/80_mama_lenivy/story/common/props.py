@@ -5593,7 +5593,7 @@ C_TAG_HI = "#7E848C"
 C_RUST80 = "#9C5A32"
 C_CARDBOARD = "#C9A46C"
 C_CARDBOARD_SH = "#A5814C"
-C_CORD = "#5B4A32"
+C_CORD = "#3E2F1E"
 C_GLOOM = "#8C929C"
 C_GLOOM_SH = "#6B717C"
 C_GLOOM_HI = "#B4B9C1"
@@ -5676,9 +5676,9 @@ def iron_tag(x, y, k=1.0, swing=0.0, crack_u=0.0, seed=0, cord=150.0, break_u=0.
     if layer in ("all", "cord") and cord_on and bu < .25:
         op = 1 - bu / .25
         # шнур: петля вокруг шеи (верх) и две ветви к ушку бирки
-        o.append(line([(-46, 10), (-30, -10), (0, -18), (30, -10), (46, 10)], 6, C_CORD, taper=.1, wmin=.7, seed=sd, op=op))
-        o.append(line([(-46, 10), (-20, cord * .55), (-6, cord + 14)], 6, C_CORD, taper=.1, wmin=.7, seed=sd + 1, op=op))
-        o.append(line([(46, 10), (20, cord * .55), (6, cord + 14)], 6, C_CORD, taper=.1, wmin=.7, seed=sd + 2, op=op))
+        o.append(line([(-46, 10), (-30, -10), (0, -18), (30, -10), (46, 10)], 8, C_CORD, taper=.1, wmin=.7, seed=sd, op=op))
+        o.append(line([(-46, 10), (-20, cord * .55), (-6, cord + 14)], 8, C_CORD, taper=.1, wmin=.7, seed=sd + 1, op=op))
+        o.append(line([(46, 10), (20, cord * .55), (6, cord + 14)], 8, C_CORD, taper=.1, wmin=.7, seed=sd + 2, op=op))
     if layer in ("all", "tag"):
         c, rimc, pieces = _tag_pieces(cord, seed)
         if bu <= 0.001:
