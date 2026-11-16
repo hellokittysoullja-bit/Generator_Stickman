@@ -115,7 +115,7 @@ def s05(t):
     o.append(glow_spot(820, 1395, 70, "#bfe0ff", .25 * (1 - du * .7)))
     # Дима: лёжа → садится (лицом к двери) → вскакивает → к ручке → берётся
     k = S05_K
-    sit_u = ease_io(clamp((t - (T_KNOW - .2)) / .55))
+    sit_u = ease_out(clamp((t - (T_KNOW - .27)) / .62), 2)
     T_UP = T_WHO - .06
     rise = ease_io(clamp((t - T_UP) / .36))
     hx_ = P.glow_door_handle(dx, dy, 1.0, 0.0)
@@ -159,9 +159,9 @@ def s05(t):
         o.append(glow_spot(dx - 60, dy + 120, 420, "#ffcf7a", .22 * gl, 110))
         o.append(f'<g opacity="{.55 * du:.3f}"><rect x="{gx0:.1f}" y="{gy0:.1f}" width="{gx1 - gx0:.1f}" height="{gy1 - gy0:.1f}" '
                  f'fill="#ffe7b0" style="mix-blend-mode:screen" opacity=".35"/></g>')
-    # камера: медленный наезд к двери, толчок на «правда»
-    u = ease_io(clamp((t - a) / (b - a)))
-    cx = lerp(1210, 1350, u)
+    # камера: медленный наезд к двери (ровный, с первого кадра), толчок на «правда»
+    u = clamp((t - a) / (b - a))
+    cx = lerp(1140, 1350, u)
     cy = lerp(890, 830, u)
     s = lerp(1.24, 1.44, u) * (1 + .045 * kick(t, T_TRUE, 1.0, .4) + .02 * kick(t, T_UP + .1, 1.0, .3))
     sx, sy = shake(t, T_UP + .05, 5, .22)
@@ -448,8 +448,8 @@ def s12(t):
         o.append(f'<rect x="-900" y="-900" width="2900" height="3200" fill="#ffffff" opacity="{.55 * (1 - (t - T_YEARS + .04) / .14):.3f}"/>')
     if fl_all > 0:
         o.append(f'<rect x="-900" y="-900" width="2900" height="3200" fill="#ffffff" opacity="{.16 * fl_all:.3f}"/>')
-    # камера: медленный наезд, качок на вспышках
-    u = ease_io(clamp((t - a) / (b - a)))
+    # камера: медленный наезд (ровный, с первого кадра), качок на вспышках
+    u = clamp((t - a) / (b - a))
     s_ = lerp(1.0, 1.12, u) * (1 + .06 * kick(t, T_YEARS, 1.0, .35) + .04 * kick(t, T_MILL, 1.0, .4))
     rot = 1.6 * math.sin((t - T_MILL) * 18) * math.exp(-3 * max(0.0, t - T_MILL)) if t > T_MILL else .4 * math.sin(t * 1.4)
     return frame_svg("".join(o), 560, 1000, s_, rot=rot, bg="#05060c")
