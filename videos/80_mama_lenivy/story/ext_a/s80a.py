@@ -232,7 +232,7 @@ def s11(t):
         o.append(P.gloom_cloud(hd[0] + 20, hd[1] - 190 - 40 * melt, .8 * (1 - .5 * melt), t, rain=.3 * (1 - melt), pale=melt,
                                grow=1 - ease_in(ramp(t, t_gone, .35), 2), seed=11))
     # снаружи: облако садится у края купола справа и ждёт; на «минуту» заглядывает краешком внутрь
-    q = math.radians(58)
+    q = math.radians(65)
     ox, oy = DOME[0] + (R + 150) * math.cos(q), DOME[1] - (R + 120) * .95 * math.sin(q)
     app = ease_out(ramp(t, t_gone - .1, t_wait - t_gone + .1), 2)
     peek = math.sin(math.pi * clamp((t - t_min) / .9)) if t > t_min else 0.0
@@ -486,15 +486,16 @@ def s13(t):
         ph = dist / (stride * SC13 * 2) + .1
         wk = people.walk_kw(fx, hip_y, SC13, ph, stride=stride, lift=60 if mode == 1 else 95)
         sw = math.sin(2 * math.pi * ph)
-        amp = .45 if mode == 1 else .95
-        arms = {"f": ("ang", .2 + amp * sw, .3 + .4 * (mode - 1)), "n": ("ang", -.1 - amp * sw, .3 + .4 * (mode - 1))}
+        amp = .3 if mode == 1 else .55
+        el = .35 if mode == 1 else 1.2
+        arms = {"f": ("ang", .1 + amp * sw, el), "n": ("ang", -.05 - amp * sw, el)}
         fig = people.dima(fx, wk["hip"][1], SC13, ex("gloom") if mode == 1 else ex("scared"), None, feet=wk["feet"],
                           lean_add=.08 if mode == 1 else .26, arms=arms)
     o.append(silhouette(fig["svg"]))
     # облачко: сидит над коробкой с «дела»; на «сбежать» катится за фигуркой (коробка остаётся на месте)
     cg = ease_out(ramp(t, t_task + .05, .35), 2)
     roll = ease_io(ramp(t, t_run - .25, .5))
-    cx = lerp(BOX13[0] + 40, fx - 420, roll)
+    cx = lerp(BOX13[0] + 40, fx - 290, roll)
     cy = lerp(BOX13[1] - 420, GROUND13 - 140, roll) + 10 * math.sin(t * 4)
     rot = -40 * roll * math.sin(t * 6) * .3 - 60 * (t - t_run) * roll
     cl = P.gloom_cloud(cx, cy, 1.05 - .2 * roll, t, rain=.4 * (1 - roll), zap=.5 * roll, grow=cg, seed=13)
@@ -504,7 +505,7 @@ def s13(t):
         o.append(P.speed_arcs(fx - 120, hip_y - 60, .8, roll, t, seed=14, n=3, ang=180.0))
     # камера: дрейф за фигуркой
     pu = ease_io(ramp(t, a, T1("s13") + .2 - a))
-    ccx = max(560.0, lerp(560, fx - 170 + 90 * ramp(t, t_run - .2, .5), ramp(t, t_off, .6)))
+    ccx = max(560.0, lerp(560, fx - 170 + 110 * ramp(t, t_run - .2, .5), ramp(t, t_off, .6)))
     return frame_svg("".join(o), ccx, 960 - 20 * pu, 1.3 + .05 * pu, .3 * math.sin(t * 1.3))
 
 
