@@ -2874,7 +2874,7 @@ def evening_chair(t, sun=1.0):
 #   warm 0…1 — тот же ракурс в тёплом свете (петля s18): янтарный задник, тёплый конус.
 #   Порядок: bg → [тень часов на заднике cast_shadow] → floor → [часы, Дима, песок] → light → shade.
 #   HV_TEXT — зона «Поздно?» (только пустой фон: часы, цепь и пылинки туда не заходят).
-#   HV_GLASS = (x, y, k) — горлышко гигантских часов в покое и их масштаб для props.giant_hourglass (крышки ≈ 434…1026);
+#   HV_GLASS = (x, y, k) — горлышко гигантских часов в покое и их масштаб для props.giant_hourglass (крышки ≈ 442…958);
 #   HV_PIVOT — точка подвеса цепи (над кадром), часы качаются вокруг неё; HV_HEAD — центр головы Димы (макушка ≈ y 1050).
 # ТЕНЬ — cast_shadow(svg, dx, dy, k, col, op, blur): та же группа силуэтом (тень на заднике), смещённая/увеличенная.
 #
@@ -2899,8 +2899,8 @@ def evening_chair(t, sun=1.0):
 CAM81 = (540.0, 960.0, 1.0)
 HV_TEXT = (50.0, 140.0, 1030.0, 430.0)
 HV_PIVOT = (540.0, -620.0)
-HV_GLASS = (540.0, 730.0, 1.06)
-HV_HEAD = (540.0, 1135.0)
+HV_GLASS = (515.0, 700.0, .92)
+HV_HEAD = (455.0, 1105.0)
 HV_FLOOR = 1520.0
 CAM81_HOOK = (540.0, 960.0, 1.0)
 CAM81_HANDS = (540.0, 1020.0, 1.45)
@@ -2938,12 +2938,12 @@ def hook_void(t, warm=0.0):
     # циклорама: стена мягко переходит в пол (без угла), пол светлее и уходит вниз
     gf = lib.lin_grad([(0, P["low"], 1), (.08, P["floor"], 1), (1, P["floor_b"], 1)], 0, fy - 40, 0, fy + 900, units="userSpaceOnUse")
     floor = f'<rect x="-1400" y="{f(fy - 40)}" width="3880" height="2400" fill="url(#{gf})"/>'
+    floor += blob(ellipse_pts(540.0, fy + 70, 700, 120, 40), P["pool"], .2, 'style="mix-blend-mode:screen"')    # пятно света на полу — под людьми
     # жёсткий конус света сверху: чёткие края, светлее к центру
     cx = 540.0
-    cone_pts = [(cx - 150, -1400, 1), (cx + 150, -1400, 1), (cx + 640, fy, 1), (cx - 640, fy, 1)]
-    gc = lib.lin_grad([(0, P["cone"], .22), (1, P["cone"], .1)], 0, -1400, 0, fy, units="userSpaceOnUse")
+    cone_pts = [(cx - 150, -1400, 1), (cx + 150, -1400, 1), (cx + 990, fy + 1000, 1), (cx - 990, fy + 1000, 1)]
+    gc = lib.lin_grad([(0, P["cone"], .22), (.7, P["cone"], .1), (1, P["cone"], .06)], 0, -1400, 0, fy + 1000, units="userSpaceOnUse")
     light = [f'<path d="{lib.fill_d(cone_pts)}" fill="url(#{gc})" style="mix-blend-mode:screen"/>']
-    light.append(blob(ellipse_pts(cx, fy + 70, 700, 120, 40), P["pool"], .2, 'style="mix-blend-mode:screen"'))
     # пылинки в конусе: медленно плывут вниз, вне зоны текста
     r = rs(8101)
     x0, y0, x1, y1 = HV_TEXT
@@ -2984,10 +2984,10 @@ RUG81 = (40.0, 1300.0, 1120.0, 1500.0)      # ковёр: x0, верхний (д
 LIE81_Y = 1380.0                            # линия спины лежащего Димы на ковре
 LIE81_HEAD = (250.0, 1330.0)                # голова лёжа (слева)
 LIE81_HIP = (600.0, LIE81_Y)
-CEIL81_GHOST = (600.0, 560.0, .78)          # часы-мираж над Димой (горлышко x, y и k для props.giant_hourglass, chain=0)
+CEIL81_GHOST = (760.0, 640.0, 1.0)          # часы-мираж над Димой (горлышко x, y и k для props.giant_hourglass, chain=0)
 DOOR81 = (1560.0, FL81 + 10.0)              # дверь: центр низа (props.glow_door(x, y, 1.0) — верх ≈ 350)
-CAM81_FLOOR = (560.0, 900.0, 1.0)
-CAM81_DOOR = (1150.0, 900.0, 1.0)
+CAM81_FLOOR = (500.0, 1230.0, 1.0)
+CAM81_DOOR = (1150.0, 1080.0, 1.0)
 N81 = dict(ceil="#121731", ceil_hi="#1a2142", wall="#1b2244", wall_hi="#232b54", wall_sh="#141a36", base="#2a3360", base_sh="#1d2448",
            floor="#2a2338", floor_b="#1c1828", plank="#171322", rug="#5a3a5e", rug_sh="#432a48", rug_hi="#7a5280", rug_band="#c08a4a",
            moon="#bcd0ff", frame="#3c4778")
@@ -3052,7 +3052,7 @@ ST81_GARAGES = tuple((x, ST81_GROUND) for x in (420.0, 900.0, 1380.0, 1860.0, 23
 ST81_GARAGE_K = 1.0
 ST81_HOUSE = (-260.0, ST81_GROUND)
 ST81_FLAG = (-20.0, 470.0)
-ST81_TAXI = (2120.0, ST81_ROAD)
+ST81_TAXI = (1180.0, ST81_ROAD)
 ST81_CLEAN = (300.0, 150.0, 1500.0, 560.0)
 CAM81_STREET = (540.0, 900.0, 1.0)
 ST81 = dict(sky0="#5aa6e6", sky1="#a9d6f4", cloud="#ffffff", cloud_sh="#d6e8f6", hill="#8fc08a", tree="#4f9a52", tree_sh="#3d7c42",
