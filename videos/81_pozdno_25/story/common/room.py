@@ -2862,3 +2862,336 @@ def evening_chair(t, sun=1.0):
     light = f'<rect x="-900" y="-900" width="2880" height="3720" fill="url(#{glow})"/>'
     return dict(bg="".join(o), chair_back=back + armL, chair_front=armR, light=light, cam=CAM78,
                 anchors=dict(hip=EC_HIP, arm=(hx + 375, hy - 150), arm_l=(hx - 290, hy - 170), knees=(hx + 260, hy - 30), win=EC_WIN, fl=fl))
+
+
+# ═════════════════════════════════════════ РИЛС 81 «Всё, поздно» (группа C) ═════════════════════════════════════════
+# Все сцены 81 — в КООРДИНАТАХ КАДРА 1080×1920 (камера по умолчанию CAM81 = (540, 960, 1.0); сцена ставит свою поверх).
+# Букв и цифр нет нигде. Главное — выше 1300 (ниже субтитры).
+#
+# ПУСТОТА ХУКА — hook_void(t, warm=0.0) -> dict(bg, floor, light, shade, anchors, cam, P):
+#   почти пустой фон: холодный задник-циклорама (стена переходит в пол без угла, горизонт HV_FLOOR), жёсткий свет сверху —
+#   конус с чёткими краями из-за верхнего края кадра на часы и Диму, пятно света на полу, пылинки в конусе.
+#   warm 0…1 — тот же ракурс в тёплом свете (петля s18): янтарный задник, тёплый конус.
+#   Порядок: bg → [тень часов на заднике cast_shadow] → floor → [часы, Дима, песок] → light → shade.
+#   HV_TEXT — зона «Поздно?» (только пустой фон: часы, цепь и пылинки туда не заходят).
+#   HV_GLASS = (x, y, k) — горлышко гигантских часов в покое и их масштаб для props.giant_hourglass (крышки ≈ 434…1026);
+#   HV_PIVOT — точка подвеса цепи (над кадром), часы качаются вокруг неё; HV_HEAD — центр головы Димы (макушка ≈ y 1050).
+# ТЕНЬ — cast_shadow(svg, dx, dy, k, col, op, blur): та же группа силуэтом (тень на заднике), смещённая/увеличенная.
+#
+# НОЧНАЯ КОМНАТА 81 — night81(t, view="floor"|"door", glow=1.0, moon=1.0) -> dict(bg, rug, dark, light, anchors, cam, P):
+#   вид сбоку с пола: потолок (полоса сверху, CEIL81_Y — его край), голая тёмная стена, окно с луной слева (WIN81),
+#   плинтус FL81 (низ стены), пол — доски в перспективе, ковёр RUG81 под лежащим Димой (голова слева у LIE81_HEAD,
+#   таз LIE81_HIP — спина на ковре на линии LIE81_Y). Свет луны пятном формы окна на полу.
+#   view "floor" (s04): CAM81_FLOOR — Дима на ковре во всю ширину, над ним стена и потолок (там тают часы-мираж: CEIL81_GHOST).
+#   view "door"  (s05, s08): CAM81_DOOR — та же стена правее: место двери DOOR81 = (x центра, низ на FL81), props.glow_door(x, y, 1.0)
+#        ставит сцена; здесь — только тёплый отсвет на полу перед дверью (light) и тёмная стена; ковёр с Димой — левее (RUG81).
+#   dark — общее затемнение (ПОСЛЕ людей, ДО света телефона/двери), light — пятна луны (после ковра, до людей).
+#
+# АМЕРИКАНСКАЯ УЛИЦА — us_street(t, pan=0.0, garages=True) -> dict(bg, garages, front, anchors, cam, P):
+#   солнечный день: голубое небо с облаками, деревья и столбы с проводами, дом с крыльцом и флагом (полосы и звёзды-точки, БЕЗ
+#   надписей) слева, ряд гаражей-мастерских (props.garage) вдоль тротуара, жёлтое такси у бордюра (без букв и шашек-цифр),
+#   пожарный гидрант. Мир шире кадра: x −900…3200 (панорама вдоль улицы — сцена двигает камеру).
+#   ST81_GROUND — линия тротуара (низ гаражей и домов), ST81_ROAD — дорога (низ колёс такси ST81_TAXI);
+#   ST81_GARAGES — центры дна гаражей (x, y) — туда A ставит props.sprout_building (дома растут из гаражей);
+#   ST81_FLAG — верх флагштока; ST81_CLEAN — чистое небо (x0, y0, x1, y1) для счётчика-кликера.
+#   garages=False — без гаражей (сцена рисует их сама, например открывающимися). front — ближний бордюр и гидрант (после людей).
+# ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+CAM81 = (540.0, 960.0, 1.0)
+HV_TEXT = (50.0, 140.0, 1030.0, 430.0)
+HV_PIVOT = (540.0, -620.0)
+HV_GLASS = (540.0, 730.0, 1.06)
+HV_HEAD = (540.0, 1135.0)
+HV_FLOOR = 1520.0
+CAM81_HOOK = (540.0, 960.0, 1.0)
+CAM81_HANDS = (540.0, 1020.0, 1.45)
+CAM81_WIDE = (540.0, 1010.0, .9)
+
+
+def _sl(pts, w, col, op=1.0):
+    """Прямая линия без живой туши — для длинных строительных линий (живая туша на 5000 px весит ~50 КБ)."""
+    d = "M" + " L".join(f"{f(x)} {f(y)}" for x, y in pts)
+    o = f' opacity="{op:.3f}"' if op != 1 else ""
+    return f'<path d="{d}" fill="none" stroke="{col}" stroke-width="{f(w)}" stroke-linecap="round"{o}/>'
+
+
+def _band(x0, y0, x1, y1, col, edge=INK, w=3.0, inner=""):
+    """Длинная полоса (плинтус, бордюр): заливка, внутреннее и ровные контуры сверху и снизу."""
+    return (f'<rect x="{f(x0)}" y="{f(y0)}" width="{f(x1 - x0)}" height="{f(y1 - y0)}" fill="{col}"/>' + inner +
+            _sl([(x0, y0), (x1, y0)], w, edge) + _sl([(x0, y1), (x1, y1)], w, edge))
+
+
+def _hv_pal(warm):
+    cold = dict(top="#1d2433", mid="#2f3a4f", low="#4a566b", floor="#56627a", floor_b="#3a4458", cone="#d8e6ff", pool="#e6efff", dust="#e8f0ff",
+                vig="#070a14", shadow="#121826")
+    hot = dict(top="#3a2118", mid="#6a3c28", low="#a8683e", floor="#b87a4a", floor_b="#8a5532", cone="#ffd9a0", pool="#ffe4b0", dust="#ffe9c0",
+               vig="#2a1206", shadow="#4a2414")
+    w = clamp01(warm)
+    return {k: lib.mix(cold[k], hot[k], w) for k in cold}
+
+
+def hook_void(t, warm=0.0):
+    """Пустота хука и петли (см. шапку раздела 81)."""
+    P = _hv_pal(warm)
+    fy = HV_FLOOR
+    g = lib.lin_grad([(0, P["top"], 1), (.55, P["mid"], 1), (1, P["low"], 1)], 0, -900, 0, fy, units="userSpaceOnUse")
+    bg = [f'<rect x="-1400" y="-1400" width="3880" height="4720" fill="url(#{g})"/>']
+    # циклорама: стена мягко переходит в пол (без угла), пол светлее и уходит вниз
+    gf = lib.lin_grad([(0, P["low"], 1), (.08, P["floor"], 1), (1, P["floor_b"], 1)], 0, fy - 40, 0, fy + 900, units="userSpaceOnUse")
+    floor = f'<rect x="-1400" y="{f(fy - 40)}" width="3880" height="2400" fill="url(#{gf})"/>'
+    # жёсткий конус света сверху: чёткие края, светлее к центру
+    cx = 540.0
+    cone_pts = [(cx - 150, -1400, 1), (cx + 150, -1400, 1), (cx + 640, fy, 1), (cx - 640, fy, 1)]
+    gc = lib.lin_grad([(0, P["cone"], .22), (1, P["cone"], .1)], 0, -1400, 0, fy, units="userSpaceOnUse")
+    light = [f'<path d="{lib.fill_d(cone_pts)}" fill="url(#{gc})" style="mix-blend-mode:screen"/>']
+    light.append(blob(ellipse_pts(cx, fy + 70, 700, 120, 40), P["pool"], .2, 'style="mix-blend-mode:screen"'))
+    # пылинки в конусе: медленно плывут вниз, вне зоны текста
+    r = rs(8101)
+    x0, y0, x1, y1 = HV_TEXT
+    for i in range(46):
+        bx, by = r.uniform(-1, 1), r.uniform(0, 1)
+        sp = r.uniform(18, 46)
+        yy = (by * 1500 + sp * t) % 1500 + 440
+        half = 150 + (640 - 150) * (yy + 1400) / (fy + 1400)
+        xx = cx + bx * half * .92 + 14 * math.sin(t * r.uniform(.6, 1.4) + i)
+        if x0 - 20 < xx < x1 + 20 and y0 - 20 < yy < y1 + 20:
+            continue
+        light.append(f'<circle cx="{f(xx)}" cy="{f(yy)}" r="{f(r.uniform(1.6, 3.4))}" fill="{P["dust"]}" opacity="{r.uniform(.25, .6) * (.6 + .4 * math.sin(t * 3 + i)):.2f}"/>')
+    gv = lib.rad_grad([(0, P["vig"], 0), (.62, P["vig"], 0), (1, P["vig"], .5)], 540, 900, 820, 1250)
+    shade = f'<rect x="-1400" y="-1400" width="3880" height="4720" fill="url(#{gv})"/>'
+    an = dict(text=HV_TEXT, glass=HV_GLASS, pivot=HV_PIVOT, head=HV_HEAD, floor=fy)
+    return dict(bg="".join(bg), floor=floor, light="".join(light), shade=shade, anchors=an, cam=CAM81_HOOK, P=P)
+
+
+def cast_shadow(svg, dx=0.0, dy=0.0, k=1.0, col="#121826", op=.45, blur=6.0, cx=540.0, cy=960.0):
+    """Тень любой группы на заднике: силуэт цветом col, сдвиг (dx, dy) и масштаб k от точки (cx, cy), мягкий край blur."""
+    if not svg or op <= .005:
+        return ""
+    fid = f"sh81_{col[1:]}"
+    if not any(f'id="{fid}"' in x for x in lib.DEFS):
+        r, g_, b = (int(col[i:i + 2], 16) / 255 for i in (1, 3, 5))
+        lib.DEFS.append(f'<filter id="{fid}" x="-20%" y="-20%" width="140%" height="140%"><feColorMatrix type="matrix" '
+                        f'values="0 0 0 0 {r:.3f} 0 0 0 0 {g_:.3f} 0 0 0 0 {b:.3f} 0 0 0 1 0"/></filter>')
+    tr = f"translate({f(cx + dx)} {f(cy + dy)}) scale({k:.4f}) translate({f(-cx)} {f(-cy)})"
+    return (f'<g opacity="{op:.3f}" {lib.blur(blur)}><g filter="url(#{fid})" transform="{tr}">{svg}</g></g>' if blur > 0 else
+            f'<g opacity="{op:.3f}" filter="url(#{fid})" transform="{tr}">{svg}</g>')
+
+
+# ─────────────── ночная комната 81 ───────────────
+CEIL81_Y = 250.0
+FL81 = 1160.0
+WIN81 = (60.0, 380.0, 360.0, 860.0)
+RUG81 = (40.0, 1300.0, 1120.0, 1500.0)      # ковёр: x0, верхний (дальний) край, x1, нижний (ближний) край
+LIE81_Y = 1380.0                            # линия спины лежащего Димы на ковре
+LIE81_HEAD = (250.0, 1330.0)                # голова лёжа (слева)
+LIE81_HIP = (600.0, LIE81_Y)
+CEIL81_GHOST = (600.0, 560.0, .78)          # часы-мираж над Димой (горлышко x, y и k для props.giant_hourglass, chain=0)
+DOOR81 = (1560.0, FL81 + 10.0)              # дверь: центр низа (props.glow_door(x, y, 1.0) — верх ≈ 350)
+CAM81_FLOOR = (560.0, 900.0, 1.0)
+CAM81_DOOR = (1150.0, 900.0, 1.0)
+N81 = dict(ceil="#121731", ceil_hi="#1a2142", wall="#1b2244", wall_hi="#232b54", wall_sh="#141a36", base="#2a3360", base_sh="#1d2448",
+           floor="#2a2338", floor_b="#1c1828", plank="#171322", rug="#5a3a5e", rug_sh="#432a48", rug_hi="#7a5280", rug_band="#c08a4a",
+           moon="#bcd0ff", frame="#3c4778")
+
+
+def night81(t, view="floor", glow=1.0, moon=1.0):
+    """Ночная комната рилса 81 (см. шапку раздела 81)."""
+    P = N81
+    o = [f'<rect x="-1400" y="-1400" width="4880" height="4720" fill="{P["wall"]}"/>']
+    g = lib.lin_grad([(0, P["wall_sh"], 1), (.6, P["wall"], 1), (1, P["wall_hi"], 1)], 0, CEIL81_Y, 0, FL81, units="userSpaceOnUse")
+    o.append(f'<rect x="-1400" y="{f(CEIL81_Y)}" width="4880" height="{f(FL81 - CEIL81_Y)}" fill="url(#{g})"/>')
+    # потолок: полоса с карнизом
+    gc = lib.lin_grad([(0, P["ceil"], 1), (1, P["ceil_hi"], 1)], 0, -400, 0, CEIL81_Y, units="userSpaceOnUse")
+    o.append(f'<rect x="-1400" y="-1400" width="4880" height="{f(CEIL81_Y + 1400)}" fill="url(#{gc})"/>')
+    o.append(_band(-600, CEIL81_Y - 6, 2800, CEIL81_Y + 22, P["base"], inner=blob(rect_pts(-600, CEIL81_Y + 12, 2800, CEIL81_Y + 22), P["base_sh"])))
+    # окно с луной
+    x0, y0, x1, y1 = WIN81
+    o.append(_night_glass(x0, y0, x1, y1, t, 81))
+    o.append(moon73(x0 + 210, y0 + 110, 46, 1.0, "#0c1330"))
+    o.append(_glass_frame(x0, y0, x1, y1, P["frame"], 8111))
+    # плинтус и пол досками в перспективе (к нам расходятся)
+    o.append(_band(-600, FL81 - 40, 2800, FL81 + 4, P["base"], inner=blob(rect_pts(-600, FL81 - 10, 2800, FL81 + 4), P["base_sh"])))
+    gf = lib.lin_grad([(0, P["floor_b"], 1), (1, P["floor"], 1)], 0, FL81, 0, 1900, units="userSpaceOnUse")
+    o.append(f'<rect x="-1400" y="{f(FL81 + 4)}" width="4880" height="1400" fill="url(#{gf})"/>')
+    vx = 1000.0
+    for i in range(-14, 26):
+        xa = vx + i * 120
+        xb = vx + i * 120 * 3.2
+        o.append(_sl([(xa, FL81 + 4), (xb, 2400)], 2.6, P["plank"], .8))
+    for y in (1210, 1290, 1420, 1610):
+        o.append(_sl([(-600, y), (2800, y)], 2.2, P["plank"], .5))
+    # пятно луны на полу — форма окна, косо
+    lt = _sun_quad((x0 + 140, FL81 + 60), (330, 40), (220, 260), P["moon"], P["moon"], inset=.08)
+    light = f'<g opacity="{.16 * clamp01(moon):.3f}" style="mix-blend-mode:screen">{lt}</g>'
+    # ковёр в перспективе с каймой
+    rx0, ry0, rx1, ry1 = RUG81
+    rug_pts = [(rx0 + 60, ry0, 1), (rx1 - 60, ry0, 1), (rx1 + 40, ry1, 1), (rx0 - 40, ry1, 1)]
+    inner = blob([(rx0 + 90, ry0 + 22), (rx1 - 90, ry0 + 22), (rx1 + 4, ry1 - 26), (rx0 - 4, ry1 - 26)], P["rug_sh"])
+    inner += line([(rx0 + 92, ry0 + 24), (rx1 - 92, ry0 + 24), (rx1 + 4, ry1 - 28), (rx0 - 4, ry1 - 28), (rx0 + 92, ry0 + 24)], 4, P["rug_band"],
+                  taper=0, wmin=1, seed=8170, op=.8)
+    for i in range(7):
+        u = (i + 1) / 8
+        inner += line([(rx0 + 60 + (rx1 - rx0 - 120) * u, ry0 + 30), (rx0 - 40 + (rx1 - rx0 + 80) * u, ry1 - 30)], 3, P["rug_hi"], taper=.3, wmin=.5,
+                      seed=8171 + i, op=.45)
+    rug = shape(rug_pts, P["rug"], inner, w=4.0, seed=8180)
+    fr = "".join(line([(rx0 - 40 + (rx1 - rx0 + 80) * j / 30, ry1), (rx0 - 40 + (rx1 - rx0 + 80) * j / 30 + 3, ry1 + 18)], 3, P["rug_band"], seed=8190 + j)
+                 for j in range(31))
+    rug += fr
+    an = dict(rug=RUG81, lie_y=LIE81_Y, head=LIE81_HEAD, hip=LIE81_HIP, ghost=CEIL81_GHOST, door=DOOR81, fl=FL81, ceil=CEIL81_Y, win=WIN81)
+    if view == "door":
+        dx_, dy_ = DOOR81
+        light += f'<g style="mix-blend-mode:screen" opacity="{.25 * clamp01(glow):.3f}">' + \
+            blob([(dx_ - 200, dy_ + 4), (dx_ + 200, dy_ + 4), (dx_ + 420, dy_ + 330), (dx_ - 420, dy_ + 330)], "#ffd98a") + "</g>"
+    dark = f'<rect x="-1400" y="-1400" width="4880" height="4720" fill="#03050c" opacity="{.34 - .14 * clamp01(glow):.3f}"/>'
+    return dict(bg="".join(o), rug=rug, dark=dark, light=light, anchors=an, cam=CAM81_FLOOR if view == "floor" else CAM81_DOOR, P=P)
+
+
+# ─────────────── американская улица 81 ───────────────
+ST81_GROUND = 1120.0
+ST81_ROAD = 1290.0
+ST81_GARAGES = tuple((x, ST81_GROUND) for x in (420.0, 900.0, 1380.0, 1860.0, 2340.0))
+ST81_GARAGE_K = 1.0
+ST81_HOUSE = (-260.0, ST81_GROUND)
+ST81_FLAG = (-20.0, 470.0)
+ST81_TAXI = (2120.0, ST81_ROAD)
+ST81_CLEAN = (300.0, 150.0, 1500.0, 560.0)
+CAM81_STREET = (540.0, 900.0, 1.0)
+ST81 = dict(sky0="#5aa6e6", sky1="#a9d6f4", cloud="#ffffff", cloud_sh="#d6e8f6", hill="#8fc08a", tree="#4f9a52", tree_sh="#3d7c42",
+            walk="#d9d2c4", walk_sh="#bdb4a4", curb="#c4bcae", road="#5d6068", road_ln="#f2d24a", pole="#7a5a3c", wire="#3a3f48",
+            house="#e8dcc6", house_sh="#c9b99c", roof="#7d4a3a", roof_sh="#5e3428", porch="#f4efe4", lawn="#86c06e")
+
+
+def _cloud81(x, y, k, seed):
+    pts = []
+    r = rs(8200 + seed)
+    bumps = [(-120, 0, 70), (-50, -40, 80), (40, -50, 90), (120, -10, 70), (60, 20, 70), (-60, 24, 64)]
+    o = ""
+    for bx, by, br in bumps:
+        o += blob(ellipse_pts(x + bx * k, y + by * k, br * k * r.uniform(.9, 1.1), br * k * .8, 18), ST81["cloud"])
+    o += blob(ellipse_pts(x, y + 30 * k, 170 * k, 34 * k, 20), ST81["cloud_sh"], .9)
+    del pts
+    return o
+
+
+def _tree81(x, y, h, t, seed):
+    r = rs(8210 + seed)
+    o = shape(rect_pts(x - 14, y - h * .45, x + 14, y), "#6e4a2c", "", w=3.2, seed=8211 + seed)
+    for j in range(5):
+        bx, by = x + r.uniform(-.35, .35) * h * .6, y - h * .55 - r.uniform(0, .4) * h
+        rr = h * r.uniform(.2, .28)
+        sw = 4 * math.sin(t * 1.2 + j + seed)
+        o += shape(ellipse_pts(bx + sw, by, rr, rr * .9, 18), ST81["tree"], blob(ellipse_pts(bx + sw + rr * .3, by + rr * .3, rr * .7, rr * .6, 14),
+                                                                                   ST81["tree_sh"]), w=3.4, seed=8220 + seed * 10 + j)
+    return o
+
+
+def us_flag(x, y, w=230.0, t=0.0, seed=0):
+    """Флаг без надписей: 7 красных и белых полос волной, синий крыж с белыми точками-звёздами. (x, y) — верх у древка."""
+    h = w * .56
+    n = 12
+
+    def P(u, v):
+        wave = 9 * math.sin(t * 5.5 - u * 5.0) * u
+        return (x + w * u, y + h * v + wave)
+    o = []
+    for i in range(7):
+        v0, v1 = i / 7, (i + 1) / 7
+        pts = [P(j / n, v0) for j in range(n + 1)] + [P(j / n, v1) for j in range(n, -1, -1)]
+        o.append(blob(pts, "#c8343a" if i % 2 == 0 else "#f7f3ea"))
+    cw, ch = .42, 4 / 7
+    cp = [P(j / n * cw, 0) for j in range(n + 1)] + [P(j / n * cw, ch) for j in range(n, -1, -1)]
+    o.append(blob(cp, "#2e3f7c"))
+    for a in range(4):
+        for b in range(3):
+            px, py = P(.06 + a * .1, .1 + b * .17)
+            o.append(f'<circle cx="{f(px)}" cy="{f(py)}" r="{f(w * .014)}" fill="#ffffff"/>')
+    outline = [P(j / n, 0) for j in range(n + 1)] + [P(1, .5)] + [P(j / n, 1) for j in range(n, -1, -1)]
+    o.append(line(outline + [outline[0]], 3.2, INK, taper=0, wmin=1, seed=8230 + seed))
+    return "".join(o)
+
+
+def taxi81(x, y, k=1.0, t=0.0, seed=0):
+    """Жёлтое такси (центр низа колёс (x, y)), без букв и номеров: на крыше пустой светлый фонарь-плашка."""
+    sd = 8240 + seed
+    yc, ys_ = "#f2c230", "#c99a1a"
+    o = []
+    body = [(-280, -40, 1), (-276, -110), (-200, -126), (-150, -200), (110, -204), (180, -128), (270, -112), (286, -44, 1)]
+    o.append(shape(body, yc, blob([(-280, -80), (286, -80), (286, -40), (-280, -40)], ys_) +
+                   line([(-260, -100), (260, -98)], 4, "#ffe08a", seed=sd + 1), w=4.6, seed=sd))
+    for (a, b) in ((-140, -10), (10, 150)):
+        o.append(shape([(a, -122, 1), (a + 20 if a < 0 else a, -188, 1), (b - 10 if b > 0 else b, -190, 1), (b, -122, 1)], "#3e4a66",
+                       line([(a + 20, -132), (a + 50, -176)], 5, "#9DB6D6", seed=sd + 3 + a), w=3.6, seed=sd + 2 + a))
+    o.append(shape(lib.rrect(-60, -236, 60, -204, 8), "#fff4d0", "", w=3.2, seed=sd + 5))
+    o.append(shape(ellipse_pts(268, -92, 14, 9, 10), "#fff1c2", "", w=2.6, seed=sd + 6))
+    o.append(shape(ellipse_pts(-272, -92, 10, 8, 10), "#e05a3a", "", w=2.6, seed=sd + 7))
+    for wx in (-170, 170):
+        o.append(shape(ellipse_pts(wx, -38, 44, 44, 20), "#22252b", blob(ellipse_pts(wx, -38, 20, 20, 14), "#9aa0ab"), w=4.0, seed=sd + 8 + wx))
+    inner = "".join(o)
+    return f'<g transform="translate({f(x)} {f(y)}) scale({k:.4f})">{inner}</g>'
+
+
+def _hydrant81(x, y, seed=0):
+    c, cs = "#d9483b", "#a5322a"
+    o = shape(rect_pts(x - 24, y - 90, x + 24, y), c, blob(rect_pts(x + 8, y - 90, x + 24, y), cs), w=3.4, seed=8250 + seed)
+    o += shape(ellipse_pts(x, y - 96, 30, 22, 14), c, "", w=3.2, seed=8251 + seed)
+    o += shape(rect_pts(x - 40, y - 64, x + 40, y - 46), cs, "", w=3.0, seed=8252 + seed)
+    return o
+
+
+def us_street(t, pan=0.0, garages=True):
+    """Американская улица (см. шапку раздела 81)."""
+    import props as PR
+    P = ST81
+    gy, ry = ST81_GROUND, ST81_ROAD
+    g = lib.lin_grad([(0, P["sky0"], 1), (1, P["sky1"], 1)], 0, -600, 0, gy, units="userSpaceOnUse")
+    o = [f'<rect x="-1400" y="-1400" width="5200" height="{f(gy + 1400)}" fill="url(#{g})"/>']
+    for i, (cx_, cy_, k_) in enumerate(((-300, 260, 1.0), (520, 200, .8), (1400, 300, 1.1), (2300, 220, .9), (3000, 280, 1.0))):
+        o.append(_cloud81(cx_ + 12 * t, cy_, k_, i))
+    # дальние холмы и деревья
+    hill = [(-1000, gy - 160, 1)] + [(-1000 + i * 160, gy - 200 - 40 * math.sin(i * .9)) for i in range(28)] + [(3400, gy - 160, 1), (3400, gy, 1),
+                                                                                                               (-1000, gy, 1)]
+    o.append(blob(hill, P["hill"]))
+    for i, x in enumerate((-700, 140, 660, 1140, 1620, 2100, 2580, 3060)):
+        o.append(_tree81(x, gy - 60, 300 + 40 * (i % 3), t, i))
+    # столбы с проводами
+    poles = [(-560, 330), (700, 300), (1960, 330), (3220, 300)]
+    for (px, top) in poles:
+        o.append(shape(rect_pts(px - 12, top, px + 12, gy + 6), P["pole"], "", w=3.0, seed=8260 + px % 97))
+        o.append(shape(rect_pts(px - 70, top + 30, px + 70, top + 44), P["pole"], "", w=2.8, seed=8261 + px % 89))
+    for j in (-60, 0, 60):
+        for (a, b) in zip(poles, poles[1:]):
+            xa, ya = a[0] + j, a[1] + 32
+            xb, yb = b[0] + j, b[1] + 32
+            sag = 60 + 4 * math.sin(t * 1.5 + j)
+            o.append(f'<path d="M{f(xa)} {f(ya)} Q{f((xa + xb) / 2)} {f((ya + yb) / 2 + 2 * sag)} {f(xb)} {f(yb)}" fill="none" stroke="{P["wire"]}" '
+                     f'stroke-width="2.6"/>')
+    # дом с крыльцом и флагом (слева)
+    hx, hy = ST81_HOUSE
+    o.append(shape(rect_pts(hx - 300, hy - 470, hx + 300, hy), P["house"], blob(rect_pts(hx + 230, hy - 470, hx + 300, hy), P["house_sh"]) +
+                   "".join(_sl([(hx - 300, hy - 470 + 40 * i), (hx + 300, hy - 470 + 40 * i)], 2.2, P["house_sh"])
+                           for i in range(1, 12)), w=4.4, seed=8281))
+    o.append(shape([(hx - 350, hy - 460, 1), (hx, hy - 700, 1), (hx + 350, hy - 460, 1)], P["roof"], blob([(hx + 40, hy - 680), (hx + 350, hy - 460),
+                                                                                                    (hx + 200, hy - 460)], P["roof_sh"]), w=4.4, seed=8282))
+    for wx in (-180, 150):
+        o.append(shape(rect_pts(hx + wx - 60, hy - 400, hx + wx + 60, hy - 260), "#9DB6D6", line([(hx + wx, hy - 400), (hx + wx, hy - 260)], 3, INK, seed=8283 + wx)
+                       + line([(hx + wx - 60, hy - 330), (hx + wx + 60, hy - 330)], 3, INK, seed=8284 + wx), w=3.6, seed=8285 + wx))
+    o.append(shape(rect_pts(hx - 50, hy - 210, hx + 50, hy), "#6a8fb0", "", w=3.6, seed=8286))
+    o.append(shape(rect_pts(hx - 330, hy - 220, hx + 330, hy - 196), P["porch"], "", w=3.2, seed=8287))
+    for px in (-310, -110, 110, 310):
+        o.append(shape(rect_pts(hx + px - 9, hy - 196, hx + px + 9, hy), P["porch"], "", w=2.8, seed=8288 + px))
+    fx, fy = ST81_FLAG
+    o.append(line([(fx - 120, fy + 300), (fx, fy)], 7, "#8a8f98", taper=0, wmin=1, seed=8290))
+    o.append(us_flag(fx, fy - 4, 230, t, 1))
+    # тротуар, бордюр, дорога
+    o.append(_band(-1000, gy - 4, 3400, gy + 90, P["walk"], inner="".join(_sl([(-1000 + 180 * i, gy), (-1040 + 180 * i, gy + 90)], 2.4, P["walk_sh"])
+                                                                           for i in range(25))))
+    o.append(_band(-1000, gy + 90, 3400, gy + 112, P["curb"]))
+    o.append(f'<rect x="-1400" y="{f(gy + 112)}" width="5400" height="1400" fill="{P["road"]}"/>')
+    for i in range(16):
+        o.append(blob(rect_pts(-1300 + 300 * i, ry + 70, -1300 + 300 * i + 150, ry + 84), P["road_ln"]))
+    gar = ""
+    if garages:
+        for i, (gx, gy_) in enumerate(ST81_GARAGES):
+            gar += PR.garage(gx, gy_, ST81_GARAGE_K, seed=i, open_u=(.35 if i % 2 else 0.0))
+    front = taxi81(*ST81_TAXI, k=.9, t=t) + _hydrant81(160, gy + 80)
+    an = dict(ground=gy, road=ry, garages=ST81_GARAGES, flag=ST81_FLAG, taxi=ST81_TAXI, clean=ST81_CLEAN, house=ST81_HOUSE)
+    return dict(bg="".join(o), garages=gar, front=front, anchors=an, cam=CAM81_STREET, P=P)
