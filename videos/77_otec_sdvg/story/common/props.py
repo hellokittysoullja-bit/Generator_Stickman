@@ -5172,10 +5172,16 @@ def key_ring_tip(x, y, k=1.0, fan_u=0.0, i=0):
     return x - math.sin(ar) * L * k, y + math.cos(ar) * L * k
 
 
-def key_ring(x, y, k=1.0, fan_u=0.0, t=0.0, seed=0, jingle=0.0):
+def key_ring(x, y, k=1.0, fan_u=0.0, t=0.0, seed=0, jingle=0.0, lead=None):
+    """lead=(i, ang, u): ключ i уходит в угол ang (°, −90 — вправо), остальные собираются в связку вниз (u 0…1)."""
     sd = 77550 + seed
     o = []
     angs = _key_angles(fan_u)
+    if lead is not None:
+        li, la, lu = lead
+        bund = _key_angles(0.0)
+        angs = [((la if i == li else bund[i][0]) * lu + a * (1 - lu), uu) for i, (a, uu) in enumerate(angs)]
+        angs = angs[:li] + angs[li + 1:] + [angs[li]] if False else angs
     for i, (a, u) in enumerate(angs):
         a2 = a + jingle * 6 * math.sin(t * 40 + i * 1.7)
         ar = math.radians(a2)
@@ -5507,41 +5513,43 @@ def _pair_inner(t=0.0):
         import people as _pp
         out = []
         if hasattr(_pp, "father"):
-            out.append(_pp.father(-26, 118, .14, "laugh", "hug", t, breath=False)["svg"])
+            out.append(_pp.father(-22, 128, .2, "laugh", "hug", t, breath=False)["svg"])
         dk = "laugh77" if "laugh77" in _pp.EXPR.get("dima", {}) else "grin"
         dp = "di_hug" if "di_hug" in _pp.POSE else None
-        out.append(_pp.dima(36, 122, .13, dk, dp, flip=True)["svg"])
+        out.append(_pp.dima(34, 134, .19, dk, dp, flip=True)["svg"])
         return "".join(out)
     except Exception:
         return ""
 
 
-def photo_frame(x, y, k=1.0, rot=0.0, face=1.0, inner=None, seed=0, glint=0.0):
-    """Рамка 200×160 с фото; face — 1 лицом, 0 оборотом; inner=None — смеющиеся отец и Дима; glint 0…1 — блик по стеклу."""
+def photo_frame(x, y, k=1.0, rot=0.0, face=1.0, inner=None, seed=0, glint=0.0, portrait=False, t=0.0):
+    """Рамка 200×160 (portrait=True — 160×200) с фото; face — 1 лицом, 0 оборотом; inner=None — смеющиеся отец и Дима (people.py,
+    локально (0, 0) — центр фото 160×120 / 120×160); glint 0…1 — блик пробегает по стеклу."""
     sd = 16500 + seed
     if inner is None:
-        inner = _pair_inner()
+        inner = _pair_inner(t)
+    hx, hy = (80, 100) if portrait else (100, 80)
     a = math.pi * (1 - clamp(face))
     sy = math.cos(a)
     o = []
     if abs(sy) > 0.04:
         if sy > 0:
-            ph = blob(rect_pts(-84, -64, 84, 64), "#F3E7CC") + blob(rect_pts(-84, 20, 84, 64), "#D9C9A6", .7) + inner
-            c = clip_rect(-80, -60, 160, 120)
-            fr = shape(rect_pts(-100, -80, 100, 80), C_WOOD, blob(rect_pts(-100, 60, 100, 82), C_WOOD_SH) + blob(rect_pts(-100, -80, 100, -72), C_WOOD_HI),
+            ph = blob(rect_pts(-hx + 16, -hy + 16, hx - 16, hy - 16), "#F3E7CC") + blob(rect_pts(-hx + 16, hy * .3, hx - 16, hy - 16), "#D9C9A6", .7) + inner
+            c = clip_rect(-hx + 20, -hy + 20, 2 * hx - 40, 2 * hy - 40)
+            fr = shape(rect_pts(-hx, -hy, hx, hy), C_WOOD, blob(rect_pts(-hx, hy - 20, hx, hy + 2), C_WOOD_SH) + blob(rect_pts(-hx, -hy, hx, -hy + 8), C_WOOD_HI),
                        w=3.6, seed=sd)
             g = clamp(glint)
             gl = ""
             if 0 < g < 1:
-                gx = -140 + 280 * g
-                gl = blob([(gx - 18, -70), (gx + 6, -70), (gx - 30, 70), (gx - 54, 70)], "#FFFFFF", .55) + \
-                    blob([(gx + 16, -70), (gx + 24, -70), (gx - 12, 70), (gx - 20, 70)], "#FFFFFF", .45)
-            fr += shape(rect_pts(-80, -60, 80, 60), "#E9DDC2", f'<g clip-path="url(#{c})">{ph}{gl}</g>', w=2.8, seed=sd + 1)
-            fr += line([(-70, -50), (-30, -56)], 3, "#FFFFFF", taper=.5, wmin=.3, seed=sd + 2)
+                gx = -hx * 1.5 + hx * 3.2 * g
+                gl = blob([(gx - 18, -hy), (gx + 6, -hy), (gx - 40, hy), (gx - 64, hy)], "#FFFFFF", .55) + \
+                    blob([(gx + 16, -hy), (gx + 26, -hy), (gx - 20, hy), (gx - 30, hy)], "#FFFFFF", .45)
+            fr += shape(rect_pts(-hx + 20, -hy + 20, hx - 20, hy - 20), "#E9DDC2", f'<g clip-path="url(#{c})">{ph}{gl}</g>', w=2.8, seed=sd + 1)
+            fr += line([(-hx + 30, -hy + 30), (-hx + 70, -hy + 24)], 3, "#FFFFFF", taper=.5, wmin=.3, seed=sd + 2)
         else:
-            fr = shape(rect_pts(-100, -80, 100, 80), C_WOOD_SH, shape(rect_pts(-84, -64, 84, 64), "#A7835A", "", w=2.4, seed=sd + 4) +
+            fr = shape(rect_pts(-hx, -hy, hx, hy), C_WOOD_SH, shape(rect_pts(-hx + 16, -hy + 16, hx - 16, hy - 16), "#A7835A", "", w=2.4, seed=sd + 4) +
                        shape([(-14, 30), (14, 30), (8, 76), (-8, 76)], "#8A6A44", "", w=2.4, seed=sd + 5), w=3.6, seed=sd + 3)
         o.append(f'<g transform="scale(1 {sy:.4f})">{fr}</g>')
     else:
-        o.append(shape(rect_pts(-100, -7, 100, 7), C_WOOD_SH, "", w=3.2, seed=sd + 6))
+        o.append(shape(rect_pts(-hx, -7, hx, 7), C_WOOD_SH, "", w=3.2, seed=sd + 6))
     return _tf("".join(o), x, y, k, rot)
