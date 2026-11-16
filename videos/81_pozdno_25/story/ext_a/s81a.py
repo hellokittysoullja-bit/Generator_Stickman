@@ -204,7 +204,7 @@ def s10(t):
     cy += 6 * math.sin(t * 9) * bump(t, ws(42), .05, .1, .4)
     rot = lerp(.8, -.6, ramp(t, a0, T1("s10") - a0))
     cx -= whip_in(t, T0("s10"), -380, .25)
-    return frame_svg("".join(o), cx, cy, s, rot, room.ST81["sky1"])
+    return frame_svg("".join(o), cx, cy, s, rot, room.ST81["sky0"])
 
 
 def rrect_(x0, y0, x1, y1, r):
@@ -213,7 +213,7 @@ def rrect_(x0, y0, x1, y1, r):
 
 # ═══════════════════════════════ s13: позёр в рамке телефона ═══════════════════════════════
 DARK13 = "#151726"
-POSER13 = (520.0, 1350.0)        # таз позёра (стоит)
+POSER13 = (400.0, 1350.0)        # таз позёра (стоит)
 FR13 = (540.0, 1000.0, 1.5)      # рамка телефона: центр экрана и масштаб
 _OLDW = ("psych", "father", "teacher_o", "inventor", "bald", "granny", "beard", "mama")
 _OLDP = ("write", "fold", "draw", "tick")
@@ -272,7 +272,7 @@ def s13(t):
     # сцена позёра: пол, машина, софит
     o.append(P.beam(520, 330, 90, 1400, 20, 1.0, color="#FFF2C4"))
     o.append(blob(ellipse_pts(520, 1712, 360, 60, 30), "#FFF2C4", .4))
-    o.append(P.sports_car(760, 1716, .52, seed=1, t=t))
+    o.append(P.sports_car(610, 1712, 1.45, seed=1, t=t))
     o.append(poser13(t))
     o.append(shape(rrect_(450, 260, 590, 340, 20), "#55595F", line([(470, 330), (570, 330)], 6, "#FFF6D8", seed=3), w=4, seed=1301))
     o.append(flashes(t, 540, 1150, 330, 7, 1))
@@ -340,10 +340,17 @@ def s14(t):
     o.append(P.workbench(1330, 1200, 700, 1.0, seed=2))
     o.append(P.model_boat(1300, 1190, .55, 3, 0, 0, t, seed=1))
     o.append(dresser(drx, dry, 320, FLOOR14 - dry))
+    # на стене — свой набросок лодки в рамке (без букв): то, к чему он идёт
+    o.append(P.photo_frame(drx - 30, dry - 330, 1.25, -2, 1.0, P.model_boat(0, 40, .22, 7, 1, 1, 0.0, seed=7), seed=4))
+    if t >= w67:
+        kk = settle_u(t, w67)
+        o.append(P.phone_flat(drx + 40, dry - 8 - 6 * kk, .32, 0, 80, face_down=True))
+        if t < w67 + .25:
+            o.append(P.click(drx + 40, dry - 30, .8, 1 - ramp(t, w67, .25)))
     o.append(shadow(hip[0], FLOOR14, 170, .22))
     if t < w67 - .55:
         # смотрит в телефон, вспышки ленты на лице
-        e = ex("lit78", bags=False) if t < w64 else ex("smug", look=(.5, .45), bags=False)
+        e = ex("lit78", bags=False) if t < w64 else ex("hmph81")
         sh = .25 * bump(t, w64, .1, .2, .25)
         fig = people.dima_phone(hip[0], hip[1] + breath(t, 2), SC14, e, "phone_chest74", t=t, thumb=.6 * (1 - ramp(t, w64 - .3, .2)), shrug=sh,
                                 head_add=-.08 * sh, **people.stand_kw(hip[0], hip[1], SC14))
@@ -378,10 +385,6 @@ def s14(t):
             fig = people.figure("dima", w["hip"][0], w["hip"][1], SC14, ex("calm_smile", look=(.6, .1), bags=False), lean=.06, arms=arms,
                                 feet=w["feet"])
             o.append(fig["svg"])
-        if t >= w67:
-            k = settle_u(t, w67)
-            o.append(P.phone_flat(drx + 40, dry - 8 - 6 * k, .32, 0, 80, face_down=True))
-            o.append(P.click(drx + 40, dry - 30, .8, 1 - ramp(t, w67, .25)) if t < w67 + .25 else "")
     # камера: светлый день, дрейф за Димой
     s = 1.12 + .03 * ramp(t, a0, 1.6) + .05 * bump(t, w64, .12, .3, .4)
     cx = 600 + 260 * ease_io(walk) + 6 * math.sin(t * 1.2)

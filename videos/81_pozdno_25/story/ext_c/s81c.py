@@ -326,7 +326,11 @@ def s01_state(t):
     h1, h2 = stress(1, .22), stress(2, .35)          # «ДВАдцать», «ПЯТЬ»
     sway = 2.6 * math.sin(2 * math.pi * 1.45 * t + .9) + damp(t, h1, 3.4, 2.3, 4.0) + damp(t, h2, -2.0, 2.6, 5.0)
     dy = -14 * kick(t, h1 - .01, .03, 9) + 8 * kick(t, h1 + .05, .06, 6)
-    return dict(h1=h1, h2=h2, sway=sway, dy=dy)
+    # кадр 0 — уже в движении: часы только что дёрнулись на цепи (отскок вниз-вверх), Дима вскидывает руки
+    dy += 46 * math.exp(-5 * t) * math.cos(2 * math.pi * 2.4 * t)
+    sway += 6.0 * math.exp(-3.5 * t) * math.sin(2 * math.pi * 1.9 * t + .3)
+    throw = 1 - ease_out(clamp(t / .32), 2)
+    return dict(h1=h1, h2=h2, sway=sway, dy=dy, throw=throw)
 
 
 def s01_world(t):
@@ -336,8 +340,9 @@ def s01_world(t):
     top = lerp(.14, .07, clamp(t / 1.4))
     hg, hole = hourglass(t, st["sway"], st["dy"], sand_top=top, sand_bot=.84, stream=1.0)
     flinch = kick(t, h1, .05, 6) + 1.3 * kick(t, h2, .05, 6)
-    fig = dima_hook(t, "panic81", jit=1.0 + .6 * flinch, dy=14 * flinch, lean=-.03 * flinch,
-                    wr={"f": (-10 * flinch, 30 * flinch), "n": (10 * flinch, 24 * flinch)})
+    th = st["throw"]
+    fig = dima_hook(t, "panic81", jit=1.0 + .6 * flinch, dy=14 * flinch + 26 * th, lean=-.03 * flinch + .08 * th, head=.12 * th,
+                    wr={"f": (-10 * flinch - 60 * th, 30 * flinch + 230 * th), "n": (10 * flinch - 30 * th, 24 * flinch + 260 * th)})
     cr = crown(fig)
     sw = 9 + 9 * kick(t, h1, .04, 4)
     stream = leak_stream(hole, cr, t, sw)
@@ -401,7 +406,7 @@ def s02(t):
     items = hg + fig["svg"] + stream + sand + last
     world = void_world(t, d, items, hg + fig["svg"], sh_dx=60 + 5 * sway)
     dt = t - T0("s02")
-    cx, cy, s0 = 580.0, 870.0 + 22 * dt, 1.2
+    cx, cy, s0 = 580.0, 835.0 + 22 * dt, 1.2
     push = .06 * kick(t, a7, .05, 4.0)
     sx, sy = shake2(t, a7, 6)
     return wrap(world, cx - sx, cy - sy, s0 * (1 + .02 * dt) * (1 + push), .3 * math.sin(t * 1.7), hook_title(t, T1("s03")))
@@ -416,10 +421,10 @@ def s03(t):
     crack = sm(t, a9 - .12, a9)
     sway = 1.2 * math.sin(2 * math.pi * .9 * t) + damp(t, a9, 3.0, 2.0, 4.0)
     hg, hole = hourglass(t, sway, 0.0, sand_top=0.0, sand_bot=.9, stream=0.0, burst=burst, crack=crack, leak=True)
-    drop = sm(t, a9 + .02, a9 + .4)
+    drop = .75 * sm(t, a9 + .02, a9 + .4)
     tuk = kick(t, a8, .04, 6.0)
     fig = dima_hook(t, ("panic81" if t < a9 + .1 else "sink81"), pose="d81_cup_up", pose2="d81_drop", u=drop, jit=.35 * (1 - drop),
-                    dy=18 * tuk + 40 * drop, lean=-.12 * drop)
+                    dy=18 * tuk + 40 * drop, lean=-.2 * drop)
     cr = crown(fig)
     # последняя песчинка: выпадает из дырочки и падает на макушку ровно на «Всё»
     grain = ""
@@ -450,7 +455,167 @@ def s03(t):
     return wrap(world, cx - sx, cy - sy, s0 * (1 + .025 * dt) * (1 + hit), damp(t, a9, 1.4, 3.0, 6.0), hook_title(t, T1("s03")))
 
 
-FRAMES = {"s01": s01, "s02": s02, "s03": s03}
+def whip_in(world, cx, cy, s, rot, t, t0, dx0=260.0, dur=.16):
+    """Хлёст на входе плана: камера влетает сбоку, мир смазан копиями по горизонтали (гаснет за dur)."""
+    u = clamp((t - t0) / dur)
+    a = (1 - u) ** 2
+    if a <= .02 or NOCAM or MASK:
+        return cx, ""
+    cx2 = cx - dx0 * a
+    o = []
+    for j, op in enumerate((.3, .2, .12)):
+        o.append(f'<g opacity="{op * a:.3f}" transform="{lib.cam(cx2 + 40 * (j + 1) * a, cy, s, rot)}">{world}</g>')
+    return cx2, "".join(o)
+
+
+# ═════════════════════════ s04: ПОВОРОТ — всполох, ночь, часы на потолке тают ═════════════════════════
+LIE_K = .78
+
+
+def ghost_glass(t, u, seed=0):
+    """Часы-мираж над Димой: контур тает (u 0 — видны, 1 — нет), рассыпаясь вверх светлой пылью."""
+    gx, gy, gk = R.CEIL81_GHOST
+    o = ""
+    if u < .98:
+        body = PR.giant_hourglass(gx, gy, gk, sand_top=0.0, sand_bot=.0, stream=0.0, t=t, seed=5, chain=0.0)
+        o += f'<g opacity="{.46 * (1 - u) ** 1.3:.3f}" style="mix-blend-mode:screen" {lib.blur(2.2 + 8 * u)}>{body}</g>'
+    if u > .02:
+        for i in range(70):
+            a = rnd(i, 31)
+            px = gx + (rnd(i, 32) - .5) * 400 * gk
+            py = gy + (rnd(i, 33) - .5) * 560 * gk
+            ts = a * .6
+            v = clamp((u - ts) / .5)
+            if v <= 0 or v >= 1:
+                continue
+            x = px + 30 * math.sin(i + t * 2) * v
+            y = py - 160 * v
+            o += f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{2 + 3 * rnd(i, 34):.1f}" fill="#e8dcb0" opacity="{.6 * (1 - v):.2f}"/>'
+    return o
+
+
+def s04(t):
+    lib.dyn_begin()
+    t0 = T0("s04")
+    a10, a11, a12 = stress(10, .3), stress(11, .3), stress(12, .3)     # «Так», «думал», «Дима»
+    d = R.night81(t, "floor", glow=1.0)
+    hx, hy = R.LIE81_HIP
+    turn = sm(t, a12 - .05, a12 + .45)
+    fig = PE.dima_floor81(hx, hy, LIE_K, t, expr=None, glow=1.0 - .3 * turn, turn=turn, blink=bump(t, a11 + .2, .18))
+    ph = fig.get("phone", (hx, hy - 300))
+    thumb = bump(t, a11, .25)
+    scr = PR.glow(ph[0], ph[1] + 30, 330, (.9 - .35 * turn) * (1 + .25 * thumb), "#9fc8ff")
+    melt = sm(t, a10 - .05, a12 + .3)
+    ghost = ghost_glass(t, melt)
+    world = d["bg"] + ghost + d["light"] + d["rug"] + fig["svg"] + d["dark"] + scr
+    cx, cy, s0 = d["cam"]
+    dt = t - t0
+    cam = lib.cam(cx + 10 * dt, cy - 6 * dt, s0 * (1 + .012 * dt))
+    set_ink(s0)
+    over = R.glitch_flash(t, t0, 0.0)
+    return lib.svg(f'<g transform="{cam}">{world}</g>{over}')
+
+
+# ═════════════════════════ s09: Америка — улица гаражей, счётчик щёлкает, гараж открывается ═════════════════════════
+WALKERS = (("cap", 0.0), ("girl", .3), ("bald", .55), ("youth", .8), ("beard", .15), ("bob", .45))
+
+
+def s09(t):
+    lib.dyn_begin()
+    t0 = T0("s09")
+    a38, a39 = stress(38, .35), stress(39, .3)     # «посчИтали», «основАтелей» (улица — с «Америке», склейка)
+    d = R.us_street(t, garages=False)
+    gy = d["anchors"]["ground"]
+    gars = ""
+    for i, (gx, gy_) in enumerate(R.ST81_GARAGES):
+        ou = sm(t, a39 - .05, a39 + .5) if i == 1 else (.3 if i == 3 else 0.0)
+        gars += PR.garage(gx, gy_, R.ST81_GARAGE_K, seed=i, open_u=ou)
+    # в открывающемся гараже — тёплый свет и человек начинает своё дело (стол с коробками)
+    g2x, g2y = R.ST81_GARAGES[1]
+    ou = sm(t, a39 - .05, a39 + .5)
+    inside = ""
+    if ou > .02:
+        x0, x1 = g2x - 176, g2x + 176
+        clip = lib.clip_rect(x0, g2y - 220, x1 - x0, 220)
+        man = PE.passerby81("beard", g2x + 60, g2y - 74, .22, 0.0, 0.0, flip=True)
+        tbl = shape(rect_pts(g2x - 150, g2y - 92, g2x - 10, g2y - 80), PR.C_WOOD, "", w=3, seed=8301) + \
+            shape(rect_pts(g2x - 140, g2y - 80, g2x - 128, g2y), PR.C_WOOD_SH, "", w=2.6, seed=8302) + \
+            shape(rect_pts(g2x - 32, g2y - 80, g2x - 20, g2y), PR.C_WOOD_SH, "", w=2.6, seed=8303) + \
+            shape(rect_pts(g2x - 130, g2y - 140, g2x - 70, g2y - 92), "#C9A06A", "", w=3, seed=8304)
+        inside = (f'<g clip-path="url(#{clip})"><rect x="{x0:.1f}" y="{g2y - 220:.1f}" width="{x1 - x0:.1f}" height="220" fill="#FFE2A0"/>'
+                  + tbl + man["svg"] + "</g>")
+        inside += PR.glow(g2x, g2y - 60, 320, .7 * ou, "#FFD98A")
+    # вереница людей идёт по тротуару слева направо под счётчиком, счётчик щёлкает на каждого
+    cl_x, cl_y = 480.0, 470.0
+    people = ""
+    clicks = []
+    for i, (kind, ph) in enumerate(WALKERS):
+        x0 = 100 - i * 170 + (rnd(i, 41) - .5) * 30
+        v = 380.0
+        x = x0 + (t - (a38 - .6)) * v
+        if -200 < x < 1700:
+            fig = PE.passerby81(kind, x, gy - 62 + 6 * (i % 2), .34, t, ph)
+            people += fig["svg"]
+        clicks.append((a38 - .6) + (cl_x - x0) / v)
+    click = bump(t, a38 - .02, .18)
+    for ct in clicks:
+        if ct >= a38 - .02:
+            click = max(click, bump(t, ct, .16))
+    clicker = PR.tally_clicker(cl_x, cl_y + 10 * math.sin(t * 2.2), 1.3, click, t, seed=1)
+    eff = strokes(cl_x, cl_y - 150, 40, 90, bump(t, a38 - .02, .3), n=5, w=6, col="#2a3550", seed=8310, a0=-150, span=120)
+    world = d["bg"] + gars + inside + people + d["front"] + clicker + eff
+    pan = sm(t, t0, a39 + .1)
+    cx = lerp(560, 900, pan)
+    cy = lerp(880, 930, sm(t, a39 - .1, a39 + .4))
+    s = 1.0 + .22 * sm(t, a39 - .1, a39 + .45)
+    cx, blur = whip_in(world, cx, cy, s, 0.0, t, t0, dx0=-300)
+    set_ink(s)
+    return lib.svg(f'<g transform="{lib.cam(cx, cy, s)}">{world}</g>{blur}')
+
+
+# ═════════════════════════ s18: ПЕТЛЯ — тот же ракурс, тепло; кот переворачивает часы ═════════════════════════
+def s18(t):
+    lib.dyn_begin()
+    t0 = T0("s18")
+    a81, a82 = stress(81, .25), stress(82, .3)          # «ТОЛЬко», «начинАется»
+    d = R.hook_void(t, warm=1.0)
+    fl = clamp((t - a81) / .5)
+    flip = ease_io(fl)
+    sway = .9 * math.sin(2 * math.pi * .8 * t) + damp(t, a81 + .5, 2.2, 2.0, 4.0)
+    if fl < 1:
+        st_top, st_bot, stream = 0.0, .9, 0.0
+        fu = flip
+    else:
+        drain = clamp((t - a82) / 4.0)
+        st_top, st_bot, stream, fu = .9 - .3 * drain, .03 + .2 * drain, sm(t, a82 - .05, a82 + .1), 0.0
+    hg, hole = hourglass(t, sway, 0.0, sand_top=st_top, sand_bot=st_bot, stream=stream, flip=fu, leak=False)
+    fig = dima_hook(t, "laugh81" if t > a81 + .3 else "smile81", pose="d81_laugh", jit=.18, dy=45.0)
+    # кот на верхней крышке: лапы вверх («упирается»), на «только» прыгает — часы переворачиваются под ним, он приземляется снова наверх
+    k_cat = .78
+    cap = rotp((GX, TOP_Y - 2), (GX, TOP_Y), sway)
+    if t < a81 - .12:
+        cat = PE.cat_svg(cap[0], cap[1], k_cat, dict(PE.CAT_ST["paws_up81"], tail=8 * math.sin(t * 3)), t)
+    elif t < a81 + .58:
+        u = clamp((t - (a81 - .12)) / .7)
+        cat = PE.cat_jump(cap, (cap[0] + 6, cap[1]), k_cat, u, t, dict(PE.CAT_ST["paws_up81"]), height=110)
+    else:
+        cat = PE.cat_svg(cap[0] + 6, cap[1], k_cat, dict(PE.CAT_ST["proud81"], tail=10 * math.sin(t * 2.4)), t)
+    sparkle = ""
+    if t >= a82:
+        for i in range(10):
+            ph_ = (t * 1.3 + i * .1) % 1
+            x = GX + (rnd(i, 51) - .5) * 300
+            y = GY - 60 + (rnd(i, 52) - .5) * 360
+            sparkle += f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{3 + 3 * math.sin(math.pi * ph_):.1f}" fill="#fff4c8" opacity="{.8 * math.sin(math.pi * ph_):.2f}"/>'
+    eff = strokes(GX, GY, 300, 380, bump(t, a81 + .45, .3), n=8, w=6, col="#fff1cf", seed=8320)
+    items = hg + fig["svg"] + cat + sparkle + eff
+    world = void_world(t, d, items, hg + fig["svg"] + cat, sh_dx=60 + 5 * sway)
+    u = ease_out(clamp((t - t0) / 1.4), 2)
+    cx0, cy0, s0 = R.CAM81_HOOK
+    return wrap(world, cx0, cy0 + 8 * (1 - u), s0 * (1.06 - .06 * u), 0.0)
+
+
+FRAMES = {"s01": s01, "s02": s02, "s03": s03, "s04": s04, "s09": s09, "s18": s18}
 
 
 def frame(sid, t):

@@ -4203,7 +4203,7 @@ POSE.update({
                   {"f": {"curl": (.35, .35, .4, .45), "thumb": .35}, "n": {"dir": (1, -.3), "curl": (0, .85, .9, .9), "spread": .05, "thumb": .7}}),
     "y81_pose": (-0.06, -0.1, {"n": ("ik", (110, -130), 1), "f": ("ik", (40, -700), -1)},
                  {"n": {"dir": (-.2, 1), "curl": (.5, .5, .55, .6), "thumb": .4}, "f": {"dir": (.1, -1), "curl": (.05, .05, .08, .1), "spread": .4, "thumb": .1}}),
-    "y81_hooray": (-0.12, -0.22, {"f": ("ik", (20, -700), -1), "n": ("ik", (400, -540), -1)},
+    "y81_hooray": (-0.12, -0.22, {"f": ("ik", (20, -700), -1), "n": ("ik", (440, -640), -1)},
                    {"f": {"dir": (-.1, -1), "curl": (.05, .05, .08, .1), "spread": .4, "thumb": .1},
                     "n": {"dir": (.2, -1), "curl": (.05, .05, .08, .1), "spread": .4, "thumb": .1}}),
     "y81_lean": (-0.14, -0.05, {"f": ("ik", (-150, -40), -1), "n": ("ik", (-60, -60), -1)},
@@ -4356,13 +4356,17 @@ CAT_ST.update({
 BRUSH81_K = 1.15
 
 
-def cat_brush81(x, y, k, st=None, t=0.0, brush_rot=-8.0, col="#D9483B"):
-    """Кот с кисточкой в зубах (лапы на полу). Кисть поперёк рта, щетиной вправо от зрителя. Возвращает dict(svg, tip) — кончик в мире."""
+def cat_brush81(x, y, k, st=None, t=0.0, brush_rot=-8.0, col="#D9483B", side=1):
+    """Кот с кисточкой в зубах (лапы на полу). Кисть поперёк рта, щетиной вправо от зрителя (side=-1 — влево: brush_rot ≈ 180±,
+    кот смотрит влево). Возвращает dict(svg, tip) — кончик в мире."""
     import cat
     import props as _P
-    st = dict(CAT_ST["paint81"], **(st or {}))
+    base = dict(CAT_ST["paint81"])
+    if side < 0:
+        base.update(turn=-.35, look=(-.85, .15))
+    st = dict(base, **(st or {}))
     FX = 22 * st.get("turn", 0.0)
-    mx, my = 836 + FX + 30, 1128
+    mx, my = 836 + FX + 30 * side, 1128
     st["mouth_item"] = _P.paint_brush(mx, my, BRUSH81_K, brush_rot, col=col)
     svg_ = cat_svg(x, y, k, st, t)
     a = math.radians(brush_rot)
