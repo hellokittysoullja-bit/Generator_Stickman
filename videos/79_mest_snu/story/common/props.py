@@ -1,4 +1,28 @@
-"""Общие предметы рилса 64 «спасибо» — ОДИН вид для групп A…F (своих копий не рисовать). Автор — группа A.
+"""Общие предметы рилса 79 «месть сну» — ОДИН вид для всех групп; новое — раздел МЕСТЬ СНУ.
+МЕСТЬ СНУ (новое в 79, автор — группа A; букв, цифр и делений нет нигде):
+  attic_clock(x, y, r, hour_a, min_a, blur, sector_u, peel_u, t, seed, pull, wood)
+                        большие круглые часы мансарды (ЦЕНТР, радиус r), обод дерева; две стрелки и точка, БЕЗ цифр и делений;
+                        углы — clock_hm(h, m); blur 0…1 — смаз-веер позади стрелок; sector_u 0…1 — тёплый сектор 11→3 проступает;
+                        peel_u 0…1 — сектор отклеивается наклейкой к руке (pull — направление тяги), при 1 его на часах нет;
+                        sector_peel_tip(x, y, r, peel_u, pull) → кончик загиба (пальцы); sector_piece(x, y, r, rot, glow, t, bend, back)
+                        — отклеенный сектор отдельно ((x, y) — центр тяжести)
+  guitar(x, y, k, rot, dust_u, strum, t, seed)  гитара: (x, y) — НИЗ корпуса, при rot=0 гриф вверх, длина ~740·k; dust_u — пыль,
+                        strum — струны дрожат; guitar_pt(x, y, k, rot, "hole"|"neck"|"fret"|"head"|"bottom"|"top") — точки для рук
+  dust_motes(x, y, k, t, u, swirl, seed, n, w, h)  пылинки в луче, swirl 0…1 — взвихрены
+  folder(x, y, k, rot, col, seed, paper), folder_stack(x, y, k, n, drop_u, t, seed, lean)  цветные папки (ЦЕНТР ДНА), верхняя падает
+  sink_brush(x, y, k, foam_u, t, seed, water)   раковина на ножке (ЦЕНТР ВЕРХНЕГО КРАЯ чаши), кран справа, стакан со щёткой слева;
+                        sink_tap() → носик; toothbrush(x, y, k, rot, foam_u, t) — щётка ((x, y) — головка, ручка вправо);
+                        foam_drop(x, y, k, u) — капля пены падает
+  wall_shelf(x0, x1, y, k, seed, col)           длинная полка (y — верх доски) с кронштейнами
+  sleep_pillow(x, y, k, squash, mood, t, tilt, hang, seed, breathe)  подушка-сон с колпаком и закрытыми глазками (ЦЕНТР ДНА, ~260·k);
+                        mood "calm" | "sad"; hang 0…1 — свешивается за край
+  nightstand_drawer(x, y, k, open_u, inner, seed, lamp, lamp_on)  тумбочка с ящиком (ЦЕНТР ДНА); drawer_mouth() → куда класть
+  music_waves(x, y, k, t, u, seed, ang, n, col) ноты-волны: ленты с головками нот бегут от точки
+  star_drip(x0, y0, x1, y1, u, r, seed, col)    звезда вытягивается в каплю и стекает к цели (в свет экрана)
+  moon_cap(x, y, r, t, mood, pull, seed)        луна в ночном колпаке, сонное личико ("sleepy" | "pout")
+
+(Ниже — как было в 64.)
+Общие предметы рилса 64 «спасибо» — ОДИН вид для групп A…F (своих копий не рисовать). Автор — группа A.
 Основа — props.py рилса 63 целиком (всё как было), сверху — раздел СПАСИБО (в конце файла). Букв и цифр нет нигде.
 Свет — только небольшой и чёткий (table_lamp, torch, chest_glow); огромных мягких овалов не класть.
 
@@ -5561,4 +5585,514 @@ def ribbon_roll(x, y, k=1.0, unroll=0.0, t=0.0, trail=None, seed=0):
     # ось-стойки
     for s_ in (0,):
         o.append(shape(lib.band([(x - R * .35, y), (x - R * .35 - 30 * k, y + R * 1.05)], 18 * k, 22 * k), C_WOOD_SH, "", w=3 * k, seed=sd + 4 + s_))
+    return "".join(o)
+
+
+# ═══════════════════════════════ МЕСТЬ СНУ (новое в 79, автор — группа A) ═══════════════════════════════
+# Букв, цифр и делений нет нигде. (x, y) — ЦЕНТР, если не сказано иначе.
+C_CLOCK_RIM = "#8A5B32"
+C_CLOCK_RIM_SH = "#64401F"
+C_CLOCK_FACE = "#F7F0DD"
+C_SECTOR = "#F6B54A"
+C_SECTOR_SH = "#E08E2E"
+C_SECTOR_HI = "#FFE29A"
+C_SECTOR_BACK = "#F3DDB0"
+C_FOLDERS = ("#D9483B", "#4F78B5", "#F2C53D", "#5C9A78", "#C58AF9", "#F28B5A")
+C_GUITAR = "#D98C3F"
+C_GUITAR_SH = "#A9622A"
+C_GUITAR_HI = "#F0B067"
+C_GUITAR_NECK = "#6B4426"
+C_PORCELAIN = "#F4F6F7"
+C_PORCELAIN_SH = "#C9D2D8"
+C_FOAM = "#FFFFFF"
+C_FOAM_SH = "#D6E6F0"
+C_CAP = "#4F78B5"
+C_CAP_SH = "#36588C"
+SECTOR_A0, SECTOR_A1 = 330.0, 450.0          # «11» → «3» по часовой (углы от «12»)
+
+
+def _apt(cx, cy, r, a):
+    """Точка циферблата: угол в градусах по часовой от «12»."""
+    q = math.radians(a - 90)
+    return cx + r * math.cos(q), cy + r * math.sin(q)
+
+
+def _wedge(cx, cy, r, a0, a1, n=22):
+    return [(cx, cy, 1)] + [_apt(cx, cy, r, a0 + (a1 - a0) * i / n) + ((1,) if i in (0, n) else ()) for i in range(n + 1)]
+
+
+def _clip_half(pts, nx, ny, h, keep_le=True):
+    """Сазерленд — Ходжман по одной полуплоскости n·p ≤ h (keep_le) или ≥ h."""
+    def inside(p):
+        v = nx * p[0] + ny * p[1] - h
+        return v <= 0 if keep_le else v >= 0
+    out = []
+    m = len(pts)
+    for i in range(m):
+        a, b = pts[i], pts[(i + 1) % m]
+        ia, ib = inside(a), inside(b)
+        if ia:
+            out.append((a[0], a[1]))
+        if ia != ib:
+            va = nx * a[0] + ny * a[1] - h
+            vb = nx * b[0] + ny * b[1] - h
+            s = va / (va - vb)
+            out.append((a[0] + (b[0] - a[0]) * s, a[1] + (b[1] - a[1]) * s))
+    return out
+
+
+def _sector_fill(pts, glow, seed, back=False):
+    if len(pts) < 3:
+        return ""
+    if back:
+        return shape(pts, C_SECTOR_BACK, "", w=3.2, seed=seed, var=.2)
+    c = mix(C_SECTOR_HI, C_SECTOR, .35 + .65 * clamp(glow))
+    return shape(pts, c, "", w=3.4, seed=seed, var=.2)
+
+
+def _peel_geom(cx, cy, r, peel, pull):
+    """Линия сгиба наклейки-сектора: n — направление тяги (к руке), h — где сгиб (по проекции на n)."""
+    W_ = _wedge(cx, cy, r * .8, SECTOR_A0, SECTOR_A1)
+    nx, ny = pull
+    L = math.hypot(nx, ny) or 1.0
+    nx, ny = nx / L, ny / L
+    pr = [nx * p[0] + ny * p[1] for p in W_]
+    lo, hi = min(pr), max(pr)
+    # тянем ЗА дальний от руки край: сгиб идёт от него (−n) к руке; peel 0 → ничего не загнуто, 1 → весь сектор перевёрнут
+    h = lo + (hi - lo) * clamp(peel) * 1.02 - 1e-3
+    return W_, nx, ny, h, lo
+
+
+def attic_clock(x, y, r=300.0, hour_a=0.0, min_a=0.0, blur=0.0, sector_u=0.0, peel_u=0.0, t=0.0, seed=0, pull=(0.25, 1.0), wood=True):
+    """Большие круглые часы мансарды (ЦЕНТР), радиус r: деревянный обод, кремовый циферблат, две стрелки и точка — БЕЗ цифр и делений.
+    hour_a/min_a — углы стрелок в градусах по часовой от «12» (clock_hm). blur 0…1 — стрелки крутятся: смаз-веер позади каждой.
+    sector_u 0…1 — тёплый сектор «11→3» проступает светом; peel_u 0…1 — сектор отклеивается, как наклейка: край, дальний от руки,
+    загибается и ложится изнанкой к руке (pull — направление тяги в мире), на месте — бледный «пустой» след.
+    При peel_u ≥ 1 сектора на часах нет (дальше его несёт сцена — sector_piece). sector_peel_tip() → кончик загиба (куда ставить пальцы)."""
+    sd = 79000 + seed
+    o = []
+    # тень на стене
+    o.append(blob(ellipse_pts(x + r * .06, y + r * .08, r * 1.05, r * 1.05, 36), "#000000", .16))
+    rim_c, rim_sh = (C_CLOCK_RIM, C_CLOCK_RIM_SH) if wood else ("#4F78B5", "#36588C")
+    o.append(shape(ellipse_pts(x, y, r, r, 40), rim_c, blob(ellipse_pts(x + r * .1, y + r * .12, r * .98, r * .96, 36), rim_sh) +
+                   line([(x - r * .78, y - r * .5), (x - r * .55, y - r * .78), (x - r * .2, y - r * .93)], r * .05, mix(rim_c, "#FFFFFF", .35), taper=.5,
+                        wmin=.2, seed=sd + 1, op=.8), w=5.0, seed=sd))
+    face = ellipse_pts(x, y, r * .86, r * .86, 40)
+    fin = blob(ellipse_pts(x + r * .22, y + r * .26, r * .7, r * .62, 26), lib.mul(C_CLOCK_FACE, (.95, .93, .89)))
+    o.append(shape(face, C_CLOCK_FACE, fin, w=4.0, seed=sd + 2))
+    su = clamp(sector_u)
+    pu = clamp(peel_u)
+    if su > 0.01:
+        if pu > 0.001:      # след: циферблат под наклейкой чуть холоднее и пустой
+            o.append(blob(_wedge(x, y, r * .8, SECTOR_A0, SECTOR_A1), "#E4E0D6"))
+        if pu < 1.0:
+            W_, nx, ny, h, lo = _peel_geom(x - x, y - y, r, pu, pull)
+            Wm = [(p[0] + x, p[1] + y) for p in W_]
+            hw = h + nx * x + ny * y
+            stay = _clip_half(Wm, nx, ny, hw, keep_le=False)       # часть ближе к руке ещё приклеена
+            flap = _clip_half(Wm, nx, ny, hw, keep_le=True)        # дальняя часть загнута
+            # свет сектора
+            g = rad_grad([(0, "#FFD27A", .55 * su * (1 - pu)), (1, "#FFD27A", 0)], *_apt(x, y, r * .42, 30), r * .7)
+            o.append(f'<circle cx="{f(_apt(x, y, r * .42, 30)[0])}" cy="{f(_apt(x, y, r * .42, 30)[1])}" r="{f(r * .7)}" fill="url(#{g})"/>')
+            if su < 1:
+                o.append(f'<g opacity="{su:.3f}">{_sector_fill(stay, 1.0, sd + 5)}</g>')
+            else:
+                o.append(_sector_fill(stay, 1.0, sd + 5))
+            if flap and pu > 0.001:
+                fl = []
+                for p in flap:
+                    v = nx * p[0] + ny * p[1] - hw
+                    fl.append((p[0] - 2 * v * nx, p[1] - 2 * v * ny))
+                # тень загиба на циферблате
+                o.append(blob([(p[0] + 6, p[1] + 10) for p in fl], "#000000", .18))
+                o.append(_sector_fill(fl, 1.0, sd + 6, back=True))
+    # стрелки: смаз-веер позади при вращении
+    bl = clamp(blur)
+    for ang, L, wd, sk in ((hour_a, .5, 15.0, 0), (min_a, .74, 10.0, 1)):
+        if bl > 0.02:
+            span_ = (60 if sk == 0 else 110) * bl
+            n = 7
+            for j in range(n, 0, -1):
+                a2 = ang - span_ * j / n
+                p1 = _apt(x, y, r * L, a2)
+                o.append(line([(x, y), p1], wd * r / 300 * (1.1 + .4 * j / n), "#6F6A7A", taper=.2, wmin=.6, seed=sd + 40 + j + 10 * sk,
+                              op=.38 * bl * (1 - j / (n + 1))))
+        p0 = _apt(x, y, -r * .1, ang)
+        p1 = _apt(x, y, r * L, ang)
+        o.append(line([p0, p1], wd * r / 300, lib.INK, taper=.25, wmin=.45, seed=sd + 30 + sk, peak=.2))
+    o.append(shape(ellipse_pts(x, y, r * .06, r * .06, 14), "#D9483B", "", w=3.0, seed=sd + 50))
+    # блик стекла
+    o.append(line([(x - r * .6, y - r * .3), (x - r * .45, y - r * .55), (x - r * .22, y - r * .7)], r * .035, "#FFFFFF", taper=.6, wmin=.2,
+                  seed=sd + 51, op=.55))
+    return "".join(o)
+
+
+def sector_peel_tip(x, y, r=300.0, peel_u=0.0, pull=(0.25, 1.0)):
+    """Где сейчас кончик загнутой наклейки (мир) — туда сцена ставит пальцы руки."""
+    W_, nx, ny, h, lo = _peel_geom(0, 0, r, peel_u, pull)
+    far = min(W_, key=lambda p: nx * p[0] + ny * p[1])       # самая дальняя от руки точка — она ведёт загиб
+    v = nx * far[0] + ny * far[1] - h
+    return x + far[0] - 2 * v * nx, y + far[1] - 2 * v * ny
+
+
+def sector_piece(x, y, r=300.0, rot=0.0, glow=1.0, t=0.0, bend=0.0, back=False, seed=0):
+    """Отклеенный тёплый сектор «11→3» свободной наклейкой; (x, y) — его ЦЕНТР ТЯЖЕСТИ, r — радиус часов, с которых он снят.
+    rot — поворот, bend 0…1 — мягко прогнут (держат в руках), back — изнанкой. Тёплый свет вокруг при glow."""
+    sd = 79100 + seed
+    W_ = _wedge(0, 0, r * .8, SECTOR_A0, SECTOR_A1)
+    gx = sum(p[0] for p in W_) / len(W_)
+    gy = sum(p[1] for p in W_) / len(W_)
+    pts = []
+    for p in W_:
+        px, py = p[0] - gx, p[1] - gy
+        py += bend * 0.0009 * px * px * (1 if not back else -1) * (300 / r)
+        pts.append((px, py) + p[2:])
+    o = []
+    if glow > 0.01 and not back:
+        g = rad_grad([(0, "#FFD27A", .5 * clamp(glow) * (.85 + .15 * math.sin(t * 6))), (1, "#FFD27A", 0)], 0, 0, r * .75)
+        o.append(f'<circle cx="0" cy="0" r="{f(r * .75)}" fill="url(#{g})"/>')
+    o.append(_sector_fill(pts, glow, sd, back=back))
+    if not back:
+        o.append(line([pts[3][:2], pts[8][:2], pts[14][:2]], r * .02, C_SECTOR_HI, taper=.5, wmin=.2, seed=sd + 1, op=.9))
+    return _tf("".join(o), x, y, 1.0, rot)
+
+
+def guitar_pt(x, y, k=1.0, rot=0.0, name="hole"):
+    """Точки гитары в мире: hole — розетка (правая рука на струнах), neck — середина грифа (левая рука), head — головка, bottom — низ."""
+    loc = {"hole": (0, -210), "neck": (0, -470), "fret": (0, -560), "head": (0, -690), "bottom": (0, 0), "top": (0, -730)}[name]
+    c, s = math.cos(math.radians(rot)), math.sin(math.radians(rot))
+    return x + (loc[0] * c - loc[1] * s) * k, y + (loc[0] * s + loc[1] * c) * k
+
+
+def _guitar_body_pts():
+    pts = []
+    # восьмёрка: нижняя дека r=150 (центр 0,-120), талия, верхняя r=112 (центр 0,-330)
+    for i in range(41):
+        a = math.radians(-60 + 300 * i / 40)       # нижняя: от правой талии вниз и к левой
+        pts.append((150 * math.cos(a), -120 + 145 * math.sin(a)))
+    for i in range(31):
+        a = math.radians(140 + 260 * i / 30)
+        pts.append((112 * math.cos(a), -332 + 105 * math.sin(a)))
+    return [(-p[0], p[1]) for p in pts]
+
+
+def guitar(x, y, k=1.0, rot=0.0, dust_u=0.0, strum=0.0, t=0.0, seed=0):
+    """Акустическая гитара; (x, y) — НИЗ корпуса, при rot=0 гриф вверх; длина ~740·k. dust_u 0…1 — серый слой пыли и пылинки на деке;
+    strum 0…1 — струны дрожат (размытые дуги). Ладов-цифр нет. guitar_pt() — точки для рук."""
+    sd = 79200 + seed
+    o = []
+    body = _guitar_body_pts()
+    inner = blob(ellipse_pts(30, -150, 150, 150, 26), C_GUITAR_SH)
+    inner += blob(ellipse_pts(-40, -330, 70, 60, 16), C_GUITAR_HI)
+    inner += line([(-100, -60), (-120, -140), (-96, -230)], 8, C_GUITAR_HI, taper=.5, wmin=.2, seed=sd + 1, op=.7)
+    du = clamp(dust_u)
+    if du > .01:
+        inner += blob(ellipse_pts(-20, -300, 120, 110, 20), "#C8BFAE", .35 * du)
+        rs = lib.np.random.RandomState(sd)
+        for j in range(46):
+            px, py = rs.uniform(-130, 130), rs.uniform(-420, -20)
+            inner += blob(ellipse_pts(px, py, 4 + 3 * rs.rand(), 3 + 2 * rs.rand(), 6), "#8F897F", .8 * du)
+    o.append(shape(body, C_GUITAR, inner, w=5.0, seed=sd))
+    # розетка
+    o.append(shape(ellipse_pts(0, -210, 56, 56, 22), "#2A1B12", "", w=3.0, seed=sd + 2))
+    o.append(line(_ring_pts(0, -210, 70, 70, 0, 360, 30), 4, C_GUITAR_NECK, taper=.1, wmin=.8, seed=sd + 3))
+    # гриф и головка
+    o.append(shape([(-20, -300, 1), (20, -300, 1), (17, -650, 1), (-17, -650, 1)], C_GUITAR_NECK, blob(rect_pts(4, -650, 20, -300), "#4E3019"), w=3.6, seed=sd + 4))
+    for j in range(8):           # лады — тонкие поперечные полоски (не деления-цифры)
+        yy = -620 + 38 * j
+        o.append(line([(-15, yy), (15, yy)], 2.2, "#C9B48A", taper=.1, wmin=.8, seed=sd + 10 + j))
+    o.append(shape([(-22, -650, 1), (22, -650, 1), (30, -735, 1), (-30, -735, 1)], C_GUITAR_NECK, "", w=3.6, seed=sd + 5))
+    for j in range(3):
+        for s_ in (-1, 1):
+            o.append(shape(ellipse_pts(s_ * 40, -668 - 24 * j, 10, 7, 8), C_METAL, "", w=2.2, seed=sd + 20 + j * 2 + (s_ > 0)))
+    # подставка-кобылка
+    o.append(shape(rrect(-52, -104, 52, -84, 6), "#3A2416", "", w=3.0, seed=sd + 6))
+    # струны
+    su = clamp(strum)
+    for j in range(6):
+        xx = -11 + 4.4 * j
+        x0 = -30 + 12 * j
+        if su > 0.02:
+            amp = su * (5 + j) * math.sin(t * 60 + j * 1.3)
+            pts = [(x0, -94), (xx + amp * .6, -300), (xx + amp, -420), (xx, -650)]
+            o.append(line(pts, 2.2, "#EDE6D6", taper=.05, wmin=.8, seed=sd + 30 + j))
+            o.append(line([(x0, -94), (xx - amp, -360), (xx, -650)], 2.0, "#EDE6D6", taper=.05, wmin=.8, seed=sd + 40 + j, op=.4))
+        else:
+            o.append(line([(x0, -94), (xx, -650)], 2.2, "#EDE6D6", taper=.05, wmin=.8, seed=sd + 30 + j))
+    if du > .01:     # пылинки на грифе
+        for j in range(7):
+            o.append(blob(ellipse_pts(-8 + 16 * ((j * 7) % 3) / 2, -330 - 44 * j, 4, 3, 6), "#9A948A", .85 * du))
+    return _tf("".join(o), x, y, k, rot)
+
+
+def dust_motes(x, y, k=1.0, t=0.0, u=1.0, swirl=0.0, seed=0, n=18, w=260.0, h=300.0, col="#E9E2D0"):
+    """Пылинки в луче (ЦЕНТР облака): плавают; swirl 0…1 — взвихрены (разлетаются по спирали и оседают по мере спада)."""
+    if u <= 0.01:
+        return ""
+    rs = lib.np.random.RandomState(79300 + seed)
+    o = []
+    for j in range(n):
+        bx, by = rs.uniform(-w / 2, w / 2), rs.uniform(-h / 2, h / 2)
+        ph = rs.uniform(0, 6.28)
+        sp = clamp(swirl)
+        a = ph + t * (0.6 + 4 * sp)
+        rr = 18 + 90 * sp
+        px = x + (bx + rr * math.cos(a) + 6 * math.sin(t * 1.3 + ph)) * k
+        py = y + (by + rr * .6 * math.sin(a) - 40 * sp + 5 * math.cos(t * 1.1 + ph)) * k
+        rad = (3.2 + 2.6 * rs.rand()) * k
+        o.append(f'<circle cx="{f(px)}" cy="{f(py)}" r="{f(rad)}" fill="{col}" opacity="{min(1, u * (.55 + .45 * math.sin(t * 3 + ph) ** 2)):.3f}"/>')
+    return "".join(o)
+
+
+def folder(x, y, k=1.0, rot=0.0, col=0, seed=0, paper=True):
+    """Одна папка (ЦЕНТР ДНА) 260×60·k сбоку-сверху: корешок, язычок, торчит лист без букв."""
+    sd = 79400 + seed
+    c = C_FOLDERS[col % len(C_FOLDERS)]
+    csh = lib.mul(c, (.78, .76, .74))
+    o = []
+    if paper:
+        o.append(shape(rect_pts(-112 + 10 * (seed % 3), -70, 100, -30), "#FBF8F0", "", w=2.6, seed=sd + 1))
+    o.append(shape([(-130, -40, 1), (-90, -40), (-80, -54, 1), (-30, -54, 1), (-22, -40, 1), (130, -40, 1), (130, 0, 1), (-130, 0, 1)], c,
+                   blob(rect_pts(-140, -14, 140, 6), csh), w=3.4, seed=sd))
+    return _tf("".join(o), x, y, k, rot)
+
+
+def folder_stack(x, y, k=1.0, n=5, drop_u=1.0, t=0.0, seed=0, lean=0.0):
+    """Стопка цветных папок (ЦЕНТР ДНА); n — сколько (дробное — верхняя ещё падает: drop_u 0…1 её полёт сверху с отскоком);
+    lean — стопка кренится (°). Шаг по высоте 44·k."""
+    o = []
+    full = int(n)
+    for i in range(full):
+        dx = 10 * math.sin(i * 2.3 + seed)
+        o.append(folder(dx + lean * i * 2.2, -44 * i, 1.0, (i % 3 - 1) * 1.6 + lean * .4, col=i + seed, seed=seed + i, paper=i % 2 == 0))
+    if n > full + .001 or drop_u < 1:
+        u = clamp(drop_u)
+        i = full
+        fall = 1 - lib.ease_in(clamp(u * 1.3), 2)
+        bounce = 0.0 if u < .77 else -26 * math.sin(math.pi * clamp((u - .77) / .23))
+        yy = -44 * i - 520 * fall + bounce
+        o.append(folder(8 + lean * i * 2.2, yy, 1.0, 9 * fall - 2, col=i + seed, seed=seed + i, paper=True))
+    return _tf("".join(o), x, y, k, 0)
+
+
+def sink_brush(x, y, k=1.0, foam_u=0.0, t=0.0, seed=0, water=0.0):
+    """Раковина на тумбе-ножке сбоку-спереди (ЦЕНТР ВЕРХНЕГО КРАЯ чаши) с краном, стакан с пастой на краю. foam_u 0…1 — пена на дне
+    чаши (капли упали); water 0…1 — тонкая струйка из крана. Ширина ~420·k. sink_tap(x, y, k) → носик крана."""
+    sd = 79500 + seed
+    o = []
+    # ножка
+    o.append(shape([(-60, 60, 1), (60, 60, 1), (44, 520, 1), (-44, 520, 1)], C_PORCELAIN, blob(rect_pts(14, 50, 70, 530), C_PORCELAIN_SH), w=4.0, seed=sd))
+    # чаша
+    bowl = [(-210, -6, 1), (210, -6, 1), (200, 30), (150, 92), (60, 116), (-60, 116), (-150, 92), (-200, 30)]
+    o.append(shape(bowl, C_PORCELAIN, blob(ellipse_pts(40, 80, 190, 50, 18), C_PORCELAIN_SH), w=4.4, seed=sd + 1))
+    o.append(shape(ellipse_pts(0, -6, 210, 26, 26), "#E3EAEE", blob(ellipse_pts(0, 4, 170, 16, 18), "#BFCAD2"), w=3.6, seed=sd + 2))
+    fu = clamp(foam_u)
+    if fu > .01:
+        for j in range(5):
+            px = -50 + 26 * j
+            o.append(blob(ellipse_pts(px, 2, (8 + 5 * (j % 2)) * fu, 5 * fu, 8), C_FOAM))
+    o.append(shape(ellipse_pts(14, 4, 12, 4, 10), "#7F8A94", "", w=2, seed=sd + 3))
+    # кран
+    o.append(shape([(132, -10, 1), (158, -10, 1), (158, -96, 1), (90, -96), (60, -88, 1), (60, -70, 1), (132, -74, 1)], C_METAL,
+                   blob(rect_pts(140, -100, 170, -10), C_METAL_SH), w=3.4, seed=sd + 4))
+    o.append(shape(rrect(126, -130, 170, -108, 8), C_METAL, "", w=3, seed=sd + 5))
+    if water > .01:
+        wob = 2 * math.sin(t * 30)
+        o.append(line([(64, -70), (64 + wob, -30), (62, -4)], 7 * water, C_WATER, taper=.1, wmin=.6, seed=sd + 6))
+    # стакан с пастой у левого края
+    o.append(shape([(-190, -12, 1), (-140, -12, 1), (-134, -96, 1), (-196, -96, 1)], "#DDEEF3", blob(rect_pts(-160, -96, -134, -12), "#B9D6E0"),
+                   w=3.2, seed=sd + 7))
+    o.append(shape(lib.band([(-176, -60), (-188, -150)], 16, 14), "#E9EEF2", blob(rect_pts(-200, -160, -170, -130), "#D9483B"), w=3, seed=sd + 8))
+    return _tf("".join(o), x, y, k, 0)
+
+
+def sink_tap(x, y, k=1.0):
+    return x + 64 * k, y - 70 * k
+
+
+def toothbrush(x, y, k=1.0, rot=0.0, foam_u=0.0, t=0.0, seed=0):
+    """Зубная щётка; (x, y) — ГОЛОВКА щётки (щетина), ручка уходит вправо при rot=0, длина 200·k. foam_u — пена на щетине."""
+    sd = 79600 + seed
+    o = [shape(lib.band([(0, 0), (90, 2), (200, -6)], 15, 12), "#4FB3A6", blob(rect_pts(100, -2, 210, 12), "#36877D"), w=3.0, seed=sd)]
+    o.append(shape(rrect(-6, -22, 40, -6, 4), "#FFFFFF", "", w=2.6, seed=sd + 1))
+    fu = clamp(foam_u)
+    if fu > .01:
+        for j in range(4):
+            px = -4 + 13 * j
+            r_ = (10 + 3 * math.sin(t * 7 + j)) * fu
+            o.append(shape(ellipse_pts(px, -24, r_, r_ * .8, 10), C_FOAM, "", w=2.0, seed=sd + 2 + j, var=.1))
+    return _tf("".join(o), x, y, k, rot)
+
+
+def foam_drop(x, y, k=1.0, u=0.0, seed=0):
+    """Капля пены падает от (x, y) вниз (u 0…1 — тянется, отрывается и падает ~260·k), к 1 — исчезает в чаше."""
+    if u <= 0 or u >= 1:
+        return ""
+    sd = 79650 + seed
+    if u < .35:
+        q = u / .35
+        L = 30 * q
+        return shape([(x - 9 * k, y), (x + 9 * k, y), (x + 6 * k, y + L * k), (x, y + (L + 12) * k), (x - 6 * k, y + L * k)], C_FOAM, "", w=2.2 * k, seed=sd)
+    q = (u - .35) / .65
+    yy = y + (40 + 220 * q * q) * k
+    return shape(ellipse_pts(x, yy, 9 * k, 12 * k, 10), C_FOAM, "", w=2.2 * k, seed=sd + 1)
+
+
+def wall_shelf(x0, x1, y, k=1.0, seed=0, col=None):
+    """Длинная настенная полка (доска), y — ВЕРХ доски; кронштейны снизу."""
+    sd = 79700 + seed
+    c = col or C_WOOD
+    o = []
+    for xx in (x0 + 70 * k, x1 - 70 * k):
+        o.append(shape([(xx - 8 * k, y + 20 * k, 1), (xx + 8 * k, y + 20 * k, 1), (xx + 8 * k, y + 90 * k, 1), (xx - 50 * k, y + 22 * k, 1)], C_WOOD_SH, "",
+                       w=3.0 * k, seed=sd + int(xx)))
+    o.append(shape(rect_pts(x0, y, x1, y + 26 * k), c, blob(rect_pts(x0 - 4, y + 16 * k, x1 + 4, y + 30 * k), C_WOOD_SH), w=4.0 * k, seed=sd))
+    o.append(blob(rect_pts(x0 + 10, y + 26 * k, x1 - 10, y + 44 * k), "#000000", .14))
+    return "".join(o)
+
+
+def sleep_pillow(x, y, k=1.0, squash=0.0, mood="calm", t=0.0, tilt=0.0, hang=0.0, seed=0, breathe=1.0):
+    """Подушка-сон с ночным колпаком и закрытыми глазками; (x, y) — ЦЕНТР ДНА, ширина ~260·k. squash ±0…1 — сплющена (+) / вытянута (−)
+    (удар щелчка); mood "calm" | "sad" (бровки домиком, ротик дугой вниз) | "sleep"; tilt — наклон (°, около дна);
+    hang 0…1 — свешивается за край (дальняя половина провисает вниз, колпак свисает). Дышит сама (breathe)."""
+    sd = 79800 + seed
+    br = .025 * math.sin(t * 2.4) * breathe
+    sx = 1 + .22 * squash - br * .5
+    sy = 1 - .26 * squash + br
+    hg = clamp(hang)
+    pts = []
+    for i in range(36):
+        a = 2 * math.pi * i / 36
+        px = 130 * math.cos(a) * (1 + .08 * math.cos(4 * a))
+        py = -62 + 58 * math.sin(a) * (1 + .1 * math.cos(4 * a))
+        if px > 0:
+            py += hg * (px / 130) ** 2 * 120
+        pts.append((px, py))
+    inner = blob(ellipse_pts(30, -20, 120, 34, 18), C_PILLOW_SH)
+    inner += line([(-90, -92), (-40, -108), (20, -106)], 5, "#FFFFFF", taper=.4, wmin=.4, seed=sd + 1, op=.8)
+    o = [blob(ellipse_pts(0, 2, 120, 12, 16), "#000000", .18)]
+    o.append(shape(pts, C_PILLOW, inner, w=4.4, seed=sd))
+    # глазки и ротик
+    ey = -66 + hg * 10
+    for s_ in (-1, 1):
+        ex = s_ * 38 + hg * 6
+        if mood == "sad":
+            o.append(line([(ex - 16, ey - 2), (ex, ey + 6), (ex + 16, ey - 2)], 5.0, lib.INK, taper=.4, wmin=.3, seed=sd + 3 + s_))
+            o.append(line([(ex - 14 * s_, ey - 30), (ex + 10 * s_, ey - 22)], 4.0, lib.INK, taper=.5, wmin=.3, seed=sd + 5 + s_))
+        else:
+            o.append(line([(ex - 16, ey - 4), (ex, ey + 6), (ex + 16, ey - 4)], 5.0, lib.INK, taper=.4, wmin=.3, seed=sd + 3 + s_))
+        o.append(blob(ellipse_pts(ex + s_ * 12, ey + 22, 12, 7, 10), "#F2A6A0", .8))
+    if mood == "sad":
+        o.append(line([(-14, -24), (0, -32), (14, -24)], 4.2, lib.INK, taper=.4, wmin=.3, seed=sd + 7))
+    else:
+        o.append(line([(-12, -32), (0, -24), (12, -32)], 4.2, lib.INK, taper=.4, wmin=.3, seed=sd + 7))
+    # колпак: от левого верха к хвосту с помпоном, хвост свисает
+    sw = 8 * math.sin(t * 2.0) - 60 * hg
+    tipx, tipy = 120 + 30 * hg, -150 + 40 * math.sin(math.radians(sw)) + 120 * hg
+    cap = [(-104, -98, 1), (-40, -134), (30, -150), (tipx - 10, tipy - 14), (tipx + 6, tipy + 6, 1), (40, -116), (-20, -96), (-90, -82, 1)]
+    o.append(shape(cap, C_CAP, blob([(0, -130), (tipx, tipy + 10), (30, -112)], C_CAP_SH), w=3.8, seed=sd + 8))
+    o.append(shape(lib.band([(-110, -88), (-40, -116), (40, -110)], 26, 22), "#FBF8F0", "", w=3.2, seed=sd + 9))
+    o.append(shape(ellipse_pts(tipx + 4, tipy + 6, 20, 20, 12), "#FBF8F0", "", w=3.0, seed=sd + 10))
+    body = "".join(o)
+    return f'<g transform="translate({f(x)} {f(y)}) rotate({f(tilt)}) scale({sx * k:.4f} {sy * k:.4f})">{body}</g>'
+
+
+def nightstand_drawer(x, y, k=1.0, open_u=0.0, inner="", seed=0, lamp=False, lamp_on=1.0):
+    """Тумбочка у кровати (ЦЕНТР ДНА) 300×300·k с одним ящиком: open_u 0…1 — ящик выдвинут к зрителю (inner — SVG внутри,
+    локально (0, 0) — центр нутра). drawer_mouth(x, y, k, open_u) → куда класть предмет (мир). lamp — ночник сверху."""
+    sd = 79900 + seed
+    o = [blob(ellipse_pts(0, 0, 170, 16, 16), "#000000", .2)]
+    o.append(shape([(-140, -300, 1), (140, -300, 1), (140, -12, 1), (-140, -12, 1)], C_WOOD, blob(rect_pts(80, -310, 150, 0), C_WOOD_SH), w=4.2, seed=sd))
+    o.append(shape(rect_pts(-156, -324, 156, -296), C_WOOD_HI, blob(rect_pts(-160, -306, 160, -292), C_WOOD_SH), w=3.8, seed=sd + 1))
+    for xx in (-120, 120):
+        o.append(shape(rect_pts(xx - 12, -14, xx + 12, 0), C_WOOD_SH, "", w=2.6, seed=sd + 2 + (xx > 0)))
+    o.append(drawer(0, -210, 230, 92, out=open_u, seed=seed, inner=inner))
+    o.append(shape(rect_pts(-110, -130, 110, -40), lib.mul(C_WOOD, (.95, .94, .93)), "", w=3.0, seed=sd + 4))
+    o.append(shape(ellipse_pts(0, -86, 12, 12, 10), C_METAL, "", w=2.4, seed=sd + 5))
+    if lamp:
+        o.append(night_lamp(0, -324, 1.0, lamp_on, 0.0, seed))
+    return _tf("".join(o), x, y, k, 0)
+
+
+def drawer_mouth(x, y, k=1.0, open_u=1.0):
+    sx, sy = drawer_slot(0, -210, 230, 92, open_u)
+    return x + sx * k, y + sy * k
+
+
+def music_waves(x, y, k=1.0, t=0.0, u=1.0, seed=0, ang=-30.0, n=3, col="#F2C53D"):
+    """Ноты-волны: волнистые ленты бегут от (x, y) в сторону ang (°), на них круглые головки нот (без символов-букв). u — сила."""
+    if u <= 0.01:
+        return ""
+    sd = 80000 + seed
+    o = []
+    ca, sa = math.cos(math.radians(ang)), math.sin(math.radians(ang))
+    for j in range(n):
+        off = (j - (n - 1) / 2) * 46
+        pts = []
+        L = 420 * clamp(u)
+        for i in range(24):
+            s = L * i / 23
+            w_ = 16 * math.sin(s / 38 - t * 7 + j * 1.7) * (0.4 + .6 * i / 23)
+            px, py = s, off + w_
+            pts.append((x + (px * ca - py * sa) * k, y + (px * sa + py * ca) * k))
+        o.append(line(pts, 6 * k, col, taper=.7, wmin=.1, seed=sd + j, op=.95))
+        ph = (t * .9 + j * .33) % 1.0
+        s = L * (.2 + .7 * ph)
+        w_ = 16 * math.sin(s / 38 - t * 7 + j * 1.7) * .8
+        hx, hy = x + (s * ca - (off + w_) * sa) * k, y + (s * sa + (off + w_) * ca) * k
+        sz = (1 - abs(ph - .5) * 1.6) * k
+        if sz > .05:
+            o.append(shape(ellipse_pts(hx, hy, 15 * sz, 11 * sz, 12, rot=-20), lib.INK, "", w=2 * k, seed=sd + 10 + j))
+            o.append(line([(hx + 13 * sz, hy - 2 * sz), (hx + 15 * sz, hy - 52 * sz)], 4 * sz, lib.INK, taper=.2, wmin=.6, seed=sd + 20 + j))
+    return "".join(o)
+
+
+def star_drip(x0, y0, x1, y1, u=0.0, r=16.0, seed=0, col="#FFF3C4"):
+    """Звезда стекает каплей из (x0, y0) в (x1, y1) (в свет экрана): u 0…0.3 — звезда вытягивается вниз, 0.3…1 — каплей с хвостом
+    стекает по дуге и тает у цели. Вне 0…1 — ничего (до — рисуй star4 сам)."""
+    if u <= 0 or u >= 1:
+        return ""
+    if u < .3:
+        q = u / .3
+        rr = r * (1 - .25 * q)
+        st = star4(x0, y0 + 6 * q, rr, 1.0)
+        tail = [(x0 - rr * .3, y0), (x0 + rr * .3, y0), (x0, y0 + rr + 26 * q)]
+        return blob(tail, col) + st
+    q = (u - .3) / .7
+    e = q * q
+    mx, my = (x0 + x1) / 2 + 40, min(y0, y1) + (max(y0, y1) - min(y0, y1)) * .35
+    px = (1 - e) ** 2 * x0 + 2 * (1 - e) * e * mx + e * e * x1
+    py = (1 - e) ** 2 * y0 + 2 * (1 - e) * e * my + e * e * y1
+    pe = max(0.0, e - .08)
+    tx = (1 - pe) ** 2 * x0 + 2 * (1 - pe) * pe * mx + pe * pe * x1
+    ty = (1 - pe) ** 2 * y0 + 2 * (1 - pe) * pe * my + pe * pe * y1
+    dx, dy = px - tx, py - ty
+    L = math.hypot(dx, dy) or 1.0
+    nx, ny = -dy / L, dx / L
+    rr = r * .55 * (1 - .6 * q)
+    pts = [(tx, ty)] + [(px + nx * rr * math.cos(a) + dx / L * rr * math.sin(a), py + ny * rr * math.cos(a) + dy / L * rr * math.sin(a))
+                        for a in [math.pi * i / 8 - math.pi / 2 for i in range(9)]]
+    g = rad_grad([(0, col, .6 * (1 - q)), (1, col, 0)], px, py, r * 2.4)
+    return f'<circle cx="{f(px)}" cy="{f(py)}" r="{f(r * 2.4)}" fill="url(#{g})"/>' + blob(pts, col)
+
+
+def moon_cap(x, y, r=60.0, t=0.0, mood="sleepy", pull=0.0, seed=0):
+    """Луна с ночным колпаком (ЦЕНТР), сонное личико: глаза-дуги; pull 0…1 — тянется (вытягивается к −x, колпак сбивается),
+    mood "sleepy" | "pout" (надулась, тянет обратно)."""
+    sd = 80100 + seed
+    o = [moon(x, y, r, 1.0)]
+    for s_ in (-1, 1):
+        ex, ey = x + s_ * r * .34, y - r * .05
+        o.append(line([(ex - r * .16, ey), (ex, ey + r * .1), (ex + r * .16, ey)], r * .07, "#6B5E3A", taper=.4, wmin=.3, seed=sd + s_))
+    if mood == "pout":
+        o.append(line([(x - r * .14, y + r * .4), (x, y + r * .34), (x + r * .14, y + r * .4)], r * .06, "#6B5E3A", taper=.4, wmin=.3, seed=sd + 3))
+    else:
+        o.append(blob(ellipse_pts(x, y + r * .36, r * .08, r * .06, 8), "#6B5E3A"))
+    sw = math.sin(t * 2) * 6 + 20 * pull
+    cap = [(x - r * .95, y - r * .45, 1), (x - r * .3, y - r * 1.15), (x + r * .5, y - r * 1.3), (x + r * 1.4 - sw * .3, y - r * 1.0 + sw * .5),
+           (x + r * .9, y - r * .55, 1)]
+    o.append(shape(cap, C_CAP, "", w=r * .06, seed=sd + 4))
+    o.append(shape(lib.band([(x - r * 1.0, y - r * .45), (x, y - r * .82), (x + r * .95, y - r * .58)], r * .26, r * .22), "#FBF8F0", "", w=r * .05,
+                   seed=sd + 5))
+    o.append(shape(ellipse_pts(x + r * 1.45 - sw * .3, y - r * .95 + sw * .5, r * .2, r * .2, 10), "#FBF8F0", "", w=r * .05, seed=sd + 6))
     return "".join(o)
