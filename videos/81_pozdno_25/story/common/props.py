@@ -5562,3 +5562,504 @@ def ribbon_roll(x, y, k=1.0, unroll=0.0, t=0.0, trail=None, seed=0):
     for s_ in (0,):
         o.append(shape(lib.band([(x - R * .35, y), (x - R * .35 - 30 * k, y + R * 1.05)], 18 * k, 22 * k), C_WOOD_SH, "", w=3 * k, seed=sd + 4 + s_))
     return "".join(o)
+
+
+# ═══════════════════════════════ ПОЗДНО (рилс 81, автор — группа A) ═══════════════════════════════
+# Букв и цифр нет нигде. (x, y) — как сказано у функции. k — масштаб, seed — своё зерно штрихов.
+#   giant_hourglass(x, y, k, sand_top, sand_bot, stream, crack_u, flip_u, t, seed, chain, burst_u)
+#                         гигантские песочные часы на цепи, ЦЕНТР горлышка (x, y); колба 2×240·k в высоту, ширина 330·k;
+#                         sand_top / sand_bot 0…1 — песок в верхней / нижней колбе; stream 0…1 — струйка; crack_u 0…1 — трещины по
+#                         нижней колбе; burst_u 0…1 — нижняя колба лопнула (осколки разлетаются, колбы нет); flip_u 0…1 — поворот на
+#                         180° (переворот, цепь остаётся сверху); chain — длина цепи вверх (0 — без цепи).
+#                         giant_neck(x, y, k, flip_u) → (x, y) горлышко в мире (откуда сыплется струя).
+#   sand_grains(x, y, t, t0, n, seed, k, floor, spread, every, col)  песчинки сыплются из точки после t0 (каждая every с), падают до
+#                         floor и отскакивают с затуханием; spread — разброс по x
+#   sand_pile(x, y, k, u, seed)            горка песка (ЦЕНТР ДНА), u 0…1 — растёт (ширина 900·k, высота 260·k при u=1)
+#   glass_shards(x, y, k, u, seed, n)      осколки стекла разлетаются из точки (u 0…1 — полёт с гравитацией)
+#   glow_door(x, y, k, open_u, t, seed, sil, light)  дверь с матовым стеклом (ЦЕНТР ДНА), 380×820·k; за стеклом тёплый свет и силуэты
+#                         (sil 0…1 — видны, ходят от t); light 0…1 — свет из щелей; open_u 0…1 — створка распахивается к нам
+#                         (сужается к петле слева), проём заливает свет. glow_door_handle(x, y, k, open_u) → ручка в мире.
+#   tally_clicker(x, y, k, click, t, seed) механический счётчик-кликер (ЦЕНТР), Ø 220·k, кнопка сверху, кольцо сбоку; окошко с
+#                         барабанами БЕЗ цифр (полоски катятся на click); click 0…1 — нажатие
+#   garage(x, y, k, seed, col, open_u)     гараж (ЦЕНТР ДНА) 420×330·k с подъёмной воротиной (рёбра), без надписей
+#   sprout_building(x, y, k, grow_u, seed, sway, col, floors)  дом растёт из земли этажами (ЦЕНТР ДНА), ширина 300·k, этаж 110·k;
+#                         grow_u 0…1 — сколько этажей стоит (дробная — верхний выскакивает), sway — наклон в градусах (качание)
+#                         building_top(x, y, k, grow_u, floors, sway) → (x, y) крыша в мире
+#   sports_car(x, y, k, seed, col, t)      спортивная машина (ЦЕНТР ДНА) 620×200·k, без логотипов и номеров
+#   phone_frame(x, y, k, drop_u, glow)     рамка телефона-схемы (ЦЕНТР экрана), экран 560×1000·k ПРОЗРАЧНЫЙ, толстая тёмная рамка;
+#                         drop_u 0…1 — опускается сверху с отскоком; phone_frame_rect(x, y, k, drop_u) → (x0, y0, x1, y1) экрана
+#   workbench(x, y, w, k, seed)            верстак (ЦЕНТР ВЕРХНЕЙ КРЫШКИ), ширина w·k, ножки до y + 470·k, тиски, рубанок
+#   model_boat(x, y, k, planks, mast_u, sail_u, t, seed)  деревянная лодка-модель на подставке (ЦЕНТР ДНА подставки), 420·k;
+#                         planks 0…7 — дощечек обшивки (дробная — текущая влетает сверху); mast_u — мачта встаёт; sail_u — парус
+#   paint_brush(x, y, k, rot, col, seed)   кисточка (ЦЕНТР), длина 200·k, кончик с краской col при rot=0 ВПРАВО
+C_GLASS_GIANT = "#DCEEF3"
+C_GLASS_EDGE = "#B9D6DF"
+C_CHAIN = "#7C828E"
+C_CHAIN_SH = "#555A64"
+C_DOOR_W = "#8E5E3A"
+C_DOOR_W_SH = "#6A4428"
+C_FROST = "#F6E3B4"
+C_GARAGE = ("#D9CFC0", "#B8AC98", "#EDE5D8")
+C_TAXI = "#F2C230"
+C_CAR_RED = ("#D9483B", "#A5322A", "#F07A6C")
+
+
+def _rot(p, a):
+    c, s = math.cos(math.radians(a)), math.sin(math.radians(a))
+    return (p[0] * c - p[1] * s, p[0] * s + p[1] * c)
+
+
+def giant_neck(x, y, k=1.0, flip_u=0.0):
+    return (x, y)
+
+
+def _bulb_half(sgn, W=165.0, H=240.0):
+    """Половина колбы: от горлышка (0, 0) к крышке (y = sgn·H), контур по часовой."""
+    ys = [0, .08, .22, .45, .7, .9, 1.0]
+    ws = [16, 30, 80, 140, 162, 160, 150]
+    left = [(-ws[i] / 165 * W, sgn * H * ys[i]) for i in range(len(ys))]
+    right = [(ws[i] / 165 * W, sgn * H * ys[i]) for i in range(len(ys))]
+    return left, right
+
+
+def giant_hourglass(x, y, k=1.0, sand_top=0.0, sand_bot=0.0, stream=0.0, crack_u=0.0, flip_u=0.0, t=0.0, seed=0, chain=900.0,
+                    burst_u=0.0):
+    sd = 81000 + seed
+    rot = 180 * lib.ease_io(clamp(flip_u))
+    H, W = 240.0, 165.0
+    o = []
+    # колбы: верх (y < 0) и низ (y > 0)
+    for sgn in (-1, 1):
+        if sgn == 1 and burst_u > .02:
+            continue
+        L, R = _bulb_half(sgn, W, H)
+        pts = [(L[0][0], L[0][1], 1)] + L[1:] + list(reversed(R[1:])) + [(R[0][0], R[0][1], 1)]
+        inner = ""
+        amt = clamp(sand_top if sgn == -1 else sand_bot)
+        if amt > .01:
+            if sgn == -1:   # верхняя колба: песок у горлышка, воронка
+                lv = -10 - (H - 30) * amt ** .8
+                dip = 22 * clamp(stream) * min(1, amt * 4)
+                inner += shape([(-200, lv, 1), (-40, lv + 2), (0, lv + dip), (40, lv + 2), (200, lv, 1), (200, 10, 1), (-200, 10, 1)], C_SAND,
+                               blob([(-200, lv + 30), (200, lv + 30), (200, 10), (-200, 10)], C_SAND_SH), w=3.0, seed=sd + 2)
+            else:           # нижняя: горка
+                lv = H - 8 - (H - 40) * amt ** .85
+                pk = 40 * min(1, amt * 3)
+                inner += shape([(-200, lv + 12, 1), (-70, lv + 4), (0, lv - pk), (70, lv + 4), (200, lv + 12, 1), (200, H + 10, 1),
+                                (-200, H + 10, 1)], C_SAND, blob([(-200, lv + 60), (200, lv + 60), (200, H + 10), (-200, H + 10)], C_SAND_SH),
+                               w=3.0, seed=sd + 3)
+        # блики стекла
+        hl = [(-W * .62, sgn * H * .78), (-W * .74, sgn * H * .55), (-W * .55, sgn * H * .3)]
+        inner += line(hl, 12, "#FFFFFF", taper=.6, wmin=.3, seed=sd + 5 + sgn)
+        inner += line([(W * .6, sgn * H * .7), (W * .68, sgn * H * .55)], 7, "#FFFFFF", taper=.6, wmin=.3, seed=sd + 7 + sgn)
+        if sgn == 1 and crack_u > .01:
+            for i, (sx_, sy_, ang) in enumerate([(-30, 120, 200), (40, 150, -20), (0, 190, 90), (-90, 160, 140)]):
+                u = clamp(crack_u * 1.6 - i * .2)
+                if u <= 0:
+                    continue
+                rs = _rs(sd + 30 + i)
+                p = [(sx_, sy_)]
+                a = ang
+                for j in range(5):
+                    a += rs.uniform(-35, 35)
+                    L_ = 30 * u
+                    p.append((p[-1][0] + L_ * math.cos(math.radians(a)), p[-1][1] + L_ * math.sin(math.radians(a))))
+                inner += line(p, 4, INK, taper=.8, wmin=.2, seed=sd + 40 + i)
+        o.append(shape(pts, C_GLASS_GIANT, inner, w=4.6, seed=sd + 10 + sgn))
+    # струя через горлышко
+    if stream > .02 and sand_top > .01 and burst_u <= .02:
+        lv = H - 8 - (H - 40) * clamp(sand_bot) ** .85 - 40 * min(1, clamp(sand_bot) * 3)
+        ys = [-6 + (lv + 6) * i / 8 for i in range(9)]
+        o.append(line([(2.0 * math.sin(t * 37 + i * 1.3), yy) for i, yy in enumerate(ys)], 9 * stream, C_SAND, taper=0, wmin=1, seed=sd + 4))
+    # стойки и крышки
+    for s in (-1, 1):
+        o.append(shape(rrect(s * 200 - 11, -H - 4, s * 200 + 11, H + 4, 5), C_WOOD,
+                       blob(rect_pts(s * 200 + 2, -H - 6, s * 200 + 13, H + 6), C_WOOD_SH), w=3.6, seed=sd + 12 + s))
+        if s == 1 and burst_u > .02:
+            continue
+    for s in (-1, 1):
+        o.append(shape(rrect(-228, s * (H + 18) - 22, 228, s * (H + 18) + 22, 12), C_WOOD,
+                       blob(rect_pts(-232, s * (H + 18) + 6, 232, s * (H + 18) + 24), C_WOOD_SH) +
+                       line([(-200, s * (H + 18) - 10), (180, s * (H + 18) - 10)], 4, C_WOOD_HI, taper=.5, wmin=.3, seed=sd + 16),
+                       w=4.2, seed=sd + 14 + s))
+    body = _tf("".join(o), 0, 0, 1.0, rot)
+    out = []
+    if chain > 0:   # цепь — всегда вверх от верхней крышки (в мире), не крутится с часами
+        top = -(H + 40)
+        n = int(chain / 46) + 1
+        lk = []
+        for i in range(n):
+            cy_ = top - 46 * i - 23
+            sw = 3 * math.sin(t * 2.1 + i * .4)
+            if i % 2 == 0:
+                lk.append(shape(ellipse_pts(sw, cy_, 15, 27, 14), C_CHAIN, blob(ellipse_pts(sw, cy_, 6, 17, 10), C_NIGHT_DEEP), w=3.2, seed=sd + 50 + i))
+            else:
+                lk.append(shape(rrect(sw - 5, cy_ - 27, sw + 5, cy_ + 27, 5), C_CHAIN_SH, "", w=3.0, seed=sd + 50 + i))
+        out.append("".join(lk))
+        out.append(shape(ellipse_pts(0, top + 6, 26, 16, 14), C_CHAIN, "", w=3.4, seed=sd + 49))
+    out.append(body)
+    if burst_u > .02:
+        out.append(glass_shards(0, H * .5, 1.0, burst_u, seed=seed + 3, n=14))
+    return _tf("".join(out), x, y, k, 0)
+
+
+def glass_shards(x, y, k=1.0, u=1.0, seed=0, n=12):
+    if u <= 0 or u >= 1.4:
+        return ""
+    rs = _rs(81200 + seed)
+    o = []
+    for i in range(n):
+        a = rs.uniform(-170, -10) if i % 3 else rs.uniform(-200, 20)
+        v = rs.uniform(500, 1100)
+        tt = u * .9
+        px = x + math.cos(math.radians(a)) * v * tt * k
+        py = y + (math.sin(math.radians(a)) * v * tt + 1600 * tt * tt) * k
+        sz = rs.uniform(18, 46) * k
+        sp = rs.uniform(-700, 700) * tt
+        pts = [_rot((sz, 0), sp), _rot((-sz * .4, sz * .6), sp), _rot((-sz * .6, -sz * .5), sp)]
+        o.append(shape([(px + p[0], py + p[1], 1) for p in pts], C_GLASS_GIANT, line([(px + pts[0][0] * .3, py + pts[0][1] * .3),
+                                                                                        (px + pts[2][0] * .3, py + pts[2][1] * .3)], 3, "#FFFFFF", seed=i),
+                       w=3.0, seed=81210 + seed + i))
+    return "".join(o)
+
+
+def sand_grains(x, y, t, t0, n=10, seed=0, k=1.0, floor=1300.0, spread=40.0, every=0.07, col=None):
+    col = col or C_SAND
+    rs = _rs(81300 + seed)
+    o = []
+    for i in range(n):
+        ts = t0 + i * every + rs.uniform(0, every * .6)
+        tt = t - ts
+        if tt < 0:
+            continue
+        dx = rs.uniform(-spread, spread)
+        g = 2600.0
+        tf = math.sqrt(max(1.0, floor - y) * 2 / g)
+        if tt < tf:
+            px, py = x + dx * tt / tf, y + .5 * g * tt * tt
+        else:
+            tb = tt - tf
+            vb = g * tf * .28
+            hb = max(0.0, vb * tb - .5 * g * tb * tb)
+            if tb > 2 * vb / g:
+                hb = 0.0
+            px, py = x + dx + rs.choice((-1, 1)) * 90 * min(tb, .35), floor - hb
+        r = rs.uniform(6, 10) * k
+        o.append(shape(ellipse_pts(px, py, r, r * .85, 8), col, "", w=2.2 * k, seed=81310 + seed + i))
+    return "".join(o)
+
+
+def sand_pile(x, y, k=1.0, u=1.0, seed=0):
+    if u <= .01:
+        return ""
+    w, h = 450 * k * (.5 + .5 * u), 260 * k * u
+    pts = [(x - w, y, 1), (x - w * .55, y - h * .45), (x - w * .2, y - h * .92), (x, y - h), (x + w * .25, y - h * .9), (x + w * .6, y - h * .4),
+           (x + w, y, 1)]
+    inner = blob([(x - w, y - h * .2), (x + w, y - h * .35), (x + w, y + 10), (x - w, y + 10)], C_SAND_SH)
+    rs = _rs(81400 + seed)
+    for i in range(14):
+        px, py = x + rs.uniform(-.7, .7) * w, y - rs.uniform(.1, .7) * h
+        inner += blob(ellipse_pts(px, py, 5 * k, 4 * k, 6), C_SAND_SH)
+    return shape(pts, C_SAND, inner, w=4.0 * k, seed=81401 + seed)
+
+
+def glow_door_handle(x, y, k=1.0, open_u=0.0):
+    sq = 1 - .82 * lib.ease_io(clamp(open_u))
+    return (x - 190 * k + 330 * k * sq, y - 400 * k)
+
+
+def glow_door(x, y, k=1.0, open_u=0.0, t=0.0, seed=0, sil=1.0, light=1.0):
+    sd = 81500 + seed
+    o = []
+    x0, x1, y0, y1 = x - 190 * k, x + 190 * k, y - 820 * k, y
+    ou = lib.ease_io(clamp(open_u))
+    # проём: тёплый свет (виден по мере открытия) — сплошной, яркий
+    o.append(shape(rect_pts(x0, y0, x1, y1), "#FFE9B0", f'<rect x="{f(x0)}" y="{f(y0)}" width="{f(x1 - x0)}" height="{f(y1 - y0)}" '
+                   f'fill="#FFF7DC" opacity="{.4 + .6 * ou:.3f}"/>', w=5 * k, seed=sd))
+    # свет из щелей вокруг закрытой двери
+    if light > .01 and ou < .99:
+        o.append(glow(x, y - 410 * k, 330 * k, .55 * light * (1 - ou * .5), "#FFD98A", ry=470 * k))
+    sq = 1 - .82 * ou        # створка сжимается к петле слева
+    dx1 = x0 + (x1 - x0) * sq
+    sk = 60 * k * ou          # перспектива: дальний край выше/ниже
+    leaf = [(x0, y0, 1), (dx1, y0 - sk, 1), (dx1, y1 + sk, 1), (x0, y1, 1)]
+
+    def P(u, v):   # u 0…1 по ширине створки, v 0…1 по высоте
+        xx = x0 + (dx1 - x0) * u
+        top = y0 - sk * u
+        bot = y1 + sk * u
+        return (xx, top + (bot - top) * v)
+    gl = [P(.17, .1) + (1,), P(.83, .1) + (1,), P(.83, .58) + (1,), P(.17, .58) + (1,)]
+    inner_g = ""
+    if sil > .01:   # силуэты за матовым стеклом: размытые тёмные фигуры, медленно ходят
+        gx0, gx1 = gl[0][0], gl[1][0]
+        gy0, gy1 = gl[0][1], gl[3][1]
+        bl = blur(9 * k)
+        for i, (ph, sp, hh) in enumerate([(0.0, .35, .62), (2.1, -.27, .55), (4.0, .2, .68)]):
+            fx = gx0 + (gx1 - gx0) * (.5 + .38 * math.sin(t * sp * 2.2 + ph))
+            fh = (gy1 - gy0) * hh
+            fy = gy1 + 10 * k
+            w_ = (gx1 - gx0) * .16
+            col = "#8C6A48"
+            fig = blob(ellipse_pts(fx, fy - fh + w_ * .55, w_ * .52, w_ * .6, 14), col) + \
+                blob([(fx - w_, fy + 5), (fx - w_ * .85, fy - fh * .62), (fx - w_ * .3, fy - fh * .76), (fx + w_ * .3, fy - fh * .76),
+                      (fx + w_ * .85, fy - fh * .62), (fx + w_, fy + 5)], col)
+            inner_g += f'<g {bl} opacity="{.55 * sil:.3f}">{fig}</g>'
+    o_leaf = shape(leaf, C_DOOR_W, blob([P(.9, 0), P(1, 0), P(1, 1), P(.9, 1)], C_DOOR_W_SH) +
+                   line([P(.06, .04), P(.06, .96)], 4 * k, mix(C_DOOR_W, "#FFFFFF", .25), seed=sd + 3), w=5 * k, seed=sd + 1)
+    o.append(o_leaf)
+    if sq > .2:
+        o.append(shape(gl, C_FROST, inner_g + blob([gl[0], (gl[0][0] + (gl[1][0] - gl[0][0]) * .3, gl[0][1]),
+                                                    (gl[3][0], gl[3][1] - (gl[3][1] - gl[0][1]) * .5)], "#FFF6DA", .7), w=4 * k, seed=sd + 2))
+        # нижняя филёнка
+        o.append(shape([P(.17, .66) + (1,), P(.83, .66) + (1,), P(.83, .92) + (1,), P(.17, .92) + (1,)], C_DOOR_W_SH, "", w=3.6 * k, seed=sd + 4))
+        hx, hy = P(.86, .5)
+        o.append(shape(rrect(hx - 26 * k * sq, hy - 9 * k, hx + 8 * k, hy + 9 * k, 6 * k), C_BRASS, "", w=3 * k, seed=sd + 5))
+        o.append(shape(ellipse_pts(hx + 4 * k, hy, 13 * k * sq + 2, 17 * k, 12), C_BRASS_SH, "", w=3 * k, seed=sd + 6))
+    # наличник
+    fr = 22 * k
+    o.append(shape(rect_pts(x0 - fr, y0 - fr, x0, y1), C_DOOR_W_SH, "", w=4 * k, seed=sd + 7))
+    o.append(shape(rect_pts(x1, y0 - fr, x1 + fr, y1), C_DOOR_W_SH, "", w=4 * k, seed=sd + 8))
+    o.append(shape(rect_pts(x0 - fr, y0 - fr, x1 + fr, y0), C_DOOR_W_SH, "", w=4 * k, seed=sd + 9))
+    return "".join(o)
+
+
+def tally_clicker(x, y, k=1.0, click=0.0, t=0.0, seed=0):
+    sd = 81600 + seed
+    c = clamp(click)
+    o = []
+    # кольцо для пальца снизу-слева
+    o.append(shape(ellipse_pts(-120, 70, 52, 52, 22), C_METAL_SH, blob(ellipse_pts(-120, 70, 34, 34, 18), "#00000000"), w=4, seed=sd))
+    o.append(blob(ellipse_pts(-120, 70, 32, 32, 18), C_NIGHT_DEEP, 0))
+    o.append(line([(-120 + 43 * math.cos(a / 10 * 6.283), 70 + 43 * math.sin(a / 10 * 6.283)) for a in range(11)], 16, C_METAL, taper=0, wmin=1,
+                  seed=sd + 1))
+    # кнопка сверху (уходит вниз при нажатии)
+    by = -150 + 24 * c
+    o.append(shape(rrect(-26, by - 40, 26, by + 30, 10), C_METAL, blob(rect_pts(8, by - 40, 26, by + 30), C_METAL_SH), w=4, seed=sd + 2))
+    # корпус
+    o.append(shape(ellipse_pts(0, 0, 110, 110, 30), C_METAL, blob(ellipse_pts(14, 16, 104, 104, 30), C_METAL_SH) +
+                   blob(ellipse_pts(0, 0, 104, 104, 30), C_METAL) + line([(-70, -60), (-82, -10)], 9, "#FFFFFF", seed=sd + 3), w=5, seed=sd + 4))
+    # окошко с барабанами без цифр: полоски катятся
+    wx0, wx1, wy0, wy1 = -74, 74, -26, 26
+    roll = c * 36 + t * 0
+    drums = ""
+    for i in range(4):
+        cx0 = wx0 + i * 37
+        off = (roll * (1 if i == 3 else .25 ** (3 - i))) % 18
+        for j in range(-2, 4):
+            yy = wy0 + j * 18 + off
+            drums += blob(rect_pts(cx0 + 6, yy, cx0 + 31, yy + 6), "#C9CDD5")
+    o.append(shape(rect_pts(wx0, wy0, wx1, wy1), "#F4F1EA", drums + "".join(
+        line([(wx0 + 37 * i, wy0), (wx0 + 37 * i, wy1)], 3, INK, taper=0, wmin=1, seed=sd + 10 + i) for i in range(1, 4)), w=4, seed=sd + 5))
+    # штрихи щелчка
+    if .05 < c < 1:
+        for s in (-1, 1):
+            o.append(line([(s * 50, by - 60), (s * 85, by - 95)], 6, INK, seed=sd + 20 + s))
+    # колёсико сбоку
+    o.append(shape(rrect(108, -20, 130, 20, 6), C_METAL_SH, "", w=3, seed=sd + 6))
+    return _tf("".join(o), x, y, k)
+
+
+def garage(x, y, k=1.0, seed=0, col=None, open_u=0.0):
+    sd = 81700 + seed
+    c0, c1, c2 = col or C_GARAGE
+    o = []
+    w, h = 210, 330
+    o.append(shape([(-w - 20, -h + 40, 1), (0, -h - 20, 1), (w + 20, -h + 40, 1), (w + 20, -h + 70, 1), (-w - 20, -h + 70, 1)], c1, "", w=4.4,
+                   seed=sd))
+    o.append(shape(rect_pts(-w, -h + 60, w, 0), c0, blob(rect_pts(w - 30, -h + 60, w, 0), c1), w=4.6, seed=sd + 1))
+    # ворота с рёбрами
+    gx0, gx1, gy0, gy1 = -w + 34, w - 34, -h + 110, 0
+    gy0b = gy0 + (gy1 - gy0) * .85 * clamp(open_u)
+    o.append(shape(rect_pts(gx0, gy0, gx1, gy1), "#3A3328", "", w=4, seed=sd + 2))
+    ribs = "".join(line([(gx0, yy), (gx1, yy)], 3, c1, taper=0, wmin=1, seed=sd + 10 + i)
+                   for i, yy in enumerate(range(int(gy0b) + 26, int(gy1), 30)))
+    if gy1 - gy0b > 10:
+        o.append(shape(rect_pts(gx0, gy0b, gx1, gy1), c2, ribs, w=4, seed=sd + 3))
+    return _tf("".join(o), x, y, k)
+
+
+def building_top(x, y, k=1.0, grow_u=1.0, floors=5, sway=0.0):
+    hh = (60 + 110 * floors * clamp(grow_u)) * k
+    p = _rot((0, -hh), sway)
+    return (x + p[0], y + p[1])
+
+
+_BLD = [("#E7B97D", "#C9955A"), ("#9DB6D6", "#7290B8"), ("#E2A08A", "#C27A64"), ("#B8C79A", "#93A574"), ("#D9C9E0", "#B3A0BE")]
+
+
+def sprout_building(x, y, k=1.0, grow_u=1.0, seed=0, sway=0.0, col=None, floors=5):
+    sd = 81800 + seed
+    c0, c1 = col or _BLD[seed % len(_BLD)]
+    g = clamp(grow_u) * floors
+    if g <= .01:
+        return ""
+    o = []
+    w = 150
+    n_full = int(g)
+    part = g - n_full
+    yb = 0.0
+    for i in range(n_full + (1 if part > .01 else 0)):
+        if i < n_full:
+            sx, sy = 1.0, 1.0
+        else:   # верхний этаж выскакивает с перелётом
+            sy = lib.back_out(part, 2.2)
+            sx = 1 + .12 * (1 - part)
+        fh = 110 * sy
+        x0, x1 = -w * sx, w * sx
+        win = ""
+        for j in (-1, 0, 1):
+            wx = j * 92 * sx
+            win += shape(rect_pts(wx - 26 * sx, yb - fh + 26 * sy, wx + 26 * sx, yb - 26 * sy), "#FFF1C2" if (i + j + seed) % 3 else "#3E4A66",
+                         "", w=3, seed=sd + i * 7 + j)
+        o.append(shape(rect_pts(x0, yb - fh, x1, yb), c0, blob(rect_pts(x1 - 28 * sx, yb - fh, x1, yb), c1) + win, w=4.4, seed=sd + i * 11))
+        yb -= fh
+    # плоская крыша с бортиком
+    o.append(shape(rect_pts(-w - 14, yb - 22, w + 14, yb), c1, "", w=4.2, seed=sd + 99))
+    o.insert(0, shape(rect_pts(-w - 10, -6, w + 10, 60), "#8A8070", "", w=4, seed=sd + 98))
+    return _tf("".join(o), x, y, k, sway)
+
+
+def sports_car(x, y, k=1.0, seed=0, col=None, t=0.0):
+    sd = 81900 + seed
+    c0, c1, c2 = col or C_CAR_RED
+    o = []
+    body = [(-310, -40, 1), (-300, -86), (-200, -100), (-110, -150), (40, -160), (150, -110), (290, -92), (312, -50), (306, -30, 1), (-306, -30, 1)]
+    o.append(shape(body, c0, blob([(-310, -60), (312, -60), (312, -30), (-310, -30)], c1) +
+                   line([(-240, -96), (-120, -136), (60, -146)], 6, c2, seed=sd + 1), w=5, seed=sd))
+    # стекло
+    o.append(shape([(-96, -138, 1), (30, -150, 1), (120, -110, 1), (-80, -106, 1)], "#3E4A66",
+                   line([(-60, -128), (0, -140)], 5, "#9DB6D6", seed=sd + 3), w=4, seed=sd + 2))
+    # фара, колёса
+    o.append(shape(ellipse_pts(286, -72, 18, 10, 10), "#FFF1C2", "", w=3, seed=sd + 4))
+    for wx in (-190, 190):
+        o.append(shape(ellipse_pts(wx, -30, 58, 58, 22), "#22252B", blob(ellipse_pts(wx, -30, 30, 30, 16), C_METAL), w=4.4, seed=sd + 5 + wx))
+    return _tf("".join(o), x, y, k)
+
+
+def phone_frame_rect(x, y, k=1.0, drop_u=1.0):
+    dy = -1500 * (1 - lib.spring(clamp(drop_u) * .9, 1.6, 6.0)) if drop_u < 1 else 0.0
+    return (x - 280 * k, y - 500 * k + dy, x + 280 * k, y + 500 * k + dy)
+
+
+def phone_frame(x, y, k=1.0, drop_u=1.0, glow_=0.0, seed=0):
+    if drop_u <= 0:
+        return ""
+    x0, y0, x1, y1 = phone_frame_rect(x, y, k, drop_u)
+    b = 46 * k
+    sd = 82000 + seed
+    outer = rrect(x0 - b, y0 - b * 1.6, x1 + b, y1 + b * 1.6, 70 * k)
+    inner = rrect(x0, y0, x1, y1, 30 * k)
+    d_o = lib.fill_d(outer)
+    d_i = lib.fill_d(inner)
+    o = [f'<path d="{d_o} {d_i}" fill="{C_PHONE}" fill-rule="evenodd"/>']
+    o.append(f'<path d="{lib.ink_closed(outer, 5 * k, seed=sd)}" fill="{INK}"/>')
+    o.append(f'<path d="{lib.ink_closed(inner, 4 * k, seed=sd + 1)}" fill="{INK}"/>')
+    if glow_ > 0:
+        o.append(f'<path d="{d_i}" fill="none" stroke="#9FD0EA" stroke-width="{10 * k:.1f}" opacity="{.6 * glow_:.3f}"/>')
+    # динамик и кнопка
+    o.append(shape(rrect((x0 + x1) / 2 - 60 * k, y0 - b * .95, (x0 + x1) / 2 + 60 * k, y0 - b * .6, 6 * k), "#55595F", "", w=2.4 * k, seed=sd + 2))
+    o.append(shape(rrect(x1 + b - 4, y0 + 160 * k, x1 + b + 12 * k, y0 + 300 * k, 5 * k), C_PHONE_SIDE, "", w=3 * k, seed=sd + 3))
+    return "".join(o)
+
+
+def workbench(x, y, w=900.0, k=1.0, seed=0):
+    sd = 82100 + seed
+    W_ = w * k / 2
+    o = []
+    for s in (-1, 1):
+        lx = x + s * (W_ - 60 * k)
+        o.append(shape(rect_pts(lx - 26 * k, y + 40 * k, lx + 26 * k, y + 470 * k), C_WOOD_SH, "", w=4 * k, seed=sd + s))
+    o.append(shape(rect_pts(x - W_ + 40 * k, y + 330 * k, x + W_ - 40 * k, y + 360 * k), C_WOOD_SH, "", w=3.6 * k, seed=sd + 3))
+    # полка снизу с досками
+    for i in range(3):
+        o.append(shape(rect_pts(x - W_ * .6 + i * 30 * k, y + 300 * k - i * 18 * k, x - W_ * .1 + i * 30 * k, y + 318 * k - i * 18 * k),
+                       C_WOOD_HI, "", w=3 * k, seed=sd + 10 + i))
+    o.append(shape(rect_pts(x - W_, y - 10 * k, x + W_, y + 50 * k), C_WOOD, blob(rect_pts(x - W_, y + 26 * k, x + W_, y + 50 * k), C_WOOD_SH) +
+                   line([(x - W_ + 30 * k, y + 6 * k), (x + W_ - 80 * k, y + 8 * k)], 4 * k, C_WOOD_HI, seed=sd + 5), w=5 * k, seed=sd + 4))
+    # тиски слева
+    vx = x - W_ + 70 * k
+    o.append(shape(rect_pts(vx - 40 * k, y - 80 * k, vx + 40 * k, y - 10 * k), C_BLUE, blob(rect_pts(vx + 20 * k, y - 80 * k, vx + 40 * k, y - 10 * k),
+                                                                                                   C_BLUE_SH), w=4 * k, seed=sd + 6))
+    o.append(line([(vx - 70 * k, y - 46 * k), (vx + 4 * k, y - 46 * k)], 9 * k, C_METAL_SH, taper=0, wmin=1, seed=sd + 7))
+    # стружки
+    rs = _rs(sd + 8)
+    for i in range(6):
+        px = x + rs.uniform(-.3, .8) * W_
+        o.append(line([(px, y - 4 * k), (px + 12 * k, y - 14 * k), (px + 22 * k, y - 6 * k), (px + 16 * k, y)], 4 * k, C_WOOD_HI, taper=.2, wmin=.5,
+                      seed=sd + 20 + i))
+    return "".join(o)
+
+
+C_BOAT = "#C8925A"
+C_BOAT_SH = "#9C6A3A"
+C_BOAT_HI = "#E3B47E"
+C_SAIL = "#FBF3DC"
+C_SAIL_SH = "#E2D3AE"
+
+
+def model_boat(x, y, k=1.0, planks=7.0, mast_u=1.0, sail_u=1.0, t=0.0, seed=0):
+    sd = 82200 + seed
+    o = []
+    # подставка
+    for s in (-1, 1):
+        o.append(shape([(s * 110 - 16, 0, 1), (s * 110 + 16, 0, 1), (s * 100 + 10, -60, 1), (s * 100 - 10, -60, 1)], C_WOOD_SH, "", w=3.4,
+                       seed=sd + s))
+    o.append(shape(rect_pts(-170, -10, 170, 8), C_WOOD, "", w=3.6, seed=sd + 2))
+    # корпус: киль всегда, дощечки снизу вверх
+    N = 7
+    hull_top = -230
+    keel = [(-210, -110), (-120, -66), (0, -58), (130, -68), (220, -120)]
+    o.append(line(keel, 12, C_BOAT_SH, taper=.2, wmin=.7, seed=sd + 3))
+    # шпангоуты-рёбра
+    for i, xx in enumerate((-130, -60, 10, 80, 150)):
+        o.append(line([(xx, -62), (xx * 1.08, hull_top + 10)], 6, C_BOAT_SH, taper=.1, wmin=.8, seed=sd + 10 + i))
+    pl = clamp(planks / N) * N
+    for i in range(int(pl) + (1 if pl - int(pl) > .01 else 0)):
+        part = 1.0 if i < int(pl) else lib.ease_out(pl - int(pl), 3)
+        drop = (1 - part) * -260
+        v0, v1 = i / N, (i + 1) / N
+        def edge(v):
+            yy = -60 + (hull_top + 60) * v
+            half = 200 + 40 * v
+            sag = 50 * (1 - v)
+            return [(-half, yy - sag * .9 - 10 * v), (-half * .5, yy + 4), (0, yy + 8), (half * .5, yy + 4), (half + 20, yy - sag - 20 * v)]
+        e0, e1 = edge(v0), edge(v1)
+        pts = [(p[0], p[1] + drop) for p in e0] + [(p[0], p[1] + drop) for p in reversed(e1)]
+        pts[0] = pts[0] + (1,)
+        pts[4] = pts[4] + (1,)
+        pts[5] = pts[5] + (1,)
+        pts[9] = pts[9] + (1,)
+        col = C_BOAT if i % 2 == 0 else C_BOAT_HI
+        o.append(shape(pts, col, "", w=3.2, seed=sd + 20 + i))
+    # мачта
+    mu = clamp(mast_u)
+    if mu > .01:
+        mh = 380 * lib.back_out(mu, 1.4)
+        ang = -35 * (1 - lib.ease_out(mu, 3))
+        top = _rot((0, -mh), ang)
+        o.append(line([(10, hull_top + 30), (10 + top[0], hull_top + 30 + top[1])], 13, C_WOOD_SH, taper=.15, wmin=.7, seed=sd + 40))
+        su = clamp(sail_u)
+        if su > .01 and mu > .9:
+            mx, my = 10, hull_top + 30
+            ht = mh * .88 * lib.back_out(su, 1.3)
+            bell = 60 * su + 8 * math.sin(t * 5)
+            sail = [(mx + 12, my - 30, 1), (mx + 12, my - 30 - ht, 1), (mx + 70 + bell, my - 30 - ht * .55), (mx + 180 * su, my - 40, 1)]
+            o.append(shape(sail, C_SAIL, blob([(mx + 12, my - 30), (mx + 12, my - 30 - ht), (mx + 40, my - 30 - ht * .5), (mx + 50, my - 30)],
+                                              C_SAIL_SH), w=4, seed=sd + 41))
+            sail2 = [(mx - 8, my - 40, 1), (mx - 8, my - 30 - ht * .82, 1), (mx - 120 * su, my - 40, 1)]
+            o.append(shape(sail2, C_SAIL, "", w=3.6, seed=sd + 42))
+            # флажок без надписей
+            fy = my - 30 - mh * .9 - 30
+            fw = 8 * math.sin(t * 7)
+            o.append(shape([(mx + 5, fy, 1), (mx + 60, fy + 10 + fw), (mx + 5, fy + 26, 1)], C_TORCH, "", w=3, seed=sd + 43))
+    return _tf("".join(o), x, y, k)
+
+
+def paint_brush(x, y, k=1.0, rot=0.0, col="#D9483B", seed=0):
+    sd = 82300 + seed
+    o = [shape(rrect(-100, -8, 30, 8, 6), C_WOOD, blob(rect_pts(-100, 2, 30, 8), C_WOOD_SH), w=3.2, seed=sd),
+         shape(rect_pts(28, -11, 56, 11), C_METAL, "", w=3, seed=sd + 1),
+         shape([(56, -12, 1), (78, -14), (100, -4), (106, 0, 1), (100, 4), (78, 14), (56, 12, 1)], "#5A4A3A",
+               blob([(84, -10), (100, -4), (106, 0), (100, 4), (84, 10)], col), w=3, seed=sd + 2)]
+    return _tf("".join(o), x, y, k, rot)
