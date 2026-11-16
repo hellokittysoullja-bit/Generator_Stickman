@@ -2902,15 +2902,15 @@ def evening_chair(t, sun=1.0):
 #     сцена ставит учёных. UT_CAM_LAB (окно), UT_CAM_TOWER (башня), мир шире кадра x −600…2400.
 # ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 AT_FL = 1480.0
-AT_SLOPE = (447.0, 0.266)                         # верхний край задней стены: y = a + b·x (выше — потолок-скат)
-AT_SKY = ((706.0, 438.0), (978.0, 506.0), (992.0, 676.0), (672.0, 594.0))   # стекло люка: л-верх, п-верх, п-низ, л-низ
-AT_CLOCK = (248.0, 668.0, 122.0)
+AT_SLOPE = (447.0, 0.42)                          # верхний край задней стены: y = a + b·x (выше — потолок-скат)
+AT_SKY = ((662.0, 452.0), (1018.0, 560.0), (1030.0, 826.0), (642.0, 684.0))   # стекло люка: л-верх, п-верх, п-низ, л-низ
+AT_CLOCK = (176.0, 694.0, 122.0)
 AT_HEADBOARD = (-6.0, 92.0, 760.0)                # x0, x1, верх
-AT_BED_Y = 1030.0                                 # верх матраса
+AT_BED_Y = 1120.0                                 # верх матраса
 AT_BED_X = (60.0, 1700.0)
-AT_PILLOW = (250.0, 1000.0)
-AT_HEAD = (300.0, 935.0)
-AT_PHONE = (470.0, 905.0)
+AT_PILLOW = (232.0, 1092.0)
+AT_HEAD = (290.0, 985.0)
+AT_PHONE = (430.0, 870.0)
 AT_NSTAND = (-200.0, 1170.0)                      # центр верха тумбочки (ширина 300)
 AT_LAMP = (-140.0, 1166.0)
 AT_SHELF = (-860.0, 760.0, -420.0)                # x0, верх доски, x1
@@ -2918,9 +2918,9 @@ AT_GUITAR_NAIL = (-1180.0, 560.0)
 AT_RUG = (-1080.0, 1520.0)
 AT_TEXT = (60.0, 140.0, 1020.0, 425.0)
 AT_CAM_HOOK = (540.0, 960.0, 1.0)
-AT_CAM_CLOCK = (330.0, 800.0, 1.55)
-AT_CAM_SKY = (820.0, 700.0, 1.45)
-AT_CAM_CLOCK_BIG = (248.0, 690.0, 2.6)
+AT_CAM_CLOCK = (300.0, 840.0, 1.55)
+AT_CAM_SKY = (840.0, 660.0, 1.45)
+AT_CAM_CLOCK_BIG = (176.0, 716.0, 2.6)
 AT_CAM_PILLOW = (360.0, 930.0, 1.7)
 AT_CAM_SHELF = (-640.0, 820.0, 1.7)
 AT_CAM_WARM = (-900.0, 1050.0, 0.92)
@@ -2958,7 +2958,7 @@ def _slope_y(x):
 def _sky_cols(phase):
     """Цвет неба люка по фазе: ночь синяя, на солнце — рыжая, между — сумерки."""
     p = phase % 1.0
-    sunk = math.sin(math.pi * clamp01((p - .5) / .5)) if p > .5 else 0.0
+    sunk = 1 - abs(2 * ((p - .25) % 1.0) - 1)                  # без остановки (треугольник): 0 на луне (p=.25), 1 на солнце (p=.75)
     top = lib.mix("#0b1238", "#f08a4a", sunk)
     bot = lib.mix("#1d2a66", "#ffd07a", sunk)
     return top, bot, sunk
@@ -3074,7 +3074,7 @@ def _skylight_frame(P, box=None):
     return "".join(o)
 
 
-def attic(t, light="night_phone", sky=None, lamp_u=None, bump=0.0):
+def attic(t, light="night_phone", sky=None, lamp_u=None, bump=0.0, pillow=True):
     """Мансарда Димы (см. шапку раздела 79)."""
     P = _at_pal(light)
     warm = light == "warm_lamp" or isinstance(light, (int, float))
@@ -3144,9 +3144,9 @@ def attic(t, light="night_phone", sky=None, lamp_u=None, bump=0.0):
                    w=4.0, seed=7927))
     px, py = AT_PILLOW
     py -= 26 * bump
-    o.append(shape([(px - 190, py + 34, 1), (px - 200, py - 26), (px - 140, py - 64), (px + 100, py - 70), (px + 170, py - 34), (px + 166, py + 34, 1)],
+    o.append("" if not pillow else shape([(px - 190, py + 34, 1), (px - 200, py - 26), (px - 140, py - 64), (px + 100, py - 70), (px + 170, py - 34), (px + 166, py + 34, 1)],
                    P["pillow"], blob(rect_pts(px - 210, py + 8, px + 180, py + 36), P["sheet_sh"]), w=3.8, seed=7928))
-    front = _quilt(-80, 1900, by + 60 - 24 * bump, by + 320, dict(quilt=P["quilt"], quilt_sh=P["quilt_sh"], quilt_hi=P["quilt_hi"]), t, 7930, bump)
+    front = _quilt(AT_HEADBOARD[1] + 4, 1900, by + 60 - 24 * bump, by + 320, dict(quilt=P["quilt"], quilt_sh=P["quilt_sh"], quilt_hi=P["quilt_hi"]), t, 7930, bump)
     vg = lib.rad_grad([(0, P["vign"], 0), (.62, P["vign"], 0), (1, P["vign"], P["vk"])], 540, 900, 900, 1250)
     shade = f'<rect x="{f(X0)}" y="-1400" width="{f(X1 - X0)}" height="4400" fill="url(#{vg})"/>'
     lt = ""
@@ -3303,3 +3303,246 @@ def office_day(t, sun_u=0.0):
     for lx in (dx0 + 30, dx1 - 60):
         desk += shape(rect_pts(lx, dy + 40, lx + 30, OD_FL), "#8c949c", "", w=3.2, seed=8015 + int(lx) % 5)
     return dict(bg="".join(o), desk=desk, front="", anchors=dict(win=OD_WIN, desk=OD_DESK, sit=OD_SIT, fl=OD_FL, sun=(sx, sy)), cam=(540.0, 960.0, 1.0))
+
+
+# ─────────────── фасад дома ночью (s06) ───────────────
+HF_X = (200.0, 880.0)                              # стены дома
+HF_GROUND = 2300.0
+HF_WIN = ((290.0, 1720.0, 520.0, 1980.0), (560.0, 1300.0, 790.0, 1560.0), (290.0, 880.0, 520.0, 1140.0))   # окна-истории (x0, y0, x1, y1)
+HF_ATTIC = (430.0, 470.0, 650.0, 640.0)            # мансардное окно-люк в скате (стекло)
+HF_RIDGE = (540.0, 236.0)                          # конёк (лапы кота на линии)
+HF_CAM_LOW = (540.0, 1480.0, 0.86)
+HF_CAM_TOP = (560.0, 560.0, 1.25)
+
+
+def _night_city_sky(x0, y0, x1, y1, t, seed=0, moon=None):
+    g = lib.lin_grad([(0, "#070b26", 1), (.6, "#121a48", 1), (1, "#28305e", 1)], 0, y0, 0, y1, units="userSpaceOnUse")
+    o = [f'<rect x="{f(x0)}" y="{f(y0)}" width="{f(x1 - x0)}" height="{f(y1 - y0)}" fill="url(#{g})"/>']
+    r = rs(8020 + seed)
+    for i in range(70):
+        sx, sy = r.uniform(x0, x1), r.uniform(y0, y0 + (y1 - y0) * .8)
+        a = .3 + .35 * math.sin(t * (1.5 + r.rand()) + i)
+        o.append(f'<circle cx="{f(sx)}" cy="{f(sy)}" r="{f(r.uniform(1.6, 3.4))}" fill="#e6eaff" opacity="{max(.05, a):.2f}"/>')
+    if moon:
+        o.append(_moon79(moon[0], moon[1], 52, t, calm=True))
+    return "".join(o)
+
+
+def windows_clip(i):
+    """Клип стекла окна-истории i (для силуэта внутри)."""
+    x0, y0, x1, y1 = HF_WIN[i]
+    return lib.clip_rect(x0, y0, x1 - x0, y1 - y0)
+
+
+def house_facade(t, lit=(0.0, 0.0, 0.0), attic_glow=1.0):
+    """Фасад узкого дома ночью (см. шапку раздела 79)."""
+    sky = _night_city_sky(-900, -900, 1980, 2400, t, moon=(160.0, 120.0))
+    o = []
+    # соседние дома — темнее, с редкими окнами
+    r = rs(8030)
+    for (a, b, top, col) in ((-900, 190, 700, "#1c1f3a"), (890, 1980, 520, "#202440")):
+        o.append(shape(rect_pts(a, top, b, HF_GROUND + 200), col, "", w=4.0, seed=8031 + int(a) % 7))
+        for k in range(10):
+            wx, wy = r.uniform(a + 40, b - 140), r.uniform(top + 80, HF_GROUND - 200)
+            o.append(blob(rect_pts(wx, wy, wx + 90, wy + 120), "#e8b860" if r.rand() < .25 else "#141630", .85))
+    x0, x1 = HF_X
+    # крыша: скат-трапеция с коньком, мансардное окно
+    rx, ry = HF_RIDGE
+    roof = [(x0 - 50, 760, 1), (rx - 40, ry, 1), (rx + 40, ry, 1), (x1 + 50, 760, 1)]
+    o.append(shape(roof, "#3a2a3e", "".join(line([(x0 - 50 + 26 * k, 760 - 20 * k * 0), (rx - 40 + 4 * k, ry)], 2.2, "#2a1e2e", taper=0, wmin=1,
+                                                   seed=8040 + k, op=.5) for k in range(0, 40, 6)), w=4.6, seed=8041))
+    # стена дома
+    o.append(shape(rect_pts(x0, 760, x1, HF_GROUND + 40), "#4a3f5e", blob(rect_pts(x1 - 40, 760, x1, HF_GROUND + 40), "#382f4a")
+                   + "".join(line([(x0, y), (x1, y)], 2.4, "#3a3050", taper=0, wmin=1, seed=8042 + int(y) % 50, op=.7) for y in range(820, int(HF_GROUND), 46)),
+                   w=4.6, seed=8043))
+    o.append(shape(rect_pts(x0 - 30, 744, x1 + 30, 780), "#2e2440", "", w=3.6, seed=8044))
+    # мансардное окно
+    ax0, ay0, ax1, ay1 = HF_ATTIC
+    g = attic_glow
+    gl = lib.rad_grad([(0, "#9ad0ff", .7 * g), (1, "#5aa0ff", 0)], (ax0 + ax1) / 2, (ay0 + ay1) / 2, 260, 200)
+    o.append(f'<rect x="{f(ax0 - 300)}" y="{f(ay0 - 250)}" width="{f(ax1 - ax0 + 600)}" height="{f(ay1 - ay0 + 500)}" fill="url(#{gl})"/>')
+    o.append(shape(rect_pts(ax0 - 30, ay0 - 40, ax1 + 30, ay1 + 20), "#5a4a6a", "", w=3.8, seed=8045))
+    o.append(shape(rect_pts(ax0, ay0, ax1, ay1), lib.mix("#18204a", "#8cc4ff", .85 * g), blob(rect_pts(ax0, ay0, ax1, ay0 + 40), "#ffffff", .15 * g),
+                   w=3.4, seed=8046))
+    o.append(line([((ax0 + ax1) / 2, ay0), ((ax0 + ax1) / 2, ay1)], 6, "#5a4a6a", taper=0, wmin=1, seed=8047))
+    # окна этажей (тёмные + три окна-истории)
+    wins = []
+    for (wx0, wy0, wx1, wy1) in ((560, 1720, 790, 1980), (290, 1300, 520, 1560), (560, 880, 790, 1140)):
+        wins.append(shape(rect_pts(wx0, wy0, wx1, wy1), "#141632", line([((wx0 + wx1) / 2, wy0), ((wx0 + wx1) / 2, wy1)], 5, "#5a4a6a", taper=0, wmin=1,
+                                                                         seed=8048 + wx0 % 9), w=3.6, seed=8049 + wy0 % 50))
+        wins.append(shape(rect_pts(wx0 - 16, wy1, wx1 + 16, wy1 + 18), "#5a4a6a", "", w=3.0, seed=8050 + wy0 % 50))
+    lit_svg = []
+    for i, (wx0, wy0, wx1, wy1) in enumerate(HF_WIN):
+        u = clamp01(lit[i]) if i < len(lit) else 0.0
+        inner = lib.mix("#141632", "#ffd88a", u)
+        lit_svg.append(shape(rect_pts(wx0, wy0, wx1, wy1), inner, blob(rect_pts(wx0, wy1 - 50, wx1, wy1), lib.mix("#0e1028", "#e8a85a", u)), w=3.6,
+                             seed=8060 + i))
+        if u > .02:
+            gw = lib.rad_grad([(0, "#ffd88a", .45 * u), (1, "#ffd88a", 0)], (wx0 + wx1) / 2, (wy0 + wy1) / 2, 260, 240)
+            lit_svg.append(f'<rect x="{f(wx0 - 260)}" y="{f(wy0 - 240)}" width="{f(wx1 - wx0 + 520)}" height="{f(wy1 - wy0 + 480)}" fill="url(#{gw})"/>')
+    frames = []
+    for i, (wx0, wy0, wx1, wy1) in enumerate(HF_WIN):
+        frames.append(line(rect_pts(wx0, wy0, wx1, wy1) + [rect_pts(wx0, wy0, wx1, wy1)[0]], 6, "#5a4a6a", taper=0, wmin=1, seed=8070 + i))
+        frames.append(shape(rect_pts(wx0 - 16, wy1, wx1 + 16, wy1 + 18), "#5a4a6a", "", w=3.0, seed=8075 + i))
+    # земля, фонарь
+    o.append(f'<rect x="-900" y="{f(HF_GROUND)}" width="2880" height="800" fill="#16182c"/>')
+    o.append(shape(rect_pts(x0 + 230, HF_GROUND - 300, x0 + 450, HF_GROUND + 4), "#2a2036", blob(rect_pts(x0 + 250, HF_GROUND - 280, x0 + 430, HF_GROUND),
+                                                                                                  "#e0a050", .35), w=3.8, seed=8080))
+    return dict(sky=sky, bg="".join(o) + "".join(wins), windows="".join(lit_svg), frames="".join(frames), front="",
+                anchors=dict(win=HF_WIN, attic=HF_ATTIC, ridge=HF_RIDGE, ground=HF_GROUND), cam=HF_CAM_LOW)
+
+
+# ─────────────── вечерний Утрехт (s13) ───────────────
+UT_STREET = 1060.0                                 # уровень улицы (верх набережной)
+UT_WHARF = 1300.0                                  # низкая набережная-верф у воды
+UT_WATER = 1360.0
+UT_LAB = (140.0, 520.0, 600.0, 880.0)              # окно университета (стекло)
+UT_BRIDGE = (900.0, 1500.0)                        # пролёт мостика (x)
+UT_TOWER = (1960.0, -260.0)                        # шпиль башни Дом (вершина)
+UT_CAM_LAB = (420.0, 820.0, 1.25)
+UT_CAM_TOWER = (1600.0, 640.0, 0.9)
+
+
+def _gable_house(x0, x1, base, h, col, seed, step=True, lit=()):
+    """Дом с фронтоном-ступеньками; lit — окна (i, j) со светом."""
+    w = x1 - x0
+    top = base - h
+    pts = [(x0, base, 1), (x0, top, 1)]
+    if step:
+        n = 3
+        for k in range(n):
+            xa = x0 + w * (k + 1) / (2 * n + 2)
+            pts += [(xa, top - 60 * k, 1), (xa, top - 60 * (k + 1), 1)]
+        xm = x0 + w / 2
+        pts += [(xm - 30, top - 60 * n - 30, 1), (xm + 30, top - 60 * n - 30, 1)]
+        for k in reversed(range(n)):
+            xa = x1 - w * (k + 1) / (2 * n + 2)
+            pts += [(xa, top - 60 * (k + 1), 1), (xa, top - 60 * k, 1)]
+    else:
+        pts += [(x0 + w / 2, top - 180, 1)]
+    pts += [(x1, top, 1), (x1, base, 1)]
+    inner = ""
+    rows = int((h - 60) // 150)
+    cols = max(1, int(w // 110))
+    for i in range(rows):
+        for j in range(cols):
+            wx = x0 + (j + .5) * w / cols - 28
+            wy = top + 50 + i * 150
+            on = (i, j) in lit
+            inner += blob(rect_pts(wx, wy, wx + 56, wy + 90), "#ffd27a" if on else "#2a2448", .95)
+    return shape(pts, col, inner, w=4.0, seed=seed)
+
+
+def _bike(x, y, k=1.0, seed=0, col="#2a2236"):
+    """Велосипед силуэтом (два колеса, рама, руль, седло)."""
+    o = ""
+    for cx in (x - 62 * k, x + 62 * k):
+        o += line(ellipse_pts(cx, y - 40 * k, 38 * k, 38 * k, 18) + [ellipse_pts(cx, y - 40 * k, 38 * k, 38 * k, 18)[0]], 4, col, taper=0, wmin=1, seed=seed)
+    fr = [(x - 62 * k, y - 40 * k), (x - 10 * k, y - 40 * k), (x + 30 * k, y - 96 * k), (x - 34 * k, y - 96 * k), (x - 62 * k, y - 40 * k)]
+    o += line(fr, 5, col, taper=0, wmin=1, seed=seed + 1)
+    o += line([(x + 30 * k, y - 96 * k), (x + 62 * k, y - 40 * k)], 5, col, taper=0, wmin=1, seed=seed + 2)
+    o += line([(x + 30 * k, y - 96 * k), (x + 40 * k, y - 124 * k), (x + 62 * k, y - 128 * k)], 5, col, taper=0, wmin=1, seed=seed + 3)
+    o += line([(x - 34 * k, y - 96 * k), (x - 40 * k, y - 112 * k)], 5, col, taper=0, wmin=1, seed=seed + 4)
+    o += blob(ellipse_pts(x - 42 * k, y - 114 * k, 18 * k, 6 * k, 10), col)
+    return o
+
+
+def _dom_tower(x, top, base, col="#2c2646"):
+    """Силуэт башни Дом: квадратный ствол в два яруса, восьмигранный фонарь с ажурными окнами, шпиль."""
+    w0, w1 = 230.0, 170.0
+    yA = top + 980       # верх нижнего ствола
+    yB = top + 600       # верх второго яруса
+    yC = top + 260       # верх фонаря
+    o = shape(rect_pts(x - w0 / 2, yA, x + w0 / 2, base), col, "".join(blob(rect_pts(x - 60 + 70 * j, yA + 80, x - 30 + 70 * j, yA + 260), "#3a3460")
+                                                                      for j in range(2)), w=4.0, seed=8100)
+    o += shape(rect_pts(x - w1 / 2, yB, x + w1 / 2, yA + 4), col, "".join(blob([(x - 50 + 60 * j, yB + 240, 1), (x - 50 + 60 * j, yB + 90, 1),
+                                                                                (x - 35 + 60 * j, yB + 60, 1), (x - 20 + 60 * j, yB + 90, 1),
+                                                                                (x - 20 + 60 * j, yB + 240, 1)], "#3a3460") for j in range(2)),
+               w=4.0, seed=8101)
+    o += shape([(x - 70, yA + 4, 1), (x - 70, yB, 1), (x - 80, yB - 20, 1), (x + 80, yB - 20, 1), (x + 70, yB, 1), (x + 70, yA + 4, 1)], col, "", w=2.0, seed=8102)
+    o += shape(rect_pts(x - 62, yC, x + 62, yB - 20), col, "".join(blob([(x - 40 + 40 * j, yB - 50, 1), (x - 40 + 40 * j, yC + 70, 1), (x - 30 + 40 * j, yC + 50, 1),
+                                                                       (x - 20 + 40 * j, yC + 70, 1), (x - 20 + 40 * j, yB - 50, 1)], "#4a4278")
+                                                                 for j in range(3)), w=3.6, seed=8103)
+    o += shape([(x - 70, yC + 4, 1), (x, top, 1), (x + 70, yC + 4, 1)], col, "", w=3.6, seed=8104)
+    o += line([(x, top), (x, top - 60)], 5, col, taper=0, wmin=1, seed=8105)
+    return o
+
+
+def utrecht(t, lab_lit=0.0):
+    """Вечерний Утрехт (см. шапку раздела 79)."""
+    g = lib.lin_grad([(0, "#1a1a52", 1), (.55, "#5a3a7a", 1), (.85, "#d0706a", 1), (1, "#e8a070", 1)], 0, -900, 0, UT_STREET, units="userSpaceOnUse")
+    sky = f'<rect x="-900" y="-1400" width="4200" height="{f(UT_STREET + 1500)}" fill="url(#{g})"/>'
+    r = rs(8110)
+    for i in range(40):
+        sx, sy = r.uniform(-900, 3300), r.uniform(-1300, 200)
+        sky += f'<circle cx="{f(sx)}" cy="{f(sy)}" r="{f(r.uniform(1.6, 3.0))}" fill="#eef0ff" opacity="{.25 + .25 * math.sin(t * 2 + i):.2f}"/>'
+    o = []
+    # дальний план: башня Дом и дома-силуэты
+    o.append(_dom_tower(UT_TOWER[0], UT_TOWER[1], UT_STREET, "#2c2646"))
+    xx = 700.0
+    k = 0
+    while xx < 3000:
+        w_ = r.uniform(170, 240)
+        if abs(xx + w_ / 2 - UT_TOWER[0]) > 190:
+            o.append(_gable_house(xx, xx + w_, UT_STREET, r.uniform(380, 520), ["#3a2e52", "#43345a", "#382c4c"][k % 3], 8120 + k, step=k % 2 == 0,
+                                  lit={(r.randint(0, 2), 0)}))
+        xx += w_ + 4
+        k += 1
+    # ближний левый — университет (кирпич), окно с учёными
+    lx0, ly0, lx1, ly1 = UT_LAB
+    uni = [(-900, UT_STREET, 1), (-900, 300, 1), (700, 300, 1), (700, UT_STREET, 1)]
+    o.append(shape(uni, "#6a3a3a", "".join(line([(-900, y), (700, y)], 2.2, "#5a3030", taper=0, wmin=1, seed=8130 + int(y) % 40, op=.6)
+                                           for y in range(330, int(UT_STREET), 36)), w=4.4, seed=8131))
+    o.append(shape(rect_pts(-920, 270, 720, 310), "#4a2a2e", "", w=3.8, seed=8132))
+    u = clamp01(lab_lit)
+    gl = lib.rad_grad([(0, "#ffd890", .5 * u), (1, "#ffd890", 0)], (lx0 + lx1) / 2, (ly0 + ly1) / 2, 420, 340)
+    o.append(f'<rect x="{f(lx0 - 400)}" y="{f(ly0 - 320)}" width="{f(lx1 - lx0 + 800)}" height="{f(ly1 - ly0 + 640)}" fill="url(#{gl})"/>')
+    o.append(shape(rect_pts(lx0 - 26, ly0 - 26, lx1 + 26, ly1 + 26), "#4a2a2e", "", w=3.8, seed=8133))
+    lab_bg = shape(rect_pts(lx0, ly0, lx1, ly1), lib.mix("#1e1a34", "#f6d8a0", u), blob(rect_pts(lx0, ly1 - 70, lx1, ly1), lib.mix("#141026", "#d8a870", u))
+                   + blob(rect_pts(lx0 + 30, ly0 + 40, lx0 + 120, ly0 + 140), lib.mix("#1e1a34", "#e8c088", u), .9), w=3.6, seed=8134)
+    lab_frame = line(rect_pts(lx0, ly0, lx1, ly1) + [rect_pts(lx0, ly0, lx1, ly1)[0]], 8, "#4a2a2e", taper=0, wmin=1, seed=8135)
+    lab_frame += shape(rect_pts(lx0 - 40, ly1 + 10, lx1 + 40, ly1 + 40), "#4a2a2e", "", w=3.4, seed=8136)
+    for wx in (-700, -400):
+        o.append(blob(rect_pts(wx, 560, wx + 200, 860), "#2a1e34"))
+    # улица-набережная, перила с велосипедами
+    o.append(shape(rect_pts(-900, UT_STREET, 3300, UT_STREET + 40), "#5a5068", "", w=3.6, seed=8140))
+    o.append(f'<rect x="-900" y="{f(UT_STREET + 40)}" width="4200" height="{f(UT_WHARF - UT_STREET - 40)}" fill="#3a3248"/>')
+    for i in range(-6, 22):                       # арки погребов верфи в стене набережной
+        ax = -900 + i * 170.0
+        if UT_BRIDGE[0] - 60 < ax < UT_BRIDGE[1] + 40:
+            continue
+        o.append(blob([(ax, UT_WHARF, 1), (ax, UT_STREET + 130, 1), (ax + 50, UT_STREET + 90, 1), (ax + 100, UT_STREET + 130, 1), (ax + 100, UT_WHARF, 1)],
+                      "#1e1828"))
+    o.append(shape(rect_pts(-900, UT_WHARF - 14, 3300, UT_WHARF + 10), "#6a6078", "", w=3.4, seed=8141))
+    # вода
+    gw = lib.lin_grad([(0, "#3a2a5a", 1), (1, "#1a1438", 1)], 0, UT_WATER, 0, UT_WATER + 700, units="userSpaceOnUse")
+    water = f'<rect x="-900" y="{f(UT_WHARF + 10)}" width="4200" height="900" fill="url(#{gw})"/>'
+    for i in range(18):                           # блики огней на воде — рябь
+        wx = -800 + i * 230 + 30 * math.sin(i)
+        for j in range(3):
+            yy = UT_WATER + 40 + j * 70
+            dx = 18 * math.sin(t * 3 + i + j)
+            water += line([(wx + dx, yy), (wx + dx + 90 - 20 * j, yy + 2)], 5 - j, "#f0b060", taper=.5, wmin=.3, seed=8150 + i * 3 + j, op=.55 - .15 * j)
+    # арочный мостик
+    bx0, bx1 = UT_BRIDGE
+    bm = (bx0 + bx1) / 2
+    br = [(bx0 - 80, UT_STREET + 40, 1), (bx1 + 80, UT_STREET + 40, 1), (bx1 + 40, UT_WHARF + 300, 1)]
+    arch = [(bx1 - 40, UT_WHARF + 300)] + [(bm + (bx1 - bx0 - 80) / 2 * math.cos(a), UT_WHARF + 300 - 300 * math.sin(a)) for a in np.linspace(0, math.pi, 22)] \
+        + [(bx0 + 40, UT_WHARF + 300)]
+    br += arch + [(bx0 - 40, UT_WHARF + 300, 1)]
+    bridge = shape(br, "#5a4a5e", "".join(line([(bx0 - 80 + 60 * j, UT_STREET + 60), (bx0 - 80 + 60 * j, UT_STREET + 100)], 2.4, "#463a4c", taper=0, wmin=1,
+                                               seed=8160 + j, op=.6) for j in range(int((bx1 - bx0 + 160) // 60))), w=4.4, seed=8161)
+    # перила и велосипеды
+    rail = line([(-900, UT_STREET - 60), (3300, UT_STREET - 60)], 6, "#1c1626", taper=0, wmin=1, seed=8170)
+    for px in range(-880, 3300, 120):
+        rail += line([(px, UT_STREET - 60), (px, UT_STREET)], 4, "#1c1626", taper=0, wmin=1, seed=8171 + px % 37)
+    for j, bxp in enumerate((620.0, 760.0, 1660.0, 1800.0)):
+        rail += _bike(bxp, UT_STREET, 1.0, 8180 + j * 6)
+    # фонари
+    for j, fx in enumerate((-200.0, 820.0, 1580.0, 2500.0)):
+        rail += line([(fx, UT_STREET), (fx, UT_STREET - 330)], 7, "#1c1626", taper=0, wmin=1, seed=8200 + j)
+        rail += blob(ellipse_pts(fx, UT_STREET - 345, 22, 26, 14), "#ffe0a0")
+        gl2 = lib.rad_grad([(0, "#ffd890", .45), (1, "#ffd890", 0)], fx, UT_STREET - 345, 160)
+        rail += f'<circle cx="{f(fx)}" cy="{f(UT_STREET - 345)}" r="160" fill="url(#{gl2})"/>'
+    return dict(sky=sky, bg="".join(o), lab=lab_bg, lab_frame=lab_frame, water=water, bridge=bridge, front=rail,
+                anchors=dict(lab=UT_LAB, street=UT_STREET, wharf=UT_WHARF, water=UT_WATER, bridge=UT_BRIDGE, tower=UT_TOWER), cam=UT_CAM_LAB)

@@ -2862,3 +2862,330 @@ def evening_chair(t, sun=1.0):
     light = f'<rect x="-900" y="-900" width="2880" height="3720" fill="url(#{glow})"/>'
     return dict(bg="".join(o), chair_back=back + armL, chair_front=armR, light=light, cam=CAM78,
                 anchors=dict(hip=EC_HIP, arm=(hx + 375, hy - 150), arm_l=(hx - 290, hy - 170), knees=(hx + 260, hy - 30), win=EC_WIN, fl=fl))
+
+
+# ═════════════════════════════════════════ РИЛС 80 «Мама была права» (группа C) ═════════════════════════════════════════
+# Букв и цифр нет нигде. Свет — пятнами с чёткой формой.
+#
+# СТЕНА ХУКА И ПЕТЛИ — hook_wall(t, warm=0.0, desk=False) -> dict(bg, floor, light, shade, anchors, cam). КООРДИНАТЫ КАДРА 1080×1920
+#   (камера по умолчанию CAM80 = (540, 960, 1.0)). Голая светлая стена, жёсткий тёплый свет лампы СБОКУ СЛЕВА (лампа за кадром,
+#   точка света W80_LAMP): большое светлое пятно с резким краем, справа и у пола стена темнее; пол с плинтусом W80_FL.
+#   Зона надписи W80_TEXT = (60, 140, 1020, 430) — только чистая стена (тени и предметы ниже W80_SHADOW_TOP).
+#   Тени на стене — wall_shadow(svg, op, col, blur) (плоский силуэт любого рисунка) и shadow_tremble(t) (дрожь лампы: dx, dy, dk).
+#   warm 0…1 — тот же ракурс тёплым вечером (петля s18); desk=True — внизу стол поперёк кадра (верх столешницы W80_DESK_Y),
+#   лампа на столе слева (anchors["lamp"] — точка лампочки, anchors["cat"] — где сидит кот на столе у лампы).
+#   Порядок: bg → [тени на стене] → light (свет лампы поверх стены и теней — тени им НЕ светлеют, он только по стене) → [люди,
+#   предметы] → floor (ничего; пол в bg) → shade (виньетка поверх всего).
+#
+# ТЁМНАЯ КОМНАТА ПОВОРОТА — turn_dark(t, reveal=1.0) -> dict(bg, pool, shade, anchors, cam). КООРДИНАТЫ КАДРА. Почти чёрная синяя
+#   стена, тусклое холодное пятно света на ней (anchors["pool"] = (cx, cy, rx, ry)) — в нём проступают тени (класть их ПОСЛЕ
+#   pool цветом T80_SHADOW); пол на W80_FL. reveal 0…1 — пятно и пол проявляются из темноты.
+#
+# КОМНАТА ДИМЫ ВЕЧЕРОМ — room_night(t, lamp=1.0) -> dict(bg, bed, front, light, anchors, cam). КООРДИНАТЫ КАДРА. Тёплый вечер:
+#   стена, окно в сумерках вверху слева (N80_WIN), тумбочка с ночником справа, кровать поперёк кадра (верх матраса N80_BED_Y,
+#   край у зрителя). anchors: sit — таз Димы, сидящего на краю кровати лицом к нам (N80_SIT), floor — пол, cat — где кот
+#   стоит на полу перед Димой (N80_CAT). Порядок: bg → [Дима] → bed (передний край кровати, ПОСЛЕ таза и ног Димы? нет — до
+#   ног: bed — ткань матраса у зрителя, класть ПЕРЕД Димой, если Дима сидит на краю — тогда ноги поверх) → [кот] → light.
+#
+# СТОЛ У ОКНА ДНЁМ / ВЕЧЕРОМ — desk80(t, light="day"|"evening", grey=0.0) -> dict как desk_scene (МИРОВЫЕ координаты комнаты
+#   рилса 64/70, Дима на стуле SIT слева лицом вправо), плюс окно WIN74 над столом (днём солнце, вечером закат) и anchors:
+#   sill — середина подоконника (кот на подоконнике), paper — где лежит лист, phone — где лежит телефон, cloud — где висит
+#   облачко над головой сидящего Димы. Порядок слоёв — как desk_scene (bg → chair_back → desk_top → pool → [legs] → desk_legs →
+#   chair_seat → [тело] → предметы → [ближняя рука] → lamp). Камеры: CAM80_DESK_MID (Дима по пояс со столом и окном),
+#   CAM80_DESK_WIDE (общий), CAM80_DESK_CLOSE (лицо и руки над столом). grey 0…1 — цвета выцветают в серый (grey_tint).
+#   grey_tint(svg, u) — снять насыщенность любого куска (облако тоски).
+#
+# ОТТАВА ЗИМОЙ — ottawa(t) -> dict(bg, snow, anchors, cam). МИРОВЫЕ координаты x −700…1900 (панорама). Бледное зимнее небо,
+#   замёрзший канал по диагонали (лёд, снег по берегам, конькобежцев ставит сцена на линии anchors["ice"]), ели в снегу, старое
+#   каменное здание университета слева с большим тёплым окном (anchors["uni_win"] = x0, y0, x1, y1 — учёных ставит сцена
+#   внутрь, clip-path id в anchors["win_clip"]), фонари без надписей. snow — падающий снег (поверх всего).
+#   Камеры: CAM80_UNI (окно крупно), CAM80_CANAL (над каналом).
+# ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+CAM80 = (540.0, 960.0, 1.0)
+W80_FL = 1330.0
+W80_TEXT = (60.0, 140.0, 1020.0, 430.0)
+W80_SHADOW_TOP = 450.0
+W80_LAMP = (-260.0, 1060.0)
+W80_DESK_Y = 1150.0
+T80_SHADOW = "#05070f"
+
+
+def _w80_pal(warm):
+    cold = dict(wall="#d9d2c4", lit="#fbf3df", lit_core="#fffaf0", dark="#9f978a", base="#ece6d8", base_sh="#bdb3a3", floor="#a88d70",
+                floor_b="#7c6550", floor_ln="#5e4a39", shadow="#2a2430", vign="#1a1420")
+    hot = dict(wall="#c99a72", lit="#f7cf94", lit_core="#ffe6b4", dark="#8a5e44", base="#e8c49c", base_sh="#b48a66", floor="#8f5d3a",
+               floor_b="#6a4128", floor_ln="#4c2e1a", shadow="#3a2216", vign="#3a1a08")
+    w = clamp01(warm)
+    return {k: lib.mix(cold[k], hot[k], w) for k in cold}
+
+
+def shadow_tremble(t, amp=1.0):
+    """Дрожь лампы: (dx, dy, dk) для теней на стене — нервное мерцание, не ровная синусоида."""
+    dx = amp * (5 * math.sin(t * 23.0) + 3 * math.sin(t * 41.0 + 1.3) + 2 * math.sin(t * 67.0))
+    dy = amp * (3 * math.sin(t * 19.0 + .7) + 2 * math.sin(t * 53.0))
+    dk = amp * (.008 * math.sin(t * 29.0) + .005 * math.sin(t * 47.0 + 2.1))
+    return dx, dy, dk
+
+
+def wall_shadow(svg_, op=0.82, col="#2a2430", blur=2.5):
+    """Плоский силуэт любого рисунка цветом col (тень на стене): все пиксели → col, альфа = альфа рисунка × op; лёгкий размыв края."""
+    r, g, b = (int(col[i:i + 2], 16) / 255 for i in (1, 3, 5))
+    fid = lib.uid("wsh")
+    bl = f'<feGaussianBlur stdDeviation="{blur:.2f}"/>' if blur > 0 else ""
+    lib.DEFS.append(f'<filter id="{fid}" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">'
+                    f'<feColorMatrix type="matrix" values="0 0 0 0 {r:.4f} 0 0 0 0 {g:.4f} 0 0 0 0 {b:.4f} 0 0 0 {op:.4f} 0"/>{bl}</filter>')
+    return f'<g filter="url(#{fid})">{svg_}</g>'
+
+
+def grey_tint(svg_, u):
+    """Цвета выцветают в серый (u 0…1): насыщенность → 0, чуть холоднее и темнее."""
+    if u <= .005:
+        return svg_
+    fid = lib.uid("gry")
+    s = 1 - .92 * clamp01(u)
+    lib.DEFS.append(f'<filter id="{fid}" color-interpolation-filters="sRGB"><feColorMatrix type="saturate" values="{s:.3f}"/>'
+                    f'<feComponentTransfer><feFuncR type="linear" slope="{1 - .1 * u:.3f}"/><feFuncG type="linear" slope="{1 - .08 * u:.3f}"/>'
+                    f'<feFuncB type="linear" slope="{1 - .03 * u:.3f}"/></feComponentTransfer></filter>')
+    return f'<g filter="url(#{fid})">{svg_}</g>'
+
+
+def hook_wall(t, warm=0.0, desk=False):
+    """Стена хука (warm=0) и петли (warm=1, desk=True). См. шапку раздела 80."""
+    P = _w80_pal(warm)
+    fl = W80_FL
+    o = [f'<rect x="-900" y="-900" width="2880" height="3720" fill="{P["dark"]}"/>']
+    g = lib.lin_grad([(0, P["wall"], 1), (1, P["dark"], 1)], 0, 0, 1, 0)
+    o.append(f'<rect x="-900" y="-900" width="2880" height="{f(fl + 900)}" fill="url(#{g})"/>')
+    # пятно света лампы: резкий эллипс с чёткой кромкой (жёсткий свет) + ядро; лампа слева за кадром, чуть ниже середины
+    fk = 1 + .012 * math.sin(t * 31) + .008 * math.sin(t * 57)
+    lx, ly = 300.0, 860.0
+    pool = lib.rad_grad([(0, P["lit_core"], 1), (.45, P["lit"], 1), (.93, P["lit"], .92), (1, P["lit"], 0)], lx, ly, 900 * fk, 760 * fk)
+    o.append(f'<rect x="-900" y="-900" width="2880" height="{f(fl + 900)}" fill="url(#{pool})"/>')
+    # редкие следы обоев и плинтус
+    for i in range(-3, 10):
+        x = i * 170.0 + 60
+        o.append(line([(x, -900), (x + 2, fl - 40)], w=1.6, color=P["dark"], taper=0.0, wmin=1, seed=8000 + i, op=.18))
+    o.append(shape(rect_pts(-900, fl - 46, 1980, fl + 4), P["base"], blob(rect_pts(-900, fl - 12, 1980, fl + 4), P["base_sh"]), w=3.4, seed=8020))
+    gf = lib.lin_grad([(0, P["floor"], 1), (1, P["floor_b"], 1)], 0, fl, 0, 2300, units="userSpaceOnUse")
+    o.append(f'<rect x="-900" y="{f(fl + 4)}" width="2880" height="1400" fill="url(#{gf})"/>')
+    for k, y in enumerate((1395, 1490, 1620, 1800)):
+        o.append(line([(-900, y), (1980, y + 3)], 3, P["floor_ln"], taper=0, wmin=1, seed=8030 + k, op=.55))
+    # свет лампы на полу — полоса с чёткой кромкой
+    o.append(blob([(-900, fl + 6, 1), (760, fl + 6, 1), (980, fl + 220, 1), (-900, fl + 260, 1)], P["lit"], .28))
+    an = dict(fl=fl, text=W80_TEXT, lamp=W80_LAMP, shadow_top=W80_SHADOW_TOP)
+    front = ""
+    if desk:   # стол поперёк кадра, лампа на столе слева
+        dy = W80_DESK_Y
+        dw, dsh, dhi = "#b07a48", "#7e5230", "#cf9a64"
+        front += shape(rect_pts(-900, dy + 30, 1980, 2400), dsh, blob(rect_pts(-900, dy + 30, 1980, dy + 60), "#000000", .25), w=4.0, seed=8040)
+        front += shape(lib.rrect(-900, dy - 40, 1980, dy + 34, 8), dw, blob(rect_pts(-900, dy - 40, 1980, dy - 28), dhi, .8)
+                       + "".join(line([(-900, dy - 12 + 9 * i), (1980, dy - 10 + 9 * i)], 2, dsh, taper=0, wmin=1, seed=8041 + i, op=.4) for i in range(3)),
+                       w=4.2, seed=8045)
+        an.update(desk_y=dy - 30, lamp=(140.0, dy - 330), cat=(330.0, dy - 22))
+    sv = P["vign"]
+    gv = lib.rad_grad([(0, sv, 0), (.62, sv, 0), (1, sv, .42)], 520, 900, 880, 1250)
+    shade = f'<rect x="-900" y="-900" width="2880" height="3720" fill="url(#{gv})"/>'
+    return dict(bg="".join(o), floor="", front=front, light="", shade=shade, anchors=an, cam=CAM80, P=P)
+
+
+def turn_dark(t, reveal=1.0):
+    """Тёмная синяя комната поворота: стена, тусклое холодное пятно (тени проступают в нём), пол. См. шапку раздела 80."""
+    fl = W80_FL
+    rv = clamp01(reveal)
+    o = ['<rect x="-900" y="-900" width="2880" height="3720" fill="#070a18"/>']
+    o.append(f'<rect x="-900" y="-900" width="2880" height="{f(fl + 900)}" fill="#0d1226"/>')
+    pcx, pcy, prx, pry = 560.0, 820.0, 560.0, 470.0
+    fk = 1 + .015 * math.sin(t * 2.3)
+    g = lib.rad_grad([(0, "#2c3a6e", .95 * rv), (.7, "#1d2850", .8 * rv), (1, "#0d1226", 0)], pcx, pcy, prx * fk, pry * fk)
+    o.append(f'<rect x="-900" y="-900" width="2880" height="{f(fl + 900)}" fill="url(#{g})"/>')
+    o.append(shape(rect_pts(-900, fl - 46, 1980, fl + 4), lib.mix("#0d1226", "#25305a", rv), "", w=3.0, seed=8060))
+    gf = lib.lin_grad([(0, lib.mix("#070a18", "#141a34", rv), 1), (1, "#05070f", 1)], 0, fl, 0, 2300, units="userSpaceOnUse")
+    o.append(f'<rect x="-900" y="{f(fl + 4)}" width="2880" height="1400" fill="url(#{gf})"/>')
+    o.append(blob(ellipse_pts(560, fl + 70, 420, 60, 24), "#2c3a6e", .35 * rv))
+    gv = lib.rad_grad([(0, "#000000", 0), (.6, "#000000", 0), (1, "#000000", .6)], 540, 900, 820, 1200)
+    shade = f'<rect x="-900" y="-900" width="2880" height="3720" fill="url(#{gv})"/>'
+    return dict(bg="".join(o), pool="", shade=shade, anchors=dict(pool=(pcx, pcy, prx, pry), fl=fl), cam=CAM80)
+
+
+# ─────────────── комната Димы вечером (s07, группа B) ───────────────
+N80_WIN = (120.0, 230.0, 560.0, 760.0)
+N80_BED_Y = 1150.0
+N80_SIT = (540.0, 1160.0)
+N80_FL = 1480.0
+N80_CAT = (800.0, 1478.0)
+N80_NSTAND = (900.0, 1100.0, 1060.0)   # x0, верх, x1
+
+
+def room_night(t, lamp=1.0):
+    """Комната Димы вечером: тёплая стена, окно в сумерках, ночник на тумбочке, кровать поперёк кадра. См. шапку раздела 80."""
+    fl = N80_FL
+    o = ['<rect x="-900" y="-900" width="2880" height="3720" fill="#6a4a52"/>']
+    g = lib.lin_grad([(0, "#5b4058", 1), (.6, "#8a6066", 1), (1, "#a8746a", 1)], 0, -200, 0, fl, units="userSpaceOnUse")
+    o.append(f'<rect x="-900" y="-900" width="2880" height="{f(fl + 900)}" fill="url(#{g})"/>')
+    for i in range(-3, 10):
+        x = i * 160.0 + 40
+        o.append(line([(x, -900), (x + 2, fl - 40)], w=1.6, color="#5a3e4c", taper=0.0, wmin=1, seed=8100 + i, op=.3))
+    o.append(window74(*N80_WIN, sky_u=.47, t=t, dark=0.0))
+    # ночник: тёплое пятно на стене над тумбочкой с чёткой кромкой
+    x0, ny, x1 = N80_NSTAND
+    lx = (x0 + x1) / 2
+    lu = clamp01(lamp) * (1 + .02 * math.sin(t * 7.3))
+    if lu > .01:
+        o.append(blob(ellipse_pts(lx, ny - 220, 330, 260, 30), "#ffcf8a", .32 * lu))
+        o.append(blob(ellipse_pts(lx, ny - 210, 190, 150, 26), "#ffe2a8", .3 * lu))
+    o.append(shape(rect_pts(-900, fl - 40, 1980, fl + 4), "#b98a7a", blob(rect_pts(-900, fl - 10, 1980, fl + 4), "#8a6058"), w=3.2, seed=8110))
+    gf = lib.lin_grad([(0, "#7a4c34", 1), (1, "#5a3422", 1)], 0, fl, 0, 2300, units="userSpaceOnUse")
+    o.append(f'<rect x="-900" y="{f(fl + 4)}" width="2880" height="1400" fill="url(#{gf})"/>')
+    for k, y in enumerate((1560, 1680, 1850)):
+        o.append(line([(-900, y), (1980, y + 3)], 3, "#43291a", taper=0, wmin=1, seed=8111 + k, op=.5))
+    # тумбочка и ночник
+    o.append(shape(rect_pts(x0, ny, x1, fl - 4), "#7a5038", blob(rect_pts(x0, ny, x1, ny + 18), "#9a6a4a") +
+                   line([(x0 + 14, ny + 170), (x1 - 14, ny + 170)], 3, INK, taper=0, wmin=1, seed=8115) +
+                   blob(ellipse_pts(lx, ny + 120, 10, 7, 10), "#d8b07a"), w=4.0, seed=8116))
+    o.append(night_lamp73(lx, ny, 1.0, lamp, t))
+    # кровать: изголовье слева, матрас поперёк, одеяло
+    by = N80_BED_Y
+    o.append(shape(lib.rrect(-120, by - 380, 70, fl - 10, 20), "#6b4a3a", blob(rect_pts(30, by - 380, 70, fl - 10), "#4e3428", .6), w=4.2, seed=8120))
+    o.append(shape(rect_pts(-80, by + 120, 860, fl - 6), "#5a3e30", "", w=3.6, seed=8121))
+    o.append(shape(lib.rrect(-100, by - 20, 880, by + 130, 22), "#e9dccb", blob(rect_pts(-100, by + 80, 880, by + 132), "#c9b8a4"), w=3.8, seed=8122))
+    o.append(shape([(-60, by - 10, 1), (-70, by - 90), (40, by - 120), (200, by - 116), (240, by - 70), (230, by - 6, 1)], "#f4ece0",
+                   blob(rect_pts(-70, by - 30, 240, by - 6), "#d6c8b4"), w=3.8, seed=8123))
+    bed = shape([(250, by + 4, 1), (260, by - 40), (500, by - 56), (870, by - 44), (890, by + 6, 1), (890, by + 130, 1), (250, by + 130, 1)],
+                "#8a5a8a", blob(rect_pts(250, by + 80, 890, by + 132), "#6a4068", .8) +
+                "".join(line([(330 + 130 * i, by - 40), (340 + 130 * i, by + 126)], 3, "#6a4068", taper=.3, wmin=.5, seed=8124 + i) for i in range(5)),
+                w=4.2, seed=8130)
+    gv = lib.rad_grad([(0, "#1a0c18", 0), (.6, "#1a0c18", 0), (1, "#1a0c18", .45)], 540, 900, 860, 1250)
+    light = f'<rect x="-900" y="-900" width="2880" height="3720" fill="url(#{gv})"/>'
+    an = dict(sit=N80_SIT, floor=fl, cat=N80_CAT, bed_y=by, nstand=N80_NSTAND, win=N80_WIN)
+    return dict(bg="".join(o), bed=bed, front="", light=light, anchors=an, cam=CAM80)
+
+
+# ─────────────── стол у окна днём / вечером (s08–s11, s15–s17) ───────────────
+CAM80_DESK_MID = (700.0, 840.0, 1.3)
+CAM80_DESK_WIDE = (760.0, 980.0, 0.9)
+CAM80_DESK_CLOSE = (640.0, 780.0, 1.9)
+SILL80 = (1060.0, 728.0)
+PAPER80 = (760.0, DESK_TOP - 50.0)
+PHONE80 = (1000.0, DESK_TOP - 34.0)
+
+
+def desk80(t, light="day", grey=0.0):
+    """Стол у окна днём ("day") или вечером ("evening"): desk_scene + окно WIN74 над столом. См. шапку раздела 80."""
+    mode = "day" if light == "day" else "evening"
+    d = desk_scene(t, mode, lamp_on=0.0 if light == "day" else 1.0)
+    sky = .25 if light == "day" else .47
+    bg = d["bg"] + window74(*WIN74, sky_u=sky, t=t, dark=0.0)
+    if light != "day":
+        fl = light_(t, 1.0)
+        bg += _light_pool73(LAMP[0] - 90, LAMP[1] - 260, 230 * fl, 170 * fl, t, LAMP_GLOW, .2, 8150, 1.2)
+    out = dict(d)
+    out["bg"] = grey_tint(bg, grey) if grey > .005 else bg
+    hx, hy = SIT
+    out.update(anchors=dict(sill=SILL80, paper=PAPER80, phone=PHONE80, cloud=(hx + 40, hy - 760), sit=SIT, lamp=LAMP, desk_top=DESK_TOP),
+               cam_mid=CAM80_DESK_MID, cam_wide=CAM80_DESK_WIDE, cam_close=CAM80_DESK_CLOSE, sit=SIT)
+    return out
+
+
+# ─────────────── зимняя Оттава (s12) ───────────────
+OT_UNI_WIN = (-330.0, 420.0, 90.0, 900.0)
+OT_ICE_Y = 1330.0
+CAM80_UNI = (-120.0, 760.0, 1.45)
+CAM80_CANAL = (900.0, 1060.0, 1.0)
+
+
+def _fir(x, y, h, seed, col="#2f5a48", snow="#f6f8fb"):
+    """Ель в снегу: ярусы-треугольники, на каждом снежная шапка."""
+    r = rs(seed)
+    o = [shape(rect_pts(x - h * .04, y - h * .12, x + h * .04, y), "#5a4030", "", w=2.6, seed=seed)]
+    n = 4
+    for i in range(n):
+        yb = y - h * .1 - i * h * .21
+        w_ = h * (.36 - .07 * i)
+        tip = yb - h * .32
+        pts = [(x - w_, yb), (x - w_ * .3, yb - h * .06), (x, tip), (x + w_ * .3, yb - h * .06), (x + w_, yb)]
+        sn = blob([(x - w_ * .55, yb - h * .1), (x, tip + h * .05), (x + w_ * .5, yb - h * .12), (x + w_ * .2, yb - h * .07 + r.uniform(-4, 4)),
+                   (x - w_ * .2, yb - h * .08)], snow, .95)
+        o.append(shape(pts, col, sn + blob([(x - w_, yb), (x + w_, yb), (x + w_ * .7, yb - h * .03), (x - w_ * .7, yb - h * .03)], snow, .9),
+                       w=3.0, seed=seed + 1 + i))
+    return "".join(o)
+
+
+def ottawa(t):
+    """Зимняя Оттава: небо, здание университета с тёплым окном, замёрзший канал, ели, снег. См. шапку раздела 80."""
+    o = ['<rect x="-1500" y="-900" width="4400" height="3720" fill="#dfe7ee"/>']
+    g = lib.lin_grad([(0, "#b9cde0", 1), (.6, "#e4ebf1", 1), (1, "#f4f0e8", 1)], 0, -300, 0, 1100, units="userSpaceOnUse")
+    o.append(f'<rect x="-1500" y="-900" width="4400" height="2100" fill="url(#{g})"/>')
+    # бледное зимнее солнце
+    o.append(f'<circle cx="1320" cy="260" r="90" fill="#fff6dc" opacity=".55"/>')
+    o.append(shape(ellipse_pts(1320, 260, 52, 52, 18), "#fff0c4", "", w=2.4, seed=8200))
+    # дальний берег: холмы и лес силуэтом, город — простые крыши без вывесок
+    o.append(blob([(-1500, 1000), (-900, 900), (-300, 950), (300, 880), (900, 930), (1500, 860), (2900, 940), (2900, 1200), (-1500, 1200)], "#9fb2c4"))
+    r = rs(8201)
+    x = 200.0
+    while x < 2600:
+        w_ = r.uniform(80, 150)
+        h_ = r.uniform(60, 160)
+        o.append(shape(rect_pts(x, 1000 - h_, x + w_, 1040), "#aebdcc", blob([(x - 8, 1000 - h_), (x + w_ / 2, 1000 - h_ - 40), (x + w_ + 8, 1000 - h_)],
+                                                                               "#f4f6f9", .95), w=2.2, seed=8202 + int(x)))
+        x += w_ + r.uniform(10, 40)
+    for i in range(14):
+        o.append(_fir(-200 + i * 190 + r.uniform(-40, 40), 1080, r.uniform(110, 170), 8300 + i * 7, col="#5f7d74"))
+    # снежные берега и лёд канала (диагональ к зрителю)
+    o.append(shape([(-1500, 1060, 1), (2900, 1040, 1), (2900, 2400, 1), (-1500, 2400, 1)], "#f4f6f9", "", w=3.0, seed=8400))
+    ice = [(-1500, 1240, 1), (300, 1180), (1400, 1150), (2900, 1130, 1), (2900, 1480, 1), (1400, 1520), (300, 1560), (-1500, 1620, 1)]
+    gi = lib.lin_grad([(0, "#bfd8ea", 1), (1, "#9cc0dc", 1)], 0, 1150, 0, 1600, units="userSpaceOnUse")
+    inner = ""
+    for i in range(7):
+        yy = 1210 + 50 * i
+        inner += line([(-1500, yy + 60), (2900, yy - 40)], 2.4, "#e6f2fa", taper=.2, wmin=.4, seed=8410 + i, op=.75)
+    for i in range(10):   # следы коньков дугами
+        cx_ = -900 + i * 380
+        inner += line([(cx_, 1400 - .03 * cx_), (cx_ + 140, 1360 - .03 * cx_), (cx_ + 300, 1390 - .03 * cx_)], 2, "#ffffff", taper=.5, wmin=.2, seed=8420 + i, op=.8)
+    o.append(f'<path d="{lib.fill_d(ice)}" fill="url(#{gi})"/>' if hasattr(lib, "fill_d") else blob(ice, "#b2d0e6"))
+    o.append(shape(ice, "none", inner, w=3.2, seed=8430))
+    for i in range(6):     # ближние ели по краю
+        o.append(_fir(1250 + i * 230 + r.uniform(-30, 30), 1700 + 20 * (i % 2), r.uniform(330, 430), 8500 + i * 7))
+    # здание университета слева: серый камень, острая крыша, большое тёплое окно-арка
+    ux0, uy0, ux1, uy1 = -800.0, 260.0, 380.0, 1240.0
+    stone = "#9a948a"
+    inner = ""
+    for i in range(12):
+        yy = uy0 + 60 + i * 80
+        inner += line([(ux0, yy), (ux1, yy)], 2, "#7c766c", taper=0, wmin=1, seed=8600 + i, op=.5)
+        for j in range(8):
+            xx = ux0 + (j + .5 * (i % 2)) * 150
+            inner += line([(xx, yy), (xx, yy + 80)], 2, "#7c766c", taper=0, wmin=1, seed=8620 + i * 8 + j, op=.4)
+    o.append(shape(rect_pts(ux0, uy0, ux1, uy1), stone, inner, w=4.4, seed=8650))
+    o.append(shape([(ux0 - 40, uy0 + 4), ((ux0 + ux1) / 2, uy0 - 330), (ux1 + 40, uy0 + 4)], "#5c6670",
+                   blob([(ux0 - 40, uy0 + 4), ((ux0 + ux1) / 2, uy0 - 330), (ux0 + 120, uy0 - 40)], "#f4f6f9", .95), w=4.4, seed=8651))
+    o.append(blob([(ux0 - 30, uy0 + 6), (ux1 + 30, uy0 + 6), (ux1 + 10, uy0 + 36), (ux0 - 10, uy0 + 36)], "#f4f6f9", .95))
+    wx0, wy0, wx1, wy1 = OT_UNI_WIN
+    arch = [(wx0, wy1), (wx0, wy0 + 110)] + [((wx0 + wx1) / 2 + (wx1 - wx0) / 2 * math.cos(math.pi - a), wy0 + 110 - 110 * math.sin(a))
+                                           for a in np.linspace(0, math.pi, 14)][1:-1] + [(wx1, wy0 + 110), (wx1, wy1)]
+    gw = lib.lin_grad([(0, "#ffe2a4", 1), (1, "#f2b56a", 1)], 0, 0, 0, 1)
+    o.append(f'<path d="M{" L".join(f"{f(a)} {f(b)}" for a, b in arch)}Z" fill="url(#{gw})"/>')
+    win_clip = lib.uid()      # прямыми отрезками: сглаженный контур выгибался ниже подоконника и выпускал рисунок наружу
+    lib.DEFS.append(f'<clipPath id="{win_clip}"><path d="M{" L".join(f"{f(a)} {f(b)}" for a, b in arch)}Z"/></clipPath>')
+    # здание справа от окна — тёмные окна этажей (без надписей), фонарь
+    for j in range(3):
+        for i in range(2):
+            xx, yy = ux0 + 80 + i * 170, uy0 + 140 + j * 300
+            o.append(shape(rect_pts(xx, yy, xx + 90, yy + 170), "#6e7e8e", blob(rect_pts(xx, yy + 150, xx + 90, yy + 170), "#f4f6f9", .9), w=3.0, seed=8660 + i + 3 * j))
+    front = f'<path d="M{" L".join(f"{f(a)} {f(b)}" for a, b in arch)}Z" fill="none" stroke="{INK}" stroke-width="7" stroke-linejoin="round"/>' + shape(rect_pts(wx0, wy0, wx1, wy1), "none", line([((wx0 + wx1) / 2, wy0), ((wx0 + wx1) / 2, wy1)], 7, "#5a5048", taper=0, wmin=1, seed=8670)
+                  + line([(wx0, (wy0 + wy1) / 2 + 40), (wx1, (wy0 + wy1) / 2 + 40)], 7, "#5a5048", taper=0, wmin=1, seed=8671), ink=False)
+    front += shape(rect_pts(wx0 - 30, wy1, wx1 + 30, wy1 + 34), "#b8b0a4", blob(rect_pts(wx0 - 30, wy1, wx1 + 30, wy1 + 14), "#f4f6f9"), w=3.6, seed=8673)
+    for lxp in (620.0, 1820.0):    # фонари у канала
+        o.append(line([(lxp, 1180), (lxp, 820)], 9, "#2a2e36", taper=0, wmin=1, seed=8680 + int(lxp)))
+        o.append(shape(lib.rrect(lxp - 30, 770, lxp + 30, 830, 10), "#ffe6a8", "", w=3.2, seed=8682 + int(lxp)))
+        o.append(blob(rect_pts(lxp - 34, 760, lxp + 34, 774), "#f4f6f9"))
+    # падающий снег
+    r = rs(8700)
+    sn = []
+    for i in range(70):
+        x0_, y0_ = r.uniform(-900, 2700), r.uniform(-300, 2000)
+        sp = r.uniform(50, 110)
+        y_ = (y0_ + sp * t) % 2300 - 300
+        x_ = x0_ + 22 * math.sin(t * 1.3 + i)
+        sn.append(f'<circle cx="{f(x_)}" cy="{f(y_)}" r="{f(r.uniform(3, 7))}" fill="#ffffff" opacity="{r.uniform(.6, .95):.2f}"/>')
+    an = dict(uni_win=OT_UNI_WIN, win_clip=win_clip, ice=(1180.0, 1520.0), win_front=front)
+    return dict(bg="".join(o), front=front, snow="".join(sn), anchors=an, cam=CAM80_CANAL)
