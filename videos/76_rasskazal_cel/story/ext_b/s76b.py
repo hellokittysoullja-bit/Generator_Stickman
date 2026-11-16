@@ -637,7 +637,7 @@ def laptop_side76(x, y, k=1.0, open_=1.0, glow=0.0, face=-1, t=0.0, seed=0):
         cx_ = h0[0] + u[0] * .5 + sgn * 40 * k
         cy_ = h0[1] + u[1] * .5
         fl = 1 + .05 * math.sin(t * 11)
-        o.append(f'<g {lib.blur(10)}>{blob([(cx_, cy_ - 140 * k), (cx_ + sgn * 260 * k, cy_ - 210 * k), (cx_ + sgn * 260 * k, cy_ + 170 * k), (cx_, cy_ + 120 * k)], "#cfe6ff", .22 * glow * fl)}</g>')
+        o.append(f'<g {lib.blur(10)}>{blob([(cx_, cy_ - 140 * k), (cx_ + sgn * 260 * k, cy_ - 210 * k), (cx_ + sgn * 260 * k, cy_ + 170 * k), (cx_, cy_ + 120 * k)], "#cfe6ff", .12 * glow * fl)}</g>')
     return "".join(o)
 
 
@@ -705,12 +705,12 @@ def s17(t):
     cat_st = dict(people.CAT_ST76["sill"])
     cat_st["drop"] = people.cat_nod(t, T_SNACH + .1, .34, .3) + people.cat_nod(t, T_MOLCH + .05, .34, .25)
     cat_st["look"] = (.8, .3)
-    cat_sv = people.cat_svg(-175, 1146, .68, cat_st, t)
+    cat_sv = people.cat_svg(-185, 1146, .68, cat_st, t)
     body = (sc_["bg"] + cat_sv + cup + sc_["chair_back"] + sc_["desk_top"] + sc_["pool"] + parts["legs"]["svg"] + sc_["desk_legs"] + sc_["chair_seat"]
             + parts["pelvis"]["svg"] + parts["arm_f"]["svg"] + parts["body"]["svg"] + face_light + lap + parts["arm_n"]["svg"] + sc_["lamp"])
     u = ease_io(clamp((t - t0) / (t1 - t0)))
     cs = lerp(.88, .95, u) + .02 * bump(t, T_MOLCH, .3)
-    cx = lerp(380, 400, u) + 2 * math.sin(t * 1.4)
+    cx = lerp(345, 415, ease_io(clamp((t - (T_SNACH - .1)) / .5))) + 2 * math.sin(t * 1.4)
     cy = lerp(960, 930, u) + 2 * math.sin(t * 1.1)
     return svg(whip_wrap(f'<rect width="1080" height="1920" fill="#2a2440"/><g transform="{lib.cam(cx, cy, cs, lerp(-.5, .3, u))}">{body}</g>',
                          t, t0, dx=640))

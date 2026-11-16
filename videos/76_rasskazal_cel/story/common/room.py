@@ -2546,7 +2546,7 @@ def drape74(view, t, u=1.0, swing=0.0, seed=0):
 R76_FL = 900.0                 # шов стены и пола (за матрасом)
 R76_CEIL = -620.0              # линия потолка (видна в широких планах)
 A76 = dict(MAT=(560.0, 1335.0, 1.25), HIP=(300.0, 1130.0), DK=1.0, TROPHY=(790.0, 1140.0, 2.0), HATCH=(1500.0, R76_CEIL),
-           LAPTOP=(1180.0, 1330.0), FLOOR=R76_FL, CEIL=R76_CEIL, CLEAN=(-640.0, 40.0, 60.0, 560.0),
+           LAPTOP=(1180.0, 1330.0), FLOOR=R76_FL, CEIL=R76_CEIL, CLEAN=(-860.0, 40.0, 700.0, 860.0),
            CAT_IN=(-900.0, 1420.0), CAT_SIT=(-200.0, 1430.0), LAMP=(1010.0, 990.0), STICKY=(1180.0, 560.0))
 CAM76 = {"hook": (540.0, 960.0, 1.0), "wide": (600.0, 1000.0, .5), "mid": (620.0, 960.0, 1.2), "cat": (60.0, 900.0, .72),
          "top": (600.0, 1060.0, .95)}
@@ -2562,7 +2562,7 @@ def _r76_shell(P, t, seed=0, window_mode="day"):
     o.append(f'<rect x="-2400" y="{f(R76_CEIL)}" width="6000" height="{f(R76_FL - R76_CEIL)}" fill="url(#{g})"/>')
     for i in range(-16, 24):
         x = i * 150.0 + 60
-        if -40 < x < 700:          # стена за надписью хука — без линий обоев (чистая зона)
+        if -900 < x < 700:         # стена за надписью хука и над котом (s05, «кот») — без линий обоев (чистая зона)
             continue
         o.append(line([(x, R76_CEIL), (x + 1.5, R76_FL - 30)], w=1.8, color=P["wall_ln"], taper=0.0, wmin=1, seed=7600 + seed + i, op=.5))
     # потолок и карниз
@@ -2570,7 +2570,7 @@ def _r76_shell(P, t, seed=0, window_mode="day"):
     o.append(shape(rect_pts(-2400, R76_CEIL - 4, 3600, R76_CEIL + 26), P["base"], blob(rect_pts(-2400, R76_CEIL + 14, 3600, R76_CEIL + 26), P["base_sh"]),
                    w=3.4, seed=7650 + seed))
     # окно слева (вне кадра хука) и полка справа
-    o.append(window(-1020, -380, -420, 520, window_mode, t, seed=76, sway=.7, curtain="#d98b5a"))
+    o.append(window(-1640, -380, -1040, 520, window_mode, t, seed=76, sway=.7, curtain="#d98b5a"))
     o.append(shelf(1420, 1780, 260, "day" if window_mode == "day" else "evening", seed=76, t=t))
     # плинтус и пол
     o.append(shape(rect_pts(-2400, R76_FL - 40, 3600, R76_FL + 6), P["base"], blob(rect_pts(-2400, R76_FL - 8, 3600, R76_FL + 6), P["base_sh"]),
@@ -2645,7 +2645,6 @@ def floor_lamp76(on=1.0, t=0.0, P=None):
         dn = [(x - 108, bot, 1), (x + 108, bot, 1), (x + 330, y + 30, 1), (x - 330, y + 30, 1)]
         light += blob(up, "#ffcf78", .16 * u * fl) + blob(dn, "#ffcf78", .13 * u * fl)
         light += blob(ellipse_pts(x, y + 10, 330, 60, 24), "#ffd890", .25 * u * fl)
-        light += blob(ellipse_pts(x - 380, y - 400, 520, 420, 30), "#ffbe70", .07 * u * fl)
     return dict(lamp="".join(o), light=light)
 
 

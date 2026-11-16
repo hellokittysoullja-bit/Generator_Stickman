@@ -112,7 +112,7 @@ def hook_cam(t, t_hit, t_hit2, rot0=3.8, side0=52.0, fly=.2, far=1.46, over=.06)
     rot = rot0 * (1 - e) + damp(t, fly, -1.3, 2.0, 6.0)
     side = side0 * (1 - e)
     hit = .04 * kick(t, t_hit, .03, 5.5) + .10 * kick(t, t_hit2, .03, 4.5)
-    return s * (1 + hit), rot, side, 1 - e
+    return s * (1 + hit), rot, side, 1 - e, 1 + hit
 
 
 def radial_blur(world, cx, cy, s, rot, amount):
@@ -239,13 +239,18 @@ def s01_world(t, cam=None):
 def s01(t):
     lib.dyn_begin()
     t1, t2 = stress(1, .42), stress(2, .3)
-    kk, rc, side, fl = hook_cam(t, t1, t2)
+    kk, rc, side, fl, hk = hook_cam(t, t1, t2)
     sx1, sy1 = shake2(t, t1, 10)
     sx2, sy2 = shake2(t, t2, 8)
     cx0, cy0, s0 = R.CAM76["hook"]
     cx = cx0 + side - sx1 - sx2 + 4 * math.sin(t * 2.1)
     cy = cy0 - sy1 - sy2
+    # удары камерой — вокруг точки у макушки Димы (под надписью): волосы не заходят под буквы
     s = s0 * kk * (1 + .02 * sm(t, .5, 1.6))
+    if t > .2:                                   # после влёта: перелёт и удары — вокруг макушки
+        px, py = 230.0, 460.0
+        r_ = s / s0
+        cx, cy = px - (px - cx) / r_, py - (py - cy) / r_
     world = s01_world(t, (cx, cy, s, rc))
     if MASK:
         return wrap(world, cx0, cy0, s0)
@@ -393,9 +398,9 @@ def s04(t):
 
 
 # ═════════════════════════ s05: кот входит, «кот» на стене ═════════════════════════
-CAM05 = (300.0, 980.0, .75)
+CAM05 = (300.0, 1030.0, .75)
 CAT05 = (-80.0, 1440.0, 2.0)
-KOT05 = (-235.0, 270.0, 1.75)          # «кот» на чистой стене (мир): левый край, линия строки, размер
+KOT05 = (-260.0, 330.0, 2.2)          # «кот» на чистой стене (мир): левый край, линия строки, размер
 
 
 def s05(t):
@@ -406,7 +411,7 @@ def s05(t):
     cx_, cy_, ck = CAT05
     t_arr = lerp(a, t21, .42)                   # дошёл
     if t < t_arr:
-        x = lerp(cx_ - 900, cx_, ease_out(clamp((t - a) / (t_arr - a)), 1.4) * .8 + .2 * clamp((t - a) / (t_arr - a)))
+        x = lerp(cx_ - 620, cx_, ease_out(clamp((t - a) / (t_arr - a)), 1.4) * .8 + .2 * clamp((t - a) / (t_arr - a)))
         st = dict(look=(.8, .1), tail=6 * math.sin(t * 4), flame_e=.9)
         cat = PE.cat_walk(x, cy_, ck, t, st, .42)
     else:
@@ -431,7 +436,7 @@ def s05(t):
     u = sm(t, a, T1("s05") + .2)
     lean = sm(t, t22 - .3, t22e + .2)
     cx, cy, s = CAM05
-    return wrap(world, cx - 30 * u - 40 * lean, cy - 20 * u - 60 * lean, s * (1 + .08 * u))
+    return wrap(world, cx - 30 * u - 40 * lean, cy - 10 * u - 30 * lean, s * (1 + .06 * u))
 
 
 # ═════════════════════════ s09: перемотка назад ═════════════════════════
@@ -484,7 +489,8 @@ def s09(t):
     jab = .5 + .5 * math.sin(2 * math.pi * 3.0 * (t - t43)) if t > t43 else .5
     st = dict(PE.CAT_ST76["poke"])
     st.update(paw=pk * (.55 + .45 * jab), paw_dx=80 + 50 * jab, look=(.7, -.3), blink=bump(t, t47 + .2, .16))
-    cat = PE.cat_svg(170, 1330, 1.25, st, t)
+    cat = PE.cat_svg(120, 1560, 1.15, st, t)
+    crowd = PE.crowd_backs(-60, 2140, 1200, 2 * T0("s09") - t, clap_phase=.15, n=4, k=.84, seed=1)
     # штрихи перемотки (экран): короткие дуги «назад» поперёк кадра, пока идёт перемотка
     lines_ = ""
     if t < t47 + .05:
@@ -497,7 +503,7 @@ def s09(t):
     f2 = clamp(1 - abs(t - t47) * 30 / 2)
     if f2 > .01:
         flash = f'<rect width="1080" height="1920" fill="#fff8de" opacity="{.55 * f2:.3f}"/>'
-    return wrap(world, cx, cy, s, 0.0, lines_ + cat + flash)
+    return wrap(world, cx, cy, s, 0.0, lines_ + crowd + cat + flash)
 
 
 # ═════════════════════════ s18: печатает молча, разворачивает ноутбук к коту ═════════════════════════
@@ -547,13 +553,13 @@ def s18(t):
     spark = PR.sparkles(cx_, cy_ - 250 * .82, 1.2, wow, t, seed=18, n=5, col="#f2c94c", r=180)
     lit_cat = ""
     if turn > .5:
-        lit_cat = f'<g {lib.blur(18)}>' + blob(ellipse_pts(cx_ - 30, cy_ - 230 * .82, 150, 120, 18), "#d6e8ff", .35 * sm(t, t94, t94 + .3)) + '</g>'
+        lit_cat = f'<g {lib.blur(18)}>' + blob(ellipse_pts(cx_ - 40, cy_ - 220 * .82, 110, 90, 18), "#cfe2ff", .2 * sm(t, t94, t94 + .3)) + '</g>'
     lit_d = ""
     if turn < .7:
         hd = body["head"]
         lit_d = f'<g {lib.blur(16)}>' + blob(ellipse_pts(hd[0] + 50, hd[1] + 10, 110, 130, 18), "#d6e8ff", .3 * (1 - turn) * (1 + .1 * tap)) + '</g>'
-    world = (nd["bg"] + cup + nd["chair_back"] + nd["desk_top"] + nd["pool"] + legs["svg"] + nd["desk_legs"] + nd["chair_seat"] + body["svg"]
-             + cat + lap_svg + arm["svg"] + nd["lamp"] + lap_lt + lit_d + lit_cat + spark)
+    world = (nd["bg"] + cup + nd["chair_back"] + nd["desk_top"] + legs["svg"] + nd["desk_legs"] + nd["chair_seat"] + body["svg"]
+             + cat + lap_svg + arm["svg"] + lap_lt + lit_d + lit_cat + spark)          # настольную лампу не ставим: свет — от экрана
     u = sm(t, T0("s18") - .2, T1("s18") + .2)
     cx, cy, s = CAM18
     cx += 60 * turn + 10 * u
@@ -581,15 +587,15 @@ def s19(t):
     def clap_amt(tt):
         return max(bump(tt, t99 - .12, .26), bump(tt, t101 - .12, .26))
     cu = clap_amt(t)
-    gap = 46 * (1 - cu) + 4
+    gap = 110 * (1 - cu) + 4
     st = dict(sy=1 + .1 * up, sx=1 - .04 * up, paw=.95 * up, paw_l=.95 * up, paw_dx=gap / 1.6 - 15, paw_l_dx=gap / 1.6 - 15, perk=.6 + .4 * up,
               smile=1.0, look=(-.3 * (1 - up), 0), flame_e=1.0 + .8 * bump(t, t101, .5), tail=8 * math.sin(t * 3),
               blink=bump(t, T0("s19") + .1, .15))
     cat = PE.cat_svg(cx_, cy_, ck, st, t)
     conf = ""
     for tc in (t99, t101):
-        conf += PR.confetti((0, 0, 1, 1), t, tc, n=10, seed=int(tc * 10) % 50, k=.75, burst=(cx_, cy_ - 230 * ck), life=1.0)
-    world = d["bg"] + mat_b + fig["svg"] + lap_svg + mat_f + cat + conf + lap_lt + d["light"]
+        conf += PR.confetti((0, 0, 1, 1), t, tc, n=16, seed=int(tc * 10) % 50, k=1.0, burst=(cx_, cy_ - 250 * ck), life=1.1)
+    world = d["bg"] + mat_b + fig["svg"] + lap_svg + mat_f + lap_lt + d["light"] + cat + conf
     if MASK:
         return wrap(mask_of(mat_b + mat_f + fig["svg"] + lap_svg + cat), *R.CAM76["hook"])
     cx0, cy0, s0 = R.CAM76["hook"]

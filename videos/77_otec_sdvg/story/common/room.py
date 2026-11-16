@@ -2520,3 +2520,376 @@ def drape74(view, t, u=1.0, swing=0.0, seed=0):
     sx, sy = v["drape_k"]
     y0 = v["seat_y"] - 420 * sy
     return f'<g transform="translate(540 {y0:.2f}) scale({sx:.4f} {sy:.4f})">{PR.throne_drape(0, 0, 1.0, u, swing, t, seed)}</g>'
+
+
+# ══════════════════════════════════════════════════════════════════════════════════════
+# РИЛС 77 «СДВГ НЕ БЫВАЕТ?» (пишет группа C; берут все). Все места — в КООРДИНАТАХ КАДРА 1080×1920 при камере
+#   CAM77 = (540, 960, 1.0) (влёт, наезд, дрейф — lib.cam вокруг точки кадра); мир шире кадра (−900…1980 по x), можно ехать.
+#   Букв, цифр и значков нет нигде. Свет — пятнами с чёткой кромкой (не огромные мягкие овалы). Людей, кота и предметы
+#   (props) кладёт сцена по якорям ниже; функции возвращают dict слоёв, класть по порядку: bg → [дальние предметы, люди]
+#   → table / front → light (поверх всего, свет и тень) → dark (затемнение, если есть).
+#
+# КУХНЯ — kitchen77(t, light="hook", view="hook", lamp_swing=0.0, flash=0.0) -> dict(bg, table, light, dark, cam, ...)
+#   light: "hook"  — жёсткий холодно-белый свет (s01–s03): стена почти без деталей, край окна-засвет слева, резкая косая
+#                    тень рамы окна на стене; flash 0…1 — передержка до белизны (s03 на «воли»), кладётся в "light";
+#          "lamp"  — поздний вечер (s04–s06): синий сумрак, одна тёплая лампа на шнуре над столом (качается на lamp_swing,
+#                    градусы), пятно света формы абажура на столе и на стене, за окном ночь со звёздами;
+#          "warm"  — мягкий тёплый дневной свет петли (s20): кремовая стена, тёплое солнце окна.
+#   view: "hook"  — средне-крупно из-за края стола, чуть снизу (s01, s04–s06, s20 — один стол): дальний край столешницы
+#                   K77_TOP, передний край K77_EDGE (столешница — тонкая полоса, мы на уровне стола), фартук до K77_APRON.
+#                   Отец за столом: таз сидящего/стоящего — сцена; кружка дном на K77_MUG; кот на правом краю стола K77_CAT.
+#         "low"   — ракурс ребёнка снизу (s02): потолок и лампа снизу вверху кадра, стена, столешница на уровне глаз
+#                   ребёнка K77L_TOP; маленький Дима сидит слева у стола K77L_KID (таз), отец нависает справа K77L_FATHER.
+#   Чистая зона под надпись хука — K77_TEXT = (90, 150, 990, 470) в экранных координатах: в "hook"/"low" в этой полосе
+#   только стена (лампа при камере хука — выше кадра).
+#   "table" — столешница и фартук (класть ПОСЛЕ ног и тела отца — стол перед ним; кулак и кружку — после table);
+#   "light" — засвет/тень/пятно лампы поверх всего; "dark" — сумрак "lamp" (класть последним, кроме света лампы: он уже в
+#   "light", который кладётся ПОСЛЕ "dark"). lamp_pool=(x, y) — где пятно лампы на столешнице.
+#   bounce — подскок столешницы от удара (px): table сдвигается вверх.
+#
+# НОЧНОЕ ОКНО — night_window77(t, knock=0.0) -> dict(bg, sill, glass_clip, light): большое окно в ночь (s07), подоконник
+#   W77_SILL_Y (кот сидит на нём, точка между задних лап ≈ (W77_CAT_X, W77_SILL_Y)); стекло W77_GLASS (x0, y0, x1, y1);
+#   ЧИСТЫЙ кусок стекла под «кот» W77_CLEAN (ни звёзд, ни крыш, ни рамы); knock 0…1 — стекло вздрагивает (блик-кольца).
+#   "sill" — подоконник ПЕРЕД котом? нет: кот сидит НА подоконнике — класть sill до кота; "light" — луна на шерсти, после кота.
+#
+# ТЁМНАЯ КОМНАТА — dark_room77(t, u=1.0) -> dict(bg, light, dark): укол s09 — пустая тёмная стена (большая, чистая, под
+#   тень отца) DR77_WALL, пол DR77_FLOOR, слева приоткрытая дверь со щелью тёплого света (источник тени). u — сила щели.
+#
+# ГАРАЖ — garage77(t, lit=1.0, view="wide") -> dict(bg, floor, light, dark, ...): s10, s12–s14. lit 0…1: 0 — темно, видна
+#   только полоска света из-под рулонной шторы; лампы-трубки под потолком загораются по очереди (пороги GA77_TUBES_U),
+#   с мерцанием старта. Задняя стена — шлакоблок, пол — бетон с пятнами. Проём под рулонную штору GA77_DOOR (props.roll_door:
+#   x = центр, y = GA77_FL, w×h = 760×900·k, k = GA77_DOOR_K); выключатель GA77_SWITCH (props.light_switch, k≈1), ящик под ним
+#   GA77_BOX (верх ящика — кот прыгает сюда); хлам (props.garage_junk) — сцена ставит у GA77_JUNK.
+#   view: "wide" — общий план; "door" — та же стена ближе к шторе (cam в dict).
+#
+# ДВОР — yard77(t, mode="day") -> dict(bg, ground, light): s11, s15. mode "day" — голубое небо, "evening" — тёплый закат.
+#   Земля YD77_GROUND (низ забора), забор props.fence — сцена ставит ЛЕВЫЙ НИЗ на (x, YD77_GROUND); дом и кусты — далеко.
+#
+# ГОСТИНАЯ — living77(t, fresh=1.0) -> dict(bg, floor, light): s17–s19. Свежая светло-зелёная стена (fresh — блеск свежей
+#   краски), плинтус, пол LV77_FL, окно справа с тёплым светом. Полка — props.shelf на LV77_SHELF (середина верха доски).
+# ══════════════════════════════════════════════════════════════════════════════════════
+CAM77 = (540.0, 960.0, 1.0)
+K77_TOP = 1112.0          # дальний край столешницы (вид "hook")
+K77_EDGE = 1196.0         # передний край столешницы
+K77_APRON = 1300.0        # низ фартука стола
+K77_MUG = (650.0, 1150.0)  # кружка дном (середина столешницы)
+K77_CAT = (900.0, 1166.0)  # кот на правом краю стола: точка между задних лап
+K77_LAMP = (540.0, 150.0)  # низ абажура лампы (вид "hook"; при камере хука — выше кадра)
+K77_POOL = (560.0, 1150.0)
+K77_TEXT = (90.0, 150.0, 990.0, 470.0)
+K77_WIN = (-620.0, 170.0, 40.0, 980.0)
+K77L_TOP = 1180.0         # вид "low": край столешницы на уровне глаз ребёнка
+K77L_KID = (300.0, 1250.0)
+K77L_FATHER = (760.0, 1330.0)
+
+W77_GLASS = (110.0, 170.0, 970.0, 1180.0)
+W77_SILL_Y = 1220.0
+W77_CAT_X = 520.0
+W77_CLEAN = (560.0, 300.0, 930.0, 600.0)
+
+DR77_WALL = (180.0, 150.0, 1080.0, 1300.0)
+DR77_FLOOR = 1430.0
+DR77_DOOR = (-120.0, 360.0, 150.0, 1430.0)
+
+GA77_FL = 1450.0
+GA77_DOOR = (400.0, GA77_FL)     # середина пола под рулонной шторой
+GA77_DOOR_K = .82
+GA77_SWITCH = (980.0, 760.0)
+GA77_BOX = (980.0, 1180.0)       # середина верха ящика под выключателем
+GA77_JUNK = (-150.0, GA77_FL)
+GA77_TUBES = ((-130.0, 210.0), (400.0, 190.0), (930.0, 210.0))
+GA77_TUBES_U = (.12, .45, .78)
+GA77_CAM = {"wide": (430.0, 900.0, .75), "door": (400.0, 980.0, 1.0)}
+
+YD77_GROUND = 1340.0
+LV77_FL = 1500.0
+LV77_SHELF = (540.0, 760.0)
+
+K77_PAL = {
+    "hook": dict(wall="#e2e6e7", wall_hi="#eceff0", wall_sh="#d2d8da", wall_ln="#d8dddf", cast="#b4bcc1", wood="#cfa77c", wood_sh="#a87e56",
+                 wood_hi="#e4c39c", apron="#9b734e", ceil="#e7ebea"),
+    "lamp": dict(wall="#3a4466", wall_hi="#46507a", wall_sh="#2a3250", wall_ln="#333c5c", cast="#202742", wood="#7a5a48", wood_sh="#56402f",
+                 wood_hi="#8f6c55", apron="#4a3628", ceil="#283050"),
+    "warm": dict(wall="#f2dfbf", wall_hi="#f8ead0", wall_sh="#e2caa2", wall_ln="#e8d3b0", cast="#e6c99c", wood="#d6a774", wood_sh="#ad7f50",
+                 wood_hi="#eac08f", apron="#a77a4c", ceil="#efdcbc"),
+}
+K77_GLOW = "#ffd88a"
+
+
+def _k77_window(P, light, t):
+    x0, y0, x1, y1 = K77_WIN
+    o = []
+    if light == "hook":
+        sky = '<rect x="{}" y="{}" width="{}" height="{}" fill="#ffffff"/>'.format(f(x0), f(y0), f(x1 - x0), f(y1 - y0))
+        sky += blob(rect_pts(x1 - 60, y0, x1 - 30, y1), "#e6ecef")
+    elif light == "lamp":
+        sky = _night_sky(x0, y0, x1, y1, seed=77)
+        sky += blob(ellipse_pts(x0 + 230, y0 + 190, 46, 46, 18), "#f3f0dc", .95)
+    else:
+        g = lib.lin_grad([(0, "#9fcbe8", 1), (1, "#f6e6c4", 1)], 0, y0, 0, y1, units="userSpaceOnUse")
+        sky = f'<rect x="{f(x0)}" y="{f(y0)}" width="{f(x1 - x0)}" height="{f(y1 - y0)}" fill="url(#{g})"/>'
+        for i, (tx, th) in enumerate(((x0 + 140, 300), (x0 + 380, 240))):
+            sky += _tree(tx, y1, th, .5, t, 7700 + i)
+    o.append(sky)
+    fr = P["wall_hi"] if light != "lamp" else "#59628a"
+    o.append(shape(rect_pts(x1 - 24, y0 - 20, x1 + 22, y1 + 20), fr, "", w=4.4, seed=7701))      # правый косяк рамы
+    o.append(shape(rect_pts(x0, y0 + (y1 - y0) * .42 - 12, x1, y0 + (y1 - y0) * .42 + 12), fr, "", w=3.6, seed=7702))
+    o.append(shape(rect_pts(x0 - 40, y1, x1 + 60, y1 + 40), fr, blob(rect_pts(x0 - 40, y1 + 26, x1 + 60, y1 + 40), P["wall_sh"]), w=4.2, seed=7703))
+    return "".join(o)
+
+
+def _k77_lamp(x, y, P, light, swing, t):
+    """Лампа на шнуре: шнур от потолка, жестяной абажур-конус; горит тёплым в "lamp", в остальных — выключена."""
+    ang = math.radians(swing)
+    top = (x - 900 * math.sin(ang), y - 900)
+    bx, by = x, y
+    on = light == "lamp"
+    o = [line([top, (bx, by - 70)], 4, INK, taper=0, wmin=1, seed=7710)]
+    rot = -swing
+    shade = [(-120, 0, 1), (-40, -70, 1), (40, -70, 1), (120, 0, 1)]
+    col = "#3f6f7a" if light != "lamp" else "#2c4a55"
+    inner = blob([(-120, 0), (-40, -70), (-30, -70), (-96, 0)], "#5d93a0" if light != "lamp" else "#3d6672", .8)
+    o.append(f'<g transform="translate({f(bx)} {f(by)}) rotate({f(rot)})">' + shape(shade, col, inner, w=4.0, seed=7711)
+             + shape(ellipse_pts(0, 0, 120, 16, 18), "#fff2c0" if on else "#d5dad8", "", w=3.0, seed=7712)
+             + (blob(ellipse_pts(0, 6, 46, 20, 14), "#fffbe8", .95) if on else "") + '</g>')
+    return "".join(o)
+
+
+def kitchen77(t, light="hook", view="hook", lamp_swing=0.0, flash=0.0, bounce=0.0):
+    P = K77_PAL[light]
+    if view == "low":
+        return _kitchen77_low(t, light, P, flash)
+    o = ['<rect x="-1200" y="-1400" width="3500" height="4800" fill="{}"/>'.format(P["wall_sh"]), _wall_light(-1200, -900, 2300, K77_TOP + 40, P)]
+    o.append(_k77_window(P, light, t))
+    if light == "hook":
+        # резкая косая тень рамы окна и угла шкафа: тёмная плоскость с чётким краем справа (жёсткий свет из окна слева)
+        o.append(blob([(1010, -900), (2300, -900), (2300, K77_TOP), (1150, K77_TOP)], P["cast"], .95))
+        o.append(_sun_quad((60, 470), (560, 50), (300, 620), "#ffffff", "#ffffff", inset=.05))
+    elif light == "warm":
+        o.append(_sun_quad((170, 160), (480, 40), (240, 780), "#fbe9c6", "#fff2d8", inset=.05))
+    if light != "hook":      # днём хука лампа выше кадра — не рисуется (чистая зона надписи)
+        o.append(_k77_lamp(K77_LAMP[0], K77_LAMP[1], P, light, lamp_swing, t))
+    # стол: столешница-полоса (мы на уровне стола), фартук, ножки
+    by = -bounce
+    top = [(-1200, K77_TOP + by, 1), (2300, K77_TOP + by, 1), (2300, K77_EDGE + by, 1), (-1200, K77_EDGE + by, 1)]
+    g = lib.lin_grad([(0, P["wood_sh"], 1), (.35, P["wood"], 1), (1, P["wood_hi"], 1)], 0, K77_TOP + by, 0, K77_EDGE + by, units="userSpaceOnUse")
+    inner = f'<rect x="-1200" y="{f(K77_TOP + by - 4)}" width="3500" height="{f(K77_EDGE - K77_TOP + 8)}" fill="url(#{g})"/>'
+    for i, xx in enumerate((-300, 220, 760, 1260)):
+        inner += line([(xx, K77_TOP + by + 30 + 10 * (i % 2)), (xx + 260, K77_TOP + by + 34 + 10 * (i % 2))], 2.2, P["wood_sh"], seed=7720 + i, op=.6)
+    table = [shape(top, P["wood"], inner, w=5.0, seed=7725)]
+    ap = [(-1200, K77_EDGE + by, 1), (2300, K77_EDGE + by, 1), (2300, 2600, 1), (-1200, 2600, 1)]
+    table.append(shape(ap, P["apron"], blob(rect_pts(-1200, K77_EDGE + by, 2300, K77_EDGE + by + 18), P["wood_sh"], .9)
+                       + line([(-1200, K77_EDGE + by + 70), (2300, K77_EDGE + by + 72)], 3, P["wood_sh"], seed=7727, op=.7), w=5.0, seed=7726))
+    lt, dark = [], ""
+    if light == "lamp":
+        sw = lamp_swing * 9
+        dark = '<rect x="-1200" y="-1400" width="3500" height="4800" fill="#0a0f22" opacity=".28"/>'
+        fl = 1 + .025 * math.sin(t * 6.1)
+        lt.append(f'<g style="mix-blend-mode:screen">' + blob(_jag(K77_POOL[0] + sw, K77_POOL[1] + by - 10, 360 * fl, 46, t, 7730, amp=.025), K77_GLOW, .42)
+                  + blob(_jag(K77_POOL[0] + sw, K77_POOL[1] + by - 12, 220 * fl, 30, t, 7731, amp=.03), "#fff0c4", .4) + '</g>')
+        # конус света от абажура вниз: трапеция с чёткими краями, едва заметная
+        lx = K77_LAMP[0]
+        cone = [(lx - 110, K77_LAMP[1] + 6), (lx + 110, K77_LAMP[1] + 6), (lx + 420 + sw, K77_TOP), (lx - 420 + sw, K77_TOP)]
+        lt.append(f'<g style="mix-blend-mode:screen">{blob(cone, "#ffd98f", .07)}</g>')
+        lt.append(f'<g style="mix-blend-mode:screen">{blob(_jag(lx, K77_LAMP[1] - 20, 170, 120, t, 7732, amp=.03), "#ffcf7a", .14)}</g>')
+    if flash > .005:
+        lt.append(f'<rect x="-1200" y="-1400" width="3500" height="4800" fill="#ffffff" opacity="{min(.92, flash):.3f}"/>')
+    return dict(bg="".join(o), table="".join(table), light="".join(lt), dark=dark, cam=CAM77, top=K77_TOP + by, edge=K77_EDGE + by,
+                mug=(K77_MUG[0], K77_MUG[1] + by), cat=(K77_CAT[0], K77_CAT[1] + by), lamp=K77_LAMP, pool=(K77_POOL[0], K77_POOL[1] + by))
+
+
+def _kitchen77_low(t, light, P, flash):
+    """Ракурс ребёнка: потолок уходит вверх (две линии перспективы), лампа снизу, стена, край столешницы на уровне глаз."""
+    o = ['<rect x="-900" y="-900" width="2900" height="3800" fill="{}"/>'.format(P["wall"]), _wall_light(-900, 120, 2000, K77L_TOP + 40, P)]
+    ceil = [(-900, -900, 1), (2000, -900, 1), (2000, 40, 1), (1180, 150, 1), (-100, 110, 1), (-900, 30, 1)]
+    o.append(shape(ceil, P["ceil"], blob([(-900, -60), (2000, -60), (2000, 40), (1180, 150), (-100, 110), (-900, 30)], P["wall_sh"], .7), w=4.0, seed=7740))
+    o.append(line([(-100, 110), (-160, -900)], 3.2, P["wall_ln"], seed=7741, op=.8))
+    o.append(line([(1180, 150), (1260, -900)], 3.2, P["wall_ln"], seed=7742, op=.8))
+    # жёсткая тень отца на стене кладёт сцена; здесь — резкий клин тени от края окна справа
+    o.append(blob([(1240, 150), (2000, 120), (2000, K77L_TOP), (1500, K77L_TOP)], P["cast"], .9))
+    o.append(shape(rect_pts(1300, 260, 1460, 980), "#ffffff", blob(rect_pts(1300, 260, 1330, 980), "#e2e8ea"), w=4.4, seed=7743))
+    # лампа снизу: шнур в потолок, видно нутро абажура
+    lx, ly = 600.0, 96.0
+    o.append(line([(lx, -900), (lx, ly - 40)], 4, INK, taper=0, wmin=1, seed=7744))
+    o.append(shape([(lx - 120, ly, 1), (lx - 46, ly - 60, 1), (lx + 46, ly - 60, 1), (lx + 120, ly, 1)], "#3f6f7a", "", w=4.0, seed=7745))
+    o.append(shape(ellipse_pts(lx, ly + 4, 120, 30, 18), "#d5dad8", blob(ellipse_pts(lx, ly + 8, 60, 14, 14), "#eef0ef"), w=3.0, seed=7746))
+    top = [(-900, K77L_TOP, 1), (2000, K77L_TOP, 1), (2000, K77L_TOP + 40, 1), (-900, K77L_TOP + 40, 1)]
+    table = shape(top, P["wood"], blob(rect_pts(-900, K77L_TOP, 2000, K77L_TOP + 10), P["wood_hi"]), w=5.0, seed=7747)
+    table += shape([(-900, K77L_TOP + 40, 1), (2000, K77L_TOP + 40, 1), (2000, 2800, 1), (-900, 2800, 1)], P["apron"],
+                   blob(rect_pts(-900, K77L_TOP + 40, 2000, K77L_TOP + 60), P["wood_sh"], .9), w=5.0, seed=7748)
+    lt = f'<rect x="-900" y="-900" width="2900" height="3800" fill="#ffffff" opacity="{min(.92, flash):.3f}"/>' if flash > .005 else ""
+    return dict(bg="".join(o), table=table, light=lt, dark="", cam=CAM77, top=K77L_TOP, kid=K77L_KID, father=K77L_FATHER)
+
+
+def night_window77(t, knock=0.0):
+    x0, y0, x1, y1 = W77_GLASS
+    o = ['<rect x="-900" y="-900" width="2900" height="3800" fill="#232a48"/>']
+    g = lib.lin_grad([(0, "#1d2442", 1), (1, "#2c355a", 1)], 0, 0, 0, 1920, units="userSpaceOnUse")
+    o.append(f'<rect x="-900" y="-900" width="2900" height="3800" fill="url(#{g})"/>')
+    o.append(_night_sky(x0, y0, x1, y1, seed=771, clean=W77_CLEAN))
+    o.append(blob(ellipse_pts(x0 + 170, y0 + 170, 58, 58, 20), "#f4f1dc", .96))
+    o.append(blob(ellipse_pts(x0 + 170, y0 + 170, 96, 96, 20), "#f4f1dc", .12))
+    # крыши и окна домов внизу стекла: силуэт ниже чистой зоны (тёплые квадратики окон без рисунков)
+    roof = [(x0, y1), (x0, 930), (220, 930), (260, 880), (420, 880), (460, 960), (640, 960), (680, 900), (840, 900), (880, 980), (x1, 980), (x1, y1)]
+    o.append(blob(roof, "#0f1428"))
+    r = rs(7760)
+    for _ in range(14):
+        wx, wy = r.uniform(x0 + 30, x1 - 60), r.uniform(1010, 1140)
+        o.append(blob(rect_pts(wx, wy, wx + 22, wy + 28), "#f2c66e", r.uniform(.5, .9)))
+    fr = "#4c557c"
+    frame = shape([(x0 - 40, y0 - 40, 1), (x1 + 40, y0 - 40, 1), (x1 + 40, y1 + 40, 1), (x0 - 40, y1 + 40, 1)], fr, "", w=5.0, seed=7761)
+    glass_hole = f'<path d="M{f(x0)} {f(y0)}H{f(x1)}V{f(y1)}H{f(x0)}Z" fill="#000"/>'
+    mid = (x0 + x1) / 2
+    o.insert(1, frame)
+    o.append(shape(rect_pts(mid - 14, y0, mid + 14, 880), fr, "", w=3.6, seed=7762))      # средник до крыш, чистая зона справа от него
+    o.append(shape(rect_pts(x0, 880, x1, 906), fr, "", w=3.6, seed=7763))
+    # блики стекла: две косые полосы (вне чистой зоны) и кольца стука
+    o.append(blob([(x0 + 40, 700), (x0 + 120, 620), (x0 + 150, 650), (x0 + 70, 730)], "#ffffff", .08))
+    if knock > .01:
+        for j in range(3):
+            rr = 30 + 90 * knock + 40 * j
+            o.append(f'<ellipse cx="{f(W77_CAT_X + 150)}" cy="{f(W77_SILL_Y - 330)}" rx="{f(rr)}" ry="{f(rr * .8)}" fill="none" '
+                     f'stroke="#cfe0ff" stroke-width="3" opacity="{.5 * (1 - knock) * (1 - .25 * j):.3f}"/>')
+    sill = shape(rect_pts(x0 - 80, W77_SILL_Y - 40, x1 + 80, W77_SILL_Y + 10), "#5d6690",
+                 blob(rect_pts(x0 - 80, W77_SILL_Y - 40, x1 + 80, W77_SILL_Y - 28), "#7983ad"), w=4.4, seed=7764)
+    sill += shape(rect_pts(x0 - 40, W77_SILL_Y + 10, x1 + 40, 1600), "#262d4c", "", w=4.0, seed=7765)
+    clip = lib.clip_rect(x0, y0, x1 - x0, y1 - y0)
+    light = ""
+    _ = glass_hole
+    return dict(bg="".join(o), sill=sill, glass_clip=clip, light=light, cam=CAM77)
+
+
+def dark_room77(t, u=1.0):
+    o = ['<rect x="-900" y="-900" width="2900" height="3800" fill="#1a1f36"/>']
+    g = lib.lin_grad([(0, "#161a2e", 1), (.7, "#262c4a", 1), (1, "#1c2138", 1)], 0, 0, 1, 0)
+    o.append(f'<rect x="-900" y="-900" width="2900" height="{f(DR77_FLOOR + 900)}" fill="url(#{g})"/>')
+    o.append(shape(rect_pts(-900, DR77_FLOOR, 2000, 2800), "#151828", line([(-900, DR77_FLOOR + 60), (2000, DR77_FLOOR + 64)], 2, "#262a40", seed=7771),
+                   w=4.0, seed=7770))
+    o.append(shape(rect_pts(-900, DR77_FLOOR - 40, 2000, DR77_FLOOR), "#22273f", "", w=3.4, seed=7772))      # плинтус
+    x0, y0, x1, y1 = DR77_DOOR
+    o.append(shape(rect_pts(x0, y0, x1, y1), "#10131f", "", w=4.4, seed=7773))
+    gap = 26 * u
+    o.append(blob(rect_pts(x1 - gap, y0 + 10, x1, y1), "#ffcf86", .9 * u))
+    # клин тёплого света из щели по полу и низу стены
+    o.append(f'<g style="mix-blend-mode:screen">{blob([(x1, y1), (x1 + 900, 2000), (x1 + 1300, 2000), (x1 + 30, y1 - 10)], "#ffcf86", .18 * u)}</g>')
+    o.append(f'<g style="mix-blend-mode:screen">{blob([(x1, y0 + 40), (2000, y0 - 300), (2000, y1 + 300), (x1, y1)], "#ffcf86", .05 * u)}</g>')
+    return dict(bg="".join(o), light="", dark="", cam=CAM77, wall=DR77_WALL, floor=DR77_FLOOR)
+
+
+def _blocks(x0, y0, x1, y1, col, ln, bw=180.0, bh=90.0):
+    d = ""
+    row = 0
+    y = y0
+    while y < y1:
+        d += f"M{f(x0)} {f(y)}L{f(x1)} {f(y + 1)}"
+        off = (bw / 2) * (row % 2)
+        x = x0 - off
+        while x < x1:
+            d += f"M{f(x)} {f(y)}L{f(x + 1)} {f(min(y1, y + bh))}"
+            x += bw
+        y += bh
+        row += 1
+    return blob(rect_pts(x0, y0, x1, y1), col) + f'<path d="{d}" stroke="{ln}" stroke-width="2.6" fill="none" opacity=".7"/>'
+
+
+def garage77(t, lit=1.0, view="wide", strip=1.0):
+    lit = clamp01(lit)
+    o = ['<rect x="-1200" y="-900" width="3500" height="3800" fill="#8c8f93"/>']
+    o.append(_blocks(-1200, 40, 2300, GA77_FL, "#a3a6a8", "#7d8083"))
+    o.append(shape(rect_pts(-1200, -900, 2300, 40), "#76797d", line([(-1200, 0), (2300, 4)], 3, "#5f6266", seed=7781, op=.8), w=4.2, seed=7780))
+    o.append(shape(rect_pts(-1200, GA77_FL, 2300, 2800), "#8a8783", "", w=4.4, seed=7782))
+    r = rs(7783)
+    for _ in range(9):
+        cx, cy = r.uniform(-900, 1900), r.uniform(GA77_FL + 40, 1900)
+        o.append(blob(ellipse_pts(cx, cy, r.uniform(40, 120), r.uniform(10, 26), 14), "#6f6c69", .5))
+    # проём рулонной шторы: тёмная рама (штору ставит сцена)
+    dx, dy = GA77_DOOR
+    hw, hh = 380 * GA77_DOOR_K + 30, 900 * GA77_DOOR_K + 40
+    o.append(shape(rect_pts(dx - hw, dy - hh, dx + hw, dy), "#5c5f63", blob(rect_pts(dx - hw + 24, dy - hh + 24, dx + hw - 24, dy), "#3b3d40"),
+                   w=4.6, seed=7784))
+    # трубки ламп под потолком (загораются по очереди)
+    tubes = []
+    for i, (tx, ty) in enumerate(GA77_TUBES):
+        on = smooth01((lit - GA77_TUBES_U[i]) / .06)
+        if 0 < on < 1:
+            on *= .5 + .5 * (math.sin(t * 90 + i) > -.2)
+        tubes.append(on)
+        o.append(line([(tx - 120, -900), (tx - 120, ty - 20)], 2.4, INK, taper=0, wmin=1, seed=7785 + i))
+        o.append(line([(tx + 120, -900), (tx + 120, ty - 20)], 2.4, INK, taper=0, wmin=1, seed=7788 + i))
+        o.append(shape(rect_pts(tx - 170, ty - 26, tx + 170, ty), "#6c7074", "", w=3.4, seed=7791 + i))
+        o.append(shape(rect_pts(tx - 160, ty, tx + 160, ty + 22, 10), lib.mix("#c9ccc8", "#fffff4", on), "", w=3.0, seed=7794 + i))
+    # ящик под выключателем
+    bx, by = GA77_BOX
+    o.append(shape(rect_pts(bx - 120, by, bx + 120, GA77_FL), "#a8784a", blob(rect_pts(bx + 60, by, bx + 120, GA77_FL), "#7f5634", .8)
+                   + line([(bx - 110, by + 90), (bx + 110, by + 92)], 2.6, "#7f5634", seed=7798), w=4.6, seed=7797))
+    light = []
+    for i, on in enumerate(tubes):
+        if on > .01:
+            tx, ty = GA77_TUBES[i]
+            light.append(f'<g style="mix-blend-mode:screen">{blob([(tx - 160, ty + 22), (tx + 160, ty + 22), (tx + 520, GA77_FL), (tx - 520, GA77_FL)], "#fffbe0", .10 * on)}'
+                         f'{blob(_jag(tx, GA77_FL + 30, 520, 70, t, 7800 + i, amp=.02), "#fffbe0", .12 * on)}</g>')
+    dk = 1 - lit
+    dark = ""
+    if dk > .005:
+        dark = f'<rect x="-1200" y="-900" width="3500" height="3800" fill="#05070d" opacity="{.93 * dk:.3f}"/>'
+        if strip > .01:      # полоска света из-под двери справа (видна и в темноте — кладётся поверх dark)
+            sx0, sx1 = GA77_DOOR[0] - 380 * GA77_DOOR_K, GA77_DOOR[0] + 380 * GA77_DOOR_K     # из-под рулонной шторы
+            dark += blob(rect_pts(sx0, GA77_FL - 12, sx1, GA77_FL + 2), "#ffdca0", .95 * strip)
+            dark += f'<g style="mix-blend-mode:screen">{blob([(sx0, GA77_FL), (sx1, GA77_FL), (sx1 + 160, 1760), (sx0 - 160, 1760)], "#ffdca0", .08 * strip * dk)}</g>'
+    return dict(bg="".join(o), floor=GA77_FL, light="".join(light), dark=dark, cam=GA77_CAM[view], tubes=tubes, door=GA77_DOOR, door_k=GA77_DOOR_K,
+                switch=GA77_SWITCH, box=GA77_BOX, junk=GA77_JUNK)
+
+
+def yard77(t, mode="day"):
+    ev = mode == "evening"
+    if ev:
+        g = lib.lin_grad([(0, "#5b5f9c", 1), (.55, "#e2928a", 1), (1, "#f6c27a", 1)], 0, -600, 0, YD77_GROUND, units="userSpaceOnUse")
+    else:
+        g = lib.lin_grad([(0, "#6fb2ec", 1), (.7, "#acd8f5", 1), (1, "#e6f4fb", 1)], 0, -600, 0, YD77_GROUND, units="userSpaceOnUse")
+    o = [f'<rect x="-1200" y="-900" width="3500" height="3800" fill="url(#{g})"/>']
+    if ev:
+        o.append(blob(ellipse_pts(780, 620, 90, 90, 22), "#ffe2a0", .95))
+        o.append(blob(ellipse_pts(780, 620, 170, 170, 22), "#ffd28a", .18))
+    else:
+        for i, (cx, cy, w_) in enumerate(((150, 230, 170), (760, 160, 220), (1500, 260, 180))):
+            cx += 6 * t
+            o.append(shape([(cx - w_, cy + 30), (cx - w_ * .6, cy - 30), (cx - w_ * .1, cy - 60), (cx + w_ * .5, cy - 40), (cx + w_, cy + 30)],
+                           "#ffffff", "", w=3.0, seed=7810 + i))
+    # дом соседа и деревья вдали
+    hc = "#7d6a8a" if ev else "#d9b48a"
+    o.append(shape([(-700, YD77_GROUND - 200, 1), (-700, 760, 1), (-420, 560, 1), (-140, 760, 1), (-140, YD77_GROUND - 200, 1)], hc,
+                   blob(rect_pts(-560, 880, -440, 1000), "#f2d27a" if ev else "#9fc6e0"), w=4.4, seed=7815))
+    for i, (tx, th) in enumerate(((60, 420), (1280, 380), (1580, 460))):
+        o.append(_tree(tx, YD77_GROUND - 160, th, .4, t, 7816 + i, col="#5b7a52" if ev else "#5f9a52", sh="#3f5a3c" if ev else "#477a3c"))
+    gc = "#6f8a4e" if ev else "#7fb35a"
+    o.append(shape([(-1200, YD77_GROUND - 190, 1), (2300, YD77_GROUND - 210, 1), (2300, 2800, 1), (-1200, 2800, 1)], gc,
+                   blob([(-1200, YD77_GROUND - 120), (2300, YD77_GROUND - 140), (2300, 2800), (-1200, 2800)], lib.mul(gc, (.86, .88, .86)), .9),
+                   w=4.4, seed=7820))
+    r = rs(7821)
+    tufts = []
+    for _ in range(60):
+        x, y = r.uniform(-1100, 2200), r.uniform(YD77_GROUND - 40, 1880)
+        sw = 3 * math.sin(t * 2.3 + x * .01)
+        tufts.append(line([(x, y), (x - 6 + sw, y - 26)], 2.2, lib.mul(gc, (.7, .74, .7)), seed=int(x) % 9000 + 7822, op=.8))
+    light = ""
+    if ev:
+        light = f'<rect x="-1200" y="-900" width="3500" height="3800" fill="#ffb070" opacity=".10" style="mix-blend-mode:multiply"/>'
+    return dict(bg="".join(o), ground="".join(tufts), light=light, cam=CAM77, y=YD77_GROUND)
+
+
+def living77(t, fresh=1.0):
+    P = dict(wall="#cfe0c4", wall_hi="#dcebd2", wall_sh="#b8cdaa", wall_ln="#c3d6b6")
+    o = ['<rect x="-1200" y="-900" width="3500" height="3800" fill="{}"/>'.format(P["wall_sh"]), _wall_light(-1200, -900, 2300, LV77_FL - 60, P)]
+    if fresh > .01:      # блеск свежей краски: несколько длинных мазков валика светлее стены
+        for i, xx in enumerate((-200, 160, 520, 880, 1240)):
+            o.append(blob([(xx, 80), (xx + 70, 80), (xx + 90, LV77_FL - 120), (xx + 20, LV77_FL - 120)], "#ffffff", .07 * fresh))
+    o.append(shape(rect_pts(-1200, LV77_FL - 60, 2300, LV77_FL), "#f4f1e6", blob(rect_pts(-1200, LV77_FL - 18, 2300, LV77_FL), "#d8d2c0"), w=4.0, seed=7830))
+    o.append(shape(rect_pts(-1200, LV77_FL, 2300, 2800), "#c8915c", "".join(
+        line([(-1200, LV77_FL + 40 + 70 * i), (2300, LV77_FL + 44 + 70 * i)], 2.4, "#a87444", seed=7832 + i, op=.6) for i in range(6)), w=4.4, seed=7831))
+    # окно справа с тёплым светом и пятно солнца на стене
+    o.append(shape(rect_pts(1180, 180, 1640, 1100), "#f8ead0", "", w=4.4, seed=7840))
+    g = lib.lin_grad([(0, "#a6d0ec", 1), (1, "#f6e2b8", 1)], 0, 200, 0, 1080, units="userSpaceOnUse")
+    o.append(f'<rect x="1210" y="210" width="400" height="860" fill="url(#{g})"/>')
+    o.append(shape(rect_pts(1398, 210, 1422, 1070), "#f8ead0", "", w=3.0, seed=7841))
+    o.append(_sun_quad((620, 260), (420, 50), (230, 820), "#e6f0d6", "#f0f6e2", inset=.05))
+    return dict(bg="".join(o), floor=LV77_FL, light="", cam=CAM77, shelf=LV77_SHELF)

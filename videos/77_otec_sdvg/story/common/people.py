@@ -3523,11 +3523,11 @@ EXPR["father77"] = {
 # поза: (наклон, голова, руки, кисти) в L-единицах отца от таза; кулак — пальцы до упора, большой поверх
 _FIST = {"kind": "fist"}
 _FA_P = {
-    "windup": (-.14, -.1, {"f": ("ik", (150, -230), -1), "n": ("ik", (60, -800), -1)}, {"f": {"curl": (.5, .5, .55, .6), "thumb": .5}, "n": dict(_FIST, dir=(.2, -1))}),
+    "windup": (-.14, -.1, {"f": ("ik", (150, -230), -1), "n": ("ik", (-60, -820), 1)}, {"f": {"curl": (.5, .5, .55, .6), "thumb": .5}, "n": dict(_FIST, dir=(.2, -1))}),
     "slam": (.26, .22, {"f": ("ik", (220, -210), -1), "n": ("ik", (380, -150), -1)}, {"f": {"curl": (.4, .4, .45, .5), "thumb": .4}, "n": dict(_FIST, dir=(.5, 1))}),
     "point": (.2, .26, {"f": ("ik", (170, -230), -1), "n": ("ik", (440, -330), -1)},
-              {"f": dict(_FIST, dir=(1, .4)), "n": {"dir": (1, .35), "curl": (0, .95, .95, .92), "spread": .02, "thumb": .8}}),
-    "temple": (.02, .08, {"f": ("ik", (170, -230), -1), "n": ("ik", (-30, -640), 1)}, {"f": dict(_FIST, dir=(1, .4)), "n": dict(_FIST, dir=(-.3, -1))}),
+              {"f": {"curl": (.8, .85, .85, .85), "thumb": .7, "dir": (1, .5)}, "n": {"dir": (1, .35), "curl": (0, .95, .95, .92), "spread": .02, "thumb": .8}}),
+    "temple": (.02, .08, {"f": ("ik", (170, -230), -1), "n": ("ik", (-30, -640), 1)}, {"f": dict(_FIST, dir=(1, .4)), "n": dict(_FIST, dir=(.25, -1))}),
     "sit": (.1, .1, {"f": ("ik", (200, -200), -1), "n": ("ik", (260, -195), -1)},
             {"f": {"curl": (.4, .4, .45, .5), "thumb": .4}, "n": {"curl": (.35, .35, .4, .45), "thumb": .35, "dir": (1, .2)}}),
     "slump": (.3, .34, {"f": ("ik", (210, -170), -1), "n": ("ik", (270, -165), -1)},
@@ -3539,14 +3539,14 @@ _FA_P = {
     "drop": (.06, .14, {"f": ("ik", (160, -230), -1), "n": ("ik", (390, -300), -1)},
              {"f": {"curl": (.45, .45, .5, .55), "thumb": .45}, "n": {"dir": (.8, .7), "curl": (.1, .1, .15, .2), "spread": .3, "thumb": .15}}),
     "forehead": (-.06, -.22, {"f": ("ik", (170, -220), -1), "n": ("ik", (150, -660), 1)},
-                 {"f": {"curl": (.4, .4, .45, .5), "thumb": .4}, "n": {"dir": (-.25, -1), "curl": (.1, .1, .15, .2), "spread": .12, "thumb": .2}}),
+                 {"f": {"curl": (.4, .4, .45, .5), "thumb": .4}, "n": {"dir": (.2, -1), "curl": (.1, .1, .15, .2), "spread": .12, "thumb": .2}}),
     "bucket": (.34, .3, {"f": ("ik", (230, -110), -1), "n": ("ik", (300, -100), -1)},
                {"f": {"curl": (.4, .4, .45, .5), "thumb": .4}, "n": {"curl": (.35, .35, .4, .45), "thumb": .35, "dir": (1, .5)}}),
     "head_hands": (.42, .5, {"f": ("ik", (260, -470), 1), "n": ("ik", (300, -450), 1)},
-                   {"f": {"dir": (.2, -1), "curl": (.2, .2, .25, .3), "thumb": .3}, "n": {"dir": (-.1, -1), "curl": (.2, .2, .25, .3), "spread": .15, "thumb": .3}}),
+                   {"f": {"dir": (.3, -1), "curl": (.2, .2, .25, .3), "thumb": .3}, "n": {"dir": (-.2, -1), "curl": (.2, .2, .25, .3), "spread": .15, "thumb": .3}}),
     "handle": (-.06, -.2, {"f": ("ik", (250, -790), 1), "n": ("ik", (330, -800), 1)},
                {"f": dict(_FIST, dir=(1, 0)), "n": dict(_FIST, dir=(1, 0))}),
-    "shoulder": (.62, .22, {"f": ("ik", (330, -440), -1), "n": ("ik", (380, -300), -1)},
+    "shoulder": (.62, .22, {"f": ("ik", (560, -470), -1), "n": ("ik", (600, -330), -1)},
                  {"f": {"dir": (.1, -1), "curl": (.15, .15, .2, .25), "spread": .2, "thumb": .2}, "n": {"dir": (.2, -1), "curl": (.1, .1, .15, .2), "spread": .2, "thumb": .2}}),
     "fall": (.85, .1, {"f": ("ik", (470, -230), -1), "n": ("ik", (520, -170), -1)},
              {"f": {"dir": (1, .3), "curl": (.1, .1, .15, .2), "spread": .3, "thumb": .15}, "n": {"dir": (1, .4), "curl": (.1, .1, .15, .2), "spread": .3, "thumb": .15}}),
@@ -3567,8 +3567,9 @@ _FA_P = {
 }
 POSE.update({"fa_" + k_: v_ for k_, v_ in _FA_P.items()})
 # позы с кистью у лица: цель запястья — смещение от центра головы (в L·scale) и сторона локтя
-_FA_HEAD = {"temple": {"n": ((-40, -10), 1)}, "forehead": {"n": ((30, -10), 1)},
-            "head_hands": {"n": ((60, 140), 1), "f": ((-40, 150), 1)}}
+_FA_HEAD = {"temple": {"n": ((-80, 30), 1)}, "forehead": {"n": ((40, 30), -1)},
+            "head_hands": {"n": ((90, 190), -1), "f": ((0, 200), -1)}}
+_FA_BEHIND = ("windup", "handle", "screw", "arms_up", "hold_shelf")
 _FA_EXPR = {"windup": "shout", "slam": "shout", "point": "shout_kid", "temple": "hard", "sit": "tired", "slump": "tired", "blow": "blow",
             "brush": "paint", "drop": "sad", "forehead": "ashamed", "bucket": "sad", "head_hands": "sad", "handle": "strain", "shoulder": "strain",
             "fall": "surprised", "screw": "busy", "arms_up": "joy", "hug": "proud", "slap": "laugh", "slap_up": "laugh", "glasses_off": "stunned",
@@ -3582,13 +3583,11 @@ def fist_svg(who, Wr, d, k=1.0, flip=1, seed=7790, far=False):
     C = PAL[who]
     d = np.array(d, float)
     d /= np.linalg.norm(d) + 1e-9
-    n = np.array([-d[1], d[0]]) * flip
-    W_ = np.array(Wr, float)
+    ang = math.degrees(math.atan2(d[1], d[0]))
     sk, sh, sh2 = (far_c(C["SKIN"], far), far_c(C["SKIN_SH"], far), C["SKIN_SH2"])
 
     def Q(a, b):
-        q = W_ + (d * a + n * b) * k
-        return (float(q[0]), float(q[1]))
+        return (float(a), float(b * flip))
     o = []
     # согнутые пальцы: четыре валика на торце кулака
     for j, (b0, b1) in enumerate(((-40, -20), (-20, 0), (0, 20), (20, 38))):
@@ -3599,10 +3598,10 @@ def fist_svg(who, Wr, d, k=1.0, flip=1, seed=7790, far=False):
     knuck = "".join(line([Q(80, b - 7), Q(86, b), Q(80, b + 7)], 1.8, sh2, seed=seed + 20 + i, op=.75) for i, b in enumerate((-30, -10, 10, 29)))
     o.append(shape(pp, sk, blob([pp[6], pp[7], pp[8], pp[9], Q(-6, 14), Q(70, 22)], sh, .55) + knuck, w=4.4, seed=seed + 5))
     # большой палец поверх согнутых пальцев
-    o.append(shape(lib.band([Q(14, -40), Q(48, -40), Q(74, -26), Q(86, -10)], 30 * k, 22 * k, step=3), sk,
-                   blob([Q(20, -34), Q(70, -24), Q(80, -12), Q(40, -30)], sh, .5) + blob(ellipse_pts(*Q(84, -12), 7 * k, 6 * k, 8), C["NAIL"], .9),
+    o.append(shape(lib.band([Q(14, -40), Q(48, -40), Q(74, -26), Q(86, -10)], 30, 22, step=3), sk,
+                   blob([Q(20, -34), Q(70, -24), Q(80, -12), Q(40, -30)], sh, .5) + blob(ellipse_pts(*Q(84, -12), 7, 6, 8), C["NAIL"], .9),
                    w=4.0, seed=seed + 6))
-    return "".join(o)
+    return f'<g transform="translate({Wr[0]:.2f} {Wr[1]:.2f}) rotate({ang:.2f}) scale({k:.4f})">{"".join(o)}</g>'
 
 
 def sit_feet(x, y, k, who="father77", ground=300.0, fwd=250.0):
@@ -3655,16 +3654,19 @@ def father(x, y, k, expr=None, pose="sit", t=0.0, u=1.0, feet=None, flip=False, 
     hands_ = dict(pk["hands"])
     for sd in fists:
         hands_[sd] = {"kind": "none"}
-    fig = figure("father77", x, y, k, ex, lean=pk["lean"] + lean_add + br, head_ang=pk["head_ang"] + head_add, arms=pk["arms"], hands=hands_,
-                 feet=ft, flip=flip, layers=lay)
-    for sd, hs in fists.items():      # кулак — поверх руки (дальний — тоже поверх: дальний кулак в позах всегда перед телом)
+    fkw = dict(lean=pk["lean"] + lean_add + br, head_ang=pk["head_ang"] + head_add, arms=pk["arms"], hands=hands_, feet=ft, flip=flip)
+    behind = name in _FA_BEHIND and lay is None
+    fig = figure("father77", x, y, k, ex, layers=("legs", "pelvis", "arm_f", "arm_n") if behind else lay, **fkw)
+    for sd, hs in fists.items():      # кулак — поверх своей руки (дальний кулак в позах всегда перед телом)
         w_ = np.array(fig["wrist"][sd])
         e_ = np.array(fig["elbow"][sd])
         dd = np.array(hs.get("dir") or (w_ - e_), float)
         if flip and hs.get("dir"):
             dd[0] = -dd[0]
-        fig["svg"] += fist_svg("father77", w_, dd, k=fig["scale"] * 1.05, flip=-1 if flip else 1, seed=7790 + (0 if sd == "n" else 30), far=sd == "f")
+        fig["svg"] += fist_svg("father77", w_, dd, k=fig["scale"] * 1.12, flip=-1 if flip else 1, seed=7790 + (0 if sd == "n" else 30), far=sd == "f")
         fig.setdefault("fists", {})[sd] = tuple(map(float, w_ + dd / (np.linalg.norm(dd) + 1e-9) * 60 * fig["scale"]))
+    if behind:      # рука за головой: тело и голова поверх руки и кулака
+        fig["svg"] += figure("father77", x, y, k, ex, layers=("body",), **fkw)["svg"]
     fig["hold"] = hand_pos(fig, "n", 70)
     fig["palm"] = hand_pos(fig, "n", 55)
     fig["fist"] = fig.get("fists", {}).get("n") or hand_pos(fig, "n", 45)
@@ -3682,17 +3684,17 @@ def father(x, y, k, expr=None, pose="sit", t=0.0, u=1.0, feet=None, flip=False, 
     return fig
 
 
-def father_shadow(x, y, k, pose="point", u=1.0, t=0.0, col="#0b0e1c", op=.9, op_fill=.18, w=6.0, flip=False, blur_sd=0.0):
+def father_shadow(x, y, k, pose="point", u=1.0, t=0.0, col="#0b0e1c", op=.9, op_fill=.18, w=6.0, flip=False, blur_sd=0.0, **kw):
     """Тень отца силуэтом ЛИНИЕЙ: фигура рисуется одним цветом (контур — тушь цвета col, заливка — полупрозрачный col).
     Делается фильтром: альфа рисунка → морфологическая обводка; внутренние линии (лицо, клетка) не видны."""
-    fig = father(x, y, k, "hard", pose, t, u, feet="stand", flip=flip)
+    fig = father(x, y, k, "hard", pose, t, u, feet="stand", flip=flip, **kw)
     fid = lib.uid("fsh")
     ww = max(1.0, w)
     lib.DEFS.append(f'<filter id="{fid}" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">'
                     f'<feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 30 0" result="a"/>'
                     f'<feMorphology in="a" operator="dilate" radius="{ww / 2:.1f}" result="d"/>'
                     f'<feMorphology in="a" operator="erode" radius="{ww / 2:.1f}" result="e"/>'
-                    f'<feComposite in="d" in2="e" operator="out" result="ring"/>'
+                    f'<feComposite in="d" in2="e" operator="out" result="ring0"/><feGaussianBlur in="ring0" stdDeviation=".9" result="ring"/>'
                     f'<feFlood flood-color="{col}" flood-opacity="{op:.3f}" result="c1"/><feComposite in="c1" in2="ring" operator="in" result="r1"/>'
                     f'<feFlood flood-color="{col}" flood-opacity="{op_fill:.3f}" result="c2"/><feComposite in="c2" in2="e" operator="in" result="r2"/>'
                     + (f'<feGaussianBlur in="r2" stdDeviation="{blur_sd:.1f}" result="r2"/>' if blur_sd > 0 else '')
