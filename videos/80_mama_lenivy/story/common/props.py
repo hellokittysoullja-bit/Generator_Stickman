@@ -5562,3 +5562,367 @@ def ribbon_roll(x, y, k=1.0, unroll=0.0, t=0.0, trail=None, seed=0):
     for s_ in (0,):
         o.append(shape(lib.band([(x - R * .35, y), (x - R * .35 - 30 * k, y + R * 1.05)], 18 * k, 22 * k), C_WOOD_SH, "", w=3 * k, seed=sd + 4 + s_))
     return "".join(o)
+
+
+# ═══════════════════════════════ «МАМА БЫЛА ПРАВА» (рилс 80, группа A) ═══════════════════════════════
+# t — общее время ролика; k — масштаб; seed — своё зерно. Букв, цифр, значков, делений нет нигде.
+#   iron_tag(x, y, k, swing=0, crack_u=0, seed=0, cord=150, break_u=0, card=0, fall=900, t=0, layer="all", cord_on=True)
+#                       тяжёлая бирка-гиря на шнуре: (x, y) — точка, где шнур обнимает шею (верх петли); бирка 200×170·k висит на
+#                       cord·k ниже, поворот swing° вокруг (x, y). Чугун с заклёпками и ржавчиной, БЕЗ букв.
+#                       crack_u 0…1 — трещины зигзагом растут от центра к краю; break_u 0…1 — куски расходятся и падают вниз на
+#                       fall·k (легко, порхая — это картон); card 0…1 — краска осыпается: куски становятся картоном (гофра на изломе).
+#                       iron_tag_center(x, y, k, swing, cord) → центр бирки в мире. layer "cord" | "tag" | "all".
+#   gloom_cloud(x, y, k, t, rain=0, zap=0, shrink=0, seed=0, pale=0, grow=1, wob=1)
+#                       серое облачко ЧУВСТВА 300×170·k (ЦЕНТР), без хвостика: клубится (дышит), rain 0…1 — моросит холодными
+#                       штрихами вниз на 260·k; zap 0…1 — потрескивает короткими молниями (мерцают от t), тон вспыхивает;
+#                       shrink 0…1 — сворачивается в маленький плотный клубок (~0.42 размера) с витками внутри; pale 0…1 — бледнеет
+#                       к бумаге (не прозрачность); grow 0…1 — набухает из точки (через back_out).
+#   story_card(x, y, k, rot, i, seed=0, lift=0)   карточка раскадровки 170×230·k (ЦЕНТР): белая рамка, внутри маленькая сцена
+#                       с Димой (i 0…5: за столом, с телефоном, у окна, на кровати, идёт, с котом), без букв; lift 0…1 — тень больше.
+#   card_fan(x, y, k, open_u, t=0, seed=0, n=5, hide=None)   веер из n карточек: (x, y) — точка, где их держат (низ веера);
+#                       open_u 0…1 — веер раскрывается (угол до ±48°); hide — номер карточки, которую сцена рисует сама.
+#                       card_fan_pos(x, y, k, open_u, j, n=5) → (cx, cy, rot) карточки j.
+#   pointer_stick(x, y, k, rot, seed=0)   указка 520·k: (x, y) — конец рукояти, кончик по направлению rot (0 — вправо).
+#   scribble_sheet(x, y, k, u, rot=0, seed=0, w=260, h=340, sy=1)   лист (ЦЕНТР) с волнистыми строками без букв; u 0…1 — строки
+#                       пишутся по одной. scribble_tip(x, y, k, u, rot, w, h, sy) → кончик пера на текущей строке.
+#   phone_dome(x, y, k, u, t=0, seed=0)   тёплый купол света телефона: (x, y) — центр основания, радиус 380·k, u 0…1 — растёт;
+#                       тёплая заливка и светлый край-оболочка, мягкое мерцание. dome_r(k, u) → текущий радиус.
+C_TAG = "#4D5157"
+C_TAG_SH = "#33363B"
+C_TAG_HI = "#7E848C"
+C_RUST80 = "#9C5A32"
+C_CARDBOARD = "#C9A46C"
+C_CARDBOARD_SH = "#A5814C"
+C_CORD = "#5B4A32"
+C_GLOOM = "#8C929C"
+C_GLOOM_SH = "#6B717C"
+C_GLOOM_HI = "#B4B9C1"
+C_DRIZZLE = "#8FA7BD"
+C_HOODIE80 = "#D9A62E"
+
+
+def _tag_outline(cord):
+    """Контур бирки: щит со скруглёнными углами, ушко сверху. Точки (x, y) локально."""
+    return rrect(-100, cord, 100, cord + 170, 30, n=6)
+
+
+def iron_tag_center(x, y, k=1.0, swing=0.0, cord=150.0):
+    a = math.radians(swing)
+    ly = cord + 85
+    return x - math.sin(a) * ly * k, y + math.cos(a) * ly * k
+
+
+def _tag_pieces(cord, seed):
+    """Куски бирки: клинья от точки излома до края контура (5 штук)."""
+    rim = _tag_outline(cord)
+    # плотно передискретизировать контур
+    P_ = []
+    for i in range(len(rim)):
+        a, b = rim[i], rim[(i + 1) % len(rim)]
+        for m in range(4):
+            q = m / 4
+            P_.append((a[0] + (b[0] - a[0]) * q, a[1] + (b[1] - a[1]) * q))
+    n = len(P_)
+    rs = _rs(80100 + seed)
+    c = (rs.uniform(-18, 12), cord + 80 + rs.uniform(-12, 12))
+    cuts = sorted(int(n * (j / 5 + rs.uniform(-.04, .04))) % n for j in range(5))
+    pieces = []
+    for j in range(5):
+        i0, i1 = cuts[j], cuts[(j + 1) % 5]
+        if i1 <= i0:
+            i1 += n
+        pts = [(c[0], c[1], 1)] + [P_[i % n] for i in range(i0, i1 + 1)]
+        pts[1] = pts[1] + (1,)
+        pts[-1] = pts[-1] + (1,)
+        pieces.append(pts)
+    return c, [P_[i] for i in cuts], pieces
+
+
+def _zig(p0, p1, u, seed, amp=9.0, n=6):
+    rs = _rs(seed)
+    out = []
+    m = max(1, int(n * u + .999))
+    for i in range(m + 1):
+        q = min(i / n, u)
+        off = 0 if i in (0, n) else rs.uniform(-amp, amp)
+        L = math.hypot(p1[0] - p0[0], p1[1] - p0[1]) or 1
+        nx, ny = -(p1[1] - p0[1]) / L, (p1[0] - p0[0]) / L
+        out.append((p0[0] + (p1[0] - p0[0]) * q + nx * off, p0[1] + (p1[1] - p0[1]) * q + ny * off))
+    return out
+
+
+def _tag_face(pts_clip_x0, cord, sd, card):
+    """Внутренность бирки (локально): тень справа, блик, царапины, ржавчина; с card — краска осыпается в картон."""
+    inner = blob(rrect(30, cord, 104, cord + 174, 30), C_TAG_SH, .85)
+    inner += line([(-76, cord + 22), (50, cord + 16)], 6, C_TAG_HI, taper=.5, wmin=.2, seed=sd + 3, op=.85)
+    for j in range(4):
+        rs = _rs(sd + 10 + j)
+        x0, y0 = rs.uniform(-70, 40), rs.uniform(cord + 60, cord + 140)
+        inner += line([(x0, y0), (x0 + rs.uniform(16, 34), y0 + rs.uniform(-7, 7))], 2.4, "#24262A", taper=.4, wmin=.3, seed=sd + 20 + j, op=.55)
+    inner += blob(ellipse_pts(-62, cord + 136, 10, 7, 10), C_RUST80, .7) + blob(ellipse_pts(64, cord + 50, 12, 7, 10), C_RUST80, .55)
+    if card > .01:
+        inner += blob(rrect(-110, cord - 10, 110, cord + 180, 30), C_CARDBOARD, clamp(card))
+        for j in range(9):   # гофра-полоски картона
+            yy = cord + 12 + j * 18
+            inner += line([(-96, yy), (96, yy + 2)], 2.2, C_CARDBOARD_SH, taper=.2, wmin=.5, seed=sd + 40 + j, op=clamp(card) * .7)
+    return inner
+
+
+def iron_tag(x, y, k=1.0, swing=0.0, crack_u=0.0, seed=0, cord=150.0, break_u=0.0, card=0.0, fall=900.0, t=0.0, layer="all",
+             cord_on=True):
+    sd = 80000 + seed
+    o = []
+    bu = clamp(break_u)
+    if layer in ("all", "cord") and cord_on and bu < .25:
+        op = 1 - bu / .25
+        # шнур: петля вокруг шеи (верх) и две ветви к ушку бирки
+        o.append(line([(-46, 10), (-30, -10), (0, -18), (30, -10), (46, 10)], 6, C_CORD, taper=.1, wmin=.7, seed=sd, op=op))
+        o.append(line([(-46, 10), (-20, cord * .55), (-6, cord + 14)], 6, C_CORD, taper=.1, wmin=.7, seed=sd + 1, op=op))
+        o.append(line([(46, 10), (20, cord * .55), (6, cord + 14)], 6, C_CORD, taper=.1, wmin=.7, seed=sd + 2, op=op))
+    if layer in ("all", "tag"):
+        c, rimc, pieces = _tag_pieces(cord, seed)
+        if bu <= 0.001:
+            body = _tag_face(0, cord, sd, card)
+            cu = clamp(crack_u)
+            if cu > 0:
+                for j, rp in enumerate(rimc):
+                    uu = clamp(cu * 1.6 - j * .12)
+                    if uu > 0:
+                        body += line(_zig(c, rp, uu, sd + 60 + j), 5.5, "#141518", taper=.3, wmin=.25, seed=sd + 70 + j)
+                        body += line([(q[0] + 3, q[1] + 2) for q in _zig(c, rp, uu, sd + 60 + j)], 2.4, C_TAG_HI, taper=.3, wmin=.3,
+                                     seed=sd + 80 + j, op=.6)
+            o.append(shape(_tag_outline(cord), C_TAG, body, w=5.6, seed=sd + 5))
+            # ушко и заклёпки
+            o.append(shape(ellipse_pts(0, cord + 16, 11, 11, 12), C_TAG_SH, blob(ellipse_pts(0, cord + 16, 5, 5, 8), "#141518"), w=3.2,
+                           seed=sd + 6))
+            for sx in (-74, 74):
+                o.append(shape(ellipse_pts(sx, cord + 146, 7, 7, 10), C_TAG_HI, "", w=2.6, seed=sd + 7 + sx))
+        else:
+            rs = _rs(sd + 90)
+            for j, pc in enumerate(pieces):
+                gx = sum(p[0] for p in pc) / len(pc)
+                gy = sum(p[1] for p in pc) / len(pc)
+                dirx = (gx - c[0]) / 60
+                # лёгкий картон: разлёт, потом порхание вниз (не камень)
+                fx = dirx * 70 * lib.ease_out(bu, 2) + math.sin(bu * 9 + j * 1.7) * 26 * bu
+                fy = -30 * math.sin(math.pi * min(bu * 2.2, 1)) + fall * bu ** 1.6 * rs.uniform(.8, 1.1)
+                rr = (j - 2) * 40 * bu + math.sin(bu * 11 + j) * 16 * bu
+                body = _tag_face(0, cord, sd, max(card, clamp(bu * 3)))
+                piece = shape(pc, C_TAG, body, w=4.6, seed=sd + 100 + j)
+                o.append(f'<g transform="translate({f(fx)} {f(fy)}) rotate({f(rr)} {f(gx)} {f(gy)})">{piece}</g>')
+    return _tf("".join(o), x, y, k, swing)
+
+
+def gloom_cloud(x, y, k=1.0, t=0.0, rain=0.0, zap=0.0, shrink=0.0, seed=0, pale=0.0, grow=1.0, wob=1.0):
+    g = clamp(grow)
+    if g <= .01:
+        return ""
+    sd = 80200 + seed
+    s = clamp(shrink)
+    sc = (1 - .58 * lib.ease_io(s)) * (lib.back_out(g, 1.4) if g < 1 else 1.0)
+    zp = clamp(zap)
+    fl = zp * (.5 + .5 * math.sin(t * 37 + seed)) * (1 if math.sin(t * 13.7 + seed * 2) > -.2 else .25)
+    pl = clamp(pale)
+    col = mix(mix(C_GLOOM, "#C7CBD3", fl * .6), "#E9E6DC", pl * .8)
+    csh = mix(mix(C_GLOOM_SH, "#9AA0AA", fl * .6), "#DCD8CC", pl * .8)
+    chi = mix(C_GLOOM_HI, "#EFEDE6", pl * .7)
+    w, h = 300 - 80 * s, 170 + 30 * s
+    # клубы дышат: точки контура слегка ходят от t
+    base = _puff_pts(w, h, sd, n=9 - int(3 * s), bump=(.14 - .06 * s, .24 - .1 * s))
+    ph = t * 2.2 * wob
+    pts = []
+    for i, p in enumerate(base):
+        b = 1 + .035 * wob * math.sin(ph + i * .7 + seed)
+        pts.append((p[0] * b, p[1] * b) + p[2:])
+    sh_pts = _puff_pts(w * 1.05, h * .7, sd + 9, n=8, bump=(.08, .16), cy=h * .42)
+    inn = blob(sh_pts, csh)
+    rs = _rs(sd + 3)
+    for j in range(3):
+        cx = -w * .26 + j * w * .2 + rs.uniform(-10, 10)
+        inn += blob(_puff_pts(w * .16, h * .13, sd + 20 + j, n=5, bump=(.1, .2), cy=0), chi, .75,
+                    extra=f'transform="translate({f(cx)} {f(-h * .25 + rs.uniform(-8, 8))})"')
+    if s > .05:   # витки клубка
+        for j in range(3):
+            r0 = (36 + j * 22) * s
+            arc = [(r0 * math.cos(a) - 6, r0 * .8 * math.sin(a) + 6) for a in [math.radians(200 + j * 40 + m * 14) for m in range(16)]]
+            inn += line(arc, 3.2, csh, taper=.5, wmin=.3, seed=sd + 30 + j, op=clamp(s * 1.4))
+    o = []
+    body = shape(pts, col, inn, w=4.4 * (1 - .3 * pl), seed=sd + 1, ink_color=mix(INK, "#9A958A", pl * .7))
+    o.append(f'<g transform="translate({f(x)} {f(y)}) scale({sc * k:.4f})">{body}</g>')
+    R = rain * (1 - s)
+    if R > .01:
+        rr = _rs(sd + 50)
+        for j in range(16):
+            px = x + rr.uniform(-w * .4, w * .4) * sc * k
+            per = rr.uniform(.45, .65)
+            ph0 = rr.uniform(0, 1)
+            u = ((t / per) + ph0) % 1
+            py0 = y + h * .36 * sc * k
+            py = py0 + u * 260 * k
+            ln = 26 * k
+            op = R * (1 - u) * (.6 + .4 * rr.uniform(0, 1))
+            if j / 16 > R + .05:
+                continue
+            o.append(line([(px - 4 * k * u, py), (px - 4 * k * u - 5 * k, py + ln)], 3.6 * k, C_DRIZZLE, taper=.5, wmin=.3, seed=sd + 60 + j,
+                          op=op))
+    if zp > .01:
+        for j in range(3):
+            tt = (t * 3.1 + j * .37 + seed * .1) % 1
+            if tt > .45 * zp + .05:
+                continue
+            rz = _rs(sd + 70 + j * 7 + int(t * 9))
+            a = math.radians(rz.uniform(-160, -20) if j == 1 else rz.uniform(30, 150))
+            r0 = (w * .42) * sc * k
+            p0 = (x + math.cos(a) * r0, y + math.sin(a) * r0 * .7)
+            p1 = (p0[0] + math.cos(a) * 70 * k, p0[1] + math.sin(a) * 60 * k + 30 * k)
+            o.append(bolt(p0[0], p0[1], p1[0], p1[1], .5, w=16 * k, seed=sd + j + int(t * 9) % 5, n=4))
+    return "".join(o)
+
+
+_CARD_COLS = ("#F6EFD9", "#EEF2F6", "#F7E7DF", "#EEF3E6", "#F3ECF6", "#F7F0DC")
+
+
+def _mini_dima(px, py, s, sd, arm=0.0, sit=False):
+    """Крошечный Дима для карточки: голова с лохмами, горчичное худи, две руки (без лица — две точки-глаза)."""
+    o = []
+    if not sit:
+        o.append(line([(px - 8 * s, py + 40 * s), (px - 12 * s, py + 78 * s)], 7 * s, "#3C4C6E", taper=.1, wmin=.8, seed=sd))
+        o.append(line([(px + 8 * s, py + 40 * s), (px + 12 * s, py + 78 * s)], 7 * s, "#3C4C6E", taper=.1, wmin=.8, seed=sd + 1))
+    o.append(shape(rrect(px - 20 * s, py - 4 * s, px + 20 * s, py + 46 * s, 12 * s, n=4), C_HOODIE80, "", w=2.6, seed=sd + 2))
+    o.append(line([(px - 18 * s, py + 6 * s), (px - 30 * s, py + 30 * s)], 6 * s, C_HOODIE80, taper=.1, wmin=.8, seed=sd + 3))
+    o.append(line([(px + 18 * s, py + 6 * s), (px + 30 * s + arm * 6 * s, py + 26 * s - arm * 18 * s)], 6 * s, C_HOODIE80, taper=.1, wmin=.8,
+                  seed=sd + 4))
+    o.append(shape(ellipse_pts(px, py - 22 * s, 17 * s, 18 * s, 14), "#F2C9A6", "", w=2.6, seed=sd + 5))
+    o.append(blob([(px - 19 * s, py - 24 * s), (px - 14 * s, py - 42 * s), (px, py - 46 * s), (px + 16 * s, py - 40 * s), (px + 19 * s, py - 26 * s),
+                   (px + 6 * s, py - 32 * s), (px - 6 * s, py - 30 * s)], "#4A3426"))
+    o.append(blob(ellipse_pts(px - 6 * s, py - 20 * s, 2.2 * s, 2.6 * s, 6), INK) + blob(ellipse_pts(px + 6 * s, py - 20 * s, 2.2 * s, 2.6 * s, 6), INK))
+    return "".join(o)
+
+
+def _card_scene(i, sd):
+    """Мини-сцена карточки (локально, окно 140×170, центр (0, −10))."""
+    o = []
+    i = i % 6
+    if i == 0:   # за столом
+        o.append(shape(rect_pts(-62, 26, 62, 36), C_WOOD, "", w=2.6, seed=sd + 1))
+        o.append(line([(-50, 36), (-50, 70)], 4, C_WOOD_SH, seed=sd + 2) + line([(50, 36), (50, 70)], 4, C_WOOD_SH, seed=sd + 3))
+        o.append(_mini_dima(-6, -20, .9, sd + 10, sit=True))
+        o.append(shape(rect_pts(14, 14, 44, 26), "#FFFFFF", "", w=2.0, seed=sd + 4))
+    elif i == 1:   # с телефоном, свет на лице
+        o.append(blob(ellipse_pts(0, -26, 52, 46, 16), "#FFE7A3", .5))
+        o.append(_mini_dima(0, -6, .95, sd + 20, arm=1.0))
+        o.append(shape(rrect(20, -8, 36, 18, 3, n=2), C_PHONE, "", w=2.0, seed=sd + 5))
+    elif i == 2:   # у окна
+        o.append(shape(rect_pts(-56, -70, 0, -6), "#BFDDF2", line([(-28, -70), (-28, -6)], 2.4, INK, seed=sd + 6), w=2.6, seed=sd + 7))
+        o.append(_mini_dima(26, -4, .9, sd + 30))
+    elif i == 3:   # на кровати
+        o.append(shape(rrect(-64, 14, 64, 44, 8, n=3), C_QUILT, "", w=2.6, seed=sd + 8))
+        o.append(shape(ellipse_pts(-40, 8, 20, 12, 12), C_PILLOW, "", w=2.2, seed=sd + 9))
+        o.append(shape(ellipse_pts(-36, -6, 15, 16, 12), "#F2C9A6", "", w=2.4, seed=sd + 11))
+        o.append(blob([(-52, -8), (-46, -22), (-34, -24), (-22, -14)], "#4A3426"))
+    elif i == 4:   # идёт
+        o.append(line([(-64, 70), (64, 70)], 3, "#9C927C", taper=.2, wmin=.5, seed=sd + 12))
+        o.append(_mini_dima(0, -14, .9, sd + 40))
+        o.append(shape(rect_pts(30, 0, 52, 30), "#B27C4C", "", w=2.2, seed=sd + 13))
+    else:   # с котом
+        o.append(_mini_dima(-20, -14, .9, sd + 50))
+        o.append(shape(ellipse_pts(36, 44, 20, 22, 12), "#2F3336", "", w=2.2, seed=sd + 14))
+        o.append(shape(ellipse_pts(36, 14, 15, 14, 12), "#2F3336", "", w=2.2, seed=sd + 15))
+        o.append(blob([(24, 6), (26, -8), (33, 2)], "#2F3336") + blob([(40, 2), (48, -6), (49, 8)], "#2F3336"))
+        o.append(blob(ellipse_pts(58, 52, 4, 6, 8), "#F29A38"))
+    return "".join(o)
+
+
+def story_card(x, y, k=1.0, rot=0.0, i=0, seed=0, lift=0.0):
+    sd = 80300 + seed * 13 + i * 31
+    o = []
+    sh = 8 + 18 * clamp(lift)
+    o.append(blob(rrect(-85 + sh * .6, -115 + sh, 85 + sh * .6, 115 + sh, 12), "#6B5B3A", .18 + .1 * lift))
+    inner = blob(rrect(-70, -98, 70, 70, 6), _CARD_COLS[i % 6])
+    c = clip_rect(-70, -98, 140, 168, 6)
+    inner += f'<g clip-path="url(#{c})"><g transform="translate(0 -14)">{_card_scene(i, sd)}</g></g>'
+    inner += line([(-70, -98), (70, -98), (70, 70), (-70, 70), (-70, -98)], 2.4, "#9C927C", taper=.05, wmin=.8, seed=sd + 1)
+    inner += blob(rrect(-85, 76, 85, 115, 10), "#F4EEDF")   # нижнее поле без надписи
+    o.append(shape(rrect(-85, -115, 85, 115, 12), "#FFFFFF", inner, w=3.4, seed=sd))
+    return _tf("".join(o), x, y, k, rot)
+
+
+def card_fan_pos(x, y, k=1.0, open_u=0.0, j=0, n=5):
+    u = lib.ease_out(clamp(open_u), 3)
+    a = (j - (n - 1) / 2) / max(1, (n - 1) / 2) * 48 * u
+    r = 150 * k
+    ar = math.radians(a)
+    return x + math.sin(ar) * r, y - math.cos(ar) * r, a
+
+
+def card_fan(x, y, k=1.0, open_u=0.0, t=0.0, seed=0, n=5, hide=None):
+    o = []
+    for j in range(n):
+        if hide is not None and j == hide:
+            continue
+        cx, cy, a = card_fan_pos(x, y, k, open_u, j, n)
+        a += math.sin(t * 3 + j) * 1.2
+        o.append(story_card(cx, cy, k, a, i=j + seed, seed=seed))
+    return "".join(o)
+
+
+def pointer_stick(x, y, k=1.0, rot=0.0, seed=0):
+    sd = 80400 + seed
+    pts = [(0, -11, 1), (380, -6), (500, -4, 1), (520, -4, 1), (520, 4, 1), (500, 4, 1), (380, 6), (0, 11, 1)]
+    inner = blob([(0, 2), (520, 1), (520, 4), (0, 11)], C_WOOD_SH, .8) + line([(10, -6), (360, -4)], 3, C_WOOD_HI, taper=.4, wmin=.3, seed=sd + 1)
+    o = shape(pts, C_WOOD, inner, w=3.6, seed=sd)
+    o += shape(rrect(488, -8, 528, 8, 6, n=3), "#3A2A22", "", w=2.6, seed=sd + 2)
+    o += shape(rrect(-6, -14, 90, 14, 8, n=3), "#6E4628", "", w=3.0, seed=sd + 3)
+    return _tf(o, x, y, k, rot)
+
+
+def _sheet_line_y(h, j):
+    return -h / 2 + 44 + 30 * j
+
+
+def scribble_tip(x, y, k=1.0, u=0.0, rot=0.0, w=260.0, h=340.0, sy=1.0):
+    n = int((h - 70) / 30)
+    q = clamp(u) * n
+    j = min(n - 1, int(q))
+    fr = q - j if q < n else 1.0
+    lx = -w / 2 + 28 + fr * (w - 70)
+    ly = _sheet_line_y(h, j) + 4 * math.sin(fr * 40 * .75 + j)
+    a = math.radians(rot)
+    return x + (lx * math.cos(a) - ly * sy * math.sin(a)) * k, y + (lx * math.sin(a) + ly * sy * math.cos(a)) * k
+
+
+def scribble_sheet(x, y, k=1.0, u=0.0, rot=0.0, seed=0, w=260.0, h=340.0, sy=1.0):
+    sd = 80500 + seed
+    n = int((h - 70) / 30)
+    q = clamp(u) * n
+    hw, hh = w / 2, h / 2
+    inner = blob(rect_pts(-hw - 4, hh - 16, hw + 4, hh + 4), C_PAGE_SH, .7)
+    rs = _rs(sd)
+    for j in range(n):
+        fr = clamp(q - j)
+        if fr <= 0:
+            break
+        L = (w - 70) * fr * (.82 + .18 * rs.uniform(0, 1) if j == n - 1 else 1)
+        pts = [(-hw + 28 + L * m / 40, _sheet_line_y(h, j) + 4 * math.sin(m * .75 + j) + 2 * math.sin(m * .31 + j * 2)) for m in range(41)]
+        inner += line(pts, 3.4, "#2E3A5C", taper=.15, wmin=.6, seed=sd + 10 + j)
+    o = shape(rect_pts(-hw, -hh, hw, hh), C_PAGE, inner, w=3.4, seed=sd + 1)
+    return f'<g transform="translate({f(x)} {f(y)}) rotate({f(rot)}) scale({k:.5f} {k * sy:.5f})">{o}</g>'
+
+
+def dome_r(k=1.0, u=1.0):
+    return 380 * k * lib.ease_out(clamp(u), 3)
+
+
+def phone_dome(x, y, k=1.0, u=1.0, t=0.0, seed=0):
+    R = dome_r(k, u)
+    if R < 4:
+        return ""
+    fl = 1 + .02 * math.sin(t * 5.3 + seed)
+    R *= fl
+    g = rad_grad([(0, "#FFF1C2", .55), (.7, "#FFD98A", .38), (1, "#FFC86B", .22)], x, y, R, R * .95)
+    pts = [(x + R * math.cos(math.radians(a)), y - R * .95 * math.sin(math.radians(a))) for a in range(0, 181, 6)]
+    d = "M" + " L".join(f"{f(p[0])} {f(p[1])}" for p in pts) + "Z"
+    o = [f'<path d="{d}" fill="url(#{g})"/>']
+    o.append(line(pts, 5 * k, "#F2B24A", taper=.15, wmin=.6, seed=80600 + seed, op=.9))
+    o.append(line([(x + (p[0] - x) * .93, y + (p[1] - y) * .93) for p in pts[4:16]], 4 * k, "#FFF6D8", taper=.6, wmin=.2, seed=80601 + seed, op=.8))
+    return "".join(o)
