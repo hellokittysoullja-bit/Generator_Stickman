@@ -469,46 +469,71 @@ def s12(t):
 
 
 # ═════════════════════════ s15: вечер — облачко снова, Дима спокойно кивает ему ═════════════════════════
+# Комната стола — группы A (s80a.desk_room, A.seated), как у s09/s11/s16/s17: тот же стол, лампа, окно; s15 кончается позой начала s16
+# (ладонь на груди, облачко над головой, мимика yes80).
+def _A():
+    sys.path.insert(0, os.path.join(STORY, "ext_a"))
+    import s80a
+    return s80a
+
+
 def s15(t):
     lib.dyn_begin()
+    A = _A()
     t0, t1 = T0("s15"), T1("s15")
     t81, t83, t84 = W(81), W(83), stress(84, .3)
-    bs = 1.0
-    sx, sy = R.SIT[0], R.seat_y(bs)
-    sc_ = R.desk80(t, "evening")
-    sit_u = ease_out(clamp((t - (t0 - .2)) / (t81 - .05 - (t0 - .2))), 2)
-    hipy = sy - 110 * (1 - sit_u) + 8 * kick(t, t81 - .05, .06, 5)
-    feet = {"n": ((sx + 300 * bs, R.FL - 50 * bs), 0.0), "f": ((sx + 250 * bs, R.FL - 48 * bs), 0.0)}
-    palm = sm(t, t83 - .15, t83 + .12)
-    nod = bump(t, t84 - .08, .36) + .6 * bump(t, t84 + .3, .3)
-    if t < t81 + .1:
-        ex = dict(PE.EXPR["dima"]["det80"])
+    bg, desk = A.desk_room(t, "evening")
+    DX, DY = A.DESK_X, A.DESK_Y
+    SX, SY = DX - 120, DY - 72
+    hx, hy = A.HIP
+    k = A.SC
+    # садится: таз опускается на стул к «Поэтому»
+    sit_u = ease_out(clamp((t - (t0 - .2)) / (W(80) + .1 - (t0 - .2))), 2)
+    dy_ = -90 * (1 - sit_u) + 8 * kick(t, W(80) + .1, .06, 5)
+    palm = sm(t, t83 - .2, t83 + .1)
+    rest_n = (SX + 150, SY - 60)
+    chest = (hx + 215 * k, hy - 225 * k)
+    tgt = (lerp(rest_n[0], chest[0], palm), lerp(rest_n[1], chest[1], palm) + dy_)
+    arms = {"n": ("ik", tgt, -1), "f": ("ik", (SX + 70 + 4 * math.sin(t * 2), SY - 105 + .3 * dy_), -1)}
+    hn = {"dir": (-.75, -.45), "curl": (.05, .05, .1, .15), "spread": .1, "thumb": .1} if palm > .5 else {"curl": (.4, .45, .5, .55), "thumb": .4, "dir": (.85, .5)}
+    hands = {"n": hn, "f": {"curl": (.35, .4, .45, .5), "thumb": .35, "dir": (.9, .55)}}
+    nod = .16 * bump(t, t84 - .06, .32) + .1 * bump(t, t84 + .26, .3)
+    look_up = sm(t, t81, t83)
+    if t < t81 + .05:
+        expr = dict(PE.EXPR["dima"]["det80"])
     elif t < t83 - .1:
-        ex = dict(PE.EXPR["dima"]["gloom80"], look=(.35, -.7))
+        expr = dict(PE.EXPR["dima"]["gloom80"], look=(.3, -.6))
     elif t < t84 - .1:
-        ex = dict(PE.EXPR["dima"]["calm80"])
+        expr = dict(PE.EXPR["dima"]["calm80"])
     else:
-        ex = dict(PE.EXPR["dima"]["yes80"])
-    kw = dict(feet=feet, lean_add=.02 * math.sin(t * 2.0) + .03 * (1 - sit_u), head_add=-.12 * sm(t, t81, t83) + .12 * nod)
-    pose = ("d80_sit", "d80_palm")
-    parts = {kk: PE.dima80(sx, hipy, bs, ex, pose, t, u=palm, age=1.0, layers=(kk,), **kw) for kk in ("legs", "pelvis", "arm_f", "body", "arm_n")}
-    hx, hy = parts["body"]["head"]
-    # облачко чувства набухает над головой на «теперь», на «себе» чуть съёживается в ответ на кивок
+        expr = dict(PE.EXPR["dima"]["yes80"])
+    head = -.12 * look_up + nod
+    kw = dict(y=hy + dy_)
+    fig_b = A.seated(t, expr, "write", .06, head, layers=("legs", "pelvis"), **kw)
+    fig = A.seated(t, expr, "write", .06, head, arms=arms, hands=hands, layers=("arm_f", "body"), **kw)
+    arm = A.seated(t, expr, "write", .06, head, arms=arms, hands=hands, layers=("arm_n",), **kw)
+    lamp = PR.lamp_desk(DX + 300, DY - 130, 1.0, on=1.0, seed=17)
+    sheets = PR.scribble_sheet(SX, SY, 1.2, 0.0, -4, seed=172, w=240, h=320, sy=.6)
+    pen_svg = PR.pen(SX + 250, SY + 30, .62, 80, seed=17)
+    # облачко набухает над головой на «теперь» (как в s09), на «себе» отвечает кивку — чуть съёживается
+    hd = fig["head"]
     g = sm(t, t81 - .05, t81 + .35)
-    cl = PR.gloom_cloud(hx + 40 + 10 * math.sin(t * 1.4), hy - 330 + 8 * math.sin(t * 1.9), .9, t, rain=.25 * (1 - sm(t, t83, t84)),
-                        zap=0.0, shrink=.18 * sm(t, t84, t84 + .4), seed=15, grow=g)
-    # кот на подоконнике: сидит, смотрит на Диму, на кивке моргает
-    cx_, cy_ = R.SILL80
-    cat = PE.cat_svg(cx_ - 230, cy_ + 2, .5, dict(look=(-.8, .2), tail=6 * math.sin(t * 2.1), flame_e=1.0, blink=bump(t, t84 + .1, .2),
-                                                  tilt=4 * sm(t, t83, t84)), t)
-    pen = PR.pen(sx + 330, R.DESK_TOP - 20, .55, -8, seed=15)
-    sheet = PR.paper(780, R.DESK_TOP - 14, 1.0, -3, w=210, h=150, seed=15, kind="blank", sy=.32)
-    body = (sc_["bg"] + cat + sc_["chair_back"] + sc_["desk_top"] + sc_["pool"] + parts["legs"]["svg"] + sc_["desk_legs"] + sc_["chair_seat"]
-            + parts["pelvis"]["svg"] + parts["arm_f"]["svg"] + parts["body"]["svg"] + sheet + pen + parts["arm_n"]["svg"] + sc_["lamp"] + cl)
-    cx0, cy0, cs0 = R.CAM80_DESK_MID
-    u = ease_io(clamp((t - (t0 - .2)) / (t1 - t0 + .4)))
-    s = lerp(1.0, 1.08, u) * (1 + .02 * bump(t, t84, .4))
-    return wrap(body, lerp(cx0 - 120, cx0 - 140, u), lerp(cy0 - 70, cy0 - 100, u), s)
+    cl = PR.gloom_cloud(hd[0] + 30 + 8 * math.sin(t * 1.4), hd[1] - 250 + 6 * math.sin(t * 2.1) + 14 * bump(t, t84, .4), 1.15, t,
+                        rain=.25, shrink=.12 * bump(t, t84, .5), seed=17, grow=g)
+    # кот на подоконнике смотрит на Диму; на кивке моргает и чуть наклоняет голову
+    cat = PE.cat_svg(150.0, 872.0, .46, dict(look=(.8, .3), tail=6 * math.sin(t * 2.1), flame_e=1.0, blink=bump(t, t84 + .1, .2),
+                                              tilt=-5 * sm(t, t83, t84)), t)
+    marks = ""
+    uu = (t - t84) / .35
+    if 0 < uu < 1:
+        for j in range(2):
+            x0 = hd[0] + 150 + 18 * j
+            marks += line([(x0, hd[1] - 30 + 30 * uu), (x0 + 6, hd[1] + 10 + 30 * uu)], 5 * (1 - uu) + 1, INK, taper=.6, wmin=.2, seed=8890 + j, op=.7 * (1 - uu))
+    world = (bg + cat + A.chair(hx, hy + 20 + dy_) + fig_b["svg"] + desk + lamp + sheets + pen_svg + fig["svg"] + arm["svg"] + cl + marks
+             + PR.glow(DX + 160, DY - 90, 420, .55, "#FFD98A"))
+    pu = ease_io(clamp((t - (t0 - .2)) / (t1 - t0 + .4)))
+    s = lerp(1.0, 1.1, pu) * (1 + .02 * bump(t, t84, .4))
+    return A.frame_svg(world, lerp(580, 540, pu), lerp(900, 880, pu), s, -.3 * math.sin(t * 1.1))
 
 
 # ═════════════════════════ s18: петля — тот же ракурс и свет, на стене огромная тень кота ═════════════════════════
