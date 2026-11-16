@@ -109,3 +109,6 @@ trig_01YYY2DmaUy4A5vAcFuP24pr (:03) и запасная trig_012jwscUZi3X1QtVeZ9
 - Сохранность (владелец 15.11): `scripts/wip_snapshot.sh` кладёт незакоммиченный код художников и клипы 75–78 в ветку
   `wip/stories` (main и рабочую папку не трогает). Запускать после каждого отчёта художника. Восстановление в новой сессии:
   `git fetch origin wip/stories && git checkout origin/wip/stories -- videos/7X_*/story` (клипы потом не в main).
+- 16.11: призыв «Телеграм» (`cta: "tg"`, `scripts/story_cta_tg.py`) — владелец сохранил пробник v5 как оригинал:
+  `assets/story_cta/tg_cta_v5_original.mp4` (кремовая карточка, t.me/ru_adhd + белый @ru_adhd с обводкой, звёздочки, красные лапки,
+  синяя кнопка). Вид призыва выбирает владелец под каждый рилс: subscribe / tg / code.
