@@ -3684,10 +3684,10 @@ def father(x, y, k, expr=None, pose="sit", t=0.0, u=1.0, feet=None, flip=False, 
     return fig
 
 
-def father_shadow(x, y, k, pose="point", u=1.0, t=0.0, col="#0b0e1c", op=.9, op_fill=.18, w=6.0, flip=False, blur_sd=0.0):
+def father_shadow(x, y, k, pose="point", u=1.0, t=0.0, col="#0b0e1c", op=.9, op_fill=.18, w=6.0, flip=False, blur_sd=0.0, **kw):
     """Тень отца силуэтом ЛИНИЕЙ: фигура рисуется одним цветом (контур — тушь цвета col, заливка — полупрозрачный col).
     Делается фильтром: альфа рисунка → морфологическая обводка; внутренние линии (лицо, клетка) не видны."""
-    fig = father(x, y, k, "hard", pose, t, u, feet="stand", flip=flip)
+    fig = father(x, y, k, "hard", pose, t, u, feet="stand", flip=flip, **kw)
     fid = lib.uid("fsh")
     ww = max(1.0, w)
     lib.DEFS.append(f'<filter id="{fid}" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">'

@@ -26,6 +26,7 @@ import hand_kot  # noqa: E402
 import lib  # noqa: E402
 import people  # noqa: E402
 import props as P  # noqa: E402
+import room as R  # noqa: E402
 from lib import blob, clamp, ease_in, ease_io, ease_out, ellipse_pts, line, shape, svg  # noqa: E402
 
 INK = lib.INK
@@ -228,7 +229,193 @@ def s07(t):
     return frame_svg(body, cx, cy, s, lerp(.5, -.3, u), bg="#080b1e")
 
 
-SCENES = {"s07": s07}
+# ═══════════════════════════════ s09: тень отца и железная бирка ═══════════════════════════════
+def s09(t):
+    lib.dyn_begin()
+    t0, t1 = T0("s09"), T1("s09")
+    T_NAP, T_TAK, T_ZV, T_SEB, T_LEN = ws(36), ws(37), we(40), ws(41), ws(42)
+    o = []
+    floor_y = 1290.0
+    # тёмная комната, холодный свет сверху на Диму
+    o.append(grad_rect(-500, -400, 1600, floor_y, [(0, "#0c1024"), (.5, "#121834"), (1, "#18203f")]))
+    o.append(grad_rect(-500, floor_y, 1600, 2400, [(0, "#10142a"), (1, "#070915")]))
+    o.append(line([(-500, floor_y), (1600, floor_y + 4)], 4, "#2a3462", taper=0, wmin=1, seed=7201))
+    dx_, hipy = 790.0, 0.0
+    flick = 1 + .03 * math.sin(t * 11.3) * math.sin(t * 3.1)
+    o.append(soft(dx_ - 160, 700, 760, 820, "#9fb4ff", .3 * flick))       # холодный свет на стене: на нём читается тень отца
+    cone = [(dx_ - 90, -300), (dx_ + 90, -300), (dx_ + 380, floor_y + 40), (dx_ - 380, floor_y + 40)]
+    g = lib.lin_grad([(0, "#cfdcff", .16), (1, "#cfdcff", .02)], 0, 0, 0, 1)
+    o.append(f'<path d="{lib.fill_d(cone)}" fill="url(#{g})"/>')
+    o.append(blob(ellipse_pts(dx_, floor_y + 18, 330, 40, 22), "#8ea2e0", .22 * flick))
+    # тень отца: входит с левого края, палец на «напишешь», уходит после «себя»
+    sh_in = ease_out(clamp((t - (t0 - .2)) / .55), 3)
+    sh_out = ease_in(clamp((t - (T_SEB + .25)) / .5), 2)
+    sx = lerp(-560, 70, sh_in) - 640 * sh_out
+    jab = bump(t, T_NAP, .3)
+    pu = ease_out(clamp((t - (T_NAP - .18)) / .2), 2)
+    sk = .9
+    shy = floor_y - 640 * sk * 1.04
+    shf = people.father_shadow(sx, shy, sk, ("sit", "point"), pu, t, col="#03050d", op=.95, op_fill=.3, w=9.0,
+                               arms={"n": ("ik", (sx + 330 * sk * 1.04 * pu + 150 * sk * (1 - pu), shy - (390 * pu + 200 * (1 - pu)) * sk * 1.04), -1)})
+    o.append(f'<g transform="translate({22 * jab:.1f} 0)" opacity="{1 - .8 * sh_out:.3f}">{shf["svg"]}</g>')
+    finger = (shf["finger"][0] + 22 * jab, shf["finger"][1])
+    # Дима (смотрит влево, к тени): вздрагивает на пальце, бирка прилипает, тянет вниз
+    tug = ease_out(clamp((t - T_LEN) / .42), 2)
+    stick = clamp((t - T_SEB) / .05)
+    k = .78
+    sink = 46 * tug + 14 * kick(t, T_SEB, .3, 2.6, 4)
+    hip = (dx_, floor_y - 640 * k + sink)
+    feet = {"n": ((dx_ - 50 * k, floor_y - 6), 0.0), "f": ((dx_ + 40 * k, floor_y), 0.0)}
+    if t < T_NAP:
+        ex = "look77"
+    elif t < T_SEB:
+        ex = dict(people.EXPR["dima"]["look77"], brows="worry", lid=1.0, look=(.7, -.1))
+    elif t < T_LEN:
+        ex = "tag77"
+    else:
+        ex = "slouch77"
+    flinch = bump(t, T_NAP + .02, .3)
+    fig = people.dima77(dx_, hip[1], k, ex, ("di_stand", "di_slouch"), t, u=tug, feet=feet, flip=True,
+                        lean_add=-.06 * flinch + .05 * stick * (1 - tug), head_add=-.1 * flinch)
+    o.append(fig["svg"])
+    # бирка: висит на пальце тени → летит тяжёлой дугой с вращением → прилипает к груди
+    hx, hy = fig["head"]
+    chest = (hx + 6, hy + 300 * k * (1 + .1 * tug))
+    tk = .8
+    fly = clamp((t - T_TAK) / max(.2, T_SEB - T_TAK))
+    if t < T_TAK:
+        tp = (finger[0] + 6, finger[1] - 6)
+        rot = 8 * math.sin(t * 5)
+        tag = P.iron_tag(tp[0], tp[1], tk, rot, cord=70)
+        if pu > .5 and sh_out < .2:
+            o.append(tag)
+    elif t < T_SEB:
+        e = ease_in(fly, 1.6)
+        a = (finger[0] + 6, finger[1] - 6)
+        bx = lerp(a[0], chest[0], e)
+        by = lerp(a[1], chest[1] - 40, e) - 70 * math.sin(math.pi * e)
+        rot = -340 * (1 - (1 - fly) ** 2) + 20
+        o.append(P.iron_tag(bx, by, tk, rot, cord=70))
+        for j in range(3):      # след полёта
+            ee = max(0.0, e - .06 * (j + 1))
+            tx = lerp(a[0], chest[0], ee)
+            ty = lerp(a[1], chest[1] - 40, ee) - 70 * math.sin(math.pi * ee)
+            o.append(line([(tx, ty + 60), (bx, by + 60)], 10 - 3 * j, "#8ea2e0", taper=.8, wmin=.1, seed=7210 + j, op=.25))
+    else:
+        sw = 18 * kick(t, T_SEB, .35, 2.2, 4) + 6 * kick(t, T_LEN, .4, 1.6, 3)
+        # шнурок вокруг шеи
+        nk = (hx + 10, hy + 150 * k)
+        top = (chest[0], chest[1] - 40)
+        o.append(line([(nk[0] - 50 * k, nk[1] - 10), (top[0] - 14, top[1] + 6)], 4.4, "#6B5B3A", taper=.1, wmin=.7, seed=7220))
+        o.append(line([(nk[0] + 50 * k, nk[1] - 10), (top[0] + 14, top[1] + 6)], 4.4, "#6B5B3A", taper=.1, wmin=.7, seed=7221))
+        o.append(P.iron_tag(chest[0], chest[1] - 40, tk, sw, cord=40))
+        # звяк: короткие штрихи удара
+        u = (t - T_SEB) / .3
+        if 0 < u < 1:
+            for j in range(5):
+                a_ = math.radians(-150 + 70 * j)
+                r0, r1 = 90 + 40 * u, 130 + 60 * u
+                cx_, cy_ = chest[0], chest[1] + 40
+                o.append(line([(cx_ + r0 * math.cos(a_), cy_ + r0 * math.sin(a_)), (cx_ + r1 * math.cos(a_), cy_ + r1 * math.sin(a_))], 7 * (1 - u) + 1,
+                              "#dfe6ff", taper=.6, wmin=.2, seed=7230 + j, op=.9 * (1 - u)))
+        if tug > .02:      # тяжесть: дуги вниз
+            for j in range(2):
+                yy = chest[1] + 160 + 30 * j + 30 * tug
+                o.append(line([(chest[0] - 40 + 10 * j, yy), (chest[0], yy + 24), (chest[0] + 40 - 10 * j, yy)], 4, "#8ea2e0", taper=.5, wmin=.2,
+                              seed=7240 + j, op=.7 * tug * (1 - .5 * j)))
+    # камера: хлёст, медленный наезд; «лентяем» — удар-наезд и тряска, дальше камера проседает с Димой
+    u = ease_io(clamp((t - (t0 - .2)) / (t1 - t0 + .4)))
+    pk = kick(t, T_LEN, .35, 1.0, 4) if t >= T_LEN else 0.0
+    shk = kick(t, T_SEB, .25, 7, 6) + .7 * kick(t, T_LEN, .3, 6, 5)
+    s = lerp(1.0, 1.1, u) * (1 + .09 * max(0.0, pk))
+    cx = lerp(600, 700, u) + 12 * shk
+    cy = lerp(880, 860, u) + 70 * tug - 8 * shk
+    body = whip_wrap("".join(o), t, t0, dx=640.0)
+    return frame_svg(body, cx, cy, s, lerp(-.4, .3, u) + .6 * shk, bg="#070915")
+
+
+def lerp_feet(a, b, u):
+    return {sd: (lerp2(a[sd][0], b[sd][0], u), lerp(a[sd][1], b[sd][1], u)) for sd in ("n", "f")}
+
+
+def stand_feet(x, y, k, who="father77"):
+    return people.stand_kw(x, y, k, who, spread=80 if who == "father77" else 60)["feet"]
+
+
+# ═══════════════════════════════ s12: гараж, доска на одном шурупе, отец на ведре ═══════════════════════════════
+def s12(t):
+    lib.dyn_begin()
+    t0, t1 = T0("s12"), T1("s12")
+    T_SER, T_RUG, T_SEB, T_LEN = ws(55), ws(57), ws(58), ws(59)
+    g = R.garage77(t, lit=1.0)
+    FL = g["floor"]
+    o = [g["bg"]]
+    o.append(P.garage_junk(-60, FL, .9))
+    # полка: одна доска на одном шурупе — срывается одним концом и качается маятником
+    sx_, sy_, sk_ = 960.0, 600.0, 1.0
+    if t < T_SER:
+        sw = 2.5 * math.sin(t * 14) * clamp((t - (t0 - .2)) / .3)       # доска уже дрожит с кадра 0
+    else:
+        u = t - T_SER
+        drop = 38 * ease_out(clamp(u / .16), 2)
+        sw = drop + 18 * math.exp(-2.2 * u) * math.sin(2 * math.pi * 1.6 * u + .3) * clamp(u / .16)
+    o.append(P.shelf(sx_, sy_, sk_, boards=2, hang_one=True, swing=-sw))
+    if T_SER < t < T_SER + .35:       # пыль с шурупа
+        o.append(P.dust_puff(sx_ - 200, sy_ + 190, .7, (t - T_SER) / .35, seed=12))
+    # ведро вверх дном (отец сядет на него)
+    fx = 610.0
+    bk = 1.0
+    bucket_top = FL - 180 * bk
+    o.append(P.paint_bucket(fx - 30, FL, bk, 0.0, upside=True))
+    # кот на ящике: смотрит на отца с сочувствием, ухо дёргается
+    bx, by = g["box"]
+    bx += 60
+    ck = .62
+    ear_tw = 14 * (bump(t, T_RUG + .05, .18) + bump(t, T_LEN + .05, .18))
+    cst = dict(turn=-.45, look=(-.75, .25 + .25 * clamp((t - T_SEB) / .3)), tilt=6 + 4 * math.sin(t * 1.2) + 6 * clamp((t - T_LEN) / .3),
+               tail=-6 + 8 * math.sin(t * 2.0), ear=ear_tw + 3 * math.sin(t * 2.7), perk=.6 * bump(t, T_SER, .35),
+               blink=1.0 if abs(t - (T_LEN + .35)) < .05 else 0.0)
+    o.append(blob(ellipse_pts(bx - 20, by + 4, 90, 10, 14), "#000000", .2))
+    o.append(CAT.draw(bx - 20, by, ck, cst, t))
+    # отец: стоит → ладонь по лбу → садится на ведро → голова в ладонях
+    k = .74
+    sc = k * people.HEIGHT["father77"]
+    hip_st = FL - (people.LEG_LEN - 12) * sc
+    hip_sit = bucket_top - 18
+    sit_u = ease_io(clamp((t - (T_SEB - .06)) / .32))
+    hip_y = lerp(hip_st, hip_sit, sit_u) + 6 * bump(t, T_SEB + .26, .2)
+    hip_x = lerp(fx - 40, fx - 30, sit_u)
+    feet = lerp_feet(stand_feet(hip_x, hip_st, k), people.sit_feet(hip_x, hip_sit, k, ground=(FL - hip_sit) / sc, fwd=230), sit_u)
+    flinch = bump(t, T_SER, .3)
+    if t < T_RUG - .14:
+        pose, u, ex = ("drop", "drop"), 1.0, dict(people.EXPR["father77"]["surprised" if t > T_SER else "look_up"], look=(.55, -.75))
+    elif t < T_SEB:
+        pose, u, ex = ("drop", "forehead"), ease_out(clamp((t - (T_RUG - .14)) / .14), 2), "ashamed"
+    elif t < T_LEN - .04:
+        pose, u, ex = ("forehead", "bucket"), ease_io(clamp((t - T_SEB) / .3)), "ashamed"
+    else:
+        pose, u, ex = ("bucket", "head_hands"), ease_out(clamp((t - (T_LEN - .04)) / .26), 2), "sad"
+    slap = bump(t, T_RUG, .16)
+    fig = people.father(hip_x, hip_y, k, ex, pose, t, u, feet=feet, lean_add=-.05 * flinch + .06 * slap, head_add=-.12 * flinch - .1 * slap)
+    o.append(fig["svg"])
+    if T_RUG - .02 < t < T_RUG + .25:       # шлепок: штрихи у лба
+        hx, hy = fig["head"]
+        uu = (t - (T_RUG - .02)) / .27
+        for j in range(3):
+            a_ = math.radians(-120 + 35 * j)
+            o.append(line([(hx + 60 + 70 * math.cos(a_), hy - 80 + 70 * math.sin(a_)), (hx + 60 + 120 * math.cos(a_), hy - 80 + 120 * math.sin(a_))],
+                          6 * (1 - uu) + 1, INK, taper=.6, wmin=.2, seed=7300 + j, op=1 - uu))
+    o.append(g["light"])
+    # камера: медленный наезд, удар-наезд на «ругал», к концу проседает за отцом
+    u_ = ease_io(clamp((t - (t0 - .2)) / (t1 - t0 + .4)))
+    pk = max(0.0, kick(t, T_RUG, .3, .9, 4))
+    s = lerp(.96, 1.04, u_) * (1 + .08 * pk)
+    cx = lerp(760, 740, u_)
+    cy = lerp(930, 900, u_) + 90 * ease_io(clamp((t - T_SEB) / .7))
+    return frame_svg("".join(o), cx, cy, s, lerp(.3, -.4, u_), bg="#8c8f93")
+
+
+SCENES = {"s07": s07, "s09": s09, "s12": s12}
 
 
 def frame(sid, t):
