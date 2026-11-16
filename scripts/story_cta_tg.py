@@ -38,17 +38,18 @@ NAME = "СДВГ | Напарник"
 LINK = "t.me/ru_adhd"
 
 # раскладка (мир = экран при камере 1.0): всё главное выше 1300 px — ниже субтитры
-CX0, CX1, CY0, CY1 = 175, 1050, 70, 1090        # карточка: 81 % ширины, кот сидит снаружи слева на книгах
+CX0, CX1, CY0, CY1 = 90, 990, 44, 812          # карточка: 83 % ширины, над котом
 CARD_C = ((CX0 + CX1) / 2, (CY0 + CY1) / 2)
-AV = (612, 292, 172)                            # аватарка: центр, радиус
-NAME_Y, LINK_Y, SUB_Y, DESC_Y = 592, 708, 772, 842
+AV = (540, 184, 124)                            # аватарка: центр, радиус
+NAME_Y, LINK_Y, SUB_Y, DESC_Y = 404, 508, 562, 612
 DESC = "истории про Диму и кота каждый вечер"
-BX0, BX1, BY0, BY1 = 262, 962, 906, 1030        # кнопка по центру карточки, целиком видна
-BTX = 612                                       # центр надписи кнопки
-BADGE = (220, 118, 60)                          # значок Телеграма на углу карточки
+BX0, BX1, BY0, BY1 = 190, 890, 650, 770         # кнопка по центру карточки, целиком видна
+BTX = 540                                       # центр надписи кнопки
+BADGE = (134, 92, 58)                           # значок Телеграма на углу карточки
 TABLE = 1272
-CAT_X, CAT_Y, CAT_K = 100, 1170, 0.78          # кот на стопке книг слева от карточки
-PAW_DX, PAW_PW = 77.0, 1.52                     # правая (от зрителя) лапа cat.py тянется к левому краю кнопки
+CAT_X, CAT_Y, CAT_K = 420, 1288, 1.2            # кот сидит на столе под карточкой, крупно
+RISE = 0.5                                      # на нажатие привстаёт: задние лапы вытягиваются (cat.py legs)
+PAW_DX, PAW_PW = 29.4, 2.66                     # лапа cat.py тянется вверх к нижнему краю кнопки (≈ x 600)
 
 _ST = {}
 
@@ -193,14 +194,6 @@ def background(lib):
                        lib.blob(lib.rect_pts(-600, FRONT + 46, 1700, FRONT + 72), "#7d4c26", .9), w=4.6, seed=603))
     s.append(lib.shape([(-600, FRONT + 70, 1), (1700, FRONT + 70, 1), (1700, 2700, 1), (-600, 2700, 1)], "#6e4a32",
                        lib.blob(lib.rect_pts(-600, FRONT + 70, 1700, FRONT + 110), "#3e2718", .55), w=4.4, seed=604))
-    # стопка книг, на которой сидит кот (слева от карточки)
-    for k, (x0, x1, col, shc) in enumerate([(-20, 236, "#4f7fb8", "#3b6496"), (4, 214, "#e3a33a", "#c0841f"), (-10, 226, "#7aa35a", "#5d8443")]):
-        y1 = TABLE - k * 34
-        y0 = y1 - 34
-        bk = [(x0, y0, 1), (x1, y0, 1), (x1, y1, 1), (x0, y1, 1)]
-        bi = lib.blob([(x1 - 26, y0), (x1, y0), (x1, y1), (x1 - 26, y1)], "#f6efdc") + lib.blob([(x0, y1 - 8), (x1, y1 - 8), (x1, y1), (x0, y1)], shc)
-        bi += "".join(lib.line([(x1 - 22, y0 + 8 + j * 7), (x1 - 4, y0 + 8 + j * 7)], 1.4, "#c9b98f", seed=710 + k * 5 + j) for j in range(3))
-        s.append(lib.shape(bk, col, bi, w=4, seed=700 + k))
     # тетрадка с карандашом (слева) и кружка (справа) — на столе, ниже главного
     nb = lib.T([(-130, -70, 1), (130, -82, 1), (138, 70, 1), (-124, 82, 1)], 210, 1440, 1, -6)
     ni = "".join(lib.line(lib.T([(-100, y), (110, y - 3)], 210, 1440, 1, -6), 2, "#9ab8d8", seed=650 + i, op=.8)
@@ -262,13 +255,13 @@ def content(lib, t, t0):
         if op <= 0.002:
             continue
         if k == 0:
-            g = _text(576, y, NAME, 86, "#ffffff") + paw_print(lib, 980, y - 50, 1.05, 28) + paw_print(lib, 1012, y - 12, .86, 28)
+            g = _text(505, y, NAME, 86, "#ffffff") + paw_print(lib, 912, y - 50, 1.05, 28) + paw_print(lib, 944, y - 12, .86, 28)
         elif k == 1:
-            g = _text(612, y, LINK, 98, TG_BLUE)
+            g = _text(540, y, LINK, 98, TG_BLUE)
         else:
-            g = _text(612, y, "телеграм-канал", 40, GREY)       # без числа подписчиков
-            g += _text(612, DESC_Y, DESC, 36, "#b4b4ba")
-        o.append(_sc(g, 612, y + dy - 20, sc, 0, op))
+            g = _text(540, y, "телеграм-канал", 40, GREY)       # без числа подписчиков
+            g += _text(540, DESC_Y, DESC, 36, "#b4b4ba")
+        o.append(_sc(g, 540, y + dy - 20, sc, 0, op))
     bs = _back((t - t0 - 0.86) / 0.5, 1.4) if t > t0 + 0.86 else 0.0
     if bs > 0:
         wob = 4 * math.sin(t * 2.2)
@@ -332,26 +325,25 @@ def button(lib, t, t0, press, touch):
     return _sc("".join(s), cx, cy, sc_in, 0, op)
 
 
-# из-под лапы вверх-влево, на стену над котом — не на текст карточки
-HEARTS = [(-420, -760, -18, 1.1), (-300, -980, 10, 1.0), (-520, -560, -6, 1.1), (-620, -860, 16, 0.95), (-360, -620, -20, 0.85),
-          (-560, -1060, 18, 0.9), (-250, -840, 4, 0.8)]
+# (сдвиг вправо, подъём) в конце дуги: от точки нажатия вправо-вверх, мимо надписей
+HEARTS = [(470, 300, -18, 1.1), (540, 420, 10, 1.0), (430, 520, -6, 1.05), (560, 260, 16, 0.95), (500, 600, -20, 0.85),
+          (450, 360, 18, 0.9), (520, 480, 4, 0.8)]
 
 
-def burst(lib, t, press):
+def burst(lib, t, press, touch):
     """Сердечки по дугам с замедлением и затуханием; самолётик улетает дугой вправо-вверх с пунктиром следа."""
     e = t - press - 0.06
     if e < 0:
         return ""
     s = []
-    ox, oy = BX0 + 20, BY0 - 10
-    for k, (vx, vy, rot, sz) in enumerate(HEARTS):
+    ox, oy = touch
+    for k, (dx_, dy_, rot, sz) in enumerate(HEARTS):
         ee = e - k * 0.045
         if ee <= 0:
             continue
-        dmp = 2.6
-        q = (1 - math.exp(-dmp * ee)) / dmp
-        x = ox + vx * q
-        y = oy + vy * q - 25 * ee
+        u = 1 - math.exp(-2.4 * ee)              # дуга с замедлением: сначала вправо вдоль низа кнопки, потом вверх мимо текста
+        x = ox + dx_ * u
+        y = oy + 60 * u * (1 - u) - dy_ * u ** 4
         a = _back(ee / 0.28, 2.2) * (1 - _eio((ee - 0.55) / 0.45))
         if a < 0.02:
             continue
@@ -359,7 +351,7 @@ def burst(lib, t, press):
     # самолётик по кубической дуге
     u = _cl(e / 1.15)
     if u < 1:
-        P = [(BX1 - 40, BY0 - 20), (1180, BY0 - 160), (760, 520), (1200, 180)]
+        P = [(BX1 - 40, BY0 + 20), (1160, BY0 - 60), (900, 300), (1200, 60)]
 
         def bez(v):
             m = 1 - v
@@ -396,22 +388,27 @@ def steam(lib, t):
 
 # ───────────────────────── кот
 def cat_state(lib, cat, t, t0, press):
-    """Кот сидит с кадра 0; смотрит на влетающую карточку (уши торчком на её приземлении), потом на кнопку, жмёт
+    """Кот сидит на столе под карточкой с кадра 0; смотрит на влетающую карточку, на нажатие привстаёт и тянет лапу вверх, жмёт
     короткой лапой (лапа cat.py, не вытянутая палка), после — в камеру, улыбка, огонёк вспыхивает."""
-    X, Y = CAT_X, CAT_Y
+    X = CAT_X
     land = _eio((t - t0 - 0.15) / 0.35)
     perk = math.exp(-max(0.0, t - t0 - 0.45) * 2.5) * land
-    a = press - 0.40
-    pw = PAW_PW * _eio((t - a) / 0.40)
+    a = press - 0.45
+    rise = _eio((t - a + 0.1) / 0.35)            # привстаёт чуть раньше, чем тянет лапу
+    pw = PAW_PW * _eio((t - a) / 0.45)
     e = t - press
     if e >= 0:
-        pw += 0.06 * math.exp(-e * 9) * math.sin(min(e * 16, math.pi))
-        pw *= 1 - _eio((e - 0.35) / 0.4)
+        pw += 0.05 * math.exp(-e * 9) * math.sin(min(e * 16, math.pi))
+        back = _eio((e - 0.35) / 0.45)
+        pw *= 1 - back
+        rise *= 1 - back
+    legs = RISE * rise
+    Y = CAT_Y - 64 * legs * CAT_K                  # лапы стоят на столе, тело поднимается
     kb = _eio((t - press + 0.75) / 0.35)         # взгляд на кнопку
     kc = _eio((t - press - 0.3) / 0.3)           # в камеру
     look0 = (0.15, 0.1)
-    look1 = (0.55, -0.85)
-    look2 = (0.85, 0.35)
+    look1 = (0.25, -0.95)
+    look2 = (0.6, -0.9)
     lk = [look0[i] + (look1[i] - look0[i]) * land for i in (0, 1)]
     lk = [lk[i] + (look2[i] - lk[i]) * kb for i in (0, 1)]
     lk = [lk[i] * (1 - kc) for i in (0, 1)]
@@ -419,13 +416,14 @@ def cat_state(lib, cat, t, t0, press):
     for c, half in ((0.08 if t0 > 0.3 else t0 + 1.0, 0.07), (press + 0.95, 0.08)):
         if c - half <= t <= c + half:
             blink = 1 - abs(t - c) / half
-    tilt = 6 * land * (1 - kb) + 5 * kc * math.sin(max(0.0, t - press) * 2.6)
+    tilt = 4 * land * (1 - kb) + 5 * kc * math.sin(max(0.0, t - press) * 2.6)
     tail = 6 * math.sin(t * 1.9) + 3 * math.sin(t * 3.3 + 1)
-    st = dict(look=tuple(lk), blink=blink, tilt=tilt, tail=tail, paw=pw, paw_dx=PAW_DX, perk=max(perk, kc),
+    st = dict(look=tuple(lk), blink=blink, tilt=tilt, tail=tail, paw=pw, paw_dx=PAW_DX, legs=legs, perk=max(perk, kc),
               smile=1.0 if kc > .5 else 0.0, flame_e=1.0 + 1.0 * math.exp(-max(0.0, e) * 2) * (e > 0))
     fx = cat.CX + 25
     tip = (fx + PAW_DX * PAW_PW * 1.6, 1306 - 150 * PAW_PW)
-    touch = (X + (tip[0] - cat.CX) * CAT_K, Y + (tip[1] - cat.CBOT) * CAT_K)
+    Yr = CAT_Y - 64 * RISE * CAT_K
+    touch = (X + (tip[0] - cat.CX) * CAT_K, Yr + (tip[1] - cat.CBOT) * CAT_K)
     return X, Y, st, touch
 
 
@@ -470,13 +468,13 @@ def layer(t, t0=0.1, press=1.7, common=None):
         out.append(f'<g opacity="{op:.3f}" transform="translate({px:.1f} {py + dy:.2f}) rotate({rot:.3f}) scale({sc:.4f}) '
                    f'translate({-px:.1f} {-py:.1f})">{sh}{card}</g>')
     out.append(cat.draw(X, Y, CAT_K, st, t))
-    out.append(burst(lib, t, press))
+    out.append(burst(lib, t, press, touch))
     # камера: мягкий наезд к карточке, лёгкий толчок на нажатии, отъезд после
     pin = _eio((t - t0 - 0.1) / 1.0)
     pout = _eio((t - press - 0.35) / 1.2)
-    s = 1.0 + 0.03 * pin - 0.028 * pout           # кот у левого края: наезд мягкий, центр по x не уводим
-    ccx = 540 + 3 * math.sin(t * 0.7)
-    ccy = 960 - 120 * pin + 100 * pout + 5 * math.sin(t * 0.9)
+    s = 1.0 + 0.022 * pin - 0.02 * pout           # мягкий наезд и отъезд; всё в кадре с запасом
+    ccx = 540 + 4 * math.sin(t * 0.7)
+    ccy = 960 - 12 * pin + 10 * pout + 4 * math.sin(t * 0.9)
     s *= 1 + 0.022 * math.exp(-((t - press - 0.08) / 0.13) ** 2)
     return "".join(out), (ccx, ccy, s, 0.35 * math.sin(t * 0.8))
 
