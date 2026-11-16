@@ -484,7 +484,7 @@ def s16(t):
     grab = ease_io(clamp((t - (T_NEP + .75)) / .3))
     hx, hy = A.HIP
     k = A.SC
-    pen_rest = (SX + 250, SY + 30)
+    pen_rest = (SX + 120, SY + 34)
     wr_write = (tip[0] - 52, tip[1] - 28)
     wr_grab = (pen_rest[0] - 40, pen_rest[1] - 40)
     if take < 1:
