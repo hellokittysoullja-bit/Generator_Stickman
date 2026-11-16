@@ -5172,10 +5172,16 @@ def key_ring_tip(x, y, k=1.0, fan_u=0.0, i=0):
     return x - math.sin(ar) * L * k, y + math.cos(ar) * L * k
 
 
-def key_ring(x, y, k=1.0, fan_u=0.0, t=0.0, seed=0, jingle=0.0):
+def key_ring(x, y, k=1.0, fan_u=0.0, t=0.0, seed=0, jingle=0.0, lead=None):
+    """lead=(i, ang, u): ключ i уходит в угол ang (°, −90 — вправо), остальные собираются в связку вниз (u 0…1)."""
     sd = 77550 + seed
     o = []
     angs = _key_angles(fan_u)
+    if lead is not None:
+        li, la, lu = lead
+        bund = _key_angles(0.0)
+        angs = [((la if i == li else bund[i][0]) * lu + a * (1 - lu), uu) for i, (a, uu) in enumerate(angs)]
+        angs = angs[:li] + angs[li + 1:] + [angs[li]] if False else angs
     for i, (a, u) in enumerate(angs):
         a2 = a + jingle * 6 * math.sin(t * 40 + i * 1.7)
         ar = math.radians(a2)
@@ -5507,10 +5513,10 @@ def _pair_inner(t=0.0):
         import people as _pp
         out = []
         if hasattr(_pp, "father"):
-            out.append(_pp.father(-26, 118, .14, "laugh", "hug", t, breath=False)["svg"])
+            out.append(_pp.father(-22, 128, .2, "laugh", "hug", t, breath=False)["svg"])
         dk = "laugh77" if "laugh77" in _pp.EXPR.get("dima", {}) else "grin"
         dp = "di_hug" if "di_hug" in _pp.POSE else None
-        out.append(_pp.dima(36, 122, .13, dk, dp, flip=True)["svg"])
+        out.append(_pp.dima(34, 134, .19, dk, dp, flip=True)["svg"])
         return "".join(out)
     except Exception:
         return ""

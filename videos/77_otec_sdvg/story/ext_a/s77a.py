@@ -148,16 +148,16 @@ def s05(t):
     o.append(P.kitchen_table(540, 1300, 1500, 1.0, 0, seed=5, depth=300))
     # отец сидит за столом лицом вправо, к торту; дует на «лет»
     ub = ease_out(ramp(t, w_let - .12, .18), 2)
-    fa = people.father(300, 1210, .78, None, ("sit", "blow"), t, ub, breath=True,
+    fa = people.father(330, 1210, .95, None, ("sit", "blow"), t, ub, breath=True,
                        head_add=-.04 * ease_out(ramp(t, w_sor, .2)) + .02 * wob(t, 2.1), look=(.75, .35))
     o.append(fa["svg"])
     hx, hy = fa["head"]
     sc = fa["scale"]
     hat_rot = 18 + 4 * wob(t, 3.1) - 10 * ub
-    o.append(P.party_hat(hx - 10 * sc, hy - 120 * sc, .62, hat_rot, seed=5))
+    o.append(P.party_hat(hx - 10 * sc, hy - 120 * sc, .75, hat_rot, seed=5))
     # торт
-    ck = 1.25
-    cx, cy = 690, 1200
+    ck = 1.45
+    cx, cy = 720, 1215
     o.append(shadow(cx, cy + 8, 300, .25, "#05060E"))
     o.append(P.candle_cake(cx, cy, ck, lit, blow, t, flare, n=40, seed=5))
     # свет свечей: растёт с числом огней, вспышка на «сорок», гаснет при задувании
@@ -172,10 +172,10 @@ def s05(t):
     # дым после задувания
     # камера: медленный наезд к торту; дрожь огней на «сорок»
     u = (t - a) / (B("s05") - a)
-    s = 1.0 + .10 * ease_io(u)
+    s = 1.32 + .12 * ease_io(u)
     sh = P.shake(t, w_sor, 9, .3, seed=5)
-    ccx = lerp(560, 640, ease_io(u)) + sh[0]
-    ccy = lerp(1000, 1010, ease_io(u)) + sh[1]
+    ccx = lerp(610, 660, ease_io(u)) + sh[0]
+    ccy = lerp(930, 960, ease_io(u)) + sh[1]
     return frame_svg("".join(o), ccx, ccy, s, .4 * wob(t, 1.3), bg="#070A1C")
 
 
@@ -192,22 +192,25 @@ def s06(t):
     sw = 3.5 * wob(t, 2.2)
     lamp, lc = pendant(560, 300, 1.0, sw)
     o.append(P.kitchen_table(540, 1300, 1500, 1.0, 0, seed=6, depth=300))
-    hip = (290 - 30 * back, 1210)
-    fa = people.father(hip[0], hip[1], .82, "stunned" if t >= w_sd else "tired", ("sit", "glasses_off"), t, off, lean_add=-.12 * back,
+    hip = (300 - 30 * back, 1250)
+    fa = people.father(hip[0], hip[1], .86, "stunned" if t >= w_sd else "tired", ("sit", "glasses_off"), t, off, lean_add=-.12 * back,
                        head_add=-.06 * back, glasses=1.0 - off, look=(.55, .55) if t < w_sd else (.15, .05))
-    # лист на столе перед ним, чуть дрожит после «СДВГ»
-    lx, ly = 650, 1130
-    o.append(P.checklist(lx, ly, .95, ticks, t, rot=-6, shake=2.5 * ramp(t, w_sd, .2), seed=6))
+    # лист на столе справа от него, чуть дрожит после «СДВГ»
+    lx, ly = 960, 960
+    o.append(P.checklist(lx, ly, .86, ticks, t, rot=5, shake=2.5 * ramp(t, w_sd, .2), seed=6))
     o.append(fa["svg"])
     # очки в руке после снятия
     if off > .55:
         hx, hy = fa["hold"]
-        o.append(P.glasses(hx + 10, hy - 6, .55, -20 + 10 * wob(t, 2), fold=ramp(t, w_sd + .4, .3)))
-    # кот сидит на столе справа и тихо кладёт лапу на руку отца (на «СДВГ»)
+        o.append(P.glasses(hx + 6, hy - 10, 1.1, -20 + 10 * wob(t, 2), fold=ramp(t, w_sd + .4, .3)))
+    # кот сидит на столе между отцом и листом и тихо кладёт лапу ему на руку (на «СДВГ»)
     paw = ease_io(ramp(t, w_sd + .15, .5))
-    ck = .62
-    cxp, cyp = 930, 1225
-    st = cat_st(t, turn=-.6, look=(-.7, .2), ear=.2, paw_l=paw, paw_l_dx=110, tilt=-6 * paw)
+    ck = .72
+    cxp, cyp = 700, 1215
+    hfx, hfy = fa["wrist"]["n"]
+    pdx = max(40.0, ((cxp - hfx) / ck - 25) / 1.6)
+    st = cat_st(t, turn=-.5, look=(-.6, .25), ear=.2, paw_l=paw, paw_l_dx=pdx, tilt=-5 * paw)
+    o.append(shadow(cxp, cyp + 4, 120, .3, "#05060E"))
     o.append(people.cat_svg(cxp, cyp, ck, st, t))
     # свет лампы: пятно на столе и лице, остальное в синем сумраке
     hx, hy = fa["head"]
@@ -220,9 +223,9 @@ def s06(t):
     # камера: медленный наезд на лист, на «СДВГ» мягкий отъезд к лицу отца
     u = ease_io(ramp(t, a, w_sd - a))
     v = ease_io(ramp(t, w_sd, .9))
-    s = lerp(1.0, 1.16, u) - .12 * v
-    ccx = lerp(lerp(560, 620, u), hx + 120, v)
-    ccy = lerp(lerp(1000, 1060, u), hy + 260, v)
+    s = lerp(1.25, 1.36, u) - .1 * v
+    ccx = lerp(lerp(640, 700, u), hx + 220, v)
+    ccy = lerp(lerp(900, 930, u), hy + 330, v)
     return frame_svg("".join(o), ccx, ccy, s, .3 * wob(t, 1.1), bg="#070A1C")
 
 
@@ -232,69 +235,67 @@ def s08(t):
     a = A("s08")
     w_sem, w_vop, w_len, w_teb, w_ili, w_net = ws(28), ws(29), ws(30), ws(32), ws(33), ws(34)
     fan = ramp(t, w_sem - .06, (w_vop + .1) - (w_sem - .06))
-    jingle = math.exp(-max(0.0, t - w_vop) * 3) if t >= w_vop else .25
+    jingle = math.exp(-max(0.0, t - w_vop) * 3) if t >= w_vop else .3
     o = [paper_bg()]
-    ground = 1250
+    ground = 1260
     # сундучок
-    chx, chy = 640, ground
+    chx, chy, chk = 720, ground, 1.25
     shake = 0.0
     if t >= w_ili:
         shake = clamp(1 - (t - w_ili) / .5) + .6 * clamp(1 - abs(t - w_net - .05) / .25)
     glow_ = ease_out(ramp(t, w_ili + .05, .4)) * (.75 + .25 * wob(t, 9))
-    o.append(shadow(chx, chy, 190, .16))
-    o.append(P.small_chest(chx, chy, 1.1, shake, glow_, t, seed=8))
-    # Дима вбегает справа на «лень» и смотрит на сундук
+    o.append(shadow(chx, chy, 220, .16))
+    o.append(P.small_chest(chx, chy, chk, shake, glow_, t, seed=8))
+    # Дима вбегает справа на «лень» и смотрит на сундук (лицом влево)
     run = ease_out(ramp(t, w_len - .05, .5), 2)
     if t >= w_len - .05:
-        dx = lerp(1350, 905, run)
-        dk = .62
-        ph = (t - w_len) * 2.4
+        dx = lerp(1450, 1010, run)
+        dk = .72
+        hip0 = ground - 640 * dk
         if run < .98:
-            wk = people.walk_kw(dx, ground - 640 * dk, dk, ph, stride=300, lift=90)
-            fe = wk["feet"]
-            hy = wk["hip"][1]
+            # шаг считаем вправо вокруг зеркальной точки и отражаем фигуру
+            wk = people.walk_kw(dx, hip0, dk, (t - w_len) * 2.6, stride=300, lift=90)
+            fe, hy = wk["feet"], wk["hip"][1]
         else:
-            fe = people.stand_kw(dx, ground - 640 * dk, dk)["feet"]
-            hy = ground - 640 * dk
-        # шаг влево: считаем как вправо и отражаем вокруг dx
-        dm = people.dima(dx, hy, dk, "look77", "di_stand" if run >= .98 else None, feet=fe, flip=True,
-                         head_add=.05 * wob(t, 2.0) + .08 * ease_out(ramp(t, w_ili, .3)))
-        o.append(shadow(dx, ground + 4, 110, .14))
+            fe, hy = people.stand_kw(dx, hip0, dk)["feet"], hip0
+        dm = people.dima(dx, hy, dk, "look77", None, feet=fe, flip=True,
+                         head_add=.05 * wob(t, 2.0) + .1 * ease_out(ramp(t, w_ili, .3)), lean_add=.08 * (1 - run))
+        o.append(shadow(dx, ground + 4, 120, .14))
         o.append(dm["svg"])
-    # кот с кольцом ключей в зубах: стоит слева, на «тебя» шагает к сундуку и вставляет ключ
-    ck = .9
-    ins = ease_io(ramp(t, w_teb - .35, .4))
-    cx0, cx1 = 250, 330
-    cx = lerp(cx0, cx1, ins)
-    hop = P.hop(t, w_teb - .35, 18, .3) if ins < 1 else 0.0
-    st = cat_st(t, turn=.45 * ins, look=(.6, .3 + .3 * ins), tilt=8 * ins, ear=.3 * wob(t, 3))
-    o.append(shadow(cx, ground + 4, 150, .15))
-    o.append(people.cat_svg(cx, ground - hop, ck, st, t))
-    mx, my = cx + 10 * ck, ground - hop + (1130 - 1306) * ck      # рот кота
-    kk = .9
-    if ins <= 0:
-        rx, ry, rr = mx, my + 24 * kk, 0.0
-    else:
-        khx, khy = P.chest_keyhole(chx, chy, 1.1)
-        L = (35 + 26 + 132 - 34) * kk
-        tx, ty = khx - L, khy
-        rx, ry = lerp(mx, tx, ins), lerp(my + 24 * kk, ty, ins)
-        rr = -24 * ins
-    o.append(f'<g transform="rotate({rr:.2f} {rx:.2f} {ry:.2f})">{P.key_ring(rx, ry, kk, fan, t, seed=8, jingle=jingle)}</g>')
+    # кот с кольцом ключей в зубах слева; на «тебя» шагает к сундуку и вставляет ключ в скважину
+    ck = 1.0
+    ins = ease_io(ramp(t, w_teb - .4, .4))
+    khx, khy = P.chest_keyhole(chx, chy, chk)
+    kk = 1.4
+    reach = (35 + 26 + 132 - 40) * kk           # от центра кольца до вошедшего в скважину кончика
+    cx1 = khx - reach - 6 * ck
+    my1 = ground + (1132 - 1306 + 70 * .75) * ck
+    cx = lerp(330, cx1, ins)
+    walk = (t - (w_teb - .4)) * 2.2 if 0 < ins < 1 else None
+    drop = .75 * ins
+    st = cat_st(t, turn=.5 * ins + .15, look=(.5, .2 + .3 * ins), ear=.3 * wob(t, 3), walk=walk, drop=drop)
+    o.append(shadow(cx, ground + 4, 160, .15))
+    o.append(people.cat_svg(cx, ground, ck, st, t))
+    mx, my = cx + 6 * ck, ground + (1132 - 1306 + 70 * drop) * ck      # рот кота (опущенная голова — ниже)
+    if ins > 0:      # ведущий ключ к скважине, кольцо — у рта
+        mx, my = lerp(mx, khx - reach, ins), lerp(my, khy, ins)
+    o.append(P.key_ring(mx, my, kk, fan, t, seed=8, jingle=jingle * (1 - ins), lead=(0, -90.0, ins) if ins > 0 else None))
     # щелчки веера — искорки
     for i in range(7):
         ti = w_sem - .06 + (i + .5) / 7 * ((w_vop + .1) - (w_sem - .06))
         u = clamp((t - ti) / .3)
         if 0 < u < 1 and ins <= 0:
-            tx_, ty_ = P.key_ring_tip(rx, ry, kk, fan, i)
-            o.append(P.sparkles(tx_, ty_, .6, 1 - u, t, seed=80 + i, n=3, r=50))
-    # камера: дрейф вправо за ключами, на «нет» короткий наезд на щель
-    u = ease_io(ramp(t, a, B("s08") - a))
+            tx_, ty_ = P.key_ring_tip(mx, my, kk, fan, i)
+            o.append(P.sparkles(tx_, ty_, .7, 1 - u, t, seed=80 + i, n=3, r=55))
+    # камера: дрейф вправо за ключами (крупно кот и ключи), с «лень» — шире, на «нет» короткий наезд на щель
+    u = ease_io(ramp(t, a, w_len - a))
+    wv = ease_io(ramp(t, w_len, .5))
     pn = ease_out(ramp(t, w_net, .25), 2)
-    s = lerp(1.0, 1.06, u) + .16 * pn
-    ccx = lerp(450, 560, u)
+    s = lerp(lerp(1.95, 2.05, u), 1.08, wv) + .2 * pn
+    ccx = lerp(lerp(390, 440, u), 680, wv)
+    ccy = lerp(1090, 960, wv)
     ccx = lerp(ccx, chx, pn)
-    ccy = lerp(1000, chy - 260, pn) + 0 * u
+    ccy = lerp(ccy, chy - 300, pn)
     return frame_svg("".join(o), ccx, ccy, s, -.4 + .8 * u)
 
 
@@ -331,7 +332,7 @@ def s11(t):
     o.append(P.fence(fx0, ground, FENCE_K, painted, t, FENCE_N, seed=11, pitch=FENCE_P, drip=drip))
     bx, btop, bbot = P.fence_board(fx0, ground, FENCE_K, half - 1, FENCE_P)
     # ведро с краской у границы
-    o.append(P.paint_bucket(bx + 120, ground + 70, .7, 0, seed=11))
+    o.append(P.paint_bucket(bx - 150, ground + 70, .7, 0, seed=11))
     # отец у границы с кистью; на «бросал» роняет кисть и уходит вправо
     fk = .74
     hipy = ground + 70 - 640 * fk * 1.04
@@ -345,9 +346,12 @@ def s11(t):
         fe, hyy = people.stand_kw(fxp, hipy, fk, "father77", spread=80)["feet"], hipy
     # мазки до «бросал»: рука ходит вверх-вниз по доске (зеркально — лицом к забору, влево)
     strokes = math.sin((t - a) * 9) if t < w_br else 0.0
-    hand = (bx + 36, btop + 160 + 60 * strokes)
-    arms = {"n": ("ik", (2 * fxp - hand[0], hand[1]), -1)} if t < w_br else None
-    fa = people.father(fxp, hyy, fk, "paint" if t < w_br else "sad", ("brush", "drop"), t, drop_u, feet=fe, flip=True, arms=arms,
+    pfrac = painted * FENCE_N - (half - 1)
+    hand = (bx + 30, lerp(btop, bbot, pfrac) - 110 + 50 * strokes)
+    turned = t >= w_br + .3
+    arms = {"n": ("ik", (2 * fxp - hand[0], hand[1]), -1)} if t < w_br else (
+        {"n": ("ang", -.05 + .25 * wob(t, 7), .2), "f": ("ang", .15 - .25 * wob(t, 7), .15)} if turned else None)
+    fa = people.father(fxp, hyy, fk, "paint" if t < w_br else "sad", ("brush", "drop"), t, drop_u, feet=fe, flip=not turned, arms=arms,
                        head_add=.03 * wob(t, 2.4))
     o.append(shadow(fxp, ground + 74, 150, .16))
     o.append(fa["svg"])
@@ -366,8 +370,8 @@ def s11(t):
     v = 520.0
     tc = min(t, w_br)
     ccx = bx - 520 + v * (tc - a)
-    s = 1.0 * punch(t, w_br, .07, .3)
-    return frame_svg("".join(o), ccx, 1020, s, 0.0, bg="#8EC3EC")
+    s = 1.22 * punch(t, w_br, .07, .3)
+    return frame_svg("".join(o), ccx, 1030, s, 0.0, bg="#8EC3EC")
 
 
 # ═══════════════════════════════ s13: штора гаража ═══════════════════════════════
@@ -409,8 +413,8 @@ def s13(t):
     sc = fk * 1.04
     recoil = ease_out(ramp(t, w_nach + .05, .35), 2)
     rise = clamp(lift / .14)
-    fhx = dx - 330 - 90 * recoil
-    fhy = floor - 420 * sc - 70 * sc * rise + 40 * sc * recoil
+    fhx = dx - 230 - 110 * recoil
+    fhy = floor - 360 * sc - 70 * sc * rise + 40 * sc * recoil
     feet = {"n": ((fhx + 150 * sc, floor), -.2), "f": ((fhx + 40 * sc, floor + 6), -.2)}
     if recoil < .5:
         arms = {"n": ("ik", (hx - 20, hy + 4), -1), "f": ("ik", (hx - 70, hy + 6), -1)}
@@ -449,30 +453,31 @@ def s16(t):
     lib.dyn_begin()
     a = A("s16")
     w_mal, w_sha = ws(80), ws(81)
-    n = 14
-    pitch, fk = 96.0, 1.1
-    x0, ground = 120.0, 1180.0
-    # одна доска на «маленькому», дальше — по доске с «шагу», каждая быстрее
-    cnt = .15 + .85 * ease_out(ramp(t, w_mal, .35))
+    n = 12
+    pitch, fk, bh = 96.0, 1.5, 640.0
+    x0, ground = 40.0, 1330.0
+    per = .2
+    # одна доска на «маленькому», дальше — по доске с «шагу»
+    cnt = .12 + .88 * ease_out(ramp(t, w_mal, .4))
     if t >= w_sha:
-        cnt = 1.0 + (t - w_sha) / .16
+        cnt = 1.0 + (t - w_sha) / per
     o = [paper_bg()]
-    o.append(line([(x0 - 200, ground + 6), (x0 + pitch * n * fk + 300, ground + 6)], 6, INK, taper=.1, wmin=.8, seed=1601))
-    o.append(P.fence(x0, ground, fk, min(cnt, n) / n, t, n, seed=16, pitch=pitch))
-    # маленькая кисть на текущей доске
+    o.append(line([(x0 - 600, ground + 6), (x0 + pitch * n * fk + 600, ground + 6)], 6, INK, taper=.1, wmin=.8, seed=1601))
+    o.append(P.fence(x0, ground, fk, min(cnt, n) / n, t, n, seed=16, h=bh, pitch=pitch))
+    # маленькая кисть ведёт мазок по текущей доске сверху вниз
     i = int(min(cnt, n - 1))
-    cxb, top, bot = P.fence_board(x0, ground, fk, i, pitch)
-    frac = cnt - i
-    by = lerp(top + 40, bot - 40, clamp(frac))
-    o.append(P.paint_brush(cxb + 46, by - 120, .5, -30 + 12 * wob(t, 22), 1.0, seed=16))
+    cxb, top, bot = P.fence_board(x0, ground, fk, i, pitch, bh)
+    frac = clamp(cnt - i)
+    by = lerp(top + 30, bot - 20, frac)
+    o.append(P.paint_brush(cxb + 70, by - 150, .9, -28 + 8 * wob(t, 22), 1.0, seed=16))
     # отпечаток лапы у основания каждой готовой доски
     for j in range(min(n, int(cnt))):
-        cxj, _, _ = P.fence_board(x0, ground, fk, j, pitch)
-        tj = (w_mal + .35) if j == 0 else (w_sha + (j - 1 + 1) * .16 - .16 + .16)
-        o.append(paw_print(cxj, ground + 46, .9, ramp(t, tj, .2), -8 + 10 * (j % 2)))
+        cxj, _, _ = P.fence_board(x0, ground, fk, j, pitch, bh)
+        tj = (w_mal + .4) if j == 0 else (w_sha + (j - 1) * per + per)
+        o.append(paw_print(cxj, ground + 70, 2.4, ramp(t, tj - .05, .2), -8 + 14 * (j % 2)))
     # камера: постоянный дрейф вправо за окрашенными досками
-    ccx = 420 + 300 * (t - a)
-    return frame_svg("".join(o), ccx, 960, 1.18, -.3)
+    ccx = 400 + 330 * (t - a)
+    return frame_svg("".join(o), ccx, 1020, 1.12, -.3)
 
 
 # ═══════════════════════════════ s19: рамка с фото на полке ═══════════════════════════════
@@ -495,13 +500,11 @@ def s19(t):
     o.append(f'<g transform="rotate({rot:.2f} 540 {sy})">' + P.photo_frame(540, fy, fk, 0, 1.0, None, seed=19,
                                                                          glint=ramp(t, w_fot, .55), portrait=True, t=t) + '</g>')
     # лапа кота справа: подходит, толкает край рамки, уходит
-    ck = 1.2
-    reach = ease_io(ramp(t, w_fot - .45, .3)) - ease_io(ramp(t, w_fot + .35, .4))
-    base = (1220, sy - 220)
-    tip = (lerp(1180, 540 + 80 * fk + 14, reach), sy - 330 + 30 * wob(t, 3) * (1 - reach))
+    ck = 2.2
+    reach = ease_io(ramp(t, a, w_fot - a)) - .35 * ease_io(ramp(t, w_fot + .3, .4))
+    base = (1300, sy - 120)
+    tip = (lerp(1130, 540 + 80 * fk + 20, reach), sy - 360 + 20 * wob(t, 3) * (1 - reach))
     o.append(people.cat_forearm(base, tip, ck, 0.0, seed=19))
-    # кончик хвоста с огоньком — кот сидит рядом на полке (за кадром справа)
-    o.append(P.att_flame(1010 + 10 * wob(t, 2.2), sy - 40, 1.2, t, 1.0, seed=19))
     # камера: наезд на фото
     u = ease_io(ramp(t, a, B("s19") - a))
     s = lerp(.98, 1.1, u) * punch(t, w_fot, .03, .3)

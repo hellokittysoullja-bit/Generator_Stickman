@@ -489,7 +489,7 @@ def s09(t):
     jab = .5 + .5 * math.sin(2 * math.pi * 3.0 * (t - t43)) if t > t43 else .5
     st = dict(PE.CAT_ST76["poke"])
     st.update(paw=pk * (.55 + .45 * jab), paw_dx=80 + 50 * jab, look=(.7, -.3), blink=bump(t, t47 + .2, .16))
-    cat = PE.cat_svg(120, 1560, 1.15, st, t)
+    cat = PE.cat_svg(100, 1295, .95, st, t)
     crowd = PE.crowd_backs(-60, 2140, 1200, 2 * T0("s09") - t, clap_phase=.15, n=4, k=.84, seed=1)
     # штрихи перемотки (экран): короткие дуги «назад» поперёк кадра, пока идёт перемотка
     lines_ = ""
