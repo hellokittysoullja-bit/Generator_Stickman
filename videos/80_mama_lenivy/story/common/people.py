@@ -259,13 +259,19 @@ def dima_head(expr):
     inner.append(blob([(-60, -60), (-34, -66), (-40, -20), (-62, -10)], C["SKIN_SH2"], .5))
     inner.append(blob([(70, 40), (112, 42), (106, 70), (80, 74)], C["SKIN_SH"], .55))
     inner.append(blob([(-20, 104), (40, 118), (96, 92), (110, 140), (-30, 140)], C["SKIN_SH"], .85))
-    inner.append(blob([(-60, 70), (-20, 92), (30, 106), (80, 94), (106, 70), (110, 130), (-60, 130)], "#9e8a96", .42))
+    stb = expr.get("stubble", 1.0)      # рилс 80: 0 — подросток без щетины, 1 — как было (байт в байт)
+    if stb > .01:
+        inner.append(blob([(-60, 70), (-20, 92), (30, 106), (80, 94), (106, 70), (110, 130), (-60, 130)], "#9e8a96", .42 * min(1.0, stb)))
     rs = np.random.RandomState(7)
     for _ in range(120):
         x, y = rs.uniform(-56, 108), rs.uniform(70, 124)
         if (x - 30) ** 2 / 92 ** 2 + (y - 56) ** 2 / 70 ** 2 > 1.0 or y > 120 - abs(x - 30) * .15:
             continue
-        inner.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{rs.uniform(1.2, 2.2):.1f}" fill="#5c4446" opacity=".55"/>')
+        r_ = rs.uniform(1.2, 2.2)
+        if stb >= 1.0:
+            inner.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{r_:.1f}" fill="#5c4446" opacity=".55"/>')
+        elif stb > .01:
+            inner.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{r_:.1f}" fill="#5c4446" opacity="{.55 * stb:.3f}"/>')
     blush = expr.get("blush", 0.0)
     inner.append(blob(ellipse_pts(54, -10, 100, 62, 14), "#d9a08f", .3))
     if blush > 0:
@@ -3737,4 +3743,264 @@ def inventor(x, y, k, pose="sew", t=0.0, expr=None, u=1.0, feet=None, flip=False
                                thumb=hand_n.get("thumb", .3), flip=-1 if flip else 1, seed=7)
     fig["hold"] = hand_pos(fig, "n", 70)
     fig["palm"] = hand_pos(fig, "n", 60)
+    return fig
+
+
+# ═════════════════════════════ РИЛС 80 «МАМА БЫЛА ПРАВА» (автор — группа B) ═════════════════════════════
+# Все люди рилса — отсюда, кот — только common/cat.py. Все смотрят вправо (flip=True — влево). (x, y) — таз, голова ≈ 300·k·рост.
+# dima80(x, y, k, expr, pose, t, u, age, feet, ...) — Дима рилса 80 (горчичное худи, лохматый). age 0…1: 0 — подросток (хук, s01–s03:
+#   ниже ростом ×0.8, без щетины и мешков), 0.5 — студент (×0.9, лёгкая щетина), 1 — взрослый (щетина). Рост меняет ТОЛЬКО масштаб и
+#   щетину — одно лицо, одна одежда. feet: None (по пояс), "stand" (стоит; (x, y) — таз), dict figure(). Для «стоит на полу floor» —
+#   hip_on_floor(floor, k, age). pose — имя POSE или (из, в) с u. Возвращает figure() + "hold" (точка в ближней ладони), "palm",
+#   "neck" (середина шеи спереди — куда вешать шнур бирки), "chest" (середина груди — где висит бирка), "k" (итоговый масштаб).
+#   Позы POSE["d80_*"]: stand (руки вниз), sag (под гирей: наклон вперёд, голова вниз, руки висят), grab (обе руки держат бирку у живота
+#   — тянет вниз), kneel_down (на коленях, руки упёрлись в пол перед собой — используй с kneel_kw), tie (обе руки у горла затягивают шнур
+#   вверх), adjust (ближняя рука поправляет бирку у груди), slump (смирился: плечи вниз, руки висят, голова вниз), neck (ближняя ладонь
+#   трогает шею), sit (сидит за столом, предплечья на крышке), sleeve (сидит, ближняя рука закатывает рукав дальней), pen (сидит, ближняя
+#   кисть с ручкой над листом: ручку кладёт вызывающий в "hold"), palm (сидит, ладонь на груди), turn_phone — см. dima80_phone.
+#   Ноги: kneel_kw (на коленях), sit_kw (сидит на стуле), stand → feet="stand".
+#   Мимика EXPR["dima"]: teen80 (подросток спокойно), hit80 (вздрогнул: зажмурен, рот «о»), heavy80 (тяжело: брови домиком, губы сжаты,
+#   взгляд вниз), crush80 (лицом к полу: зажмурен, рот кривой), cower80 (съёжился, смотрит вверх), grow80 (растёт: растерянно вперёд),
+#   tie80 (сам затягивает: губы сжаты, взгляд вниз), resign80 (смирился: веки опущены, рот вниз), det80 (решительно за столом), gloom80
+#   (под облаком: устало), screen80 (в телефон: облегчение, свет), calm80 (спокойно смотрит вверх на облачко), yes80 (кивает «да»: мягкая
+#   полуулыбка, веки прикрыты), say_yes80 (одними губами «да»: рот приоткрыт), write80 (пишет, мягко), touch80 (трогает шею: удивлён).
+# accuser_shadow(kind, x, y, k, jab, t, col, op, ...) — ТЕНЬ-обвинитель силуэтом без лица (сплошной цвет, мягкий край): kind "mama"
+#   (пучок, указка в ближней руке), "teacher" (мужчина в пиджаке, в дальней руке раскрытая книга у груди, тычет пальцем), "aunt" (пышная
+#   причёска, сумочка на локте дальней руки, тычет пальцем). jab 0…1: 0 — рука занесена вверх-назад, 1 — выброшена вперёд-вниз.
+#   reach (по умолчанию 1) — длина выпада; aim=(x, y) — точка, куда тычет (мир), тогда jab ведёт туда. (x, y) — таз, стоит.
+#   Возвращает dict(svg, tip — кончик указки или пальца, head, wrist). flip=True — смотрит влево.
+# scientist80(kind, x, y, k, pose, t, expr, feet) — учёные (без имён, не портреты): kind "a" — женщина, тёмное каре, очки, бордовый
+#   свитер с белым воротом; "b" — мужчина, седая борода, твидовый кардиган. pose: "write" (сидит, ближняя кисть пишет вниз-вперёд:
+#   "hold"), "lean" (наклон к тетради, рука у подбородка), "point" (тычет в тетрадь пальцем: "finger"), "rest". Мимика "focus", "ah"
+#   (озарение), "talk", "smile".
+EXPR["dima"].update({
+    "teen80": {"brows": "calm", "mouth": "flat", "lid": .8, "look": (.4, -.2), "bags": False, "stubble": 0.0},
+    "hit80": {"brows": "worry", "mouth": "o", "open": .45, "squeeze": 1.0, "bags": False, "stubble": 0.0},
+    "heavy80": {"brows": "sad", "mouth": "pressed", "lid": .5, "look": (.3, .8), "bags": False, "stubble": 0.0},
+    "crush80": {"brows": "worry", "mouth": "wobble", "squeeze": 1.0, "bags": False, "stubble": 0.0},
+    "cower80": {"brows": "worry", "mouth": "frown", "lid": .95, "look": (-.5, -.7), "bags": False, "stubble": 0.0},
+    "grow80": {"brows": "worry", "mouth": "flat", "lid": .8, "look": (.5, .2), "bags": False},
+    "tie80": {"brows": "sad", "mouth": "pressed", "lid": .45, "look": (.3, .9)},
+    "resign80": {"brows": "sad", "mouth": "tired", "lid": .3, "look": (.2, .9)},
+    "det80": {"brows": "det", "mouth": "pressed", "lid": .75, "look": (.6, .45), "bags": False},
+    "gloom80": {"brows": "sad", "mouth": "tired", "lid": .5, "look": (.4, .5), "bags": False},
+    "screen80": {"brows": "calm", "mouth": "smile", "smile": .3, "lid": .55, "look": (.5, .55), "bags": False},
+    "calm80": {"brows": "calm", "mouth": "flat", "lid": .8, "look": (.35, -.75), "bags": False},
+    "yes80": {"brows": "calm", "mouth": "smile", "smile": .35, "lid": .4, "look": (.4, -.5), "bags": False},
+    "say_yes80": {"brows": "calm", "mouth": "o", "open": .25, "lid": .55, "look": (.4, -.6), "bags": False},
+    "write80": {"brows": "calm", "mouth": "smile", "smile": .25, "lid": .55, "look": (.6, .6), "bags": False},
+    "touch80": {"brows": "up", "mouth": "o", "open": .3, "lid": 1.0, "look": (.6, .3), "bags": False},
+})
+_GRIP = {"curl": (.7, .74, .78, .8), "thumb": .65}
+_OPEN = {"curl": (.15, .15, .2, .25), "spread": .2, "thumb": .25}
+POSE.update({
+    "d80_stand": (0.0, 0.0, {"f": ("ang", 0.16, 0.16), "n": ("ang", -0.08, 0.22)},
+                  {"f": {"curl": (.35, .35, .4, .45), "thumb": .35}, "n": {"curl": (.35, .35, .4, .45), "thumb": .35}}),
+    "d80_sag": (0.3, 0.42, {"f": ("ang", 0.5, 0.1), "n": ("ang", 0.42, 0.14)},
+                {"f": {"curl": (.4, .4, .45, .5), "thumb": .4}, "n": {"curl": (.4, .4, .45, .5), "thumb": .4}}),
+    "d80_grab": (0.22, 0.35, {"f": ("ik", (190, -250), -1), "n": ("ik", (240, -235), -1)},
+                 {"f": dict(_GRIP, dir=(.2, 1)), "n": dict(_GRIP, dir=(.1, 1))}),
+    "d80_kneel_down": (0.55, 0.45, {"f": ("ik", (330, 290), -1), "n": ("ik", (390, 300), -1)},
+                       {"f": dict(_OPEN, dir=(1, .25)), "n": dict(_OPEN, dir=(1, .2))}),
+    "d80_tie": (0.04, 0.12, {"f": ("ik", (115, -320), -1), "n": ("ik", (150, -326), -1)},
+                {"f": dict(_GRIP, dir=(.2, -1)), "n": dict(_GRIP, dir=(.1, -1))}),
+    "d80_adjust": (0.06, 0.28, {"f": ("ang", 0.16, 0.16), "n": ("ik", (150, -290), -1)},
+                   {"f": {"curl": (.35, .35, .4, .45), "thumb": .35}, "n": dict(_GRIP, dir=(-.2, 1))}),
+    "d80_slump": (0.24, 0.5, {"f": ("ang", 0.1, 0.06), "n": ("ang", 0.0, 0.08)},
+                  {"f": {"curl": (.4, .4, .45, .5), "thumb": .4}, "n": {"curl": (.4, .4, .45, .5), "thumb": .4}}),
+    "d80_neck": (0.0, 0.1, {"f": ("ang", 0.16, 0.16), "n": ("ik", (105, -350), -1)},
+                 {"f": {"curl": (.35, .35, .4, .45), "thumb": .35}, "n": {"dir": (-.6, -.6), "curl": (.15, .15, .2, .25), "spread": .15, "thumb": .2}}),
+    "d80_sit": (0.08, 0.0, {"f": ("ik", (190, -200), -1), "n": ("ik", (240, -195), -1)},
+                {"f": {"curl": (.4, .4, .45, .5), "thumb": .4}, "n": {"curl": (.3, .3, .35, .4), "thumb": .3}}),
+    "d80_sleeve": (0.1, 0.12, {"f": ("ik", (230, -215), -1), "n": ("ik", (160, -250), -1)},
+                   {"f": {"curl": (.4, .4, .45, .5), "thumb": .4}, "n": dict(_GRIP, dir=(1, .25))}),
+    "d80_pen": (0.18, 0.12, {"f": ("ik", (200, -210), -1), "n": ("ik", (290, -235), -1)},
+                {"f": {"curl": (.2, .2, .25, .3), "thumb": .2}, "n": {"dir": (.5, .9), "curl": (.62, .7, .78, .8), "thumb": .6}}),
+    "d80_palm": (0.02, -0.05, {"f": ("ik", (200, -200), -1), "n": ("ik", (150, -290), -1)},
+                 {"f": {"curl": (.4, .4, .45, .5), "thumb": .4}, "n": {"dir": (-.4, -.9), "curl": (.05, .05, .1, .15), "spread": .1, "thumb": .1}}),
+})
+
+
+def age_k(age):
+    """Масштаб роста Димы: подросток 0.8 → взрослый 1.0."""
+    return .8 + .2 * lib.clamp(age)
+
+
+def hip_on_floor(floor, k, age=1.0):
+    """y таза стоящего Димы, чтобы ступни стояли на полу floor (учитывает возраст)."""
+    sc = k * age_k(age) * HEIGHT["dima"]
+    return floor - (LEG_LEN - 12) * sc
+
+
+def kneel_kw(x, y, scale, who="dima", age=1.0):
+    """На коленях: колени на полу перед тазом, голени назад, носки за спиной. (x, y) — таз; пол ≈ y + 330·sc."""
+    sc = scale * age_k(age) * HEIGHT.get(who, 1.0)
+    return {"feet": {"n": ((x - 150 * sc, y + 285 * sc), 2.95), "f": ((x - 200 * sc, y + 290 * sc), 2.95)}}
+
+
+def dima80(x, y, k, expr="teen80", pose="d80_stand", t=0.0, u=1.0, age=1.0, feet=None, flip=False, **kw):
+    """Дима рилса 80 (см. шапку раздела). k — масштаб взрослого; подросток получается age."""
+    sc = k * age_k(age)
+    if isinstance(pose, (tuple, list)):
+        pk = mix_pose(pose[0], pose[1], u, x, y, sc, "dima")
+    else:
+        pk = pose_kw(pose, x, y, sc, "dima")
+    ex = dict(EXPR["dima"][expr]) if isinstance(expr, str) else dict(expr)
+    ex["stubble"] = min(ex.get("stubble", 1.0), 1.0 if age >= 1 else lib.clamp((age - .25) / .75))
+    if age < .5:
+        ex["bags"] = False
+    ft = stand_kw(x, y, sc, "dima")["feet"] if feet == "stand" else feet
+    br = .012 * math.sin(t * 2 * math.pi / 3.3 + 1.0)
+    arms = dict(pk["arms"], **kw.pop("arms", {}))
+    hands = dict(pk["hands"], **kw.pop("hands", {}))
+    fig = figure("dima", x, y, sc, ex, lean=pk["lean"] + kw.pop("lean_add", 0.0) + br, head_ang=pk["head_ang"] + kw.pop("head_add", 0.0), arms=arms,
+                 hands=hands, feet=ft, flip=flip, **kw)
+    fig["hold"] = hand_pos(fig, "n", 70)
+    fig["palm"] = hand_pos(fig, "n", 55)
+    s_ = fig["scale"]
+    hx, hy = fig["head"]
+    sgn = -1 if flip else 1
+    fig["neck"] = (hx - sgn * 10 * s_, hy + 150 * s_)
+    fig["chest"] = (hx + sgn * 20 * s_, hy + 330 * s_)
+    fig["k"] = sc
+    return fig
+
+
+# ─── тени-обвинители: силуэт одним цветом, без лица ───
+_ACC = {"mama": ("mama", .98), "teacher": ("bald", 1.0), "aunt": ("bob", 1.0)}
+
+
+def _silhouette(inner, col, op, blur_sd):
+    fid = lib.uid("acc")
+    r, g, b = (int(col[i:i + 2], 16) / 255 for i in (1, 3, 5))
+    lib.DEFS.append(f'<filter id="{fid}" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">'
+                    f'<feColorMatrix type="matrix" values="0 0 0 0 {r:.3f} 0 0 0 0 {g:.3f} 0 0 0 0 {b:.3f} 0 0 0 40 0"/>'
+                    + (f'<feGaussianBlur stdDeviation="{blur_sd:.1f}"/>' if blur_sd > 0 else '') + '</filter>')
+    return f'<g filter="url(#{fid})" opacity="{op:.3f}">{inner}</g>'
+
+
+def accuser_shadow(kind, x, y, k, jab=0.0, t=0.0, col="#120d24", op=.88, blur_sd=2.5, flip=False, aim=None, reach=1.0, raw=False):
+    """Тень-обвинитель (см. шапку раздела). raw=True — без фильтра силуэта (для проверки позы глазами)."""
+    who, hk = _ACC[kind]
+    sc = k * hk
+    j = lib.clamp(jab)
+    tremble = 1.2 * math.sin(t * 23.0) + .8 * math.sin(t * 37.0 + 1)
+    # ближняя рука: занесена вверх-назад → выброшена вперёд-вниз
+    up = (60, -760)
+    if aim is not None:
+        ax, ay = aim
+        sgn = -1 if flip else 1
+        down = ((ax - x) * sgn / sc, (ay - y) / sc)
+        L = math.hypot(*down)
+        lim = 560 * reach
+        if L > lim:
+            down = (down[0] * lim / L, down[1] * lim / L)
+    else:
+        down = (520 * reach, -470)
+    tgt = (lerp_(up[0], down[0], j), lerp_(up[1], down[1], j) + tremble)
+    lean = -.06 + .16 * j
+    hands_n = dict(_GRIP, dir=(1, -.2)) if kind == "mama" else {"dir": (1, .1), "curl": (0, .85, .9, .9), "spread": .05, "thumb": .7}
+    far_arm = ("ang", 0.2, 0.2)
+    hands_f = {"curl": (.35, .35, .4, .45), "thumb": .35}
+    if kind == "teacher":
+        far_arm = ("ik", (150, -330), -1)
+        hands_f = dict(_GRIP, dir=(1, -.3))
+    elif kind == "aunt":
+        far_arm = ("ik", (40, -300), 1)
+        hands_f = {"dir": (.3, -1), "curl": (.5, .5, .55, .6), "thumb": .4}
+    arms = {"n": ("ik", (x + tgt[0] * sc, y + tgt[1] * sc), 1), "f": far_arm if far_arm[0] == "ang" else ("ik", (x + far_arm[1][0] * sc, y + far_arm[1][1] * sc), far_arm[2])}
+    fig = figure(who, x, y, sc, {"brows": "sad", "mouth": "flat"}, lean=lean, head_ang=-.1 + .25 * j, arms=arms, hands={"n": hands_n, "f": hands_f},
+                 feet=stand_kw(x, y, sc, who)["feet"])
+    s_ = fig["scale"]
+    hx, hy = fig["head"]
+    extra = []
+    wr = np.array(fig["wrist"]["n"])
+    el = np.array(fig["elbow"]["n"])
+    d = wr - el
+    d /= (np.linalg.norm(d) + 1e-6)
+    tip = wr + d * 70 * s_
+    if kind == "mama":      # пучок на затылке и указка
+        extra.append(blob(ellipse_pts(hx - 120 * s_, hy - 100 * s_, 82 * s_, 74 * s_, 16), INK))
+        extra.append(blob(ellipse_pts(hx - 70 * s_, hy - 150 * s_, 46 * s_, 34 * s_, 12), INK))
+        a = wr + d * 30 * s_
+        tip = wr + d * 520 * s_
+        nrm = np.array([-d[1], d[0]])
+        extra.append(blob([tuple(a + nrm * 9 * s_), tuple(tip + nrm * 5 * s_), tuple(tip - nrm * 5 * s_), tuple(a - nrm * 9 * s_)], INK))
+    elif kind == "teacher":   # книга у груди в дальней руке, торчит прямоугольником
+        fw = np.array(fig["wrist"]["f"])
+        extra.append(blob([(fw[0] - 20 * s_, fw[1] - 150 * s_), (fw[0] + 110 * s_, fw[1] - 170 * s_), (fw[0] + 130 * s_, fw[1] + 20 * s_),
+                           (fw[0] - 10 * s_, fw[1] + 40 * s_)], INK))
+    elif kind == "aunt":      # пышная причёска и сумочка на локте
+        extra.append(blob(ellipse_pts(hx - 10 * s_, hy - 90 * s_, 190 * s_, 150 * s_, 20), INK))
+        fe = np.array(fig["elbow"]["f"])
+        extra.append(blob(ellipse_pts(fe[0] - 20 * s_, fe[1] + 110 * s_, 90 * s_, 70 * s_, 16), INK))
+        extra.append(line([(fe[0] - 70 * s_, fe[1] + 60 * s_), (fe[0], fe[1] - 10 * s_), (fe[0] + 40 * s_, fe[1] + 60 * s_)], 10 * s_, INK, taper=0, wmin=1, seed=8001))
+    inner = "".join(extra) + fig["svg"] if kind == "aunt" else fig["svg"] + "".join(extra)
+    tipw = (float(tip[0]), float(tip[1]))
+    if flip:
+        inner = f'<g transform="translate({2 * x:.2f} 0) scale(-1 1)">{inner}</g>'
+        tipw = (2 * x - tipw[0], tipw[1])
+        hx = 2 * x - hx
+    svg_ = inner if raw else _silhouette(inner, col, op, blur_sd)
+    return dict(svg=svg_, tip=tipw, head=(hx, hy), wrist=fig["wrist"], scale=s_)
+
+
+def lerp_(a, b, u):
+    return a + (b - a) * u
+
+
+# ─── учёные (без имён, не портреты) ───
+PAL["sci80a"] = dict(PAL["bob"], HAIR="#1f1a1e", HAIR_SH="#120e11", HAIR_HI="#3d343a", SKIN="#efcdb4", SKIN_SH="#d6a68c", SKIN_SH2="#c08f78",
+                     TOP="#8e2f3c", TOP_SH="#6e222e", TOP_SH2="#561a24", FOLD="#3e121a", STITCH="#f2e8dc",
+                     LEGS="#3a3a48", LEGS_SH="#2a2a34", LEGS_SEAM="#565668")
+PAL["sci80b"] = dict(PAL["beard"], HAIR="#cfcbd2", HAIR_SH="#9c97a3", HAIR_HI="#eeebf0", SKIN="#e8bf9e", SKIN_SH="#cf9f80", SKIN_SH2="#b88566",
+                     TOP="#7a6a4e", TOP_SH="#5e5038", TOP_SH2="#4a3f2c", FOLD="#352c1e", STITCH="#c9b88e", TEE="#e9e4d8", TEE_SH="#cfc8b8",
+                     PLAID="#5b4c34", PLAID2="#a8946a", LEGS="#4a4438", LEGS_SH="#36312a", LEGS_SEAM="#615a4c")
+HEIGHT.update({"sci80a": .95, "sci80b": 1.02})
+HEADS64 = HEADS64 + ("sci80a", "sci80b")
+FRIENDLIKE = FRIENDLIKE + ("sci80a", "sci80b")
+FACES = FACES + ("sci80a", "sci80b")
+CLOTHES64["sci80a"] = sweater_parts
+CLOTHES64["sci80b"] = knit_cardigan_parts
+EXPR["sci80a"] = {"focus": {"brows": "calm", "mouth": "flat", "lid": .7, "look": (.5, .7)},
+                  "ah": {"brows": "up", "mouth": "o", "open": .35, "lid": 1.0, "look": (.4, .2)},
+                  "talk": {"brows": "calm", "mouth": "smile", "smile": .4, "lid": .8, "look": (-.6, 0)},
+                  "smile": {"brows": "calm", "mouth": "smile", "smile": .7, "lid": .65, "look": (.4, .5)}}
+EXPR["sci80b"] = {k_: dict(v_) for k_, v_ in EXPR["sci80a"].items()}
+POSE.update({
+    "sci_write": (0.18, 0.15, {"f": ("ik", (220, -200), -1), "n": ("ik", (300, -225), -1)},
+                  {"f": {"curl": (.2, .2, .25, .3), "thumb": .2}, "n": {"dir": (.5, .9), "curl": (.62, .7, .78, .8), "thumb": .6}}),
+    "sci_lean": (0.22, 0.2, {"f": ("ik", (230, -200), -1), "n": ("ik", (190, -360), 1)},
+                 {"f": {"curl": (.4, .4, .45, .5), "thumb": .4}, "n": {"dir": (.2, -1), "curl": (.5, .55, .6, .65), "thumb": .4}}),
+    "sci_point": (0.15, 0.12, {"f": ("ik", (220, -200), -1), "n": ("ik", (330, -240), -1)},
+                  {"f": {"curl": (.4, .4, .45, .5), "thumb": .4}, "n": {"dir": (.6, .8), "curl": (0, .85, .9, .9), "spread": .05, "thumb": .7}}),
+    "sci_rest": (0.05, 0.05, {"f": ("ik", (200, -200), -1), "n": ("ik", (250, -195), -1)},
+                 {"f": {"curl": (.4, .4, .45, .5), "thumb": .4}, "n": {"curl": (.3, .3, .35, .4), "thumb": .3}}),
+})
+_head64_orig80 = head64
+
+
+def head64(expr, style):        # noqa: F811 — плюс учёные рилса 80 (головы стилей bob и beard в своей палитре, у «a» очки)
+    if style == "sci80a":
+        h = person_head(expr, "bob")
+        gl = (line([(-6, -36), (52, -40)], 4.4, "#2a2228", taper=0, wmin=1, seed=8010) + ring(ellipse_pts(20, -10, 34, 26, 14), 4.6, 8011)
+              + ring(ellipse_pts(94, -8, 26, 24, 14), 4.0, 8012) + line([(54, -12), (68, -12)], 4, "#2a2228", taper=0, wmin=1, seed=8013))
+        return h + gl
+    if style == "sci80b":
+        return person_head(expr, "beard")
+    return _head64_orig80(expr, style)
+
+
+def scientist80(kind, x, y, k, pose="write", t=0.0, expr="focus", feet=None, flip=False, **kw):
+    """Учёный рилса 80: kind "a" | "b"; pose — "write" | "lean" | "point" | "rest" (или имя POSE); feet: None | "stand" | "sit" | dict."""
+    who = "sci80a" if kind == "a" else "sci80b"
+    pn = pose if pose in POSE else "sci_" + pose
+    pk = pose_kw(pn, x, y, k, who)
+    ex = dict(EXPR[who][expr]) if isinstance(expr, str) else dict(expr)
+    ft = stand_kw(x, y, k, who)["feet"] if feet == "stand" else (sit_kw(x, y, k, who)["feet"] if feet == "sit" else feet)
+    br = .01 * math.sin(t * 2 * math.pi / 3.1 + .4 + (1.3 if kind == "b" else 0))
+    fig = figure(who, x, y, k, ex, lean=pk["lean"] + kw.pop("lean_add", 0.0) + br, head_ang=pk["head_ang"] + kw.pop("head_add", 0.0),
+                 arms=dict(pk["arms"], **kw.pop("arms", {})), hands=dict(pk["hands"], **kw.pop("hands", {})), feet=ft, flip=flip, **kw)
+    fig["hold"] = hand_pos(fig, "n", 70)
+    fig["finger"] = hand_pos(fig, "n", 120)
     return fig
