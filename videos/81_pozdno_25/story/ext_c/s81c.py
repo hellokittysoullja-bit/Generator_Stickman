@@ -550,8 +550,8 @@ def s09(t):
     people = ""
     clicks = []
     for i, (kind, ph) in enumerate(WALKERS):
-        x0 = 300 - i * 160 + (rnd(i, 41) - .5) * 30
-        v = 260.0
+        x0 = 100 - i * 170 + (rnd(i, 41) - .5) * 30
+        v = 380.0
         x = x0 + (t - (a38 - .6)) * v
         if -200 < x < 1700:
             fig = PE.passerby81(kind, x, gy - 62 + 6 * (i % 2), .34, t, ph)
@@ -597,7 +597,7 @@ def s18(t):
         cat = PE.cat_svg(cap[0], cap[1], k_cat, dict(PE.CAT_ST["paws_up81"], tail=8 * math.sin(t * 3)), t)
     elif t < a81 + .58:
         u = clamp((t - (a81 - .12)) / .7)
-        cat = PE.cat_jump(cap, (cap[0] + 6, cap[1]), k_cat, u, t, dict(PE.CAT_ST["paws_up81"]), height=170)
+        cat = PE.cat_jump(cap, (cap[0] + 6, cap[1]), k_cat, u, t, dict(PE.CAT_ST["paws_up81"]), height=110)
     else:
         cat = PE.cat_svg(cap[0] + 6, cap[1], k_cat, dict(PE.CAT_ST["proud81"], tail=10 * math.sin(t * 2.4)), t)
     sparkle = ""
