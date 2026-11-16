@@ -4356,13 +4356,17 @@ CAT_ST.update({
 BRUSH81_K = 1.15
 
 
-def cat_brush81(x, y, k, st=None, t=0.0, brush_rot=-8.0, col="#D9483B"):
-    """Кот с кисточкой в зубах (лапы на полу). Кисть поперёк рта, щетиной вправо от зрителя. Возвращает dict(svg, tip) — кончик в мире."""
+def cat_brush81(x, y, k, st=None, t=0.0, brush_rot=-8.0, col="#D9483B", side=1):
+    """Кот с кисточкой в зубах (лапы на полу). Кисть поперёк рта, щетиной вправо от зрителя (side=-1 — влево: brush_rot ≈ 180±,
+    кот смотрит влево). Возвращает dict(svg, tip) — кончик в мире."""
     import cat
     import props as _P
-    st = dict(CAT_ST["paint81"], **(st or {}))
+    base = dict(CAT_ST["paint81"])
+    if side < 0:
+        base.update(turn=-.35, look=(-.85, .15))
+    st = dict(base, **(st or {}))
     FX = 22 * st.get("turn", 0.0)
-    mx, my = 836 + FX + 30, 1128
+    mx, my = 836 + FX + 30 * side, 1128
     st["mouth_item"] = _P.paint_brush(mx, my, BRUSH81_K, brush_rot, col=col)
     svg_ = cat_svg(x, y, k, st, t)
     a = math.radians(brush_rot)
