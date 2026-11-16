@@ -418,8 +418,8 @@ def s13(t):
     else:
         sa = PE.scientist79("a", x0 + 115, y1 + 25, sk, t=t)
         sb = PE.scientist79("b", x1 - 115, y1 + 35, sk, t=t, flip=True)
-    inside = d["lab"] + sa["svg"] + sb["svg"] + (card if hold > .02 else "")
-    world = (d["sky"] + d["bg"] + f'<g clip-path="url(#{cid})" opacity="{max(.15, lab):.3f}">{inside}</g>' + d["lab_frame"] + d["water"] + d["bridge"]
+    inside = sa["svg"] + sb["svg"] + (card if hold > .02 else "")
+    world = (d["sky"] + d["bg"] + d["lab"] + (f'<g clip-path="url(#{cid})" opacity="{lab:.3f}">{inside}</g>' if lab > .01 else "") + d["lab_frame"] + d["water"] + d["bridge"]
              + d["front"])
     world += strokes(card_c[0], card_c[1], 140, 200, bump(t, t63 + .1, .3), n=8, w=6, col="#fff0c0", seed=7995)
     # камера: окно → на «Голландии» над каналом к башне → на «назвали» обратно к окну с толчком
