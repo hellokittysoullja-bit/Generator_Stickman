@@ -3871,7 +3871,8 @@ def dima_lie79(x, y, k=0.5, t=0.0, mode="phone", u=1.0, expr=None, tilt=16.0, gl
                                                        (hx + 40 * sc, hy - 120 * sc)], "#cfe6ff", .18 * g * fl) + "</g>")
         o.append(f'<g transform="{tb}">{mobilnik(float(c[0]), float(c[1]), 1.5 * sc, 0, seed=7951 + seed)}</g>')
         if g > .01:
-            o.append(f'<g transform="{tb}">' + blob(ellipse_pts(hx + 50 * sc, hy + 10 * sc, 120 * sc, 150 * sc, 16), "#bfe0ff", .22 * g * fl) + "</g>")
+            gid = lib.rad_grad([(0, "#d6ecff", .42 * g * fl), (.6, "#bfe0ff", .16 * g * fl), (1, "#bfe0ff", 0)], hx + 60 * sc, hy + 10 * sc, 170 * sc)
+            o.append(f'<g transform="{tb}"><circle cx="{hx + 60 * sc:.1f}" cy="{hy + 10 * sc:.1f}" r="{170 * sc:.1f}" fill="url(#{gid})"/></g>')
         phone_w = _rot_pt((float(c[0]), float(c[1])), a_body, x, y - bump)
     else:
         phone_w = None
@@ -3980,7 +3981,7 @@ def dima_reach79(x, y, scale, target, u=1.0, expr="warm79", flip=False, feet=Non
                   lean_add=lean_add + .06 * u)
 
 
-GUITAR_K = 0.86      # гитара к масштабу Димы: длина ≈ 740·0.86·sc ≈ 1.6 высоты торса
+GUITAR_K = 1.05      # гитара к масштабу Димы: длина ≈ 740·1.05·sc ≈ 0.55 его роста
 
 
 def dima_guitar79(x, y, scale, mode="hold", u=1.0, t=0.0, expr=None, gpos=None, dust_u=0.0, strum=0.0, strum_ph=0.0, seed=0, feet=None,
@@ -4054,7 +4055,7 @@ def colleague79(x, y, scale, offer=1.0, t=0.0, expr=None, flip=True, feet=None):
     import props as _P
     sc = scale * HEIGHT["girl"]
     o = lib.clamp(offer)
-    p = (x + (120 + 200 * o) * sc, y - (230 + 60 * o) * sc)
+    p = (x + (120 + 230 * o) * sc, y - (230 + 190 * o) * sc)
     ex = expr or {"brows": "up", "mouth": "talk", "open": .3 + .2 * math.sin(t * 12), "smile": .8, "lid": .85, "look": (.5, 0)}
     arms = {"f": ("ang", 0.18, 0.2), "n": ("ik", p, -1)}
     hands = {"n": {"dir": (1, -.2), "curl": (.6, .65, .7, .72), "thumb": .55}}
@@ -4070,7 +4071,7 @@ def mama79(x, y, scale, offer=1.0, t=0.0, expr=None, flip=True, feet=None):
     o = lib.clamp(offer)
     ex = expr or {"brows": "up", "mouth": "talk", "open": .3 + .25 * abs(math.sin(t * 10)), "smile": .5, "lid": .85, "look": (.5, 0)}
     sc = scale * HEIGHT["mama"]
-    arms = {"f": ("ik", (x + (160 + 170 * o) * sc, y - (180 + 70 * o) * sc), -1), "n": ("ik", (x - 75 * sc, y - 430 * sc), 1)}
+    arms = {"f": ("ik", (x + (160 + 200 * o) * sc, y - (180 + 200 * o) * sc), -1), "n": ("ik", (x - 75 * sc, y - 430 * sc), 1)}
     hands = {"f": {"dir": (1, -.25), "flip": -1, "spread": .35, "curl": (.1, .15, .2, .25), "thumb": .2}}
     base = person("mama", x, y, scale, ex, pose="mobile", arms=arms, hands=hands, feet=feet, flip=flip, layers=("legs", "pelvis", "arm_f", "body"))
     hand_ = person("mama", x, y, scale, ex, pose="mobile", arms=arms, hands=hands, feet=feet, flip=flip, layers=("arm_n",))
@@ -4093,7 +4094,7 @@ def friend79(x, y, scale, offer=1.0, t=0.0, expr=None, flip=True, feet=None):
     """Рыжий друг в джинсовке протягивает коробку двумя руками (переезд — «помоги»)."""
     sc = scale * HEIGHT["friend"]
     o = lib.clamp(offer)
-    c = (x + (200 + 150 * o) * sc, y - (250 + 40 * o) * sc)
+    c = (x + (200 + 170 * o) * sc, y - (250 + 170 * o) * sc)
     ex = expr or {"brows": "up", "mouth": "grin", "open": .4, "lid": .85, "look": (.5, 0)}
     arms = {"f": ("ik", (c[0] + 120 * sc, c[1] + 30 * sc), -1), "n": ("ik", (c[0] - 110 * sc, c[1] + 40 * sc), -1)}
     hands = {"f": {"dir": (0, -1), "curl": (.5, .55, .6, .65), "thumb": .5}, "n": {"dir": (.2, -1), "curl": (.5, .55, .6, .65), "thumb": .5}}
