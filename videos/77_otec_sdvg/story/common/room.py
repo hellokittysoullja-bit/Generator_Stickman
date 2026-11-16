@@ -2594,9 +2594,9 @@ DR77_DOOR = (-120.0, 360.0, 150.0, 1430.0)
 GA77_FL = 1450.0
 GA77_DOOR = (400.0, GA77_FL)     # середина пола под рулонной шторой
 GA77_DOOR_K = .82
-GA77_SWITCH = (980.0, 760.0)
-GA77_BOX = (980.0, 1180.0)       # середина верха ящика под выключателем
-GA77_JUNK = (-150.0, GA77_FL)
+GA77_SWITCH = (1010.0, 1035.0)
+GA77_BOX = (880.0, 1180.0)       # середина верха ящика под выключателем
+GA77_JUNK = (150.0, GA77_FL)
 GA77_TUBES = ((-130.0, 210.0), (400.0, 190.0), (930.0, 210.0))
 GA77_TUBES_U = (.12, .45, .78)
 GA77_CAM = {"wide": (430.0, 900.0, .75), "door": (400.0, 980.0, 1.0)}
@@ -2685,8 +2685,8 @@ def kitchen77(t, light="hook", view="hook", lamp_swing=0.0, flash=0.0, bounce=0.
         sw = lamp_swing * 9
         dark = '<rect x="-1200" y="-1400" width="3500" height="4800" fill="#0a0f22" opacity=".28"/>'
         fl = 1 + .025 * math.sin(t * 6.1)
-        lt.append(f'<g style="mix-blend-mode:screen">' + blob(_jag(K77_POOL[0] + sw, K77_POOL[1] + by - 10, 360 * fl, 46, t, 7730, amp=.025), K77_GLOW, .42)
-                  + blob(_jag(K77_POOL[0] + sw, K77_POOL[1] + by - 12, 220 * fl, 30, t, 7731, amp=.03), "#fff0c4", .4) + '</g>')
+        lt.append('<g style="mix-blend-mode:screen">' + blob(_jag(K77_POOL[0] + sw, K77_POOL[1] + by - 10, 360 * fl, 46, t, 7730, amp=.025), K77_GLOW, .26)
+                  + blob(_jag(K77_POOL[0] + sw, K77_POOL[1] + by - 12, 220 * fl, 30, t, 7731, amp=.03), "#fff0c4", .2) + '</g>')
         # конус света от абажура вниз: трапеция с чёткими краями, едва заметная
         lx = K77_LAMP[0]
         cone = [(lx - 110, K77_LAMP[1] + 6), (lx + 110, K77_LAMP[1] + 6), (lx + 420 + sw, K77_TOP), (lx - 420 + sw, K77_TOP)]
@@ -2835,7 +2835,7 @@ def garage77(t, lit=1.0, view="wide", strip=1.0):
         if strip > .01:      # полоска света из-под двери справа (видна и в темноте — кладётся поверх dark)
             sx0, sx1 = GA77_DOOR[0] - 380 * GA77_DOOR_K, GA77_DOOR[0] + 380 * GA77_DOOR_K     # из-под рулонной шторы
             dark += blob(rect_pts(sx0, GA77_FL - 12, sx1, GA77_FL + 2), "#ffdca0", .95 * strip)
-            dark += f'<g style="mix-blend-mode:screen">{blob([(sx0, GA77_FL), (sx1, GA77_FL), (sx1 + 160, 1760), (sx0 - 160, 1760)], "#ffdca0", .08 * strip * dk)}</g>'
+            dark += f'<g style="mix-blend-mode:screen">{blob([(sx0, GA77_FL), (sx1, GA77_FL), (sx1 + 60, GA77_FL + 90), (sx0 - 60, GA77_FL + 90)], "#ffdca0", .1 * strip * dk)}</g>'
     return dict(bg="".join(o), floor=GA77_FL, light="".join(light), dark=dark, cam=GA77_CAM[view], tubes=tubes, door=GA77_DOOR, door_k=GA77_DOOR_K,
                 switch=GA77_SWITCH, box=GA77_BOX, junk=GA77_JUNK)
 
@@ -2873,7 +2873,7 @@ def yard77(t, mode="day"):
         tufts.append(line([(x, y), (x - 6 + sw, y - 26)], 2.2, lib.mul(gc, (.7, .74, .7)), seed=int(x) % 9000 + 7822, op=.8))
     light = ""
     if ev:
-        light = f'<rect x="-1200" y="-900" width="3500" height="3800" fill="#ffb070" opacity=".10" style="mix-blend-mode:multiply"/>'
+        light = '<rect x="-1200" y="-900" width="3500" height="3800" fill="#ffb070" opacity=".10" style="mix-blend-mode:multiply"/>'
     return dict(bg="".join(o), ground="".join(tufts), light=light, cam=CAM77, y=YD77_GROUND)
 
 

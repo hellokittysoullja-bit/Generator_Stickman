@@ -390,19 +390,22 @@ def s04(t):
     d = R.kitchen77(t, "lamp", lamp_swing=swing)
     look = sm(t, t10 - .05, t10 + .25)
     ex = dict(PE.EXPR["father77"]["look_up" if look > .5 else "tired"])
-    kw4 = dict(head_add=-.1 * (1 - look) + .02 * math.sin(t * 1.7))
+    sc4 = FA4_K * 1.04
+    kw4 = dict(head_add=-.1 * (1 - look) + .02 * math.sin(t * 1.7),
+               arms={"n": ("ik", (FA4_HIP[0] + 225 * sc4, R.K77_TOP + 30), -1), "f": ("ik", (FA4_HIP[0] + 150 * sc4, R.K77_TOP + 22), -1)},
+               hands={"n": {"curl": (.45, .5, .55, .6), "thumb": .4, "dir": (1, .15)}, "f": {"curl": (.5, .55, .6, .6), "thumb": .4, "dir": (1, .1)}})
     fa = PE.father(FA4_HIP[0], FA4_HIP[1], FA4_K, ex, "slump", t, **kw4)
     arms4 = PE.father(FA4_HIP[0], FA4_HIP[1], FA4_K, ex, "slump", t, layers=("arm_f", "arm_n"), **kw4)["svg"]   # руки лежат на столе
-    mug = PR.enamel_mug(R.K77_MUG[0] + 70, R.K77_MUG[1] - 66, 1.0, 0, .1, 0, t, steam=1.0)
+    mug = PR.enamel_mug(R.K77_MUG[0] + 250, R.K77_MUG[1] - 66, 1.0, 0, .1, 0, t, steam=1.0)
     # тень прежнего жеста: огромный отец с поднятым пальцем на стене; с «Так» ссыхается до размеров отца и уходит за него
     u = sm(t, t8 - .05, t11 + .1)
     sk = lerp(2.05, FA4_K * .95, u)
     sx_ = lerp(760, FA4_HIP[0] + 70, u) + 5 * swing
     sy_ = lerp(1260, FA4_HIP[1] - 10, u)
-    sh = PE.father_shadow(sx_, sy_, sk, "point", t=t, col="#0a0d1e", op=.55 * (1 - .5 * u), op_fill=.5 * (1 - .4 * u), w=6)
+    sh = PE.father_shadow(sx_, sy_, sk, "point", t=t, col="#080b18", op=.75 * (1 - .4 * u), op_fill=.62 * (1 - .4 * u), w=7)
     shadow = f'<g transform="translate({sx_:.1f} {sy_:.1f}) scale(-1 1) translate({-sx_:.1f} {-sy_:.1f})">{sh["svg"]}</g>'
     lit = R.warm_tint(fa["svg"], 1.0)
-    world = d["bg"] + shadow + lit + d["table"] + R.warm_tint(arms4, 1.0) + mug + d["dark"] + d["light"]
+    world = d["bg"] + shadow + lit + d["table"] + f'<g clip-path="url(#{lib.clip_rect(-900, -900, 3000, d["edge"] + 896)})">{R.warm_tint(arms4, 1.0)}</g>' + mug + d["dark"] + d["light"]
     s = 1.0 + .05 * sm(t, tg, T1("s04") + .2)
     rot = .5 * math.sin(2 * math.pi * (t - tg) / 1.9)
     out = wrap(world, 540 + 6 * math.sin(t * 1.3), 980, s, rot, "")
@@ -417,7 +420,7 @@ GA_K = .62
 
 def s10(t):
     lib.dyn_begin()
-    t44, t45, t48 = W(44), W(45), W(48)
+    t44, t48 = W(44), W(48)
     t_on = W(45) + .08                    # щелчок на «смотри»
     lit = clamp((t - t_on) / .45)
     d = R.garage77(t, lit, "wide")
@@ -425,34 +428,32 @@ def s10(t):
     walk0 = (bx - 520, R.GA77_FL)
     jump0 = (bx - 150, R.GA77_FL)
     tj0, tj1 = t44 - .1, t44 + .35
+    night = 1 - lit
     if t < tj0:
         u = clamp((t - (T0("s10") - .2)) / (tj0 - T0("s10") + .2))
         x = lerp(walk0[0], jump0[0], u)
         cat = PE.cat_walk(x, R.GA77_FL, GA_K, t, dict(turn=.6, look=(.6, -.3), perk=.6), period=.42)
-        cp = (x, R.GA77_FL)
     elif t < tj1:
         cat = PE.cat_jump(jump0, (bx, by), GA_K, (t - tj0) / (tj1 - tj0), t, dict(turn=.6))
-        cp = (bx, by)
     else:
         paw = sm(t, t_on - .25, t_on - .02) * (1 - sm(t, t_on + .25, t_on + .5))
         turn = lerp(.6, 0.0, sm(t, t48 - .2, t48 + .1))
-        st = dict(paw=paw * 1.05, paw_dx=88, turn=turn, look=(lerp(.7, 0, sm(t, t48 - .2, t48 + .1)), lerp(-.5, 0, sm(t, t48 - .2, t48 + .1))),
+        st = dict(paw=paw * 1.15, paw_dx=95, turn=turn, look=(lerp(.7, 0, sm(t, t48 - .2, t48 + .1)), lerp(-.5, 0, sm(t, t48 - .2, t48 + .1))),
                   perk=1.0, tail=8 * math.sin(t * 3), smile=.6 * sm(t, t48, t48 + .2), tilt=4 * bump(t, t48, .5))
         cat = PE.cat_svg(bx, by, GA_K, st, t)
-        cp = (bx, by)
     sw = PR.light_switch(R.GA77_SWITCH[0], R.GA77_SWITCH[1], .8, on=lit, press=bump(t, t_on - .03, .2))
-    junk = PR.garage_junk(R.GA77_JUNK[0], R.GA77_JUNK[1], .78, seed=1)
+    junk = PR.garage_junk(R.GA77_JUNK[0], R.GA77_JUNK[1], 1.15, seed=1)
+    junk += PR.dried_can(R.GA77_JUNK[0] + 560, R.GA77_FL, 1.0, seed=3)
+    for i, (bx0, by0) in enumerate(((790, 640), (1070, 640), (790, 820), (1070, 820))):      # полки без досок: пустые кронштейны
+        junk += line([(bx0, by0), (bx0, by0 + 70)], 9, "#7E838C", taper=0, wmin=1, seed=7770 + i) + line([(bx0, by0 + 66), (bx0 + 60, by0 + 4)], 6, "#7E838C",
+                                                                                                       seed=7780 + i) + PR.screw(bx0, by0 + 20, 1.0)
     door = PR.roll_door(R.GA77_DOOR[0], R.GA77_DOOR[1], R.GA77_DOOR_K, 0.0, 0.0, 0.0, 0.0, t)
-    world = d["bg"] + door + junk + sw + cat + d["light"]
-    if lit < .99:
-        world += d["dark"]
-        # в темноте видно глаза и огонёк кота
-        fx, fy = cp[0] + (995 - 836) * GA_K, cp[1] + (1076 - 1306) * GA_K
-        gl = (1 - lit) * (1 + .1 * math.sin(t * 13))
-        world += blob(ellipse_pts(fx, fy - 14, 22, 34, 14), "#ff9a3c", .9 * gl) + blob(ellipse_pts(fx, fy - 10, 70, 80, 16), "#ff9a3c", .15 * gl)
-        hx, hy = cp[0], cp[1] + (1072 - 1306) * GA_K
-        for ex_ in (-26, 26):
-            world += blob(ellipse_pts(hx + ex_ * GA_K * 1.4, hy + 6, 9, 11, 10), "#b6e86a", .85 * (1 - lit))
+    room = d["bg"] + door + junk + sw + d["light"]
+    # в темноте видно только глаза и огонёк: кот под ночным фильтром поверх затемнения, с первым светом — обычный
+    if night > .01:
+        a_ = 1 - .5 * night
+        cat = R._tint(cat, f"{a_:.3f} 0 0 0 0 0 {a_ + .03 * night:.3f} 0 0 0 0 0 {a_ + .15 * night:.3f} 0 0 0 0 0 1 0", "nk")
+    world = room + d["dark"] + cat
     cam0 = d["cam"]
     s0 = lerp(1.15, cam0[2], ease_out(clamp((t - t_on) / .6), 3))
     cx = lerp(bx - 260, cam0[0], ease_out(clamp((t - t_on) / .6), 3)) + 20 * (t - T0("s10"))
@@ -462,26 +463,33 @@ def s10(t):
 
 
 # ═════════════════════════ s20: петля — тот же стол, тёплый свет, хохот ═════════════════════════
-DI20_HIP = (1120.0, 1400.0)
+DI20_HIP = (1010.0, 1340.0)
+FA20_HIP = (270.0, 1398.0)
 DI20_K = 1.1
-CAT20 = (835.0, 1166.0)
+CAT20 = (870.0, 1166.0)
 
 
 def s20(t):
     lib.dyn_begin()
-    t97, t99, t101 = W(97), W(99), W(101)
+    t99, t101 = W(99), W(101)
     slap = stress(97, .35)
     bounce = 8 * kick(t, slap, .025, 14)
     d = R.kitchen77(t, "warm", bounce=bounce)
-    pu = clamp(.6 + .4 * math.sin(2 * math.pi * 2.4 * t)) if t < slap - .15 else 1 - bump(t, slap - .02, .2)
+    slap2 = stress(99, .4)
+    # ладонь: замах — хлопок на «отец», второй хлопок на «Дима»; в промежутках трясётся от смеха
+    pu = 1.0 - bump(t, slap - .16, .2) - bump(t, slap2 - .16, .2) - .25 * (.5 + .5 * math.sin(2 * math.pi * 3.1 * t))
+    pu = clamp(1 - pu)
+    bounce += 6 * kick(t, slap2, .025, 14)
     ex = dict(PE.EXPR["father77"]["laugh"])
     ex["open"] = .8 + .2 * math.sin(t * 19)
-    fa = PE.father(FA_HIP[0], FA_HIP[1], FA_K, ex, ("slap_up", "slap"), t, u=pu, head_add=-.12 - .04 * math.sin(t * 14),
-                   lean_add=-.05 + .03 * math.sin(t * 14))
-    mug = PR.enamel_mug(MUG0[0] - 40, MUG0[1] - 66 - bounce - hop(t, slap, 30, .22), 1.0, 6 * math.sin(math.pi * clamp((t - slap) / .22)), 0, 0, t,
+    hand = (lerp(600, 560, pu), lerp(1080, 850, pu))
+    fa = PE.father(FA20_HIP[0], FA20_HIP[1], FA_K, ex, ("slap_up", "slap"), t, u=1 - pu, head_add=.02 - .04 * math.sin(t * 14),
+                   lean_add=.08 + .03 * math.sin(t * 14), arms={"n": ("ik", hand, -1)},
+                   hands={"n": {"dir": (lerp(1, .6, pu), lerp(.3, -.8, pu)), "curl": (.05, .05, .1, .12), "spread": .25, "thumb": .15}})
+    mug = PR.enamel_mug(MUG0[0] - 20, MUG0[1] - 66 - bounce - hop(t, slap, 30, .22) - hop(t, slap2, 18, .18), 1.0, 6 * math.sin(math.pi * clamp((t - slap) / .22)), 0, 0, t,
                         steam=.6)
     lean_in = ease_out(clamp((t - t99 + .25) / .45), 3)
-    di = PE.dima77(DI20_HIP[0] + 260 * (1 - lean_in), DI20_HIP[1], DI20_K, "laugh77", "di_laugh", t, lean_add=.25 * lean_in + .03 * math.sin(t * 13),
+    di = PE.dima77(DI20_HIP[0] + 300 * (1 - lean_in), DI20_HIP[1], DI20_K, "laugh77", "di_laugh", t, lean_add=.25 * lean_in + .03 * math.sin(t * 13),
                    flip=True)
     perk = sm(t, t101 - .2, t101 + .1)
     st = dict(perk=.6 + .4 * perk, look=(-.5, -.2), squint=.6 * perk, smile=1.0, flame_e=1.4, tail=10 * math.sin(t * 4), tilt=4 * math.sin(t * 3),
