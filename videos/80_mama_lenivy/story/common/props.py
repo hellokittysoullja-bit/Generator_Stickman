@@ -5597,7 +5597,7 @@ C_CORD = "#5B4A32"
 C_GLOOM = "#8C929C"
 C_GLOOM_SH = "#6B717C"
 C_GLOOM_HI = "#B4B9C1"
-C_DRIZZLE = "#8FA7BD"
+C_DRIZZLE = "#5E7C9A"
 C_HOODIE80 = "#D9A62E"
 
 
@@ -5752,18 +5752,18 @@ def gloom_cloud(x, y, k=1.0, t=0.0, rain=0.0, zap=0.0, shrink=0.0, seed=0, pale=
     R = rain * (1 - s)
     if R > .01:
         rr = _rs(sd + 50)
-        for j in range(16):
+        for j in range(22):
             px = x + rr.uniform(-w * .4, w * .4) * sc * k
             per = rr.uniform(.45, .65)
             ph0 = rr.uniform(0, 1)
             u = ((t / per) + ph0) % 1
             py0 = y + h * .36 * sc * k
             py = py0 + u * 260 * k
-            ln = 26 * k
-            op = R * (1 - u) * (.6 + .4 * rr.uniform(0, 1))
-            if j / 16 > R + .05:
+            ln = 38 * k
+            op = R * (1 - .7 * u) * (.75 + .25 * rr.uniform(0, 1))
+            if j / 22 > R + .05:
                 continue
-            o.append(line([(px - 4 * k * u, py), (px - 4 * k * u - 5 * k, py + ln)], 3.6 * k, C_DRIZZLE, taper=.5, wmin=.3, seed=sd + 60 + j,
+            o.append(line([(px - 4 * k * u, py), (px - 4 * k * u - 6 * k, py + ln)], 5.0 * k, C_DRIZZLE, taper=.5, wmin=.3, seed=sd + 60 + j,
                           op=op))
     if zp > .01:
         for j in range(3):
@@ -5775,7 +5775,8 @@ def gloom_cloud(x, y, k=1.0, t=0.0, rain=0.0, zap=0.0, shrink=0.0, seed=0, pale=
             r0 = (w * .42) * sc * k
             p0 = (x + math.cos(a) * r0, y + math.sin(a) * r0 * .7)
             p1 = (p0[0] + math.cos(a) * 70 * k, p0[1] + math.sin(a) * 60 * k + 30 * k)
-            o.append(bolt(p0[0], p0[1], p1[0], p1[1], .5, w=16 * k, seed=sd + j + int(t * 9) % 5, n=4))
+            p1 = (p0[0] + math.cos(a) * 95 * k, p0[1] + math.sin(a) * 80 * k + 40 * k)
+            o.append(bolt(p0[0], p0[1], p1[0], p1[1], .5, w=22 * k, seed=sd + j + int(t * 9) % 5, n=4))
     return "".join(o)
 
 
@@ -5919,7 +5920,7 @@ def phone_dome(x, y, k=1.0, u=1.0, t=0.0, seed=0):
         return ""
     fl = 1 + .02 * math.sin(t * 5.3 + seed)
     R *= fl
-    g = rad_grad([(0, "#FFF1C2", .55), (.7, "#FFD98A", .38), (1, "#FFC86B", .22)], x, y, R, R * .95)
+    g = rad_grad([(0, "#FFF1C2", .3), (.7, "#FFD98A", .22), (1, "#FFC86B", .18)], x, y, R, R * .95)
     pts = [(x + R * math.cos(math.radians(a)), y - R * .95 * math.sin(math.radians(a))) for a in range(0, 181, 6)]
     d = "M" + " L".join(f"{f(p[0])} {f(p[1])}" for p in pts) + "Z"
     o = [f'<path d="{d}" fill="url(#{g})"/>']
