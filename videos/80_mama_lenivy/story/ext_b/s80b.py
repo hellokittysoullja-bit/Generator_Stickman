@@ -24,6 +24,8 @@ import lib  # noqa: E402
 import people  # noqa: E402
 import props as P  # noqa: E402
 import room as R  # noqa: E402
+sys.path.insert(0, os.path.join(STORY, "ext_a"))
+import s80a as A  # noqa: E402  — комната стола группы A (s09, s11, s17): s08, s10, s16 в той же
 from lib import blob, clamp, ease_in, ease_io, ease_out, ellipse_pts, line, shape, svg  # noqa: E402,F401
 
 INK = lib.INK
@@ -293,30 +295,28 @@ def dust_puffs(x, y, t, t_hit, k=1.0, col="#efe4cf", seed=0):
 
 
 # ═══════════════════════════════ s08: днём садится за стол, рукава, кладёт лист и папку ═══════════════════════════════
+# Комната, стол, стул, Дима (HIP, SC), лист, кружка и лампа — как у группы A в s09 (следующий план), чтобы склейка была в том же месте.
 def s08(t):
     lib.dyn_begin()
     t0, t1 = T0("s08"), T1("s08")
-    T_DIMA, T_SAD, T_DELO = ws(38), ws(39), ws(41)
-    bs = 1.0
-    sx, sy = R.SIT[0], R.seat_y(bs)
-    sc_ = R.desk80(t, "day")
+    T_SAD, T_DELO = ws(39), ws(41)
+    bg, desk = A.desk_room(t, "day")
+    hx, hy0 = A.HIP
+    k = A.SC
     # садится: таз опускается на стул к «садился»
     sit_u = ease_out(clamp((t - (t0 - .2)) / (T_SAD + .12 - (t0 - .2))), 2)
-    bounce = 10 * kick(t, T_SAD + .12, .3, 2.0, 5)
-    hipy = sy - 150 * (1 - sit_u) + bounce
-    feet = {"n": ((sx + 300 * bs, R.FL - 50 * bs), 0.0), "f": ((sx + 250 * bs, R.FL - 48 * bs), 0.0)}
-    # руки: опускаются на стол → закатывает рукав (ближняя кисть скользит по дальнему предплечью дважды) → тянется за папкой → кладёт
-    pk = people.pose_kw("d80_sit", sx, hipy, bs)
+    hy = hy0 - 130 * (1 - sit_u) + 8 * kick(t, T_SAD + .12, .3, 2.0, 5)
+    pk = people.pose_kw("d80_sit", hx, hy, k)
     arms, hands = dict(pk["arms"]), dict(pk["hands"])
-    f_w = (sx + 210 * bs, hipy - 205 * bs)
+    f_w = (hx + 250 * k, hy - 200 * k)
     arms["f"] = ("ik", f_w, -1)
     roll = clamp((t - (T_SAD - .05)) / .3)
     t_grab = T_DELO - .28
     t_reach = T_SAD + .25
-    fx0, fy0 = 700.0, R.DESK_TOP - 12            # папка лежит у его рук
-    land = (640.0, R.DESK_TOP + 14)
-    lift_pt = (640.0, R.DESK_TOP - 120)
-    # папка: лежит → поднята рукой → шлёп на «дело»; лист выезжает из-под неё
+    DX, DY = A.DESK_X, A.DESK_Y
+    fx0, fy0 = DX - 150, DY - 30            # папка лежит у его рук
+    land = (DX - 120, DY - 40)
+    lift_pt = (DX - 160, DY - 170)
     if t < t_grab:
         fpos, frot = (fx0, fy0), 0.0
     elif t < T_DELO:
@@ -329,16 +329,14 @@ def s08(t):
             fpos = lerp2(lift_pt, land, e2)
             frot = -10 * (1 - e2)
     else:
-        sq = kick(t, T_DELO, .3, 2.2, 5)
-        fpos, frot = (land[0], land[1] + 2 * sq), 0.0
+        fpos, frot = (land[0], land[1] + 2 * kick(t, T_DELO, .3, 2.2, 5)), 0.0
     if 0 < roll < 1:
         q = .5 - .5 * math.cos(2 * math.pi * 2 * roll)
-        tgt = lerp2((f_w[0] + 20, f_w[1] - 6), (f_w[0] - 90, f_w[1] - 40), q)
-        arms["n"] = ("ik", tgt, -1)
+        arms["n"] = ("ik", lerp2((f_w[0] + 16, f_w[1] - 5), (f_w[0] - 75, f_w[1] - 32), q), -1)
         hands["n"] = {"dir": (1, .3), "curl": (.62, .66, .7, .74), "thumb": .6}
     elif roll >= 1:
-        rest = (sx + 270 * bs, hipy - 200 * bs)
-        grip = (fpos[0] - 100, fpos[1] - 60)
+        rest = (hx + 290 * k, hy - 205 * k)
+        grip = (fpos[0] - 70, fpos[1] - 50)
         if t < t_reach:
             tgt = rest
         elif t < t_grab:
@@ -349,37 +347,200 @@ def s08(t):
             tgt = lerp2(grip, rest, ease_io(clamp((t - (T_DELO + .15)) / .3)))
         arms["n"] = ("ik", tgt, -1)
         hands["n"] = {"dir": (.7, .7), "curl": (.45, .5, .55, .6), "thumb": .5}
-    if t < T_SAD:
-        ex = dict(people.EXPR["dima"]["det80"], look=(.6, .1))
-    else:
-        ex = dict(people.EXPR["dima"]["det80"])
+    ex = dict(people.EXPR["dima"]["det80"], look=(.6, .1) if t < T_SAD else (.6, .45))
     ex["closed"] = blink(t, .7)
-    kw = dict(arms=arms, hands=hands, feet=feet, lean_add=.03 * (1 - sit_u) + .02 * math.sin(t * 2.0))
-    parts = {kk: people.dima80(sx, hipy, bs, ex, "d80_sit", t, age=1.0, layers=(kk,), **kw) for kk in ("legs", "pelvis", "arm_f", "body", "arm_n")}
-    fk = .62 * (1 + .04 * (kick(t, T_DELO, .3, 2.2, 5) if t >= T_DELO else 0))
-    props_ = ""
-    sh_u = ease_out(clamp((t - T_DELO) / .3), 2)
-    if t >= T_DELO:
-        props_ += P.paper(land[0] + 160 * sh_u + 10, land[1] - 6, 1.0, -4 + 6 * sh_u, w=210, h=150, seed=3, kind="blank", sy=.32)
+    kw = dict(arms=arms, hands=hands, feet=people.sit_kw(hx, hy, k)["feet"], lean_add=.03 * (1 - sit_u) + .02 * math.sin(t * 2.0))
+    fb = people.dima80(hx, hy, k, ex, "d80_sit", t, age=1.0, layers=("legs", "pelvis"), **kw)
+    fm = people.dima80(hx, hy, k, ex, "d80_sit", t, age=1.0, layers=("arm_f", "body"), **kw)
+    fn = people.dima80(hx, hy, k, ex, "d80_sit", t, age=1.0, layers=("arm_n",), **kw)
+    fk = .55 * (1 + .04 * (kick(t, T_DELO, .3, 2.2, 5) if t >= T_DELO else 0))
+    props_ = P.paper(DX - 140, DY - 70, 1.15, -4, 220, 280, seed=9, kind="lines", sy=.42)       # тот же лист, что в s09
+    props_ += P.mug(DX + 250, DY - 60, .8, col="blue", coffee=True, steam=.6, t=t, seed=9)
+    props_ += P.lamp_desk(DX + 150, DY - 110, .9, on=0.0, seed=9)
     props_ += folder(fpos[0], fpos[1], fk, frot)
-    props_ += dust_puffs(land[0], land[1], t, T_DELO, .9)
-    # штрихи удара
+    props_ += dust_puffs(land[0], land[1], t, T_DELO, .8)
     uu = (t - T_DELO) / .25
     if 0 < uu < 1:
         for j in range(4):
             a_ = math.radians(-160 + 46 * j)
-            r0, r1 = 130 + 30 * uu, 170 + 50 * uu
-            props_ += line([(land[0] + r0 * math.cos(a_), land[1] - 40 + r0 * .6 * math.sin(a_)), (land[0] + r1 * math.cos(a_), land[1] - 40 + r1 * .6 * math.sin(a_))],
-                           7 * (1 - uu) + 1, INK, taper=.6, wmin=.2, seed=8620 + j, op=.8 * (1 - uu))
-    body = (sc_["bg"] + sc_["chair_back"] + sc_["desk_top"] + sc_["pool"] + parts["legs"]["svg"] + sc_["desk_legs"] + sc_["chair_seat"]
-            + parts["pelvis"]["svg"] + parts["arm_f"]["svg"] + parts["body"]["svg"] + props_ + parts["arm_n"]["svg"] + sc_["lamp"])
-    cx_, cy_, cs_ = R.CAM80_DESK_MID
+            r0, r1 = 120 + 30 * uu, 160 + 50 * uu
+            props_ += line([(land[0] + r0 * math.cos(a_), land[1] - 40 + r0 * .6 * math.sin(a_)),
+                            (land[0] + r1 * math.cos(a_), land[1] - 40 + r1 * .6 * math.sin(a_))], 7 * (1 - uu) + 1, INK, taper=.6, wmin=.2,
+                           seed=8620 + j, op=.8 * (1 - uu))
+    body = bg + A.chair(hx, hy0 + 20) + fb["svg"] + desk + fm["svg"] + props_ + fn["svg"]
     u = ease_io(clamp((t - (t0 - .2)) / (t1 - t0 + .4)))
     shk = kick(t, T_DELO, .25, 6, 6)
-    s = lerp(cs_ * .92, cs_ * 1.0, u) * (1 + .04 * bump(t, T_DELO, .3))
-    cx = lerp(cx_ - 170, cx_ - 120, u) + 6 * shk
-    cy = lerp(cy_ + 30, cy_ - 10, u) + 4 * shk
+    s = lerp(1.24, 1.36, u) * (1 + .04 * bump(t, T_DELO, .3))
+    cx = lerp(600, 560, u) + 6 * shk
+    cy = lerp(990, 930, u) + 4 * shk
     return frame_svg(body, cx, cy, s, lerp(.5, -.3, u) + .4 * shk, bg="#f2e6cf")
+
+
+def outside_dome(svg_, x, y, r):
+    """Обрезать рисунок куполом: видно только то, что снаружи полукруга радиуса r с основанием (x, y)."""
+    if r < 4:
+        return svg_
+    cid = lib.uid("od")
+    d = (f"M-3000 -3000 H4000 V4000 H-3000 Z M{x - r:.1f} {y:.1f} A{r:.1f} {r * .95:.1f} 0 0 1 {x + r:.1f} {y:.1f} Z")
+    lib.DEFS.append(f'<clipPath id="{cid}" clipPathUnits="userSpaceOnUse"><path d="{d}" clip-rule="evenodd"/></clipPath>')
+    return f'<g clip-path="url(#{cid})">{svg_}</g>'
+
+
+# ═══════════════════════════════ s10: отворачивается в телефон, тёплый купол ═══════════════════════════════
+# Начало — как конец s09 группы A (серое облако над головой, мир выцвел), конец — как начало s11 (Дима с телефоном у груди под куполом
+# DOME/DOME_K, облако над головой внутри купола: оно растает в s11, а снаружи сядет другое).
+def s10(t):
+    lib.dyn_begin()
+    t0, t1 = T0("s10"), T1("s10")
+    T_UH, T_TEL = ws(51), ws(53)
+    bg, desk = A.desk_room(t, "day")
+    k = A.SC
+    hx0, hy = A.HIP
+    br = 3 * math.sin(t * 2.3)
+    turn = ease_out(clamp((t - (T_UH - .06)) / .26), 2)          # отворачивается от листа к телефону
+    raise_u = ease_out(clamp((t - (T_UH + .05)) / .3), 2)
+    dome_u = ease_out(clamp((t - (T_TEL - .04)) / .42), 2)
+    hx = lerp(hx0, 300.0, turn)
+    DX, DY = A.DESK_X, A.DESK_Y
+    if t < T_UH + .05:
+        expr = dict(people.EXPR["dima"]["gloom"], brows="worry", lid=.75, look=lerp2((-.2, -.5), (-.6, .2), turn))
+        fb = A.seated(t, expr, "write", .16 - .2 * turn, .05, layers=("legs", "pelvis"), shrug=.5, x=hx)
+        fig = A.seated(t, expr, "write", .16 - .2 * turn, .05 - .15 * turn, layers=("arm_f", "body", "arm_n"), shrug=.5, x=hx)
+        dsvg, dbg = fig["svg"], fb["svg"]
+        hd = fig["head"]
+        ph = None
+    else:
+        expr = dict(people.EXPR["dima"]["screen74"], look=(.45, .5), bags=True)
+        if t < T_TEL + .1:
+            expr.update(brows="worry", mouth="flat")
+        else:
+            expr.update(mouth="smile", smile=.3 * dome_u)
+        fig = people.dima_phone(hx, hy + br, k, expr, "phone_chest74", phone_k=1.45 * k * HEIGHT_D * (.55 + .45 * raise_u), thumb=raise_u, t=t,
+                                feet=people.sit_kw(hx, hy + br, k)["feet"], lean_add=.04 - .06 * (1 - raise_u) + .02 * math.sin(t * 1.4),
+                                shrug=.5 - .15 * dome_u)
+        dsvg, dbg = fig["svg"], ""
+        hd = fig["head"]
+        ph = fig["phone"]
+    props_ = P.paper(DX - 140, DY - 70, 1.15, -4, 220, 280, seed=9, kind="lines", sy=.42)
+    props_ += P.mug(DX + 250, DY - 60, .8, col="blue", coffee=True, seed=9)
+    props_ += P.lamp_desk(DX + 150, DY - 110, .9, on=0.0, seed=9)
+    props_ += P.pen(DX - 20, DY - 46, .55, 86, seed=9)              # ручка укатилась в s09
+    scene = bg + A.chair(hx0, hy + 20) + dbg + desk + props_ + dsvg
+    R_ = P.dome_r(A.DOME_K, dome_u) * (1 + .02 * math.sin(t * 5.3))
+    o = [f'<g {P.desat(.75 - .05 * dome_u)}>{scene}</g>']
+    if R_ > 4:
+        dpts = [(A.DOME[0] + R_ * math.cos(math.radians(q)), A.DOME[1] - R_ * .95 * math.sin(math.radians(q))) for q in range(0, 181, 6)]
+        cid = lib.clip_of(dpts)
+        o.append(f'<g clip-path="url(#{cid})">{scene}</g>')
+        o.append(P.phone_dome(A.DOME[0], A.DOME[1], A.DOME_K, dome_u, t, seed=11))
+    if ph is not None:
+        w = fig["wrist"]["n"]
+        o.append(P.glow(w[0] - 10, w[1] - 90, 130, .2 + .25 * dome_u, "#FFE7A3"))
+    # облако: над головой (как в конце s09) → купол прижимает его ниже и меньше, дождь стихает (как в начале s11)
+    c0 = (hd[0] + 30 + 10 * math.sin(t * 1.3), hd[1] - 270 + 8 * math.sin(t * 1.9))
+    c1 = (hd[0] + 20, hd[1] - 190)
+    cl = lerp2(c0, c1, dome_u)
+    o.append(P.gloom_cloud(cl[0], cl[1], lerp(1.15, .8, dome_u), t, rain=lerp(1.0, .3, dome_u), zap=(1 - dome_u) * (.6 + .4 * math.sin(t * 7)), seed=9))
+    # вспышка раскрытия купола
+    uu = (t - T_TEL) / .35
+    if ph is not None and 0 < uu < 1:
+        for j in range(7):
+            a_ = math.radians(195 + 25 * j)
+            r0 = 120 + 420 * ease_out(uu, 2)
+            o.append(line([(ph[0] + r0 * math.cos(a_), ph[1] + r0 * math.sin(a_)), (ph[0] + (r0 + 55) * math.cos(a_), ph[1] + (r0 + 55) * math.sin(a_))],
+                          8 * (1 - uu) + 1, "#ffd27a", taper=.6, wmin=.2, seed=8700 + j, op=.9 * (1 - uu)))
+    # камера: рывок за поворотом на «уходил» (со смазом), наезд в свет экрана на «телефон» → к кадру начала s11 (1.5, 390, 1000)
+    jerk_u = ease_out(clamp((t - T_UH) / .18), 3)
+    shk = kick(t, T_UH + .06, .3, 3, 5)
+    push_c = ease_io(clamp((t - (T_TEL - .1)) / (t1 + .2 - T_TEL)))
+    s = lerp(1.46, 1.4, jerk_u) + .1 * push_c
+    cx = lerp(520, 420, jerk_u) - 30 * push_c + 16 * shk
+    cy = lerp(850, 960, jerk_u) + 40 * push_c
+    rot = lerp(-.6, .8, jerk_u) - 1.4 * shk
+    body = "".join(o)
+    blur = 24 * bump(t, T_UH - .02, .2)
+    if blur > .5:
+        fid = lib.uid("jb")
+        lib.DEFS.append(f'<filter id="{fid}" x="-10%" y="-5%" width="120%" height="110%"><feGaussianBlur stdDeviation="{blur:.1f} 0"/></filter>')
+        body = f'<g filter="url(#{fid})">{body}</g>'
+    return frame_svg(body, cx, cy, s, rot, bg="#e8dfcc")
+
+
+HEIGHT_D = 1.0
+
+# ═══════════════════════════════ s16: «да» — кивает облачку, оно клубком садится на угол стола ═══════════════════════════════
+# Вечерняя комната, лампа, листы, место клубка и ручка — как в s17 группы A (следующий план).
+def s16(t):
+    lib.dyn_begin()
+    t0, t1 = T0("s16"), T1("s16")
+    T_DA, T_NEP = ws(85), ws(86)
+    bg, desk = A.desk_room(t, "evening")
+    DX, DY = A.DESK_X, A.DESK_Y
+    SX, SY = DX - 120, DY - 72
+    U0 = .12          # s17 начинается с этой доли первой строки
+    tip = P.scribble_tip(SX, SY, 1.2, U0, -4, w=240, h=320, sy=.6)
+    # руки: ладонь на груди → «неприятно» ладонь уходит, рука берёт ручку со стола и подносит к листу
+    take = ease_io(clamp((t - (T_NEP + .3)) / .45))
+    grab = ease_io(clamp((t - (T_NEP + .75)) / .3))
+    hx, hy = A.HIP
+    k = A.SC
+    pen_rest = (SX + 250, SY + 30)
+    wr_write = (tip[0] - 52, tip[1] - 28)
+    wr_grab = (pen_rest[0] - 40, pen_rest[1] - 40)
+    if take < 1:
+        tgt = lerp2((hx + 215 * k, hy - 225 * k), wr_grab, take)
+    else:
+        tgt = lerp2(wr_grab, wr_write, grab)
+    arms = {"n": ("ik", tgt, -1), "f": ("ik", (SX + 70 + 4 * math.sin(t * 2), SY - 105), -1)}
+    hn = {"dir": (-.75, -.45), "curl": (.05, .05, .1, .15), "spread": .1, "thumb": .1} if take < .5 else {"curl": (.55, .6, .7, .75), "thumb": .5, "dir": (.85, .5)}
+    hands = {"n": hn, "f": {"curl": (.35, .4, .45, .5), "thumb": .35, "dir": (.9, .55)}}
+    nod = .16 * bump(t, T_DA - .02, .32) + .1 * bump(t, T_DA + .3, .3)
+    if t < T_DA - .05:
+        expr = dict(people.EXPR["dima"]["calm80"])
+    elif t < T_NEP + .3:
+        expr = dict(people.EXPR["dima"]["say_yes80"] if t < we(85) + .05 else people.EXPR["dima"]["yes80"])
+    else:
+        expr = dict(people.EXPR["dima"]["write80"], look=lerp2((.4, -.3), (.6, .7), take))
+    expr["closed"] = blink(t, 1.3) if t < T_DA - .1 or t > T_NEP + .5 else 0.0
+    pose = "write"
+    fig_b = A.seated(t, expr, pose, .06, -.12 * (1 - take) + nod, layers=("legs", "pelvis"))
+    fig = A.seated(t, expr, pose, .06, -.12 * (1 - take) + nod, arms=arms, hands=hands, layers=("arm_f", "body"))
+    arm = A.seated(t, expr, pose, .06, -.12 * (1 - take) + nod, arms=arms, hands=hands, layers=("arm_n",))
+    lamp = P.lamp_desk(DX + 300, DY - 130, 1.0, on=1.0, seed=17)
+    sheets = P.scribble_sheet(SX, SY, 1.2, U0, -4, seed=172, w=240, h=320, sy=.6)
+    # облачко: над головой → «неприятно» съёживается в клубок и по дуге садится на угол стола, как зверёк
+    hd = fig["head"]
+    top = (hd[0] + 30 + 8 * math.sin(t * 1.4), hd[1] - 250 + 6 * math.sin(t * 2.1))
+    corner = (DX + 105, DY - 100)
+    shr = ease_io(clamp((t - T_NEP) / .3))
+    fly = clamp((t - (T_NEP + .12)) / .42)
+    e = ease_io(fly)
+    cpos = lerp2(top, corner, e)
+    cpos = (cpos[0], cpos[1] - 160 * math.sin(math.pi * e))
+    land = kick(t, T_NEP + .54, .4, 2.2, 5) if t >= T_NEP + .54 else 0.0
+    cpos = (cpos[0], cpos[1] + 10 * land + (4 * math.sin(t * 2) if fly >= 1 else 0))
+    ball = P.gloom_cloud(cpos[0], cpos[1], 1.15, t, rain=.25 * (1 - shr), shrink=shr, seed=17, wob=1 + .5 * abs(land))
+    # «да»: маленький кивок-штрих у головы
+    marks = ""
+    uu = (t - T_DA) / .35
+    if 0 < uu < 1:
+        for j in range(2):
+            x0 = hd[0] + 150 + 18 * j
+            marks += line([(x0, hd[1] - 30 + 30 * uu), (x0 + 6, hd[1] + 10 + 30 * uu)], 5 * (1 - uu) + 1, INK, taper=.6, wmin=.2, seed=8800 + j, op=.7 * (1 - uu))
+    # ручка: лежит у листа → в руке
+    if grab < .05:
+        pen_svg = P.pen(pen_rest[0], pen_rest[1], .62, 80 + 3 * math.sin(t * 1.2) * (take > 0), seed=17)
+    else:
+        wr = arm["wrist"]["n"]
+        pen_svg = P.pen(wr[0] + 26, wr[1] - 34, .62, lerp(80, 25, grab), seed=17)
+    o = [bg, A.chair(hx, hy + 20), fig_b["svg"], desk, lamp, sheets, ball, fig["svg"], pen_svg, arm["svg"], marks,
+         P.glow(DX + 160, DY - 90, 420, .55, "#FFD98A")]
+    # камера: лёгкий наезд к облачку → к кадру начала s17 (620, 1060, 1.74)
+    pu = ease_io(clamp((t - (t0 - .2)) / (t1 - t0 + .4)))
+    s = lerp(1.38, 1.7, pu)
+    cx = lerp(470, 610, pu)
+    cy = lerp(860, 1050, pu)
+    return frame_svg("".join(o), cx, cy, s, .3 * math.sin(t * 1.2))
 
 
 # ═══════════════════════════════ s05: призыв «Телеграм» ═══════════════════════════════
