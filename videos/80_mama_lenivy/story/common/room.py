@@ -3164,14 +3164,15 @@ def ottawa(t):
                                            for a in np.linspace(0, math.pi, 14)][1:-1] + [(wx1, wy0 + 110), (wx1, wy1)]
     gw = lib.lin_grad([(0, "#ffe2a4", 1), (1, "#f2b56a", 1)], 0, 0, 0, 1)
     o.append(f'<path d="M{" L".join(f"{f(a)} {f(b)}" for a, b in arch)}Z" fill="url(#{gw})"/>')
-    win_clip = lib.clip_of(arch)
+    win_clip = lib.uid()      # прямыми отрезками: сглаженный контур выгибался ниже подоконника и выпускал рисунок наружу
+    lib.DEFS.append(f'<clipPath id="{win_clip}"><path d="M{" L".join(f"{f(a)} {f(b)}" for a, b in arch)}Z"/></clipPath>')
     # здание справа от окна — тёмные окна этажей (без надписей), фонарь
     for j in range(3):
         for i in range(2):
             xx, yy = ux0 + 80 + i * 170, uy0 + 140 + j * 300
             o.append(shape(rect_pts(xx, yy, xx + 90, yy + 170), "#6e7e8e", blob(rect_pts(xx, yy + 150, xx + 90, yy + 170), "#f4f6f9", .9), w=3.0, seed=8660 + i + 3 * j))
-    front = shape(arch + [arch[0]], "none", line([((wx0 + wx1) / 2, wy0), ((wx0 + wx1) / 2, wy1)], 7, "#5a5048", taper=0, wmin=1, seed=8670)
-                  + line([(wx0, (wy0 + wy1) / 2 + 40), (wx1, (wy0 + wy1) / 2 + 40)], 7, "#5a5048", taper=0, wmin=1, seed=8671), w=8.0, seed=8672)
+    front = f'<path d="M{" L".join(f"{f(a)} {f(b)}" for a, b in arch)}Z" fill="none" stroke="{INK}" stroke-width="7" stroke-linejoin="round"/>' + shape(rect_pts(wx0, wy0, wx1, wy1), "none", line([((wx0 + wx1) / 2, wy0), ((wx0 + wx1) / 2, wy1)], 7, "#5a5048", taper=0, wmin=1, seed=8670)
+                  + line([(wx0, (wy0 + wy1) / 2 + 40), (wx1, (wy0 + wy1) / 2 + 40)], 7, "#5a5048", taper=0, wmin=1, seed=8671), ink=False)
     front += shape(rect_pts(wx0 - 30, wy1, wx1 + 30, wy1 + 34), "#b8b0a4", blob(rect_pts(wx0 - 30, wy1, wx1 + 30, wy1 + 14), "#f4f6f9"), w=3.6, seed=8673)
     for lxp in (620.0, 1820.0):    # фонари у канала
         o.append(line([(lxp, 1180), (lxp, 820)], 9, "#2a2e36", taper=0, wmin=1, seed=8680 + int(lxp)))
