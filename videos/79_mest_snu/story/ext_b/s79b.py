@@ -423,7 +423,7 @@ def s16(t):
     st["flame_e"] = 1.0 + .9 * eve
     st["look"] = (-.5, .1)
     st["blink"] = .55 if t < T_MORE else .9
-    o.append(people.cat_svg(rx + 320, ry + 24, .62, st, t))
+    o.append(people.cat_svg(rx + 250, ry + 24, .62, st, t))
     o.append(f["svg"])
     if t >= T_HALF - .02:
         wu = clamp((t - T_HALF) / .25)
