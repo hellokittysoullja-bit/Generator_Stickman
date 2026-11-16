@@ -291,11 +291,11 @@ def s08(t):
     u = ease_io(ramp(t, a, w_len - a))
     wv = ease_io(ramp(t, w_len, .5))
     pn = ease_out(ramp(t, w_net, .25), 2)
-    s = lerp(lerp(1.95, 2.05, u), 1.08, wv) + .2 * pn
+    s = lerp(lerp(1.95, 2.05, u), 1.08, wv) + .55 * pn
     ccx = lerp(lerp(390, 440, u), 680, wv)
     ccy = lerp(1090, 960, wv)
     ccx = lerp(ccx, chx, pn)
-    ccy = lerp(ccy, chy - 300, pn)
+    ccy = lerp(ccy, chy - 330, pn)
     return frame_svg("".join(o), ccx, ccy, s, -.4 + .8 * u)
 
 

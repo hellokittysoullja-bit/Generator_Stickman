@@ -5226,16 +5226,17 @@ def small_chest(x, y, k=1.0, shake=0.0, glow=0.0, t=0.0, seed=0):
     for sx in (-110, 110):
         lin += blob(rect_pts(sx - 12, -236, sx + 12, -150), C_BRASS, .95)
     seam = ""
+    lift = lift + 7 * g
     if g > .02 or lift > .5:
-        gap = max(lift, 1.5 + 3 * g)
-        seam = blob([(-146, -150 - gap), (146, -150 - gap), (146, -150), (-146, -150)], "#FFD873", min(1.0, .4 + g))
-        if g > .05:
-            seam += glow(0, -150, 200, g * .8, "#FFC46B", ry=40)
-            for j in range(5):
-                xx = -110 + j * 55
-                seam += line([(xx, -152), (xx + (j - 2) * 12, -152 - 60 * g)], 5 * g, "#FFD873", taper=.6, wmin=.1, seed=sd + 20 + j, op=.9)
+        gap = lift
+        seam = blob([(-146, -150 - gap - 2), (146, -150 - gap - 2), (146, -148), (-146, -148)], "#FFD873", min(1.0, .5 + g))
     o.append(seam)
     o.append(f'<g transform="translate(0 {-lift:.2f}) rotate({lrot:.2f} -150 -150)">{shape(lid, C_CHEST, lin, w=4.6, seed=sd + 6)}</g>')
+    if g > .05:
+        o.append(glow(0, -150 - lift / 2, 230, g * .9, "#FFC46B", ry=60))
+        for j in range(7):
+            xx = -120 + j * 40
+            o.append(line([(xx, -154 - lift), (xx + (j - 3) * 16, -154 - lift - 80 * g)], 6 * g, "#FFD873", taper=.6, wmin=.1, seed=sd + 20 + j, op=.9))
     return _tf("".join(o), x + jx, y, k)
 
 
