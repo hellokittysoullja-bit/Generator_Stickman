@@ -112,7 +112,7 @@ def hook_cam(t, t_hit, t_hit2, rot0=3.8, side0=52.0, fly=.2, far=1.46, over=.06)
     rot = rot0 * (1 - e) + damp(t, fly, -1.3, 2.0, 6.0)
     side = side0 * (1 - e)
     hit = .04 * kick(t, t_hit, .03, 5.5) + .10 * kick(t, t_hit2, .03, 4.5)
-    return s * (1 + hit), rot, side, 1 - e
+    return s * (1 + hit), rot, side, 1 - e, 1 + hit
 
 
 def radial_blur(world, cx, cy, s, rot, amount):
@@ -239,13 +239,18 @@ def s01_world(t, cam=None):
 def s01(t):
     lib.dyn_begin()
     t1, t2 = stress(1, .42), stress(2, .3)
-    kk, rc, side, fl = hook_cam(t, t1, t2)
+    kk, rc, side, fl, hk = hook_cam(t, t1, t2)
     sx1, sy1 = shake2(t, t1, 10)
     sx2, sy2 = shake2(t, t2, 8)
     cx0, cy0, s0 = R.CAM76["hook"]
     cx = cx0 + side - sx1 - sx2 + 4 * math.sin(t * 2.1)
     cy = cy0 - sy1 - sy2
+    # удары камерой — вокруг точки у макушки Димы (под надписью): волосы не заходят под буквы
     s = s0 * kk * (1 + .02 * sm(t, .5, 1.6))
+    if t > .2:                                   # после влёта: перелёт и удары — вокруг макушки
+        px, py = 230.0, 460.0
+        r_ = s / s0
+        cx, cy = px - (px - cx) / r_, py - (py - cy) / r_
     world = s01_world(t, (cx, cy, s, rc))
     if MASK:
         return wrap(world, cx0, cy0, s0)
@@ -484,7 +489,7 @@ def s09(t):
     jab = .5 + .5 * math.sin(2 * math.pi * 3.0 * (t - t43)) if t > t43 else .5
     st = dict(PE.CAT_ST76["poke"])
     st.update(paw=pk * (.55 + .45 * jab), paw_dx=80 + 50 * jab, look=(.7, -.3), blink=bump(t, t47 + .2, .16))
-    cat = PE.cat_svg(120, 1560, 1.15, st, t)
+    cat = PE.cat_svg(100, 1295, .95, st, t)
     crowd = PE.crowd_backs(-60, 2140, 1200, 2 * T0("s09") - t, clap_phase=.15, n=4, k=.84, seed=1)
     # штрихи перемотки (экран): короткие дуги «назад» поперёк кадра, пока идёт перемотка
     lines_ = ""
