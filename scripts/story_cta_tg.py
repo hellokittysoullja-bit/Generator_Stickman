@@ -1,4 +1,8 @@
-"""Призыв «подпишись на мой Телеграм-канал» для рилсов-историй формата 4 (вид "cta": "tg", владелец 16.11), v2.
+"""Призыв «подпишись на мой Телеграм-канал» для рилсов-историй формата 4 (вид "cta": "tg", владелец 16.11), v5.
+
+v5 (владелец 16.11): карточка кремовая как у подписки рилсов 29–51, ссылка тёмным телеграм-синим, @ru_adhd белым с
+обводкой, золотые искорки (мерцают, пульсируют, плывут), красные лапки (подпрыгивают на нажатии), логотип на кнопке,
+кот под карточкой привстаёт и жмёт согнутой лапой подушечкой вверх. Ниже — описание v2 (часть устарела).
 
 Рисованная обстановка (тёплая стена, стол с тетрадкой и кружкой), крупная карточка канала в тёмной теме Телеграма
 (как профиль владельца, assets/story_cta/tg_channel_ref.jpg): круглая аватарка с кольцом, «СДВГ | Напарник» с лапками
@@ -40,16 +44,22 @@ LINK = "t.me/ru_adhd"
 # раскладка (мир = экран при камере 1.0): всё главное выше 1300 px — ниже субтитры
 CX0, CX1, CY0, CY1 = 90, 990, 44, 812          # карточка: 83 % ширины, над котом
 CARD_C = ((CX0 + CX1) / 2, (CY0 + CY1) / 2)
-AV = (540, 184, 124)                            # аватарка: центр, радиус
-NAME_Y, LINK_Y, SUB_Y, DESC_Y = 404, 508, 562, 612
-DESC = "истории про Диму и кота каждый вечер"
+AV = (540, 172, 116)                            # аватарка: центр, радиус
+NAME_Y, LINK_Y, AT_Y = 384, 480, 566             # имя, ссылка, @ник (белый с обводкой, центр строки)
+AT = "@ru_adhd"
+CREAM, CREAM_SH, CREAM_RIM = "#fbf3e2", "#ecdcbd", "#f3e6cb"
+RED = "#D9302B"                                  # лапки: как «ПОДПИСАТЬСЯ» карточки рилсов 29–51
+LINK_BLUE = "#1a76b5"                           # тёмный телеграм-синий: читается на креме
+GOLD, GOLD_INK = "#f2b22e", "#a8661a"            # искорки
 BX0, BX1, BY0, BY1 = 190, 890, 650, 770         # кнопка по центру карточки, целиком видна
 BTX = 540                                       # центр надписи кнопки
 BADGE = (134, 92, 58)                           # значок Телеграма на углу карточки
 TABLE = 1272
 CAT_X, CAT_Y, CAT_K = 420, 1288, 1.2            # кот сидит на столе под карточкой, крупно
 RISE = 0.5                                      # на нажатие привстаёт: задние лапы вытягиваются (cat.py legs)
-PAW_DX, PAW_PW = 29.4, 2.66                     # лапа cat.py тянется вверх к нижнему краю кнопки (≈ x 600)
+PAW_DX, PAW_PW = 59.0, 1.31                     # плечо — лапа cat.py до локтя (вбок наружу)
+ELBOW = (985.0, 1110.0)                         # локоть (внутр. координаты кота) при полном подъёме
+PAW_TIP = (990.0, 914.0)                        # подушечка у нижнего края кнопки (≈ x 605, y 775 в мире)
 
 _ST = {}
 
@@ -152,9 +162,10 @@ def tg_badge(lib, cx, cy, r, sd=700):
 def paw_print(lib, cx, cy, s, rot, col=GREY):
     """Отпечаток лапки (вместо эмодзи 🐾 — шрифта с ним нет)."""
     from ink import ellipse_pts
-    o = lib.blob(lib.T(ellipse_pts(0, 6, 15, 12.5, 14), cx, cy, s, rot), col)
-    for dx, dy, rx in [(-15, -12, 6), (-5, -20, 6.4), (6, -20, 6.4), (16, -12, 6)]:
-        o += lib.blob(lib.T(ellipse_pts(dx, dy, rx, rx * 1.25, 10, rot=dx * 1.4), cx, cy, s, rot), col)
+    pad = [(-17, 12), (-15, 0), (-7, -7), (0, -8), (7, -7), (15, 0), (17, 12), (8, 18), (0, 16), (-8, 18)]
+    o = lib.blob(lib.T(pad, cx, cy, s, rot), col)
+    for dx, dy, rx in [(-19, -14, 6.2), (-7, -24, 6.6), (7, -24, 6.6), (19, -14, 6.2)]:
+        o += lib.blob(lib.T(ellipse_pts(dx, dy, rx, rx * 1.3, 10, rot=dx * 1.2), cx, cy, s, rot), col)
     return o
 
 
@@ -215,28 +226,73 @@ def background(lib):
 
 
 def card_static(lib):
-    """Карточка: мягкий градиент, большие скругления, тонкий светлый кант и блик; без содержимого."""
+    """Карточка как в рилсах 29–51: кремовая, светлая рамка, большие скругления, мягкая тень."""
     s = []
-    pts = lib.rect_pts(CX0, CY0, CX1, CY1, 84)
-    g = lib.lin_grad([(0, "#2b2b31", 1), (.55, "#1d1d21", 1), (1, "#141417", 1)], 0, 0, .25, 1)
-    inner = lib.blob(lib.rect_pts(CX0 + 8, CY0 + 8, CX1 - 8, CY1 - 8, 78), "none",
-                     extra='stroke="#ffffff" stroke-opacity=".10" stroke-width="3"')
-    inner += lib.line([(CX0 + 110, CY0 + 22), (CX1 - 220, CY0 + 18)], 6, "#ffffff", seed=620, op=.16)
-    inner += lib.line([(CX0 + 22, CY0 + 120), (CX0 + 18, CY0 + 380)], 5, "#ffffff", seed=623, op=.10)
-    s.append(lib.shape(pts, f"url(#{g})", inner, w=5, seed=621))
-    _ST["card_shadow"] = lib.blob(lib.rect_pts(CX0 + 18, CY0 + 40, CX1 + 26, CY1 + 46, 90), "#5a3110", .38, lib.blur(26))
+    pts = lib.rect_pts(CX0, CY0, CX1, CY1, 70)
+    inner = lib.blob(lib.rect_pts(CX1 - 64, CY0 - 10, CX1 + 10, CY1 + 10), CREAM_SH, 1)
+    inner += lib.blob(lib.rect_pts(CX0 - 10, CY1 - 46, CX1 + 10, CY1 + 10), CREAM_SH, 1)
+    inner += lib.blob(lib.rect_pts(CX0 + 18, CY0 + 18, CX1 - 22, CY1 - 26, 56), CREAM)
+    inner += lib.line([(CX0 + 90, CY0 + 30), (CX1 - 200, CY0 + 26)], 6, "#fffdf6", seed=620, op=.95)
+    s.append(lib.shape(pts, CREAM_RIM, inner, w=6, seed=621))
+    _ST["card_shadow"] = lib.blob(lib.rect_pts(CX0 + 22, CY0 + 40, CX1 + 30, CY1 + 40, 76), "#5a3110", .36, lib.blur(22))
     return "".join(s)
 
 
 def avatar_static(lib):
     from ink import ellipse_pts
     ax, ay, ar = AV
-    s = [lib.blob(ellipse_pts(ax, ay + 10, ar + 18, ar + 18, 28), "#000000", .35, lib.blur(12))]
-    s.append(f'<circle cx="{ax}" cy="{ay}" r="{ar + 13}" fill="none" stroke="{TG_BLUE}" stroke-width="5" stroke-opacity=".9"/>')
+    s = [lib.blob(ellipse_pts(ax + 4, ay + 10, ar + 12, ar + 12, 28), "#7a4a20", .25, lib.blur(10))]
+    s.append(f'<circle cx="{ax}" cy="{ay}" r="{ar + 11}" fill="none" stroke="{GOLD}" stroke-width="5"/>')
     cid = lib.clip_of(ellipse_pts(ax, ay, ar, ar, 28))
     s.append(f'<g clip-path="url(#{cid})"><image href="{_avatar_uri()}" x="{ax - ar}" y="{ay - ar}" width="{2 * ar}" height="{2 * ar}"/></g>')
     s.append(f'<path d="{lib.ink_closed(ellipse_pts(ax, ay, ar, ar, 28), 4.4, seed=622)}" fill="{lib.INK}"/>')
     return "".join(s)
+
+
+def star4(lib, cx, cy, r, rot=0.0, sd=0):
+    """Четырёхлучевая искорка (как на ref_stars): вогнутые лучи, тёплое золото с тонким контуром."""
+    pts = []
+    for k in range(8):
+        a = math.radians(rot + k * 45 - 90)
+        rr = r if k % 2 == 0 else r * 0.26
+        pts.append((cx + rr * math.cos(a), cy + rr * math.sin(a)) + ((1,) if k % 2 == 0 else ()))
+    return lib.shape(pts, GOLD, lib.blob([(cx - r * .1, cy - r * .5), (cx + r * .06, cy - r * .5), (cx, cy)], "#ffe7a0"), w=2.2,
+                     seed=sd, ink_color=GOLD_INK, var=.1)
+
+
+# (x, y, размер, фаза) — по свободным местам карточки, не на тексте
+STARS = [(214, 128, 30, 0.0), (870, 240, 24, 0.37), (300, 268, 16, 0.71), (770, 96, 18, 0.18), (930, 620, 20, 0.55), (152, 486, 16, 0.86)]
+DOTS = [(338, 190, 0.2), (722, 300, 0.6), (900, 160, 0.9), (196, 300, 0.45), (946, 520, 0.1), (132, 700, 0.75), (820, 190, 0.3)]
+# лапки-подушечки цвета кнопки: две у имени (как 🐾 в названии канала) и одна в углу
+PAWS = [(912, NAME_Y - 50, 1.15, 28), (946, NAME_Y - 10, .95, 28), (150, 612, 1.2, -24)]
+
+
+def sparkles(lib, t, t0, press):
+    """Искорки мерцают, пульсируют масштабом и медленно плывут — каждая со своей фазой; лапки подпрыгивают на нажатии."""
+    o = []
+    app = _expo((t - t0 - 0.2) / 0.5)
+    if app <= 0.002:
+        return ""
+    for k, (x, y, r, ph) in enumerate(STARS):
+        w = 2 * math.pi * (t / 1.6 + ph)
+        sc = (0.72 + 0.32 * math.sin(w)) * app
+        op = 0.55 + 0.45 * (0.5 + 0.5 * math.sin(w + 0.8))
+        dx, dy = 6 * math.sin(t * 0.7 + ph * 6), 5 * math.cos(t * 0.6 + ph * 5)
+        o.append(f'<g opacity="{op:.3f}">' + _sc(star4(lib, x + dx, y + dy, r, 0, 740 + k), x + dx, y + dy, sc, 8 * math.sin(w * .5)) + "</g>")
+    for k, (x, y, ph) in enumerate(DOTS):
+        w = 2 * math.pi * (t / 1.3 + ph)
+        rr = (4.2 + 2.2 * math.sin(w)) * app
+        dy = 4 * math.sin(t * 0.8 + ph * 7)
+        o.append(f'<circle cx="{x:.1f}" cy="{y + dy:.1f}" r="{max(rr, .1):.2f}" fill="{GOLD}" opacity="{.5 + .4 * math.sin(w + 1):.3f}"/>')
+    e = t - press
+    for k, (x, y, sc, rot) in enumerate(PAWS):
+        ee = e - k * 0.06
+        hop = 18 * math.exp(-ee * 7) * abs(math.sin(ee * 11)) if ee > 0 else 0.0
+        pa = _back((t - t0 - 0.35 - k * 0.08) / 0.35, 2.2) if t > t0 + 0.35 + k * 0.08 else 0.0
+        if pa > 0:
+            o.append(_sc(paw_print(lib, x, y - hop, sc, rot + (8 * math.sin(ee * 9) * math.exp(-ee * 5) if ee > 0 else 0), col=RED),
+                         x, y - hop, pa))
+    return "".join(o)
 
 
 # ───────────────────────── динамика карточки
@@ -246,21 +302,26 @@ def _rise(t, a, d=0.42, dy=34):
     return u, dy * (1 - u), 0.92 + 0.08 * u
 
 
-def content(lib, t, t0):
-    o = []
+def at_nick(lib):
+    """@ru_adhd белым жирным с тёмной обводкой 6 px и мягкой тенью — как субтитры рилсов, прямо на креме."""
+    sh = _text(540 + 3, AT_Y + 30, AT, 84, "#000000", extra=f'stroke="#000000" stroke-width="14" stroke-linejoin="round" opacity=".35" {lib.blur(5)}')
+    return sh + _text(540, AT_Y + 25, AT, 84, "#ffffff", extra='stroke="#1c1622" stroke-width="12" stroke-linejoin="round" paint-order="stroke"')
+
+
+def content(lib, t, t0, press):
+    o = [sparkles(lib, t, t0, press)]
     s = 0.82 + 0.18 * _back((t - t0) / 0.5, 2.0)          # аватар — вместе с карточкой, с лёгким pop
     o.append(_sc(_ST["avatar"], AV[0], AV[1], s, 5 * (1 - _cl(s))))
-    for k, (a, y) in enumerate(((0.30, NAME_Y), (0.40, LINK_Y), (0.50, SUB_Y))):
+    for k, (a, y) in enumerate(((0.30, NAME_Y), (0.40, LINK_Y), (0.50, AT_Y))):
         op, dy, sc = _rise(t, t0 + a)
         if op <= 0.002:
             continue
         if k == 0:
-            g = _text(505, y, NAME, 86, "#ffffff") + paw_print(lib, 912, y - 50, 1.05, 28) + paw_print(lib, 944, y - 12, .86, 28)
+            g = _text(505, y, NAME, 86, lib.INK)
         elif k == 1:
-            g = _text(540, y, LINK, 98, TG_BLUE)
+            g = _text(540, y, LINK, 90, LINK_BLUE)
         else:
-            g = _text(540, y, "телеграм-канал", 40, GREY)       # без числа подписчиков
-            g += _text(540, DESC_Y, DESC, 36, "#b4b4ba")
+            g = at_nick(lib)
         o.append(_sc(g, 540, y + dy - 20, sc, 0, op))
     bs = _back((t - t0 - 0.86) / 0.5, 1.4) if t > t0 + 0.86 else 0.0
     if bs > 0:
@@ -298,8 +359,8 @@ def button(lib, t, t0, press, touch):
     gl = lib.rad_grad([(0, TG_BLUE, .55), (1, TG_BLUE, 0)], cx, cy + 10, 420, 120)
     s.append(f'<ellipse cx="{cx:.1f}" cy="{cy + 12:.1f}" rx="{430 + 30 * breath:.1f}" ry="{130 + 16 * breath:.1f}" fill="url(#{gl})" '
              f'opacity="{(.45 + .4 * breath) * pre * op:.3f}"/>')
-    s.append(lib.shape(lib.rect_pts(BX0, BY0 + 14, BX1, BY1 + 12, 62), lip, "", w=4.6, seed=650))
-    pts = lib.rect_pts(BX0, BY0 + dn, BX1, BY1 + dn, 62)
+    s.append(lib.shape(lib.rrect(BX0, BY0 + 14, BX1, BY1 + 12, 52), lip, "", w=4.6, seed=650))
+    pts = lib.rrect(BX0, BY0 + dn, BX1, BY1 + dn, 52)
     inner = lib.blob(lib.rect_pts(BX0, BY1 + dn - 28, BX1 + 4, BY1 + dn + 4), sh, 1)
     inner += lib.line([(BX0 + 70, BY0 + dn + 18), (BX1 - 230, BY0 + dn + 16)], 7, "#ffffff", seed=651, op=.45 * pre + .08)
     if 0 <= e < 0.7:
@@ -310,7 +371,12 @@ def button(lib, t, t0, press, touch):
     ty = cy + dn + 25
     o1 = 1 - _eio((e - 0.02) / 0.16)
     if o1 > 0.002:
-        s.append(f'<g opacity="{o1:.3f}">' + _text(BTX, ty + 1, "ПОДПИСАТЬСЯ", 66, sh) + _text(BTX, ty - 2, "ПОДПИСАТЬСЯ", 66, "#ffffff") + "</g>")
+        from ink import ellipse_pts
+        icx, icy = BTX - 262, ty - 22                  # логотип Телеграма: белый круг, синий самолётик
+        body_, fold_, tail_ = plane_pts(icx - 2, icy + 1, 32, 0)
+        ic = lib.shape(ellipse_pts(icx, icy, 34, 34, 16), "#ffffff", "", w=3, seed=654)
+        ic += lib.blob(tail_, "#1b7fb8") + lib.blob(body_, TG_BLUE) + lib.blob(fold_, "#1d8fcc")
+        s.append(f'<g opacity="{o1:.3f}">' + ic + _text(BTX + 34, ty + 1, "ПОДПИСАТЬСЯ", 62, sh) + _text(BTX + 34, ty - 2, "ПОДПИСАТЬСЯ", 62, "#ffffff") + "</g>")
     o2 = _eio((e - 0.12) / 0.2)
     if o2 > 0.002:
         tx = BTX + 34
@@ -387,6 +453,27 @@ def steam(lib, t):
 
 
 # ───────────────────────── кот
+def forearm(lib, cat, X, k, r, el, tip, Y):
+    """Предплечье кота от локтя к кнопке: колбаска меха с изгибом наружу и подушечка с пальчиками к кнопке."""
+    if r < 0.08:
+        return ""
+    from ink import band, ellipse_pts
+    mid = ((el[0] + tip[0]) / 2 + 30 * r, (el[1] + tip[1]) / 2)
+    o = []
+    arm = band([el, mid, tip], 46, 40, step=4, cap=False)
+    o.append(lib.shape(arm, cat.CAT, lib.blob([(el[0] + 8, el[1]), (el[0] + 24, el[1]), (tip[0] + 22, tip[1]), (tip[0] + 6, tip[1])],
+                                              cat.CAT_SH, .6), w=4.6, seed=771))
+    ang = math.degrees(math.atan2(tip[1] - mid[1], tip[0] - mid[0])) + 90
+    # кисть: подушечка (оранжевая) и 4 пальчика смотрят вверх, к кнопке
+    pp = ellipse_pts(tip[0], tip[1] - 6, 27, 23, 14, rot=ang)
+    o.append(lib.shape(pp, cat.CAT, "", w=4.4, seed=772))
+    o.append(lib.blob(lib.T([(-10, 4), (-8, -3), (0, -6), (8, -3), (10, 4), (0, 8)], tip[0], tip[1] - 4, 1.0, ang), "#e8823a"))
+    for kk, (dx, dy) in enumerate([(-15, -12), (-5, -18), (5, -18), (15, -12)]):
+        q = lib.T([(dx, dy)], tip[0], tip[1] - 4, 1.0, ang)[0]
+        o.append(lib.blob(ellipse_pts(q[0], q[1], 4.6, 4, 8), "#e8823a"))
+    return f'<g transform="translate({X:.2f} {Y:.2f}) scale({k:.4f}) translate({-cat.CX} {-cat.CBOT})">{"".join(o)}</g>'
+
+
 def cat_state(lib, cat, t, t0, press):
     """Кот сидит на столе под карточкой с кадра 0; смотрит на влетающую карточку, на нажатие привстаёт и тянет лапу вверх, жмёт
     короткой лапой (лапа cat.py, не вытянутая палка), после — в камеру, улыбка, огонёк вспыхивает."""
@@ -395,13 +482,15 @@ def cat_state(lib, cat, t, t0, press):
     perk = math.exp(-max(0.0, t - t0 - 0.45) * 2.5) * land
     a = press - 0.45
     rise = _eio((t - a + 0.1) / 0.35)            # привстаёт чуть раньше, чем тянет лапу
-    pw = PAW_PW * _eio((t - a) / 0.45)
+    r = _eio((t - a) / 0.45)                     # подъём лапы 0..1
     e = t - press
+    push = 0.0
     if e >= 0:
-        pw += 0.05 * math.exp(-e * 9) * math.sin(min(e * 16, math.pi))
+        push = math.exp(-e * 9) * math.sin(min(e * 16, math.pi))
         back = _eio((e - 0.35) / 0.45)
-        pw *= 1 - back
+        r *= 1 - back
         rise *= 1 - back
+    pw = PAW_PW * r
     legs = RISE * rise
     Y = CAT_Y - 64 * legs * CAT_K                  # лапы стоят на столе, тело поднимается
     kb = _eio((t - press + 0.75) / 0.35)         # взгляд на кнопку
@@ -418,12 +507,14 @@ def cat_state(lib, cat, t, t0, press):
             blink = 1 - abs(t - c) / half
     tilt = 4 * land * (1 - kb) + 5 * kc * math.sin(max(0.0, t - press) * 2.6)
     tail = 6 * math.sin(t * 1.9) + 3 * math.sin(t * 3.3 + 1)
+    tail += 30 * r                               # хвост с огоньком уходит вбок, не под лапу
     st = dict(look=tuple(lk), blink=blink, tilt=tilt, tail=tail, paw=pw, paw_dx=PAW_DX, legs=legs, perk=max(perk, kc),
               smile=1.0 if kc > .5 else 0.0, flame_e=1.0 + 1.0 * math.exp(-max(0.0, e) * 2) * (e > 0))
-    fx = cat.CX + 25
-    tip = (fx + PAW_DX * PAW_PW * 1.6, 1306 - 150 * PAW_PW)
     Yr = CAT_Y - 64 * RISE * CAT_K
-    touch = (X + (tip[0] - cat.CX) * CAT_K, Yr + (tip[1] - cat.CBOT) * CAT_K)
+    touch = (X + (PAW_TIP[0] - cat.CX) * CAT_K, Yr + (PAW_TIP[1] - cat.CBOT) * CAT_K)
+    # предплечье: от конца лапы cat.py (локоть) вверх, согнуто, подушечкой к кнопке
+    el = (cat.CX + 25 + PAW_DX * pw * 1.6, 1306 - 150 * pw)
+    st["_arm"] = (r, el, (el[0] + (PAW_TIP[0] - ELBOW[0]) * r, el[1] + (PAW_TIP[1] - ELBOW[1]) * r - 10 * push), Y)
     return X, Y, st, touch
 
 
@@ -464,10 +555,12 @@ def layer(t, t0=0.1, press=1.7, common=None):
         op = _cl(e / 0.12)
         px, py = CARD_C[0], CY1
         sh = _ST["card_shadow"]
-        card = _ST["card"] + content(lib, t, t0) + button(lib, t, t0, press, touch)
+        card = _ST["card"] + content(lib, t, t0, press) + button(lib, t, t0, press, touch)
         out.append(f'<g opacity="{op:.3f}" transform="translate({px:.1f} {py + dy:.2f}) rotate({rot:.3f}) scale({sc:.4f}) '
                    f'translate({-px:.1f} {-py:.1f})">{sh}{card}</g>')
+    arm = st.pop("_arm")
     out.append(cat.draw(X, Y, CAT_K, st, t))
+    out.append(forearm(lib, cat, X, CAT_K, *arm))
     out.append(burst(lib, t, press, touch))
     # камера: мягкий наезд к карточке, лёгкий толчок на нажатии, отъезд после
     pin = _eio((t - t0 - 0.1) / 1.0)
