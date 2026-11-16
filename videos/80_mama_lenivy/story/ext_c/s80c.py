@@ -210,14 +210,15 @@ def dima_hook(t, st):
 def tag_now(t, fig, st):
     """Бирка: до удара летит к шее (кадр 0 — уже в полёте, крутится, шнур хлещет), на «ВА» садится и раскачивается под весом."""
     nx, ny = fig["neck"]
+    nx += 22 * fig["k"] / .5                           # петля на шее спереди: бирка висит на груди, не на спине
     tl = st["tl"]
     if t < tl:
         u = clamp(t / tl)
         e = 1 - (1 - u) ** 1.4                                                # без разгона с нуля: летит с кадра 0
         sx, sy = nx - 480, ny + 40
         x = lerp(sx, nx, e)
-        y = lerp(sy, ny, e) - 130 * math.sin(math.pi * e) * (1 - .5 * e)
-        swing = lerp(-210, 0, e) + 25 * math.sin(t * 21)
+        y = lerp(sy, ny, e) - 90 * math.sin(math.pi * e) * (1 - .6 * e)
+        swing = lerp(-75, 0, e) + 22 * math.sin(t * 21)        # бирка висит под петлёй и хлещет, не поднимаясь к лицу
         return dict(x=x, y=y, swing=swing, on=False)
     sw = damp(t, tl, 24, 1.6, 2.6) + 4 * math.sin(t * 2.7)
     if st["kneel"] > .01:      # на коленях бирка тянет вниз к полу: шнур натянут, бирка у пола
