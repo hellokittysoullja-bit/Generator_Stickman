@@ -2874,7 +2874,7 @@ def evening_chair(t, sun=1.0):
 #   warm 0…1 — тот же ракурс в тёплом свете (петля s18): янтарный задник, тёплый конус.
 #   Порядок: bg → [тень часов на заднике cast_shadow] → floor → [часы, Дима, песок] → light → shade.
 #   HV_TEXT — зона «Поздно?» (только пустой фон: часы, цепь и пылинки туда не заходят).
-#   HV_GLASS = (x, y, k) — горлышко гигантских часов в покое и их масштаб для props.giant_hourglass (крышки ≈ 434…1026);
+#   HV_GLASS = (x, y, k) — горлышко гигантских часов в покое и их масштаб для props.giant_hourglass (крышки ≈ 442…958);
 #   HV_PIVOT — точка подвеса цепи (над кадром), часы качаются вокруг неё; HV_HEAD — центр головы Димы (макушка ≈ y 1050).
 # ТЕНЬ — cast_shadow(svg, dx, dy, k, col, op, blur): та же группа силуэтом (тень на заднике), смещённая/увеличенная.
 #
@@ -2899,8 +2899,8 @@ def evening_chair(t, sun=1.0):
 CAM81 = (540.0, 960.0, 1.0)
 HV_TEXT = (50.0, 140.0, 1030.0, 430.0)
 HV_PIVOT = (540.0, -620.0)
-HV_GLASS = (540.0, 730.0, 1.06)
-HV_HEAD = (540.0, 1135.0)
+HV_GLASS = (515.0, 700.0, .92)
+HV_HEAD = (455.0, 1105.0)
 HV_FLOOR = 1520.0
 CAM81_HOOK = (540.0, 960.0, 1.0)
 CAM81_HANDS = (540.0, 1020.0, 1.45)
@@ -2938,12 +2938,12 @@ def hook_void(t, warm=0.0):
     # циклорама: стена мягко переходит в пол (без угла), пол светлее и уходит вниз
     gf = lib.lin_grad([(0, P["low"], 1), (.08, P["floor"], 1), (1, P["floor_b"], 1)], 0, fy - 40, 0, fy + 900, units="userSpaceOnUse")
     floor = f'<rect x="-1400" y="{f(fy - 40)}" width="3880" height="2400" fill="url(#{gf})"/>'
+    floor += blob(ellipse_pts(540.0, fy + 70, 700, 120, 40), P["pool"], .2, 'style="mix-blend-mode:screen"')    # пятно света на полу — под людьми
     # жёсткий конус света сверху: чёткие края, светлее к центру
     cx = 540.0
     cone_pts = [(cx - 150, -1400, 1), (cx + 150, -1400, 1), (cx + 640, fy, 1), (cx - 640, fy, 1)]
     gc = lib.lin_grad([(0, P["cone"], .22), (1, P["cone"], .1)], 0, -1400, 0, fy, units="userSpaceOnUse")
     light = [f'<path d="{lib.fill_d(cone_pts)}" fill="url(#{gc})" style="mix-blend-mode:screen"/>']
-    light.append(blob(ellipse_pts(cx, fy + 70, 700, 120, 40), P["pool"], .2, 'style="mix-blend-mode:screen"'))
     # пылинки в конусе: медленно плывут вниз, вне зоны текста
     r = rs(8101)
     x0, y0, x1, y1 = HV_TEXT

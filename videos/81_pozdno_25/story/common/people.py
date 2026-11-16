@@ -4017,7 +4017,7 @@ def scientist80(kind, x, y, k, pose="write", t=0.0, expr="focus", feet=None, fli
 
 
 # ═════════════════════════════ РИЛС 81 «ВСЁ, ПОЗДНО» (автор — группа B) ═════════════════════════════
-# Основа — common/people.py рилса 80 (всё прежнее байт в байт; у головы "cap" новый ключ expr["nocap"] — кепка снята).
+# Основа — common/people.py рилса 80 (надмножество 78: всё прежнее байт в байт; у головы "cap" новый ключ expr["nocap"] — кепка снята).
 # Дима (горчичное худи, лохматый, щетина) — dima81(x, y, k, expr, pose, t, ...) = dima80 взрослого: fig["hold"], fig["palm"], fig["chest"].
 #   Позы POSE: d81_cup_up (ладони лодочкой над головой — ловит песок), d81_cup (ладони лодочкой у груди, пальцы чуть врозь — песок
 #   сквозь пальцы), d81_drop (руки опущены, плечи вниз — засыпан), d81_rest (спокойно, руки вдоль тела), d81_knob (ближняя рука вперёд к
@@ -4056,8 +4056,8 @@ EXPR["dima"].update({
 })
 _CUP = {"curl": (.38, .34, .34, .4), "spread": .02, "thumb": .45}
 POSE.update({
-    "d81_cup_up": (-0.06, -0.3, {"f": ("ik", (110, -640), -1), "n": ("ik", (215, -625), -1)},
-                   {"f": dict(_CUP, dir=(.35, -1)), "n": dict(_CUP, dir=(-.25, -1))}),
+    "d81_cup_up": (-0.16, -0.42, {"f": ("ik", (300, -600), -1), "n": ("ik", (380, -560), -1)},
+                   {"f": dict(_CUP, dir=(.7, -.7)), "n": dict(_CUP, dir=(.6, -.8))}),
     "d81_cup": (0.1, 0.32, {"f": ("ik", (220, -255), -1), "n": ("ik", (285, -245), -1)},
                 {"f": dict(_CUP, dir=(1, -.15)), "n": dict(_CUP, dir=(1, -.05))}),
     "d81_cup_open": (0.1, 0.32, {"f": ("ik", (215, -250), -1), "n": ("ik", (290, -240), -1)},
@@ -4113,14 +4113,14 @@ def dima_floor81(x, y, k, t=0.0, expr=None, glow=1.0, turn=0.0, sit=0.0, phone=T
     if blink > .01:
         ex = dict(ex, lid=ex.get("lid", .8) * (1 - blink))
     ha = .25 - .45 * lib.ease_io(turn) + .1 * sit
-    # ноги в «стоячей» системе: колени согнуты (ступни на полу ближе к тазу), knees 0 — прямые
+    # стопы стоят на полу (мир): колени согнуты вверх; в систему фигуры — поворотом на −a_body, подошва ровно по полу
     kz = lib.clamp(knees)
-    ground = (LEG_LEN - 12) * sc
-    if sit > .5:
-        feet = sit_kw(0, 0, sc / HEIGHT["dima"])["feet"]
-    else:
-        feet = {"n": ((float(260 * sc * kz + 40 * sc), float(ground - 230 * sc * kz)), 1.57 * kz),
-                "f": ((float(220 * sc * kz + 10 * sc), float(ground - 210 * sc * kz)), 1.57 * kz)}
+    ar = math.radians(a_body)
+    feet = {}
+    for side, (fx, fy) in (("n", (430.0 - 120 * (1 - kz), 150.0)), ("f", (400.0 - 120 * (1 - kz), 140.0))):
+        wx, wy = fx * sc, fy * sc
+        lx, ly = wx * math.cos(-ar) - wy * math.sin(-ar), wx * math.sin(-ar) + wy * math.cos(-ar)
+        feet[side] = ((float(lx), float(ly)), -ar)
     body = figure("dima", 0.0, 0.0, k, ex, lean=br, head_ang=ha, arms=arms, hands=hands, feet=feet, layers=("legs", "pelvis", "arm_f", "body"))
     arm_n = figure("dima", 0.0, 0.0, k, ex, lean=br, head_ang=ha, arms=arms, hands=hands, feet=feet, layers=("arm_n",))
     tb = f'translate({x:.2f} {y:.2f}) rotate({a_body:.2f})'
@@ -4192,18 +4192,18 @@ POSE.update({
                  {"f": {"dir": (.3, 1), "curl": (.5, .5, .55, .6), "thumb": .4}, "n": {"dir": (-.2, 1), "curl": (.5, .5, .55, .6), "thumb": .4}}),
     "f81_wave": (0.0, -0.05, {"f": ("ang", 0.16, 0.16), "n": ("ik", (260, -560), -1)},
                  {"f": {"curl": (.35, .35, .4, .45), "thumb": .35}, "n": {"dir": (.2, -1), "curl": (.05, .05, .08, .1), "spread": .35, "thumb": .1}}),
-    "f81_cap": (0.0, -0.1, {"f": ("ang", 0.16, 0.16), "n": ("ik", (150, -640), -1)},
-                {"f": {"curl": (.35, .35, .4, .45), "thumb": .35}, "n": dict(_GRIP, dir=(-.2, -1))}),
-    "f81_cap_up": (0.0, -0.12, {"f": ("ang", 0.16, 0.16), "n": ("ik", (260, -700), -1)},
-                   {"f": {"curl": (.35, .35, .4, .45), "thumb": .35}, "n": dict(_GRIP, dir=(.2, -1))}),
-    "f81_glasses": (0.02, -0.05, {"f": ("ang", 0.16, 0.16), "n": ("ik", (165, -455), -1)},
-                    {"f": {"curl": (.35, .35, .4, .45), "thumb": .35}, "n": {"dir": (-.2, -1), "curl": (.75, 0.0, .85, .9), "thumb": .7}}),
+    "f81_cap": (0.0, -0.1, {"n": ("ang", -0.08, 0.22), "f": ("ik", (40, -700), -1)},
+                {"n": {"curl": (.35, .35, .4, .45), "thumb": .35}, "f": dict(_GRIP, dir=(.2, -1))}),
+    "f81_cap_up": (-0.04, -0.14, {"n": ("ang", -0.08, 0.22), "f": ("ik", (-60, -820), -1)},
+                   {"n": {"curl": (.35, .35, .4, .45), "thumb": .35}, "f": dict(_GRIP, dir=(.1, -1))}),
+    "f81_glasses": (0.02, -0.12, {"f": ("ang", 0.16, 0.16), "n": ("ik", (-50, -540), 1)},
+                    {"f": {"curl": (.35, .35, .4, .45), "thumb": .35}, "n": {"dir": (.3, -1), "curl": (.75, 0.0, .85, .9), "thumb": .7}}),
     "f81_fold": (-0.04, 0.0, {"f": ("ik", (120, -250), -1), "n": ("ik", (-60, -250), 1)}, {"f": {"kind": "none"}, "n": {"kind": "none"}}),
     "f81_point": (0.04, -0.1, {"f": ("ang", 0.16, 0.16), "n": ("ik", (420, -420), -1)},
                   {"f": {"curl": (.35, .35, .4, .45), "thumb": .35}, "n": {"dir": (1, -.3), "curl": (0, .85, .9, .9), "spread": .05, "thumb": .7}}),
-    "y81_pose": (-0.06, -0.1, {"f": ("ik", (60, -150), 1), "n": ("ik", (220, -620), -1)},
-                 {"f": {"dir": (.3, 1), "curl": (.5, .5, .55, .6), "thumb": .4}, "n": {"dir": (.2, -1), "curl": (.05, .05, .08, .1), "spread": .4, "thumb": .1}}),
-    "y81_hooray": (-0.1, -0.2, {"f": ("ik", (60, -640), -1), "n": ("ik", (250, -640), -1)},
+    "y81_pose": (-0.06, -0.1, {"n": ("ik", (110, -130), 1), "f": ("ik", (40, -700), -1)},
+                 {"n": {"dir": (-.2, 1), "curl": (.5, .5, .55, .6), "thumb": .4}, "f": {"dir": (.1, -1), "curl": (.05, .05, .08, .1), "spread": .4, "thumb": .1}}),
+    "y81_hooray": (-0.12, -0.22, {"f": ("ik", (20, -700), -1), "n": ("ik", (400, -540), -1)},
                    {"f": {"dir": (-.1, -1), "curl": (.05, .05, .08, .1), "spread": .4, "thumb": .1},
                     "n": {"dir": (.2, -1), "curl": (.05, .05, .08, .1), "spread": .4, "thumb": .1}}),
     "y81_lean": (-0.14, -0.05, {"f": ("ik", (-150, -40), -1), "n": ("ik", (-60, -60), -1)},
@@ -4249,15 +4249,18 @@ def cap81(x, y, k=1.0, rot=0.0, col=None, seed=0):
 
 
 def _belly81(fig_x, fig_y, sc, lean, col_top, col_sh, size=1.0, seed=0):
-    """Брюшко поверх свитера: мягкий выступ вперёд над поясом (в системе фигуры, смотрит вправо)."""
+    """Брюшко поверх свитера: мягкий выступ вперёд над поясом (в системе фигуры, смотрит вправо). Контур — только по выпуклости,
+    сторона к свитеру без линии (сливается с ним)."""
     up = rot(np.array([0.0, -1.0]), lean)
     fw = rot(np.array([1.0, 0.0]), lean)
-    c = np.array([fig_x, fig_y]) + (up * 120 + fw * 92) * sc
-    pts = [tuple(c + (fw * (math.cos(a) * 92 * size) + up * (math.sin(a) * 122)) * sc) for a in np.linspace(-math.pi / 2, math.pi / 2, 12)]
-    pts = [tuple(c + (up * 150 - fw * 40) * sc)] + pts + [tuple(c + (-up * 140 - fw * 40) * sc)]
-    inner = blob([tuple(c + (fw * 40 - up * 40) * sc), tuple(c + (fw * 96 * size - up * 10) * sc), tuple(c + (fw * 70 - up * 130) * sc),
-                  tuple(c - (up * 140) * sc)], col_sh, .7)
-    return shape(pts, col_top, inner, w=5.0 * sc / .4 * .4, seed=8150 + seed)
+    c = np.array([fig_x, fig_y]) + (up * 95 + fw * 70) * sc
+    arc = [tuple(c + (fw * (math.cos(a) * 70 * size) + up * (math.sin(a) * 120)) * sc) for a in np.linspace(math.pi / 2 - .05, -math.pi / 2 + .25, 14)]
+    fill = [tuple(c + (-fw * 70 + up * 120) * sc)] + arc + [tuple(c + (-fw * 70 - up * 100) * sc)]
+    o = blob(fill, col_top)
+    o += blob([tuple(c + (fw * 10 - up * 40) * sc), tuple(c + (fw * 70 * size - up * 10) * sc), tuple(c + (fw * 40 - up * 110) * sc),
+               tuple(c + (-fw * 40 - up * 100) * sc)], col_sh, .55)
+    o += line(arc, 5.0 * sc / .4 * .55, INK, taper=.5, wmin=.3, seed=8150 + seed)
+    return o
 
 
 def founder81(kind, x, y, k, pose="rest", t=0.0, expr="calm", feet=None, flip=False, cap_u=0.0, belly=1.0, u=1.0, **kw):
@@ -4289,10 +4292,13 @@ def founder81(kind, x, y, k, pose="rest", t=0.0, expr="calm", feet=None, flip=Fa
     cap_c = None
     cap_svg = ""
     if kind == "cap" and cap_u > .5:
-        w = np.array(front["wrist"]["n"])
+        w = np.array(back["wrist"]["f"])
         cap_c = (float(w[0] + 10 * sc), float(w[1] - 40 * sc))
         cap_svg = cap81(cap_c[0], cap_c[1] + 60 * sc, sc, rot=-12 + 20 * (1 - lib.clamp((cap_u - .5) * 2)))
-    svg_ = back["svg"] + mid + cap_svg + front["svg"] if cap_svg else back["svg"] + mid + front["svg"]
+    if cap_svg:      # кепка в дальней руке: рука за головой, кепка поверх руки, ближняя рука поверх всего
+        svg_ = back["svg"] + mid + cap_svg + front["svg"]
+    else:
+        svg_ = back["svg"] + mid + front["svg"]
     if flip:
         svg_ = f'<g transform="translate({2 * x:.2f} 0) scale(-1 1)">{svg_}</g>'
     res = dict(back)
@@ -4342,7 +4348,7 @@ def passerby81(kind, x, y, k, t=0.0, phase=0.0, flip=False):
 
 # ─── кот рилса 81 ───
 CAT_ST.update({
-    "proud81": {"tilt": -9, "look": (.15, -.8), "blink": .45, "smile": 1.0, "flame_e": 1.5, "perk": .6},
+    "proud81": {"tilt": -9, "look": (.15, -.8), "blink": .45, "smile": 1.0, "flame_e": 1.5, "perk": .6, "drop": -.14},
     "nod81": {"look": (0, .1), "smile": 1.0, "flame_e": 1.3},
     "paws_up81": {"paw": 1.0, "paw_l": 1.0, "paw_dx": 18, "paw_l_dx": 18, "perk": 1.0, "look": (0, -.6), "smile": 1.0},
     "paint81": {"look": (.85, .15), "turn": .35, "flame_e": 1.3, "perk": .4},

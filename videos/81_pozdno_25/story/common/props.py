@@ -5576,9 +5576,10 @@ def ribbon_roll(x, y, k=1.0, unroll=0.0, t=0.0, trail=None, seed=0):
 #                         floor и отскакивают с затуханием; spread — разброс по x
 #   sand_pile(x, y, k, u, seed)            горка песка (ЦЕНТР ДНА), u 0…1 — растёт (ширина 900·k, высота 260·k при u=1)
 #   glass_shards(x, y, k, u, seed, n)      осколки стекла разлетаются из точки (u 0…1 — полёт с гравитацией)
-#   glow_door(x, y, k, open_u, t, seed, sil, light)  дверь с матовым стеклом (ЦЕНТР ДНА), 380×820·k; за стеклом тёплый свет и силуэты
-#                         (sil 0…1 — видны, ходят от t); light 0…1 — свет из щелей; open_u 0…1 — створка распахивается к нам
-#                         (сужается к петле слева), проём заливает свет. glow_door_handle(x, y, k, open_u) → ручка в мире.
+#   glow_door(x, y, k, open_u, t, seed, sil, light, hinge)  дверь с матовым стеклом (ЦЕНТР ДНА), 380×820·k; за стеклом тёплый свет и
+#                         силуэты (sil 0…1 — видны, ходят от t); light 0…1 — свет из щелей; open_u 0…1 — створка распахивается
+#                         (сужается к петле), проём заливает свет. hinge="right" (ПО УМОЛЧАНИЮ, s05 и s08 — одна дверь): петли справа,
+#                         ручка СЛЕВА — со стороны ковра, Дима подходит слева. glow_door_handle(x, y, k, open_u, hinge) → ручка в мире.
 #   tally_clicker(x, y, k, click, t, seed) механический счётчик-кликер (ЦЕНТР), Ø 220·k, кнопка сверху, кольцо сбоку; окошко с
 #                         барабанами БЕЗ цифр (полоски катятся на click); click 0…1 — нажатие
 #   garage(x, y, k, seed, col, open_u)     гараж (ЦЕНТР ДНА) 420×330·k с подъёмной воротиной (рёбра), без надписей
@@ -5763,12 +5764,15 @@ def sand_pile(x, y, k=1.0, u=1.0, seed=0):
     return shape(pts, C_SAND, inner, w=4.0 * k, seed=81401 + seed)
 
 
-def glow_door_handle(x, y, k=1.0, open_u=0.0):
+def glow_door_handle(x, y, k=1.0, open_u=0.0, hinge="right"):
     sq = 1 - .82 * lib.ease_io(clamp(open_u))
-    return (x - 190 * k + 330 * k * sq, y - 400 * k)
+    hx = x - 190 * k + 330 * k * sq
+    return (2 * x - hx if hinge == "right" else hx, y - 400 * k)
 
 
-def glow_door(x, y, k=1.0, open_u=0.0, t=0.0, seed=0, sil=1.0, light=1.0):
+def glow_door(x, y, k=1.0, open_u=0.0, t=0.0, seed=0, sil=1.0, light=1.0, hinge="right"):
+    if hinge == "right":
+        return f'<g transform="translate({2 * x:.2f} 0) scale(-1 1)">{glow_door(x, y, k, open_u, t, seed, sil, light, "left")}</g>'
     sd = 81500 + seed
     o = []
     x0, x1, y0, y1 = x - 190 * k, x + 190 * k, y - 820 * k, y

@@ -331,6 +331,7 @@ def s03(t):
     kw = PE.kneel_kw(540, hy, D_K, "dima", 0.0)
     fig = PE.dima80(540, hy, D_K, "cower80", "d80_grab", t, age=0.0, feet=kw["feet"], lean_add=.06 * cow - .04, head_add=-.1 * cow)
     nx, ny = fig["neck"]
+    nx += 22 * fig["k"] / .5
     tag = PR.iron_tag(nx, ny, TAG_K, 4 * math.sin(t * 2.2) + damp(t, W(7), 6, 2, 4), seed=1, t=t)
     dima = R.cold_tint(R.cold_tint(fig["svg"] + tag, 1.0, 1.0), 0.0, .55)
     # тени проступают одна за другой и тычут в Диму (в голову)

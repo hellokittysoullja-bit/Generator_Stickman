@@ -99,197 +99,116 @@ def breath(t, a=1.0):
 
 
 # ═══════════════════════════════ s08: дверь со светом распахивается ═══════════════════════════════
-N_WALL = "#2B3060"
-N_WALL_LN = "#353B70"
-N_FLOOR = "#1B1E40"
-N_BOARD = "#3B4278"
-D8X, D8Y, D8K = 760.0, 1500.0, 1.04     # дверь: центр дна, масштаб
-HIP8 = (420.0, 1500.0 - 598 * .62 - 8)
+import room  # noqa: E402
 
-
-def door_mirror(svg_, x):
-    return f'<g transform="translate({2 * x:.2f} 0) scale(-1 1)">{svg_}</g>'
+D8X, D8Y = room.DOOR81           # та же дверь, что в s05 (петли справа, ручка слева)
+SC8 = .56
+FEET8 = room.FL81 + 40
 
 
 def s08(t):
+    if not any('id="dim8"' in d for d in lib.DEFS):
+        lib.DEFS.append('<filter id="dim8"><feColorMatrix type="matrix" values=".78 0 0 0 0  0 .74 0 0 0  0 0 .8 0 .02  0 0 0 1 0"/></filter>')
     a = ws(34)          # «теперь» — толкает
     b = ws(35)          # «смотри» — распахивается
     push = ease_io(ramp(t, a, .26)) * .22
     swing = ease_out(ramp(t, b, .3), 3)
-    open_u = clamp(push + swing * .78 + .02 * math.sin(t * 3) * (1 - swing))
-    o = [rect(-800, -400, 2000, D8Y, N_WALL)]
-    o.append(f'<path d="{"".join(f"M{x} -400V{D8Y:.0f}" for x in range(-780, 2000, 70))}" stroke="{N_WALL_LN}" stroke-width="10"/>')
-    o.append(rect(-800, D8Y, 2000, 2600, N_FLOOR))
-    o.append(shape(rect_pts(-800, D8Y - 40, 2000, D8Y), N_BOARD, "", w=4, seed=8001))
-    # свет на полу из двери: трапеция растёт при открытии
-    lw = 190 * D8K
-    spill = .35 + .65 * open_u
-    fl = [(D8X - lw, D8Y), (D8X + lw, D8Y), (D8X + lw + 520 * spill, D8Y + 900), (D8X - lw - 520 * spill, D8Y + 900)]
-    o.append(blob(fl, "#FFD98A", .6 * ease_io(clamp(open_u * 1.6))))
-    o.append(blob([(D8X - lw, D8Y), (D8X + lw, D8Y), (D8X + lw + 30, D8Y + 26), (D8X - lw - 30, D8Y + 26)], "#FFD98A", .7))
-    o.append(P.glow(D8X, D8Y - 420, 520, .25 + .55 * open_u, "#FFC86A", ry=640))
-    door = P.glow_door(D8X, D8Y, D8K, open_u, t, seed=3, sil=1 - open_u, light=1.0)
-    o.append(door_mirror(door, D8X))
+    open_u = clamp(push + swing * .78)
+    nr = room.night81(t, view="door", glow=.6 + .4 * open_u)
+    o = [nr["bg"], nr["rug"]]
     # Дима: рука на ручке, пока дверь не ушла из-под неё; потом опускается, свет на лице
-    hx, hy = P.glow_door_handle(D8X, D8Y, D8K, open_u)
-    hx = 2 * D8X - hx
+    hx, hy = P.glow_door_handle(D8X, D8Y, 1.0, open_u)
     rel = ramp(t, b + .12, .3)
-    hip = (HIP8[0] + 30 * push / .22 + 50 * ease_io(ramp(t, b + .1, .5)), HIP8[1] + breath(t, 3))
-    tgt = (lerp(hx - 18, hip[0] + 60, ease_io(rel)), lerp(hy, hip[1] + 120, ease_io(rel)))
+    hip = (hx - 190 + 30 * push / .22 + 40 * ease_io(ramp(t, b + .1, .5)), FEET8 - 598 * SC8 + breath(t, 2.5))
+    tgt = (lerp(hx - 14, hip[0] + 50, ease_io(rel)), lerp(hy + 4, hip[1] + 110, ease_io(rel)))
     arms = {"n": ("ik", tgt, -1), "f": ("ang", .2 - .5 * ease_io(rel), .25 + .9 * ease_io(rel))}
     hands = {"n": {"dir": (1, .1), "curl": (.65, .68, .72, .75), "thumb": .55} if rel < .5 else {"curl": (.3, .3, .35, .4), "thumb": .3},
              "f": {"dir": (.3, -1), "spread": .25, "curl": (.1, .1, .15, .2), "thumb": .15} if rel > .3 else {"curl": (.4, .45, .5, .55), "thumb": .4}}
-    e = ex("surprise", look=(.7, -.05)) if t > b else ex("carry78", look=(.7, .1))
-    if t > b + .25:
-        e = dict(e, brows="up", mouth="o", open=.3, lid=.75)
-    st = people.stand_kw(hip[0], hip[1], .62)
-    fig = people.figure("dima", hip[0], hip[1], .62, e, lean=.04 + .12 * push / .22 + .06 * rel, head_ang=.04, arms=arms, hands=hands,
-                        feet=st["feet"])
-    o.insert(len(o) - 0, shadow(hip[0], D8Y, 150, .3, "#0B0E22"))
-    o.append(fig["svg"])
-    # тёплый отсвет на Диме со стороны двери
-    if open_u > .05:
-        o.append(f'<g opacity="{.35 * open_u:.3f}">{P.glow(D8X - 120, D8Y - 520, 380, 1.0, "#FFE6A8", ry=600)}</g>')
+    e = ex("reach81") if t < b else ex("wonder81", look=(.75, -.1))
+    fig = people.figure("dima", hip[0], hip[1], SC8, e, lean=.04 + .12 * push / .22 + .06 * rel, head_ang=.04, arms=arms, hands=hands,
+                        feet=people.stand_kw(hip[0], hip[1], SC8)["feet"])
+    lw = 190
+    spill = .35 + .65 * open_u
+    fl = [(D8X - lw, D8Y), (D8X + lw, D8Y), (D8X + lw + 520 * spill, D8Y + 700), (D8X - lw - 520 * spill, D8Y + 700)]
+    o.append(nr["dark"])
+    o.append(blob(fl, "#FFD98A", .55 * ease_io(clamp(open_u * 1.6))))
+    o.append(blob([(D8X - lw, D8Y), (D8X + lw, D8Y), (D8X + lw + 40, D8Y + 34), (D8X - lw - 40, D8Y + 34)], "#FFD98A", .55))
+    o.append(P.glow(D8X, D8Y - 420, 500, .3 + .5 * open_u, "#FFC86A", ry=620))
+    o.append(P.glow_door(D8X, D8Y, 1.0, open_u, t, seed=3, sil=1 - open_u, light=1.0))
+    o.append(shadow(hip[0], FEET8 + 4, 130, .35, "#05060f"))
+    o.append(f'<g filter="url(#dim8)">{fig["svg"]}</g>')
+    if open_u > .05:     # тёплый отсвет на Диме со стороны двери
+        o.append(f'<g opacity="{.4 * open_u:.3f}">{P.glow(D8X - 260, D8Y - 420, 330, 1.0, "#FFE6A8", ry=520)}</g>')
     # камера: лёгкий наезд, на «смотри» — нырок в проём
     dive = ease_io(ramp(t, b + .12, T1("s08") - b + .1))
-    s = lerp(1.08 + .05 * ramp(t, T0("s08") - .2, 1.0), 3.4, dive ** 1.5)
-    cx = lerp(580, D8X - 10, dive ** .7)
-    cy = lerp(1190, D8Y - 420, dive ** .7)
+    s = lerp(1.1 + .05 * ramp(t, T0("s08") - .2, 1.0), 3.3, dive ** 1.5)
+    cx = lerp(1420, D8X, dive ** .7)
+    cy = lerp(840, D8Y - 410, dive ** .7)
     rot = lerp(-.6, .4, ramp(t, T0("s08") - .2, 1.4))
     over = ""
     fl_u = clamp((t - (b + .5)) / .55)
     if fl_u > 0:
         over = rect(0, 0, 1080, 1920, "#FFF4D6", .75 * ease_io(fl_u))
-    return frame_svg("".join(o), cx, cy, s, rot, N_WALL, over + vignette("#05060f", .5 * (1 - open_u)))
+    return frame_svg("".join(o), cx, cy, s, rot, room.N81["wall"], over + vignette("#05060f", .45 * (1 - open_u)))
 
 
 # ═══════════════════════════════ s10: дома растут из гаражей ═══════════════════════════════
-GROUND10 = 1500.0
-B10 = [  # x, k гаража, цвет-индекс, (этажей к «быстрорастущих», к концу)
-    (-240.0, .78, 0, (4, 6)),
-    (160.0, .82, 1, (6, 14)),
-    (560.0, .78, 2, (5, 7)),
-    (960.0, .82, 3, (6, 16)),
-    (1360.0, .78, 4, (5, 13)),
-]
+GROUND10 = room.ST81_GROUND
+FL10 = [(4, 6), (6, 14), (5, 7), (6, 13), (5, 11)]     # этажей к «быстрорастущих» и к концу; три самых высоких — 1, 3, 4
 
 
 def floors10(t, i):
     """Сколько этажей у дома i сейчас (дробная часть — верхний выскакивает)."""
-    f1, f2 = B10[i][3]
+    f1, f2 = FL10[i]
     a = ws(40) + .05 * i
     m = ws(41) + .7
     c = ws(42) + .02 * i
     if t < a:
         return 0.0
-    if t < m:     # рывками: этаж каждые ~0.14 с
+    if t < m:     # рывками: этаж за этажом
         u = (t - a) / (m - a)
         n = f1 * u
         return int(n) + ease_out(min(1.0, (n - int(n)) * 2.2), 2)
     if t < c:
         return float(f1)
-    u = clamp((t - c) / .55)
-    n = f1 + (f2 - f1) * ease_out(u, 2)
-    return n
-
-
-def flag_us(x, y, k, t):
-    o = [line([(x, y), (x, y - 360 * k)], 9 * k, "#6E737D", taper=0, wmin=1, seed=1001)]
-    fx, fy = x + 5 * k, y - 350 * k
-    w, h = 200 * k, 120 * k
-
-    def pt(u, v):
-        return (fx + w * u, fy + h * v + 10 * k * math.sin(t * 6 - u * 5) * u)
-    inner = ""
-    for i in range(7):
-        v0, v1 = i * 2 / 13, (i * 2 + 1) / 13
-        inner += blob([pt(0, v0), pt(.5, v0), pt(1, v0), pt(1, v1), pt(.5, v1), pt(0, v1)], "#D9483B")
-    inner += blob([pt(0, 0), pt(.4, 0), pt(.4, 7 / 13), pt(0, 7 / 13)], "#3E5A9A")
-    for r in range(3):
-        for c in range(3):
-            px, py = pt(.07 + c * .13, .09 + r * .15)
-            inner += blob(ellipse_pts(px, py, 5 * k, 5 * k, 6), "#FFFFFF")
-    o.append(shape([pt(0, 0) + (1,), pt(.5, 0), pt(1, 0) + (1,), pt(1, 1) + (1,), pt(.5, 1), pt(0, 1) + (1,)], "#F4F1EA", inner, w=3.4 * k,
-                   seed=1002))
-    return "".join(o)
-
-
-def taxi(x, y, k, t, seed=0):
-    o = [shape([(-170, -30, 1), (-166, -78), (-110, -88), (-70, -140), (70, -140), (112, -88), (166, -80), (172, -30, 1)], P.C_TAXI,
-               blob([(-170, -54), (172, -54), (172, -30), (-170, -30)], "#C99A1E") + line([(-150, -90), (150, -90)], 3, "#C99A1E", seed=1), w=4.4,
-               seed=1100 + seed)]
-    o.append(shape([(-60, -130, 1), (0, -130, 1), (0, -92, 1), (-96, -92, 1)], "#9DB6D6", "", w=3, seed=1101 + seed))
-    o.append(shape([(10, -130, 1), (62, -130, 1), (98, -92, 1), (10, -92, 1)], "#9DB6D6", "", w=3, seed=1102 + seed))
-    o.append(shape(rrect_(-34, -162, 34, -140, 5), "#F4F1EA", "", w=3, seed=1103 + seed))   # фонарь-шашка без букв
-    for wx in (-108, 110):
-        o.append(shape(ellipse_pts(wx, -30, 36, 36, 18), "#22252B", blob(ellipse_pts(wx, -30, 17, 17, 12), P.C_METAL), w=4, seed=1104 + wx))
-    return P._tf("".join(o), x, y, k)
-
-
-def rrect_(x0, y0, x1, y1, r):
-    return lib.rrect(x0, y0, x1, y1, r)
-
-
-def sky10(top=-1600, bot=GROUND10):
-    g = lib.lin_grad([(0, "#6FA8DC", 1), (.7, "#A9D2F0", 1), (1, "#E6F2F8", 1)], 0, top, 0, bot, units="userSpaceOnUse")
-    return f'<rect x="-900" y="{top}" width="3000" height="{bot - top}" fill="url(#{g})"/>'
-
-
-def cloud10(x, y, k, seed):
-    return P.cloud(x, y, 260 * k, 120 * k, seed=seed, col="#FFFFFF", ink_w=3.2)
+    return f1 + (f2 - f1) * ease_out(clamp((t - c) / .55), 2)
 
 
 def s10(t):
     a0 = T0("s10") - .2
-    o = [sky10()]
-    for i in range(14):     # дальние кварталы — бледные силуэты, чтобы небо не пустовало
-        bx = -900 + i * 210 + 37 * (i % 3)
-        bh = 260 + 170 * ((i * 7) % 5)
-        o.append(blob(rect_pts(bx, GROUND10 - 180 - bh, bx + 170, GROUND10), "#B9CEE0"))
-        for r in range(int(bh / 70)):
-            o.append(blob(rect_pts(bx + 30, GROUND10 - 150 - bh + r * 70, bx + 140, GROUND10 - 130 - bh + r * 70), "#C9DAEA"))
-    for i, (cx_, cy_, ck) in enumerate([(120, 160, 1.0), (760, -80, .8), (420, -520, .9), (980, -760, .7)]):
-        o.append(cloud10(cx_ + 22 * (t - a0), cy_, ck, 1200 + i))
-    o.append(rect(-900, GROUND10, 2000, 2600, "#8E8A84"))
-    o.append(rect(-900, GROUND10, 2000, GROUND10 + 60, "#C9C2B6"))
-    o.append(line([(-900, GROUND10 + 60), (2000, GROUND10 + 60)], 4, INK, taper=0, wmin=1, seed=1301))
-    o.append(f'<path d="{"".join(f"M{x} {GROUND10 + 160:.0f}h70" for x in range(-880, 2000, 150))}" stroke="#F2EDE2" stroke-width="10"/>')
-    # дома растут из крыш гаражей: сначала дома (за гаражами), потом гаражи
+    st = room.us_street(t)
+    o = [st["bg"]]
     hit = ws(42)
-    for i, (x, gk, ci, _) in enumerate(B10):
+    gk = room.ST81_GARAGE_K
+    for i, (x, gy) in enumerate(room.ST81_GARAGES):
         fl = floors10(t, i)
-        Fm = B10[i][3][1]
-        sw = 0.0
-        if t > hit and i in (1, 3, 4):
+        Fm = FL10[i][1]
+        sw = .4 * math.sin(t * 3 + i)
+        if t > hit + .3 and i in (1, 3, 4):
             u = t - hit - .3
-            sw = (2.6 if i != 3 else -3.0) * math.exp(-2.2 * max(0.0, u)) * math.sin(7.5 * max(0.0, u)) if u > 0 else 0.0
-        sw += .4 * math.sin(t * 3 + i)
-        gy = GROUND10 - 330 * gk + 50 * gk
+            sw += (2.6 if i != 3 else -3.0) * math.exp(-2.2 * u) * math.sin(7.5 * u)
         if fl > 0.01:
-            o.append(P.sprout_building(x, gy + 20, gk * 1.0, fl / Fm, seed=i, sway=sw, floors=Fm))
-        # обломки крыши разлетаются на первом этаже
+            o.append(P.sprout_building(x, gy - 260 * gk, gk, fl / Fm, seed=i, sway=sw, floors=Fm))
+    o.append(st["garages"])
+    for i, (x, gy) in enumerate(room.ST81_GARAGES):     # пыль с крыши, когда дом пробивается
         pu = ramp(t, ws(40) + .05 * i, .45)
         if 0 < pu < 1:
-            o.append(P.dust_puff(x, gy + 10, gk * 1.2, pu, seed=40 + i))
-    for i, (x, gk, ci, _) in enumerate(B10):
-        o.append(P.garage(x, GROUND10, gk, seed=i, open_u=.15 * (i % 2)))
-    o.append(flag_us(140, GROUND10, 1.0, t))
-    o.append(taxi(760 - 30 * (t - a0), GROUND10 + 120, .9, t))
-    o.append(shadow(760 - 30 * (t - a0), GROUND10 + 122, 170, .25))
+            o.append(P.dust_puff(x, gy - 290 * gk, 1.2, pu, seed=40 + i))
+    o.append(st["front"])
     # камера: с улицы вверх вслед росту, отъезд
     up = ease_io(ramp(t, ws(40), ws(42) + .7 - ws(40)))
-    s0, s1 = 1.32, .6
-    s = lerp(s0, s1, up)
-    cx = lerp(560, 580, up) + 10 * math.sin(t * 1.3)
-    top_y = GROUND10 - 1250
-    gy_scr = lerp(1240, 1290, up)
+    s = lerp(.95, .5, up)
+    cx = lerp(1150, 1380, up) + 10 * math.sin(t * 1.3)
+    gy_scr = lerp(1150, 1285, up)
     cy = GROUND10 - (gy_scr - 960) / s
     cy += 6 * math.sin(t * 9) * bump(t, ws(42), .05, .1, .4)
-    _ = top_y
     rot = lerp(.8, -.6, ramp(t, a0, T1("s10") - a0))
-    # хвост хлёста с s09 (влёт слева)
-    cx -= whip_in(t, T0("s10"), 0, .25)
-    return frame_svg("".join(o), cx, cy, s, rot, "#A9D2F0")
+    cx -= whip_in(t, T0("s10"), -380, .25)
+    return frame_svg("".join(o), cx, cy, s, rot, room.ST81["sky1"])
+
+
+def rrect_(x0, y0, x1, y1, r):
+    return lib.rrect(x0, y0, x1, y1, r)
 
 
 # ═══════════════════════════════ s13: позёр в рамке телефона ═══════════════════════════════
@@ -325,16 +244,9 @@ def workshop(x, y, who, sc, pose, sd, t):
 
 
 def poser13(t):
-    """Юный позёр у машины: худи, гладкое лицо, руки вверх (на «чаще» уже стоит так с s12)."""
+    """Юный позёр рилса (people.youngster81, как в s11–s12): обе руки вверх у машины."""
     x, y = POSER13
-    sc = .6
-    ph = math.sin(t * 5)
-    arms = {"n": ("ik", (x + 170 * sc + 10 * ph, y - 760 * sc), 1), "f": ("ik", (x - 120 * sc - 10 * ph, y - 760 * sc), 1)}
-    hands = {"n": {"dir": (.3, -1), "spread": .4, "curl": (0, 0, .05, .1), "thumb": .1}, "f": {"dir": (-.3, -1), "spread": .4, "curl": (0, 0, .05, .1),
-                                                                                              "thumb": .1}}
-    e = {"brows": "up", "mouth": "grin", "open": .5, "lid": .9, "look": (0, 0), "bags": False}
-    st = people.stand_kw(x, y, sc, who="youth")
-    return people.figure("youth", x, y + 3 * ph, sc, e, lean=-.05, head_ang=-.08, arms=arms, hands=hands, feet=st["feet"])["svg"]
+    return people.youngster81(x, y + 2 * math.sin(t * 5), .6, "hooray", t)["svg"]
 
 
 def flashes(t, cx, cy, R, n=6, seed=0):
@@ -496,8 +408,11 @@ def wall_light(t, phase):
     day = 1 - phase
     col = lib.mix("#FFE6A8", "#7D8FD0", phase)
     sx = 120 * phase
-    pts = [(380 + sx, 260), (760 + sx, 230), (820 + sx, 760), (440 + sx, 800)]
-    return blob(pts, col, .28 + .3 * day)
+    pts = [(330 + sx, 300, 1), (660 + sx, 270, 1), (700 + sx, 740, 1), (370 + sx, 780, 1)]
+    o = blob(pts, col, .22 + .26 * day)
+    mx = 515 + sx       # тень крестовины окна в пятне
+    o += blob([(mx - 8, 285, 1), (mx + 8, 285, 1), (mx + 12, 760, 1), (mx - 4, 760, 1)], "#000000", .05 * day)
+    return o
 
 
 def bench_scene(t, phase, planks, mast_u, sail_u, hand=None, cat_st=None, cat_paw=None):
@@ -506,7 +421,7 @@ def bench_scene(t, phase, planks, mast_u, sail_u, hand=None, cat_st=None, cat_pa
     o.append(wall_light(t, phase))
     o.append(P.workbench(760, BENCH_Y, 1000, 1.0, seed=3))
     # дощечки-заготовки в стопке на верстаке
-    left = max(0, 3 - int(planks - 3.0)) if planks >= 3 else 3
+    left = max(0, 7 - int(planks))
     for i in range(left):
         o.append(shape(rect_pts(420 - 6 * i, BENCH_Y - 18 - 16 * i, 560 - 6 * i, BENCH_Y - 4 - 16 * i), P.C_BOAT_HI if i % 2 else P.C_BOAT, "", w=3,
                        seed=1500 + i))
@@ -521,7 +436,7 @@ def plank_in_hand(x, y, rot, k=1.0):
 def s15(t):
     a0 = T0("s15") - .2
     hits = [ws(69), ws(70), ws(71)]
-    n = 3.0
+    n = 4.0
     for h in hits:
         n += ease_out(ramp(t, h - .02, .16), 3)
     # день-ночь-день: ночь между дощечками
@@ -559,12 +474,12 @@ def s15(t):
     for i, h in enumerate(hits):
         bu = ramp(t, h, .35)
         if 0 < bu < 1:
-            o.append(P.dust_puff(hull[0] + 40, hull[1] + 40, .5, bu, seed=i))
+            o.append(P.click(hull[0] + 30, hull[1] - 30, 1.0, bu, seed=i))
     over = rect(0, 0, 1080, 1920, "#1B2350", .35 * ph)
     pk = sum(bump(t, h, .05, .02, .25) for h in hits)
-    s = 1.14 + .015 * ramp(t, a0, 1.5) + .03 * pk
-    cx = 600 + 8 * math.sin(t * 1.1)
-    cy = 950 + 6 * pk
+    s = 1.42 + .02 * ramp(t, a0, 1.5) + .035 * pk
+    cx = 560 + 8 * math.sin(t * 1.1)
+    cy = 1010 + 6 * pk
     return frame_svg("".join(o), cx, cy, s, -.3 + .3 * ramp(t, a0, 1.5), D_WALL, over)
 
 
@@ -578,9 +493,11 @@ def s16(t):
     o = bench_scene(t, 0.0, 7.0, mast, sail)
     # кот на верстаке справа: сидит, на «своему» — лапой к парусу
     pu = bump(t, sl + .2, .25, .35, .3)
-    cat_x, cat_y, cat_k = BOAT[0] + 330, BENCH_Y - 4, .62
-    st = {"look": (-.7, -.3), "tilt": -6 + 4 * pu, "paw_l": pu, "paw_l_dx": 120, "smile": .6, "blink": 0.0}
-    o.append(shadow(cat_x, BENCH_Y + 2, 120, .2))
+    cat_x, cat_y, cat_k = BOAT[0] + 300, BENCH_Y - 118, .6
+    st = {"look": (-.7, -.4), "tilt": -6 + 4 * pu, "paw_l": pu, "paw_l_dx": 122, "smile": .6, "blink": 0.0}
+    o.append(shape(rect_pts(cat_x - 130, BENCH_Y - 120, cat_x + 130, BENCH_Y - 6), P.C_WOOD_HI,
+                   line([(cat_x - 110, BENCH_Y - 60), (cat_x + 100, BENCH_Y - 62)], 3, P.C_WOOD_SH, seed=5), w=4, seed=1650))
+    o.append(shadow(cat_x, cat_y + 2, 110, .2))
     o.append(people.cat_svg(cat_x, cat_y, cat_k, st, t))
     # рука Димы держит мачту и вдвигает
     mx, my = BOAT[0] + 10 * BOAT_K, BOAT[1] - 200 * BOAT_K
@@ -604,9 +521,9 @@ def s16(t):
     _ = top
     # камера: наезд к парусу
     z = ease_io(ramp(t, sl - .1, .7))
-    s = lerp(1.45, 1.9, z) + .02 * bump(t, m1, .05, .02, .3)
-    cx = lerp(600, BOAT[0] + 60, z)
-    cy = lerp(880, BOAT[1] - 330, z)
+    s = lerp(1.38, 1.62, z) + .02 * bump(t, m1, .05, .02, .3)
+    cx = lerp(620, BOAT[0], z)
+    cy = lerp(900, BOAT[1] - 260, z)
     return frame_svg("".join(o), cx, cy, s, lerp(.5, -.4, ramp(t, a0, 1.5)), D_WALL)
 
 
