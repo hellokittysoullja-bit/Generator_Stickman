@@ -290,9 +290,9 @@ def s01(t):
 
 
 # ═════════════════════════ s02: ракурс ребёнка — палец-копьё ═════════════════════════
-KID_HIP = (850.0, 1400.0)
+KID_HIP = (905.0, 1400.0)
 KID_K = 1.25
-FA2_HIP = (290.0, 1358.0)
+FA2_HIP = (185.0, 1358.0)
 FA2_K = 1.3
 
 
@@ -303,12 +303,12 @@ def s02(t):
     lean = sm(t, T0("s02") - .1, t3 + .1) * .1 + .06 * kick(t, t4 - .06, .06, 4)
     # палец: летит вниз к мальчику с кадра 0, на «слабаки» тычет почти в нос
     jab = sm(t, T0("s02") - .2, t3 + .15) * .6 + .4 * kick(t, t4 - .05, .05, 3.5)
-    tgt = (lerp(420, 500, jab), lerp(800, 866, jab))
+    tgt = (lerp(490, 560, jab), lerp(900, 930, jab))
     ex = dict(PE.EXPR["father77"]["shout_kid"])
     ex["mous"] = math.sin(t * 29) * .7
     ex["open"] = .55 + .45 * math.sin(t * 15)
     fa = PE.father(FA2_HIP[0], FA2_HIP[1], FA2_K, ex, "point", t, lean_add=lean, head_add=.03 * math.sin(t * 11),
-                   arms={"n": ("ik", tgt, -1)})
+                   arms={"n": ("ik", tgt, -1)}, hands={"n": {"dir": (1, .02), "curl": (0, .95, .95, .92), "spread": .02, "thumb": .8}})
     shadow = f'<g transform="translate(60 -24)">{flat(fa["svg"], "#a7b0b5", .5)}</g>'
     cower = sm(t, t3 - .05, t3 + .2) * .5 + .5 * sm(t, t4 - .06, t4 + .1)
     kex = "flinch77" if t > t4 - .04 else "scared77"
@@ -328,7 +328,7 @@ def s02(t):
     sx, sy = shake2(t, t4, 15)
     s = 1.0 + .03 * sm(t, T0("s02"), T1("s02")) + .10 * kick(t, t4, .04, 4)
     cy = 960 - 50 * sm(t, t4, T1("s02") + .2) - sy
-    return wrap(world, 540 - sx - 30 * sm(t, t4, T1("s02") + .2), cy, s, 0.0, hook_title(t, T0("s04")))
+    return wrap(world, 540 - sx, cy, s, 0.0, hook_title(t, T0("s04")))
 
 
 # ═════════════════════════ s03: кулак у виска — «вот где сила» ═════════════════════════
@@ -351,12 +351,18 @@ def s03(t):
     fa0 = PE.father(FA3_HIP[0], FA3_HIP[1], FA3_K, ex, "temple", t, layers=("body",))
     hx, hy = fa0["head"]
     sc = fa0["scale"]
-    tem = (hx - 70 * sc - 18 * sc * knock, hy + 30 * sc)
-    fr_ = (hx + 150 * sc, hy + 230 * sc)
-    tgt = (lerp(tem[0], fr_[0], front) + shake, lerp(tem[1], fr_[1], front) + shake * .6)
+    fr_ = (hx + 205 * sc, hy + 215 * sc)
+    tgt = (fr_[0] + shake - 60 * sc * (1 - clamp((front - .5) * 2)), fr_[1] + shake * .6 + 60 * sc * (1 - clamp((front - .5) * 2)))
     dirv = (lerp(.25, .1, front), lerp(-1, -1, front))
-    fa = PE.father(FA3_HIP[0], FA3_HIP[1], FA3_K, ex, "temple", t, arms={"n": ("ik", tgt, 1)}, hands={"n": {"kind": "fist", "dir": dirv}},
-                   head_add=.03 * math.sin(t * 9) + .04 * kick(t, t7, .06, 4))
+    # поза "temple" сама ставит кулак к голове (_FA_HEAD) — для хода кулака к лицу берём "slam" с наклонами позы "temple"
+    sc0 = fa0["scale"]
+    far = (FA3_HIP[0] + 120 * sc0, FA3_HIP[1] - 200 * sc0)          # дальняя рука опущена (ниже кадра)
+    if front < .5:      # у виска: поза "temple" (кулак у головы сама), стук — голова кивает в кулак
+        fa = PE.father(FA3_HIP[0], FA3_HIP[1], FA3_K, ex, "temple", t, head_add=.05 * knock + .03 * math.sin(t * 9), lean_add=.02 * knock)
+    else:               # перед лицом: кулак справа от лица, локоть вниз
+        fa = PE.father(FA3_HIP[0], FA3_HIP[1], FA3_K, ex, "slam", t, arms={"n": ("ik", tgt, -1), "f": ("ik", far, -1)},
+                       hands={"n": {"kind": "fist", "dir": dirv}},
+                       lean_add=-.24, head_add=-.14 + .03 * math.sin(t * 9) + .04 * kick(t, t7, .06, 4))
     fx, fy = fa["fist"]
     eff = strokes(fx, fy, front * (.6 + .4 * math.sin(t * 40) ** 2), 90, 60, 0, 360, 8, 7730, INK, 5)
     eff += strokes(hx - 120 * sc, hy, bump(t, t5 - .02, .2) + bump(t, t5 + .09, .2), 40, 50, 150, 230, 3, 7740, INK, 5)
@@ -370,8 +376,8 @@ def s03(t):
 
 
 # ═════════════════════════ s04: поворот — всполох, лампа, тень съёживается ═════════════════════════
-FA4_HIP = (470.0, 1400.0)
-FA4_K = 1.12
+FA4_HIP = (430.0, 1420.0)
+FA4_K = 1.42
 
 
 def s04(t):
@@ -384,17 +390,19 @@ def s04(t):
     d = R.kitchen77(t, "lamp", lamp_swing=swing)
     look = sm(t, t10 - .05, t10 + .25)
     ex = dict(PE.EXPR["father77"]["look_up" if look > .5 else "tired"])
-    fa = PE.father(FA4_HIP[0], FA4_HIP[1], FA4_K, ex, "slump", t, head_add=-.1 * (1 - look) + .02 * math.sin(t * 1.7))
-    mug = PR.enamel_mug(R.K77_MUG[0] + 20, R.K77_MUG[1] - 66, 1.0, 0, .1, 0, t, steam=1.0)
+    kw4 = dict(head_add=-.1 * (1 - look) + .02 * math.sin(t * 1.7))
+    fa = PE.father(FA4_HIP[0], FA4_HIP[1], FA4_K, ex, "slump", t, **kw4)
+    arms4 = PE.father(FA4_HIP[0], FA4_HIP[1], FA4_K, ex, "slump", t, layers=("arm_f", "arm_n"), **kw4)["svg"]   # руки лежат на столе
+    mug = PR.enamel_mug(R.K77_MUG[0] + 70, R.K77_MUG[1] - 66, 1.0, 0, .1, 0, t, steam=1.0)
     # тень прежнего жеста: огромный отец с поднятым пальцем на стене; с «Так» ссыхается до размеров отца и уходит за него
     u = sm(t, t8 - .05, t11 + .1)
-    sk = lerp(2.6, FA4_K, u)
-    sx_ = lerp(640, FA4_HIP[0] + 50, u) + 30 * math.sin(math.radians(swing)) * 10
-    sy_ = lerp(1500, FA4_HIP[1] + 40, u)
+    sk = lerp(2.05, FA4_K * .95, u)
+    sx_ = lerp(760, FA4_HIP[0] + 70, u) + 5 * swing
+    sy_ = lerp(1260, FA4_HIP[1] - 10, u)
     sh = PE.father_shadow(sx_, sy_, sk, "point", t=t, col="#0a0d1e", op=.55 * (1 - .5 * u), op_fill=.5 * (1 - .4 * u), w=6)
     shadow = f'<g transform="translate({sx_:.1f} {sy_:.1f}) scale(-1 1) translate({-sx_:.1f} {-sy_:.1f})">{sh["svg"]}</g>'
     lit = R.warm_tint(fa["svg"], 1.0)
-    world = d["bg"] + shadow + lit + d["table"] + mug + d["dark"] + d["light"]
+    world = d["bg"] + shadow + lit + d["table"] + R.warm_tint(arms4, 1.0) + mug + d["dark"] + d["light"]
     s = 1.0 + .05 * sm(t, tg, T1("s04") + .2)
     rot = .5 * math.sin(2 * math.pi * (t - tg) / 1.9)
     out = wrap(world, 540 + 6 * math.sin(t * 1.3), 980, s, rot, "")

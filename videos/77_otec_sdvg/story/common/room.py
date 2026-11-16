@@ -2690,8 +2690,8 @@ def kitchen77(t, light="hook", view="hook", lamp_swing=0.0, flash=0.0, bounce=0.
         # конус света от абажура вниз: трапеция с чёткими краями, едва заметная
         lx = K77_LAMP[0]
         cone = [(lx - 110, K77_LAMP[1] + 6), (lx + 110, K77_LAMP[1] + 6), (lx + 420 + sw, K77_TOP), (lx - 420 + sw, K77_TOP)]
-        lt.append(f'<g style="mix-blend-mode:screen">{blob(cone, "#ffd98f", .07)}</g>')
-        lt.append(f'<g style="mix-blend-mode:screen">{blob(_jag(lx, K77_LAMP[1] - 20, 170, 120, t, 7732, amp=.03), "#ffcf7a", .14)}</g>')
+        lt.append(f'<g style="mix-blend-mode:screen">{blob(cone, "#ffd98f", .045)}</g>')
+        lt.append(f'<g style="mix-blend-mode:screen">{blob(_jag(lx, K77_LAMP[1] - 14, 130, 70, t, 7732, amp=.03), "#ffcf7a", .09)}</g>')
     if flash > .005:
         lt.append(f'<rect x="-1200" y="-1400" width="3500" height="4800" fill="#ffffff" opacity="{min(.92, flash):.3f}"/>')
     return dict(bg="".join(o), table="".join(table), light="".join(lt), dark=dark, cam=CAM77, top=K77_TOP + by, edge=K77_EDGE + by,
