@@ -2904,13 +2904,13 @@ def evening_chair(t, sun=1.0):
 AT_FL = 1480.0
 AT_SLOPE = (447.0, 0.42)                          # верхний край задней стены: y = a + b·x (выше — потолок-скат)
 AT_SKY = ((662.0, 452.0), (1018.0, 560.0), (1030.0, 826.0), (642.0, 684.0))   # стекло люка: л-верх, п-верх, п-низ, л-низ
-AT_CLOCK = (248.0, 704.0, 122.0)
+AT_CLOCK = (176.0, 694.0, 122.0)
 AT_HEADBOARD = (-6.0, 92.0, 760.0)                # x0, x1, верх
-AT_BED_Y = 1030.0                                 # верх матраса
+AT_BED_Y = 1120.0                                 # верх матраса
 AT_BED_X = (60.0, 1700.0)
-AT_PILLOW = (250.0, 1000.0)
-AT_HEAD = (300.0, 935.0)
-AT_PHONE = (470.0, 905.0)
+AT_PILLOW = (232.0, 1092.0)
+AT_HEAD = (290.0, 985.0)
+AT_PHONE = (430.0, 870.0)
 AT_NSTAND = (-200.0, 1170.0)                      # центр верха тумбочки (ширина 300)
 AT_LAMP = (-140.0, 1166.0)
 AT_SHELF = (-860.0, 760.0, -420.0)                # x0, верх доски, x1
@@ -2918,9 +2918,9 @@ AT_GUITAR_NAIL = (-1180.0, 560.0)
 AT_RUG = (-1080.0, 1520.0)
 AT_TEXT = (60.0, 140.0, 1020.0, 425.0)
 AT_CAM_HOOK = (540.0, 960.0, 1.0)
-AT_CAM_CLOCK = (330.0, 840.0, 1.55)
+AT_CAM_CLOCK = (300.0, 840.0, 1.55)
 AT_CAM_SKY = (840.0, 660.0, 1.45)
-AT_CAM_CLOCK_BIG = (248.0, 726.0, 2.6)
+AT_CAM_CLOCK_BIG = (176.0, 716.0, 2.6)
 AT_CAM_PILLOW = (360.0, 930.0, 1.7)
 AT_CAM_SHELF = (-640.0, 820.0, 1.7)
 AT_CAM_WARM = (-900.0, 1050.0, 0.92)
@@ -2958,7 +2958,7 @@ def _slope_y(x):
 def _sky_cols(phase):
     """Цвет неба люка по фазе: ночь синяя, на солнце — рыжая, между — сумерки."""
     p = phase % 1.0
-    sunk = math.sin(math.pi * clamp01((p - .5) / .5)) if p > .5 else 0.0
+    sunk = 1 - abs(2 * ((p - .25) % 1.0) - 1)                  # без остановки (треугольник): 0 на луне (p=.25), 1 на солнце (p=.75)
     top = lib.mix("#0b1238", "#f08a4a", sunk)
     bot = lib.mix("#1d2a66", "#ffd07a", sunk)
     return top, bot, sunk
@@ -3074,7 +3074,7 @@ def _skylight_frame(P, box=None):
     return "".join(o)
 
 
-def attic(t, light="night_phone", sky=None, lamp_u=None, bump=0.0):
+def attic(t, light="night_phone", sky=None, lamp_u=None, bump=0.0, pillow=True):
     """Мансарда Димы (см. шапку раздела 79)."""
     P = _at_pal(light)
     warm = light == "warm_lamp" or isinstance(light, (int, float))
@@ -3144,7 +3144,7 @@ def attic(t, light="night_phone", sky=None, lamp_u=None, bump=0.0):
                    w=4.0, seed=7927))
     px, py = AT_PILLOW
     py -= 26 * bump
-    o.append(shape([(px - 190, py + 34, 1), (px - 200, py - 26), (px - 140, py - 64), (px + 100, py - 70), (px + 170, py - 34), (px + 166, py + 34, 1)],
+    o.append("" if not pillow else shape([(px - 190, py + 34, 1), (px - 200, py - 26), (px - 140, py - 64), (px + 100, py - 70), (px + 170, py - 34), (px + 166, py + 34, 1)],
                    P["pillow"], blob(rect_pts(px - 210, py + 8, px + 180, py + 36), P["sheet_sh"]), w=3.8, seed=7928))
     front = _quilt(AT_HEADBOARD[1] + 4, 1900, by + 60 - 24 * bump, by + 320, dict(quilt=P["quilt"], quilt_sh=P["quilt_sh"], quilt_hi=P["quilt_hi"]), t, 7930, bump)
     vg = lib.rad_grad([(0, P["vign"], 0), (.62, P["vign"], 0), (1, P["vign"], P["vk"])], 540, 900, 900, 1250)
@@ -3396,7 +3396,7 @@ def house_facade(t, lit=(0.0, 0.0, 0.0), attic_glow=1.0):
 UT_STREET = 1060.0                                 # уровень улицы (верх набережной)
 UT_WHARF = 1300.0                                  # низкая набережная-верф у воды
 UT_WATER = 1360.0
-UT_LAB = (180.0, 560.0, 560.0, 860.0)              # окно университета (стекло)
+UT_LAB = (140.0, 520.0, 600.0, 880.0)              # окно университета (стекло)
 UT_BRIDGE = (900.0, 1500.0)                        # пролёт мостика (x)
 UT_TOWER = (1960.0, -260.0)                        # шпиль башни Дом (вершина)
 UT_CAM_LAB = (420.0, 820.0, 1.25)
