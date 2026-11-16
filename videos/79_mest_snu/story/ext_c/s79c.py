@@ -409,12 +409,12 @@ def s13(t):
     cid = lib.clip_rect(x0, y0, x1 - x0, y1 - y0)
     hold = sm(t, t63 - .1, t63 + .14)
     sk = .5
-    cy_card = lerp(y1 + 80, y0 + 150, ease_out(hold, 2)) + damp(t, t63 + .14, 10, 3, 6)
-    card_c = ((x0 + x1) / 2, cy_card)
-    card = pict_card(card_c[0], card_c[1], 1.05, -4 + 4 * hold, push=sm(t, t63 + .15, t63 + .45))
+    cy_card = lerp(y1 + 80, y0 + 262, ease_out(hold, 2)) + damp(t, t63 + .14, 10, 3, 6)
+    card_c = ((x0 + x1) / 2 - 40, cy_card)
+    card = pict_card(card_c[0], card_c[1], .95, -4 + 4 * hold, push=sm(t, t63 + .15, t63 + .45))
     if hold > .02:
-        sa = PE.scientist79("a", x0 + 115, y1 + 25, sk, pose="hold", center=(card_c[0] - 30, card_c[1]), held_svg="", t=t)
-        sb = PE.scientist79("b", x1 - 115, y1 + 35, sk, pose="hold", center=(card_c[0] + 30, card_c[1]), held_svg="", t=t, flip=True)
+        sa = PE.scientist79("a", x0 + 115, y1 + 25, sk, pose="hold", center=(card_c[0], card_c[1] + 10), held_svg="", t=t)
+        sb = PE.scientist79("b", x1 - 115, y1 + 35, sk, t=t, flip=True)
     else:
         sa = PE.scientist79("a", x0 + 115, y1 + 25, sk, t=t)
         sb = PE.scientist79("b", x1 - 115, y1 + 35, sk, t=t, flip=True)
@@ -437,7 +437,105 @@ def s13(t):
     return lib.svg(f'<g transform="{lib.cam(cx, cy, s_, 0)}">{world}</g>{wh}')
 
 
-FRAMES = {"s01": s01, "s02": s02, "s06": s06, "s13": s13}
+# ═════════════════════════ s17: гитару на стену, к кровати, гасит лампу ═════════════════════════
+W17_K = .6
+
+
+def hang_pos(k):
+    """Низ гитары, висящей головкой на гвозде AT_GUITAR_NAIL (rot 0, гриф вверх)."""
+    nx, ny = R.AT_GUITAR_NAIL
+    return nx, ny + 690 * k
+
+
+def s17(t):
+    lib.dyn_begin()
+    t76, t77, t79 = stress(76, .2), stress(77, .3), stress(79, .2)
+    light = sm(t, t79 - .02, t79 + .12)                     # тёплая лампа → лунный свет
+    d = R.attic(t, light, lamp_u=1 - light)
+    sc = W17_K * PE.HEIGHT["dima"]
+    gk = PE.GUITAR_K * sc
+    fy = R.AT_FL - 8
+    hip_y = fy - (PE.LEG_LEN - 12) * sc
+    nx, ny = R.AT_GUITAR_NAIL
+    hb = hang_pos(gk)
+    x_wall = nx + 300
+    t_walk0, t_walk1 = t76 + .22, t79 - .38
+    x_lamp = R.AT_LAMP[0] - 300
+    if t < t76 + .12:                                          # подносит гитару и надевает на гвоздь
+        u = ease_out(clamp((t - (T0("s17") - .2)) / (t76 - T0("s17") + .2)), 2)
+        gpos = (lerp(hb[0] + 120, hb[0], u), lerp(hb[1] + 110, hb[1], u), lerp(-24, 0, u))
+        fig = PE.dima_guitar79(x_wall, hip_y, W17_K, "hold", u=1.0, t=t, expr="warm79", gpos=gpos, feet=PE.stand_kw(x_wall, hip_y, W17_K)["feet"])
+        guitar = ""
+        man = fig["svg"]
+    else:
+        sw = damp(t, t76 + .12, 6.0, 1.6, 2.5)                   # гитара качается на гвозде и успокаивается
+        guitar = PR.guitar(hb[0], hb[1], gk, 0.0, t=t)
+        guitar = f'<g transform="rotate({sw:.2f} {nx:.1f} {ny:.1f})">{guitar}</g>'
+        if t < t_walk1:                                        # повернулся и идёт к кровати, потягиваясь на ходу
+            u = clamp((t - t_walk0) / (t_walk1 - t_walk0))
+            x = lerp(x_wall + 40, x_lamp, ease_io(u))
+            ph = (x - x_wall) / (230 * sc * 2)
+            wk = PE.walk_kw(x, hip_y, W17_K, ph)
+            sw_ = math.sin(2 * math.pi * ph)
+            arms = {"f": ("ang", .12 - .22 * sw_, .2), "n": ("ang", .12 + .22 * sw_, .2)}
+            yawn = bump(t, t77 - .1, .6)                          # на ходу сладко зевает
+            ex = "warm79" if yawn < .3 else "yawn79"
+            man = PE.person("dima", x, wk["hip"][1], W17_K, ex, feet=wk["feet"], arms=arms)["svg"]
+        else:                                                  # тянется к лампе и гасит её на «себя»
+            u = sm(t, t_walk1, t79 - .03) * (1 - sm(t, t79 + .2, t79 + .5))
+            tgt = (R.AT_LAMP[0] - 10, R.AT_LAMP[1] - 130)
+            man = PE.dima_reach79(x_lamp, hip_y, W17_K, tgt, u=u, expr="warm79")["svg"]
+    bcid = lib.clip_rect(R.AT_HEADBOARD[1] - 40, R.AT_BED_Y - 200, 3000, 450)      # одеяло свисает до низа кровати, не до пола
+    world = d["bg"] + d["sky"] + d["frame"] + guitar + man + f'<g clip-path="url(#{bcid})">{d["bed"]}</g>' + d["light"] + d["shade"]
+    if t >= t79 - .02:                                         # щелчок выключателя
+        world += strokes(R.AT_LAMP[0], R.AT_LAMP[1] - 150, 90, 140, bump(t, t79 - .02, .25), n=6, w=5, col="#fff2c8", seed=7999)
+    # камера идёт за Димой: от гвоздя к лампе и люку
+    c0 = (nx + 240, 940.0, .8)
+    c1 = (40.0, 900.0, .74)
+    u = ease_io(clamp((t - (t76 + .1)) / (t79 - t76 + .2)))
+    cx, cy, s_ = (lerp(c0[i], c1[i], u) for i in range(3))
+    s_ *= 1 + .02 * (t - T0("s17"))
+    return wrap(world, cx, cy, s_, 0.0)
+
+
+# ═════════════════════════ s18: петля — тот же кадр, что s01, всё спокойно ═════════════════════════
+CAT18 = (930.0, 1128.0)     # кот на одеяле у ног Димы (низ клубка)
+
+
+def s18(t):
+    lib.dyn_begin()
+    t81, t83, t85 = stress(81, .25), stress(83, .25), stress(85, .25)
+    tick = t83
+    m_a = -6 + 6 * (t >= tick) + damp(t, tick, 3.0, 5, 9)
+    st = dict(phase="moon_high", rm=m_a, rh=330.0 + .5 * m_a / 6, blur=0.0, ring=0.0, bed=1.5 * math.sin(t * 1.4), flash=0.0,
+              blink=sm(t, t81 - .1, t81 + .25), blanket=.6)
+    expr = "sleep79" if t >= t81 + .25 else "doze79"
+    d = R.attic(t, "moon_calm", sky="moon_high", pillow=False)
+    clk = clock_spin(t, st["rm"], st["rh"], 0.0)
+    fig = PE.dima_lie79(LIE_HIP[0], LIE_HIP[1], LIE_K, t, "hug", u=1.0, expr=expr, tilt=LIE_TILT, bump=st["bed"], blanket=.6,
+                        blink=st["blink"] if expr != "sleep79" else 0.0, breath=1.3)
+    # кот: сидит на подушке, на «кот» сворачивается клубком
+    cx_, cy_ = CAT18
+    cu = sm(t, t85 - .12, t85 + .1)
+    if cu < .5:
+        cat = PE.cat_svg(cx_ + 10, cy_, .46, dict(PE.CAT_ST["sigh79"], blink=.6 + .4 * cu, tail=2 * math.sin(t * 2)), t)
+        cat = f'<g opacity="{1 - cu * 1.2:.3f}">{cat}</g>' if cu > .02 else cat
+    else:
+        sq = 1 + .12 * damp(t, t85 + .1, 1, 3, 6)
+        cat = PE.cat_curl(cx_, cy_ + 6, .5, {"eye": 0.0, "breath": 1.0}, t)
+        cat = f'<g transform="translate({cx_:.1f} {cy_:.1f}) scale({1 / sq:.3f} {sq:.3f}) translate({-cx_:.1f} {-cy_:.1f})">{cat}</g>'
+    zz = PR.zzz(LIE_HIP[0] - 300, 820, .9, t - t81, u=sm(t, t81 + .2, t81 + .6))
+    zz += PR.zzz(cx_ + 60, cy_ - 210, .6, t - t85, u=sm(t, t85 + .2, t85 + .5))
+    world = d["bg"] + d["sky"] + d["frame"] + beam(.25, .8) + clk + fig["svg"] + cat + zz + d["light"] + d["shade"]
+    x, y, r = R.AT_CLOCK
+    world += strokes(x, y, r * 1.06, r * 1.25, bump(t, tick, .3), n=5, w=4, col="#d8dcf4", seed=8005, a0=-90 - 50, span=100)
+    cx0, cy0, s0 = R.AT_CAM_HOOK
+    u = ease_out(clamp((t - T0("s18")) / 1.6), 2)
+    s_ = s0 * (1.07 - .07 * u)
+    return wrap(world, cx0, cy0 + 10 * (1 - u), s_, 0.0)
+
+
+FRAMES = {"s01": s01, "s02": s02, "s06": s06, "s13": s13, "s17": s17, "s18": s18}
 
 
 def frame(sid, t):
