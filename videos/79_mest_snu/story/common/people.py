@@ -3738,3 +3738,431 @@ def inventor(x, y, k, pose="sew", t=0.0, expr=None, u=1.0, feet=None, flip=False
     fig["hold"] = hand_pos(fig, "n", 70)
     fig["palm"] = hand_pos(fig, "n", 60)
     return fig
+
+
+# ═════════════════════════════ РИЛС 79 «МЕСТЬ СНУ» (автор — группа B) ═════════════════════════════
+# Дима (горчичное худи, лохматый, щетина) смотрит вправо, flip=True — влево. Все функции возвращают dict(svg=..., head=(x, y), ...).
+# Мимика EXPR["dima"]: screen79 (лицо в свете экрана, красные усталые глаза в телефон), sleep79 (спит, губы мягко), yawn79 (огромный
+#   зевок, глаза зажмурены), doze79 (веки слипаются), nodjerk79 (дёрнулся, ловит себя: глаза распахнуты), hug79 (обнял, усталая улыбка
+#   «хоть так»), work79 (работает, сосредоточен), yes79 (кивает: вежливая улыбка), blow79 (сдувает пыль: щёки надуты), play79 (играет:
+#   глаза закрыты от удовольствия, улыбка), warm79 (тёплая улыбка к гитаре), run79 (бежит, глаза вперёд), look_back79 (оглянулся, грустно).
+# dima_lie79(x, y, k, t, mode, u, ...) — ЛЁЖА В КРОВАТИ, сбоку: голова на подушке слева, ноги вправо (flip — наоборот), верх тела
+#   приподнят на подушке (tilt°). (x, y) — таз в мире, k — масштаб (голова ≈ 300·k). mode: "phone" (держит телефон двумя руками экраном К
+#   СЕБЕ, свет на лице, glow 0…1), "sleep" (спит, ближняя рука поверх одеяла), "hug" (обнимает предмет у груди: held_svg рисуется между
+#   руками, центр — out["hold"]), "reach" (ближняя рука тянется вверх-вперёд к reach=(x, y) мира). u — переход из "phone" в mode (0…1).
+#   blanket 0…1 — высота края одеяла (0 — грудь, 1 — до подбородка), bump — подпрыгивание (px), col одеяла "blue"|"green"|"quilt".
+# dima_hold79(x, y, scale, expr, center, held_svg, width, nod, sit) — держит предмет (стопку папок, коробку) обеими руками перед собой:
+#   center — центр предмета в мире, width — ширина хвата; предмет рисуется между дальней и ближней рукой. nod 0…1 — кивок головой.
+#   sit=True — сидит (sit_kw), иначе стоит. Возвращает dict фигуры.
+# dima_run79(x, y, scale, t, smear) — пробегает (шаг walk_kw, наклон вперёд), smear 0…1 — смаз-след позади (полупрозрачные копии).
+# dima_drawer79(x, y, scale, u, t, phone) — стоит у тумбочки, ближняя рука кладёт телефон вниз-вперёд (u 0 → у груди, 1 → в ящике
+#   на высоте ≈ y−150·sc, x+330·sc), возвращает out["phone"] — центр телефона (рисует его функция, если phone=True).
+# dima_guitar79(x, y, scale, mode, u, t, guitar, ...) — с гитарой. Гитару рисует вызывающий (props.guitar) функцией guitar(cx, cy, k, rot)
+#   или строкой: guitar_svg и точки neck / strum. mode: "reach" (тянется к стене: u 0…1), "blow" (держит у лица, сдувает пыль),
+#   "hug" (прижал к груди), "play" (сидит на коврике по-турецки, ближняя рука бьёт по струнам у розетки, дальняя на грифе; strum —
+#   фаза удара). Гриф по экрану влево-вверх: фигура в этих режимах смотрит ВЛЕВО (flip внутри).
+# Новые люди s09: colleague79 (рыжая коллега в бирюзовом свитере с кружкой), mama79 (мама с телефоном у уха, вторая ладонь просит),
+#   friend79 (рыжий друг в джинсовке с коробкой); offer 0…1 — протягивает вперёд. Учёные s13: scientist79("a"|"b", ...) — женщина в
+#   очках с кудрями и мужчина с бородкой, оба в белых халатах; pose "hold" — держат перед собой карточку (center, card_svg).
+# Силуэты в окнах s06: dima_silhouette79(kind, x, y, k, t, col) — kind "cook" (мешает в кастрюле), "run" (бежит), "sit_cat" (сидит,
+#   на коленях кот клубком), "phone" (лежит с телефоном); col — цвет силуэта, без черт лица.
+# Кот (cat.py, через cat_svg / cat_curl): CAT_ST yawn79 (зевает: глаза зажмурены, язычок), ridge79 (сидит на коньке: смотрит вниз,
+#   огонёк ярче), sly79 (хитрый прищур к зрителю), brow79 (подняла бровь, смотрит на Диму вниз-влево), sigh79 (вздыхает: голова
+#   опускается, глаза прикрыты), sway79 (довольный, хвост качает сцена ±), cat_curl — клубком (дуги сна и Z — props.zzz сцены).
+EXPR["dima"].update({
+    "screen79": {"brows": "tired", "mouth": "flat", "lid": .5, "look": (.55, -.15)},
+    "sleep79": {"brows": "calm", "mouth": "smile", "smile": .25, "closed": 1.0, "bags": False},
+    "yawn79": {"brows": "up", "mouth": "yawn", "open": 1.0, "closed": 1.0},
+    "doze79": {"brows": "tired", "mouth": "tired", "lid": .12, "look": (.3, .4)},
+    "nodjerk79": {"brows": "up", "mouth": "o", "open": .25, "lid": 1.0, "look": (.3, 0)},
+    "hug79": {"brows": "worry", "mouth": "side", "lid": .42, "look": (.45, .3)},
+    "work79": {"brows": "det", "mouth": "flat", "lid": .6, "look": (.6, .45), "bags": False},
+    "yes79": {"brows": "up", "mouth": "smile", "smile": .6, "lid": .7, "look": (.5, 0), "bags": False},
+    "blow79": {"brows": "calm", "mouth": "puff", "puff": 1.0, "lid": .55, "look": (.6, .3), "bags": False},
+    "play79": {"brows": "calm", "mouth": "smile", "smile": 1.0, "closed": 1.0, "bags": False},
+    "warm79": {"brows": "calm", "mouth": "smile", "smile": .9, "lid": .62, "look": (.5, .3), "bags": False},
+    "run79": {"brows": "worry", "mouth": "o", "open": .2, "lid": .8, "look": (.7, 0), "bags": False},
+    "look_back79": {"brows": "sad", "mouth": "flat", "lid": .7, "look": (-.8, .1), "bags": False},
+})
+
+_dima_mouth_prev = dima_mouth
+
+
+def dima_mouth(expr):        # noqa: F811 — плюс широкий зевок (рилс 79)
+    if expr.get("mouth") == "yawn":
+        o_ = expr.get("open", 1.0)
+        h = 30 + 46 * o_
+        mp = [(34, 68), (60, 58), (90, 62), (102, 82), (96, 70 + h * .8), (66, 78 + h), (42, 70 + h * .8), (30, 86)]
+        mi = blob([(40, 66), (94, 66), (90, 78), (44, 78)], "#f4ede0") + blob([(46, 70 + h * .7), (66, 64 + h * .55), (88, 70 + h * .7),
+                                                                                 (66, 78 + h)], "#c86b6b")
+        return shape(mp, "#5a2b33", mi, w=4.4, seed=266)
+    return _dima_mouth_prev(expr)
+
+
+def _rot_pt(p, a, x, y):
+    ca, sa = math.cos(math.radians(a)), math.sin(math.radians(a))
+    return (x + p[0] * ca - p[1] * sa, y + p[0] * sa + p[1] * ca)
+
+
+def dima_lie79(x, y, k=0.5, t=0.0, mode="phone", u=1.0, expr=None, tilt=16.0, glow=1.0, blanket=0.0, bump=0.0, col="blue", held_svg="",
+               reach=None, flip=False, pillow=True, seed=0, blink=0.0, breath=1.0):
+    sc = k * HEIGHT["dima"]
+    u = lib.clamp(u)
+    br = math.sin(t * 2 * math.pi / (4.2 if mode != "sleep" else 5.0)) * breath
+    a_body = -90.0 + tilt
+    # цели рук в «стоячей» системе (таз 0,0; лицо смотрит в +x)
+    ph_c = np.array([290.0, -440.0]) * sc                    # телефон перед лицом (подбородок к груди, взгляд вперёд-вниз)
+    T = {"phone": ({"f": (ph_c[0] - 30 * sc, ph_c[1] + 50 * sc), "n": (ph_c[0] - 10 * sc, ph_c[1] + 70 * sc)}),
+         "sleep": ({"f": (100 * sc, -220 * sc), "n": (175 * sc, -215 * sc)}),
+         "hug": ({"f": (210 * sc, -320 * sc), "n": (150 * sc, -300 * sc)}),
+         "reach": ({"f": (100 * sc, -220 * sc), "n": (175 * sc, -215 * sc)})}
+    A, B = T["phone"], T.get(mode, T["phone"])
+    tg = {s: (A[s][0] + (B[s][0] - A[s][0]) * u, A[s][1] + (B[s][1] - A[s][1]) * u) for s in ("f", "n")}
+    if mode == "reach" and reach is not None:          # точка мира → стоячая система (без flip)
+        rx, ry = (2 * x - reach[0], reach[1]) if flip else reach
+        ca, sa = math.cos(math.radians(-a_body)), math.sin(math.radians(-a_body))
+        lx, ly = (rx - x) * ca - (ry - y) * sa, (rx - x) * sa + (ry - y) * ca
+        tg["n"] = (A["n"][0] + (lx - A["n"][0]) * u, A["n"][1] + (ly - A["n"][1]) * u)
+    hold_h = {"dir": (.5, -1), "curl": (.62, .66, .7, .74), "thumb": .55}
+    hands = {"f": dict(hold_h, dir=(.9, -.2)), "n": dict(hold_h)}
+    if mode == "sleep" and u > .5:
+        hands = {"f": {"curl": (.4, .45, .5, .55), "thumb": .4}, "n": {"dir": (1, .4), "curl": (.35, .4, .45, .5), "thumb": .35}}
+    elif mode == "hug" and u > .5:
+        hands = {"f": {"dir": (-.6, .4), "curl": (.5, .55, .6, .65), "thumb": .5}, "n": {"dir": (.2, 1), "curl": (.45, .5, .55, .6), "thumb": .45}}
+    elif mode == "reach" and u > .5:
+        hands = {"f": {"curl": (.4, .45, .5, .55), "thumb": .4}, "n": {"dir": (1, -.6), "curl": (.15, .05, .2, .3), "spread": .15, "thumb": .3}}
+    if expr is None:
+        expr = {"phone": "screen79", "sleep": "sleep79", "hug": "hug79", "reach": "screen79"}[mode if u > .5 else "phone"]
+    ex = dict(EXPR["dima"].get(expr, {})) if isinstance(expr, str) else dict(expr)
+    if blink > .01 and not ex.get("closed"):
+        ex = awake_blink(ex, blink)
+    ha_m = {"phone": .62, "reach": .5, "sleep": .34, "hug": .42}
+    ha = ha_m["phone"] + (ha_m.get(mode, .5) - ha_m["phone"]) * u
+    arms = {s: ("ik", tg[s], -1) for s in ("f", "n")}
+    body = figure("dima", 0.0, 0.0, k, ex, lean=0.0, head_ang=ha, arms=arms, hands=hands, layers=("pelvis", "body"))
+    arm_f = figure("dima", 0.0, 0.0, k, ex, lean=0.0, head_ang=ha, arms=arms, hands=hands, layers=("arm_f",))
+    arm_n = figure("dima", 0.0, 0.0, k, ex, lean=0.0, head_ang=ha, arms=arms, hands=hands, layers=("arm_n",))
+    hx, hy = body["head"]
+    top_y = (-300 * sc) * (1 - blanket) + (hy + 70 * sc) * blanket
+    blank = _blanket_lying(sc, top_y, 0.25, 125 * sc + 6 * sc * br, 79100 + seed, col)
+    tb = f'translate({x:.2f} {y - bump:.2f}) rotate({a_body:.2f})'
+    o = []
+    if pillow:
+        import props as _P
+        pw = _rot_pt((hx - 150 * sc, hy - 10 * sc), a_body, x, y - bump * .5)
+        o.append(_P.pillow(pw[0] + 20 * sc, pw[1] + 150 * sc, k * 2.6, 0, seed=seed + 3))
+    o.append(f'<g transform="{tb}">{body["svg"]}</g>')
+    show_f = mode in ("phone", "hug") or u < .5
+    if show_f:
+        o.append(f'<g transform="{tb}">{blank}</g>')
+        o.append(f'<g transform="{tb}">{arm_f["svg"]}</g>')
+    else:
+        o.append(f'<g transform="{tb}">{arm_f["svg"]}{blank}</g>')
+    ph_on = (mode == "phone") or (u < .5)
+    hold_c = None
+    if ph_on:
+        wn, wf = np.array(arm_n["wrist"]["n"]), np.array(arm_f["wrist"]["f"])
+        c = (wn + wf) / 2 + np.array([46, -20]) * sc
+        g = lib.clamp(glow) * (1 - (u if mode != "phone" else 0) * 2 if mode != "phone" else 1)
+        g = max(0.0, g)
+        if g > .01:      # свет экрана: клин от телефона к лицу + пятно на лице
+            fl = 1 + .06 * math.sin(t * 11.0) + .04 * math.sin(t * 23.0)
+            o.append(f'<g transform="{tb}">' + blob([(c[0] - 10 * sc, c[1] - 90 * sc), (c[0] - 10 * sc, c[1] + 90 * sc), (hx + 60 * sc, hy + 110 * sc),
+                                                       (hx + 40 * sc, hy - 120 * sc)], "#cfe6ff", .18 * g * fl) + "</g>")
+        o.append(f'<g transform="{tb}">{mobilnik(float(c[0]), float(c[1]), 1.5 * sc, 0, seed=7951 + seed)}</g>')
+        if g > .01:
+            o.append(f'<g transform="{tb}">' + blob(ellipse_pts(hx + 50 * sc, hy + 10 * sc, 120 * sc, 150 * sc, 16), "#bfe0ff", .22 * g * fl) + "</g>")
+        phone_w = _rot_pt((float(c[0]), float(c[1])), a_body, x, y - bump)
+    else:
+        phone_w = None
+    fl_g = (lambda s_: f'<g transform="translate({2 * x:.2f} 0) scale(-1 1)">{s_}</g>') if flip else (lambda s_: s_)
+    svg_ = fl_g("".join(o))
+    if mode == "hug":
+        hc = (np.array(arm_n["wrist"]["n"]) + np.array(arm_f["wrist"]["f"])) / 2 + np.array([30, 10]) * sc
+        hold_c = _rot_pt((float(hc[0]), float(hc[1])), a_body, x, y - bump)
+        if flip:
+            hold_c = (2 * x - hold_c[0], hold_c[1])
+        svg_ += held_svg(hold_c) if callable(held_svg) else held_svg
+    svg_ += fl_g(f'<g transform="{tb}">{arm_n["svg"]}</g>')
+
+    def Wp(p):
+        q = _rot_pt(p, a_body, x, y - bump)
+        return (2 * x - q[0], q[1]) if flip else q
+    res = dict(svg=svg_, head=Wp((hx, hy)), wrist={"n": Wp(arm_n["wrist"]["n"]), "f": Wp(arm_f["wrist"]["f"])}, scale=sc, hold=hold_c,
+               phone=(None if phone_w is None else ((2 * x - phone_w[0], phone_w[1]) if flip else phone_w)), body_angle=a_body)
+    return res
+
+
+def _layered(who, x, y, scale, expr, mid="", **kw):
+    """Фигура слоями: тело и дальняя рука → mid (предмет, строка или функция(fig) → строка) → ближняя рука поверх."""
+    flip = kw.get("flip", False)
+    lay = kw.pop("layers_body", ("legs", "pelvis", "arm_f", "body"))
+    base = person(who, x, y, scale, expr, layers=lay, **kw)
+    arm = person(who, x, y, scale, expr, layers=("arm_n",), **kw)
+    m = mid(base) if callable(mid) else mid
+    base["svg"] = base["svg"] + m + arm["svg"]
+    base["flip"] = flip
+    return base
+
+
+def dima_hold79(x, y, scale, expr="yes79", center=(0, 0), held_svg="", width=150.0, nod=0.0, sit=True, flip=False, lean_add=0.0, t=0.0):
+    sc = scale * HEIGHT["dima"]
+    cx, cy = center
+    lx = 2 * x - cx if flip else cx              # цель в неотражённой системе фигуры
+    arms = {"f": ("ik", (lx + width * .5 - 10 * sc, cy + 20 * sc), -1), "n": ("ik", (lx - width * .5 + 20 * sc, cy + 30 * sc), -1)}
+    hands = {"f": {"dir": (.3, -1), "curl": (.55, .6, .65, .7), "thumb": .5}, "n": {"dir": (.5, -1), "curl": (.5, .55, .6, .65), "thumb": .55}}
+    feet = sit_kw(x, y, scale)["feet"] if sit else stand_kw(x, y, scale)["feet"]
+    nd = math.sin(math.pi * lib.clamp(nod)) * .32
+    return _layered("dima", x, y, scale, expr, mid=held_svg, arms=arms, hands=hands, feet=feet, flip=flip, head_add=nd, lean_add=lean_add)
+
+
+def dima_run79(x, y, scale, t, expr="run79", smear=0.0, period=.42, carry=None, flip=False):
+    """Бег: фаза от t, наклон вперёд, руки в такт. carry — SVG папок под ближней рукой (кладётся поверх тела, под руку).
+    smear 0…1 — смаз-след позади (две бледные копии)."""
+    sc = scale * HEIGHT["dima"]
+
+    def one(ph, op=1.0):
+        wk = walk_kw(x, y, scale, ph, stride=360.0, lift=110.0)
+        a = math.sin(2 * math.pi * ph)
+        hx, hy = wk["hip"]
+        arms = {"f": ("ang", .9 * a, .9), "n": ("ang", -.9 * a + .2, .9)} if carry is None else \
+            {"f": ("ang", .9 * a, .9), "n": ("ik", (hx + 150 * sc, hy - 200 * sc), -1)}
+        hands = {"f": {"curl": (.6, .65, .7, .75), "thumb": .5}, "n": {"curl": (.6, .65, .7, .75), "thumb": .5}}
+        if carry is not None:
+            f = _layered("dima", hx, hy, scale, expr, mid=carry, arms=arms, hands=hands, feet=wk["feet"], lean_add=.28, flip=flip,
+                         layers_body=("legs", "pelvis", "arm_f", "body"))
+        else:
+            f = person("dima", hx, hy, scale, expr, arms=arms, hands=hands, feet=wk["feet"], lean_add=.28, flip=flip)
+        if op < 1:
+            f["svg"] = f'<g opacity="{op:.2f}">{f["svg"]}</g>'
+        return f
+    ph = t / period
+    main = one(ph)
+    if smear > .02:
+        tr = ""
+        for i, (dx, op) in enumerate(((-90, .22), (-180, .1))):
+            g = one(ph - .06 * (i + 1), op * smear)
+            dxs = -dx if flip else dx
+            tr += f'<g transform="translate({dxs * smear * sc / .5:.1f} 0)">{g["svg"]}</g>'
+        main["svg"] = tr + main["svg"]
+    return main
+
+
+def dima_drawer79(x, y, scale, u=0.0, t=0.0, expr="warm79", phone=True, target=None, flip=False):
+    """Стоит у тумбочки и кладёт телефон в ящик: u 0 — телефон у груди, 1 — в ящике (target — точка мира; по умолчанию x+330·sc, y−150·sc)."""
+    sc = scale * HEIGHT["dima"]
+    u = lib.clamp(u)
+    tg = target or ((x - 330 * sc) if flip else (x + 330 * sc), y - 150 * sc)
+    lx = 2 * x - tg[0] if flip else tg[0]
+    a = (x + 230 * sc, y - 300 * sc)
+    p = (a[0] + (lx - a[0]) * u, a[1] + (tg[1] - a[1]) * u - 60 * sc * math.sin(math.pi * u))
+    arms = {"f": ("ang", 0.16, 0.2), "n": ("ik", p, -1)}
+    hands = {"n": {"dir": (.4 + .6 * u, -1 + 1.6 * u), "curl": (.55, .6, .65, .7), "thumb": .55}}
+    f = _layered("dima", x, y, scale, expr, arms=arms, hands=hands, feet=stand_kw(x, y, scale)["feet"], flip=flip, lean_add=.1 * u)
+    w = f["wrist"]["n"]
+    d = (1 if not flip else -1)
+    ph = (w[0] + d * 40 * sc, w[1] + 10 * sc)
+    if phone:      # телефон в пальцах поверх кисти (кисть его держит снизу)
+        f["svg"] += mobilnik(ph[0], ph[1], 1.2 * sc, d * (60 + 30 * u), seed=7960)
+    f["phone"] = ph
+    return f
+
+
+def dima_reach79(x, y, scale, target, u=1.0, expr="warm79", flip=False, feet=None, rest=None, hand=None, lean_add=0.0):
+    """Стоит и тянет ближнюю руку к target (мир): u 0 — рука внизу, 1 — у цели (выключатель лампы, гриф на стене)."""
+    sc = scale * HEIGHT["dima"]
+    lx = 2 * x - target[0] if flip else target[0]
+    r0 = rest or (x + 120 * sc, y - 60 * sc)
+    p = (r0[0] + (lx - r0[0]) * u, r0[1] + (target[1] - r0[1]) * u)
+    arms = {"f": ("ang", 0.16, 0.2), "n": ("ik", p, -1)}
+    hands = {"n": hand or {"dir": (.5, -1), "curl": (.2, .3, .4, .5), "thumb": .3}}
+    return person("dima", x, y, scale, expr, arms=arms, hands=hands, feet=feet or stand_kw(x, y, scale)["feet"], flip=flip,
+                  lean_add=lean_add + .06 * u)
+
+
+GUITAR_K = 0.86      # гитара к масштабу Димы: длина ≈ 740·0.86·sc ≈ 1.6 высоты торса
+
+
+def dima_guitar79(x, y, scale, mode="hold", u=1.0, t=0.0, expr=None, gpos=None, dust_u=0.0, strum=0.0, strum_ph=0.0, seed=0, feet=None,
+                  lean_add=0.0):
+    """С гитарой; фигура смотрит ВЛЕВО, гриф по экрану влево-вверх. Гитару рисует сама (props.guitar).
+    mode "hold": стоит, держит гитару в gpos=(низ x, низ y, rot°) мира: дальняя рука на грифе, ближняя на корпусе (u — 0: ближняя
+      ещё внизу, 1 — держит). "play": сидит на коврике по-турецки, таз (x, y), гитара на колене (gpos вычисляется), ближняя рука
+      бьёт по струнам (strum_ph — фаза удара 0…1, strum — дрожь струн), дальняя на ладу.
+    Возвращает dict фигуры + guitar=(x, y, rot) и hole/neck — точки гитары в мире."""
+    import props as _P
+    sc = scale * HEIGHT["dima"]
+    gk = GUITAR_K * sc
+    if mode == "play":
+        lot = lotus_kw("sit", x, y, scale)
+        # гитара в неотражённой системе: низ на ближнем бедре, гриф вправо-вверх
+        r = 64.0
+        B = (x + 40 * sc, y + 40 * sc)
+        g_loc = (B[0], B[1], r)
+        lean = 0.05
+    else:
+        gx, gy, gr = gpos or (x - 260 * sc, y - 120 * sc, -60.0)
+        g_loc = (2 * x - gx, gy, -gr)
+        lot = None
+        lean = 0.02
+    gl = g_loc
+    hole = _P.guitar_pt(gl[0], gl[1], gk, gl[2], "hole")
+    fret = _P.guitar_pt(gl[0], gl[1], gk, gl[2], "fret" if mode == "play" else "neck")
+    ax = math.radians(gl[2])
+    axis = (math.sin(ax), -math.cos(ax))
+    nrm = (math.cos(ax), math.sin(ax))
+    if mode == "play":
+        s_ = math.sin(2 * math.pi * strum_ph)
+        n_t = (hole[0] + nrm[0] * 30 * sc + axis[0] * 30 * sc * s_, hole[1] + nrm[1] * 30 * sc + axis[1] * 30 * sc * s_ + 40 * sc * s_)
+        hands = {"f": {"dir": (nrm[0], nrm[1]), "curl": (.7, .72, .75, .78), "thumb": .6},
+                 "n": {"dir": (.3, 1), "curl": (.45, .5, .55, .6), "thumb": .45}}
+    else:
+        rest = (x + 120 * sc, y - 40 * sc)
+        tn = (hole[0] + nrm[0] * 20 * sc, hole[1] + nrm[1] * 20 * sc)
+        n_t = (rest[0] + (tn[0] - rest[0]) * u, rest[1] + (tn[1] - rest[1]) * u)
+        hands = {"f": {"dir": (nrm[0], nrm[1]), "curl": (.7, .72, .75, .78), "thumb": .6},
+                 "n": {"dir": (axis[0], axis[1]), "curl": (.35, .4, .45, .5), "thumb": .4}}
+    arms = {"f": ("ik", (fret[0] - nrm[0] * 6 * sc, fret[1] - nrm[1] * 6 * sc), -1), "n": ("ik", n_t, -1)}
+    if expr is None:
+        expr = "play79" if mode == "play" else "warm79"
+    ex = EXPR["dima"].get(expr, {}) if isinstance(expr, str) else dict(expr)
+    kw = dict(lean=lean + lean_add, head_ang=.12, arms=arms, hands=hands)
+    if lot is not None:
+        kw.update(lotus=lot["lotus"])
+        kw["lean"] = lot["lean"] + lean + lean_add
+        o = draw(dict(hip=(x, y), scale=sc, lean=kw["lean"], feet=None, arms=arms, hands=hands, head_ang=.12, expr=ex, lotus=lot["lotus"]), "dima")
+    else:
+        ft = feet or stand_kw(x, y, scale)["feet"]
+        if feet is not None:
+            ft = {k: ((2 * x - v[0][0], v[0][1]), v[1]) for k, v in feet.items()}
+        o = draw(dict(hip=(x, y), scale=sc, lean=kw["lean"], feet=ft, arms=arms, hands=hands, head_ang=.12, expr=ex), "dima")
+    gsvg = _P.guitar(gl[0], gl[1], gk, gl[2], dust_u=dust_u, strum=strum, t=t, seed=seed)
+    order = ("legs", "pelvis", "arm_f", "body") if lot is None else ("arm_f", "body", "legs")
+    body = "".join(o[k] for k in order if k in o)
+    svg_ = body + gsvg + o["hand_f"] + o["arm_n"]
+    svg_ = f'<g transform="translate({2 * x:.2f} 0) scale(-1 1)">{svg_}</g>'
+
+    def M(p):
+        return (2 * x - p[0], p[1])
+    return dict(svg=svg_, head=M(o["head"]), wrist={k: M(v) for k, v in o["wrist"].items()}, scale=sc, guitar=(2 * x - gl[0], gl[1], -gl[2]),
+                hole=M(hole), neck=M(fret), gk=gk)
+
+
+# ─── люди с просьбами (s09) ───
+def colleague79(x, y, scale, offer=1.0, t=0.0, expr=None, flip=True, feet=None):
+    """Рыжая коллега в бирюзовом свитере протягивает кружку (props.cup_plain). Смотрит влево (flip) — к Диме."""
+    import props as _P
+    sc = scale * HEIGHT["girl"]
+    o = lib.clamp(offer)
+    p = (x + (120 + 200 * o) * sc, y - (230 + 60 * o) * sc)
+    ex = expr or {"brows": "up", "mouth": "talk", "open": .3 + .2 * math.sin(t * 12), "smile": .8, "lid": .85, "look": (.5, 0)}
+    arms = {"f": ("ang", 0.18, 0.2), "n": ("ik", p, -1)}
+    hands = {"n": {"dir": (1, -.2), "curl": (.6, .65, .7, .72), "thumb": .55}}
+    f = _layered("girl", x, y, scale, ex, arms=arms, hands=hands, feet=feet, flip=flip)
+    w = f["wrist"]["n"]
+    d = -1 if flip else 1
+    f["svg"] = f["svg"] + _P.cup_plain(w[0] + d * 50 * sc, w[1] - 30 * sc, 1.1 * sc)
+    return f
+
+
+def mama79(x, y, scale, offer=1.0, t=0.0, expr=None, flip=True, feet=None):
+    """Мама: ближняя рука держит телефон у уха, дальняя ладонью вверх тянется вперёд — «а можешь…?»."""
+    o = lib.clamp(offer)
+    ex = expr or {"brows": "up", "mouth": "talk", "open": .3 + .25 * abs(math.sin(t * 10)), "smile": .5, "lid": .85, "look": (.5, 0)}
+    sc = scale * HEIGHT["mama"]
+    arms = {"f": ("ik", (x + (160 + 170 * o) * sc, y - (180 + 70 * o) * sc), -1), "n": ("ik", (x - 75 * sc, y - 430 * sc), 1)}
+    hands = {"f": {"dir": (1, -.25), "flip": -1, "spread": .35, "curl": (.1, .15, .2, .25), "thumb": .2}}
+    base = person("mama", x, y, scale, ex, pose="mobile", arms=arms, hands=hands, feet=feet, flip=flip, layers=("legs", "pelvis", "arm_f", "body"))
+    hand_ = person("mama", x, y, scale, ex, pose="mobile", arms=arms, hands=hands, feet=feet, flip=flip, layers=("arm_n",))
+    base["svg"] = base["svg"] + mobile_at_ear(base, base["scale"], flip) + hand_["svg"]
+    return base
+
+
+def cardbox79(x, y, k=1.0, rot=0.0, seed=0):
+    """Картонная коробка (центр) 300×220·k, без надписей: крышка с клапанами, скотч."""
+    sd = 79700 + seed
+    o = shape(lib.rect_pts(-150, -110, 150, 110), "#c99a5e", blob(lib.rect_pts(60, -110, 150, 110), "#a87d44", .8) +
+              line([(-150, -40), (150, -40)], 3, "#8a6434", seed=sd + 1, op=.8) +
+              blob(lib.rect_pts(-22, -110, 22, 110), "#e2c48e", .9), w=4.4, seed=sd)
+    o += shape([(-150, -110), (-120, -150), (-6, -150), (0, -110)], "#d8aa6c", "", w=3.6, seed=sd + 2)
+    o += shape([(150, -110), (126, -146), (6, -146), (0, -110)], "#b98a50", "", w=3.6, seed=sd + 3)
+    return f'<g transform="translate({x:.2f} {y:.2f}) rotate({rot:.2f}) scale({k:.4f})">{o}</g>'
+
+
+def friend79(x, y, scale, offer=1.0, t=0.0, expr=None, flip=True, feet=None):
+    """Рыжий друг в джинсовке протягивает коробку двумя руками (переезд — «помоги»)."""
+    sc = scale * HEIGHT["friend"]
+    o = lib.clamp(offer)
+    c = (x + (200 + 150 * o) * sc, y - (250 + 40 * o) * sc)
+    ex = expr or {"brows": "up", "mouth": "grin", "open": .4, "lid": .85, "look": (.5, 0)}
+    arms = {"f": ("ik", (c[0] + 120 * sc, c[1] + 30 * sc), -1), "n": ("ik", (c[0] - 110 * sc, c[1] + 40 * sc), -1)}
+    hands = {"f": {"dir": (0, -1), "curl": (.5, .55, .6, .65), "thumb": .5}, "n": {"dir": (.2, -1), "curl": (.5, .55, .6, .65), "thumb": .5}}
+    cx = 2 * x - c[0] if flip else c[0]
+    box = cardbox79(cx, c[1], 1.25 * sc, 4 * math.sin(t * 3), seed=1)
+    return _layered("friend", x, y, scale, ex, mid=box, arms=arms, hands=hands, feet=feet, flip=flip)
+
+
+# ─── учёные (s13): тот же рисунок «curly» и «psych», в белых халатах ───
+_SCI = {"a": "curly", "b": "psych"}
+_COAT = dict(TOP="#f4f2ee", TOP_SH="#d6d3cc", TOP_SH2="#b9b5ad", FOLD="#9e9a92")
+
+
+def scientist79(kind, x, y, scale, expr=None, pose="rest", center=None, held_svg="", t=0.0, flip=False, feet=None, **kw):
+    """Учёный в белом халате: kind "a" — женщина с кудрями, "b" — седой мужчина. pose "hold" — держит перед собой предмет
+    (center — его центр в мире, held_svg — его рисунок) двумя руками; иначе любая поза POSE."""
+    who = _SCI[kind]
+    keep = dict(PAL[who])
+    PAL[who].update(_COAT)
+    try:
+        ex = expr or {"brows": "up", "mouth": "smile", "smile": .6, "lid": .85, "look": (.4, 0)}
+        if pose == "hold" and center is not None:
+            sc = scale * HEIGHT[who]
+            lx = 2 * x - center[0] if flip else center[0]
+            arms = {"f": ("ik", (lx + 110 * sc, center[1] + 60 * sc), -1), "n": ("ik", (lx - 100 * sc, center[1] + 70 * sc), -1)}
+            hands = {"f": {"dir": (0, -1), "curl": (.55, .6, .65, .7), "thumb": .5}, "n": {"dir": (.1, -1), "curl": (.55, .6, .65, .7), "thumb": .5}}
+            f = _layered(who, x, y, scale, ex, mid=held_svg, arms=arms, hands=hands, feet=feet, flip=flip, **kw)
+        else:
+            f = person(who, x, y, scale, ex, pose if pose != "hold" else "rest", feet=feet, flip=flip, **kw)
+    finally:
+        PAL[who].clear()
+        PAL[who].update(keep)
+    return f
+
+
+# ─── силуэты Димы в окнах (s06) ───
+def _silhouette(svg_, col):
+    fid = lib.uid("sil")
+    lib.DEFS.append(f'<filter id="{fid}"><feFlood flood-color="{col}"/><feComposite in2="SourceAlpha" operator="in"/></filter>')
+    return f'<g filter="url(#{fid})">{svg_}</g>'
+
+
+def dima_silhouette79(kind, x, y, k=0.2, t=0.0, col="#1a1f33"):
+    """Маленький силуэт Димы без черт лица (заливка col): (x, y) — таз. kind: cook | run | sit_cat | phone."""
+    if kind == "run":
+        f = dima_run79(x, y, k, t, period=.5)
+        s_ = f["svg"]
+    elif kind == "cook":
+        a = math.sin(t * 7)
+        f = person("dima", x, y, k, "work79", arms={"f": ("ang", .3, .3), "n": ("ik", (x + (230 + 30 * a) * k, y - (200 + 15 * math.cos(t * 7)) * k), -1)},
+                   feet=stand_kw(x, y, k)["feet"])
+        pot = shape(lib.rect_pts(x + 170 * k, y - 230 * k, x + 360 * k, y - 120 * k, 14 * k), "#000", "", w=3, seed=1)
+        s_ = f["svg"] + pot + line([(x + 240 * k + 20 * a * k, y - 300 * k), (x + 260 * k, y - 160 * k)], 10 * k + 2, seed=2)
+    elif kind == "sit_cat":
+        f = person("dima", x, y, k, "warm79", pose="rest", feet=sit_kw(x, y, k)["feet"],
+                   arms={"f": ("ang", .4, .5), "n": ("ik", (x + 230 * k, y - 60 * k + 8 * k * math.sin(t * 3)), -1)})
+        s_ = f["svg"] + cat_curl(x + 300 * k, y + 20 * k, .45 * k, {}, t)
+    else:
+        f = dima_lie79(x, y, k, t, "phone", glow=0.0, pillow=False)
+        s_ = f["svg"]
+    return dict(svg=_silhouette(s_, col), head=f["head"])
+
+
+# ─── кот рилса 79 (cat.py) ───
+CAT_ST.update({
+    "yawn79": {"blink": 1.0, "tongue": .7, "tilt": -12, "perk": .3, "flame_e": .8},
+    "ridge79": {"look": (-.3, .6), "flame_e": 1.6, "tail": 4},
+    "sly79": {"smug": .8, "look": (0, 0), "tilt": -8, "turn": 0.0},
+    "brow79": {"smug": 1.0, "look": (-.75, .55), "tilt": 6, "turn": -.4},
+    "sigh79": {"blink": .75, "drop": .5, "look": (-.3, .5), "flame_e": .7, "tilt": -6},
+    "sway79": {"blink": .55, "smile": 1.0, "look": (-.3, .2), "flame_e": 1.6},
+})

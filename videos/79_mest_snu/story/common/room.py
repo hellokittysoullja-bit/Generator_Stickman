@@ -2862,3 +2862,444 @@ def evening_chair(t, sun=1.0):
     light = f'<rect x="-900" y="-900" width="2880" height="3720" fill="url(#{glow})"/>'
     return dict(bg="".join(o), chair_back=back + armL, chair_front=armR, light=light, cam=CAM78,
                 anchors=dict(hip=EC_HIP, arm=(hx + 375, hy - 150), arm_l=(hx - 290, hy - 170), knees=(hx + 260, hy - 30), win=EC_WIN, fl=fl))
+
+
+# ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+# РИЛС 79 «Месть сну» (пишет группа C; берут все). Новые места: МАНСАРДА Димы, ванная, кухня вечером, офис днём, фасад
+# дома ночью, вечерний Утрехт. Букв и цифр нигде нет. Мир кадра 1080×1920, камера снаружи (lib.cam(cx, cy, s)).
+#
+# МАНСАРДА — один мир на все ракурсы: attic(t, light="night_phone", sky=None, lamp_u=None, bump=0.0) -> dict(bg, sky, frame,
+#     bed, front, shade, light, anchors). Порядок: bg → sky (небо люка, уже обрезано стеклом) → frame (рама люка) → [часы
+#     props.attic_clock на AT_CLOCK] → [Дима, кот, предметы] → bed (одеяло-перед, если сцена не рисует своё) → front → light
+#     (свет лампы/экрана) → shade (виньетка). light: "night_phone" (тёмно-синяя ночь, хук), "moon_calm" (спокойная лунная,
+#     петля s18, s17 после лампы), "warm_lamp" (тёплый вечер s15–s17), "day" (днём, s10 и др.); число 0…1 — warm_lamp→moon_calm
+#     (s17: «гасит лампу»). sky — фаза неба люка (см. skylight_sky); None — по свету (ночь — луна, день — солнце).
+#     Стена задняя: верхний край — линия ската AT_SLOPE (y = a + b·x), выше — плоскость потолка-ската, в ней ЛЮК AT_SKY (четыре
+#     угла стекла). Над изголовьем — место часов AT_CLOCK=(x, y, r) (часы ставит сцена: props.attic_clock, группа A).
+#     Кровать боком: изголовье слева (AT_HEADBOARD), матрас верхом на AT_BED_Y, подушка AT_PILLOW (центр), голова Димы
+#     лежащего на боку — около AT_HEAD; телефон в руках — около AT_PHONE. Тумбочка слева от изголовья AT_NSTAND (верх, центр),
+#     лампа на ней AT_LAMP (дно), полка на стене AT_SHELF (x0, y, x1) — верх доски, ставить предметы дном на неё. Гвоздь
+#     гитары AT_GUITAR_NAIL, коврик на полу AT_RUG (центр), пол AT_FL.
+#     Камеры: AT_CAM_HOOK (s01 и петля s18 — ОДИН кадр), AT_CAM_CLOCK (s02: часы и лицо), AT_CAM_SKY (s07: снизу на люк),
+#     AT_CAM_CLOCK_BIG (s11), AT_CAM_PILLOW (s12), AT_CAM_SHELF (s14), AT_CAM_WARM (s15–s16: гитара, коврик), AT_CAM_WARM_BED (s17).
+#     Чистая зона хука AT_TEXT=(x0, y0, x1, y1) в кадре AT_CAM_HOOK — только плоскость потолка, ни линий, ни предметов.
+# НЕБО ЛЮКА: skylight_sky(t, phase, box=None, stars=1.0) — луна и солнце ДУГОЙ: phase 0…1 — луна ныряет вниз по дуге
+#     (0….5), солнце выскакивает снизу по дуге и уходит (.5…1), небо синий → рыжий → синий; дробная часть фазы, фаза растёт —
+#     ночь «пролетает». Особые: "moon_high" (луна высоко, неподвижна), "dawn" (серо-розовый рассвет), "empty" (пустое тёмное
+#     небо без звёзд, s07), "day" (голубое, солнце в углу). box — 4 угла стекла (по умолчанию AT_SKY).
+# ВАННАЯ (s03): bathroom(t, light="evening") -> dict(bg, front, anchors): плитка, зеркало БЕЗ отражения (матовый блик),
+#     раковина — props.sink_brush ставит сцена на BA_SINK (центр верха чаши); Дима стоит BA_STAND (таз, scale ≈ .9).
+# КУХНЯ ВЕЧЕРОМ (s04): kitchen_evening(t, moon_u=0.0) -> dict(bg, table, front, anchors): стол, лампа над ним, окно KE_WIN с
+#     крышами, луна встаёт по дуге (moon_u 0…1). KE_SIT — таз сидящего Димы, KE_TABLE=(x0, x1, верх), KE_PLATE — тарелка.
+# ОФИС ДНЁМ (s08): office_day(t, sun_u=0.0) -> dict(bg, desk, front, anchors): большое окно OD_WIN, солнце по дуге (sun_u 0…1
+#     восход→закат), тени рамы метут по полу; стол OD_DESK, таз сидящего Димы OD_SIT.
+# ФАСАД ДОМА НОЧЬЮ (s06): house_facade(t, lit=(0, 0, 0), attic_glow=1.0) -> dict(sky, bg, windows, front, anchors):
+#     узкий городской дом в 4 этажа, три окна-истории HF_WIN[0..2] (прямоугольники стекла), lit[i] 0…1 — окно загорелось (свет
+#     изнутри, силуэт ставит сцена в HF_WIN[i] клипом windows_clip(i)); мансардное окно HF_ATTIC под крышей с голубым светом
+#     телефона; конёк крыши HF_RIDGE (где сидит кот: лапы на линии). HF_CAM_LOW (низ фасада) → HF_CAM_TOP (мансарда).
+# УТРЕХТ ВЕЧЕРОМ (s13): utrecht(t, lab_lit=0.0) -> dict(sky, bg, water, front, anchors): канал с низкой набережной (верфь),
+#     арочный мостик, велосипеды у перил, силуэт башни Дом, дома с фронтонами; окно университета UT_LAB (свет lab_lit), туда
+#     сцена ставит учёных. UT_CAM_LAB (окно), UT_CAM_TOWER (башня), мир шире кадра x −600…2400.
+# ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+AT_FL = 1480.0
+AT_SLOPE = (447.0, 0.266)                         # верхний край задней стены: y = a + b·x (выше — потолок-скат)
+AT_SKY = ((706.0, 438.0), (978.0, 506.0), (992.0, 676.0), (672.0, 594.0))   # стекло люка: л-верх, п-верх, п-низ, л-низ
+AT_CLOCK = (248.0, 668.0, 122.0)
+AT_HEADBOARD = (-6.0, 92.0, 760.0)                # x0, x1, верх
+AT_BED_Y = 1030.0                                 # верх матраса
+AT_BED_X = (60.0, 1700.0)
+AT_PILLOW = (250.0, 1000.0)
+AT_HEAD = (300.0, 935.0)
+AT_PHONE = (470.0, 905.0)
+AT_NSTAND = (-200.0, 1170.0)                      # центр верха тумбочки (ширина 300)
+AT_LAMP = (-140.0, 1166.0)
+AT_SHELF = (-860.0, 760.0, -420.0)                # x0, верх доски, x1
+AT_GUITAR_NAIL = (-1180.0, 560.0)
+AT_RUG = (-1080.0, 1520.0)
+AT_TEXT = (60.0, 140.0, 1020.0, 425.0)
+AT_CAM_HOOK = (540.0, 960.0, 1.0)
+AT_CAM_CLOCK = (330.0, 800.0, 1.55)
+AT_CAM_SKY = (820.0, 700.0, 1.45)
+AT_CAM_CLOCK_BIG = (248.0, 690.0, 2.6)
+AT_CAM_PILLOW = (360.0, 930.0, 1.7)
+AT_CAM_SHELF = (-640.0, 820.0, 1.7)
+AT_CAM_WARM = (-900.0, 1050.0, 0.92)
+AT_CAM_WARM_BED = (-420.0, 1010.0, 0.82)
+
+AT_PAL = {
+    "night_phone": dict(wall="#202a4c", wall_hi="#2a3560", wall_sh="#161d38", ceil="#1a2244", ceil_hi="#222c54", beam="#2c2a46", beam_sh="#1e1d33",
+                        frame="#3a4470", sheet="#3a4a78", sheet_sh="#28345a", quilt="#3e5a8e", quilt_sh="#2a4068", quilt_hi="#5674a8",
+                        wood="#3a3048", wood_sh="#29223a", floor="#1c1f34", floor_b="#13152a", pillow="#56689a", rug="#5a3a5a", vign="#05081a", vk=.55),
+    "moon_calm": dict(wall="#2b3762", wall_hi="#36447a", wall_sh="#1f2850", ceil="#24305a", ceil_hi="#2e3b6c", beam="#36345a", beam_sh="#26243f",
+                      frame="#4a5688", sheet="#485c90", sheet_sh="#33436e", quilt="#4b6aa0", quilt_sh="#344e7c", quilt_hi="#6a88bc",
+                      wood="#463a58", wood_sh="#322a44", floor="#252a46", floor_b="#1a1e36", pillow="#6a7cb0", rug="#6a4466", vign="#0a1030", vk=.4),
+    "warm_lamp": dict(wall="#d49a6e", wall_hi="#e6b183", wall_sh="#b07a56", ceil="#c78a62", ceil_hi="#d89c72", beam="#8a5634", beam_sh="#6c4024",
+                      frame="#9a6440", sheet="#f0d4b4", sheet_sh="#d0a884", quilt="#c9705a", quilt_sh="#a65444", quilt_hi="#e08c72",
+                      wood="#8a5634", wood_sh="#6a3e22", floor="#8c5634", floor_b="#6c3e22", pillow="#f4dcc0", rug="#b85a48", vign="#5a2408", vk=.3),
+    "day": dict(wall="#e8dccb", wall_hi="#f4ebdd", wall_sh="#cfc0aa", ceil="#ddd0bc", ceil_hi="#ebe0ce", beam="#a0805c", beam_sh="#80603e",
+                frame="#f2ece0", sheet="#f4f0e8", sheet_sh="#d8d0c2", quilt="#7f9fc4", quilt_sh="#62809f", quilt_hi="#a2bedc",
+                wood="#a87a52", wood_sh="#86603e", floor="#b88a5e", floor_b="#9a7048", pillow="#fbf7f0", rug="#c4685a", vign="#3a2a18", vk=.12),
+}
+
+
+def _at_pal(light):
+    if isinstance(light, (int, float)):
+        u = clamp01(light)
+        a, b = AT_PAL["warm_lamp"], AT_PAL["moon_calm"]
+        out = {k: (lib.mix(a[k], b[k], u) if isinstance(a[k], str) else a[k] + (b[k] - a[k]) * u) for k in a}
+        return out
+    return AT_PAL.get(light, AT_PAL["night_phone"])
+
+
+def _slope_y(x):
+    return AT_SLOPE[0] + AT_SLOPE[1] * x
+
+
+def _sky_cols(phase):
+    """Цвет неба люка по фазе: ночь синяя, на солнце — рыжая, между — сумерки."""
+    p = phase % 1.0
+    sunk = math.sin(math.pi * clamp01((p - .5) / .5)) if p > .5 else 0.0
+    top = lib.mix("#0b1238", "#f08a4a", sunk)
+    bot = lib.mix("#1d2a66", "#ffd07a", sunk)
+    return top, bot, sunk
+
+
+def _arc_pt(box, u, lift):
+    """Точка дуги через люк: u 0 — слева у низа, .5 — вершина, 1 — справа ниже низа (ныряет)."""
+    (x0, y0), (x1, y1), (x2, y2), (x3, y3) = box
+    lx, rx = min(x0, x3) - 40, max(x1, x2) + 60
+    ty, by = min(y0, y1), max(y2, y3)
+    x = lx + (rx - lx) * u
+    y = by + 90 - (by - ty + 40) * lift * math.sin(math.pi * u)
+    return x, y
+
+
+def skylight_sky(t, phase=0.0, box=None, stars=1.0):
+    """Небо в люке (уже обрезано стеклом). См. шапку раздела 79."""
+    box = box or AT_SKY
+    cid = lib.clip_of([(x, y, 1) for x, y in box])
+    xs, ys = [p[0] for p in box], [p[1] for p in box]
+    bx0, by0, bx1, by1 = min(xs) - 20, min(ys) - 20, max(xs) + 20, max(ys) + 20
+    o = []
+    if isinstance(phase, str):
+        kind = phase
+        if kind == "day":
+            top, bot = "#7fb4e4", "#cfe6f6"
+        elif kind == "dawn":
+            top, bot = "#5a6890", "#d8a49a"
+        elif kind == "empty":
+            top, bot = "#090d24", "#141c40"
+        else:
+            top, bot = "#0d1640", "#22306e"
+        g = lib.lin_grad([(0, top, 1), (1, bot, 1)], 0, by0, 0, by1, units="userSpaceOnUse")
+        o.append(f'<rect x="{f(bx0)}" y="{f(by0)}" width="{f(bx1 - bx0)}" height="{f(by1 - by0)}" fill="url(#{g})"/>')
+        if kind in ("moon_high", "dawn"):
+            r = rs(7901)
+            for i in range(8):
+                sx, sy = r.uniform(bx0 + 30, bx1 - 30), r.uniform(by0 + 30, by1 - 40)
+                a = (.55 if kind == "moon_high" else .2) * (.7 + .3 * math.sin(t * 2.3 + i * 1.7))
+                o.append(f'<circle cx="{f(sx)}" cy="{f(sy)}" r="{f(r.uniform(2.0, 3.4))}" fill="#e8ecff" opacity="{a:.2f}"/>')
+            if kind == "moon_high":
+                mx, my = bx0 + (bx1 - bx0) * .62, by0 + 78
+                o.append(_moon79(mx, my, 40, t, calm=True))
+        elif kind == "day":
+            o.append(_sun79(bx1 - 70, by0 + 70, 34, t))
+        return f'<g clip-path="url(#{cid})">{"".join(o)}</g>'
+    p = phase % 1.0
+    top, bot, sunk = _sky_cols(p)
+    g = lib.lin_grad([(0, top, 1), (1, bot, 1)], 0, by0, 0, by1, units="userSpaceOnUse")
+    o.append(f'<rect x="{f(bx0)}" y="{f(by0)}" width="{f(bx1 - bx0)}" height="{f(by1 - by0)}" fill="url(#{g})"/>')
+    r = rs(7902)
+    for i in range(10):                     # звёзды гаснут на солнце
+        sx, sy = r.uniform(bx0 + 20, bx1 - 20), r.uniform(by0 + 20, by1 - 30)
+        a = stars * (1 - sunk) * (.5 + .4 * math.sin(t * 9 + i * 2.1))
+        if a > .03:
+            o.append(f'<circle cx="{f(sx)}" cy="{f(sy)}" r="{f(r.uniform(2.0, 3.6))}" fill="#eef1ff" opacity="{a:.2f}"/>')
+    # луна ныряет (0….5): с вершины вправо-вниз за край; солнце (.5…1) выскакивает слева снизу и уходит вправо-вниз
+    if p < .5:
+        u = .45 + 1.1 * (p / .5) * .5
+        mx, my = _arc_pt(box, u, 1.0)
+        o.append(_moon79(mx, my, 40, t))
+    else:
+        u = (p - .5) / .5
+        sx_, sy_ = _arc_pt(box, -.05 + 1.1 * u, 1.05)
+        o.append(_sun79(sx_, sy_, 40, t))
+    return f'<g clip-path="url(#{cid})">{"".join(o)}</g>'
+
+
+def _moon79(x, y, r, t, calm=False):
+    """Полумесяц-серп с ореолом (не фазы — один и тот же месяц)."""
+    g = lib.rad_grad([(0, "#fff3c4", .5), (1, "#fff3c4", 0)], x, y, r * 2.6)
+    o = f'<circle cx="{f(x)}" cy="{f(y)}" r="{f(r * 2.6)}" fill="url(#{g})"/>'
+    outer = ellipse_pts(x, y, r, r, 26)
+    cid = lib.uid("mn")
+    lib.DEFS.append(f'<mask id="{cid}"><rect x="{f(x - r * 2)}" y="{f(y - r * 2)}" width="{f(r * 4)}" height="{f(r * 4)}" fill="#fff"/>'
+                    f'<circle cx="{f(x + r * .55)}" cy="{f(y - r * .28)}" r="{f(r * .86)}" fill="#000"/></mask>')
+    o += f'<g mask="url(#{cid})">' + shape(outer, "#fbefc0", blob(ellipse_pts(x - r * .35, y + r * .25, r * .5, r * .55, 14), "#e8d898", .7), w=2.6,
+                                           seed=7903) + "</g>"
+    return o
+
+
+def _sun79(x, y, r, t):
+    g = lib.rad_grad([(0, "#ffe7a0", .65), (1, "#ffb060", 0)], x, y, r * 2.8)
+    o = f'<circle cx="{f(x)}" cy="{f(y)}" r="{f(r * 2.8)}" fill="url(#{g})"/>'
+    for j in range(8):
+        a = 2 * math.pi * j / 8 + t * 1.5
+        o += line([(x + r * 1.25 * math.cos(a), y + r * 1.25 * math.sin(a)), (x + r * 1.7 * math.cos(a), y + r * 1.7 * math.sin(a))], 5, "#f2a43a",
+                  taper=.5, wmin=.4, seed=7904 + j)
+    o += shape(ellipse_pts(x, y, r, r, 22), "#ffd45a", blob(ellipse_pts(x + r * .3, y + r * .3, r * .6, r * .55, 14), "#f5b840", .7), w=2.6, seed=7905)
+    return o
+
+
+def _skylight_frame(P, box=None):
+    box = box or AT_SKY
+    (x0, y0), (x1, y1), (x2, y2), (x3, y3) = box
+    cx, cy = sum(p[0] for p in box) / 4, sum(p[1] for p in box) / 4
+
+    def grow(p, d):
+        vx, vy = p[0] - cx, p[1] - cy
+        n = math.hypot(vx, vy)
+        return (p[0] + vx / n * d, p[1] + vy / n * d)
+    outer = [grow(p, 34) for p in box]
+    o = [f'<path d="{lib.fill_d([(x, y, 1) for x, y in outer])}{lib.fill_d([(x, y, 1) for x, y in box][::-1])}" fill="{P["frame"]}" fill-rule="evenodd"/>']
+    # откос (глубина проёма) снизу — тень
+    o.append(blob([(x3, y3, 1), (x2, y2, 1), (x2 - 6, y2 + 18, 1), (x3 + 4, y3 + 16, 1)], "#000000", .25))
+    o.append(line([(x, y) for x, y in outer] + [outer[0]], 4.2, INK, taper=0, wmin=1, seed=7906))
+    o.append(line([(x, y) for x, y in box] + [box[0]], 3.2, INK, taper=0, wmin=1, seed=7907))
+    # средник створки
+    mt, mb = ((x0 + x1) / 2, (y0 + y1) / 2), ((x3 + x2) / 2, (y3 + y2) / 2)
+    o.append(line([mt, mb], 7, P["frame"], taper=0, wmin=1, seed=7908) + line([mt, mb], 2.4, INK, taper=0, wmin=1, seed=7909, op=.7))
+    # блик стекла
+    o.append(line([(x0 + 30, y0 + 40), (x0 + 70, y0 + 120)], 5, "#ffffff", taper=.5, wmin=.3, seed=7910, op=.18))
+    return "".join(o)
+
+
+def attic(t, light="night_phone", sky=None, lamp_u=None, bump=0.0):
+    """Мансарда Димы (см. шапку раздела 79)."""
+    P = _at_pal(light)
+    warm = light == "warm_lamp" or isinstance(light, (int, float))
+    if lamp_u is None:
+        lamp_u = (1 - clamp01(light)) if isinstance(light, (int, float)) else (1.0 if light == "warm_lamp" else 0.0)
+    o = []
+    X0, X1 = -2200.0, 2400.0
+    # потолок-скат (весь верх) — ровная плоскость, лёгкий градиент, без линий
+    g = lib.lin_grad([(0, P["ceil_hi"], 1), (1, P["ceil"], 1)], 0, -600, 0, 900, units="userSpaceOnUse")
+    o.append(f'<rect x="{f(X0)}" y="-1400" width="{f(X1 - X0)}" height="3400" fill="url(#{g})"/>')
+    # задняя стена ниже линии ската
+    wall = [(X0, _slope_y(X0), 1), (X1, _slope_y(X1), 1), (X1, AT_FL + 10, 1), (X0, AT_FL + 10, 1)]
+    gw = lib.lin_grad([(0, P["wall_hi"], 1), (1, P["wall_sh"], 1)], 0, 300, 0, AT_FL, units="userSpaceOnUse")
+    o.append(f'<path d="{lib.fill_d(wall)}" fill="url(#{gw})"/>')
+    # стропило-балка вдоль линии ската (толстая доска), тень под ней на стене
+    bt = 26.0
+    beam = [(X0, _slope_y(X0) - bt, 1), (X1, _slope_y(X1) - bt, 1), (X1, _slope_y(X1) + bt * .6, 1), (X0, _slope_y(X0) + bt * .6, 1)]
+    o.append(blob([(X0, _slope_y(X0) + bt * .6, 1), (X1, _slope_y(X1) + bt * .6, 1), (X1, _slope_y(X1) + bt * 1.6, 1), (X0, _slope_y(X0) + bt * 1.6, 1)],
+                  "#000000", .14))
+    o.append(shape(beam, P["beam"], blob([(X0, _slope_y(X0) + bt * .1, 1), (X1, _slope_y(X1) + bt * .1, 1), (X1, _slope_y(X1) + bt * .6, 1),
+                                          (X0, _slope_y(X0) + bt * .6, 1)], P["beam_sh"]), w=3.8, seed=7911))
+    # плинтус, пол
+    o.append(shape(rect_pts(X0, AT_FL - 40, X1, AT_FL + 4), P["wood"], "", w=3.2, seed=7912))
+    gf = lib.lin_grad([(0, P["floor"], 1), (1, P["floor_b"], 1)], 0, AT_FL, 0, AT_FL + 600, units="userSpaceOnUse")
+    o.append(f'<rect x="{f(X0)}" y="{f(AT_FL + 4)}" width="{f(X1 - X0)}" height="900" fill="url(#{gf})"/>')
+    for k, y in enumerate((AT_FL + 60, AT_FL + 150, AT_FL + 280)):
+        o.append(line([(X0, y), (X1, y + 2)], 3, P["floor_b"], taper=0, wmin=1, seed=7913 + k, op=.7))
+    # коврик
+    rx, ry = AT_RUG
+    o.append(shape(ellipse_pts(rx, ry + 30, 330, 52, 28), P["rug"], blob(ellipse_pts(rx, ry + 30, 270, 34, 24), lib.mul(P["rug"], (1.15, 1.1, 1.1)), .5)
+                   + line(ellipse_pts(rx, ry + 30, 300, 44, 28) + [ellipse_pts(rx, ry + 30, 300, 44, 28)[0]], 3, lib.mul(P["rug"], (.75, .75, .75)), taper=0,
+                          wmin=1, seed=7915, op=.6), w=3.4, seed=7914))
+    # полка на стене (s14) — доска на двух кронштейнах
+    sx0, sy, sx1 = AT_SHELF
+    o.append(blob(rect_pts(sx0 + 6, sy + 22, sx1 + 6, sy + 40), "#000000", .18))
+    o.append(shape(rect_pts(sx0, sy, sx1, sy + 24), P["wood"], blob(rect_pts(sx0, sy + 16, sx1, sy + 24), P["wood_sh"]), w=3.6, seed=7916))
+    for bx in (sx0 + 60, sx1 - 60):
+        o.append(shape([(bx - 8, sy + 24, 1), (bx + 8, sy + 24, 1), (bx + 8, sy + 90, 1)], P["wood_sh"], "", w=2.8, seed=7917 + int(bx) % 5))
+    # гвоздь гитары
+    gx, gy = AT_GUITAR_NAIL
+    o.append(shape(ellipse_pts(gx, gy, 9, 9, 10), "#8a8a96", "", w=2.4, seed=7918))
+    # люк в скате
+    sky_svg = skylight_sky(t, sky if sky is not None else ("day" if light == "day" else ("moon_high" if light != "night_phone" else 0.15)))
+    frame = _skylight_frame(P)
+    # лунный (или дневной) свет из люка — пятно формы стекла на стене справа
+    if light != "warm_lamp":
+        lk = .10 if light == "night_phone" else (.16 if light == "day" else .2 * (clamp01(light) if isinstance(light, (int, float)) else 1.0))
+        col = "#fff6dc" if light == "day" else "#b8c8ff"
+        q = [(p[0] + 60 + .25 * (p[1] - 400), p[1] + 330 + .4 * (p[0] - 700)) for p in AT_SKY]
+        o.append(blob([(x, y, 1) for x, y in q], col, lk))
+    # тумбочка и лампа слева от изголовья
+    nx, ny = AT_NSTAND
+    o.append(blob(rect_pts(nx - 150, AT_FL - 10, nx + 160, AT_FL + 14), "#000000", .2))
+    o.append(shape(rect_pts(nx - 150, ny, nx + 150, AT_FL - 6), P["wood"], blob(rect_pts(nx + 124, ny, nx + 150, AT_FL - 6), P["wood_sh"])
+                   + line([(nx - 130, ny + 130), (nx + 130, ny + 130)], 3, P["wood_sh"], taper=0, wmin=1, seed=7920)
+                   + shape(lib.rrect(nx - 22, ny + 66, nx + 22, ny + 82, 5), "#c8b49a", "", w=2.0, seed=7921), w=4.0, seed=7922))
+    o.append(shape(lib.rrect(nx - 166, ny - 18, nx + 166, ny + 6, 6), lib.mul(P["wood"], (1.1, 1.08, 1.06)), "", w=3.6, seed=7923))
+    o.append(_lamp79(AT_LAMP[0], AT_LAMP[1], lamp_u, P))
+    # изголовье, матрас, подушка
+    hx0, hx1, hy = AT_HEADBOARD
+    o.append(shape(lib.rrect(hx0, hy, hx1, AT_FL, 30), P["wood"], blob(rect_pts(hx1 - 22, hy + 20, hx1, AT_FL), P["wood_sh"])
+                   + line([(hx0 + 20, hy + 60), (hx1 - 26, hy + 60)], 3, P["wood_sh"], taper=0, wmin=1, seed=7924), w=4.2, seed=7925))
+    bx0, bx1 = AT_BED_X
+    by = AT_BED_Y
+    o.append(shape(lib.rrect(bx0, by + 80, bx1, by + 250, 12), P["wood"], blob(rect_pts(bx0, by + 210, bx1, by + 250), P["wood_sh"]), w=4.0, seed=7926))
+    o.append(shape(lib.rrect(bx0, by - 6 - 20 * bump, bx1, by + 100, 26), P["sheet"], blob(rect_pts(bx0, by + 66, bx1, by + 100), P["sheet_sh"]),
+                   w=4.0, seed=7927))
+    px, py = AT_PILLOW
+    py -= 26 * bump
+    o.append(shape([(px - 190, py + 34, 1), (px - 200, py - 26), (px - 140, py - 64), (px + 100, py - 70), (px + 170, py - 34), (px + 166, py + 34, 1)],
+                   P["pillow"], blob(rect_pts(px - 210, py + 8, px + 180, py + 36), P["sheet_sh"]), w=3.8, seed=7928))
+    front = _quilt(-80, 1900, by + 60 - 24 * bump, by + 320, dict(quilt=P["quilt"], quilt_sh=P["quilt_sh"], quilt_hi=P["quilt_hi"]), t, 7930, bump)
+    vg = lib.rad_grad([(0, P["vign"], 0), (.62, P["vign"], 0), (1, P["vign"], P["vk"])], 540, 900, 900, 1250)
+    shade = f'<rect x="{f(X0)}" y="-1400" width="{f(X1 - X0)}" height="4400" fill="url(#{vg})"/>'
+    lt = ""
+    if lamp_u > .01:
+        lx, ly = AT_LAMP
+        gl = lib.rad_grad([(0, "#ffd48a", .55 * lamp_u), (.5, "#ffb860", .22 * lamp_u), (1, "#ffb860", 0)], lx, ly - 150, 760, 620)
+        lt = f'<rect x="{f(lx - 900)}" y="{f(ly - 900)}" width="1800" height="1600" fill="url(#{gl})"/>'
+    an = dict(clock=AT_CLOCK, sky=AT_SKY, pillow=AT_PILLOW, head=AT_HEAD, phone=AT_PHONE, bed_y=AT_BED_Y, nstand=AT_NSTAND, lamp=AT_LAMP,
+              shelf=AT_SHELF, nail=AT_GUITAR_NAIL, rug=AT_RUG, fl=AT_FL, text=AT_TEXT, warm=warm)
+    return dict(bg="".join(o), sky=sky_svg, frame=frame, bed=front, front="", shade=shade, light=lt, anchors=an, P=P, cam=AT_CAM_HOOK)
+
+
+def _lamp79(x, y, u, P):
+    """Ночник: ножка, абажур-трапеция; u — горит (абажур светится, ниже — круг света на тумбочке)."""
+    o = shape(ellipse_pts(x, y - 6, 40, 10, 14), "#5a4a3a", "", w=2.6, seed=7931)
+    o += line([(x, y - 10), (x, y - 120)], 7, "#5a4a3a", taper=0, wmin=1, seed=7932)
+    sh = lib.mix("#e8c890", "#fff0b8", u)
+    o += shape([(x - 44, y - 200, 1), (x + 44, y - 200, 1), (x + 74, y - 116, 1), (x - 74, y - 116, 1)], sh,
+               blob([(x + 30, y - 200), (x + 44, y - 200), (x + 74, y - 116), (x + 52, y - 116)], "#000000", .12 * (1 - u)), w=3.4, seed=7933)
+    if u > .01:
+        o += blob(ellipse_pts(x, y - 4, 120, 16, 18), "#fff0c0", .4 * u)
+    return o
+
+
+# ─────────────── ванная (s03) ───────────────
+BA_SINK = (620.0, 1080.0)
+BA_STAND = (300.0, 1180.0)
+BA_MIRROR = (450.0, 300.0, 820.0, 820.0)
+BA_FL = 1640.0
+
+
+def bathroom(t, light="evening"):
+    """Ванная вечером: плитка, зеркало без отражения, тумба под раковиной, полочка со стаканом. См. шапку раздела 79."""
+    o = ['<rect x="-900" y="-900" width="2880" height="3720" fill="#bcd2d6"/>']
+    g = lib.lin_grad([(0, "#d2e2e4", 1), (1, "#9ab4ba", 1)], 0, -200, 0, 1700, units="userSpaceOnUse")
+    o.append(f'<rect x="-900" y="-900" width="2880" height="3720" fill="url(#{g})"/>')
+    for k in range(-8, 22):
+        o.append(line([(k * 96, -900), (k * 96, BA_FL)], 2.2, "#8aa6ac", taper=0, wmin=1, seed=7940 + k, op=.55))
+    for k in range(-8, 26):
+        o.append(line([(-900, k * 96), (1980, k * 96)], 2.2, "#8aa6ac", taper=0, wmin=1, seed=7980 + k, op=.55))
+    x0, y0, x1, y1 = BA_MIRROR
+    o.append(blob(rect_pts(x0 + 10, y0 + 14, x1 + 14, y1 + 18), "#000000", .15))
+    gm = lib.lin_grad([(0, "#e6f0f2", 1), (1, "#b8ccd2", 1)], 0, 0, 1, 1)
+    o.append(shape(lib.rrect(x0, y0, x1, y1, 18), f"url(#{gm})", line([(x0 + 60, y0 + 90), (x0 + 150, y0 + 240)], 10, "#ffffff", taper=.4, wmin=.3,
+                                                                     seed=7990, op=.5)
+                   + line([(x0 + 110, y0 + 80), (x0 + 170, y0 + 180)], 6, "#ffffff", taper=.4, wmin=.3, seed=7991, op=.4), w=4.4, seed=7992))
+    # лампочка над зеркалом
+    o.append(shape(lib.rrect(x0 + 80, y0 - 70, x1 - 80, y0 - 30, 18), "#fff4d0", "", w=3.2, seed=7993))
+    gl = lib.rad_grad([(0, "#fff0c0", .35), (1, "#fff0c0", 0)], (x0 + x1) / 2, y0 - 50, 520, 360)
+    o.append(f'<rect x="{f(x0 - 600)}" y="{f(y0 - 600)}" width="1600" height="1200" fill="url(#{gl})"/>')
+    # тумба под раковиной
+    sx, sy = BA_SINK
+    o.append(shape(rect_pts(sx - 260, sy + 70, sx + 260, BA_FL - 6), "#e8e2d6", blob(rect_pts(sx + 230, sy + 70, sx + 260, BA_FL - 6), "#c4bcae")
+                   + line([(sx, sy + 90), (sx, BA_FL - 30)], 3, "#b0a898", taper=0, wmin=1, seed=7994), w=4.0, seed=7995))
+    o.append(shape(rect_pts(sx - 290, sy + 40, sx + 290, sy + 76), "#f2eee6", "", w=3.6, seed=7996))
+    # пол
+    o.append(f'<rect x="-900" y="{f(BA_FL)}" width="2880" height="1400" fill="#7f969c"/>')
+    o.append(line([(-900, BA_FL), (1980, BA_FL)], 4, INK, taper=0, wmin=1, seed=7997))
+    vg = lib.rad_grad([(0, "#2a1a10", 0), (.65, "#2a1a10", 0), (1, "#2a1a10", .3)], 540, 900, 900, 1250)
+    front = f'<rect x="-900" y="-900" width="2880" height="3720" fill="url(#{vg})"/>'
+    return dict(bg="".join(o), front=front, anchors=dict(sink=BA_SINK, stand=BA_STAND, mirror=BA_MIRROR, fl=BA_FL), cam=(540.0, 960.0, 1.0))
+
+
+# ─────────────── кухня вечером (s04) ───────────────
+KE_WIN = (560.0, 230.0, 1000.0, 760.0)
+KE_TABLE = (80.0, 1000.0, 1080.0)
+KE_SIT = (300.0, 1170.0)
+KE_PLATE = (620.0, 1060.0)
+KE_FL = 1600.0
+
+
+def kitchen_evening(t, moon_u=0.0):
+    """Кухня вечером: тёплая стена, лампа над столом, окно с крышами, луна встаёт по дуге (moon_u 0…1). См. шапку раздела 79."""
+    o = ['<rect x="-900" y="-900" width="2880" height="3720" fill="#b9805e"/>']
+    g = lib.lin_grad([(0, "#9a6650", 1), (.5, "#c48a64", 1), (1, "#a8704e", 1)], 0, -200, 0, 1700, units="userSpaceOnUse")
+    o.append(f'<rect x="-900" y="-900" width="2880" height="3720" fill="url(#{g})"/>')
+    x0, y0, x1, y1 = KE_WIN
+    m = clamp01(moon_u)
+    sky = lib.lin_grad([(0, lib.mix("#3a3a7a", "#141c4a", m), 1), (1, lib.mix("#e0906a", "#3a4a8a", m), 1)], 0, y0, 0, y1, units="userSpaceOnUse")
+    win = [f'<rect x="{f(x0)}" y="{f(y0)}" width="{f(x1 - x0)}" height="{f(y1 - y0)}" fill="url(#{sky})"/>']
+    # луна по дуге из-за крыш
+    mx = x0 + 120 + 240 * m
+    my = y1 - 60 - 360 * math.sin(math.pi / 2 * m)
+    win.append(_moon79(mx, my, 44, t))
+    r = rs(7995)
+    x = x0 - 10
+    while x < x1:
+        w_, h_ = r.uniform(100, 160), r.uniform(70, 170)
+        win.append(blob([(x, y1 + 10, 1), (x, y1 - h_, 1), (x + w_ / 2, y1 - h_ - 50, 1), (x + w_, y1 - h_, 1), (x + w_, y1 + 10, 1)], "#2a1f3a"))
+        if r.rand() < .6:
+            win.append(blob(rect_pts(x + w_ * .35, y1 - h_ * .6, x + w_ * .55, y1 - h_ * .35), "#f0c060", .8))
+        x += w_ + r.uniform(4, 14)
+    cid = lib.clip_rect(x0, y0, x1 - x0, y1 - y0)
+    o.append(f'<g clip-path="url(#{cid})">{"".join(win)}</g>')
+    o.append(_glass_frame(x0, y0, x1, y1, "#e8d0b0", 7996))
+    # лампа над столом и круг света
+    lx = 520.0
+    o.append(line([(lx, -900), (lx, 330)], 4, "#3a2a20", taper=0, wmin=1, seed=7997))
+    o.append(shape([(lx - 50, 330, 1), (lx + 50, 330, 1), (lx + 120, 430, 1), (lx - 120, 430, 1)], "#d06a3a", "", w=3.6, seed=7998))
+    o.append(blob(ellipse_pts(lx, 430, 112, 12, 14), "#fff2c0", .95))
+    gl = lib.rad_grad([(0, "#ffd890", .4), (1, "#ffd890", 0)], lx, 900, 700, 600)
+    o.append(f'<rect x="-600" y="200" width="2400" height="1400" fill="url(#{gl})"/>')
+    o.append(f'<rect x="-900" y="{f(KE_FL)}" width="2880" height="1400" fill="#6a3e26"/>')
+    o.append(shape(rect_pts(-900, KE_FL - 40, 1980, KE_FL + 4), "#d8b08a", "", w=3.2, seed=7999))
+    tx0, tx1, ty = KE_TABLE
+    tb = shape(rect_pts(tx0, ty, tx1 + 300, ty + 44), "#a8683e", blob(rect_pts(tx0, ty + 30, tx1 + 300, ty + 44), "#7a4626"), w=4.2, seed=8000)
+    tb += shape(rect_pts(tx0 - 30, ty - 60, tx1 + 300, ty + 6), "#e8d8c0", blob(rect_pts(tx0 - 30, ty - 14, tx1 + 300, ty + 6), "#c8b498"), w=3.6, seed=8001)
+    for lx2 in (tx0 + 40, tx1 + 220):
+        tb += shape(rect_pts(lx2, ty + 44, lx2 + 34, KE_FL), "#8a5232", "", w=3.4, seed=8002 + int(lx2) % 5)
+    vg = lib.rad_grad([(0, "#2a1408", 0), (.6, "#2a1408", 0), (1, "#2a1408", .35)], 540, 900, 900, 1250)
+    front = f'<rect x="-900" y="-900" width="2880" height="3720" fill="url(#{vg})"/>'
+    return dict(bg="".join(o), table=tb, front=front, anchors=dict(win=KE_WIN, table=KE_TABLE, sit=KE_SIT, plate=KE_PLATE, fl=KE_FL, moon=(mx, my)),
+                cam=(540.0, 960.0, 1.0))
+
+
+# ─────────────── офис днём (s08) ───────────────
+OD_WIN = (80.0, 140.0, 1000.0, 820.0)
+OD_DESK = (120.0, 1060.0, 1100.0)
+OD_SIT = (380.0, 1240.0)
+OD_FL = 1620.0
+
+
+def office_day(t, sun_u=0.0):
+    """Офис днём: большое окно с городом, солнце по дуге (sun_u 0…1), тени рамы метут по полу и стене. См. шапку раздела 79."""
+    u = clamp01(sun_u)
+    o = ['<rect x="-900" y="-900" width="2880" height="3720" fill="#e4e0d6"/>']
+    x0, y0, x1, y1 = OD_WIN
+    warm = math.sin(math.pi * u) ** .5
+    sky = lib.lin_grad([(0, lib.mix("#e89a6a", "#6fa8e0", warm), 1), (1, lib.mix("#f8d09a", "#cfe4f4", warm), 1)], 0, y0, 0, y1, units="userSpaceOnUse")
+    win = [f'<rect x="{f(x0)}" y="{f(y0)}" width="{f(x1 - x0)}" height="{f(y1 - y0)}" fill="url(#{sky})"/>']
+    sx = x0 + 60 + (x1 - x0 - 120) * u
+    sy = y1 - 40 - (y1 - y0 - 140) * math.sin(math.pi * u)
+    win.append(_sun79(sx, sy, 50, t))
+    r = rs(8010)
+    x = x0 - 10
+    while x < x1:
+        w_, h_ = r.uniform(70, 130), r.uniform(120, 320)
+        win.append(shape(rect_pts(x, y1 - h_, x + w_, y1 + 10), "#9aaabb", "".join(blob(rect_pts(x + 14 + 26 * c, y1 - h_ + 20 + 40 * rr, x + 26 + 26 * c,
+                                                                                               y1 - h_ + 40 + 40 * rr), "#d8e2ea", .8)
+                                                                               for c in range(int(w_ // 30)) for rr in range(int(h_ // 60))), w=2.6,
+                         seed=8011 + int(x) % 50))
+        x += w_ + r.uniform(8, 20)
+    cid = lib.clip_rect(x0, y0, x1 - x0, y1 - y0)
+    o.append(f'<g clip-path="url(#{cid})">{"".join(win)}</g>')
+    o.append(_glass_frame(x0, y0, x1, y1, "#f4f2ee", 8012))
+    # пятно солнца формы окна — метёт по полу/стене против солнца
+    dx = -700 + 1400 * (1 - u)
+    o.append(f'<rect x="-900" y="{f(OD_FL)}" width="2880" height="1400" fill="#b8b0a0"/>')
+    o.append(line([(-900, OD_FL), (1980, OD_FL)], 4, INK, taper=0, wmin=1, seed=8013))
+    sq = _sun_quad((x0 + dx * .4 + 100, OD_FL + 30), (700, 0), (dx * .5, 360), "#fff0c8", "#fff6dc", inset=.04)
+    o.append(f'<g opacity="{.55 * warm + .2:.3f}">{sq}</g>')
+    dx0, dx1, dy = OD_DESK
+    desk = shape(rect_pts(dx0, dy, dx1, dy + 40), "#cfd6dc", blob(rect_pts(dx0, dy + 28, dx1, dy + 40), "#a8b0b8"), w=4.0, seed=8014)
+    for lx in (dx0 + 30, dx1 - 60):
+        desk += shape(rect_pts(lx, dy + 40, lx + 30, OD_FL), "#8c949c", "", w=3.2, seed=8015 + int(lx) % 5)
+    return dict(bg="".join(o), desk=desk, front="", anchors=dict(win=OD_WIN, desk=OD_DESK, sit=OD_SIT, fl=OD_FL, sun=(sx, sy)), cam=(540.0, 960.0, 1.0))
