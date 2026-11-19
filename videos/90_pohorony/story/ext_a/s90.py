@@ -663,14 +663,21 @@ def frame_s09(t):
     for nm in ("book", "dumbbell"):
         o.append(grave(GR_X[nm], FL, nm, 1.0, t, [1] * 4 if nm == "dumbbell" else None, 4 if nm == "dumbbell" else 0, sun=sunu, seed=hash(nm) % 50))
     su = ramp(t, stress(40, .3), .7)
-    o.append(sprout(gx + 70, FL + 20, 1.3, su, t, bud=pop(t, W(46) - .1, .3) if t > W(46) - .1 else 0))
+    o.append(sprout(gx - 80, FL + 44, 1.1, su, t, bud=.7 * pop(t, W(46) - .1, .3) if t > W(46) - .1 else 0))
     pour = smooth(a, a + .2, t) * (1 - smooth(W(44), W(44) + .3, t))
-    o.append(cat_priest(gx + 330, FL + 180, 1.0, t, cat_st(t, look=(-.8, .5), smile=1.0 if t > W(41) else 0.0), cap=1.0))
-    o.append(watering_can(gx + 210, FL - 60, 1.0, -30 * pour - 5, pour, t))
-    ds, res = dima(gx - 260, FL + 230, .58, t, dict(people.EXPR["dima"]["hope"], look=(.8, .4)), 0.0, tissue=0.0, arms=None)
+    cx_, cg_, ck_ = gx + 250, FL + 200, .95
+    o.append(cat_priest(cx_, cg_, ck_, t, cat_st(t, look=(-.8, .5), smile=1.0 if t > W(41) else 0.0), cap=1.0))
+    canx, cany = gx + 50, FL + 10
+    rot = 25 * pour + 5
+    o.append(f'<g transform="translate({canx:.1f} {cany:.1f}) scale(-1 1)">{watering_can(0, 0, 1.0, rot, pour, t)}</g>')
+    sh = (cx_ + (762 - 836) * ck_, cg_ + (1182 - 1306) * ck_)
+    paw = (canx + 30, cany - 84)
+    o.append(line([sh, ((sh[0] + paw[0]) / 2, max(sh[1], paw[1]) + 30), paw], 36 * ck_, CLOAK, taper=0, wmin=1, seed=9740))
+    o.append(shape(ellipse_pts(paw[0], paw[1], 24, 22, 14), CT.CAT, blob(ellipse_pts(paw[0] - 4, paw[1] + 6, 10, 7, 10), "#f0a37b"), w=4, seed=9741))
+    ds, res = dima(gx - 330, FL + 230, .58, t, dict(people.EXPR["dima"]["hope"], look=(.8, .4)), 0.0, tissue=0.0, arms=None)
     o.append(ds)
     u = ease_io(ramp(t, a, b - a))
-    return view("".join(o), gx + 40 + 30 * u, FL - 110, 1.75 + .15 * u + .06 * bump(t, W(41)), 0, over=rain(t, 1 - 3 * sunu, seed=4))
+    return view("".join(o), gx + 20 + 30 * u, FL - 160, 1.18 + .1 * u + .05 * bump(t, W(41)), 0, over=rain(t, 1 - 3 * sunu, seed=4))
 
 
 # ═════════════════════════ s10: «Почему они умирают?» ═════════════════════════
@@ -678,33 +685,38 @@ def frame_s10(t):
     a, b = T0("s10"), T1("s10")
     o = [yard_bg(t), yard_row(t)]
     ex = dict(people.EXPR["dima"]["puzzled"], look=(.7, -.2))
-    ds, res = dima(DIMA_POS[0] + 40, DIMA_POS[1], DIMA_POS[2], t, ex, 0.0, tissue=0.0, head_ang=.12 * math.sin(t * 3))
+    ds, res = dima(DIMA_POS[0] - 20, DIMA_POS[1], DIMA_POS[2], t, ex, 0.0, tissue=0.0, head_ang=.12 * math.sin(t * 3))
     o.append(ds)
     cx, cg, ck = CAT_POS
-    o.append(cat_priest(cx, cg, ck, t, cat_st(t, look=(-.8, -.4), tilt=-12 * smooth(W(49), W(49) + .3, t)), cap=1.0))
+    o.append(cat_priest(cx + 40, cg, ck, t, cat_st(t, look=(-.8, -.4), tilt=-12 * smooth(W(49), W(49) + .3, t)), cap=1.0))
     hx, hy = res["head"]
     o.append(PR.question_mark(hx + 30, hy - 260, 1.4 * pop(t, W(49) - .05), 1.0, col="#f2b84b"))
     u = ease_io(ramp(t, a, b - a))
-    return view("".join(o), 560 - 40 * u, 1000 + 30 * u, 1.05 + .12 * u + .05 * bump(t, W(49)), 0, over=rain(t, .6, seed=5))
+    return view("".join(o), 650 - 30 * u, 1000 + 30 * u, 1.0 + .1 * u + .05 * bump(t, W(49)), 0, over=rain(t, .6, seed=5))
 
 
 # ═════════════════════════ ступени: огромная и маленькая ═════════════════════════
 STEP_X = 640.0
 
 
+def big_step(x, y, k, u, t, seed=1):
+    """Огромная ступень: широкий каменный блок (step_wall, растянутый вширь), u 0…1 — высота."""
+    return f'<g transform="translate({x:.1f} {y:.1f}) scale(2.3 1) translate({-x:.1f} {-y:.1f})">{PR.step_wall(x, y, k, u, t=t, seed=seed)}</g>'
+
+
 def frame_s11(t):
     a, b = T0("s11"), T1("s11")
     grow = ease_out(ramp(t, W(54) - .05, .45), 3)
     o = [yard_bg(t)]
-    o.append(PR.step_wall(STEP_X, FL + 120, 1.15, .75 + .25 * grow, t=t, seed=1))
+    o.append(big_step(STEP_X + 120, FL + 120, 1.15, .7 + .3 * grow, t))
     ex = dict(people.EXPR["dima"]["scared"], look=(.5, -1.0))
     ds, _ = dima(STEP_X - 330, FL + 120, .52, t, ex, 0.0, tissue=0.0, head_ang=-.3 - .1 * grow, lean=-.06)
     o.append(ds)
     u = ease_io(ramp(t, a, b - a))
     tilt = smooth(W(54) - .1, W(54) + .5, t)
-    cy = 900 - 260 * tilt
+    cy = FL - 380 - 200 * tilt
     dx, dy = shake(t, W(54) + .2, 10)
-    return view("".join(o), STEP_X - 130 + dx, cy + dy, .82 - .05 * u, 0, over=rain(t, .5, seed=6))
+    return view("".join(o), STEP_X - 60 + dx, cy + dy, 1.02 - .1 * u - .08 * tilt, 0, over=rain(t, .5, seed=6))
 
 
 def head_icon(x, y, k, calm=1.0, t=0.0, fear=0.0):
@@ -720,41 +732,43 @@ def head_icon(x, y, k, calm=1.0, t=0.0, fear=0.0):
     return tf(o, x, y, k)
 
 
+HEAD_AT = (STEP_X - 160, FL - 900)
+
+
 def frame_s12(t):
     a, b = T0("s12"), T1("s12")
     o = [yard_bg(t)]
-    o.append(PR.step_wall(STEP_X + 220, FL + 120, 1.0, 1.0, t=t, seed=1))
-    o.append(PR.step_wall(STEP_X - 200, FL + 120, .9, 0.0, glow_=.6, t=t, seed=2))      # маленькая ступенька
+    o.append(big_step(STEP_X + 330, FL + 120, 1.0, 1.0, t))
+    o.append(PR.step_wall(STEP_X - 190, FL + 120, .9, 0.0, glow_=.6, t=t, seed=2))      # маленькая ступенька
     step = ease_io(ramp(t, W(57) - .1, .5))
     ex = dict(people.EXPR["dima"]["calm_smile"], look=(.3, .6))
-    sx = STEP_X - 430 + 150 * step
-    ds, _ = dima(sx, FL + 120 - 72 * step + 30 * math.sin(math.pi * step) * 0, .52, t, ex, 0.0, tissue=0.0, lean=.05)
+    sx = STEP_X - 420 + 230 * step
+    ds, _ = dima(sx, FL + 120 - 72 * step, .52, t, ex, 0.0, tissue=0.0, lean=.05)
     o.append(ds)
-    o.append(head_icon(STEP_X - 280, FL - 560, 1.25 * pop(t, a + .05), 1.0, t))
+    o.append(head_icon(*HEAD_AT, 1.15 * pop(t, a + .05), 1.0, t))
     u = ease_io(ramp(t, a, b - a))
-    return view("".join(o), STEP_X - 220 + 30 * u, FL - 330, 1.05 + .1 * u, 0, over=rain(t, .4, seed=7))
+    return view("".join(o), STEP_X - 150 + 30 * u, FL - 420, 1.02 + .08 * u, 0, over=rain(t, .4, seed=7))
 
 
 def frame_s13(t):
     a, b = T0("s13"), T1("s13")
     o = [yard_bg(t)]
     slam = ease_in_(ramp(t, stress(64, .2) - .18, .18))
-    o.append(PR.step_wall(STEP_X + 120, FL + 120, 1.15, 1.0, t=t, seed=1))
-    # на «хоронит» перед ступенью падает плита-надгробие
+    o.append(big_step(STEP_X + 200, FL + 120, 1.15, 1.0, t))
     if slam > .01:
         gy = FL + 130 - 900 * (1 - slam)
-        o.append(grave(STEP_X + 120, gy, "dumbbell", 1.5, t, None, 0, seed=7).replace("icon", "icon"))
+        o.append(grave(STEP_X + 200, gy, "dumbbell", 1.5, t, None, 0, seed=7))
     hit = stress(64, .2)
     if t >= hit:
-        o.append(PR.dust_puff(STEP_X - 60, FL + 120, 1.2, clamp((t - hit) / .5), seed=3))
-        o.append(PR.dust_puff(STEP_X + 300, FL + 120, 1.1, clamp((t - hit) / .5), seed=5))
+        o.append(PR.dust_puff(STEP_X + 20, FL + 120, 1.2, clamp((t - hit) / .5), seed=3))
+        o.append(PR.dust_puff(STEP_X + 380, FL + 120, 1.1, clamp((t - hit) / .5), seed=5))
     ex = dict(people.EXPR["dima"]["scared"], look=(.6, -.6))
-    ds, _ = dima(STEP_X - 420, FL + 120, .5, t, ex, 0.0, tissue=0.0, lean=-.12 - .1 * smooth(hit, hit + .2, t))
+    ds, _ = dima(STEP_X - 380, FL + 120, .52, t, ex, 0.0, tissue=0.0, lean=-.12 - .1 * smooth(hit, hit + .2, t))
     o.append(ds)
-    o.append(head_icon(STEP_X - 300, FL - 560, 1.25, 0.0, t, fear=1.0))
+    o.append(head_icon(*HEAD_AT, 1.15, 0.0, t, fear=1.0))
     dx, dy = shake(t, hit, 22)
     u = ease_io(ramp(t, a, b - a))
-    return view("".join(o), STEP_X - 140 + dx, FL - 340 + dy, .9 + .08 * u + .08 * bump(t, hit), 0, over=rain(t, .5, seed=8))
+    return view("".join(o), STEP_X - 100 + dx, FL - 420 + dy, .98 + .06 * u + .08 * bump(t, hit), 0, over=rain(t, .5, seed=8))
 
 
 def ease_in_(u):
