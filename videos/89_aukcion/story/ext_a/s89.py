@@ -340,7 +340,9 @@ def sun_patch(u, t):
     a, b, c, d = WIN
     g = lib.lin_grad([(0, "#fff3c4", .0), (1, "#fff3c4", .55 * u)], 0, 0, 0, 1)
     beam = f'<polygon points="{a:.0f},{b:.0f} {c:.0f},{b:.0f} {c + 40:.0f},{d + 30:.0f} {a + 30:.0f},{d + 30:.0f}" fill="url(#{g})"/>'
-    spot = blob(ellipse_pts((a + c) / 2 + 20, d + 30, 150 * (.6 + .4 * u), 16, 22), "#ffe58a", .9 * u)
+    gg = lib.rad_grad([(0, "#fff0a8", .8 * u), (1, "#fff0a8", 0)], (a + c) / 2 + 20, d + 20, 240)
+    spot = (f'<ellipse cx="{(a + c) / 2 + 20:.0f}" cy="{d + 20:.0f}" rx="240" ry="90" fill="url(#{gg})"/>'
+            + blob(ellipse_pts((a + c) / 2 + 20, d + 30, 170 * (.6 + .4 * u), 22, 22), "#ffe070", .95 * u))
     return beam + spot
 
 
@@ -518,8 +520,8 @@ def dima_fig(x, y, sc, expr, reach=0.0, t=0.0, wobble=1.0, look=None, lean=0.0, 
     if look:
         ex["look"] = look
     sh = (x + 40 * sc, y - 430 * sc)
-    rest = (x - 110 * sc, y - 30 * sc)
-    top = (x - 230 * sc, y - 1120 * sc)
+    rest = (x + 110 * sc, y - 30 * sc)
+    top = (x + 200 * sc, y - 1120 * sc)
     w_ = 14 * sc * wobble * math.sin(t * 9)
     hn = (rest[0] + (top[0] - rest[0]) * reach + w_, rest[1] + (top[1] - rest[1]) * reach)
     arms = {"n": near_arm or ("ik", hn, 1), "f": far_arm or ("ang", .12, .2)}
@@ -791,6 +793,317 @@ def frame_s09(t):
     import story_cta_tg as tg
     press = W(33) + 0.12
     return tg.frame(t, t0=press - 1.10, press=press, common=os.path.join(STORY, "common"))
+
+
+def stand_y(sc):
+    """Таз Димы, когда ступни на полу FL."""
+    return FL - 590 * sc
+
+
+def coin(x, y, k=1.0):
+    return shape(ellipse_pts(x, y, 30 * k, 30 * k, 18), GOLD, blob(ellipse_pts(x - 8 * k, y - 8 * k, 12 * k, 8 * k, 10), "#ffe8a8"), w=3.4 * k, seed=5200)
+
+
+def small_clock(x, y, k, t):
+    return PR.clock(x, y, 46 * k, angle_h=(t * 90) % 360, angle_m=(t * 400) % 360, seed=9, rim=DIMA_RIM)
+
+
+def hug_dima(x, sc, t, expr, cpos, clock_svg, look=None, head_ang=0.0, r=60.0):
+    """Дима держит предмет двумя руками у груди (предмет между дальней и ближней рукой)."""
+    y = stand_y(sc)
+    ex = dict(people.EXPR["dima"][expr]) if isinstance(expr, str) else dict(expr)
+    if look:
+        ex["look"] = look
+    arms = {"n": ("ik", (cpos[0] - r - 10, cpos[1] + 20), -1), "f": ("ik", (cpos[0] + r + 10, cpos[1] + 20), -1)}
+    hands = {"n": {"dir": (.5, -.8), "curl": (.3, .3, .35, .4), "thumb": .4}, "f": {"dir": (-.5, -.8), "curl": (.3, .3, .35, .4), "thumb": .4}}
+    b = fig(x, y, sc, ex, feet="stand", lean=.02, head_ang=head_ang, arms=arms, hands=hands, layers=("legs", "pelvis", "arm_f", "body"))
+    n = fig(x, y, sc, ex, feet="stand", lean=.02, head_ang=head_ang, arms=arms, hands=hands, layers=("arm_n",))
+    return shadow(x, FL + 12, 150 * sc / .6) + b["svg"] + n["svg"] + clock_svg, b
+
+
+# ═════════════════════════ s10: «выкупить своё время обратно» ═════════════════════════
+def frame_s10(t):
+    a = T0("s10")
+    o = [hall_bg(t), spotlight(PED[0], FL, 1.0), PR.pedestal(PED[0], PED[1], PED[2], seed=1)]
+    cu = smooth(W(38) - .1, W(38) + .3, t)                       # монетка с лапы на пьедестал
+    hug = ease_io(ramp(t, W(41) - .1, .45))
+    sc = .74
+    dx_ = 420.0
+    chest = (dx_ + 60, stand_y(sc) - 300 * sc)
+    cx_, cy_ = CLK[0] + (chest[0] - CLK[0]) * hug, CLK[1] + (chest[1] - CLK[1]) * hug - 120 * math.sin(math.pi * hug)
+    kk = 1.0 - .45 * hug
+    clk = life_clock(cx_, cy_, kk, t, .3) if hug < .98 else PR.clock(cx_, cy_, 100 * kk, (t * 18) % 360, (t * 150) % 360, seed=7, rim=DIMA_RIM)
+    ccx, ccy = PED[0] + 150, PED_TOP
+    o.append(cat(ccx, ccy, .5, t, look=(-.8, .2) if t < W(41) else (-.9, -.3), paw=cu * (1 - smooth(W(39), W(39) + .3, t)), paw_dx=-100,
+                 smile=hug, tail=8 * math.sin(t * 3)))
+    if t > W(38) - .1:
+        px = ccx - 90 * (1 - cu) - 40 * cu
+        o.append(coin(px - 30, ccy - 60 * (1 - cu) - 22, .9))
+        o.append(PR.sparkles(px - 30, ccy - 30, .9, bump(t, W(38) + .3, .05, .4), t, seed=11))
+    if hug < .5:
+        o.append(clk)
+        g = dima_fig(dx_, stand_y(sc), sc, "hope", 0.0, t, look=(.8, -.3), wobble=.3)["svg"]
+    else:
+        g, _ = hug_dima(dx_, sc, t, "bliss", (chest[0], chest[1]), clk, r=55)
+    o.append(g)
+    if hug > .5:
+        o.append(PR.heart(chest[0] + 230, chest[1] - 200 - 80 * ramp(t, W(41) + .3, 1.0), .7, bump(t, W(41) + .35, .06, .4), seed=3))
+    z = 1.35 + .12 * ease_io(ramp(t, a, T1("s10") - a)) + .06 * bump(t, W(41))
+    return view("".join(o), 590, 860 - 40 * hug, z, 0, bg=WALL)
+
+
+# ═════════════════════════ s11: «каждую неделю мы возвращаем себе один лот» ═════════════════════════
+def week_row(t, gold_u):
+    o = []
+    for j in range(7):
+        x = 190 + j * 116
+        pu = smooth(W(44) + j * .05, W(44) + j * .05 + .15, t)
+        if pu < .02:
+            continue
+        r = 42 * pu
+        fill = "#f4ead8"
+        inner = ""
+        if j == 0 and gold_u > .02:
+            inner = blob(ellipse_pts(x, 220, r * gold_u, r * gold_u, 18), GOLD)
+        o.append(shape(ellipse_pts(x, 220, r, r, 18), fill, inner, w=4, seed=5300 + j))
+    o.append(PR.sparkles(190, 220, 1.0, gold_u * (1 - smooth(W(49) + .3, W(49) + .6, t)), t, seed=12))
+    return "".join(o)
+
+
+def frame_s11(t):
+    a = T0("s11")
+    gu = smooth(W(48), W(48) + .25, t)
+    o = [hall_bg(t, win=False), shape(lib.rrect(110, 140, 970, 300, 30), "#f6eee0", "", w=4, seed=5310), week_row(t, gu)]
+    # часок: у значка-ленты в руке → кот выхватывает → у Димы
+    take = ease_io(ramp(t, W(46) - .05, .35))
+    give = ease_io(ramp(t, W(47), .4))
+    bs, hand, head = buyer(230.0, FL + 160, .9, "feed", t, .1, look=(.7, .2), mouth="grin" if take < .5 else "o", seed=3, paddle_on=False)
+    o.append(bs)
+    catx = 520.0 - 120 * take + 120 * give
+    jump = 90 * math.sin(math.pi * take) * (take < .99)
+    cpaw = (catx - 70, FL - 300 - jump)
+    sc = .72
+    dx_ = 820.0
+    chest = (dx_ - 40, stand_y(sc) - 280 * sc)
+    if take < .5:
+        cp = (hand[0] + 10, hand[1] - 30)
+    elif give < .02:
+        cp = cpaw
+    else:
+        cp = (cpaw[0] + (chest[0] - cpaw[0]) * give, cpaw[1] + (chest[1] - cpaw[1]) * give)
+    o.append(shadow(catx, FL + 12, 90))
+    o.append(cat(catx, FL - jump, .48, t, look=(-.9 if t < W(47) else .9, -.3), paw=take * (1 - give), paw_dx=-120, smile=give, tail=10 * math.sin(t * 4)))
+    if give > .9:
+        g, _ = hug_dima(dx_, sc, t, "bliss", chest, small_clock(*cp, 1.0, t), r=46)
+        o.append(g)
+    else:
+        o.append(dima_fig(dx_, stand_y(sc), sc, "hope", .25 * give, t, look=(-.8, -.2), wobble=.2)["svg"])
+        o.append(small_clock(*cp, 1.0, t))
+    z = 1.08 + .1 * ease_io(ramp(t, a, T1("s11") - a)) + .05 * bump(t, W(46))
+    dx, dy = shake(t, W(46), 6)
+    return view("".join(o), 540 + dx, 830 + dy, z, 0, bg=WALL)
+
+
+# ═════════════════════════ s12: человек отдаёт соцсетям часики ═════════════════════════
+def frame_s12(t):
+    a = T0("s12")
+    o = [hall_bg(t, win=False)]
+    give = ease_io(ramp(t, W(53) - .1, .35))
+    stash = ease_io(ramp(t, W(53) + .25, .45))
+    again = smooth(W(54) + .15, W(54) + .4, t)
+    sc = .7
+    px, py = 330.0, FL - 590 * sc * 1.02
+    reach = (px + 240 * sc + 200 * give * (1 - stash), py - 330 * sc)
+    ex = dict(people.EXPR["youth"]["serious"])
+    ex["look"] = (.8, .0)
+    pf = people.person("youth", px, py, sc, ex, feet=people.stand_kw(px, py, sc, who="youth")["feet"], arms={"n": ("ik", reach, -1)},
+                       hands={"n": {"dir": (1, -.2), "curl": (.4, .4, .45, .5), "thumb": .4}})
+    o.append(shadow(px, FL + 12, 150))
+    bs, hand, head = buyer(800.0, FL + 40, .95, "feed", t, .05, look=(-.8, .1), mouth="grin", seed=3, paddle_on=False, fat=1.0 + .1 * stash)
+    o.append(bs)
+    o.append(pf["svg"])
+    wr = pf["wrist"]["n"]
+    if stash < .98:
+        tx_, ty_ = 800 - 55, FL + 40 - 330 * .95                  # нагрудный карман фрака
+        cp = (wr[0] + 30 + (tx_ - wr[0] - 30) * stash, wr[1] - 20 + (ty_ - wr[1] + 20) * stash - 90 * math.sin(math.pi * stash))
+        o.append(f'<g opacity="{1 - smooth(.8, 1.0, stash):.2f}">{small_clock(cp[0], cp[1], 1.0 - .45 * stash, t)}</g>')
+    if again > .02:
+        o.append(f'<g opacity="{again:.2f}">{small_clock(wr[0] + 30, wr[1] - 20, again, t + 1)}</g>')
+    z = 1.2 + .12 * ease_io(ramp(t, a, T1("s12") - a)) + .06 * bump(t, W(53))
+    return view("".join(o), 560, 900, z, 0, bg=WALL)
+
+
+# ═════════════════════════ s13: песок — прямо в рот ленте ═════════════════════════
+def frame_s13(t):
+    a = T0("s13")
+    o = [hall_bg(t, win=False)]
+    fat = 1.0 + .35 * ramp(t, a, T1("s13") - a)
+    bx_ = 540.0
+    bk = 1.25
+    bs, hand, head = buyer(bx_, FL + 160, bk, "feed", t, 0.0, look=(0, -.6), mouth="chew", chew=t * 14, seed=3, paddle_on=False, fat=fat)
+    o.append(bs)
+    mouth = (head[0], head[1] + 66 * bk)
+    two = smooth(W(56) - .1, W(56) + .15, t)
+    for j, (hx, ph) in enumerate(((bx_ - 290, 0.0), (bx_ + 290, .5))):
+        u = 1.0 if j == 0 else two
+        if u < .02:
+            continue
+        hy = head[1] - 330 + (1 - u) * -900
+        o.append(PR.giant_hourglass(hx, hy, .8, sand_top=.7 - .2 * ramp(t, a, 2), sand_bot=0.0, stream=1.0, t=t, seed=j, chain=0.0))
+        tip = (hx, hy + 200)
+        end = (mouth[0] + (-14 if j == 0 else 14), mouth[1])
+        o.append(grains(bez(tip, (tip[0] + (end[0] - tip[0]) * .2, end[1] + 40), end), t, n=26, seed=j, speed=2.2, col="#e8c27a"))
+    z = 1.0 + .12 * ease_io(ramp(t, a, T1("s13") - a)) + .08 * bump(t, W(56))
+    dx, dy = shake(t, W(56), 8)
+    return view("".join(o), 540 + dx, 760 + dy, z, 0, bg=WALL)
+
+
+# ═════════════════════════ s14: целый месяц в году — лист улетает в зал ═════════════════════════
+def tear_sheet(x, y, k=1.0, rot=0.0, fy=1.0):
+    o = shape(lib.rect_pts(-130, 0, 130, 250), "#fbf6ea", "".join(blob(ellipse_pts(-90 + 45 * (j % 5), 60 + 45 * (j // 5), 7, 7, 8), "#9a8f80")
+                                                            for j in range(20)) + blob(lib.rect_pts(-130, 0, 130, 34), TAG_RED), w=4, seed=5400)
+    return f'<g transform="translate({x:.1f} {y:.1f}) rotate({rot:.2f}) scale({k:.3f} {k * fy:.3f})">{o}</g>'
+
+
+def frame_s14(t):
+    a = T0("s14")
+    h = stress(67, .4)
+    o = [hall_bg(t), spotlight(PED[0], FL, 1.0), PR.pedestal(PED[0], PED[1], PED[2], seed=1)]
+    ag, _ = auctioneer(t, [h], expr="talk" if t < h else "proud", look=(.7, .3))
+    o.append(ag)
+    bx, by = PED[0], PED_TOP - 300
+    o.append(shape(lib.rect_pts(bx - 140, by - 20, bx + 140, by + 300), "#8f5a33", "", w=4, seed=5410))
+    for j in range(4):
+        o.append(line([(bx - 90 + 60 * j, by - 30), (bx - 90 + 60 * j, by + 10)], 8, "#9aa0a8", taper=0, wmin=1, seed=5411 + j))
+    o.append(tear_sheet(bx, by + 12, 1.0))
+    fu = ramp(t, W(62), 1.4)
+    if fu > 0:
+        e = ease_out(fu, 2)
+        fx_ = bx + (1180 - bx) * e
+        fy_ = by + 12 - 240 * math.sin(math.pi * min(1, e * 1.3)) + 700 * e * e
+        o.append(tear_sheet(fx_, fy_, 1.0 - .2 * e, 40 * e + 25 * math.sin(t * 9) * e, .55 + .45 * math.cos(t * 10)))
+    else:
+        o.append(tear_sheet(bx, by + 12, 1.0))
+    if t < W(62) + .15:
+        o.append(tear_sheet(bx, by + 12, 1.0, 0, 1 - 1.4 * ramp(t, W(62) - .05, .2)))
+    ru = lambda n: smooth(W(62) + .3, W(62) + .6, t) * (.6 + .4 * math.sin(t * 9 + len(n)))
+    for s_, yb, nm in sorted(crowd(t, ru, look=(.6, -.8)), key=lambda z: z[1]):
+        if nm in ("feed", "series", "game"):
+            o.append(s_)
+    jump = bump(t, h, .06, .35)
+    o.append(tag(PED[0] - 100, PED_TOP - 60 * jump, .8, 10 * math.sin(t * 3) + damp(t, h + .05, 25, 2, 4)))
+    pan = ease_io(ramp(t, W(62), 1.2))
+    back = ease_io(ramp(t, h - .5, .4))
+    cx = 700 + 300 * pan - 330 * back
+    cy = 700 + 300 * pan - 100 * back
+    z = 1.5 - .45 * pan + .25 * back + .1 * bump(t, h, .04, .3)
+    dx, dy = shake(t, h, 16)
+    return view("".join(o), cx + dx, cy + dy, z, 0, bg=WALL)
+
+
+# ═════════════════════════ s15: «Дима впервые поднял руку» — зал оборачивается ═════════════════════════
+def frame_s15(t):
+    a = T0("s15")
+    up = ease_out(ramp(t, W(70) - .15, .35), 3)
+    turn = ease_io(ramp(t, W(71), .3))
+    sc = .78
+    x = 560.0
+    y = FL + 300 - 40 * up
+    ex = "resolve" if up > .3 else "unsure"
+    dg = dima_fig(x, y, sc, ex, .1 + .9 * up, t, look=(-.3, -.9) if up > .3 else (0, .5), wobble=.15, lean=.08 * (1 - up), head_ang=-.05 * up)["svg"]
+    lk = lambda nx: (clamp((x - nx) / 300, -1, 1) * turn + -.5 * (1 - turn), .3 * turn - .4 * (1 - turn))
+    o = [hall_bg(t)]
+    ag, _ = auctioneer(t, [], expr="wow" if turn > .5 else "talk", look=(.9 * turn, .5 * turn))
+    o += [PR.pedestal(PED[0], PED[1], PED[2], seed=1), life_clock(CLK[0], CLK[1], 1.0, t), ag]
+    rows = [("chat", -60.0, FL + 380, 1.0, 1), ("alarm", 200.0, FL + 520, 1.1, 2), ("feed", 930.0, FL + 480, 1.1, 3),
+            ("series", 1180.0, FL + 360, 1.0, 4)]
+    fg = [(y + 590 * sc, dg)]
+    for nm, bx, yb, k, sd in rows:
+        bsv, _, _ = buyer(bx, yb, k, nm, t, .3 * (1 - turn), look=lk(bx), turn=clamp((x - bx) / 400, -1, 1) * turn,
+                          mouth="o" if turn > .4 else "smug", seed=sd)
+        fg.append((yb, bsv))
+    for _, sv in sorted(fg, key=lambda z: z[0]):
+        o.append(sv)
+    z = .8 + .25 * ease_io(ramp(t, a, T1("s15") - a)) + .07 * bump(t, W(70))
+    dx, dy = shake(t, W(71), 8)
+    return view("".join(o), 560 + dx, 1080 - 120 * ease_io(ramp(t, a, T1("s15") - a)) + dy, z, 0, bg=WALL)
+
+
+# ═════════════════════════ s16: «Этот час мой» — молоток зависает ═════════════════════════
+def frame_s16(t):
+    a = T0("s16")
+    low = ease_io(ramp(t, W(76), .5))
+    fr = 58 - 38 * low + 2.5 * math.sin(t * 23) * (1 - low)
+    o = [hall_bg(t), PR.pedestal(PED[0], PED[1], PED[2], seed=1)]
+    ag, _ = auctioneer(t, [], expr="wow", look=(.8, .6), freeze=fr)
+    o.append(ag)
+    hold = ease_out(ramp(t, W(75) - .1, .3), 3)
+    sc = .82
+    x = 860.0
+    chest = (x - 40, stand_y(sc) + 120 - 300 * sc)
+    cp = (chest[0] + 140 * (1 - hold), chest[1] - 260 * (1 - hold))
+    clk = small_clock(cp[0], cp[1], 1.3, t * .2)
+    ex = dict(people.EXPR["dima"]["resolve"])
+    ex["look"] = (-.6, -.3)
+    if hold > .5:
+        g, _ = hug_dima(x, sc, t, ex, chest, clk)
+        g = f'<g transform="translate(0 120)">{g}</g>'
+    else:
+        g = dima_fig(x, stand_y(sc) + 120, sc, ex, 1.0, t, wobble=0.0)["svg"] + clk
+    o.append(g)
+    bsv, _, _ = buyer(80.0, FL + 520, 1.05, "alarm", t, 0.0, look=(.9, -.2), turn=.6, mouth="o", seed=2)
+    o.append(bsv)
+    o.append(PR.sparkles(cp[0], cp[1], 1.1, smooth(W(75), W(75) + .2, t) * (1 - smooth(W(76) + .4, W(76) + .8, t)), t, seed=13))
+    z = 1.05 + .2 * ease_io(ramp(t, a, T1("s16") - a))
+    return view("".join(o), 620, 900, z, .8 * math.sin(t * 1.5), bg=WALL)
+
+
+# ═════════════════════════ s17: кот купил солнечное пятно ═════════════════════════
+SILL = WIN[3] + 30
+
+
+def frame_s17(t):
+    a = T0("s17")
+    h = stress(81, .2)
+    su = ease_out(ramp(t, h, .35), 2)
+    o = [hall_bg(t)]
+    o.append(sun_patch(su, t))
+    if t > h - .02 and su < .99:
+        o.append(blob(ellipse_pts((WIN[0] + WIN[2]) / 2 + 20, WIN[1] + 40 + (SILL - WIN[1] - 40) * su, 120, 30, 20), "#ffe58a", .9))
+    pu = smooth(W(79) - .1, W(79) + .15, t) * (1 - smooth(h + .3, h + .6, t))
+    cx_ = (WIN[0] + WIN[2]) / 2 + 30
+    o.append(cat(cx_, SILL, .48, t, look=(-.3, -.6) if t < h else (0, .3), paw=pu, paw_dx=-30, smile=su, squint=su * .8, tail=10 * math.sin(t * 3),
+                 flame_e=1.0 + .4 * su))
+    if pu > .05:
+        o.append(paddle(cx_ - 60, SILL - 70 - 50 * pu, .45, -8))
+    o.append(PR.sparkles(cx_, SILL - 120, 1.2, bump(t, h + .1, .06, .5), t, seed=14))
+    z = 2.0 + .15 * ease_io(ramp(t, a, T1("s17") - a)) + .08 * bump(t, h)
+    dx, dy = shake(t, h, 8)
+    return view("".join(o), cx_ - 20 + dx, SILL - 170 + dy, z, 0, bg=WALL)
+
+
+# ═════════════════════════ s18: петля — ракурс хука, Дима держит свои часы ═════════════════════════
+def frame_s18(t):
+    a = T0("s18")
+    cx_ = (WIN[0] + WIN[2]) / 2 + 30
+    stretch = bump(t, W(85), .25, .6)
+    catsvg = cat(cx_, SILL, .4, t, look=(0, .3), smile=1.0, squint=.8, sy=1 + .12 * stretch, sx=1 - .05 * stretch, flame_e=1.3)
+    catsvg += tag(cx_ + 40, SILL - 120, .45, 18 + 10 * math.sin(t * 2.4))
+    sc = .66
+    x = 560.0
+    chest = (x - 30, stand_y(sc) - 300 * sc)
+    g, _ = hug_dima(x, sc, t, "bliss", chest, PR.clock(chest[0], chest[1], 62, (t * 18) % 360, (t * 150) % 360, seed=7, rim=DIMA_RIM), r=62)
+    g = f'<g transform="translate(0 90)">{g}</g>'
+    ru = lambda n: .1
+    cr = crowd(t, ru, look=(-.2, -.3))
+    o = [hall_bg(t), sun_patch(1.0, t), catsvg, PR.pedestal(PED[0], PED[1], PED[2], seed=1)]
+    ag, _ = auctioneer(t, [], expr="calm", look=(.5, .4))
+    o.append(ag)
+    fg = sorted([(yb, s_) for s_, yb, _ in cr] + [(FL + 90, g)], key=lambda z: z[0])
+    o += [s_ for _, s_ in fg]
+    u = ease_io(ramp(t, a, T1("s18") - a))
+    cx, cy, s_ = 560 + 60 * u, 1000 + 150 * u, .8 - .18 * u
+    return view("".join(o), cx, cy, s_, -2.0 * u, bg=WALL)
 
 
 FRAMES = {k[6:]: v for k, v in dict(globals()).items() if k.startswith("frame_s")}
