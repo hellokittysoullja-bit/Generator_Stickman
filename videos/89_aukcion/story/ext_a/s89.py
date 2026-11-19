@@ -1007,15 +1007,18 @@ def frame_s15(t):
     up = ease_out(ramp(t, W(70) - .15, .35), 3)
     turn = ease_io(ramp(t, W(71), .3))
     sc = .78
-    x = 560.0
+    x = 330.0
     y = FL + 300 - 40 * up
     ex = "resolve" if up > .3 else "unsure"
-    dg = dima_fig(x, y, sc, ex, .1 + .9 * up, t, look=(-.3, -.9) if up > .3 else (0, .5), wobble=.15, lean=.08 * (1 - up), head_ang=-.05 * up)["svg"]
+    ru = .1 + .9 * up                                             # рука вверх и в сторону от лица, не к часам на пьедестале
+    hn = (x + 60 * sc + 120 * sc * ru, y - 30 * sc - 1100 * sc * ru)
+    dg = dima_fig(x, y, sc, ex, 0.0, t, look=(-.3, -.9) if up > .3 else (0, .5), wobble=.15, lean=.08 * (1 - up), head_ang=-.05 * up,
+                  near_arm=("ang", .12, .2), far_arm=("ik", hn, 1))["svg"]
     lk = lambda nx: (clamp((x - nx) / 300, -1, 1) * turn + -.5 * (1 - turn), .3 * turn - .4 * (1 - turn))
     o = [hall_bg(t)]
     ag, _ = auctioneer(t, [], expr="wow" if turn > .5 else "talk", look=(.9 * turn, .5 * turn))
     o += [PR.pedestal(PED[0], PED[1], PED[2], seed=1), life_clock(CLK[0], CLK[1], 1.0, t), ag]
-    rows = [("chat", -60.0, FL + 380, 1.0, 1), ("alarm", 200.0, FL + 520, 1.1, 2), ("feed", 930.0, FL + 480, 1.1, 3),
+    rows = [("chat", -60.0, FL + 380, 1.0, 1), ("alarm", 700.0, FL + 520, 1.1, 2), ("feed", 990.0, FL + 480, 1.1, 3),
             ("series", 1180.0, FL + 360, 1.0, 4)]
     fg = [(y + 590 * sc, dg)]
     for nm, bx, yb, k, sd in rows:
@@ -1030,10 +1033,13 @@ def frame_s15(t):
 
 
 # ═════════════════════════ s16: «Этот час мой» — молоток зависает ═════════════════════════
+FR16 = 38.0
+
+
 def frame_s16(t):
     a = T0("s16")
     low = ease_io(ramp(t, W(76), .5))
-    fr = 58 - 38 * low + 2.5 * math.sin(t * 23) * (1 - low)
+    fr = FR16 - (FR16 - 8) * low + 2.5 * math.sin(t * 23) * (1 - low)
     o = [hall_bg(t), PR.pedestal(PED[0], PED[1], PED[2], seed=1)]
     ag, _ = auctioneer(t, [], expr="wow", look=(.8, .6), freeze=fr)
     o.append(ag)
@@ -1041,7 +1047,9 @@ def frame_s16(t):
     sc = .82
     x = 860.0
     chest = (x - 40, stand_y(sc) + 120 - 300 * sc)
-    cp = (chest[0] + 140 * (1 - hold), chest[1] - 260 * (1 - hold))
+    yd = stand_y(sc) + 120
+    hn = (x + 60 * sc + 120 * sc, yd - 30 * sc - 900 * sc)       # рука поднята за головой (как в s15), часок в ладони
+    cp = (hn[0] + (chest[0] - hn[0]) * hold + 230 * math.sin(math.pi * hold), hn[1] - 40 + (chest[1] - hn[1] + 40) * hold)
     clk = small_clock(cp[0], cp[1], 1.3, t * .2)
     ex = dict(people.EXPR["dima"]["resolve"])
     ex["look"] = (-.6, -.3)
@@ -1049,7 +1057,7 @@ def frame_s16(t):
         g, _ = hug_dima(x, sc, t, ex, chest, clk)
         g = f'<g transform="translate(0 120)">{g}</g>'
     else:
-        g = dima_fig(x, stand_y(sc) + 120, sc, ex, 1.0, t, wobble=0.0)["svg"] + clk
+        g = dima_fig(x, yd, sc, ex, 0.0, t, wobble=0.0, near_arm=("ang", .12, .2), far_arm=("ik", hn, 1))["svg"] + clk
     o.append(g)
     bsv, _, _ = buyer(80.0, FL + 520, 1.05, "alarm", t, 0.0, look=(.9, -.2), turn=.6, mouth="o", seed=2)
     o.append(bsv)
