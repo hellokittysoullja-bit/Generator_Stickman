@@ -3195,3 +3195,171 @@ def us_street(t, pan=0.0, garages=True):
     front = taxi81(*ST81_TAXI, k=.9, t=t) + _hydrant81(160, gy + 80)
     an = dict(ground=gy, road=ry, garages=ST81_GARAGES, flag=ST81_FLAG, taxi=ST81_TAXI, clean=ST81_CLEAN, house=ST81_HOUSE)
     return dict(bg="".join(o), garages=gar, front=front, anchors=an, cam=CAM81_STREET, P=P)
+
+
+# ═════════════════════════════ РИЛС 82 «ОПЯТЬ ОПОЗДАЛ?» (автор — группа C) ═════════════════════════════
+# Букв и цифр нет нигде: вывески пустые, часы без цифр, у автобуса нет номера.
+#
+# ПРИХОЖАЯ — hall82(t, mode="morning" | "evening") -> dict(bg, door, front, anchors, cam), мир 1080×1920-кадра, FL82 = 1560 пол:
+#   bg     — стена (обои-полосы), плинтус, пол-доски, плафон, напольная вешалка с курткой и шарфом (HALL82["rack"]),
+#            планка с тремя пустыми крючками для ключей (HALL82["keys"] — точка под средним крючком: ключи-воришку вешает сцена),
+#            табуретка (HALL82["stool"] — центр сиденья сверху), проём кухни справа с кафелем и плитой (HALL82["stove"] — центр
+#            конфорки, куда ставят чайник), коврик у двери, полоса утреннего солнца из кухни (morning).
+#   door(ajar=0..1, k=None) — входная дверь в проёме HALL82["door"] (центр низа); ajar>0 — полотно уходит вглубь (видна улица-свет);
+#            класть ПОСЛЕ bg. front — пусто (на будущее). anchors — те же точки. Свет утра тёплый, вечер — от плафона.
+#   cam = CAM82_HALL (общий: вешалка, табуретка, крючки, дверь и плита); CAM82_HALL_DOOR (дверь и табуретка средним), CAM82_HALL_KEYS
+#   (крючки и табуретка крупно), CAM82_HALL_STOVE (плита в проёме).
+FL82 = 1560.0
+HALL82 = dict(rack=(120.0, FL82), stool=(360.0, FL82 - 300.0), keys=(560.0, 830.0), door=(900.0, FL82), door_k=1.3, door_w=612.0, door_h=1248.0,
+              kitchen=(1260.0, 1680.0, 360.0), stove=(1470.0, 1040.0), rug=(900.0, FL82 + 60.0))
+CAM82_HALL = (880.0, 1010.0, 0.68)
+CAM82_HALL_DOOR = (760.0, 1060.0, 0.95)
+CAM82_HALL_KEYS = (500.0, 1000.0, 1.25)
+CAM82_HALL_STOVE = (1460.0, 1060.0, 1.35)
+HALL82_PAL = dict(
+    morning=dict(wall="#e9d6b4", wall_hi="#f6e6c6", wall_sh="#cfb894", stripe="#dcc49e", floor="#b58457", floor_b="#946640", ln="#6e4628",
+                 base="#f4ead8", base_sh="#d4c4a8", light="#fff1c8", sun="#ffe9a8", tile="#dfeef0", tile_ln="#b7cfd4", kit="#cfe2e4"),
+    evening=dict(wall="#c79a7c", wall_hi="#d9b08e", wall_sh="#a87b62", stripe="#b98d70", floor="#8a5a38", floor_b="#6c4428", ln="#4c2e1a",
+                 base="#e6cdb2", base_sh="#c4a689", light="#ffd896", sun="#ffd896", tile="#b9a99a", tile_ln="#93836f", kit="#a99686"))
+
+
+def _stool82(x, y, k=1.0, seed=0):
+    """Деревянная табуретка: (x, y) — центр сиденья сверху; высота до пола 300·k."""
+    o = []
+    for i, (a, b) in enumerate(((-120, -150), (120, 150), (-60, -80), (60, 80))):
+        far = i >= 2
+        col = lib.mul(WOOD_SH if far else WOOD, (1, 1, 1))
+        o.append(shape([(x + a * k - 14 * k, y + 30 * k, 1), (x + a * k + 14 * k, y + 30 * k, 1), (x + b * k + 12 * k, y + 300 * k, 1),
+                        (x + b * k - 12 * k, y + 300 * k, 1)], col, "", w=3.4 * k, seed=8700 + seed + i))
+    o.append(shape(rect_pts(x - 130 * k, y + 170 * k, x + 130 * k, y + 192 * k), WOOD_SH, "", w=3.0 * k, seed=8705 + seed))
+    o.append(shape(lib.rrect(x - 160 * k, y - 10 * k, x + 160 * k, y + 34 * k, 12 * k), WOOD,
+                   blob(rect_pts(x - 160 * k, y + 16 * k, x + 160 * k, y + 34 * k), WOOD_SH, .9) +
+                   blob(rect_pts(x - 120 * k, y - 6 * k, x + 40 * k, y + 2 * k), WOOD_HI, .7), w=3.8 * k, seed=8706 + seed))
+    o.append(blob(ellipse_pts(x + 10 * k, y + 304 * k, 190 * k, 16 * k, 16), "#000000", .16))
+    return "".join(o)
+
+
+def _coat_rack82(x, y, t=0.0, seed=0):
+    """Напольная вешалка на стойке: (x, y) — центр низа; куртка, шарф и сумка на рожках."""
+    o = []
+    top = y - 1200
+    o.append(blob(ellipse_pts(x + 8, y + 4, 150, 16, 16), "#000000", .16))
+    for i, a in enumerate((-1, 1)):
+        o.append(line([(x, y - 60), (x + a * 130, y)], 12, "#5a3a22", taper=.1, wmin=.8, seed=8720 + i))
+    o.append(shape(rect_pts(x - 14, top, x + 14, y - 40), WOOD, blob(rect_pts(x + 4, top, x + 14, y - 40), WOOD_SH), w=3.6, seed=8722))
+    o.append(shape(ellipse_pts(x, top - 6, 26, 22, 12), WOOD_HI, "", w=3.2, seed=8723))
+    for i, a in enumerate((-1, 1)):
+        o.append(line([(x, top + 40), (x + a * 70, top + 10), (x + a * 96, top + 24)], 9, "#5a3a22", taper=.2, wmin=.6, seed=8724 + i))
+    sw = 4 * math.sin(t * 1.3 + seed)
+    jk = [(x - 96, top + 30, 1), (x - 50, top + 30, 1), (x - 10, top + 90), (x + 6 + sw, top + 520, 1), (x - 90 + sw, top + 540), (x - 190 + sw, top + 520, 1),
+          (x - 160, top + 90)]
+    o.append(shape(jk, "#3d5277", line([(x - 80, top + 50), (x - 90 + sw, top + 520)], 3.2, "#2b3b58", taper=.3, wmin=.4, seed=8727)
+                   + blob([(x - 60, top + 80), (x, top + 120), (x + 6 + sw, top + 520), (x - 40 + sw, top + 530)], "#2b3b58", .7), w=4.0, seed=8726))
+    sc_ = [(x + 70, top + 30, 1), (x + 110, top + 30, 1), (x + 116 + sw, top + 400, 1), (x + 80 + sw, top + 404, 1)]
+    o.append(shape(sc_, "#c8634a", line([(x + 78, top + 160), (x + 112, top + 160)], 2.4, "#9a4632", taper=0, wmin=1, seed=8729)
+                   + line([(x + 80, top + 240), (x + 114, top + 240)], 2.4, "#9a4632", taper=0, wmin=1, seed=8730), w=3.2, seed=8728))
+    return "".join(o)
+
+
+def _key_hooks82(x, y, seed=0):
+    """Планка с тремя пустыми крючками для ключей: (x, y) — точка под средним крючком."""
+    o = [blob(lib.rrect(x - 116, y - 92, x + 124, y - 40, 8), "#000000", .12)]
+    o.append(shape(lib.rrect(x - 120, y - 100, x + 120, y - 48, 8), WOOD, blob(rect_pts(x - 120, y - 62, x + 120, y - 48), WOOD_SH, .9), w=3.4, seed=8740 + seed))
+    for i, dx in enumerate((-70, 0, 70)):
+        o.append(line([(x + dx, y - 70), (x + dx, y - 12), (x + dx + 14, y - 4), (x + dx + 22, y - 16)], 6, "#7d838e", taper=.1, wmin=.7, seed=8741 + i))
+    return "".join(o)
+
+
+def _kitchen82(P, t, seed=0):
+    """Проём кухни: кафель, плита с двумя конфорками, кусочек окна с утренним светом."""
+    x0, x1, top = HALL82["kitchen"]
+    o = []
+    o.append(f'<rect x="{f(x0)}" y="{f(top)}" width="{f(x1 - x0)}" height="{f(FL82 - top)}" fill="{P["kit"]}"/>')
+    for j in range(int((FL82 - top) / 70) + 1):
+        y = top + j * 70
+        o.append(_sl([(x0, y), (x1, y)], 2, P["tile_ln"], .8))
+    for i in range(int((x1 - x0) / 70) + 1):
+        o.append(_sl([(x0 + i * 70, top), (x0 + i * 70, FL82 - 180)], 2, P["tile_ln"], .8))
+    # окошко кухни (свет утра)
+    o.append(shape(rect_pts(x1 - 170, top + 70, x1 + 30, top + 330), "#bfe3f4", blob(rect_pts(x1 - 170, top + 220, x1 + 30, top + 330), "#ffe9b0", .8)
+                   + line([(x1 - 70, top + 70), (x1 - 70, top + 330)], 4, INK, seed=8751), w=3.6, seed=8750))
+    # пол кухни — линолеум
+    o.append(f'<rect x="{f(x0)}" y="{f(FL82 - 180)}" width="{f(x1 - x0)}" height="180" fill="{lib.mul(P["floor"], (1.1, 1.08, 1.05))}"/>')
+    # плита
+    sx, sy = HALL82["stove"]
+    st = [(sx - 170, sy, 1), (sx + 170, sy, 1), (sx + 170, FL82 - 20, 1), (sx - 170, FL82 - 20, 1)]
+    inner = blob(rect_pts(sx + 120, sy, sx + 170, FL82 - 20), "#cfd3d6", .9)
+    inner += shape(lib.rrect(sx - 130, sy + 120, sx + 130, FL82 - 80, 10), "#3a3f45", blob(rect_pts(sx - 110, sy + 140, sx - 40, FL82 - 100), "#59606a", .7),
+                   w=3.2, seed=8753)
+    inner += line([(sx - 100, sy + 100), (sx + 100, sy + 100)], 6, "#9aa0a6", taper=.1, wmin=.8, seed=8754)
+    for i, kx in enumerate((-110, -40, 40, 110)):
+        inner += blob(ellipse_pts(sx + kx, sy + 50, 12, 12, 10), "#6b7178")
+    o.append(shape(st, "#eef0f1", inner, w=4.0, seed=8752))
+    o.append(shape(rect_pts(sx - 180, sy - 20, sx + 180, sy + 4), "#d9dde0", "", w=3.4, seed=8755))
+    for i, kx in enumerate((-90, 90)):
+        o.append(shape(ellipse_pts(sx + kx, sy - 18, 60, 12, 14), "#2e3238", blob(ellipse_pts(sx + kx, sy - 20, 40, 7, 12), "#454b52"), w=2.8, seed=8756 + i))
+    # наличник проёма
+    cas = P["base"]
+    for i, pts in enumerate(([(x0 - 30, top - 30, 1), (x0, top - 30, 1), (x0, FL82, 1), (x0 - 30, FL82, 1)],
+                             [(x1, top - 30, 1), (x1 + 30, top - 30, 1), (x1 + 30, FL82, 1), (x1, FL82, 1)],
+                             [(x0 - 30, top - 30, 1), (x1 + 30, top - 30, 1), (x1 + 30, top, 1), (x0 - 30, top, 1)])):
+        o.append(shape(pts, cas, blob(rect_pts(pts[0][0], pts[0][1], pts[0][0] + 8, max(pts[2][1], pts[0][1] + 8)), P["base_sh"], .7), w=3.4, seed=8760 + i))
+    return "".join(o)
+
+
+def hall82(t, mode="morning"):
+    """Прихожая рилса 82 (см. шапку раздела 82)."""
+    import props as PR
+    P = HALL82_PAL.get(mode, HALL82_PAL["morning"])
+    o = []
+    g = lib.lin_grad([(0, P["wall_sh"], 1), (.4, P["wall"], 1), (1, P["wall_hi"], 1)], 0, -600, 0, FL82 - 120, units="userSpaceOnUse")
+    o.append(f'<rect x="-1600" y="-600" width="5000" height="{f(FL82 + 600)}" fill="url(#{g})"/>')
+    for i in range(-14, 30):
+        x = i * 110.0
+        o.append(_sl([(x, -600), (x, FL82 - 60)], 2.0, P["stripe"], .7))
+        o.append(_sl([(x + 12, -600), (x + 12, FL82 - 60)], 1.2, P["stripe"], .5))
+    o.append(_kitchen82(P, t))
+    o.append(_band(-1600, FL82 - 60, HALL82["kitchen"][0] - 30, FL82, P["base"], inner=blob(rect_pts(-1600, FL82 - 14, HALL82["kitchen"][0] - 30, FL82), P["base_sh"])))
+    o.append(_band(HALL82["kitchen"][1] + 30, FL82 - 60, 3400, FL82, P["base"], inner=blob(rect_pts(HALL82["kitchen"][1] + 30, FL82 - 14, 3400, FL82), P["base_sh"])))
+    gf = lib.lin_grad([(0, P["floor"], 1), (1, P["floor_b"], 1)], 0, FL82, 0, 2400, units="userSpaceOnUse")
+    o.append(f'<rect x="-1600" y="{f(FL82)}" width="5000" height="{f(2400 - FL82)}" fill="url(#{gf})"/>')
+    for k, y in enumerate((1610, 1680, 1780, 1920, 2110)):
+        o.append(_sl([(-1600, y), (3400, y)], 3.0, P["ln"], .55))
+    r = rs(82)
+    for k in range(26):
+        x = r.uniform(-1500, 3300)
+        y0 = r.choice([FL82, 1610, 1680, 1780, 1920])
+        o.append(_sl([(x, y0), (x, y0 + 50)], 2.4, P["ln"], .4))
+    if mode == "morning":   # полоса солнца из кухни по полу
+        x0, x1, _ = HALL82["kitchen"]
+        o.append(blob([(x0, FL82 + 2), (x1, FL82 + 2), (x1 - 260, 1800), (x0 - 520, 1800)], P["sun"], .45))
+    # плафон
+    lx = 560.0
+    o.append(f'<ellipse cx="{f(lx)}" cy="200" rx="160" ry="62" fill="{P["light"]}" opacity=".25"/>')
+    o.append(line([(lx, -600), (lx, 112)], 4, "#3a3d46", taper=0, wmin=1, seed=8770))
+    o.append(shape(ellipse_pts(lx, 140, 70, 30, 18), "#f6efd8", blob(ellipse_pts(lx, 152, 60, 14, 14), "#fff8e0"), w=3.0, seed=8771))
+    o.append(_coat_rack82(*HALL82["rack"], t=t))
+    o.append(_key_hooks82(*HALL82["keys"]))
+    o.append(_stool82(*HALL82["stool"]))
+    # коврик у двери и тень проёма
+    dx, fy = HALL82["door"]
+    o.append(blob(ellipse_pts(dx + 6, fy + 66, 280, 32, 22), "#000000", .16))
+    o.append(shape(lib.rrect(dx - 250, fy + 30, dx + 250, fy + 96, 14), "#8a6f9a", blob(lib.rrect(dx - 220, fy + 44, dx + 220, fy + 82, 10), "#a688b4"),
+                   w=3.4, seed=8772))
+    k = HALL82["door_k"]
+
+    def door(ajar=0.0, kk=None):
+        kk = k if kk is None else kk
+        w2 = 236 * kk
+        out = []
+        if ajar > 0.01:      # проём: светлая лестничная клетка / утро
+            out.append(f'<rect x="{f(dx - w2)}" y="{f(fy - 960 * kk)}" width="{f(2 * w2)}" height="{f(960 * kk)}" fill="#fff3d0"/>')
+            out.append(blob(rect_pts(dx - w2, fy - 360 * kk, dx + w2, fy), "#f4d9a0", .8))
+            sq = 1.0 - 0.8 * clamp01(ajar)
+            out.append(f'<g transform="translate({f(dx - w2)} 0) scale({sq:.4f} 1) translate({f(-(dx - w2))} 0)">{PR.door(dx, fy, kk)}</g>')
+        else:
+            out.append(PR.door(dx, fy, kk))
+        return "".join(out)
+
+    an = dict(HALL82, fl=FL82)
+    return dict(bg="".join(o), door=door, front="", anchors=an, cam=CAM82_HALL)
