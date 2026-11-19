@@ -149,6 +149,144 @@ def s08(t):
     return frame_svg("".join(o), cx, cy, s_, rot=.4 * math.sin(t * .8), bg="#e9d6b4")
 
 
+# ═══════════════════════════════ s12: прихожая, мелочи бледным пунктиром ═══════════════════════════════
+def faint(svg_, op, gid):
+    """Предмет «незамеченным» карандашом: серый графит, штриховой пунктир (маска косых штрихов), прозрачность op."""
+    lib.DEFS.append(f'<pattern id="hp{gid}" width="13" height="13" patternUnits="userSpaceOnUse" patternTransform="rotate(32)">'
+                    f'<rect width="7" height="13" fill="#fff"/></pattern>'
+                    f'<mask id="hm{gid}" maskUnits="userSpaceOnUse" x="-3000" y="-3000" width="9000" height="9000">'
+                    f'<rect x="-3000" y="-3000" width="9000" height="9000" fill="url(#hp{gid})"/></mask>'
+                    f'<filter id="hf{gid}" x="-20%" y="-20%" width="140%" height="140%"><feColorMatrix type="matrix" '
+                    f'values=".16 .26 .06 0 0  .16 .26 .06 0 0  .16 .26 .06 0 .03  0 0 0 1 0"/></filter>')
+    return f'<g opacity="{op:.3f}" mask="url(#hm{gid})"><g filter="url(#hf{gid})">{svg_}</g></g>'
+
+
+S12_K = .78
+
+
+def s12(t):
+    a, b = span("s12")
+    h = R.hall82(t, "morning")
+    o = [h["bg"], h["door"](0.0)]
+    t_m, t_no = ws(51), ws(53)
+    an = R.HALL82
+    kx, ky = an["keys"]
+    stx, sty = an["stool"]
+    kex, key = an["stove"]
+    items = [(P.thief_keys(kx, ky - 40, 1.2, 0.0, t, seed=1), (kx, ky + 170), t_m),
+             (P.thief_sock(stx + 30, sty + 10, 1.0, 0.0, t, seed=2, rot=-80), (stx + 10, sty - 70), t_m + .1),
+             (P.thief_kettle(kex, key, .95, 0.0, .35 + .25 * math.sin(t * 3), t, seed=3), (kex, key - 100), t_m + .2)]
+    for i, (sv, (gx, gy), tf) in enumerate(items):
+        fl = math.exp(-((t - tf - .12) / .2) ** 2)            # вспышка на «мелочи»
+        fade = ease_io(clamp((t - t_no) / .55))                # гаснут на «не запоминаются»
+        op = (.5 + .5 * fl) * (1 - .7 * fade) + .03 * math.sin(t * 5 + i)
+        if fl > .02:
+            gg = lib.rad_grad([(0, "#fff6c8", .85 * fl), (1, "#fff6c8", 0)], gx, gy, 190)
+            o.append(f'<circle cx="{gx:.1f}" cy="{gy:.1f}" r="190" fill="url(#{gg})"/>')
+        sc = 1 + .08 * fl
+        solid = f'<g opacity="{.75 * fl:.3f}" filter="url(#hf{i})">{sv}</g>' if fl > .02 else ""
+        o.append(f'<g transform="translate({gx:.1f} {gy:.1f}) scale({sc:.4f}) translate({-gx:.1f} {-gy:.1f})">{faint(sv, op, i)}{solid}</g>')
+    # Дима идёт через прихожую ускоренно, мимо мелочей, не глядя на них
+    x = 250 + 600 * (t - a)                    # к вспышке «мелочи» он уже между ключами и плитой
+    hip_y = people.hip_on_floor(R.FL82, S12_K)
+    ph = (x - 250) / (2 * 210 * S12_K)
+    fig = people.dima82_walk(x, hip_y, S12_K, ph, t=t, expr="calm82", mug=True)
+    o.append(fig["svg"])
+    cx = lerp(700, 880, ease_out(clamp((t - a) / (t_m - a)))) if t < t_no else lerp(880, 1150, ease_io(clamp((t - t_no) / (b - t_no))))
+    s_ = .84 * (1 + .02 * kick(t, t_m, 1.0, .4))
+    return frame_svg("".join(o), cx, 1040, s_, rot=.3 * math.sin(t * .7), bg="#e9d6b4")
+
+
+# ═══════════════════════════════ s07: кот крутит проектор, на стене сценки утра Димы ═══════════════════════════════
+S07_SCR = (300.0, 170.0, 1040.0, 740.0)        # прямоугольник света на стене
+S07_PROJ = (580.0, 1170.0, 1.15)               # проектор: центр дна, масштаб
+S07_CAT = (290.0, 1300.0, .95)
+
+
+def _sepia(gid):
+    lib.DEFS.append(f'<filter id="sp{gid}" x="-10%" y="-10%" width="120%" height="120%"><feColorMatrix type="matrix" '
+                    f'values=".36 .52 .14 0 .06  .30 .46 .12 0 .03  .22 .34 .09 0 0  0 0 0 1 0"/></filter>')
+    return f'filter="url(#sp{gid})"'
+
+
+def _slide(i, t, cx, cy):
+    """Сценка утра Димы на стене (мир сценки — вокруг (cx, cy) низа фигуры)."""
+    k = .4
+    if i == 0:          # бежит с кедом в руке и бутербродом
+        f = people.dima82_run(cx - 60, cy - 215, k, (t * 2.6) % 1.0, t=t, lean=.32)
+        return f["svg"]
+    if i == 1:          # ищет носок под вешалкой: согнулся к полу, вторая нога босая
+        o = P.coat_rack(cx - 200, cy - 520, .62, coat=1, t=t, seed=3)
+        hy = cy - (people.LEG_LEN - 12) * k
+        f = people.dima82(cx + 30, hy, k, "puzzled82", "d82_shoe", t=t, feet="stand", socks=("shoe", "bare"), head_add=.1 * math.sin(t * 6),
+                          flip=True)
+        return o + f["svg"]
+    # бежит с чайником в руке
+    f = people.dima82_run(cx - 80, cy - 215, k, (t * 2.6) % 1.0 + .3, t=t, lean=.3, boot=False, sandwich=False, socks=("sock", "shoe"),
+                          expr="panic82")
+    hx, hy = f["hold"]
+    return f["svg"] + P.thief_kettle(hx + 10, hy + 150, .5, 0.0, .6, t, seed=5)
+
+
+def s07(t):
+    a, b = span("s07")
+    o = []
+    # тёмная комната вечером
+    g = lib.lin_grad([(0, "#1f1a2c", 1), (.6, "#2a2236", 1), (1, "#3a2c34", 1)], 0, 0, 0, 1920, units="userSpaceOnUse")
+    o.append(f'<rect x="-400" y="-400" width="1900" height="2700" fill="url(#{g})"/>')
+    o.append(f'<rect x="-400" y="1240" width="1900" height="1100" fill="#2a1f22"/>')
+    for i, yy in enumerate((1300, 1390, 1520)):
+        o.append(line([(-400, yy), (1500, yy)], 3, "#1a1316", taper=0, wmin=1, seed=8400 + i, op=.8))
+    x0, y0, x1, y1 = S07_SCR
+    # смена сценок: «такие» — 0, «истории» — 1, «Диму» — 2; кадр плёнки проезжает вверх на смене, вспышка
+    sw = [ws(26), ws(27), ws(29)]
+    idx = 0 if t < sw[1] else (1 if t < sw[2] else 2)
+    ch = max([t - s_ for s_ in sw[1:] if t >= s_] + [9.0])
+    slide_u = ease_out(clamp(ch / .16)) if ch < .16 else 1.0
+    flick = .9 + .06 * math.sin(t * 47) + .04 * math.sin(t * 23 + 1)
+    # свет на стене
+    gl = lib.rad_grad([(0, "#fff4cf", 1), (.75, "#f6e3ae", 1), (1, "#d8bf86", 1)], (x0 + x1) / 2, (y0 + y1) / 2, (x1 - x0) * .62, (y1 - y0) * .62)
+    o.append(f'<rect x="{x0}" y="{y0}" width="{x1 - x0}" height="{y1 - y0}" rx="10" fill="url(#{gl})" opacity="{flick:.3f}"/>')
+    cid = lib.clip_rect(x0 + 6, y0 + 6, x1 - x0 - 12, y1 - y0 - 12, 8)
+    cx, cy = (x0 + x1) / 2, y1 - 40
+    scenes = ""
+    if slide_u < 1.0 and idx > 0:        # прошлая сценка уезжает вверх, новая въезжает снизу
+        dy = (y1 - y0) * slide_u
+        scenes += f'<g transform="translate(0 {-dy:.1f})">{_slide(idx - 1, t, cx, cy)}</g>'
+        scenes += f'<g transform="translate(0 {(y1 - y0) - dy:.1f})">{_slide(idx, t, cx, cy)}</g>'
+    else:
+        scenes += _slide(idx, t, cx, cy)
+    o.append(f'<g clip-path="url(#{cid})" opacity="{.95 * flick:.3f}"><g {_sepia(1)}>{scenes}</g></g>')
+    if ch < .2:     # вспышка смены кадра
+        o.append(f'<rect x="{x0}" y="{y0}" width="{x1 - x0}" height="{y1 - y0}" rx="10" fill="#fffbe8" opacity="{.6 * (1 - ch / .2):.3f}"/>')
+    # проектор, луч и пылинки
+    px, py, pk = S07_PROJ
+    lx, ly = P.projector_lens(px, py, pk)
+    o.append(f'<polygon points="{lx:.1f},{ly - 18:.1f} {x0 + 30},{y0 + 20} {x1 - 20},{y0 + 20} {x1 - 20},{y1 - 20} {lx:.1f},{ly + 18:.1f}" '
+             f'fill="#fff2c4" opacity="{.16 * flick:.3f}"/>')
+    o.append(f'<polygon points="{lx:.1f},{ly - 8:.1f} {x0 + 140},{y0 + 120} {x1 - 120},{y1 - 120} {lx:.1f},{ly + 8:.1f}" fill="#fff8dc" opacity=".12"/>')
+    r = P._rs(8407)
+    for i in range(26):
+        u = (r.uniform(0, 1) + .12 * t * (1 + i % 3) * .3) % 1.0
+        qx, qy = lx + (x1 - 60 - lx) * u, ly + (r.uniform(.15, .85) * (y1 - y0) + y0 - ly) * u
+        qx += 14 * math.sin(t * 1.3 + i)
+        qy += 10 * math.cos(t * 1.1 + i * 2)
+        o.append(f'<circle cx="{qx:.1f}" cy="{qy:.1f}" r="{r.uniform(2.2, 4.6):.1f}" fill="#fff6d6" opacity="{.35 + .4 * abs(math.sin(t * 2 + i)):.2f}"/>')
+    o.append(P.stool(px + 10, py, 1.0, seed=4))
+    o.append(P.film_projector(px, py, pk, t, beam_u=0.0, seed=2, crank=t * 420))
+    # кот: сидит слева на полу, лапой переключает кадр (тянется к корпусу на сменах), огонёк светит в пыль
+    ctx, cty, ck = S07_CAT
+    tap = max([math.exp(-((t - s_ + .06) / .12) ** 2) for s_ in sw] + [0.0])
+    st = dict(people.CAT_ST.get("watch82", {}), look=(.7, -.6), turn=.35, paw=.55 + .45 * tap, paw_dx=95 + 40 * tap, perk=.6 + .4 * tap,
+              tail=8 * math.sin(t * 2.2), flame_e=1.4)
+    gg = lib.rad_grad([(0, "#ffb050", .45), (1, "#ffb050", 0)], ctx + 130 * ck, cty - 270 * ck, 170)
+    o.append(f'<circle cx="{ctx + 130 * ck:.1f}" cy="{cty - 270 * ck:.1f}" r="170" fill="url(#{gg})"/>')
+    o.append(people.cat_svg(ctx, cty, ck, st, t))
+    z = ease_io(clamp((t - a) / (b - a)))
+    s_ = lerp(1.08, 1.16, z) * (1 + .02 * sum(kick(t, s_, 1.0, .3) for s_ in sw[1:]))
+    return frame_svg("".join(o), lerp(620, 670, z), lerp(930, 860, z), s_, rot=lerp(-.6, .3, z), bg="#1f1a2c")
+
+
 def frame(sid, t):
     lib.dyn_begin()
     return globals()[sid](t)
