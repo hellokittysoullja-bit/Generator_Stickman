@@ -93,6 +93,9 @@ def plan(conf):
     st = conf["st"] * tc
     Cn = []
     for k in range(1, 16):
+        if conf.get("still"):        # до a стоит: обе ступни на месте
+            Cn.append([conf["a"] - k * tc, "n" if k % 2 == 0 else "f", conf["x0"] - (0 if k % 2 == 0 else 60), 0.0, conf["a"] - k * tc + tc * .99, tc, None])
+            continue
         Cn.append([conf["a"] - k * tc, "n" if k % 2 == 0 else "f", conf["x0"] - k * step, 0.0, conf["a"] - k * tc + st, tc, None])
     Cn = Cn[::-1]
     t, x, k = conf["a"], conf["x0"], 0
@@ -106,11 +109,25 @@ def plan(conf):
                 break
         if conf.get("stumble") and abs(t - conf["stumble"]) < tc / 2:
             ttc, sstep = tc * 1.25, step * .55
+        if conf.get("stop_x") is not None and x > conf["stop_x"] and conf.get("stop") is None:
+            conf["stop"] = t - 1e-3
+        if conf.get("stop") is not None and t > conf["stop"]:      # остановка: приставил ногу и стоит
+            Cn.append([t, "n" if k % 2 == 0 else "f", x - sstep * .7, 0.0, t + 30.0, ttc, None])
+            last = Cn[-2]
+            last[4] = t + 30.0
+            break
         Cn.append([t, "n" if k % 2 == 0 else "f", x, 0.0, t + st, ttc, tag])
         t += ttc
         x += sstep
         k += 1
-    keys = [((c[0] + c[4]) / 2, c[2] + 6) for c in Cn]
+    C.update(conf)
+    keys = [((c[0] + min(c[4], c[0] + c[5] * .6)) / 2, c[2] + 6) for c in Cn]
+    if conf.get("stop") is not None:
+        xe = (Cn[-1][2] + Cn[-2][2]) / 2 + 6
+        keys = [kk for kk in keys if kk[0] < Cn[-1][0] - .05] + [(Cn[-1][0] + .25, xe), (Cn[-1][0] + 30, xe)]
+    if conf.get("still"):
+        keys = [(conf["a"] - 3.0, conf["x0"] - 24)] + [kk for kk in keys if kk[0] >= conf["a"]]
+        keys.insert(1, (conf["a"], conf["x0"] - 24))
     ts, xs = zip(*keys)
     PL.clear()
     PL.update(C=Cn, hip_x=PchipInterpolator(np.array(ts), np.array(xs)))
@@ -118,6 +135,12 @@ def plan(conf):
 
 def hip_at(t, bob=True):
     x = float(PL["hip_x"](t))
+    if C.get("walk") and (C.get("stop") is not None and t > PL["C"][-1][0] + .2 or C.get("still") and t < C["a"]):
+        y = -(LEG * 0.97 + AHW)
+        if C.get("sit") is not None:
+            y += C["sit_drop"] * ease_io(clamp((t - C["sit"]) / .45))
+            x += C.get("sit_dx", 0.0) * ease_io(clamp((t - C["sit"]) / .45))
+        return np.array([x, y])
     y = -(LEG * (0.86 if not C.get("walk") else 0.93) + AHW)
     if bob:
         best, tc = 9.0, C["tc"]
@@ -504,5 +527,167 @@ def frame_s03(t):
     return lib.svg(f'<rect width="1080" height="1920" fill="#a9cfe9"/>{body}' + title(t))
 
 
+# ═════════════════════════ петля s19–s20: та же улица, Дима спокойно идёт, приходит первым; кот уже на скамейке ═════════════════════════
+import people as PE  # noqa: E402
+
+WALK = dict(a=29.0, b=33.0, x0=0.0, tc=0.5, st=0.62, step=170.0, walk=True, stop=W(84) + 0.2)
+_CUR = [None]
+
+
+def ensure(sid):
+    if sid == "s14":
+        return
+    key = "hook" if sid in ("s01", "s02", "s03") else ("walk" if sid == "s19" else "walk2")
+    if _CUR[0] == key:
+        return
+    _CUR[0] = key
+    if key == "hook":
+        _setup_hook()
+    elif key == "walk":
+        plan(WALK)
+    else:
+        plan(walk2_conf())
+
+
+def _stop_x():
+    plan(WALK)
+    x = float(PL["hip_x"](40.0))
+    return x
+
+
+STOP_X = _stop_x()
+_CUR[0] = "walk"
+BENCH_X = STOP_X + 760.0
+BENCH_K = 0.8
+POLE_X = BENCH_X + 250.0
+
+
+def walk2_conf():
+    seat_x = BENCH_X - 200.0
+    return dict(a=T0("s20") - 0.1, b=34.6, x0=STOP_X, tc=0.4, st=0.62, step=230.0, walk=True, still=True, stop_x=seat_x + 80.0,
+                sit=W(91) - 0.1, sit_drop=112.0, sit_dx=-95.0, seat_x=seat_x)
+
+
+def walk_pose(t, mood="calm"):
+    p = run_pose(t, expr=dict(sandwich=False, lid=.78, look=(.5, 0.0), brows="calm", mouth="flat", hair=0))
+    moving = not (t > PL["C"][-1][0] + .25 or (C.get("still") and t < C["a"]))
+    p["lean"] = 0.06 if moving else 0.02
+    p["head_ang"] = 0.03
+    p["arms"]["n"] = ("ang", 0.75, 1.75)                         # кружка у груди
+    if not moving:
+        p["arms"]["f"] = ("ang", 0.12, 0.25)
+    p["held"] = ("front", lambda Wr, d: PE.mug82(float(Wr[0]) + 40, float(Wr[1]) + 30, 1.25, t=t, steam=1.0))
+    p["held_side"] = "n"
+    if C.get("sit") is not None:
+        u = ease_io(clamp((t - C["sit"]) / .45))
+        if u > 0:
+            p["lean"] = 0.02 - 0.12 * u
+            p["expr"].update(mouth="grin", brows="up", lid=.7 + .2 * u, look=(.9, -.1))
+            p["head_ang"] = 0.03 - 0.22 * u * (1 + .25 * math.sin((t - C["sit"]) * 22))
+    return p
+
+
+def others(t, cam):
+    """«раньше всех»: вдалеке позади из подъездов выбегают растрёпанные горожане (слой домов 0.55)."""
+    o = []
+    for i, (kind, t_in, dx) in enumerate((("courier", W(85) - .1, -520.0), ("student", W(85) + .15, -380.0), ("elder", W(86), -620.0))):
+        if t < t_in - .05:
+            continue
+        u = t - t_in
+        cx, cy, s_, rot = cam
+        xs = 40 + 150 * i + 260 * u                             # экранный x: слева позади Димы, бегут вправо
+        x = cx * .55 / .62 + (xs - 540) / (s_ * .62)
+        ph = u / .26 + i * .3
+        try:
+            fig = PE.townsman82_walk(kind, x, -10, 0.36, ph, t=t, expr="calm", hold_ribbon=False)
+            g = fig["svg"] if isinstance(fig, dict) else fig
+        except Exception:
+            g = ""
+        o.append(g)
+    return f'<g transform="{R.cam_layer(cam, .55, .62, -170)}">{"".join(o)}</g>'
+
+
+def frame_s19(t):
+    """«И приходит раньше всех»: тот же трекинг, что s01, без тряски и влёта; Дима идёт с кружкой в обоих кедах, приходит и
+    встаёт у края; вдалеке позади только выбегают другие."""
+    ensure("s19")
+    s = S_HOOK
+    cam = track_cam(t, s, 360.0, 1300.0, shake=0.0, drift=0.25)
+    lib.DEFS.clear()
+    st = R.street82(t, cam, "calm")
+    g, _ = dima.draw(walk_pose(t))
+    clk = PR.street_clock(POLE_X, -40, CLOCK_K, hand_a=(t - 31.0) * 6.0 + 300.0, t=t)
+    seat = PR.bench_seat(BENCH_X, -36.0, BENCH_K)
+    cat = PE.cat_bench82(BENCH_X + 150, seat[1] + 6, 0.8, t=t)
+    world = clk + PR.bench(BENCH_X, -36, BENCH_K) + cat + PE.boot82(BENCH_X + 250, seat[1] - 6, 0.55, rot=-4, t=t) + f'<g opacity=".18" transform="matrix(1 0 -0.9 -0.22 0 0)">{g}</g>' + g
+    body = st["back"] + others(t, cam) + f'<g transform="{lib.cam(*cam)}">{st["ground"]}{world}</g>' + st["front"]
+    return lib.svg(body)
+
+
+def frame_s20(t):
+    """«а кот уже на месте»: камера доезжает вправо — на скамейке у столба с часами уже сидит кот, рядом ботинок из хука;
+    «кот» — жмурится, огонёк вспыхивает; «месте» — кивает; Дима подходит, садится рядом и смеётся. Конец — улица и столб как в хуке."""
+    ensure("s20")
+    s = S_HOOK
+    a = T0("s20")
+    u = ease_io(clamp((t - a + .2) / .8))
+    cx0 = STOP_X + (540 - 360) / s
+    cx = cx0 + 560 * u + 40 * smooth(W(91), 34.6, t)
+    cy = (960 - 1300) / s
+    cam = (cx + 6 * math.sin(t * 1.3), cy + 3 * math.sin(t * 1.7), s * (1 + .02 * smooth(a, 34.6, t)), 0.3 * math.sin(t * .9))
+    lib.DEFS.clear()
+    st = R.street82(t, cam, "calm")
+    g, _ = dima.draw(walk_pose(t))
+    by = -36.0
+    seat = PR.bench_seat(BENCH_X, by, BENCH_K)
+    sq = smooth(W(88), W(88) + .15, t) * (1 - smooth(W(89) + .3, W(89) + .5, t))
+    nod = clamp((t - W(91)) / .45)
+    cat = PE.cat_bench82(BENCH_X + 150, seat[1] + 6, 0.8, t=t, nod=nod if 0 < nod < 1 else 0.0, squint=sq)
+    boot = PE.boot82(BENCH_X + 250, seat[1] - 6, 0.55, rot=-4, t=t)
+    clk = PR.street_clock(POLE_X, -40, CLOCK_K, hand_a=(t - 31.0) * 6.0 + 300.0, t=t)
+    flare = ""
+    world = (clk + PR.bench(BENCH_X, by, BENCH_K) + cat + boot + flare +
+             f'<g opacity=".18" transform="matrix(1 0 -0.9 -0.22 0 0)">{g}</g>' + g)
+    body = st["back"] + f'<g transform="{lib.cam(*cam)}">{st["ground"]}{world}</g>' + st["front"]
+    return lib.svg(body)
+
+
+# ═════════════════════════ s14 Сан-Диего: пальмы и океан → окно лаборатории, учёные показывают две ленты ═════════════════════════
+def frame_s14(t):
+    """«Учёные» — солнечный Сан-Диего (пальмы, пирс, океан, кампус с красной черепицей, чайки); «Сан-Диего» — камера летит к окну
+    лаборатории; «проверили» — в окне учёные показывают испытуемому короткую ленту («как помнишь») и длинную («как было»)."""
+    lib.DEFS.clear()
+    sd = R.san_diego(t, "wide")
+    a = T0("s14") - 0.2
+    w0, l0 = R.CAM82_SD_WIDE, R.CAM82_SD_LAB
+    u = ease_io(clamp((t - W(59)) / (W(60) - W(59) + .1)))
+    push = .04 * smooth(a, W(59), t)
+    cx = w0[0] + (l0[0] - w0[0]) * u - 40 * (1 - u) * (t - a)
+    cy = w0[1] + (l0[1] - w0[1]) * u
+    s = (w0[2] * (1 + push)) * (1 - u) + l0[2] * u
+    cam = (cx, cy, s, 0.6 * math.sin(t * 1.1) * (1 - u))
+    lx0, ly0, lx1, ly1 = R.SD82["lab"]
+    hy = ly1 + 10
+    up = ease_out(clamp((t - W(60)) / .3), 3)
+    sub = PE.subject82(lx0 + 110, hy, .3, pose="rest", t=t, expr="focus", feet=None)
+    sa = PE.scientist82("a", lx0 + 290, hy, .3, pose="show" if up > .02 else "rest", t=t, expr="talk" if up > .02 else "focus", feet=None, flip=True)
+    sb = PE.scientist82("b", lx0 + 420, hy, .3, pose="show" if up > .02 else "rest", t=t, expr="smile", feet=None, flip=True)
+    sc = PE.scientist82("c", lx0 + 530, hy, .3, pose="show" if up > .02 else "rest", t=t, expr="focus", feet=None, flip=True)
+    people = sub["svg"] + sa["svg"] + sb["svg"] + sc["svg"]
+    tapes = ""
+    if up > .02:
+        ya = (sa["hold"][1] + sa["hold_f"][1]) / 2 - 30 * (1 - up)
+        xa = (sa["hold"][0] + sa["hold_f"][0]) / 2
+        tapes += PR.time_strip(xa - 45, ya + 8, xa + 45, k=.36, seed=1)            # короткая — «как помнишь»
+        yb = (sb["hold"][1] + sc["hold_f"][1]) / 2 - 30 * (1 - up)
+        xm = (sb["hold"][0] + sc["hold"][0]) / 2
+        L = 330 * up
+        tapes += PR.time_strip(xm - 165, yb + 62, xm - 165 + L, k=.36, seed=2)       # длинная — «как было», раскручивается
+    inside = f'<g clip-path="url(#{sd["window_clip"]})">{sd["inside"]}{people}{tapes}</g>'
+    body = f'<g transform="{lib.cam(*cam)}">{sd["bg"]}{inside}{sd["front"]}</g>'
+    return lib.svg(body)
+
+
 def frame(sid, t):
-    return {"s01": frame_s01, "s02": frame_s02, "s03": frame_s03}[sid](t)
+    ensure(sid)
+    return {"s01": frame_s01, "s02": frame_s02, "s03": frame_s03, "s19": frame_s19, "s20": frame_s20, "s14": frame_s14}[sid](t)

@@ -3566,3 +3566,125 @@ def splash82(x, y, u, k=1.0, seed=0):
                                                                                                            rr * .35, 6), "#ffffff"),
                        w=2.4 * k, seed=8380 + j))
     return "".join(o)
+
+
+# САН-ДИЕГО — san_diego(t, view="wide") -> dict(bg, window_clip, inside, front, anchors, cam)
+#   Солнечный город у океана без букв и флагов: небо, океан с волнами, деревянный пирс на сваях, пальмы (качаются), здание кампуса
+#   в испанском стиле (светлая штукатурка, арки, красная черепица), чайка. Окно лаборатории SD82["lab"] = (x0, y0, x1, y1): внутри
+#   светлая комната (inside — стена и стол; людей кладёт сцена ПОСЛЕ inside и ДО front, обрезая window_clip — id clipPath);
+#   front — рама окна, подоконник, отражение (класть последним). Камеры: CAM82_SD_WIDE (пальмы, океан, пирс), CAM82_SD_LAB (окно).
+SD82 = dict(lab=(1560.0, 700.0, 2140.0, 1130.0), ground=1480.0, horizon=880.0)
+CAM82_SD_WIDE = (860.0, 860.0, 0.8)
+CAM82_SD_LAB = (1850.0, 930.0, 1.9)
+
+
+def _palm82(x, y, h, t, seed, lean=0.0):
+    sw = math.sin(t * 1.6 + seed) * 5 + 2 * math.sin(t * 3.1 + seed * 2)
+    top = (x + lean * h + sw * .6, y - h)
+    o = []
+    trunk = [(x - 24, y, 1), (x + lean * h * .5 - 16, y - h * .5), (top[0] - 12, top[1] + 10), (top[0] + 12, top[1] + 10),
+             (x + lean * h * .5 + 16, y - h * .5), (x + 24, y, 1)]
+    inner = "".join(line([(x + lean * h * u - 18 + sw * .6 * u, y - h * u), (x + lean * h * u + 18 + sw * .6 * u, y - h * u - 8)], 2.6, "#8a6a48",
+                         seed=8500 + seed * 9 + i, op=.8) for i, u in enumerate(np.linspace(.08, .92, 12)))
+    o.append(shape(trunk, "#b08a62", inner, w=3.6, seed=8501 + seed))
+    for j in range(7):
+        a = math.radians(-180 + j * 30 + sw * 1.5 + (j % 2) * 8)
+        L = 230 + 30 * (j % 3)
+        droop = 90 + 20 * (j % 2)
+        p0 = np.array(top)
+        p2 = p0 + np.array([math.cos(a) * L, math.sin(a) * L * .45 + droop])
+        p1 = p0 + np.array([math.cos(a) * L * .5, math.sin(a) * L * .45 - 30])
+        pts = [tuple(p0), tuple(p1), tuple(p2)]
+        o.append(shape(lib.band(pts, 46, 6, step=5), "#4f9a4a" if j % 2 else "#5fae52",
+                       line(pts, 2.4, "#2f6a34", seed=8520 + seed * 7 + j, op=.8), w=3.0, seed=8510 + seed * 7 + j))
+    for k in range(3):
+        o.append(shape(ellipse_pts(top[0] - 14 + 14 * k, top[1] + 18, 12, 12, 10), "#7a5232", "", w=2.4, seed=8530 + k))
+    return "".join(o)
+
+
+def _gull82(x, y, t, k=1.0, seed=0):
+    fl = math.sin(t * 9 + seed)
+    w = 70 * k
+    pts = [(x - w, y - 10 * k - 26 * k * fl), (x - w * .45, y - 6 * k), (x, y + 6 * k), (x + w * .45, y - 6 * k), (x + w, y - 10 * k - 26 * k * fl)]
+    return line(pts, 7 * k, "#ffffff", taper=.4, wmin=.4, seed=8540 + seed) + line(pts, 2.4 * k, INK, taper=.4, wmin=.4, seed=8541 + seed, op=.8)
+
+
+def san_diego(t, view="wide"):
+    """Сан-Диего (см. шапку): dict(bg, window_clip, inside, front, anchors, cam)."""
+    gy, hz = SD82["ground"], SD82["horizon"]
+    o = []
+    g = lib.lin_grad([(0, "#5fb2ec", 1), (.6, "#a8dcf6", 1), (1, "#e9f6fb", 1)], 0, -400, 0, hz, units="userSpaceOnUse")
+    o.append(f'<rect x="-1500" y="-1200" width="5200" height="{f(hz + 1200)}" fill="url(#{g})"/>')
+    o.append(f'<circle cx="300" cy="180" r="80" fill="#fff8d8"/>')
+    o.append(f'<circle cx="300" cy="180" r="150" fill="#fff8d8" opacity=".25"/>')
+    for i, (cx_, cy_, k_) in enumerate(((-200, 260, 1.0), (760, 160, .8), (1500, 300, 1.1), (2300, 200, .9))):
+        cxx = cx_ + 10 * t
+        pts = [(cxx + 120 * k_ * math.cos(a) * (1 + .18 * math.sin(5 * a + i)), cy_ + 40 * k_ * math.sin(a)) for a in np.linspace(0, 2 * math.pi, 20, endpoint=False)]
+        o.append(blob(pts, "#ffffff", .9))
+    # океан
+    gs = lib.lin_grad([(0, "#2f8fcf", 1), (1, "#5ec0e6", 1)], 0, hz, 0, gy, units="userSpaceOnUse")
+    o.append(f'<rect x="-1500" y="{f(hz)}" width="5200" height="{f(gy - hz + 200)}" fill="url(#{gs})"/>')
+    o.append(_sl([(-1500, hz), (3700, hz)], 3, INK, .8))
+    for j in range(9):
+        y = hz + 30 + j * 55
+        for i in range(-6, 14):
+            x = i * 260 + (j % 2) * 130 + 30 * math.sin(t * 1.4 + j + i)
+            o.append(line([(x, y), (x + 40, y - 8), (x + 80, y)], 3.0, "#e8f8ff", seed=8550 + (i * 13 + j) % 90, op=.8))
+    # пляж
+    sand = [(-1500, gy - 160, 1), (200, gy - 140), (900, gy - 90), (1300, gy - 60), (3700, gy - 60, 1), (3700, gy + 600, 1), (-1500, gy + 600, 1)]
+    o.append(shape(sand, "#f2dca8", blob([(-1500, gy - 100), (3700, gy - 30), (3700, gy + 600), (-1500, gy + 600)], "#e6c98e", .6), w=3.6, seed=8560))
+    o.append(line([(-1500, gy - 156), (200, gy - 136), (900, gy - 86), (1300, gy - 56)], 6, "#ffffff", seed=8561, op=.8))
+    # пирс
+    for i in range(10):
+        px = -700 + i * 110
+        o.append(shape(rect_pts(px - 10, hz + 80, px + 10, hz + 260), "#7a5634", "", w=2.8, seed=8570 + i))
+    o.append(shape(rect_pts(-760, hz + 60, 360, hz + 90), "#b07c4c", "".join(_sl([(-760 + 40 * q, hz + 60), (-760 + 40 * q, hz + 90)], 2, "#8a5b32")
+                                                                             for q in range(28)), w=3.2, seed=8580))
+    o.append(_sl([(-760, hz + 30), (360, hz + 30)], 4, "#6a4a2e"))
+    for i in range(12):
+        o.append(_sl([(-760 + i * 100, hz + 30), (-760 + i * 100, hz + 60)], 4, "#6a4a2e"))
+    # здание кампуса
+    x0, x1, top = 1180.0, 2560.0, 520.0
+    wall = "#f6ecd8"
+    inner = blob(rect_pts(x1 - 120, top, x1, gy - 60), "#e3d3b6", .9)
+    for i in range(6):                     # арки галереи внизу
+        ax = x0 + 90 + i * 220
+        inner += shape([(ax, gy - 60, 1), (ax, gy - 260), (ax + 50, gy - 330), (ax + 110, gy - 345), (ax + 170, gy - 330), (ax + 220 - 40, gy - 260),
+                        (ax + 180, gy - 60, 1)], "#c9b28e", blob([(ax, gy - 260), (ax + 180, gy - 260), (ax + 180, gy - 60), (ax, gy - 60)], "#b39a74", .5),
+                       w=3.0, seed=8590 + i)
+    lx0, ly0, lx1, ly1 = SD82["lab"]
+    for i, wx in enumerate((1300.0, 1420.0, 2280.0, 2400.0)):
+        inner += shape(rect_pts(wx - 40, 760, wx + 40, 1000), "#8ec7e6", blob([(wx - 40, 760), (wx, 760), (wx - 40, 820)], "#d9f1fb", .9), w=3.0,
+                       seed=8600 + i)
+    o.append(shape(rect_pts(x0, top, x1, gy - 60), wall, inner, w=4.2, seed=8610))
+    roof = [(x0 - 90, top + 20, 1), (x0 + 120, top - 150), (x1 - 120, top - 150), (x1 + 90, top + 20, 1)]
+    rin = "".join(line([(x0 - 80 + 60 * q, top + 18), (x0 + 120 + 60 * q * (x1 - x0 - 240) / (x1 - x0 + 160), top - 148)], 2.4, "#a8402a", seed=8620 + q,
+                       op=.8) for q in range(0, 27))
+    rin += "".join(_sl([(x0 - 90 + 20 * r_, top + 20 - 34 * r_), (x1 + 90 - 20 * r_, top + 20 - 34 * r_)], 3, "#a8402a", .7) for r_ in range(1, 5))
+    o.append(shape(roof, "#d2603e", rin, w=4.2, seed=8619))
+    # башенка с куполом
+    o.append(shape(rect_pts(x0 + 40, top - 330, x0 + 240, top - 120), wall, shape([(x0 + 100, top - 180, 1), (x0 + 100, top - 250), (x0 + 140, top - 290),
+                                                                               (x0 + 180, top - 250), (x0 + 180, top - 180, 1)], "#5e7d96", "", w=2.6,
+                                                                              seed=8631), w=3.8, seed=8630))
+    o.append(shape([(x0 + 20, top - 330, 1), (x0 + 140, top - 440), (x0 + 260, top - 330, 1)], "#d2603e", "", w=3.8, seed=8632))
+    # пальмы и чайка
+    for i, (px, h, ln) in enumerate(((-60, 820, .05), (420, 700, -.06), (1040, 900, .04), (2700, 820, -.05))):
+        o.append(_palm82(px, gy - 120 + (40 if i == 3 else 0), h, t, i, ln))
+    o.append(_gull82(700 + 140 * math.sin(t * .5) + 60 * t % 400, 380 + 20 * math.sin(t * 2), t, 1.0))
+    o.append(_gull82(980 + 80 * t % 300, 300, t, .7, 1))
+    # окно лаборатории
+    cid = lib.uid("sdw")
+    lib.DEFS.append(f'<clipPath id="{cid}"><rect x="{f(lx0)}" y="{f(ly0)}" width="{f(lx1 - lx0)}" height="{f(ly1 - ly0)}" rx="6"/></clipPath>')
+    ins = [f'<rect x="{f(lx0)}" y="{f(ly0)}" width="{f(lx1 - lx0)}" height="{f(ly1 - ly0)}" fill="#f4efe2"/>',
+           blob(rect_pts(lx0, ly1 - 90, lx1, ly1), "#d9cfba"),
+           shape(rect_pts(lx0 + 20, ly0 + 40, lx0 + 170, ly0 + 200), "#e8e2d2", "".join(_sl([(lx0 + 30, ly0 + 70 + 32 * q), (lx0 + 160, ly0 + 70 + 32 * q)],
+                                                                                         4, "#b9b09c") for q in range(4)), w=3.0, seed=8640)]
+    front = [f'<path d="M{f(lx0 - 30)} {f(ly0 - 30)}H{f(lx1 + 30)}V{f(ly1 + 30)}H{f(lx0 - 30)}Z M{f(lx0)} {f(ly0)}V{f(ly1)}H{f(lx1)}V{f(ly0)}Z" '
+             f'fill="#c9b28e" fill-rule="evenodd"/>',
+             _sl([(lx0 - 30, ly0 - 30), (lx1 + 30, ly0 - 30), (lx1 + 30, ly1 + 30), (lx0 - 30, ly1 + 30), (lx0 - 30, ly0 - 30)], 4, INK),
+             _sl([(lx0, ly0), (lx1, ly0), (lx1, ly1), (lx0, ly1), (lx0, ly0)], 3.4, INK),
+             shape(rect_pts(lx0 - 60, ly1 + 20, lx1 + 60, ly1 + 56), "#e3d3b6", "", w=3.4, seed=8652),
+             blob([(lx0 + 40, ly0), (lx0 + 140, ly0), (lx0 + 20, ly1 * .5 + ly0 * .5), (lx0, ly1 * .4 + ly0 * .6)], "#ffffff", .18)]
+    an = dict(SD82, window_clip=cid)
+    return dict(bg="".join(o), window_clip=cid, inside="".join(ins), front="".join(front), anchors=an,
+                cam=CAM82_SD_LAB if view == "lab" else CAM82_SD_WIDE)
