@@ -94,7 +94,7 @@ def s08(t):
     a, b = span("s08")
     h = R.hall82(t, "morning")
     o = [h["bg"], h["door"](0.0)]
-    t_look, t_bite, t_tap1, t_tap2 = ws(31), ws(32), ws(33), ws(34)
+    t_bite, t_tap1, t_tap2 = ws(32), ws(33), ws(34)
     x0, sy, x1 = S08_STRIP
     k_s = 1.5
     # укусы: два старых (с утра) и новый на «съел»
@@ -234,7 +234,7 @@ def s07(t):
     # тёмная комната вечером
     g = lib.lin_grad([(0, "#1f1a2c", 1), (.6, "#2a2236", 1), (1, "#3a2c34", 1)], 0, 0, 0, 1920, units="userSpaceOnUse")
     o.append(f'<rect x="-400" y="-400" width="1900" height="2700" fill="url(#{g})"/>')
-    o.append(f'<rect x="-400" y="1240" width="1900" height="1100" fill="#2a1f22"/>')
+    o.append('<rect x="-400" y="1240" width="1900" height="1100" fill="#2a1f22"/>')
     for i, yy in enumerate((1300, 1390, 1520)):
         o.append(line([(-400, yy), (1500, yy)], 3, "#1a1316", taper=0, wmin=1, seed=8400 + i, op=.8))
     x0, y0, x1, y1 = S07_SCR
@@ -285,6 +285,247 @@ def s07(t):
     z = ease_io(clamp((t - a) / (b - a)))
     s_ = lerp(1.08, 1.16, z) * (1 + .02 * sum(kick(t, s_, 1.0, .3) for s_ in sw[1:]))
     return frame_svg("".join(o), lerp(620, 670, z), lerp(930, 860, z), s_, rot=lerp(-.6, .3, z), bg="#1f1a2c")
+
+
+# ═══════════════════════════════ s15–s16: ряд людей с ленточками ═══════════════════════════════
+S15_K = .56
+S15_ROW = [("student", 200.0), ("elder", 560.0), ("mom", 920.0), ("courier", 1280.0), ("dima", 1660.0)]
+RIB_K = .5                 # ширина ленты (time_strip k)
+RIB_SHORT = 400.0          # «как помнится»
+RIB_LONG = 2.0 * RIB_SHORT  # «как было» — вдвое длиннее
+
+
+def street_frame(t, cam, body, bg="#bfe0ee", mood="calm"):
+    st = R.street82(t, cam, mood)
+    cx, cy, s_, rot = cam
+    return svg(f'<rect width="1080" height="1920" fill="{bg}"/>{st["back"]}<g transform="{lib.cam(cx, cy, s_, rot)}">{st["ground"]}{body}'
+               f'{st["front"]}</g>')
+
+
+def rib_hang(x, y, L, sway=0.0, seed=0):
+    """Короткая ленточка висит из руки (x, y) вниз длиной L, качается на sway градусов."""
+    return f'<g transform="rotate({90 + sway:.2f} {x:.1f} {y:.1f})">{P.time_strip(x, y, x + L, RIB_K, seed=seed, h=100)}</g>'
+
+
+def rib_rise(x, L, sway=0.0, seed=0, curl=0.0):
+    """Длинная лента встаёт с земли (y = 0) вверх на длину L (сзади человека)."""
+    if L < 4:
+        return ""
+    return f'<g transform="rotate({-90 + sway:.2f} {x:.1f} 0)">{P.time_strip(x, 0, x + L, RIB_K, seed=seed, h=100)}</g>'
+
+
+def _person15(kind, x, k, t, pose_u, look_back, expr):
+    hy = -(people.LEG_LEN - 12) * k * people.HEIGHT.get(people._TOWN.get(kind, "dima"), 1.0)
+    if kind == "dima":
+        ex = "wow82" if look_back else "calm82"
+        f = people.dima82(x, hy, k, ex, ("d82_rest", "d82_ribbon"), t=t, u=pose_u, feet="stand", head_add=-.12 * look_back)
+    else:
+        f = _town_mix(kind, x, hy, k, t, pose_u, expr, look_back)
+    return f
+
+
+def _town_mix(kind, x, hy, k, t, u, expr, look_back):
+    who = people._TOWN[kind]
+    pk = people.mix_pose("x82_rest", "x82_ribbon", u, x, hy, k, who)
+    return people.townsman82(kind, x, hy, k, "rest", t=t, expr=expr, feet="stand", arms=pk["arms"], hands=pk["hands"],
+                             head_add=-.12 * look_back)
+
+
+def s15(t):
+    a, b = span("s15")
+    t_mem, t_short = ws(64), ws(67)
+    o = []
+    for i, (kind, x) in enumerate(S15_ROW):
+        tr = t_mem + .09 * i                       # поднимает короткую ленточку
+        u = ease_out(clamp((t - tr) / .22))
+        tl = t_short + .07 * i                     # за спиной встаёт длинная
+        ul = clamp((t - tl) / .32)
+        lb = ease_io(clamp((t - tl - .1) / .25))   # оглядывается на неё
+        if ul > 0:
+            o.append(rib_rise(x - 150, RIB_LONG * lib.back_out(ul) if hasattr(lib, "back_out") else RIB_LONG * ease_out(ul),
+                              sway=4 * math.sin(t * 3 + i) * (1 - ul * .5), seed=20 + i))
+        f = _person15(kind, x, S15_K, t + i * .7, u, lb, "wow" if lb > .5 else "calm")
+        o.append(f["svg"])
+        if u > .01:
+            hx, hy = f["hold"]
+            o.append(rib_hang(hx, hy - 10, RIB_SHORT * u, sway=6 * math.sin(t * 2.4 + i), seed=10 + i))
+    # камера: проезд вдоль ряда, на «короче» — отъезд, чтобы видеть длинные ленты
+    z = ease_io(clamp((t - a) / (t_short - .1 - a)))
+    zo = ease_io(clamp((t - t_short + .1) / .45))
+    s_ = lerp(1.12, .88, zo) * (1 + .03 * kick(t, t_short, 1.0, .4))
+    cx = lerp(lerp(260, 1150, z), 1250, zo)
+    cy = lerp(-360, -520, zo)
+    return street_frame(t, (cx, cy, s_, .3 * math.sin(t * .9)), "".join(o))
+
+
+def s16(t):
+    a, b = span("s16")
+    t_shli = ws(70)
+    o = []
+    dx = 1660.0
+    k = S15_K
+    # люди расходятся от Димы в разные стороны, волоча длинные ленты шлейфами (к Диме)
+    walkers = [("student", dx - 380, -1, 400.0), ("elder", dx - 700, -1, 300.0), ("mom", dx + 420, 1, 360.0), ("courier", dx + 740, 1, 420.0)]
+    for i, (kind, x0, dirn, sp) in enumerate(walkers):
+        x = x0 + dirn * sp * (t - a)
+        who = people._TOWN[kind]
+        hy = -(people.LEG_LEN - 12) * k * people.HEIGHT[who]
+        f = people.townsman82_walk(kind, x, hy, k, (t - a) * 1.5 + i * .3, t=t, flip=dirn < 0, expr="calm")
+        hx, hy_ = f["hold"]
+        o.append(_trail(hx, hy_, hx - dirn * RIB_LONG * 1.25, i, t))
+        o.append(f["svg"])
+    # Дима остаётся: короткая ленточка в руке у груди, длинная лежит у ног; смотрит на одну, на другую, кивает на «шли»
+    hy = -(people.LEG_LEN - 12) * k
+    nod = math.sin(math.pi * clamp((t - t_shli) / .35)) if t > t_shli else 0.0
+    lk = ease_io(clamp((t - a - .25) / .3))
+    look = (lerp(.5, .9, lk), lerp(.6, .95, lk))
+    ex = dict(people.EXPR["dima"]["sure82" if t > t_shli + .1 else "puzzled82"], look=look)
+    arms = {"n": ("ik", (dx + 230 * k, hy - 330 * k), -1)}
+    hands = {"n": dict(people._GRIP, dir=(.6, -.8))}
+    o.append(P.time_strip(dx + 60, -10, dx + 60 + RIB_LONG, RIB_K, seed=59, h=100))
+    f = people.dima82(dx, hy, k, ex, "d82_rest", t=t, feet="stand", head_add=.2 * nod + .14 * lk, arms=arms, hands=hands)
+    o.append(f["svg"])
+    hx, hy_ = f["hold"]
+    o.append(rib_hang(hx, hy_, RIB_SHORT, sway=5 * math.sin(t * 2.2), seed=14))
+    z = ease_io(clamp((t - a) / (b - a)))
+    s_ = lerp(.8, .72, z)
+    return street_frame(t, (dx + 60, lerp(-430, -470, z), s_, -.2 + .3 * z), "".join(o))
+
+
+def _trail(hx, hy, tail_x, seed, t, flat=False):
+    """Лента-шлейф: из руки (hx, hy) вниз до земли и назад по тротуару до tail_x."""
+    o = ""
+    gx = hx + (tail_x - hx) * .18
+    if not flat:
+        L = math.hypot(gx - hx, -6 - hy)
+        ang = math.degrees(math.atan2(-6 - hy, gx - hx))
+        o += f'<g transform="rotate({ang:.2f} {hx:.1f} {hy:.1f})">{P.time_strip(hx, hy, hx + L, RIB_K, seed=40 + seed, h=100)}</g>'
+    x0, x1 = (gx, tail_x) if not flat else (hx, tail_x)
+    wav = 3 * math.sin(t * 5 + seed)
+    o += P.time_strip(min(x0, x1), -8 + wav, max(x0, x1), RIB_K, seed=50 + seed, h=100)
+    return o
+
+
+# ═══════════════════════════════ s04: подъезд выплёвывает Диму трижды, автобус уходит ═══════════════════════════════
+S04_DOOR = (240.0, -70.0, .92)      # центр низа двери (на верхней ступеньке), масштаб
+S04_K = .62
+S04_BUS = 1430.0                     # центр автобуса на остановке
+S04_STOP = 650.0                    # где Дима останавливается на третьем выбеге
+
+
+def _facade04(t):
+    o = []
+    wall, wall_sh, ln = "#e6b98f", "#c99a72", "#b07f5a"
+    o.append(f'<rect x="-900" y="-1900" width="1500" height="1900" fill="{wall}"/>')
+    o.append('<rect x="600" y="-1900" width="1400" height="1900" fill="#d9c9a8"/>')       # соседний дом у остановки
+    for j in range(40):
+        yy = -1900 + j * 50
+        o.append(line([(-900, yy), (600, yy)], 2.0, ln, taper=0, wmin=1, seed=8450 + j, op=.45))
+        for i in range(16):
+            xx = -900 + i * 110 + (55 if j % 2 else 0)
+            o.append(line([(xx, yy), (xx, yy + 50)], 1.6, ln, taper=0, wmin=1, seed=8500 + i + j * 16, op=.35))
+    o.append(blob(lib.rect_pts(560, -1900, 600, 0), wall_sh, .9))
+    # окна первого этажа (пустые, без надписей)
+    for wx in (-560, 760):
+        o.append(shape(lib.rect_pts(wx - 120, -1000, wx + 120, -640), "#bcd8e6", blob(lib.rect_pts(wx - 120, -720, wx + 120, -640), "#9cc0d4", .8) +
+                       line([(wx, -1000), (wx, -640)], 4, "#f2ece0", taper=0, wmin=1, seed=8601), w=5, seed=8600 + wx))
+    dx, dy, dk = S04_DOOR
+    # ступеньки
+    o.append(shape(lib.rect_pts(dx - 300, -36, dx + 300, 0), "#b9b2a6", blob(lib.rect_pts(dx - 300, -10, dx + 300, 0), "#958e82", .9), w=4, seed=8610))
+    o.append(shape(lib.rect_pts(dx - 260, dy, dx + 260, -36), "#cfc8bc", blob(lib.rect_pts(dx - 260, -46, dx + 260, -36), "#a8a094", .9), w=4, seed=8611))
+    # козырёк и фонарь
+    o.append(shape([(dx - 320, -1010), (dx + 320, -1010), (dx + 340, -960), (dx - 340, -960)], "#7d8a96", blob(lib.rect_pts(dx - 340, -975, dx + 340, -960),
+                                                                                                       "#5d6874", .9), w=4.4, seed=8612))
+    fl = .8 + .2 * math.sin(t * 9)
+    o.append(shape(ellipse_pts(dx + 300, -900, 26, 34, 12), "#fff3c6", w=3.2, seed=8613))
+    o.append(f'<circle cx="{dx + 300}" cy="-900" r="70" fill="#fff3c6" opacity="{.25 * fl:.2f}"/>')
+    # тротуар
+    o.append('<rect x="-900" y="0" width="2900" height="900" fill="#d6d0c4"/>')
+    for i in range(30):
+        o.append(line([(-900 + i * 140, 0), (-960 + i * 140, 300)], 2.4, "#b8b1a4", taper=0, wmin=1, seed=8620 + i, op=.7))
+    o.append(line([(-900, 0), (2000, 0)], 4, INK, taper=0, wmin=1, seed=8650))
+    o.append('<rect x="-900" y="240" width="2900" height="40" fill="#bdb6a8"/><rect x="-900" y="280" width="2900" height="700" fill="#6f727a"/>')
+    # остановка: столб с пустой табличкой и навес
+    sx = S04_STOP + 220
+    o.append(line([(sx, 0), (sx, -760)], 12, "#5d6874", taper=0, wmin=1, seed=8660))
+    o.append(shape(lib.rrect(sx - 70, -900, sx + 70, -760, 10), "#f2f0ea", blob(lib.rect_pts(sx - 70, -790, sx + 70, -760), "#d8d4ca", .9), w=4, seed=8661))
+    o.append(shape(lib.rrect(sx - 40, -880, sx + 40, -840, 8), "#3f86c6", w=3, seed=8662))
+    return "".join(o)
+
+
+def _door04(open_u):
+    """Дверь подъезда: открывается наружу (полотно сжимается к петле слева), за ней тёмный тамбур."""
+    dx, dy, dk = S04_DOOR
+    o = [f'<rect x="{dx - 210 * dk:.1f}" y="{dy - 936 * dk:.1f}" width="{420 * dk:.1f}" height="{936 * dk:.1f}" fill="#3a2e2a"/>']
+    if open_u > .01:
+        o.append(f'<rect x="{dx - 210 * dk:.1f}" y="{dy - 300 * dk:.1f}" width="{420 * dk:.1f}" height="{300 * dk:.1f}" fill="#5a4a40"/>')
+    sq = 1.0 - .82 * clamp(open_u)
+    hx = dx - 236 * dk
+    o.append(f'<g transform="translate({hx:.1f} 0) scale({sq:.4f} 1) translate({-hx:.1f} 0)">{P.door(dx, dy, dk, seed=4, col="#5e7d6a")}</g>')
+    return "".join(o)
+
+
+def s04(t):
+    a, b = span("s04")
+    exits = [ws(10), ws(11), ws(12) - .1]          # «каждое», «утро», третий — перед «и не понимает»
+    t_bus, t_shrug = ws(13), ws(14)
+    gear = [dict(brush=True), dict(inside_out=True), dict(towel=True)]
+    o = [_facade04(t)]
+    # текущий выбег (рез-повтор: на каждом слове всё начинается заново — дверь хлопает, Дима вылетает)
+    idx = max([i for i, te in enumerate(exits) if t >= te - .06] + [-1])
+    te = exits[idx] if idx >= 0 else exits[0] - .5
+    u = (t - te) / .3
+    open_u = 0.0
+    if idx >= 0:
+        open_u = ease_out(clamp(u / .25)) * (1 - ease_in(clamp((u - 1.4) / .8)) * .9)
+    elif t > exits[0] - .2:
+        open_u = .1 * abs(math.sin((t - a) * 40))          # дверь дрожит перед первым хлопком
+    o.append(_door04(open_u))
+    # кот на нижней ступеньке слева: провожает взглядом
+    dx, dy, dk = S04_DOOR
+    hip0 = -(people.LEG_LEN - 12) * S04_K
+    if idx < 0:
+        x = dx - 40
+        fig = None
+    else:
+        last = idx == 2
+        run_u = clamp(u / 1.0)
+        x = lerp(dx + 10, dx + 330, ease_out(run_u)) if not last else lerp(dx + 10, S04_STOP, ease_out(clamp((t - te) / max(.2, t_shrug - te))))
+        hop = 60 * math.sin(math.pi * clamp(u / .9)) * (1 - clamp(u - .9))
+        if last and t >= t_shrug - .05:
+            e = ease_out(clamp((t - t_shrug + .05) / .2))
+            fig = people.dima82(x, hip0, S04_K, "panic82", ("d82_rest", "d82_shrug"), t=t, u=e, feet="stand", towel=True)
+        else:
+            fig = people.dima82_run(x, hip0 - hop - 70 * (1 - clamp(u / .35)), S04_K, (t - te) * 3.2 + idx * .37, t=t, expr="panic82",
+                                    boot=False, sandwich=False, socks=None, lean=.34, inside_out=bool(gear[idx].get("inside_out")))
+    look_x = 1.0 if fig is None else clamp((x - (dx - 330)) / 400, -1, 1)
+    cst = dict(look=(look_x, .1), turn=.4 * look_x, tail=10 * math.sin(t * 2.5), flame_e=1.2, perk=.5 + .5 * (idx >= 0 and u < 1.2))
+    o.append(people.cat_svg(dx - 215, -36, .72, cst, t))
+    if fig is not None:
+        o.append(fig["svg"])
+        # предметы выбега поверх фигуры
+        if idx == 0 or idx == 2:
+            hx, hy = fig["head"]
+            sc = fig["scale"]
+            if idx == 0:
+                mx, my = hx + 64 * sc, hy + 92 * sc
+                o.append(people.toothbrush82(mx + 10 * sc, my, sc * 1.05, rot=-6, t=t))
+            else:
+                o.append(people.towel82(hx - 20 * sc, hy + 160 * sc, sc))
+    # автобус на ближней полосе у остановки: стоит, на «не» трогается и уезжает вправо, открывая Диму (облачко выхлопа)
+    bu = max(0.0, t - t_bus)
+    bx = S04_BUS + 900 * bu * bu + 80 * bu
+    o.append(P.bus(bx, 330, 1.9, u=bx * 3, seed=2, puff=clamp(bu / .3)))
+    # камера: точка у подъезда с микродрейфом, толчки на хлопках, на «понимает» — доворот к остановке
+    s_ = .9 * (1 + sum(.035 * kick(t, e_, 1.0, .3) for e_ in exits))
+    sx, sy_ = 0.0, 0.0
+    for e_ in exits:
+        q = shake(t, e_, 10, .22, int(e_ * 10))
+        sx, sy_ = sx + q[0], sy_ + q[1]
+    pan = ease_io(clamp((t - t_bus + .1) / .45))
+    cx = lerp(470, 600, pan) + 6 * math.sin(t * 1.3) + sx
+    cy = -330 + 4 * math.cos(t * 1.1) + sy_
+    return frame_svg("".join(o), cx, cy, s_, rot=.3 * math.sin(t * .9), bg="#e6b98f")
 
 
 def frame(sid, t):
