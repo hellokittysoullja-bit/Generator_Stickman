@@ -784,15 +784,15 @@ def frame_s14(t):
     o.append(grave(gx, FL, "flag", 1.0, t, [1, 1], 2, wet=1 - sunu, sun=sunu, seed=hash("flag") % 50, steam=smooth(W(67), W(67) + .4, t)))
     hit = stress(67, .3)
     su = ramp(t, hit - .1, .6)
-    o.append(sprout(gx - 95, FL + 20, 1.4, su, t))
+    o.append(sprout(gx - 95, FL + 20, 1.8, su, t))
     if t >= hit - .1:
         o.append(PR.dust_puff(gx - 95, FL + 20, .7, clamp((t - hit + .1) / .45), seed=2))
         o.append(PR.sparkles(gx - 95, FL - 120, 1.0, smooth(hit, hit + .3, t), t, seed=4))
     ex = dict(people.EXPR["dima"]["wonder81"] if "wonder81" in people.EXPR["dima"] else people.EXPR["dima"]["hope"], look=(.6, .6))
-    ds, _ = dima(gx - 400, FL + 220, .5, t, ex, 0.0, tissue=0.0)
+    ds, _ = dima(gx - 470, FL + 220, .5, t, ex, 0.0, tissue=0.0)
     o.append(ds)
     u = ease_io(ramp(t, a, b - a))
-    return view("".join(o), gx - 170, FL - 180 + 20 * u, 1.85 + .2 * u + .06 * bump(t, hit), 0, over=rain(t, .15, seed=9))
+    return view("".join(o), gx - 200, FL - 200 + 20 * u, 1.5 + .2 * u + .06 * bump(t, hit), 0, over=rain(t, .15, seed=9))
 
 
 # ═════════════════════════ s15: «одна минута английского в день» ═════════════════════════
@@ -823,7 +823,8 @@ def frame_s15(t):
     x = gx - 260
     ground = FL + 260
     y = stand_y(ground, sc)
-    card = (x + 260 * sc, y - 520 * sc + 10 * math.sin(t * 4))
+    hx_, hy_ = people.figure("dima", x, y, sc, expr={}, lean=.02, head_ang=.08, feet=people.stand_kw(x, y, sc)["feet"])["head"]
+    card = (hx_ + 300 * sc, hy_ + 150 * sc + 10 * math.sin(t * 4))
     sw = (x - 230 * sc, y - 440 * sc)
     arms = {"n": ("ik", (card[0] - 60, card[1] + 50), -1), "f": ("ik", (sw[0] + 30, sw[1] + 60), 1)}
     hands = {"n": {"dir": (.6, -.8), "curl": (.55, .55, .6, .62), "thumb": .5}, "f": {"dir": (-.3, -1), "curl": (.6, .6, .65, .7), "thumb": .5}}
@@ -865,7 +866,8 @@ def frame_s17(t):
     sc = DIMA_POS[2]
     x = DIMA_POS[0]
     y = stand_y(DIMA_POS[1], sc)
-    card = (x + 250 * sc, y - 470 * sc)
+    hx_, hy_ = people.figure("dima", x, y, sc, expr={}, feet=people.stand_kw(x, y, sc)["feet"])["head"]
+    card = (hx_ + 300 * sc, hy_ + 170 * sc)
     arms = {"n": ("ik", (card[0] - 50, card[1] + 50), -1), "f": ("ang", .14, .25)}
     hands = {"n": {"dir": (.6, -.8), "curl": (.55, .55, .6, .62), "thumb": .5}}
     base = people.figure("dima", x, y, sc, expr=ex, arms=arms, hands=hands, feet=people.stand_kw(x, y, sc)["feet"], layers=("legs", "pelvis", "arm_f", "body"))
