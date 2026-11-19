@@ -630,6 +630,10 @@ def s18(t):
         e = ex("calm82", look=(.7, -.6)) if t > now else ex("rush82", look=(.8, -.3))
         fig = dima_at(t, x, True, e, tn=tn if touch > .01 or t > now else None, hn=hn, tf=(x - 90, DHY - 40) if keys_in else None,
                       hf={"curl": (.62, .66, .7, .72), "thumb": .6}, socks=socks)
+    leave = ramp(t, num + .45, .55)
+    if leave > 0:          # поворачивается к проёму и шагает за порог
+        wx = x + 110 * ease_io(leave)
+        fig = people.dima82_walk(wx, DHY - 20 * leave, DK * (1 - .1 * leave), 1.3 * leave, t=t, expr="calm82", mug=False)
     body = fig["svg"]
     o.append(blurred(body, min(18.0, abs(v) * .006), 0.0))
     if abs(v) > 600:          # след рывка
@@ -641,7 +645,7 @@ def s18(t):
     if not keys_in:
         o.append(P.thief_keys(hk[0], hk[1] - 40, .5, kc, t, seed=1))
     else:
-        hp = fig["hold_f"] if (flip and shoe < .05) else fig["hold"]
+        hp = fig["hold_f"] if (flip and shoe < .05 and leave <= 0) else fig["hold"]
         o.append(P.thief_keys(hp[0], hp[1] - 30, .42, kc, t, seed=1))
     # камера: дрейф к двери; толчок на «цифре»
     z = ease_io(ramp(t, a0, T1("s18") - a0))
@@ -657,13 +661,14 @@ KEYS_H = (HA["keys"][0], HA["keys"][1] - 40)          # точка подвес�
 SOCK_S = (STOOL[0] + 70, STOOL[1] - 2)                # носок стоит на табуретке справа
 KETTLE_S = (STOOL[0] - 110, STOOL[1] - 2)             # чайник на табуретке слева
 TK = .55
+TKK = .8                                              # ключи крупнее, иначе не читаются
 
 
 def thieves(t, kc, sc, ec, steam=0.0, hop_k=0.0, hop_s=0.0, hop_e=0.0, tilt=(0.0, 0.0, 0.0)):
     """Три воришки: ключи на крючке, носок и чайник на табуретке. hop_* — подскок к ленте (px вверх)."""
     o = []
     o.append(f'<g transform="rotate({tilt[0]:.2f} {KEYS_H[0]:.1f} {KEYS_H[1]:.1f})">' +
-             P.thief_keys(KEYS_H[0], KEYS_H[1] + hop_k, TK, kc, t, seed=1) + "</g>")
+             P.thief_keys(KEYS_H[0], KEYS_H[1] + hop_k, TKK, kc, t, seed=1) + "</g>")
     o.append(shadow(SOCK_S[0], SOCK_S[1] + 2, 60, .2))
     o.append(P.thief_sock(SOCK_S[0], SOCK_S[1] - hop_s, TK, sc, t, seed=1, rot=tilt[1]))
     o.append(shadow(KETTLE_S[0], KETTLE_S[1] + 2, 80, .2))
@@ -673,7 +678,7 @@ def thieves(t, kc, sc, ec, steam=0.0, hop_k=0.0, hop_s=0.0, hop_e=0.0, tilt=(0.0
 
 
 def mouths(hop_k=0.0, hop_s=0.0, hop_e=0.0):
-    k = P.thief_keys_mouth(KEYS_H[0], KEYS_H[1] + hop_k, TK)
+    k = P.thief_keys_mouth(KEYS_H[0], KEYS_H[1] + hop_k, TKK)
     s_ = P.thief_sock_mouth(SOCK_S[0], SOCK_S[1] - hop_s, TK)
     e = P.thief_kettle_mouth(KETTLE_S[0], KETTLE_S[1] - hop_e, TK)
     return k, s_, e
@@ -695,7 +700,7 @@ def s09(t):
         kc = alive * chomp_osc(t, look, how, 6.5) + .9 * bump(t, how - .1, .08, .02, .06)
         sc = alive * chomp_osc(t, look + .04, how, 5.5) + .9 * bump(t, how - .1, .08, .02, .06)
         ec = alive * chomp_osc(t, look + .08, how, 6.0) + .9 * bump(t, how - .1, .08, .02, .06)
-    hk, hs, he = 26 * jump, 30 * jump, 40 * jump
+    hk, hs, he = 26 * jump, 30 * jump + 8 * alive * abs(math.sin(t * 11)), 40 * jump + 8 * alive * abs(math.sin(t * 9 + 1))
     mk, ms, me = mouths(hk, hs, he)
     # свисающая лента проходит у всех трёх «ртов»
     sway = 6 * math.sin(t * 2.4)
@@ -713,14 +718,12 @@ def s09(t):
         o.append(strip_seg(p0, p1, kk, bites, [(0, t - how)] if bit and bites else [], seed=90 + i))
     o.append(thieves(t, kc, sc, ec, 0.0, hk, hs, he, tilt=(-6 * ramp(t, how + .1, .2), -8 * ramp(t, how + .1, .2), 5 * ramp(t, how + .1, .2))))
     if bit:          # в «ртах» — по кусочку ленты
-        for j, (m, rot) in enumerate(((mk, 80), (ms, -20), (me, 15))):
-            o.append(P.strip_piece(m[0] + (8 if j == 1 else 0), m[1] + (-6 if j == 0 else 4), .32, 120, rot, seed=40 + j))
         if t - how < .3:
             o.append(P.click(mk[0], mk[1] - 40, .8, ramp(t, how, .3), seed=11))
             o.append(P.click(me[0], me[1] - 50, .8, ramp(t, how, .3), seed=12))
     # камера: хлёст-нырок сверху на «смотри», стоп-удар на «как»
-    w = whip(t, look, 1.0, .3)
-    tx, ty, ts = 420.0, 1020.0, 1.45
+    w = whip(t, T0("s09"), 1.0, .24)
+    tx, ty, ts = 450.0, 1100.0, 1.5
     cx = tx - 60 * w
     cy = ty - 900 * w
     s = ts * (1 - .25 * w) + .07 * bump(t, how, .03, .05, .3)
@@ -744,14 +747,15 @@ def s13(t):
     o = [h["bg"], h["door"](0.0)]
     n_done = sum(1 for x in hits if t >= x)
     # Дима позади: роется в куртке → на одной ноге → «ой»
-    dx_ = 820.0
+    dx_ = 900.0
     if t < hits[1]:
         fig = people.dima82(dx_, DHY, DK, ex("panic82", look=(.5, .6)), "d82_pocket", t=t, flip=True,
                             feet=people.stand_kw(dx_, DHY, DK)["feet"], lean_add=.03 * math.sin(t * 9))
     elif t < hits[2]:
         fig = people.dima82_onefoot(dx_, DHY, DK, t=t, flip=True, wob=math.sin(t * 7), socks=("sock", "bare"))
     else:
-        fig = people.dima82(dx_, DHY, DK, ex("wow82", look=(.6, .2)), "d82_shrug", t=t, flip=True, feet=people.stand_kw(dx_, DHY, DK)["feet"])
+        fig = people.dima82(dx_, DHY, DK, ex("wow82", look=(.9, .5)), "d82_pocket", t=t, flip=True, feet=people.stand_kw(dx_, DHY, DK)["feet"],
+                            lean_add=-.04)
     o.append(fig["svg"])
     # лента: кусок за куском, после каждого укуса короче рывком (правый конец отскакивает)
     x0 = -160.0
@@ -778,7 +782,7 @@ def s13(t):
         if 0 < t - hx < .28:
             o.append(P.click(m[0], m[1] - (60 if i == 0 else -10), 1.0, ramp(t, hx, .28), seed=20 + i))
     # камера: удар-наезд склейкой на каждый укус
-    frames = [(480.0, 1020.0, 1.18), (mk[0] - 10, 1000.0, 1.45), (ms[0] - 10, 1060.0, 1.62), (me[0] + 30, 1080.0, 1.8)]
+    frames = [(560.0, 1060.0, 1.12), (600.0, 1040.0, 1.24), (560.0, 1090.0, 1.34), (520.0, 1110.0, 1.44)]
     cx, cy, s = frames[n_done]
     t_last = hits[n_done - 1] if n_done else a0
     dr = t - t_last
