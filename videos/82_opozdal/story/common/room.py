@@ -3363,3 +3363,206 @@ def hall82(t, mode="morning"):
 
     an = dict(HALL82, fl=FL82)
     return dict(bg="".join(o), door=door, front="", anchors=an, cam=CAM82_HALL)
+
+
+# УТРЕННЯЯ УЛИЦА ДЛЯ БЕГА — street82(t, cam, mood="rush" | "calm", puddles=(), posts=(), splash=()) -> dict(back, ground, front)
+#   Мир бега: земля тротуара y = 0 (по нему бегут Дима и кот), x растёт вправо (по ходу). cam = (cx, cy, s, rot) — как lib.cam.
+#   back   — экранный слой (класть первым): небо, дальние деревья (параллакс 0.2), дома с подъездами, пустыми вывесками и окнами
+#            (параллакс 0.55), деревья в лунках у тротуара (0.8). Каждый слой — свой масштаб и сдвиг от камеры (cam_layer).
+#   ground — мир (после back, до фигур): плитка тротуара, дальний бордюр к газону, лужи (puddles=[(x, y, rx), …] — центр и
+#            полуширина, отражают небо), тени. Столбы с часами кладёт сцена (props.street_clock) — после ground, до фигур.
+#   front  — ближний слой (после фигур): бордюр дороги, водосток, лужа у бордюра, дорога (параллакс 1.35) — у нижнего края кадра.
+#   mood: "rush" — раннее солнечное утро (s01–s03); "calm" — то же утро, теплее и мягче (s19–s20, петля).
+ST82 = dict(
+    rush=dict(sky0="#7fbde8", sky1="#cfe7f2", sky2="#ffe7bf", far="#a9c6b8", far2="#93b5a4", walk="#d9d4cb", walk_sh="#b9b2a6", walk_ln="#a49c8f",
+              walk_lit="#efe9df", lawn="#9cc46e", curb="#c9c3b8", curb_sh="#9d968a", road="#6c7078", road_sh="#575b63", puddle="#a8d3ee",
+              puddle_hi="#e8f6ff", shadow="#4a4f6e", glass="#a9cfe9", glass_hi="#e3f2fb", door="#5b6d82", tree="#7fb35c", tree_sh="#5c8e45",
+              trunk="#7a5a40", fac=("#e8c9a0", "#c9d7c0", "#e6b8a6", "#d9cfe2", "#f0dcb0", "#bcd3de")),
+    calm=dict(sky0="#9ac8ea", sky1="#f3e6c9", sky2="#ffd9a0", far="#b9c9a8", far2="#a3b893", walk="#e0d6c6", walk_sh="#c2b6a2", walk_ln="#ab9e88",
+              walk_lit="#f6ecd8", lawn="#a8c473", curb="#d2c7b6", curb_sh="#a69a86", road="#73747a", road_sh="#5d5e64", puddle="#bcd6e6",
+              puddle_hi="#fff4dc", shadow="#5a5068", glass="#bcd6e6", glass_hi="#fff1d6", door="#6a7486", tree="#8fb862", tree_sh="#6a9248",
+              trunk="#7a5a40", fac=("#efcfa2", "#d1d9bd", "#ecc0a6", "#dfd2df", "#f4dcae", "#c6d5d6")))
+ST82_SUN = (860.0, 300.0)
+
+
+def cam_layer(cam, p, kp, yoff):
+    """Трансформ слоя параллакса: p — доля скорости камеры, kp — масштаб (дальше — мельче), yoff — земля слоя в мире
+    кадра бега (отрицательное — выше земли тротуара). Содержимое слоя рисуется в своих координатах с землёй y = 0."""
+    cx, cy, s, rot = cam
+    return (f"translate(540 960) rotate({f(rot)}) translate(0 {(yoff - cy) * s:.3f}) scale({s * kp:.5f}) "
+            f"translate({-cx * p / kp:.3f} 0)")
+
+
+def _view82(cam, p, kp):
+    cx, cy, s, rot = cam
+    c = cx * p / kp
+    half = 760.0 / (s * kp)
+    return c - half, c + half
+
+
+def _facade82(x0, w, h, P, seed, t):
+    """Дом: фасад w×h от земли слоя, окна в сетку, подъезд с козырьком и пустой табличкой, балконы, водосток."""
+    r = rs(8200, seed)
+    col = P["fac"][seed % len(P["fac"])]
+    sh = lib.mul(col, (.86, .84, .86))
+    o = []
+    inner = blob(rect_pts(x0 + w - 70, -h, x0 + w, 0), sh, .9)
+    inner += blob(rect_pts(x0, -h, x0 + w, -h + 40), sh, .8)
+    nx = max(2, int(w / 190))
+    ny = max(3, int((h - 360) / 230))
+    dx = w / nx
+    door_i = int(r.uniform(0, nx)) if nx > 1 else 0
+    for j in range(ny):
+        for i in range(nx):
+            wx = x0 + dx * i + dx * .5
+            wy = -330 - j * 230
+            if wy - 150 < -h + 60:
+                continue
+            gw, gh = 92, 150
+            g = shape(rect_pts(wx - gw / 2, wy - gh, wx + gw / 2, wy), P["glass"],
+                      blob([(wx - gw / 2, wy - gh), (wx - gw / 2 + 40, wy - gh), (wx - gw / 2, wy - gh + 60)], P["glass_hi"], .9)
+                      + _sl([(wx, wy - gh), (wx, wy)], 3, INK) + _sl([(wx - gw / 2, wy - gh * .55), (wx + gw / 2, wy - gh * .55)], 3, INK),
+                      w=3.2, seed=8210 + seed * 37 + j * 7 + i)
+            inner += g
+            inner += blob(rect_pts(wx - gw / 2 - 10, wy, wx + gw / 2 + 10, wy + 14), sh)
+            if (i + j + seed) % 5 == 0 and j > 0:            # балкон
+                inner += shape(rect_pts(wx - 80, wy - 40, wx + 80, wy + 18), lib.mul(col, (.94, .93, .95)),
+                               "".join(_sl([(wx - 70 + 20 * q, wy - 40), (wx - 70 + 20 * q, wy + 18)], 2.4, sh) for q in range(8)), w=3.0,
+                               seed=8250 + seed * 11 + j)
+    # подъезд
+    ex = x0 + dx * door_i + dx * .5
+    inner += shape(rect_pts(ex - 70, -250, ex + 70, 0), P["door"], blob(rect_pts(ex + 30, -250, ex + 70, 0), lib.mul(P["door"], (.8, .8, .85)))
+                   + _sl([(ex, -250), (ex, 0)], 3, INK) + blob(ellipse_pts(ex - 14, -120, 6, 6, 8), "#e8d9a0"), w=3.4, seed=8260 + seed)
+    inner += shape([(ex - 110, -280, 1), (ex + 110, -280, 1), (ex + 90, -250, 1), (ex - 90, -250, 1)], "#8a5a3a", "", w=3.2, seed=8261 + seed)
+    inner += shape(rect_pts(ex - 34, -330, ex + 34, -296), "#eef2f4", "", w=2.6, seed=8262 + seed)       # пустая табличка
+    if seed % 3 == 1:   # магазинчик с пустой вывеской
+        sx = x0 + dx * ((door_i + 1) % nx) + dx * .5
+        inner += shape(rect_pts(sx - 90, -230, sx + 90, -10), P["glass"], blob(rect_pts(sx - 90, -230, sx - 30, -10), P["glass_hi"], .7), w=3.2,
+                       seed=8263 + seed)
+        inner += shape(rect_pts(sx - 110, -290, sx + 110, -240), "#d9543c" if seed % 2 else "#3c8fd9", "", w=3.2, seed=8264 + seed)
+        inner += shape([(sx - 110, -240, 1), (sx + 110, -240, 1), (sx + 120, -210, 1), (sx - 120, -210, 1)], "#f3efe6",
+                       "".join(blob(rect_pts(sx - 110 + 44 * q, -240, sx - 88 + 44 * q, -210), "#d9543c" if seed % 2 else "#3c8fd9") for q in range(5)),
+                       w=3.0, seed=8265 + seed)
+    o.append(shape(rect_pts(x0, -h, x0 + w, 0), col, inner, w=4.2, seed=8200 + seed))
+    o.append(shape(rect_pts(x0 - 14, -h - 26, x0 + w + 14, -h), lib.mul(col, (.78, .76, .8)), "", w=3.6, seed=8201 + seed))
+    o.append(line([(x0 + w - 24, -h), (x0 + w - 24, 0)], 9, "#8d939c", taper=0, wmin=1, seed=8202 + seed))
+    return "".join(o)
+
+
+def _tree82(x, h, P, seed, t, k=1.0):
+    sway = 4 * math.sin(t * 1.3 + seed)
+    o = [shape([(x - 14 * k, 0, 1), (x - 9 * k, -h * .55), (x + 9 * k, -h * .55), (x + 14 * k, 0, 1)], P["trunk"], "", w=3.4, seed=8300 + seed)]
+    r = rs(8301, seed)
+    for i in range(3):
+        cxx = x + (i - 1) * 60 * k + sway
+        cyy = -h * (.72 + .1 * (i % 2))
+        rr = (110 + r.uniform(-20, 30)) * k
+        pts = [(cxx + rr * (1 + .12 * math.sin(a * 5 + seed)) * math.cos(a), cyy + rr * .85 * (1 + .12 * math.sin(a * 5 + seed)) * math.sin(a))
+               for a in np.linspace(0, 2 * math.pi, 22, endpoint=False)]
+        o.append(shape(pts, P["tree"], blob([(p[0] + 20 * k, p[1] + 24 * k) for p in pts[4:14]], P["tree_sh"], .8), w=3.6, seed=8310 + seed * 3 + i))
+    return "".join(o)
+
+
+def street82(t, cam, mood="rush", puddles=(), splash=()):
+    """Утренняя улица для бега (см. шапку): dict(back, ground, front)."""
+    P = ST82.get(mood, ST82["rush"])
+    cx, cy, s, rot = cam
+    back = []
+    g = lib.lin_grad([(0, P["sky0"], 1), (.55, P["sky1"], 1), (1, P["sky2"], 1)], 0, 0, 0, 1920, units="userSpaceOnUse")
+    back.append(f'<rect x="-900" y="-900" width="2880" height="3720" fill="url(#{g})"/>')
+    gs = lib.rad_grad([(0, "#fffbe8", 1), (.15, "#fff3cf", .8), (1, "#ffe2a4", 0)], ST82_SUN[0], ST82_SUN[1], 520)
+    back.append(f'<rect x="-900" y="-900" width="2880" height="3720" fill="url(#{gs})"/>')
+    back.append(f'<circle cx="{ST82_SUN[0]}" cy="{ST82_SUN[1]}" r="56" fill="#fffdf0"/>')
+    # дальние деревья: силуэт дымкой (0.2)
+    a, b = _view82(cam, .2, .38)
+    xs = np.arange(math.floor(a / 40) * 40 - 200, b + 240, 40.0)
+    ys = [-160 - 70 * abs(math.sin(x * .011)) - 40 * abs(math.sin(x * .027 + 1)) for x in xs]
+    pts = " L".join(f"{f(x)} {f(y)}" for x, y in zip(xs, ys))
+    back.append(f'<g transform="{cam_layer(cam, .2, .38, -330)}"><path d="M{f(xs[0])} 400 L{pts} L{f(xs[-1])} 400Z" fill="{P["far"]}"/>'
+                f'<rect x="{f(xs[0])}" y="-60" width="{f(xs[-1] - xs[0])}" height="460" fill="{P["far2"]}"/></g>')
+    # дома (0.55)
+    a, b = _view82(cam, .55, .62)
+    hs = []
+    sp = 900.0
+    for i in range(math.floor(a / sp) - 1, math.floor(b / sp) + 2):
+        r = rs(8270, i)
+        w = r.uniform(760, 880)
+        h = r.uniform(1350, 1750)
+        hs.append(_facade82(i * sp + r.uniform(0, sp - w), w, h, P, i % 97, t))
+    back.append(f'<g transform="{cam_layer(cam, .55, .62, -170)}"><rect x="{f(a - 400)}" y="-30" width="{f(b - a + 800)}" height="400" '
+                f'fill="{lib.mul(P["walk"], (.9, .9, .9))}"/>{"".join(hs)}</g>')
+    # деревья в лунках (0.8)
+    a, b = _view82(cam, .8, .82)
+    tr = []
+    sp = 760.0
+    for i in range(math.floor(a / sp) - 1, math.floor(b / sp) + 2):
+        r = rs(8290, i)
+        tr.append(_tree82(i * sp + r.uniform(0, 300), r.uniform(560, 700), P, i % 89, t))
+    back.append(f'<g transform="{cam_layer(cam, .8, .82, -96)}"><rect x="{f(a - 400)}" y="-24" width="{f(b - a + 800)}" height="60" '
+                f'fill="{P["lawn"]}"/>{"".join(tr)}</g>')
+    # мир: тротуар
+    x0, x1 = cx - 1000 / s, cx + 1000 / s
+    gr = [f'<rect x="{f(x0)}" y="-74" width="{f(x1 - x0)}" height="900" fill="{P["walk"]}"/>']
+    gr.append(blob(rect_pts(x0, -74, x1, -50), P["walk_sh"], .8))
+    for i in range(math.floor(x0 / 150) - 1, math.floor(x1 / 150) + 2):
+        gr.append(_sl([(i * 150, -74), (i * 150 - 90, 160)], 2.6, P["walk_ln"], .7))
+    for y in (-26, 40, 110):
+        gr.append(_sl([(x0, y), (x1, y)], 2.4, P["walk_ln"], .6))
+    for i in range(math.floor(x0 / 420) - 1, math.floor(x1 / 420) + 2):
+        r = rs(8320, i)
+        px, py = i * 420 + r.uniform(0, 420), r.uniform(-50, 120)
+        gr.append(blob(ellipse_pts(px, py, r.uniform(30, 70), r.uniform(8, 14), 10), P["walk_lit"], .7))
+    gr.append(line([(x0, -74), (x1, -74)], 4.0, INK, taper=.05, wmin=.9, seed=8330))
+    for (px, py, rx) in puddles:
+        if x0 - rx < px < x1 + rx:
+            pp = [(px + rx * math.cos(a_) * (1 + .1 * math.sin(3 * a_ + px)), py + rx * .22 * math.sin(a_) * (1 + .15 * math.cos(2 * a_)))
+                  for a_ in np.linspace(0, 2 * math.pi, 28, endpoint=False)]
+            rip = 0.5 + 0.5 * math.sin(t * 6 + px)
+            gr.append(shape(pp, P["puddle"], blob([(px - rx * .6, py - rx * .08), (px + rx * .1, py - rx * .14), (px - rx * .1, py)], P["puddle_hi"], .9)
+                            + line([(px - rx * .3, py + rx * .06), (px + rx * (.2 + .1 * rip), py + rx * .05)], 2.6, "#ffffff", seed=8340, op=.7),
+                            w=3.0, seed=int(8341 + px % 97)))
+    for (sx, sy, u, k) in splash:
+        gr.append(splash82(sx, sy, u, k))
+    # ближний слой (1.35): бордюр, водосток, дорога
+    a, b = _view82(cam, 1.35, 1.25)
+    fr = [f'<rect x="{f(a - 400)}" y="0" width="{f(b - a + 800)}" height="40" fill="{P["curb"]}"/>',
+          f'<rect x="{f(a - 400)}" y="40" width="{f(b - a + 800)}" height="900" fill="{P["road"]}"/>',
+          blob(rect_pts(a - 400, 26, b + 400, 40), P["curb_sh"], .9), _sl([(a - 400, 0), (b + 400, 0)], 3.4, INK),
+          _sl([(a - 400, 40), (b + 400, 40)], 3.4, INK)]
+    for i in range(math.floor(a / 260) - 2, math.floor(b / 260) + 3):
+        fr.append(_sl([(i * 260, 0), (i * 260 - 6, 40)], 2.6, P["curb_sh"]))
+    for i in range(math.floor(a / 900) - 1, math.floor(b / 900) + 2):
+        r = rs(8350, i)
+        px = i * 900 + r.uniform(0, 600)
+        fr.append(shape(rect_pts(px, 48, px + 120, 70), "#4a4e55", "".join(_sl([(px + 12 + 16 * q, 50), (px + 12 + 16 * q, 68)], 3, "#2a2d33")
+                                                                         for q in range(7)), w=2.6, seed=8351 + i % 50))
+        qx = px + 420
+        rx = 170
+        pp = [(qx + rx * math.cos(a_), 120 + 34 * math.sin(a_)) for a_ in np.linspace(0, 2 * math.pi, 24, endpoint=False)]
+        fr.append(shape(pp, P["puddle"], blob([(qx - 100, 112), (qx + 40, 104), (qx - 20, 124)], P["puddle_hi"], .9), w=3.0, seed=8360 + i % 50))
+    front = f'<g transform="{cam_layer(cam, 1.35, 1.25, 150)}">{"".join(fr)}</g>'
+    return dict(back="".join(back), ground="".join(gr), front=front, P=P)
+
+
+def splash82(x, y, u, k=1.0, seed=0):
+    """Брызги из лужи: корона капель вверх-в стороны и кольцо на воде (u 0…1 — фаза, 1 — осели)."""
+    if not 0 <= u < 1:
+        return ""
+    o = []
+    r = rs(8370, int(x) % 9973, seed)
+    ring = 1 - (1 - u) ** 2
+    o.append(f'<ellipse cx="{f(x)}" cy="{f(y)}" rx="{f((40 + 120 * ring) * k)}" ry="{f((8 + 24 * ring) * k)}" fill="none" stroke="#ffffff" '
+             f'stroke-width="{f(5 * k * (1 - u))}" opacity="{.9 * (1 - u):.3f}"/>')
+    for j in range(11):
+        a_ = math.radians(r.uniform(200, 340))
+        v = r.uniform(380, 720) * k
+        tt = u * 0.42
+        px = x + math.cos(a_) * v * tt * 1.2
+        py = y + math.sin(a_) * v * tt + 1900 * k * tt * tt
+        if py > y + 6:
+            continue
+        rr = r.uniform(6, 13) * k * (1 - .5 * u)
+        o.append(shape(ellipse_pts(px, py, rr, rr * 1.25, 8, rot=math.degrees(a_) + 90), "#bfe2f6", blob(ellipse_pts(px - rr * .3, py - rr * .3, rr * .35,
+                                                                                                           rr * .35, 6), "#ffffff"),
+                       w=2.4 * k, seed=8380 + j))
+    return "".join(o)
