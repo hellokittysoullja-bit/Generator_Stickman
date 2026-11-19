@@ -6067,3 +6067,559 @@ def paint_brush(x, y, k=1.0, rot=0.0, col="#D9483B", seed=0):
          shape([(56, -12, 1), (78, -14), (100, -4), (106, 0, 1), (100, 4), (78, 14), (56, 12, 1)], "#5A4A3A",
                blob([(84, -10), (100, -4), (106, 0), (100, 4), (84, 10)], col), w=3, seed=sd + 2)]
     return _tf("".join(o), x, y, k, rot)
+
+
+# ═══════════════════════════════ ОПОЗДАЛ (рилс 82, автор — группа A) ═══════════════════════════════
+# Букв и цифр НЕТ нигде: на ленте только насечки, на часах и секундомере только деления, у автобуса нет номера.
+#   time_strip(x0, y, x1, k, bites, crumbs_t, seed, h, ticks, op_col)
+#                         ПОЛОСКА ВРЕМЕНИ: бумажная лента-рулетка от x0 до x1, (y) — её СРЕДНЯЯ линия, высота 110·k; насечки сверху
+#                         (каждая пятая длинная) и снизу; bites — укусы [(u, r, side, a)]: u 0…1 — место вдоль ленты, r — радиус
+#                         (в px мира, ×k не умножается), side −1 — с верхнего края, +1 — с нижнего, a 0…1 — укус «вырос» (по умолчанию 1);
+#                         край укуса — полукруг со следами зубов. crumbs_t — [(i, dt)]: от укуса i крошки летят dt секунд.
+#                         strip_bite_xy(x0, y, x1, k, u, side) → точка края укуса в мире.
+#   strip_crumbs(x, y, k, dt, seed, n, floor)  крошки бумаги из точки, падают с гравитацией dt секунд (до floor)
+#   strip_piece(x, y, k, w, rot, seed)     отломанный кусок ленты (ЦЕНТР), ширина w·k, рваные края-укусы с обеих сторон
+#   tape_roll(x, y, k, unroll_u, angle, seed)  рулон той же ленты (ЦЕНТР оси), радиус 95·k·(1 − 0.55·unroll_u); angle — поворот (катится);
+#                         хвост ленты рисует сцена через time_strip. tape_roll_r(k, unroll_u) → радиус.
+#   scissors(x, y, k, snip_u, rot, seed)   ножницы (ЦЕНТР винта), лезвия ВПРАВО при rot=0, длина 230·k; snip_u 0 — раскрыты, 1 — сомкнуты
+#   thief_keys(x, y, k, chomp, t, seed)    ВОРИШКА-КЛЮЧИ: висят на кольце, (x, y) — ТОЧКА ПОДВЕСА кольца; два больших ключа вниз
+#                         бородками друг к другу — это «челюсть»: chomp 0…1 — раскрыта; лица нет. thief_keys_mouth(x, y, k) → «рот».
+#   thief_sock(x, y, k, chomp, t, seed, rot)  ВОРИШКА-НОСОК-кукла: (x, y) — ЦЕНТР ДНА резинки, стоит вверх, мысок-«голова» вправо;
+#                         chomp 0…1 — мысок раскрывается, как рот куклы (без глаз). thief_sock_mouth(x, y, k) → «рот».
+#   thief_kettle(x, y, k, chomp, steam, t, seed)  ВОРИШКА-ЧАЙНИК (ЦЕНТР ДНА) 260×220·k: крышка на петле сзади хлопает (chomp 0…1);
+#                         steam 0…1 — пар из носика. thief_kettle_mouth(x, y, k) → щель под крышкой.
+#   stopwatch(x, y, k, hand_a, sector_a, click, t, seed)  механический секундомер (ЦЕНТР циферблата), R 150·k; 60 делений без цифр,
+#                         одна стрелка hand_a (град, 0 — вверх, по часовой), sector_a — закрашенный сектор от 0 до этого угла;
+#                         click 0…1 — кнопка вдавлена (и штрихи щелчка)
+#   sector_sticker(x, y, k, a, rot, peel, seed)  наклейка-сектор (вершина в (x, y)), радиус 110·k, угол a; peel 0…1 — уголок отгибается
+#   film_projector(x, y, k, t, beam_u, seed, crank)  плёночный проектор (ЦЕНТР ДНА) 300·k: две бобины крутятся от t, ручка crank (град);
+#                         beam_u 0…1 — луч вправо с пылинками. projector_lens(x, y, k) → объектив в мире.
+#   coat_rack(x, y, k, coat, t, seed)      вешалка-планка на стене (ЦЕНТР планки) 520·k, четыре крючка; coat 0/1 — куртка на 1-м крючке.
+#                         coat_rack_hook(x, y, k, i) → кончик крючка i (0…3) в мире
+#   stool(x, y, k, seed)                   табуретка (ЦЕНТР ВЕРХА сиденья) 220·k, ножки до y + 300·k
+#   street_clock(x, y, k, hand_a, jump_u, t, seed)  уличные часы на столбе (ЦЕНТР ДНА столба), столб 900·k, циферблат R 100·k без цифр;
+#                         hand_a — минутная стрелка (часовая = hand_a/12); jump_u 0…1 — часы вздрагивают (качание затухает).
+#                         street_clock_center(x, y, k) → центр циферблата.
+#   bus(x, y, k, u, seed, puff)            городской автобус (ЦЕНТР ДНА — земля под серединой) 920×360·k, без номера и надписей;
+#                         u — пройденный путь в px (крутит колёса), puff 0…1 — облачко выхлопа сзади (слева)
+#   bench(x, y, k, seed)                   парковая скамейка (ЦЕНТР ДНА) 560·k; bench_seat(x, y, k) → центр сиденья в мире
+#   (кружка — уже есть: mug / coffee_mug)
+C_STRIP = "#F7ECCB"
+C_STRIP_SH = "#E2CFA0"
+C_STRIP_EDGE = "#C8B07A"
+C_STRIP_TICK = "#6E604A"
+C_STEEL = "#C9CDD4"
+C_STEEL_SH = "#8D939D"
+C_STEEL_HI = "#EEF1F5"
+C_KETTLE = "#E0574A"
+C_KETTLE_SH = "#A93C33"
+C_KETTLE_HI = "#F28C7E"
+C_BUS = "#F2B33A"
+C_BUS_SH = "#C88A22"
+C_BUS_HI = "#F9D37E"
+C_BUS_GLASS = "#9FCBE3"
+C_BUS_GLASS_SH = "#79AACA"
+C_SECTOR = "#F2A33A"
+C_BENCH = "#B9733F"
+C_BENCH_SH = "#8C5328"
+C_IRONW = "#3A3F47"
+
+
+def _bite_pts(cx, cy, r, side, seed, n=40):
+    """Полукруг укуса со следами зубов (зубчатый край), открыт к краю ленты (side)."""
+    rs = _rs(seed)
+    nt = 6 + int(rs.uniform(0, 3))
+    ph = rs.uniform(0, 3.14)
+    out = []
+    for i in range(n + 1):
+        a = math.pi * i / n
+        rr = r * (1 - .085 * abs(math.sin(a * nt + ph)) ** .6) + rs.uniform(-.8, .8)
+        out.append((cx + rr * math.cos(a) * 1.0, cy - side * rr * math.sin(a)))
+    return out
+
+
+def _norm_bites(bites):
+    out = []
+    for b in bites or ():
+        b = tuple(b)
+        u, r = b[0], b[1]
+        side = b[2] if len(b) > 2 else -1
+        a = b[3] if len(b) > 3 else 1.0
+        out.append((u, r, side, clamp(a)))
+    return out
+
+
+def strip_bite_xy(x0, y, x1, k=1.0, u=0.5, side=-1):
+    return x0 + (x1 - x0) * u, y + side * 55 * k
+
+
+def strip_crumbs(x, y, k=1.0, dt=0.0, seed=0, n=7, floor=None):
+    if dt <= 0:
+        return ""
+    rs = _rs(81900 + seed)
+    o = []
+    for i in range(n):
+        vx = rs.uniform(-160, 160) * k
+        vy = rs.uniform(-260, -60) * k
+        g = 1900 * k
+        tt = max(0.0, dt - rs.uniform(0, .06))
+        px = x + vx * tt
+        py = y + vy * tt + .5 * g * tt * tt
+        if floor is not None and py > floor:
+            py = floor
+            px = x + vx * min(tt, 1.0) * .6
+        s = rs.uniform(7, 14) * k
+        rot = rs.uniform(0, 360) + 400 * tt * (1 if i % 2 else -1)
+        pts = [(-s, -s * .6), (s * .8, -s * .7), (s, s * .5), (-s * .5, s * .7)]
+        o.append(_tf(shape(pts, C_STRIP if i % 3 else C_STRIP_SH, "", w=2.0, seed=81950 + seed + i), px, py, 1.0, rot))
+    return "".join(o)
+
+
+def time_strip(x0, y, x1, k=1.0, bites=(), crumbs_t=(), seed=0, h=None, ticks=True, op_col=None):
+    sd = 81000 + seed
+    hh = (110 if h is None else h) * k
+    top, bot = y - hh / 2, y + hh / 2
+    L = x1 - x0
+    bl = _norm_bites(bites)
+    # бумага с лёгкой волной края
+    rs = _rs(sd)
+    n = max(4, int(abs(L) / 40))
+    up = [(x0 + L * i / n, top + rs.uniform(-1.2, 1.2)) for i in range(n + 1)]
+    dn = [(x0 + L * i / n, bot + rs.uniform(-1.2, 1.2)) for i in range(n, -1, -1)]
+    pts = [(up[0][0], up[0][1], 1)] + up[1:-1] + [(up[-1][0], up[-1][1], 1), (dn[0][0], dn[0][1], 1)] + dn[1:-1] + [(dn[-1][0], dn[-1][1], 1)]
+    inner = [blob(rect_pts(min(x0, x1) - 5, bot - hh * .22, max(x0, x1) + 5, bot + 5), C_STRIP_SH, .8)]
+    if ticks:
+        step = 22 * k
+        m = int(abs(L) / step)
+        sg = 1 if L >= 0 else -1
+        for i in range(1, m + 1):
+            xx = x0 + sg * step * i
+            ln = 46 * k if i % 5 == 0 else 22 * k
+            inner.append(line([(xx, top), (xx, top + ln)], (3.4 if i % 5 == 0 else 2.4) * k, C_STRIP_TICK, taper=.1, wmin=.8, seed=sd + i))
+            inner.append(line([(xx, bot), (xx, bot - ln * .55)], 2.2 * k, C_STRIP_TICK, taper=.1, wmin=.8, seed=sd + 300 + i, op=.75))
+    body = shape(pts, op_col or C_STRIP, "".join(inner), w=3.6 * k, seed=sd + 1)
+    holes = []
+    rims = []
+    for j, (u, r, side, a) in enumerate(bl):
+        if a <= .01:
+            continue
+        rr = r * (.25 + .75 * lib.ease_out(a, 2)) if a < 1 else r
+        cx = x0 + L * u
+        cy = top if side < 0 else bot
+        bp = _bite_pts(cx, cy, rr, side, sd + 50 + j)
+        holes.append(blob(bp + [(cx - rr * 1.2, cy + side * 40), (cx + rr * 1.2, cy + side * 40)][::-1], "#000000"))
+        others = [(x0 + L * u2, top if s2 < 0 else bot, r2 * .97) for jj, (u2, r2, s2, a2) in enumerate(bl) if jj != j and a2 >= 1]
+        runs, cur = [], []
+        for p in bp:
+            ok = top - 1 <= p[1] <= bot + 1 and min(x0, x1) <= p[0] <= max(x0, x1) and all(math.hypot(p[0] - ox, p[1] - oy) > orr
+                                                                                            for ox, oy, orr in others)
+            if ok:
+                cur.append(p)
+            elif cur:
+                runs.append(cur)
+                cur = []
+        if cur:
+            runs.append(cur)
+        for q, ins in enumerate(runs):
+            if len(ins) > 2:
+                rims.append(line(ins, 6.5 * k, C_STRIP_EDGE, taper=.3, wmin=.4, seed=sd + 80 + j + q, op=.9))
+                rims.append(line(ins, 3.0 * k, lib.INK, taper=.35, wmin=.3, seed=sd + 90 + j + q))
+    if holes:
+        mid = lib.uid("m")
+        x_a, x_b = min(x0, x1) - 60, max(x0, x1) + 60
+        lib.DEFS.append(f'<mask id="{mid}" maskUnits="userSpaceOnUse" x="{f(x_a)}" y="{f(top - 400)}" width="{f(x_b - x_a)}" '
+                        f'height="{f(hh + 800)}"><rect x="{f(x_a)}" y="{f(top - 400)}" width="{f(x_b - x_a)}" height="{f(hh + 800)}" '
+                        f'fill="#FFFFFF"/>{"".join(holes)}</mask>')
+        body = f'<g mask="url(#{mid})">{body}</g>'
+    o = [body] + rims
+    for (i, dt) in crumbs_t or ():
+        if 0 <= i < len(bl):
+            u, r, side, a = bl[i]
+            o.append(strip_crumbs(x0 + L * u, (top if side < 0 else bot) - side * r * .5, k, dt, seed=seed * 7 + i))
+    return "".join(o)
+
+
+def strip_piece(x, y, k=1.0, w=150.0, rot=0.0, seed=0):
+    ww = w
+    body = time_strip(-ww / 2, 0, ww / 2, 1.0, bites=[(0.0, 62, -1), (0.0, 56, 1), (1.0, 54, 1), (1.0, 60, -1)], seed=820 + seed)
+    return _tf(body, x, y, k, rot)
+
+
+def tape_roll_r(k=1.0, unroll_u=0.0):
+    return 95 * k * (1 - .55 * clamp(unroll_u))
+
+
+def tape_roll(x, y, k=1.0, unroll_u=0.0, angle=0.0, seed=0):
+    sd = 81200 + seed
+    R = tape_roll_r(1.0, unroll_u)
+    o = [shape(ellipse_pts(0, 0, R, R, 40), C_STRIP, blob(ellipse_pts(R * .2, R * .25, R * .8, R * .7, 24), C_STRIP_SH, .6), w=4.2, seed=sd)]
+    # витки спиралью
+    pts = []
+    for i in range(140):
+        a = i * .2
+        r = R * (.93 - .7 * i / 140)
+        pts.append((r * math.cos(a), r * math.sin(a)))
+    o.append(line(pts, 2.4, C_STRIP_EDGE, taper=.2, wmin=.6, seed=sd + 1))
+    # насечки по краю — видно, что катится
+    for i in range(16):
+        a = 2 * math.pi * i / 16
+        o.append(line([(R * math.cos(a), R * math.sin(a)), ((R - (14 if i % 4 else 24)) * math.cos(a), (R - (14 if i % 4 else 24)) * math.sin(a))],
+                      2.4, C_STRIP_TICK, taper=.1, wmin=.8, seed=sd + 10 + i))
+    o.append(shape(ellipse_pts(0, 0, R * .22, R * .22, 16), "#8C7A5A", blob(ellipse_pts(0, 0, R * .12, R * .12, 12), "#4A3E2E"), w=3.0, seed=sd + 2))
+    return _tf("".join(o), x, y, k, angle)
+
+
+def scissors(x, y, k=1.0, snip_u=0.0, rot=0.0, seed=0):
+    sd = 81300 + seed
+    op = 24 * (1 - clamp(snip_u))
+    o = []
+    for s_, col, col2 in ((1, C_STEEL, "#D9483B"), (-1, C_STEEL_SH, "#A5322A")):
+        g = []
+        blade = [(-6, -9 * s_, 1), (150, -4 * s_), (190, 2 * s_, 1), (150, 9 * s_), (10, 12 * s_, 1)]
+        g.append(shape(blade, col, line([(20, -3 * s_), (150, 0)], 2.4, C_STEEL_HI, taper=.4, wmin=.3, seed=sd + 2 + s_, op=.8), w=3.0,
+                       seed=sd + 4 + s_))
+        g.append(line([(0, 0), (-50, 18 * s_)], 10, lib.INK, taper=.1, wmin=.8, seed=sd + 6 + s_))
+        ring_c = (-78, 30 * s_)
+        g.append(shape(ellipse_pts(ring_c[0], ring_c[1], 36, 26, 22, rot=25 * s_), col2,
+                       blob(ellipse_pts(ring_c[0], ring_c[1], 20, 12, 18, rot=25 * s_), "#FBF3DC"), w=3.4, seed=sd + 8 + s_))
+        o.append(f'<g transform="rotate({f(-s_ * op / 2)})">{"".join(g)}</g>')
+    o.append(shape(ellipse_pts(0, 0, 8, 8, 10), C_STEEL_SH, "", w=2.4, seed=sd + 12))
+    return _tf("".join(o), x, y, k, rot)
+
+
+def thief_keys_mouth(x, y, k=1.0):
+    return x, y + 230 * k
+
+
+def thief_keys(x, y, k=1.0, chomp=0.0, t=0.0, seed=0):
+    sd = 81400 + seed
+    c = clamp(chomp)
+    sw = 3 * math.sin(t * 2.3 + seed)
+    o = []
+    # кольцо
+    o.append(line(ellipse_pts(0, 40, 40, 40, 28) + [ellipse_pts(0, 40, 40, 40, 28)[0]], 7, C_STEEL_SH, taper=.05, wmin=.9, seed=sd))
+    o.append(line(ellipse_pts(0, 40, 40, 40, 28)[3:12], 3, C_STEEL_HI, taper=.3, wmin=.4, seed=sd + 1, op=.9))
+
+    def key(col, colsh, s_, ang, ln, sdk):
+        g = []
+        g.append(shape(ellipse_pts(0, 30, 30, 30, 22), col, blob(ellipse_pts(0, 22, 9, 9, 10), "#3a3020"), w=3.2, seed=sdk))
+        g.append(shape(rrect(-8, 54, 8, 54 + ln, 4), col, "", w=3.0, seed=sdk + 1))
+        # бородка-«зубы» к другой стороне
+        tx = s_ * 8
+        teeth = [(tx, 54 + ln - 70, 1)]
+        for i in range(5):
+            yy = 54 + ln - 70 + 14 * i
+            teeth += [(tx + s_ * (16 if i % 2 == 0 else 26), yy + 3), (tx + s_ * (16 if i % 2 == 0 else 26), yy + 11)]
+        teeth += [(tx, 54 + ln, 1)]
+        g.append(shape(teeth, colsh, "", w=2.8, seed=sdk + 2))
+        g.append(line([(-3, 62), (-3, 54 + ln - 8)], 2.0, C_STEEL_HI if col == C_STEEL else "#F6DF92", taper=.3, wmin=.3, seed=sdk + 3, op=.8))
+        return f'<g transform="rotate({f(ang)} 0 0)"><g transform="translate(0 70)">{"".join(g)}</g></g>'
+    # задний маленький ключ
+    o.append(key(C_BRASS, C_BRASS_SH, 1, 4 + sw, 90, sd + 10))
+    o.append(key(C_STEEL, C_STEEL_SH, 1, 10 + 24 * c + sw, 140, sd + 20))
+    o.append(key(C_BRASS, C_BRASS_SH, -1, -10 - 24 * c + sw, 140, sd + 30))
+    return _tf("".join(o), x, y, k, 0)
+
+
+def thief_sock_mouth(x, y, k=1.0):
+    return x + 120 * k, y - 300 * k
+
+
+def thief_sock(x, y, k=1.0, chomp=0.0, t=0.0, seed=0, rot=0.0):
+    sd = 81500 + seed
+    red, wht, blu = C_SOCK
+    c = clamp(chomp)
+    bend = 6 * math.sin(t * 3.1 + seed)
+    o = []
+    # тело-голенище вверх (резинка снизу)
+    body = [(-62, 0, 1), (-60, -150), (-56, -250), (-40, -300), (40, -306), (62, -250), (62, -150), (62, 0, 1)]
+    st = []
+    for i in range(6):
+        yy = -40 - 42 * i
+        st.append(blob([(-80, yy), (80, yy - 6), (80, yy - 24), (-80, yy - 18)], wht))
+    st.append(blob(rect_pts(-80, -30, 80, 10), blu))
+    st.append(blob(rect_pts(30, -320, 90, 10), "#000000", .1))
+    o.append(shape(body, red, "".join(st), w=4.2, seed=sd))
+    for i in range(4):
+        o.append(line([(-46 + 30 * i, -4), (-46 + 30 * i, -28)], 2.2, "#2E4F80", taper=.1, wmin=.8, seed=sd + 40 + i, op=.8))
+    # «голова»-мысок вправо: нижняя челюсть (пятка)
+    jaw_lo = [(-30, -300, 1), (60, -300), (150, -296), (186, -282), (186, -266), (150, -258), (60, -262), (-20, -268, 1)]
+    o.append(shape(jaw_lo, red, blob([(120, -320), (200, -320), (200, -240), (120, -240)], blu), w=4.0, seed=sd + 2))
+    # нутро рта
+    a = 6 + 26 * c
+    if c > .03:
+        o.append(f'<g transform="rotate({f(-a * .6)} -20 -300)">' +
+                 blob([(-20, -300), (176, -300), (180, -286), (60, -282)], "#7A2A26") + "</g>")
+        o.append(blob([(0, -300), (176, -288), (176, -276), (40, -276)], "#5E1D1A", .9))
+    # верхняя челюсть (мысок), открывается
+    jaw_up = [(-40, -296, 1), (-30, -340), (40, -362), (140, -352), (196, -326), (200, -300), (150, -300), (60, -300), (-20, -298, 1)]
+    up_in = blob([(130, -380), (220, -380), (220, -290), (130, -290)], blu) + "".join(
+        blob([(xx, -380), (xx + 14, -380), (xx + 14, -290), (xx, -290)], wht) for xx in (-10, 40, 90))
+    o.append(f'<g transform="rotate({f(-a)} -20 -300)">' + shape(jaw_up, red, up_in, w=4.2, seed=sd + 3) + "</g>")
+    return _tf(f'<g transform="rotate({f(bend * .5)} 0 0)">{"".join(o)}</g>', x, y, k, rot)
+
+
+def thief_kettle_mouth(x, y, k=1.0):
+    return x - 10 * k, y - 200 * k
+
+
+def thief_kettle(x, y, k=1.0, chomp=0.0, steam=0.0, t=0.0, seed=0):
+    sd = 81600 + seed
+    c = clamp(chomp)
+    o = []
+    # носик вправо
+    o.append(shape([(80, -80, 1), (150, -150), (190, -190), (206, -180), (176, -126), (112, -40, 1)], C_KETTLE_SH, "", w=3.8, seed=sd))
+    # ручка сверху
+    o.append(line([(-80, -170), (-60, -250), (0, -270), (60, -250), (80, -170)], 16, lib.INK, taper=.05, wmin=.9, seed=sd + 1))
+    o.append(line([(-76, -176), (-58, -244), (0, -262), (58, -244), (76, -176)], 8, C_IRONW, taper=.05, wmin=.9, seed=sd + 2))
+    # корпус
+    body = [(-130, 0, 1), (-140, -60), (-120, -150), (-70, -190), (70, -190), (120, -150), (140, -60), (130, 0, 1)]
+    o.append(shape(body, C_KETTLE, blob(ellipse_pts(-70, -110, 26, 50, 16, rot=12), C_KETTLE_HI, .8) +
+                   blob(rect_pts(-150, -30, 150, 10), C_KETTLE_SH, .8), w=4.6, seed=sd + 3))
+    o.append(shape(rrect(-140, -16, 140, 4, 8), C_IRONW, "", w=3.0, seed=sd + 4))
+    # щель-«рот» под крышкой (темнеет при раскрытии)
+    a = 46 * c
+    if c > .03:
+        o.append(blob(ellipse_pts(0, -192, 72, 8 + 26 * c, 20), "#3B1A16"))
+    # крышка на петле слева (сзади)
+    lid = [(-74, -190, 1), (-62, -214), (0, -226), (62, -214), (74, -190, 1)]
+    o.append(f'<g transform="rotate({f(-a)} -74 -190)">' + shape(lid, C_KETTLE_SH, "", w=3.8, seed=sd + 5) +
+             shape(ellipse_pts(0, -232, 14, 10, 12), C_IRONW, "", w=2.6, seed=sd + 6) + "</g>")
+    if steam > .02:
+        o.append(smoke_curls(206, -200, .9 * k, steam, t, seed=sd + 7, col="#F2F4F7"))
+    return _tf("".join(o), x, y, k, 0)
+
+
+def stopwatch(x, y, k=1.0, hand_a=0.0, sector_a=0.0, click=0.0, t=0.0, seed=0):
+    sd = 81700 + seed
+    cl = clamp(click)
+    o = []
+    # кольцо-петля и кнопка сверху (вдавливается)
+    o.append(line(ellipse_pts(0, -222 + 10 * cl, 34, 30, 22) + [ellipse_pts(0, -222 + 10 * cl, 34, 30, 22)[0]], 9, C_STEEL_SH, taper=.05, wmin=.9,
+                  seed=sd))
+    o.append(shape(rrect(-24, -192 + 14 * cl, 24, -150, 6), C_STEEL, blob(rect_pts(-20, -188 + 14 * cl, -8, -156), C_STEEL_HI, .8), w=3.4, seed=sd + 1))
+    o.append(shape(rrect(-34, -166, 34, -140, 5), C_STEEL_SH, "", w=3.2, seed=sd + 2))
+    # боковая кнопка
+    o.append(_tf(shape(rrect(-14, -150, 14, -118, 5), C_STEEL, "", w=3.0, seed=sd + 3), 0, 0, 1.0, 40))
+    # корпус
+    o.append(shape(ellipse_pts(0, 0, 150, 150, 44), C_STEEL, blob(ellipse_pts(-52, -64, 46, 26, 16, rot=-38), C_STEEL_HI, .9) +
+                   blob(ellipse_pts(40, 70, 90, 50, 16, rot=-38), C_STEEL_SH, .5), w=5.0, seed=sd + 4))
+    o.append(shape(ellipse_pts(0, 0, 128, 128, 44), "#FBF6E8", "", w=3.4, seed=sd + 5))
+    sa = sector_a
+    if abs(sa) > .5:
+        pts = [(0, 0, 1)]
+        n = max(3, int(abs(sa) / 5))
+        for i in range(n + 1):
+            aa = math.radians(sa * i / n)
+            pts.append((118 * math.sin(aa), -118 * math.cos(aa)) + ((1,) if i in (0, n) else ()))
+        o.append(blob(pts, C_SECTOR, .85))
+        o.append(line(pts[1:], 3.0, "#C77A1E", taper=.1, wmin=.6, seed=sd + 6))
+    for i in range(60):
+        aa = math.radians(6 * i)
+        r0 = 104 if i % 5 else 92
+        o.append(line([(r0 * math.sin(aa), -r0 * math.cos(aa)), (120 * math.sin(aa), -120 * math.cos(aa))], 3.4 if i % 5 == 0 else 1.8,
+                      lib.INK, taper=.05, wmin=.9, seed=sd + 10 + i))
+    a = math.radians(hand_a)
+    tip = (112 * math.sin(a), -112 * math.cos(a))
+    o.append(line([(-26 * math.sin(a), 26 * math.cos(a)), tip], 6, "#C2382D", taper=.25, wmin=.35, seed=sd + 80))
+    o.append(shape(ellipse_pts(0, 0, 10, 10, 12), "#C2382D", "", w=2.6, seed=sd + 81))
+    o.append(line([(-80, -86), (-40, -112)], 6, "#FFFFFF", taper=.5, wmin=.2, seed=sd + 82, op=.6))
+    if 0 < cl < 1:
+        for j, aa in enumerate((-50, -90, -130)):
+            r = math.radians(aa)
+            o.append(line([(0 + 60 * math.cos(r), -200 + 60 * math.sin(r)), (0 + (60 + 40 * cl) * math.cos(r), -200 + (60 + 40 * cl) * math.sin(r))],
+                          5 * (1 - cl * .6), lib.INK, taper=.4, wmin=.2, seed=sd + 90 + j))
+    return _tf("".join(o), x, y, k, 0)
+
+
+def sector_sticker(x, y, k=1.0, a=90.0, rot=0.0, peel=0.0, seed=0):
+    sd = 81800 + seed
+    R = 110
+    n = max(3, int(abs(a) / 5))
+    edge = [(R * math.sin(math.radians(a * i / n)), -R * math.cos(math.radians(a * i / n))) + ((1,) if i in (0, n) else ()) for i in range(n + 1)]
+    oc = (-8 * math.sin(math.radians(a / 2)), 8 * math.cos(math.radians(a / 2)))
+    outer = [(oc[0], oc[1], 1)] + [((R + 10) * math.sin(math.radians(a * i / n)), -(R + 10) * math.cos(math.radians(a * i / n))) + ((1,) if i in (0, n) else ())
+                                   for i in range(n + 1)]
+    o = [blob([(p[0] + 5, p[1] + 6) for p in outer], "#000000", .18)]
+    o.append(shape(outer, "#FFFFFF", "", w=3.0, seed=sd))
+    o.append(blob([(0, 0, 1)] + edge, C_SECTOR))
+    o.append(line([(0, 0)] + edge + [(0, 0)], 2.4, "#C77A1E", taper=.1, wmin=.7, seed=sd + 1))
+    pl = clamp(peel)
+    if pl > .02:
+        e = outer[-1]
+        cx, cy = e[0] * .8, e[1] * .8
+        o.append(shape([(e[0], e[1]), (cx, cy), (cx + (e[0] - cx) * (1 - pl) - 20 * pl, cy - 30 * pl)], "#EDE7DA", "", w=2.4, seed=sd + 2))
+    return _tf("".join(o), x, y, k, rot)
+
+
+def projector_lens(x, y, k=1.0):
+    return x + 190 * k, y - 120 * k
+
+
+def film_projector(x, y, k=1.0, t=0.0, beam_u=0.0, seed=0, crank=None):
+    sd = 81850 + seed
+    o = []
+    bu = clamp(beam_u)
+    if bu > .01:
+        L = 900 * bu
+        o.append(blob([(190, -140), (190 + L, -140 - L * .34), (190 + L, -100 + L * .34), (190, -100)], "#FFF2C4", .38))
+        o.append(blob([(190, -132), (190 + L, -132 - L * .2), (190 + L, -108 + L * .2), (190, -108)], "#FFF8DC", .35))
+        rs = _rs(sd)
+        for i in range(10):
+            px = 230 + (rs.uniform(0, 1) * L + 40 * t * (1 + i % 3)) % max(40, L - 30)
+            py = -120 + rs.uniform(-.25, .25) * (px - 190) * 1.1 + 10 * math.sin(t * 2 + i)
+            o.append(mote(px, py, 5, .8))
+    # ножки
+    for s_ in (-1, 1):
+        o.append(line([(s_ * 90, -10), (s_ * 120, 0)], 10, lib.INK, taper=.1, wmin=.8, seed=sd + 1 + s_))
+    # корпус
+    o.append(shape(rrect(-150, -200, 150, -10, 18), "#4E5664", blob(rect_pts(-150, -60, 150, -10), "#3A414D") +
+                   blob(rect_pts(-130, -186, -40, -170), "#6B7484", .9), w=4.4, seed=sd + 3))
+    # объектив
+    o.append(shape(rrect(140, -150, 196, -90, 8), "#2F343D", blob(ellipse_pts(196, -120, 10, 26, 12), "#CFE7F4"), w=3.6, seed=sd + 4))
+    # бобины сверху, крутятся
+    for j, (cx, cy, r) in enumerate(((-80, -300, 100), (90, -290, 86))):
+        o.append(line([(cx, cy), (cx * .6, -200)], 8, lib.INK, taper=.1, wmin=.8, seed=sd + 10 + j))
+        sp = []
+        for m in range(3):
+            aa = t * 6 * (1 if j == 0 else 1.15) + m * 2.094
+            sp.append(blob([(cx, cy), (cx + r * .78 * math.cos(aa - .35), cy + r * .78 * math.sin(aa - .35)),
+                            (cx + r * .78 * math.cos(aa + .35), cy + r * .78 * math.sin(aa + .35))], "#2B3038"))
+        o.append(shape(ellipse_pts(cx, cy, r, r, 36), "#8A93A3", "".join(sp) + blob(ellipse_pts(cx, cy, 16, 16, 12), "#5B6372"), w=4.0, seed=sd + 12 + j))
+    # плёнка между бобинами
+    o.append(line([(-80, -400), (10, -330), (90, -376)], 4, "#2B2420", taper=.05, wmin=.9, seed=sd + 20))
+    # ручка сбоку
+    ca = math.radians(t * 400 if crank is None else crank)
+    hx, hy = -150 - 10, -110
+    ex_, ey_ = hx - 56 * math.cos(ca), hy + 56 * math.sin(ca)
+    o.append(line([(hx, hy), (ex_, ey_)], 9, lib.INK, taper=.1, wmin=.8, seed=sd + 21))
+    o.append(shape(rrect(ex_ - 10, ey_ - 22, ex_ + 10, ey_ + 4, 6), C_WOOD, "", w=2.6, seed=sd + 22))
+    o.append(shape(ellipse_pts(hx, hy, 12, 12, 12), "#2F343D", "", w=2.4, seed=sd + 23))
+    return _tf("".join(o), x, y, k, 0)
+
+
+def coat_rack_hook(x, y, k=1.0, i=0):
+    return x + (-195 + 130 * i) * k, y + 66 * k
+
+
+def coat_rack(x, y, k=1.0, coat=0, t=0.0, seed=0):
+    sd = 81880 + seed
+    o = [shape(rrect(-260, -34, 260, 34, 10), C_WOOD, blob(rect_pts(-260, 14, 260, 34), C_WOOD_SH, .8) +
+               line([(-240, -12), (240, -16)], 2.4, C_WOOD_SH, seed=sd + 1, op=.6), w=4.2, seed=sd)]
+    for i in range(4):
+        hx = -195 + 130 * i
+        o.append(line([(hx, 0), (hx + 2, 46), (hx + 16, 70), (hx + 32, 58)], 9, C_IRONW, taper=.1, wmin=.8, seed=sd + 10 + i))
+        o.append(shape(ellipse_pts(hx, 0, 9, 9, 10), C_IRONW, "", w=2.4, seed=sd + 20 + i))
+    if coat:
+        sw = 3 * math.sin(t * 1.4)
+        hx = -195
+        jk = [(hx - 10, 60, 1), (hx - 90, 110), (hx - 120, 260), (hx - 110, 470), (hx + 100, 480), (hx + 110, 260), (hx + 80, 110), (hx + 10, 60, 1)]
+        o.append(f'<g transform="rotate({f(sw)} {f(hx)} 60)">' +
+                 shape(jk, "#4A6FA5", blob([(hx - 120, 380), (hx + 120, 380), (hx + 120, 500), (hx - 120, 500)], "#34507D", .8) +
+                       line([(hx, 90), (hx, 470)], 4, "#34507D", seed=sd + 30), w=4.2, seed=sd + 31) + "</g>")
+    return _tf("".join(o), x, y, k, 0)
+
+
+def stool(x, y, k=1.0, seed=0):
+    sd = 81900 + seed
+    o = []
+    for s_, dx in ((-1, -90), (1, 90), (0, 18)):
+        o.append(shape(lib.band([(dx * .7, 10), (dx, 300)], 26, 20), C_WOOD_SH if s_ == 0 else C_WOOD, "", w=3.4, seed=sd + 1 + s_))
+    o.append(line([(-80, 200), (80, 200)], 10, C_WOOD_SH, taper=.05, wmin=.9, seed=sd + 5))
+    o.append(shape(ellipse_pts(0, 0, 112, 30, 30), C_WOOD_HI, "", w=3.8, seed=sd + 6))
+    o.append(shape(ellipse_pts(0, 18, 112, 30, 30)[0:16] + ellipse_pts(0, 0, 112, 30, 30)[15:0:-1], C_WOOD, "", w=3.4, seed=sd + 7))
+    return _tf("".join(o), x, y, k, 0)
+
+
+def street_clock_center(x, y, k=1.0):
+    return x, y - 900 * k
+
+
+def street_clock(x, y, k=1.0, hand_a=0.0, jump_u=0.0, t=0.0, seed=0):
+    sd = 81950 + seed
+    j = clamp(jump_u)
+    wob = 4 * j * math.sin(t * 40)
+    o = []
+    o.append(shape(rrect(-44, -24, 44, 0, 6), "#2F3A44", "", w=3.4, seed=sd))
+    o.append(shape([(-16, -20, 1), (-12, -800, 1), (12, -800, 1), (16, -20, 1)], "#3E4A55",
+                   line([(-6, -40), (-4, -790)], 3, "#5E6B78", seed=sd + 1, op=.8), w=3.6, seed=sd + 2))
+    for yy in (-200, -620):
+        o.append(shape(rrect(-26, yy - 14, 26, yy + 14, 6), "#2F3A44", "", w=3.0, seed=sd + 3 + yy))
+    g = []
+    g.append(shape(rrect(-12, -830, 12, -790, 4), "#2F3A44", "", w=3.0, seed=sd + 5))
+    g.append(shape(ellipse_pts(0, -900, 104, 104, 40), "#2F3A44", "", w=4.4, seed=sd + 6))
+    g.append(shape(ellipse_pts(0, -900, 86, 86, 40), "#FBF6E8", "", w=3.0, seed=sd + 7))
+    for i in range(12):
+        aa = math.radians(30 * i)
+        r0 = 64 if i % 3 else 56
+        g.append(line([(r0 * math.sin(aa), -900 - r0 * math.cos(aa)), (78 * math.sin(aa), -900 - 78 * math.cos(aa))], 4.2 if i % 3 == 0 else 2.6,
+                      lib.INK, taper=.05, wmin=.9, seed=sd + 10 + i))
+    ha = math.radians(hand_a / 12 + 150)
+    ma = math.radians(hand_a)
+    g.append(line([(0, -900), (42 * math.sin(ha), -900 - 42 * math.cos(ha))], 9, lib.INK, taper=.3, wmin=.4, seed=sd + 30))
+    g.append(line([(-10 * math.sin(ma), -900 + 10 * math.cos(ma)), (70 * math.sin(ma), -900 - 70 * math.cos(ma))], 6, "#C2382D", taper=.3,
+                  wmin=.35, seed=sd + 31))
+    g.append(shape(ellipse_pts(0, -900, 8, 8, 10), lib.INK, "", w=2.0, seed=sd + 32))
+    g.append(line([(-60, -950), (-30, -972)], 5, "#FFFFFF", taper=.5, wmin=.2, seed=sd + 33, op=.6))
+    g.append(shape([(-30, -1004, 1), (0, -1030), (30, -1004, 1)], "#2F3A44", "", w=3.0, seed=sd + 34))
+    o.append(f'<g transform="rotate({f(wob)} 0 -800)">{"".join(g)}</g>')
+    if j > .05:
+        for i, aa in enumerate((-30, 0, 30, 150, 180, 210)):
+            r = math.radians(aa)
+            r0 = 118 + 6 * i % 2
+            o.append(line([(r0 * math.cos(r), -900 + r0 * math.sin(r)), ((r0 + 34 * j) * math.cos(r), -900 + (r0 + 34 * j) * math.sin(r))],
+                          5 * j, lib.INK, taper=.4, wmin=.2, seed=sd + 40 + i))
+    return _tf("".join(o), x, y, k, 0)
+
+
+def bus(x, y, k=1.0, u=0.0, seed=0, puff=0.0):
+    sd = 82000 + seed
+    o = []
+    o.append(blob(ellipse_pts(0, 0, 470, 26, 24), "#000000", .2))
+    body = [(-460, -60, 1), (-462, -340), (-440, -360, 1), (420, -360, 1), (452, -330), (470, -200), (470, -60, 1)]
+    inner = [blob(rect_pts(-470, -110, 480, -50), C_BUS_SH, .9), blob(rect_pts(-470, -360, 480, -330), C_BUS_HI, .9)]
+    # окна
+    for i in range(6):
+        x0 = -430 + 130 * i
+        inner.append(shape(rrect(x0, -320, x0 + 108, -200, 10), C_BUS_GLASS, line([(x0 + 14, -230), (x0 + 50, -310)], 6, "#FFFFFF", seed=sd + i,
+                                                                                         op=.5), w=3.0, seed=sd + 10 + i))
+    # лобовое
+    inner.append(shape([(360, -320, 1), (440, -320), (462, -200, 1), (360, -200, 1)], C_BUS_GLASS_SH, "", w=3.0, seed=sd + 20))
+    # двери
+    for dx in (-230, 250):
+        inner.append(shape(rrect(dx, -300, dx + 90, -70, 6), C_BUS_GLASS_SH, line([(dx + 45, -300), (dx + 45, -70)], 3, lib.INK, seed=sd + 21 + dx),
+                           w=3.0, seed=sd + 22 + dx))
+    # табло маршрута — пустое тёмное
+    inner.append(shape(rrect(370, -352, 450, -328, 4), "#2A2F36", "", w=2.4, seed=sd + 25))
+    o.append(shape(body, C_BUS, "".join(inner), w=4.8, seed=sd + 1))
+    o.append(shape(rrect(440, -100, 474, -76, 6), "#FFF2B0", "", w=2.6, seed=sd + 26))
+    # колёса
+    for wx in (-290, 300):
+        o.append(shape(ellipse_pts(wx, -40, 66, 66, 20), "#2A2D33", "", w=3.8, seed=sd + 30 + wx))
+        ang = -u / 50.0
+        sp = "".join(line([(wx, -40), (wx + 30 * math.cos(ang + m * 2.094), -40 + 30 * math.sin(ang + m * 2.094))], 6, "#8A909A", taper=.1, wmin=.8,
+                          seed=sd + 40 + m) for m in range(3))
+        o.append(shape(ellipse_pts(wx, -40, 34, 34, 16), "#9AA0AA", sp, w=3.0, seed=sd + 50 + wx))
+    if puff > .02:
+        p = clamp(puff)
+        for i in range(3):
+            r = (20 + 26 * i) * (.4 + .6 * p)
+            o.append(shape(ellipse_pts(-500 - 50 * i * p, -60 - 20 * i * p, r, r * .8, 14), "#D3D7DE", "", w=2.6, seed=sd + 60 + i))
+    return _tf("".join(o), x, y, k, 0)
+
+
+def bench_seat(x, y, k=1.0):
+    return x, y - 160 * k
+
+
+def bench(x, y, k=1.0, seed=0):
+    sd = 82100 + seed
+    o = []
+    for s_ in (-1, 1):
+        o.append(line([(s_ * 230, 0), (s_ * 220, -160), (s_ * 236, -330)], 14, C_IRONW, taper=.05, wmin=.9, seed=sd + 1 + s_))
+        o.append(line([(s_ * 250, 0), (s_ * 210, -150)], 12, C_IRONW, taper=.05, wmin=.9, seed=sd + 3 + s_))
+    for i, yy in enumerate((-330, -280, -232)):
+        o.append(shape(rrect(-280, yy - 20, 280, yy + 20, 8), C_BENCH if i % 2 == 0 else C_BENCH_SH, "", w=3.4, seed=sd + 10 + i))
+    for i, yy in enumerate((-176, -150)):
+        o.append(shape(rrect(-286, yy - 14, 286, yy + 14, 6), C_BENCH if i == 0 else C_BENCH_SH, "", w=3.4, seed=sd + 20 + i))
+    return _tf("".join(o), x, y, k, 0)
