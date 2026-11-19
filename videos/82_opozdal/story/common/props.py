@@ -6241,7 +6241,8 @@ def time_strip(x0, y, x1, k=1.0, bites=(), crumbs_t=(), seed=0, h=None, ticks=Tr
 
 def strip_piece(x, y, k=1.0, w=150.0, rot=0.0, seed=0):
     ww = w
-    body = time_strip(-ww / 2, 0, ww / 2, 1.0, bites=[(0.0, 62, -1), (0.0, 56, 1), (1.0, 54, 1), (1.0, 60, -1)], seed=820 + seed)
+    r = min(60.0, ww * .2)
+    body = time_strip(-ww / 2, 0, ww / 2, 1.0, bites=[(0.0, r * 1.05, -1), (0.0, r * .9, 1), (1.0, r * .95, 1), (1.0, r, -1)], seed=820 + seed)
     return _tf(body, x, y, k, rot)
 
 
