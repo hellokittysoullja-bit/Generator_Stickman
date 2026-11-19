@@ -450,8 +450,10 @@ PET = W(94) - 0.25           # кот прыгает под руку чуть р
 
 
 def dima_loop(t):
-    ex = dict(age=1.15, lid=0.85, look=(0.6, -0.1), brows="calm", mouth="grin", hair=0.0)
+    ex = dict(age=1.15, lid=0.7, look=(0.6, -0.1), brows="calm", mouth="grin", hair=0.0)
     p = run_pose(t, expr=ex)
+    th, bend = p["arms"]["f"][1], p["arms"]["f"][2]
+    p["arms"]["f"] = ("ang", 0.2 + 0.5 * (th - 0.1), min(bend, 1.3))          # дальняя рука не заходит на лицо
     lk = smooth(W(89) - .1, W(89) + .3, t) * (1 - smooth(W(91), W(92), t))      # «кот» — косится вниз на кота
     if lk > 0:
         p["head_ang"] = -0.12 + 0.3 * lk
@@ -459,7 +461,7 @@ def dima_loop(t):
     u = smooth(PET - .25, PET + .1, t) * (1 - smooth(T1("s18") - .2, T1("s18") + .2, t))
     if u > 0:                                 # ближняя рука вниз-вперёд, ладонь на голове кота
         hip = np.array(p["hip"])
-        tgt = hip + np.array([150.0, 200.0])
+        tgt = hip + np.array([235.0, 185.0])
         th, bend = p["arms"]["n"][1], p["arms"]["n"][2]
         cur = hip + np.array([60.0, 120.0])
         p["arms"]["n"] = ("ik", tuple(cur + (tgt - cur) * u + np.array([0, 6 * math.sin(t * 30) * u])), -1)
@@ -841,9 +843,9 @@ def frame_s10(t):
     o.append(dg)
     pile = .25 + .75 * ease_io(ramp(t, a, T1("s10") - a))
     o.append(grains(bez((760, hy + 60), (600, hy - 40), (420, FL - 200 * pile)), t, n=26, seed=5, k=1.0, speed=1.6))
-    o.append(PR.sand_pile(410, FL + 20, 1.4, pile, seed=2))
+    o.append(PR.sand_pile(410, FL + 20, 1.15, pile, seed=2))
     cu = smooth(ws(47) - .2, ws(48), t)
-    cy_ = FL + 20 - 360 * 1.4 * pile * .55
+    cy_ = FL + 20 - 360 * 1.15 * pile * .55
     o.append(cat(560 + 40 * (1 - cu), cy_ + (1 - cu) * 200, .62, t, look=(-.6, -.2), sx=1.0, rot=-6 * cu) if cu > .02 else "")
     z = 1.25 + .12 * ease_io(ramp(t, a, T1("s10") - a))
     dx, dy = shake(t, ws(45), 14)
@@ -886,13 +888,12 @@ def frame_s12(t):
         tf = tt - .38
         u = (t - tf) / .38
         if 0 <= u < 1:
-            yy = 150 + (py - 120 - 150) * u * u
+            yy = -40 + (py - 120 + 40) * u * u
             o.append(gold_drop(px + 30 * (j - 1), yy, 2.6, 0))
         if 0 <= t - tt < .5:
             v = (t - tt) / .5
             o.append(f'<ellipse cx="{px + 30 * (j - 1):.1f}" cy="{py - 60:.1f}" rx="{40 + 160 * v:.1f}" ry="{20 + 70 * v:.1f}" fill="none" '
                      f'stroke="{GOLD}" stroke-width="{10 * (1 - v):.1f}" opacity="{1 - v:.3f}"/>')
-    o.append(shape(lib.band([(420, -300), (540, 150)], 380, 300, step=8, cap=False), "#d4a23e", line([(400, 130), (690, 150)], 4, "#a97b25", seed=3802), w=6, seed=3801))
     dx, dy = 0.0, 0.0
     for tt in hits:
         ddx, ddy = shake(t, tt, 9)
@@ -1135,10 +1136,10 @@ def frame_s17(t):
     ex = dict(people.EXPR["dima"]["calm_smile" if hap > .5 else "surprise"], age=1.2, look=(-.5, -.6))
     jump = cat_jump(t, ws(87) - .05, .5, 160.0)
     o.append(cat(130, FL + 10 + jump, .7, t, look=(.6, -.9)))
-    o.append(shadow(880, FL + 18, 160))
-    o.append(fig(890, 860, .6, ex, feet="stand", lean=-.04, head_ang=-.15, flip=True)["svg"])
+    o.append(shadow(840, FL + 18, 160))
+    o.append(fig(850, 860, .6, ex, feet="stand", lean=-.04, head_ang=-.15, flip=True)["svg"])
     z = 1.2 + .05 * ease_io(ramp(t, a, 3.0)) + .04 * bump(t, ws(87))
-    return view("".join(o), 520, 760 - 60 * back, z, 0)
+    return view("".join(o), 500, 760 - 60 * back, z, 0)
 
 
 FRAMES = {k[6:]: v for k, v in dict(globals()).items() if k.startswith("frame_s")}
