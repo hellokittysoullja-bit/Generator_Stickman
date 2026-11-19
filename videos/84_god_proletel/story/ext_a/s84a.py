@@ -462,18 +462,18 @@ def frame_s02(t):
     u = .3 + .62 * (t - a) / (W(5) + .36 - a)
     u = min(1.0, u) if t < W(5) + .36 else min(1.0, .92 + .08 * (t - W(5) - .36) / .2)
     p0, p1 = (catx(a), 0.0), (catx(W(5) + .5), 0.0)
+    # кот в мире — по формуле cat_jump; позиция для листка
+    e = clamp((u - .4) / .45)
+    cpos = np.array(p0) + (np.array(p1) - np.array(p0)) * e + np.array([0, -190 * 4 * e * (1 - e)])
     s = 1.6
-    cx = catx(t) + 60
-    cam = (cx, -(1250 - 960) / s - 60 * (0 if NOCAM else math.sin(t * 3)), s, 0 if NOCAM else -2.5 + 2 * kick(t, W(5), .04, .2))
+    cam = (float(cpos[0]) + 40, -(1330 - 960) / s - (0 if NOCAM else 12 * math.sin(t * 3)), s,
+           0 if NOCAM else -2.5 + 2 * kick(t, W(5), .04, .2))
     lib.DEFS.clear()
     caught = t >= W(5)
     st = dict(perk=1.0, look=(-.3, -.6), paw=1.0 if not caught else .6, smile=.8 if caught else 0.0, flame_e=1.5)
     if caught:
         st["mouth_item"] = leaf(770, 1150, 1.5, 70 + 6 * math.sin(t * 20), 6, 1.0, 21)
-    cj = PE.cat_jump(p0, p1, k, u, t, st, height=300.0)
-    # кот в мире — по формуле cat_jump; позиция для листка
-    e = clamp((u - .4) / .45)
-    cpos = np.array(p0) + (np.array(p1) - np.array(p0)) * e + np.array([0, -300 * 4 * e * (1 - e)])
+    cj = PE.cat_jump(p0, p1, k, u, t, st, height=190.0)
     mouth = to_screen(cpos + np.array([75 * k, -150 * k]), cam)
     pd = dima_pose(t)
     dg, _ = dima.draw(pd)
@@ -665,7 +665,7 @@ def frame_s04(t):
         o.append(tree(260, 1250, 1.05, t, lit=1.0 - smooth(to - .4, to, t)))
     else:
         # декабрь: ёлки нет, на подоконнике кот в снежинках
-        o.append(cat(760, 852, .42, dict(look=(-.6, .2), perk=.9, tail=6 * math.sin(t * 3), smile=.4), t))
+        o.append(cat(770, 852, .62, dict(look=(-.6, .2), perk=.9, tail=6 * math.sin(t * 3), smile=.4), t))
     closed = 0.0
     if tb < t < to:
         closed = min(1.0, (t - tb) / .07)
@@ -686,7 +686,7 @@ def frame_s04(t):
 # ═════════════════════════ s05: призыв «Телеграм» ═════════════════════════
 def frame_s05(t):
     import story_cta_tg as tg
-    press = W(21) + 0.12
+    press = W(20) + 0.12
     return tg.frame(t, t0=press - 1.10, press=press, common=COMMON)
 
 
@@ -694,7 +694,7 @@ def frame_s05(t):
 def frame_s06(t):
     lib.DEFS.clear()
     a = T0("s06")
-    tf = W(29)                                    # «пролетел»: листки срываются очередью
+    tf = W(30)                                    # «пролетел»: листки срываются очередью
     o = ['<rect x="-300" y="-300" width="1680" height="2520" fill="#ece3d2"/>', '<rect x="-300" y="1180" width="1680" height="700" fill="#cdb894"/>']
     o.append(window_view(-60, 300, 300, 420, "snow", t))
     # блок календаря: тоньше с каждым сорванным
@@ -727,7 +727,7 @@ def frame_s06(t):
     # Дима тянется к блоку, кот на тумбе прижимает его лапой
     reach = smooth(tf - .2, tf + .3, t)
     f_ = dfig(250, 1500, 1.05, ex("panic82") if reach > .3 else ex("look82"), "d82_rest", t=t,
-              arms={"n": ("ik", (250 + (180 + 170 * reach) * 1.05, 1500 - 520 - 60 * reach), -1)}, hands={"n": {"dir": (1, -.3), "spread": .4}})
+              arms={"n": ("ik", (250 + (300 + 60 * reach) * 1.05, 1500 - 380 - 200 * reach), -1)}, hands={"n": {"dir": (1, -.3), "spread": .4}})
     o.append(shape(lib.rect_pts(700, 1020, 1100, 1300), "#9a6f4a", w=5, seed=770))
     o.append(cat(880, 1022, .6, dict(look=(.2, -.6), paw=smooth(tf - .1, tf + .15, t), paw_dx=40, perk=1.0, flat_ears=0.0), t))
     o.append(f_["svg"])
@@ -739,71 +739,72 @@ def frame_s06(t):
 # ═════════════════════════ s07: кот зовёт «смотри» и поддевает тонкую карточку ═════════════════════════
 def frame_s07(t):
     lib.DEFS.clear()
-    td = W(35)                                     # «делся»
+    td = W(36)                                     # «делся»
     o = [grad_bg("#f3e4c8", "#e8d2a8"), '<rect x="-300" y="1050" width="1680" height="900" fill="#b88a5c"/>',
          '<rect x="-300" y="1050" width="1680" height="22" fill="#9a6f44"/>']
     lift = smooth(td - .05, td + .25, t)
     # тонкая серая карточка на столе: край поднимается лапой
-    cx_, cy_ = 430, 1090
+    cx_, cy_ = 300, 1090
     o.append(f'<ellipse cx="{cx_}" cy="{cy_ + 8}" rx="170" ry="14" fill="#000" opacity=".15"/>')
-    o.append(f'<g transform="translate({cx_ + 160} {cy_}) rotate({-28 * lift:.2f}) translate({-cx_ - 160} {-cy_})">'
+    o.append(f'<g transform="translate({cx_ - 160} {cy_}) rotate({-24 * lift:.2f}) translate({-cx_ + 160} {-cy_})">'
              + shape(lib.rect_pts(cx_ - 160, cy_ - 8, cx_ + 160, cy_ + 2), "#c9cbcf", w=3.2, seed=780) + "</g>")
     if lift > .3:
         o.append(f'<ellipse cx="{cx_}" cy="{cy_}" rx="150" ry="10" fill="#a87c50" opacity="{lift:.2f}"/>')
-    look = (.8, .3) if t < td - .3 else (-.5, .5)
-    o.append(cat(730, 1080, 1.05, dict(look=look, paw=lift, paw_dx=110, perk=1.0, tilt=-6 * smooth(T0("s07"), W(32) + .3, t),
+    look = (-.2, -.1) if t < td - .3 else (-.8, .5)
+    o.append(cat(700, 1084, 1.55, dict(look=look, paw_l=lift, paw_l_dx=150, perk=1.0, tilt=-6 * smooth(T0("s07"), W(33) + .3, t),
                                       tail=8 * math.sin(t * 4), smile=.3), t))
     dx, dy, r = drift(t, 1.4)
-    z = 1.0 + .07 * kick(t, W(32), .05, .25) + .06 * kick(t, td, .04, .25)
-    return view("".join(o), 560 + dx, 900 + dy, z, r, bg="#f3e4c8")
+    z = 1.0 + .07 * kick(t, W(33), .05, .25) + .06 * kick(t, td, .04, .25)
+    return view("".join(o), 540 + dx, 860 + dy, z, r, bg="#f3e4c8")
 
 
 # ═════════════════════════ s08: яркие разные дни встают отдельно ═════════════════════════
 def frame_s08(t):
     lib.DEFS.clear()
     a = T0("s08")
-    tn = W(39)                                     # «новое»: самая яркая
+    tn = W(40)                                     # «новое»: самая яркая
     o = [grad_bg("#fff7e6", "#ffe9c2")]
-    slots = [("sea", 300, 520, -6), ("mount", 790, 470, 5), ("train", 290, 1040, 4), ("fire", 780, 1000, -4)]
+    slots = [("sea", 285, 560, -6), ("mount", 800, 520, 5), ("train", 280, 1090, 4), ("fire", 795, 1060, -4)]
     for i, (kind, x, y, rot) in enumerate(slots):
-        ti = a + .15 + .32 * i if kind != "fire" else tn - .12
+        ti = a - .25 + .3 * i if kind != "fire" else tn - .12
         u = (t - ti) / .32
         if u <= 0:
             continue
         sx = x + (1300 - x) * (1 - ease_out(u, 3)) * (1 if i % 2 else -1) * .8
         sy = y - 300 * (1 - ease_out(u, 3))
-        k = 1.95 * (1 + .25 * math.exp(-max(0, u - 1) * 6) * (u > 1)) if kind == "fire" else 1.85
+        k = 2.35 * (1 + .25 * math.exp(-max(0, u - 1) * 6) * (u > 1)) if kind == "fire" else 2.2
         o.append(card(sx, sy, k, kind, rot + 30 * (1 - ease_out(u)), t, seed=i))
-    o.append(burst(780, 1000, 260, tn + .1, t, "#ffd23f", 14, .45))
+    o.append(burst(795, 1060, 300, tn + .1, t, "#ffd23f", 14, .45))
     dx, dy, r = drift(t)
-    return view("".join(o), 540 + dx, 800 + dy, 1.0 + .04 * kick(t, tn + .1, .04, .3), r, bg="#fff7e6")
+    return view("".join(o), 540 + dx, 820 + dy, 1.0 + .04 * kick(t, tn + .1, .04, .3), r, bg="#fff7e6")
 
 
 # ═════════════════════════ s09: серые одинаковые дни сливаются в один ═════════════════════════
 def frame_s09(t):
     lib.DEFS.clear()
     a = T0("s09")
-    tm, t1 = W(43), W(45)                          # «сливаются», «один»
+    tm, t1 = W(44), W(46)                          # «сливаются», «один»
     o = [grad_bg("#e9eaec", "#d5d7da")]
     merge = smooth(tm - .1, t1, t)
     squash = smooth(t1 - .05, t1 + .12, t)
     n = 9
     for i in range(n):
-        ti = a + .06 * i
+        ti = a - .25 + .06 * i
         u = clamp((t - ti) / .3)
         if u <= 0:
             continue
-        gx, gy = 260 + 280 * (i % 3), 520 + 300 * (i // 3)
+        gx, gy = 225 + 315 * (i % 3), 470 + 250 * (i // 3)
         x = gx + (540 - gx) * merge + 900 * (1 - ease_out(u))
         y = gy + (860 - gy) * merge + i * 4 * merge
-        k = 1.15 + .4 * merge
+        k = 1.35 + .6 * merge
         o.append(card(x, y, k * (1 - .0 * squash), "gray", (i % 3 - 1) * 4 * (1 - merge), t, seed=40 + i))
     if squash > 0:
         # всё сплющилось в одну тонкую серую карточку
         o = [grad_bg("#e9eaec", "#d5d7da")]
         h = 170 * (1 - .9 * squash)
-        o.append(f'<g transform="translate(540 {880:.1f}) scale(1.6 {h / 170:.3f})">{card(0, 0, 1, "gray", 0, t, 49)}</g>')
-        o.append(burst(540, 880, 200, t1, t, "#9fa3a9", 12, .4))
+        o.append(f'<g transform="translate(540 {880:.1f}) scale(2.2 {2.2 * h / 170:.3f})">{card(0, 0, 1, "gray", 0, t, 49)}</g>')
+        o.append(burst(540, 880, 300, t1, t, "#9fa3a9", 12, .4))
+    o.append(cat(540, 1250, .8, dict(look=(0, -.9), perk=1.0, tilt=10 * squash, flat_ears=.0), t))
     dx, dy, r = drift(t)
     return view("".join(o), 540 + dx, 860 + dy, 1.0 + .05 * kick(t, t1, .04, .25), r, bg="#e9eaec")
 
@@ -821,11 +822,10 @@ def gray_scene(kind, t, k=1.0):
         o.append(shape(lib.rrect(40, 900, 1040, 1400, 60), "#7f8794", blob(lib.rrect(40, 900, 1040, 1000, 40), "#6d7480", .8), w=5, seed=810))
         o.append(shape(lib.rect_pts(820, 380, 900, 900), "#9a9fa6", w=4, seed=811))
         o.append(shape([(760, 380), (960, 380), (920, 250), (800, 250)], "#e0d9b8", w=4, seed=812))
-    f_ = dfig(420, 1580, 1.5, ex("gloom") if "gloom" in PE.EXPR["dima"] else ex("calm82"), "d82_rest", t=t)
+    f_ = dfig(420, 1580, 1.5, ex("gloom"), "d82_hold" if kind == "feed" else "d82_rest", t=t)
     o.append(f_["svg"])
     if kind == "feed":
-        hx, hy = f_["head"]
-        px, py = hx + 230, hy + 280
+        px, py = f_["hold"][0] + 40, f_["hold"][1] - 120
         o.append(shape(lib.rrect(px - 90, py - 160, px + 90, py + 160, 22), "#2a2d33",
                        f'<rect x="{px - 76}" y="{py - 140}" width="152" height="280" fill="#aeb6c0"/>'
                        + "".join(f'<rect x="{px - 64}" y="{py - 130 + ((70 * i - 400 * t) % 280):.1f}" width="128" height="52" rx="6" fill="#8b95a2"/>'
@@ -835,7 +835,7 @@ def gray_scene(kind, t, k=1.0):
 
 def frame_s10(t):
     lib.DEFS.clear()
-    beats = [W(46), W(47), W(48)]
+    beats = [W(47), W(48), W(49)]
     i = max([j for j, b in enumerate(beats) if t >= b - .02] or [0])
     kind = ("work", "home", "feed")[i]
     z = 1.0 + .14 * kick(t, beats[i], .03, .18) + .03 * (t - beats[i])
@@ -846,7 +846,7 @@ def frame_s10(t):
 # ═════════════════════════ s11: триста раз подряд → в памяти неделя ═════════════════════════
 def frame_s11(t):
     lib.DEFS.clear()
-    a, tm, tw = T0("s11"), W(54), W(56)            # «памяти», «неделя»
+    a, tm, tw = T0("s11"), W(55), W(57)            # «памяти», «неделя»
     o = ['<rect x="-400" y="-400" width="1880" height="2720" fill="#b9bdc3"/>']
     grow = clamp((t - a) / (tm - a))
     n = int(2 + 22 * grow ** 1.3)                  # плитка мельчает и множится
@@ -858,7 +858,7 @@ def frame_s11(t):
             for c_ in range(n):
                 j = (r_ * n + c_) % 3
                 x, y = c_ * cell, r_ * cell
-                tx, ty = 300 + (j + (r_ * n + c_) % 7) * 70, 760
+                tx, ty = 230 + ((r_ * n + c_) % 7) * 92, 820
                 x = x + (tx - x) * ease_io(col)
                 y = y + (ty - y) * ease_io(col)
                 sz = cell * (1 - .15) * (1 - col) + 56 * col
@@ -871,8 +871,8 @@ def frame_s11(t):
         hx, hy = f_["hold"]
         sh = smooth(tw - .1, tw + .2, t)
         for q in range(7):
-            x = hx - 175 + q * 58 + 0 * sh
-            o.append(f'<rect x="{x:.1f}" y="{hy - 70 - 20 * (1 - col):.1f}" width="50" height="40" rx="6" fill="#9aa1aa" stroke="{INK}" stroke-width="3" opacity="{col:.2f}"/>')
+            x = hx - 420 + q * 92
+            o.append(f'<rect x="{x:.1f}" y="{hy - 110 - 30 * (1 - col) - 12 * sh * math.sin(q + t * 8):.1f}" width="80" height="64" rx="8" fill="#9aa1aa" stroke="{INK}" stroke-width="4" opacity="{col:.2f}"/>')
     dx, dy, r = drift(t)
     return view("".join(o), 540 + dx, 900 + dy, 1 + .05 * kick(t, tm, .04, .3), r, bg="#b9bdc3")
 
@@ -907,7 +907,7 @@ def ribbon(x0, y, x1, kind, t, h=56, seed=0):
 
 def frame_s12(t):
     lib.DEFS.clear()
-    a, tp = T0("s12"), W(60)                       # «проверили»: ленты разворачиваются
+    a, tp = T0("s12"), W(61)                       # «проверили»: ленты разворачиваются
     o = [grad_bg("#7fc3ef", "#d9eef8"), '<circle cx="860" cy="260" r="80" fill="#fff6c8"/><circle cx="860" cy="260" r="140" fill="#fff6c8" opacity=".3"/>']
     # белый камень: стена из блоков с аркой
     o.append(shape(lib.rect_pts(-300, 560, 1380, 1300), "#efe4cc",
@@ -921,8 +921,8 @@ def frame_s12(t):
     fb = PE.scientist82("b", 830, 990, .62, "rest", t=t, expr="focus", flip=True)
     o.append(fa["svg"] + fb["svg"])
     hy = fa["hold"][1]
-    o.append(ribbon(fa["hold"][0], hy + 10, fa["hold"][0] + 520 * u, "bright", t, seed=1))
-    o.append(ribbon(fb["hold"][0] - 300 * u, hy + 110, fb["hold"][0], "gray", t, seed=2))
+    o.append(ribbon(fa["hold"][0], hy + 20, fa["hold"][0] + 60 + 640 * u, "bright", t, h=80, seed=1))
+    o.append(ribbon(fb["hold"][0] - 60 - 300 * u, hy + 150, fb["hold"][0], "gray", t, h=80, seed=2))
     pan = ease_io(clamp((t - a) / 1.6))
     return view("".join(o), 540, 780 + 160 * pan, 1.12 - .1 * pan, 0, bg="#bfe3f5")
 
@@ -930,13 +930,13 @@ def frame_s12(t):
 # ═════════════════════════ s13: две ленты — однообразная съёживается ═════════════════════════
 def frame_s13(t):
     lib.DEFS.clear()
-    tk = W(65)                                     # «короче»
+    tk = W(66)                                     # «короче»
     o = [grad_bg("#fbf3e2", "#f1e2c4")]
     sh = smooth(tk - .05, tk + .35, t)
-    o.append(ribbon(60, 640, 1020, "bright", t, h=110, seed=1))
+    o.append(ribbon(40, 600, 1040, "bright", t, h=170, seed=1))
     w = 960 - 600 * ease_out(sh, 3) + 30 * damp(t, tk + .35, 1, 4, 7)
-    o.append(ribbon(60, 1000, 60 + w, "gray", t, h=110, seed=2))
-    o.append(f'<g transform="translate(990 1140)">{cat(0, 0, .5, dict(look=(.8, -.6), perk=1.0, tilt=8 * sh), t)}</g>')
+    o.append(ribbon(40, 900, 40 + w, "gray", t, h=170, seed=2))
+    o.append(f'<g transform="translate(860 1250)">{cat(0, 0, .8, dict(look=(.8, -.6), perk=1.0, tilt=8 * sh), t)}</g>')
     dx, dy, r = drift(t)
     return view("".join(o), 540 + dx, 860 + dy, 1.0 + .05 * kick(t, tk, .04, .25), r, bg="#fbf3e2")
 
@@ -981,21 +981,21 @@ def walk_scene(t, cols, mood_new, lamps=0.0, expr="calm82", reveal=None):
     ph = (t * 1.0) % 1.0
     f_ = PE.dima82_walk(430, 1300 - 598 * .95, .95, ph, t=t, expr=expr, mug=False)
     o.append(f_["svg"])
-    o.append(cat(780, G + 6, .42, dict(walk=(t * 2.2) % 1.0, look=(.3, -.3), rot=2 * math.sin(t * 9), tail=8 * math.sin(t * 4)), t, right=True))
+    o.append(cat(800, G + 6, .68, dict(walk=(t * 2.2) % 1.0, look=(.3, -.3), rot=2 * math.sin(t * 9), tail=8 * math.sin(t * 4)), t, right=True))
     return "".join(o)
 
 
 def frame_s14(t):
     lib.DEFS.clear()
-    tf = W(73)                                     # «впервые»
-    rev = smooth(W(70), tf, t)
+    tf = W(74)                                     # «впервые»
+    rev = smooth(W(71), tf, t)
     dx, dy, r = drift(t, .5)
     return view(walk_scene(t, FAC_GRAY, False, 0.0, "calm82" if rev < .5 else "wow82", reveal=rev), 540 + dx, 900 + dy, 1.0 + .03 * rev, r)
 
 
 def frame_s15(t):
     lib.DEFS.clear()
-    tu = W(75)                                     # «улица»
+    tu = W(76)                                     # «улица»
     lamps = smooth(tu - .1, tu + .15, t)
     dx, dy, r = drift(t, .8)
     return view(walk_scene(t, FAC_NEW, True, lamps, "wow82"), 540 + dx, 880 + dy, 1.04 + .05 * kick(t, tu, .04, .25), r)
@@ -1004,13 +1004,13 @@ def frame_s15(t):
 # ═════════════════════════ s16: новое блюдо ═════════════════════════
 def frame_s16(t):
     lib.DEFS.clear()
-    tb = W(77)                                     # «блюдо»: пробует
+    tb = W(78)                                     # «блюдо»: пробует
     o = [grad_bg("#ffe2b8", "#f7c98a")]
     taste = smooth(tb - .1, tb + .1, t)
-    f_ = dfig(500, 1600, 1.45, ex("laugh82") if taste > .5 else ex("wow82", look=(.3, .8)), "d82_rest", t=t, head_add=.12 * taste)
+    f_ = dfig(500, 1640, 1.45, ex("laugh82") if taste > .5 else ex("wow82", look=(.3, .8)), "d82_rest", t=t, head_add=.12 * taste)
     o.append(f_["svg"])
-    o.append('<rect x="-300" y="1080" width="1680" height="900" fill="#c0563a"/><rect x="-300" y="1080" width="1680" height="20" fill="#9a3f28"/>')
-    bx, by = 540, 1110
+    o.append('<rect x="-300" y="1230" width="1680" height="900" fill="#c0563a"/><rect x="-300" y="1230" width="1680" height="20" fill="#9a3f28"/>')
+    bx, by = 600, 1260
     o.append(shape([(bx - 260, by - 30), (bx + 260, by - 30), (bx + 200, by + 140), (bx - 200, by + 140)], "#2f86c4",
                    blob([(bx - 260, by + 40), (bx + 260, by + 40), (bx + 200, by + 140), (bx - 200, by + 140)], "#236fa8", .8), w=5, seed=1200))
     food = [("#ffd04a", -150, -40, 70), ("#7cc56a", -40, -60, 55), ("#ff8f5a", 80, -50, 65), ("#e2463c", 170, -30, 40), ("#f7f4ee", 10, -20, 60)]
@@ -1021,9 +1021,9 @@ def frame_s16(t):
         sx = bx - 100 + 100 * i + 30 * math.sin(u * 6 + i)
         o.append(line([(sx, by - 80 - 300 * u), (sx + 20, by - 140 - 300 * u), (sx - 10, by - 200 - 300 * u)], 10, "#ffffff", seed=1210 + i, op=.7 * (1 - u)))
     o.append(burst(bx, by - 120, 260, tb, t, "#ffd23f", 12, .4))
-    o.append(cat(930, 1180, .6, dict(look=(-.9, .4), perk=1.0, tilt=-10, smile=.3 + .5 * taste), t))
+    o.append(cat(940, 1250, .8, dict(look=(-.9, .4), perk=1.0, tilt=-10, smile=.3 + .5 * taste), t))
     dx, dy, r = drift(t)
-    return view("".join(o), 540 + dx, 900 + dy, 1.0 + .06 * kick(t, tb, .04, .25), r, bg="#ffe2b8")
+    return view("".join(o), 540 + dx, 960 + dy, 1.0 + .06 * kick(t, tb, .04, .25), r, bg="#ffe2b8")
 
 
 # ═════════════════════════ s17: длинная лента года, кот спит, лапки на пятницах ═════════════════════════
@@ -1033,9 +1033,9 @@ RIB_Y = lambda x: 900 + 60 * math.sin(x / 260)      # noqa: E731
 def frame_s17(t):
     lib.DEFS.clear()
     a, b = T0("s17"), T1("s17")
-    tc = W(83)                                     # «кот»
+    tc = W(84)                                     # «кот»
     L = 4200.0
-    o = [grad_bg("#fdf3dc", "#f3ddb0")]
+    o = ['<rect x="-1500" y="-1500" width="8000" height="5000" fill="#fbefd2"/>']
     # лента — сегментами по волне
     for i in range(int(L / 46)):
         x = i * 46
@@ -1046,7 +1046,7 @@ def frame_s17(t):
     o.append(line([(x, RIB_Y(x) - 50) for x in range(0, int(L), 60)], 4, INK, seed=1300, taper=.05))
     o.append(line([(x, RIB_Y(x) + 50) for x in range(0, int(L), 60)], 4, INK, seed=1301, taper=.05))
     pan = ease_io(clamp((t - a) / (tc - a + .1)))
-    camx = 600 + (L - 1000 - 600) * pan
+    camx = 400 + (L - 900 - 400) * pan
     # лапки на каждой яркой отметке, ставятся, когда камера проходит
     for i in range(int(L / 46)):
         if i % 7 != 4:
@@ -1063,8 +1063,8 @@ def frame_s17(t):
     for q in range(3):                              # «з-з» сна без букв: пузырьки дыхания
         u = ((t * .7 + q / 3) % 1)
         o.append(f'<circle cx="{xc - 120 + 40 * u:.1f}" cy="{RIB_Y(xc) - 140 - 160 * u:.1f}" r="{8 + 14 * u:.1f}" fill="none" stroke="{INK}" stroke-width="3" opacity="{1 - u:.2f}"/>')
-    z = .95 + .25 * smooth(tc - .3, b, t)
-    return view("".join(o), camx, RIB_Y(camx) - 40, z, -1.5 * math.sin(t), bg="#fdf3dc")
+    z = 1.9 + .3 * smooth(tc - .3, b, t)
+    return view("".join(o), camx, RIB_Y(camx) - 20, z, -1.5 * math.sin(t), bg="#fdf3dc")
 
 
 # ═════════════════════════ s18: петля — та же улица, листки медленно падают, Дима ловит один ═════════════════════════
@@ -1073,7 +1073,7 @@ def frame_s18(t):
     s = 1.55
     cam = run_cam(t, s, 380.0, 1300.0, shake=0.0, drift=.4)
     lib.DEFS.clear()
-    tc = W(86)                                     # «пятницу»: ловит
+    tc = W(87)                                     # «пятницу»: ловит
     p = run_pose(t)
     p["expr"].update(brows="calm", mouth="smile", lid=.8, look=(.6, -.6))
     face = face_world(p)

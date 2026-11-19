@@ -446,20 +446,22 @@ def frame_s03(t):
 LOOP = dict(a=T0("s18") - 0.4, b=T1("s18") + 0.4, x0=0.0, tc=0.2, st=0.55, step=230.0, leap=None, stumble=None,
             lean_add=lambda t: -0.1)
 V_LOOP = 230.0 / 0.2
-PET = W(93) - 0.25           # кот прыгает под руку чуть раньше «гладили»
+PET = W(94) - 0.25           # кот прыгает под руку чуть раньше «гладили»
 
 
 def dima_loop(t):
-    ex = dict(age=1.15, lid=0.85, look=(0.6, -0.1), brows="calm", mouth="grin", hair=0.0)
+    ex = dict(age=1.15, lid=0.7, look=(0.6, -0.1), brows="calm", mouth="grin", hair=0.0)
     p = run_pose(t, expr=ex)
-    lk = smooth(W(88) - .1, W(88) + .3, t) * (1 - smooth(W(90), W(91), t))      # «кот» — косится вниз на кота
+    th, bend = p["arms"]["f"][1], p["arms"]["f"][2]
+    p["arms"]["f"] = ("ang", 0.2 + 0.5 * (th - 0.1), min(bend, 1.3))          # дальняя рука не заходит на лицо
+    lk = smooth(W(89) - .1, W(89) + .3, t) * (1 - smooth(W(91), W(92), t))      # «кот» — косится вниз на кота
     if lk > 0:
         p["head_ang"] = -0.12 + 0.3 * lk
         p["expr"]["look"] = (0.5, -0.1 + 0.9 * lk)
     u = smooth(PET - .25, PET + .1, t) * (1 - smooth(T1("s18") - .2, T1("s18") + .2, t))
     if u > 0:                                 # ближняя рука вниз-вперёд, ладонь на голове кота
         hip = np.array(p["hip"])
-        tgt = hip + np.array([150.0, 200.0])
+        tgt = hip + np.array([235.0, 185.0])
         th, bend = p["arms"]["n"][1], p["arms"]["n"][2]
         cur = hip + np.array([60.0, 120.0])
         p["arms"]["n"] = ("ik", tuple(cur + (tgt - cur) * u + np.array([0, 6 * math.sin(t * 30) * u])), -1)
@@ -477,7 +479,7 @@ def frame_s18(t):
     _setup(LOOP)
     Cat.LANE_Y = 36.0
     dy = -90.0 * smooth(PET - .2, PET + .05, t) * (1 - smooth(T1("s18") - .1, T1("s18") + .3, t))
-    look = (0.4, -1.0) if t > W(88) - .1 else None
+    look = (0.4, -1.0) if t > W(89) - .1 else None
     return run_frame(t, S_HOOK, 330.0, 1330.0, REL18, dima_loop, cat_dy=dy, mood="calm", cat_look=look)
 
 
@@ -623,14 +625,14 @@ def fig(x, y, sc, expr, pose=None, feet="stand", lean=None, head_ang=None, arms=
 
 def dima_phone(x, y, sc, expr, t, feet="stand", lean=0.12, glow=1.0, ph_k=None, scroll_v=1.6, extra_arms=None, head_ang=0.32):
     """Дима держит телефон двумя руками перед грудью и смотрит в экран. -> (svg, res, точка телефона)."""
-    arms = {"f": ("ik", (x + 210 * sc, y - 330 * sc), -1), "n": ("ik", (x + 300 * sc, y - 335 * sc), -1)}
+    arms = {"f": ("ik", (x + 215 * sc, y - 285 * sc), -1), "n": ("ik", (x + 305 * sc, y - 290 * sc), -1)}
     if extra_arms:
         arms.update(extra_arms)
     hands = {"f": {"dir": (.9, -.3), "curl": (.55, .55, .6, .62), "thumb": .5}, "n": {"dir": (-.6, -.7), "curl": (.6, .6, .65, .68), "thumb": .6}}
     base = fig(x, y, sc, expr, feet=feet, lean=lean, head_ang=head_ang, arms=arms, hands=hands, layers=("legs", "pelvis", "arm_f", "body"))
     near = fig(x, y, sc, expr, feet=feet, lean=lean, head_ang=head_ang, arms=arms, hands=hands, layers=("arm_n",))
     wf, wn = np.array(base["wrist"]["f"]), np.array(base["wrist"]["n"])
-    pp = (wf + wn) / 2 + np.array([10 * sc, -60 * sc])
+    pp = (wf + wn) / 2 + np.array([10 * sc, -40 * sc])
     ph = phone_up(pp[0], pp[1], (ph_k or 0.9) * sc / .5 * .5, -14, glow, t * scroll_v)
     return base["svg"] + ph + near["svg"], base, pp
 
@@ -698,16 +700,16 @@ def frame_s04(t):
         if t < ti:
             break
         u = back_out(clamp((t - ti) / .18))
-        py = pp[1] - 120 - i * 76
+        py = pp[1] - 110 - i * 64
         px = pp[0] + 60 + 6 * math.sin(i * 1.7)
         if u < 1:                                           # вылетает из экрана к своему месту
             px, py = pp[0] + (px - pp[0]) * u, pp[1] + (py - pp[1]) * u
         o.append(PR.hourglass(px, py, 0.34 * min(1.0, .3 + u), rot=4 * math.sin(i + t * 3), flow=1.0, top=.6, t=t, seed=i))
     _ = c0
     dx, dy = shake(t, ws(11), 14)
-    z = 1.0 + 0.06 * ramp(t, a, T1("s04") - a) + 0.05 * bump(t, ws(11))
-    cy = 860 - 160 * smooth(ws(9), ws(12), t)
-    return view("".join(o), 560 + dx, cy + dy, z, 0.8 * math.sin(t * 1.3))
+    z = 1.42 + 0.08 * ramp(t, a, T1("s04") - a) + 0.07 * bump(t, ws(11))
+    cy = 830 - 230 * smooth(ws(9), ws(12), t)
+    return view("".join(o), 600 + dx, cy + dy, z, 0.8 * math.sin(t * 1.3))
 
 
 def back_out(u, s=1.7):
@@ -734,20 +736,20 @@ def frame_s05(t):
     o.append(phone_up(pp[0], pp[1], SOF_K * .9, -14, 1.0 + .8 * (1 - day), (t) * 2.4) if day < .6 else "")
     dx, dy = shake(t, ws(16), 8)
     dx2, dy2 = shake(t, ws(18), 8)
-    return view("".join(o), 520 + dx + dx2, 820 + dy + dy2, 0.86 + 0.04 * ramp(t, a, 2.2), 0)
+    return view("".join(o), 470 + dx + dx2, 800 + dy + dy2, 1.3 + 0.06 * ramp(t, a, 2.2), 0)
 
 
 # ═════════════════════════ s06: призыв ═════════════════════════
 def frame_s06(t):
     import story_cta_tg as tg
-    press = ws(22) + 0.12
+    press = ws(21) + 0.12
     return tg.frame(t, t0=press - 1.10, press=press, common=os.path.join(STORY, "common"))
 
 
 # ═════════════════════════ s07: песок из груди утекает в экран ═════════════════════════
 def frame_s07(t):
     a = T0("s07")
-    fl = bump(t, ws(29), .06, .35)                         # «двенадцать» — на миг седеет
+    fl = bump(t, ws(30), .06, .35)                         # «двенадцать» — на миг седеет
     ex = dict(people.EXPR["dima"]["dull"], age=1.2 + 1.8 * fl)
     x, y = 470.0, 860.0
     sc = 0.62
@@ -756,23 +758,394 @@ def frame_s07(t):
     o.append(shadow(x + 40, FL + 20, 200))
     o.append(dg)
     chest = np.array([x + 40 * sc, y - 260 * sc])
-    thick = 1 + 1.4 * smooth(ws(28), ws(29) + .2, t)
+    thick = 1 + 1.4 * smooth(ws(29), ws(30) + .2, t)
     path = bez(chest, (chest[0] + 260, chest[1] - 260), (pp[0], pp[1] - 30))
     o.append(grains(path, t, n=int(26 * thick), seed=1, k=1.0, speed=1.3))
     o.append(blob(ellipse_pts(chest[0], chest[1], 40, 30, 12), GOLD, .35 + .3 * math.sin(t * 9) ** 2))
     o.append(phone_up(pp[0], pp[1], .56, -14, 1.2, t * 1.6))
     cx_ = 840 + 30 * math.sin(t * 2)
     paw = .5 + .5 * math.sin(t * 8)
-    o.append(cat(cx_, FL + 10, 0.7, t, look=(-.6, -.9), paw=paw, paw_dx=-60))
+    o.append(cat(cx_ - 60, FL + 10, 0.8, t, look=(-.6, -.9), paw=paw, paw_dx=-60))
     if fl > .02:
         o.append(f'<rect x="-2000" y="-2000" width="5000" height="5000" fill="#ffffff" opacity="{.35 * fl:.3f}"/>')
-    z = 1.0 + 0.18 * ease_io(ramp(t, a, T1("s07") - a)) + 0.06 * fl
-    dx, dy = shake(t, ws(29), 12)
-    return view("".join(o), 560 + 40 * ramp(t, a, 1.9) + dx, 760 + dy, z, 0)
+    z = 1.4 + 0.2 * ease_io(ramp(t, a, T1("s07") - a)) + 0.06 * fl
+    dx, dy = shake(t, ws(30), 12)
+    return view("".join(o), 600 + 40 * ramp(t, a, 1.9) + dx, 800 + dy, z, 0)
+
+
+
+# ═════════════════════════ большие песочные часы на телефоне (s08–s10, s17) ═════════════════════════
+def hourglass_on_phone(x, y_base, k, t, sand_top, stream=1.0, lift=0.0, glow_=1.0, sand_bot=0.0):
+    """Огромные часы стоят на телефоне-подставке: нижняя колба пустая — песок уходит в светящийся экран (y_base — пол)."""
+    o = [shadow(x, y_base + 10, 330 * k, .25)]
+    o.append(PR.phone_flat(x, y_base - 30 * k, 2.3 * k, 0, 90, face_down=False, glow_=.45 * glow_))
+    hy = y_base - 70 * k - 290 * k + lift
+    g = PR.giant_hourglass(x, hy, k, sand_top=sand_top, sand_bot=sand_bot, stream=stream, t=t, chain=0)
+    o.append(g)
+    gg = lib.rad_grad([(0, "#cfeeff", .7 * glow_), (1, "#cfeeff", 0)], x, hy + 200 * k, 170 * k)
+    o.append(f'<circle cx="{x:.1f}" cy="{hy + 200 * k:.1f}" r="{170 * k:.1f}" fill="url(#{gg})"/>')
+    return "".join(o), hy
+
+
+def frame_s08(t):
+    a = T0("s08")
+    o = [room(wall="#e6d6bd")]
+    rise = ease_out(ramp(t, ws(33) - .1, .45), 3)
+    hx = 700.0
+    if rise > 0:
+        g, hy = hourglass_on_phone(hx, FL, 1.05, t, .75, 1.0 * smooth(ws(34), ws(35), t), lift=(1 - rise) * 900)
+        c = lib.clip_rect(-2000, -2000, 5000, 2000 + FL + 40)
+        o.append(f'<g clip-path="url(#{c})">{g}</g>')
+    walk = t < ws(32)
+    cx_ = 120 + 260 * ease_out(ramp(t, a - .2, ws(32) - a + .2), 2)
+    if walk:
+        o.append(people.cat_walk(cx_, FL + 10, 0.85, t, {"look": (.6, 0)}, .42))
+    else:
+        tu = ramp(t, ws(32), .2)
+        o.append(cat(cx_, FL + 10, 0.85, t, look=(.7 * (1 - tu) + .1, -.1), paw=smooth(ws(32), ws(32) + .2, t), paw_dx=110,
+                     tilt=-8 * smooth(ws(33), ws(33) + .3, t)))
+    m = smooth(ws(33) - .05, ws(35) - .2, t)
+    z = 1.9 - .4 * ease_out(ramp(t, a - .2, .4), 3) - .28 * m
+    cy = 1080 - 190 * m
+    dx, dy = shake(t, ws(33) + .3, 12)
+    return view("".join(o), 330 + 230 * m + dx, cy + dy, z, -1.5 * (1 - ramp(t, a, .3)))
+
+
+def frame_s09(t):
+    a = T0("s09")
+    o = [room(wall="#e6d6bd")]
+    pul = sum(bump(t, ws(j), .05, .2) for j in (36, 37, 39))
+    g, hy = hourglass_on_phone(700, FL, 1.05, t, .7, min(1.0, .6 + .6 * pul))
+    o.append(g)
+    o.append(grains(bez((700, hy + 30), (705, hy + 150), (700, hy + 250)), t, n=8 + int(10 * pul), seed=3, k=.9, speed=2.2))
+    ex = dict(people.EXPR["dima"]["zombie"], age=1.2)
+    dg, res, pp = dima_phone(300, FL - 175 * .45, .45, ex, t, feet="sit", lean=.1, head_ang=.3)
+    o.append(shape(lib.rrect(170, FL - 175 * .45, 420, FL, 30), "#c27a5c", "", w=4, seed=3700))
+    o.append(dg)
+    o.append(cat(960, FL + 10, .6, t, look=(-.7, -.6)))
+    out = ease_io(ramp(t, ws(41) - .05, .6))
+    z = 2.3 - 1.25 * out + .08 * pul
+    cx = 700 - 120 * out
+    cy = (hy + 60) + (840 - hy - 60) * out
+    return view("".join(o), cx, cy, z, 0)
+
+
+def frame_s10(t):
+    a = T0("s10")
+    drain = smooth(ws(45) - .05, ws(46) + .1, t)
+    o = [room(wall="#e2d1b8")]
+    g, hy = hourglass_on_phone(760, FL, 1.0, t, .62 - .4 * drain, 1.0 + .5 * bump(t, ws(45)))
+    o.append(g)
+    ex = dict(people.EXPR["dima"]["zombie"], age=1.2)
+    hx, hyp = 330.0, FL - 190 * .55
+    dg, res, pp = dima_phone(hx, hyp, .55, ex, t, feet="sit", lean=.1, head_ang=.3, scroll_v=2.2)
+    o.append(shape(lib.rrect(200, hyp, 460, FL, 30), "#c27a5c", "", w=4, seed=3701))
+    o.append(dg)
+    pile = .25 + .75 * ease_io(ramp(t, a, T1("s10") - a))
+    o.append(grains(bez((760, hy + 60), (600, hy - 40), (420, FL - 200 * pile)), t, n=26, seed=5, k=1.0, speed=1.6))
+    o.append(PR.sand_pile(410, FL + 20, 1.15, pile, seed=2))
+    cu = smooth(ws(47) - .2, ws(48), t)
+    cy_ = FL + 20 - 360 * 1.15 * pile * .55
+    o.append(cat(560 + 40 * (1 - cu), cy_ + (1 - cu) * 200, .62, t, look=(-.6, -.2), sx=1.0, rot=-6 * cu) if cu > .02 else "")
+    z = 1.25 + .12 * ease_io(ramp(t, a, T1("s10") - a))
+    dx, dy = shake(t, ws(45), 14)
+    return view("".join(o), 520 + dx, 760 + 120 * pile + dy, z, 0)
+
+
+# ═════════════════════════ s11: «никто специально» — разводит руками ═════════════════════════
+def frame_s11(t):
+    a = T0("s11")
+    u = smooth(ws(49) - .1, ws(49) + .35, t)
+    sh_ = bump(t, ws(53), .08, .4)
+    ex = dict(people.EXPR["dima"]["shrug"], age=1.2) if u > .4 else dict(people.EXPR["dima"]["dull"], age=1.2)
+    x, y = 470.0, 860.0
+    sc = .62
+    arms = {"f": ("ang", 0.25 + .35 * u, 0.3 + 1.0 * u), "n": ("ang", 0.1 + .45 * u, 0.3 + 1.1 * u)}
+    hands = {"f": {"dir": (-.3, -1), "curl": (.2, .2, .25, .3), "spread": .3, "thumb": .3}, "n": {"curl": (.6, .6, .65, .68), "thumb": .6}}
+    f_ = fig(x, y - 18 * sh_, sc, ex, feet="stand", lean=-.04 * u, head_ang=.05 - .1 * sh_, arms=arms, hands=hands)
+    o = [room(wall="#dfe3d6"), sofa(-300, 330, 1060, "#7a9a6a"), shadow(x + 30, FL + 18, 200), f_["svg"]]
+    wn = f_["wrist"]["n"]
+    o.append(phone_up(wn[0] + 30, wn[1] - 50, .42, -30 + 30 * u, .6, t * .5))
+    o.append(cat(860, FL + 10, .8, t, look=(-.8, -.4), tilt=14 * smooth(ws(52), ws(53), t), ear=10 * sh_))
+    z = 1.38 + .1 * ease_io(ramp(t, a, T1("s11") - a)) + .05 * sh_
+    return view("".join(o), 610, 820, z, 0)
+
+
+# ═════════════════════════ s12: капли времени из рукава в экран ═════════════════════════
+def frame_s12(t):
+    a = T0("s12")
+    o = [rect(-500, -500, 1600, 2500, "#d8c6a6")]
+    g = lib.rad_grad([(0, "#f3e7cf", 1), (1, "#d8c6a6", 1)], 540, 700, 900)
+    o.append(f'<rect x="-500" y="-500" width="2100" height="3000" fill="url(#{g})"/>')
+    px, py = 560.0, 900.0
+    hits = [ws(55), ws(57), ws(58)]
+    glow_k = 1 + sum(bump(t, tt, .05, .25) for tt in hits)
+    # рукав и ладонь снизу держат телефон
+    o.append(shape(lib.band([(720, 2100), (690, 1560), (650, 1310)], 300, 280, step=8, cap=False), "#d4a23e", "", w=6, seed=3800))
+    o.append(phone_up(px, py, 3.0, -6, min(1.6, glow_k), t * 1.2))
+    o.append(people.hand_svg("dima", (650, 1330), (-.35, -1), k=2.1, curl=(.55, .6, .65, .7), thumb=.55, spread=.15))
+    for j, tt in enumerate(hits):                     # капля падает из рукава сверху, ныряет в экран кругами
+        tf = tt - .38
+        u = (t - tf) / .38
+        if 0 <= u < 1:
+            yy = -40 + (py - 120 + 40) * u * u
+            o.append(gold_drop(px + 30 * (j - 1), yy, 2.6, 0))
+        if 0 <= t - tt < .5:
+            v = (t - tt) / .5
+            o.append(f'<ellipse cx="{px + 30 * (j - 1):.1f}" cy="{py - 60:.1f}" rx="{40 + 160 * v:.1f}" ry="{20 + 70 * v:.1f}" fill="none" '
+                     f'stroke="{GOLD}" stroke-width="{10 * (1 - v):.1f}" opacity="{1 - v:.3f}"/>')
+    dx, dy = 0.0, 0.0
+    for tt in hits:
+        ddx, ddy = shake(t, tt, 9)
+        dx += ddx
+        dy += ddy
+    return view("".join(o), 540 + dx, 900 + dy, 1.0 + .05 * ramp(t, a, 1.7), 0)
+
+
+
+# ═════════════════════════ s13: очередь, лифт, кровать — хлёсты ═════════════════════════
+PAN = 1400.0
+
+
+def drop_to_phone(t, tt, src, pp, k=1.2):
+    """Золотая капля летит от груди Димы в экран к моменту слова tt."""
+    u = (t - (tt - .3)) / .3
+    if not 0 <= u < 1:
+        if 0 <= t - tt < .4:
+            v = (t - tt) / .4
+            return (f'<circle cx="{pp[0]:.1f}" cy="{pp[1]:.1f}" r="{20 + 70 * v:.1f}" fill="none" stroke="{GOLD}" '
+                    f'stroke-width="{8 * (1 - v):.1f}" opacity="{1 - v:.3f}"/>')
+        return ""
+    p = np.array(src) + (np.array(pp) - np.array(src)) * u + np.array([0, -90 * math.sin(math.pi * u)])
+    return gold_drop(p[0], p[1], k, 0)
+
+
+def panel_queue(t, tt):
+    o = [rect(-200, -1400, 1250, FL, "#d7e0e4"), rect(-200, FL, 1250, 2600, "#9aa3a8")]
+    for k in range(5):
+        o.append(rect(-200 + k * 300, 300, -60 + k * 300, 560, "#bfe0ef"))
+        o.append(f'<path d="{lib.ink_closed(lib.rect_pts(-200 + k * 300, 300, -60 + k * 300, 560), 3.6, seed=3900 + k)}" fill="{INK}"/>')
+    for k, (who, x) in enumerate((("bob", 960), ("beard", 760))):
+        o.append(people.figure(who, x, 860, .6, expr={}, **people.stand_kw(x, 860, .6, who))["svg"])
+    ex = dict(people.EXPR["dima"]["zombie"], age=1.2)
+    dg, res, pp = dima_phone(420, 860, .62, ex, t)
+    o.append(dg)
+    o.append(drop_to_phone(t, tt, (res["head"][0] - 20, res["head"][1] + 150), pp))
+    return "".join(o)
+
+
+def panel_lift(t, tt):
+    o = [rect(-200, -1400, 1250, 2600, "#b9bec4")]
+    for k in range(6):
+        o.append(line([(-200 + k * 260, -400), (-200 + k * 260, FL)], 3, "#9aa0a8", seed=3910 + k, op=.8))
+    o.append(rect(-200, FL, 1250, 2600, "#6f747c"))
+    o.append(shape(lib.rect_pts(820, 180, 1250, FL), "#cfd4da", line([(1035, 180), (1035, FL)], 4, seed=3920), w=5, seed=3921))
+    o.append(shape(lib.rrect(860, 600, 920, 760, 10), "#8a9099", "".join(
+        f'<circle cx="890" cy="{630 + 34 * j}" r="11" fill="#f6e9b0"/>' for j in range(4)), w=3, seed=3922))
+    o.append(rect(-200, -400, 1250, 120, "#9ea4ab"))
+    g = lib.rad_grad([(0, "#fffbe8", .7), (1, "#fffbe8", 0)], 520, 120, 500)
+    o.append(f'<rect x="-200" y="-400" width="1450" height="1800" fill="url(#{g})"/>')
+    ex = dict(people.EXPR["dima"]["zombie"], age=1.2)
+    dg, res, pp = dima_phone(460, 860, .62, ex, t)
+    o.append(dg)
+    o.append(drop_to_phone(t, tt, (res["head"][0] - 20, res["head"][1] + 150), pp))
+    return "".join(o)
+
+
+def panel_bed(t, tt):
+    o = [rect(-200, -1400, 1250, 2600, "#232a52"), window(60, 220, 330, 560, "#141a3e", t, moon=(260, 300))]
+    o.append(shape(lib.rrect(120, 640, 360, 1010, 30), "#6b4a34", "", w=5, seed=3930))
+    o.append(shape(lib.rrect(160, 700, 420, 860, 50), "#e9e4f2", "", w=4.4, seed=3931))
+    ex = dict(people.EXPR["dima"]["zombie"], age=1.2)
+    dg, res, pp = dima_phone(400, 960, .62, ex, t, feet={"n": ((620, 1030), 0.0), "f": ((600, 1040), 0.0)}, lean=-.32, head_ang=.55)
+    o.append(dg)
+    o.append(shape(lib.rrect(300, 960, 1120, 1240, 60), "#7d8fd0", line([(340, 1010), (1080, 1000)], 3, "#5b6aa8", seed=3933), w=5, seed=3932))
+    o.append(phone_up(pp[0], pp[1], .5, -14, 1.6, t * 1.6))
+    o.append(drop_to_phone(t, tt, (res["head"][0] - 20, res["head"][1] + 150), pp))
+    return "".join(o)
+
+
+def frame_s13(t):
+    a = T0("s13")
+    ts = [ws(59), ws(60), ws(61)]
+    pos = 0.0
+    for j in (1, 2):
+        pos += ease_io(clamp((t - (ts[j] - .16)) / .16))
+    lib.DEFS.clear()
+    o = [f'<g transform="translate({j * PAN} 0)">{fn(t, ts[j])}</g>' for j, fn in enumerate((panel_queue, panel_lift, panel_bed))]
+    sp = 0.0
+    for j in (1, 2):
+        u = (t - (ts[j] - .16)) / .16
+        if 0 < u < 1:
+            sp = math.sin(math.pi * u)
+    body = "".join(o)
+    if sp > .05:
+        fid = lib.uid("wb")
+        lib.DEFS.append(f'<filter id="{fid}" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="{30 * sp:.1f} 0"/></filter>')
+        body = f'<g filter="url(#{fid})">{body}</g>'
+    z = 1.32 + .05 * ramp(t, a, 1.9)
+    return view(body, 560 + pos * PAN, 820, z, 0, bg="#232a52")
+
+
+
+# ═════════════════════════ s14: значок ленты убран с первого экрана ═════════════════════════
+ICONS = ["#7bd389", "#6cc4ff", "#ffd166", "#c9a7ff", "#ff9e7a", "#9fe0d0", "#f6a6c1", "#b5c7ff", "#ffc78a", "#8fd0a0", "#d0b0ff", "#9fc4ff"]
+
+
+def icon(x, y, col, k=1.0, kind=0, seed=0):
+    o = shape(lib.T(lib.rrect(-62, -62, 62, 62, 26), x, y, k), col, "", w=4 * k, seed=4000 + seed)
+    m = lib.mul(col, (.7, .7, .7))
+    if kind % 3 == 0:
+        o += blob(lib.T(ellipse_pts(0, 0, 26, 26, 12), x, y, k), "#ffffff", .85)
+    elif kind % 3 == 1:
+        o += blob(lib.T(lib.rrect(-28, -20, 28, 20, 6), x, y, k), "#ffffff", .85)
+    else:
+        o += blob(lib.T([(-26, 22), (0, -26), (26, 22)], x, y, k), m, .9)
+    return o
+
+
+def feed_icon(x, y, k, t):
+    """Значок ленты: яркий, внутри бегут полоски карточек (без букв)."""
+    o = shape(lib.T(lib.rrect(-62, -62, 62, 62, 26), x, y, k), "#ff4f7b", "", w=4 * k, seed=4100)
+    for j in range(3):
+        yy = -40 + ((j * 30 + t * 90) % 90)
+        o += blob(lib.T(lib.rrect(-38, yy, 38, yy + 18, 5), x, y, k), "#ffffff", .9)
+    return o
+
+
+def frame_s14(t):
+    a = T0("s14")
+    X0, Y0, X1, Y1 = 150.0, 180.0, 930.0, 1560.0
+    o = [rect(-500, -500, 1600, 2500, "#2b2622")]
+    o.append(shape(lib.rrect(X0 - 40, Y0 - 40, X1 + 40, Y1 + 40, 90), PH_BODY, "", w=6, seed=4200))
+    calm = smooth(ws(66), ws(68) + .2, t)
+    o.append(blob(lib.rrect(X0, Y0, X1, Y1, 60), lib.mix("#7fc3f0", "#cfe6e0", calm)))
+    grab = ws(64) - .35
+    gone = smooth(ws(64), ws(64) + .3, t)
+    fi = (0, 0)
+    for r in range(4):
+        for c in range(3):
+            j = r * 3 + c
+            x, y = X0 + 150 + c * 240, Y0 + 190 + r * 270
+            if (r, c) == fi:
+                continue
+            o.append(icon(x, y, ICONS[j], 1.45, j, j))
+    fx, fy = X0 + 150, Y0 + 190
+    drag = ease_io(ramp(t, grab, ws(64) - grab))
+    px, py = fx + 330 * drag, fy + 120 * drag
+    wig = 6 * math.sin(t * 40) * (1 - drag) * (t > grab - .4)
+    if gone < 1:
+        sc_ = 1.0 + .15 * drag - 1.1 * gone
+        if sc_ > .05:
+            o.append(feed_icon(px + wig, py, 1.45 * sc_, t))
+    o.append(PR.puff_cloud(px, py, 2.4, ramp(t, ws(64) + .05, .45), seed=3))
+    if t > grab - .5 and t < ws(64) + .1:              # палец Димы
+        app = ease_out(ramp(t, grab - .5, .3))
+        o.append(people.hand_svg("dima", (px + 150, py + 520 + 600 * (1 - app)), (-.25, -1), k=3.2, curl=(0, .75, .8, .85), thumb=.5,
+                                 spread=.1))
+    o.append(dark(.2 * calm, "#000000"))
+    dx, dy = shake(t, ws(64), 12)
+    z = 1.0 + .05 * bump(t, ws(64)) + .03 * ramp(t, a, 2.5)
+    return view("".join(o), 540 + dx, 900 + dy, z, 0, bg="#2b2622")
+
+
+# ═════════════════════════ s15: телефон остаётся на полке ═════════════════════════
+def frame_s15(t):
+    a = T0("s15")
+    o = [room(-800, 2600, wall="#d8e2d0")]
+    o.append(shape(lib.rect_pts(620, 860, 980, 900), "#8a5a38", "", w=4, seed=4300))
+    o.append(rect(650, 900, 670, 1240, "#6c4428") + rect(930, 900, 950, 1240, "#6c4428"))
+    o.append(PR.phone_flat(800, 840, .7, 0, 80, face_down=False, glow_=.4 + .3 * math.sin(t * 5) ** 2))
+    u = ramp(t, a - .2, T1("s15") - a + .4)
+    x = 260 + 1050 * u
+    ph = (t - a) / .55
+    kw = people.walk_kw(x, 840, .6, ph)
+    hip = kw["hip"]
+    arms = {"f": ("ik", (x + 200 * .6, hip[1] - 300 * .6), -1), "n": ("ik", (x + 280 * .6, hip[1] - 300 * .6), -1)}
+    hands = {"f": {"curl": (.4, .4, .45, .5), "thumb": .4}, "n": {"curl": (.4, .4, .45, .5), "thumb": .4}}
+    look = smooth(ws(70), ws(71), t) * (1 - smooth(ws(72), ws(73), t))
+    ex = dict(people.EXPR["dima"]["calm_smile"], age=1.2, look=(.5 - .9 * look, .1))
+    f_ = people.figure("dima", hip[0], hip[1], .6, expr=ex, lean=.05, head_ang=-.05 - .12 * look, arms=arms, hands=hands, feet=kw["feet"],
+                       layers=("legs", "pelvis", "arm_f", "body"))
+    f2 = people.figure("dima", hip[0], hip[1], .6, expr=ex, lean=.05, head_ang=-.05, arms=arms, hands=hands, feet=kw["feet"], layers=("arm_n",))
+    o.append(shadow(x, 1250, 170))
+    o.append(f_["svg"])
+    w_ = (np.array(f_["wrist"]["f"]) + np.array(f_["wrist"]["n"])) / 2
+    o.append(PR.plate_soup(w_[0] + 20, w_[1] + 10, .8, 1.0, t))
+    o.append(f2["svg"])
+    cxc = x - 330
+    o.append(people.cat_walk(cxc, 1250, .75, t, {"look": (.6, -.2)}, .4))
+    return view("".join(o), 560 + 700 * ease_io(u), 860, 1.25, 0)
+
+
+# ═════════════════════════ s16: ужин без телефона, засыпает ═════════════════════════
+def frame_s16(t):
+    a = T0("s16")
+    o = [room(-800, 2800, wall="#efd9b6")]
+    o.append(window(-260, 240, 60, 640, lib.mix("#f4a77a", "#1b2150", smooth(ws(76), ws(76) + .4, t)), t))
+    # стол
+    o.append(shape(lib.rect_pts(560, 960, 1000, 1000), "#a5703f", "", w=4, seed=4400))
+    o.append(rect(600, 1000, 624, 1240, "#7a4f2a") + rect(940, 1000, 964, 1240, "#7a4f2a"))
+    x, y = 360.0, 1010.0
+    sc = .62
+    eat = bump(t, ws(74) - .15, .12, .35)
+    sp_t = (x + 360 * sc, y - 260 * sc) if eat < .05 else (x + (360 - 150 * eat) * sc, y - (260 + 230 * eat) * sc)
+    arms = {"f": ("ik", (x + 280 * sc, y - 200 * sc), -1), "n": ("ik", sp_t, -1)}
+    ex = dict(people.EXPR["dima"]["calm_smile"], age=1.2)
+    if eat > .3:
+        ex.update(mouth="o", open=.4)
+    f_ = fig(x, y, sc, ex, feet="sit", lean=.12, head_ang=.12, arms=arms,
+             hands={"f": {"curl": (.4, .4, .45, .5), "thumb": .4}, "n": {"curl": (.6, .6, .65, .7), "thumb": .6}})
+    o.append(shape(lib.rrect(260, 1010, 480, 1060, 12), "#8b5a33", "", w=4, seed=4401) + rect(300, 1060, 320, 1240, "#6c4428"))
+    o.append(f_["svg"])
+    o.append(PR.plate_soup(760, 958, .8, 1.0, t))
+    wn = f_["wrist"]["n"]
+    o.append(line([(wn[0] - 10, wn[1] + 10), (wn[0] + 60, wn[1] - 50)], 7, "#b8bcc4", seed=4402, taper=.2, wmin=.6))
+    # кровать справа: Дима спит
+    bx = 1700.0
+    o.append(shape(lib.rrect(bx - 380, 860, bx - 300, 1160, 20), "#6b4a34", "", w=5, seed=4410))
+    o.append(shape(lib.rrect(bx - 380, 1020, bx + 380, 1160, 30), "#6b4a34", "", w=5, seed=4411))
+    o.append(shape(lib.rrect(bx - 330, 930, bx - 120, 1030, 40), "#ece6f4", "", w=4.4, seed=4412))
+    people.C = people.PAL["dima"]
+    sl = dict(age=1.2, lid=0.0, brows="calm", mouth="smile", smile=.5, look=(0, 0), closed=1.0, bags=False)
+    o.append(f'<g transform="translate({bx - 210:.1f} 930) rotate(-78) scale(.55)">{people.dima_head(sl)}</g>')
+    o.append(shape(lib.rrect(bx - 190, 960, bx + 360, 1080, 50), "#7d8fd0", line([(bx - 150, 990), (bx + 320, 985)], 3, "#5b6aa8", seed=4414),
+                   w=5, seed=4413))
+    o.append(PR.zzz(bx - 140, 820, 1.2, t, smooth(ws(76) + .3, ws(76) + .6, t)))
+    pan = ease_io(ramp(t, ws(76) - .1, .35))
+    o.append(dark(.38 * smooth(ws(76), ws(76) + .4, t)))
+    z = 1.3 + .05 * ramp(t, a, 1.7)
+    return view("".join(o), 560 + (bx - 560 - 40) * pan, 900, z, 0)
+
+
+# ═════════════════════════ s17: песок течёт обратно ═════════════════════════
+def frame_s17(t):
+    a = T0("s17")
+    back = smooth(ws(78) - .1, ws(87), t)
+    o = [room(wall="#e8dcc4")]
+    hx = 620.0
+    hy = 560.0
+    o.append(shadow(hx, FL + 10, 250))
+    o.append(PR.giant_hourglass(hx, hy, 1.0, sand_top=.25 + .5 * back, sand_bot=.0, stream=0.0, t=t, chain=0))
+    o.append(rect(hx - 240, hy + 290, hx + 240, FL, "#8a5a38"))
+    pp = (250.0, FL - 20)
+    o.append(PR.phone_flat(pp[0], pp[1], .9, 0, 70, face_down=False, glow_=.6 - .4 * back))
+    if t > ws(78) - .2:
+        o.append(grains(bez(pp, (300, hy - 520), (hx, hy - 260)), t, n=36, seed=7, k=1.0, speed=1.2))
+    hap = smooth(ws(87) - .2, ws(87) + .2, t)
+    ex = dict(people.EXPR["dima"]["calm_smile" if hap > .5 else "surprise"], age=1.2, look=(-.5, -.6))
+    jump = cat_jump(t, ws(87) - .05, .5, 160.0)
+    o.append(cat(130, FL + 10 + jump, .7, t, look=(.6, -.9)))
+    o.append(shadow(840, FL + 18, 160))
+    o.append(fig(850, 860, .6, ex, feet="stand", lean=-.04, head_ang=-.15, flip=True)["svg"])
+    z = 1.2 + .05 * ease_io(ramp(t, a, 3.0)) + .04 * bump(t, ws(87))
+    return view("".join(o), 500, 760 - 60 * back, z, 0)
 
 
 FRAMES = {k[6:]: v for k, v in dict(globals()).items() if k.startswith("frame_s")}
 
 
 def frame(sid, t):
+    if sid != "s06":
+        lib.DEFS.clear()
     return FRAMES[sid](t)
