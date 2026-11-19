@@ -557,15 +557,26 @@ def _stop_x():
 
 STOP_X = _stop_x()
 _CUR[0] = "walk"
-BENCH_X = STOP_X + 760.0
 BENCH_K = 0.8
-POLE_X = BENCH_X + 250.0
+SIT_DX = -95.0
+PAN20 = 318.0
 
 
 def walk2_conf():
-    seat_x = BENCH_X - 200.0
-    return dict(a=T0("s20") - 0.1, b=34.6, x0=STOP_X, tc=0.4, st=0.62, step=230.0, walk=True, still=True, stop_x=seat_x + 80.0,
-                sit=W(91) - 0.1, sit_drop=112.0, sit_dx=-95.0, seat_x=seat_x)
+    return dict(a=T0("s20") - 0.1, b=34.6, x0=STOP_X, tc=0.4, st=0.62, step=230.0, walk=True, still=True, stop_x=STOP_X + 400.0,
+                sit=W(91) - 0.1, sit_drop=112.0, sit_dx=SIT_DX)
+
+
+def _bench_x():
+    """Скамейка ставится туда, где Дима садится: сиденье — под тазом после посадки (левая половина скамейки)."""
+    plan(walk2_conf())
+    hx = float(PL["hip_x"](40.0)) + SIT_DX
+    return hx + 200.0
+
+
+BENCH_X = _bench_x()
+_CUR[0] = "walk2"
+POLE_X = BENCH_X + 205.0
 
 
 def walk_pose(t, mood="calm"):
@@ -595,11 +606,11 @@ def others(t, cam):
             continue
         u = t - t_in
         cx, cy, s_, rot = cam
-        xs = 40 + 150 * i + 260 * u                             # экранный x: слева позади Димы, бегут вправо
+        xs = -90 + 95 * i + 240 * u                             # экранный x: слева позади Димы, бегут вправо
         x = cx * .55 / .62 + (xs - 540) / (s_ * .62)
         ph = u / .26 + i * .3
         try:
-            fig = PE.townsman82_walk(kind, x, -10, 0.36, ph, t=t, expr="calm", hold_ribbon=False)
+            fig = PE.townsman82_walk(kind, x, -10, 0.27, ph, t=t, expr="calm", hold_ribbon=False)
             g = fig["svg"] if isinstance(fig, dict) else fig
         except Exception:
             g = ""
@@ -612,14 +623,14 @@ def frame_s19(t):
     встаёт у края; вдалеке позади только выбегают другие."""
     ensure("s19")
     s = S_HOOK
-    cam = track_cam(t, s, 360.0, 1300.0, shake=0.0, drift=0.25)
+    cam = track_cam(t, s, 430.0, 1300.0, shake=0.0, drift=0.25)
     lib.DEFS.clear()
     st = R.street82(t, cam, "calm")
     g, _ = dima.draw(walk_pose(t))
     clk = PR.street_clock(POLE_X, -40, CLOCK_K, hand_a=(t - 31.0) * 6.0 + 300.0, t=t)
     seat = PR.bench_seat(BENCH_X, -36.0, BENCH_K)
     cat = PE.cat_bench82(BENCH_X + 150, seat[1] + 6, 0.8, t=t)
-    world = clk + PR.bench(BENCH_X, -36, BENCH_K) + cat + PE.boot82(BENCH_X + 250, seat[1] - 6, 0.55, rot=-4, t=t) + f'<g opacity=".18" transform="matrix(1 0 -0.9 -0.22 0 0)">{g}</g>' + g
+    world = clk + PR.bench(BENCH_X, -36, BENCH_K) + cat + f'<g transform="translate({BENCH_X - 20:.1f} {seat[1] - 30:.1f}) scale({BS})">{dima.shoe(np.array([0.0, 0.0]), 0.0, False, 1990)}</g>' + f'<g opacity=".18" transform="matrix(1 0 -0.9 -0.22 0 0)">{g}</g>' + g
     body = st["back"] + others(t, cam) + f'<g transform="{lib.cam(*cam)}">{st["ground"]}{world}</g>' + st["front"]
     return lib.svg(body)
 
@@ -631,8 +642,8 @@ def frame_s20(t):
     s = S_HOOK
     a = T0("s20")
     u = ease_io(clamp((t - a + .2) / .8))
-    cx0 = STOP_X + (540 - 360) / s
-    cx = cx0 + 560 * u + 40 * smooth(W(91), 34.6, t)
+    cx0 = STOP_X + (540 - 430) / s
+    cx = cx0 + PAN20 * u + 30 * smooth(W(91), 34.6, t)
     cy = (960 - 1300) / s
     cam = (cx + 6 * math.sin(t * 1.3), cy + 3 * math.sin(t * 1.7), s * (1 + .02 * smooth(a, 34.6, t)), 0.3 * math.sin(t * .9))
     lib.DEFS.clear()
@@ -643,7 +654,7 @@ def frame_s20(t):
     sq = smooth(W(88), W(88) + .15, t) * (1 - smooth(W(89) + .3, W(89) + .5, t))
     nod = clamp((t - W(91)) / .45)
     cat = PE.cat_bench82(BENCH_X + 150, seat[1] + 6, 0.8, t=t, nod=nod if 0 < nod < 1 else 0.0, squint=sq)
-    boot = PE.boot82(BENCH_X + 250, seat[1] - 6, 0.55, rot=-4, t=t)
+    boot = f'<g transform="translate({BENCH_X - 20:.1f} {seat[1] - 30:.1f}) scale({BS})">{dima.shoe(np.array([0.0, 0.0]), 0.0, False, 1990)}</g>'
     clk = PR.street_clock(POLE_X, -40, CLOCK_K, hand_a=(t - 31.0) * 6.0 + 300.0, t=t)
     flare = ""
     world = (clk + PR.bench(BENCH_X, by, BENCH_K) + cat + boot + flare +
