@@ -4379,3 +4379,534 @@ def cat_brush81(x, y, k, st=None, t=0.0, brush_rot=-8.0, col="#D9483B", side=1):
     rr = math.radians(st.get("rot", 0.0))
     dx, dy = (tx - cat.CX) * k, (ty - cat.CBOT) * k
     return dict(svg=svg_, tip=(x + dx * math.cos(rr) - dy * math.sin(rr), y + dx * math.sin(rr) + dy * math.cos(rr)))
+
+
+# ═════════════════════════════ РИЛС 82 «ОПЯТЬ ОПОЗДАЛ?» (автор — группа B) ═════════════════════════════
+# Всё прежнее — байт в байт; ниже только новое. Кот — common/cat.py (здесь лишь обёртки с предметом в зубах).
+# Дима — dima82(x, y, k, expr, pose, t, u, feet, flip, socks, inside_out, towel, brush, sandwich, ...) = dima81 + :
+#   socks=("sock"|"bare"|"shoe" ближняя, то же дальняя) — что на ступне вместо кеда (по умолчанию обе в кедах);
+#   inside_out — худи наизнанку (светлая изнанка, швы наружу, белая бирка у шеи); towel — полотенце на шее; brush — зубная щётка во
+#   рту; sandwich — бутерброд в зубах. Возвращает figure() + "hold" (точка в ближней ладони), "hold_f" (в дальней), "mouth" (рот в мире),
+#   "temple" (висок), "k". Позы POSE["d82_*"]: rest, shrug (развёл руками), temple (палец к виску — точнее dima82_temple), hold (обе руки
+#   у груди держат рулон/ленту), cut (ножницы ближней рукой вперёд), ribbon (ближняя кисть держит ленточку у груди), one (палец «один» вверх),
+#   press (большой палец жмёт кнопку секундомера перед грудью), pocket (обе руки в карманах куртки/худи — роется), mug (кружка у груди),
+#   look_up (голова вверх, руки вниз), shoe (наклон, обе руки к стопе — обувается), boot (бег: ботинок в ближней руке).
+#   Мимика EXPR["dima"]: rush82 (несётся: брови вверх, рот сжат), panic82 (опоздал: рот «о»), squint82 (щурится «это я?»), sure82 (уверен,
+#   кивает), puzzled82 (недоумение), calm82 (спокойно), proud82 (пришёл первым), laugh82, wow82 (удивлённо оглядывается).
+# Бег: run82_kw(x, y, k, phase, stride, lift) — ноги бега (фаза полёта, толчок, захлёст пятки) + hip (таз с подскоком) + "contact" 0/1;
+#   dima82_run(x, y, k, phase, t, ...) — Дима бежит в профиль вправо: руки работают, ботинок в ближней руке (boot=True), одна нога в носке,
+#   другая босая (socks), бутерброд (sandwich), наклон корпуса lean. Шаг ≈ phase += dt / period (period ≈ .35 с — два шага).
+#   dima82_walk(x, y, k, phase, t, mug=True) — спокойная ходьба с кружкой в ближней руке, в обоих кедах.
+#   dima82_temple(x, y, k, tap, t, ...) — стучит указательным пальцем по виску (tap 0…1 — палец у виска / отведён).
+#   dima82_onefoot(x, y, k, t, ...) — стоит на одной ноге (дальняя поджата), обе руки роются в куртке.
+# Предметы: boot82(x, y, k, rot, t, lace) — кед Димы отдельно со шнурком (x, y — середина подошвы), sandwich82(x, y, k, rot),
+#   toothbrush82(x, y, k, rot), mug82(x, y, k, ...) — кружка (= props.mug), newspaper82, backpack82, shopping_bag82, courier_box82.
+# Люди (все смотрят вправо, flip — влево; (x, y) — таз; feet "stand" | None | dict):
+#   scientist82(kind, x, y, k, pose, t, expr, feet) — kind "a" (женщина, тёмный хвост, круглые очки, белый халат), "b" (бородач, рыжая
+#   борода, халат поверх свитера), "c" (седой в коричневом кардигане, очки). pose: rest, show (обе руки держат ленту перед собой:
+#   fig["hold"], fig["hold_f"]), point, talk. expr: focus, smile, ah, talk.
+#   subject82(x, y, k, pose, t, expr) — испытуемый (молодой, серая толстовка).
+#   townsman82(kind, x, y, k, pose, t, expr, feet) — kind "student" (студентка с рюкзаком), "elder" (пожилой, лысина, усы, газета без букв
+#   под мышкой), "mom" (мама с пакетом), "courier" (курьер в кепке и с коробом за спиной). pose: rest, ribbon (поднимает короткую ленточку,
+#   конец в fig["hold"]), look_back (оглядывается назад), walk (через townsman82_walk).
+# Кот (cat.py): cat_boot82(x, y, k, st, t, lace) — кот с ботинком Димы в зубах (лапы на земле); cat_bench82(x, y, k, t, nod, squint) —
+#   сидит, жмурится, кивает; CAT_ST "boot82", "watch82" (следит за стрелкой), "proud82".
+EXPR["dima"].update({
+    "rush82": {"brows": "up", "mouth": "pressed", "lid": 1.0, "look": (.8, .1), "hair": 8},
+    "panic82": {"brows": "up", "mouth": "o", "open": .7, "lid": 1.0, "look": (.6, -.3), "hair": 8},
+    "squint82": {"brows": "det", "mouth": "pressed", "lid": .45, "look": (.2, -.7)},
+    "sure82": {"brows": "calm", "mouth": "smile", "smile": .6, "lid": .7, "look": (.5, .3), "bags": False},
+    "puzzled82": {"brows": "worry", "mouth": "o", "open": .25, "lid": .95, "look": (.4, -.5)},
+    "calm82": {"brows": "calm", "mouth": "smile", "smile": .55, "lid": .72, "look": (.6, 0), "bags": False},
+    "proud82": {"brows": "calm", "mouth": "smile", "smile": 1.0, "lid": .6, "look": (.3, -.1), "bags": False},
+    "laugh82": {"brows": "up", "mouth": "grin", "open": .75, "lid": .45, "look": (.3, -.3), "bags": False},
+    "wow82": {"brows": "up", "mouth": "o", "open": .45, "lid": 1.0, "look": (-.8, -.2)},
+    "look82": {"brows": "up", "mouth": "flat", "lid": .95, "look": (.3, -.9)},
+})
+_HALF = {"curl": (.4, .4, .45, .5), "thumb": .4}
+_FIST82 = {"curl": (.85, .9, .9, .9), "thumb": .7}
+POSE.update({
+    "d82_rest": (0.0, 0.0, {"f": ("ang", 0.16, 0.16), "n": ("ang", -0.08, 0.22)}, {"f": dict(_HALF), "n": dict(_HALF)}),
+    "d82_shrug": (-0.06, -0.06, {"f": ("ik", (-90, -230), 1), "n": ("ik", (330, -250), -1)},
+                  {"f": {"dir": (-.6, -.7), "curl": (.05, .05, .08, .1), "spread": .4, "thumb": .1},
+                   "n": {"dir": (.7, -.7), "curl": (.05, .05, .08, .1), "spread": .4, "thumb": .1}}),
+    "d82_hold": (0.08, 0.2, {"f": ("ik", (250, -300), -1), "n": ("ik", (300, -280), -1)},
+                 {"f": dict(_GRIP, dir=(1, -.2)), "n": dict(_GRIP, dir=(1, .1))}),
+    "d82_cut": (0.1, 0.22, {"f": ("ik", (230, -300), -1), "n": ("ik", (380, -300), -1)},
+                {"f": dict(_GRIP, dir=(1, -.1)), "n": dict(_GRIP, dir=(1, 0))}),
+    "d82_ribbon": (0.02, 0.0, {"f": ("ang", 0.16, 0.16), "n": ("ik", (250, -380), -1)},
+                   {"f": dict(_HALF), "n": dict(_GRIP, dir=(.3, -1))}),
+    "d82_one": (0.0, -0.05, {"f": ("ang", 0.16, 0.16), "n": ("ik", (230, -520), -1)},
+                {"f": dict(_HALF), "n": {"dir": (.1, -1), "curl": (0, .9, .9, .9), "spread": .05, "thumb": .75}}),
+    "d82_press": (0.08, 0.25, {"f": ("ik", (250, -300), -1), "n": ("ik", (290, -330), -1)},
+                  {"f": dict(_GRIP, dir=(1, -.1)), "n": {"dir": (.4, -1), "curl": (.7, .75, .8, .8), "thumb": .0}}),
+    "d82_pocket": (0.12, 0.35, {"f": ("ik", (90, -160), -1), "n": ("ik", (140, -150), -1)},
+                   {"f": {"kind": "none"}, "n": {"kind": "none"}}),
+    "d82_mug": (0.02, 0.0, {"f": ("ang", 0.16, 0.18), "n": ("ik", (230, -290), -1)}, {"f": dict(_HALF), "n": {"kind": "none"}}),
+    "d82_look_up": (-0.08, -0.4, {"f": ("ang", 0.16, 0.16), "n": ("ang", -0.06, 0.2)}, {"f": dict(_HALF), "n": dict(_HALF)}),
+    "d82_shoe": (0.75, 0.35, {"f": ("ik", (300, 230), -1), "n": ("ik", (360, 250), -1)},
+                 {"f": dict(_GRIP, dir=(.6, .8)), "n": dict(_GRIP, dir=(.7, .7))}),
+})
+
+# ─── ступни: носок или босая вместо кеда (только у Димы и только когда задано) ───
+_FOOT82 = {}
+_shoe_orig82 = shoe
+
+
+def _sock_foot(A, phi, far, seed, bare):
+    c, s_ = math.cos(phi), math.sin(phi)
+
+    def tf(p):
+        x, y = p[0] * 1.18, (p[1] - AH) * 1.18 + AH
+        return (A[0] + x * c - y * s_, A[1] + x * s_ + y * c)
+
+    if bare:        # босая ступня: пятка, свод, подушечка и пальцы
+        out = [(-30, -40), (-52, -10), (-58, 30), (-44, 56), (20, 58), (90, 56), (132, 50), (150, 40), (150, 26), (128, 14), (80, 0),
+               (40, -14), (18, -40)]
+        inner = blob([tf(p) for p in [(-56, 34), (140, 40), (140, 58), (-50, 58)]], far_c(C["SKIN_SH"], far), .85)
+        inner += line([tf((-10, 50)), tf((50, 40)), tf((96, 50))], 2.2, far_c(C["SKIN_SH2"], far), seed=seed + 3, op=.7)
+        o = shape([tf(p) for p in out], far_c(C["SKIN"], far), inner, w=4.2, seed=seed)
+        for i, (x0, r) in enumerate(((148, 13), (128, 11), (110, 10), (94, 9), (80, 8))):
+            o += shape(ellipse_pts(*tf((x0, 46 - i * 1.5)), r * 1.15, r * .95, 10), far_c(C["SKIN"], far),
+                       blob(ellipse_pts(*tf((x0 + 2, 50)), r * .8, r * .5, 8), far_c(C["SKIN_SH"], far), .7), w=3.0, seed=seed + 10 + i)
+        o += shape(ellipse_pts(*tf((152, 40)), 6, 4, 8), far_c(C["NAIL"], far), w=1.6, seed=seed + 20)
+        return o
+    # носок: мягкий, светло-серый, красная пятка и мысок, резинка
+    SOCK, SOCK_SH, SOCK_HI = "#ecebe6", "#c9c6bd", "#d9483c"
+    out = [(-36, -84), (-48, -40), (-60, 0), (-64, 34), (-46, 60), (30, 62), (110, 60), (150, 50), (158, 32), (140, 14), (90, 0),
+           (46, -20), (26, -60), (24, -86)]
+    inner = blob([tf(p) for p in [(-62, 32), (156, 36), (150, 62), (-50, 62)]], far_c(SOCK_SH, far), .85)
+    inner += blob([tf(p) for p in [(-64, 10), (-30, 10), (-24, 62), (-50, 62)]], far_c(SOCK_HI, far), .95)          # пятка
+    inner += blob([tf(p) for p in [(118, 14), (160, 30), (152, 58), (116, 60)]], far_c(SOCK_HI, far), .95)          # мысок
+    for i in range(4):
+        inner += line([tf((-34 + i * 16, -84)), tf((-30 + i * 16, -64))], 1.8, far_c(SOCK_SH, far), seed=seed + 30 + i, op=.9)
+    inner += line([tf((-40, -60)), tf((26, -62))], 2.0, far_c(SOCK_SH, far), seed=seed + 40, op=.9)
+    return shape([tf(p) for p in out], far_c(SOCK, far), inner, w=4.2, seed=seed)
+
+
+def shoe(A, phi, far, seed, who):      # noqa: F811 — рилс 82: носок / босая ступня Димы по _FOOT82
+    kind = _FOOT82.get("f" if far else "n", "shoe") if who == "dima" else "shoe"
+    if kind == "shoe":
+        return _shoe_orig82(A, phi, far, seed, who)
+    return _sock_foot(A, phi, far, seed, kind == "bare")
+
+
+# ─── худи наизнанку: светлая изнанка с начёсом, швы наружу, бирка ───
+_INOUT82 = [False]
+_hoodie_orig82 = hoodie_parts
+
+
+def hoodie_parts(hood_b=0.0, strings=(0, 0)):     # noqa: F811
+    back, torso, st = _hoodie_orig82(hood_b, strings)
+    if not _INOUT82[0]:
+        return back, torso, st
+    seams = line([(-118, -40), (-126, -200), (-118, -340)], 3.0, "#9c7a3a", seed=8201, op=.95)
+    seams += line([(118, -30), (124, -200), (108, -340)], 3.0, "#9c7a3a", seed=8202, op=.95)
+    for i in range(10):
+        y_ = -60 - i * 30
+        seams += line([(-124, y_), (-112, y_ - 6)], 1.6, "#7a5a24", seed=8203 + i, op=.8)
+        seams += line([(124, y_ + 6), (112, y_)], 1.6, "#7a5a24", seed=8223 + i, op=.8)
+    tag = shape([(-70, -414), (-30, -420), (-26, -372), (-66, -366)], "#fbf8f1", blob([(-66, -380), (-28, -384), (-26, -372), (-66, -366)], "#d8d2c4", .8),
+                w=2.8, seed=8240)
+    return back, torso + seams + tag, ""
+
+
+def _mouth_world(fig, sc, lean, ha, flip, x, local=(64, 92)):
+    a = lean * .5 + ha
+    hx, hy = fig["head"]
+    px, py = local
+    rx, ry = px * math.cos(a) - py * math.sin(a), px * math.sin(a) + py * math.cos(a)
+    sgn = -1 if flip else 1
+    return (hx + sgn * rx * sc, hy + ry * sc)
+
+
+def dima82(x, y, k, expr="calm82", pose="d82_rest", t=0.0, u=1.0, feet=None, flip=False, socks=None, inside_out=False, towel=False,
+           brush=False, sandwich=False, **kw):
+    """Дима рилса 82 (см. шапку раздела). Предметы во рту и полотенце рисуются поверх головы/шеи."""
+    _FOOT82.clear()
+    if socks:
+        _FOOT82.update(n=socks[0], f=socks[1])
+    pal0 = PAL["dima"]
+    if inside_out:
+        _INOUT82[0] = True
+        PAL["dima"] = dict(pal0, TOP="#ecd69c", TOP_SH="#d2b673", TOP_SH2="#b8974f", FOLD="#94742f")
+    if isinstance(pose, (tuple, list)):
+        pk = mix_pose(pose[0], pose[1], u, x, y, k, "dima")
+    else:
+        pk = pose_kw(pose, x, y, k, "dima")
+    lean = pk["lean"] + kw.get("lean_add", 0.0) + .012 * math.sin(t * 2 * math.pi / 3.3 + 1.0)
+    ha = pk["head_ang"] + kw.get("head_add", 0.0)
+    try:
+        fig = dima80(x, y, k, expr, pose, t=t, u=u, age=1.0, feet=feet, flip=flip, **kw)
+    finally:
+        PAL["dima"] = pal0
+        _INOUT82[0] = False
+        _FOOT82.clear()
+    sc = fig["scale"]
+    fig["hold_f"] = hand_pos(fig, "f", 70)
+    fig["mouth"] = _mouth_world(fig, sc, lean, ha, flip, x)
+    fig["temple"] = _mouth_world(fig, sc, lean, ha, flip, x, (-40, -70))
+    over = ""
+    sgn = -1 if flip else 1
+    rot_d = math.degrees(lean * .5 + ha) * sgn
+    if towel:
+        nx, ny = fig["neck"]
+        over += towel82(nx - sgn * 20 * sc, ny + 10 * sc, sc, flip=flip)
+    if brush:
+        mx, my = fig["mouth"]
+        over += toothbrush82(mx + sgn * 10 * sc, my, sc * 1.05, rot=rot_d + (180 if flip else 0) - 8 * sgn, t=t)
+    if sandwich:
+        mx, my = fig["mouth"]
+        over += sandwich82(mx + sgn * 40 * sc, my + 4 * sc, sc * .95, rot=rot_d + 6 * sgn, flip=flip)
+    fig["svg"] += over
+    return fig
+
+
+# ─── предметы рилса 82 ───
+def boot82(x, y, k=1.0, rot=0.0, t=0.0, lace=1.0, seed=0, flip=False):
+    """Кед Димы отдельно (тот же, что на ноге): (x, y) — середина подошвы, носок вправо; k — масштаб фигуры (sc); lace 0…1 — длина
+    развязанного шнурка (он болтается от времени t)."""
+    global C
+    C = PAL["dima"]
+    body = _shoe_orig82(np.array([0.0, -AH * 1.22]), 0.0, False, 8250 + seed, "dima")
+    if lace > .01:
+        sw = math.sin(t * 13 + seed)
+        for i, (x0, ln) in enumerate(((40, 120), (64, 90))):
+            ln *= lace
+            pts = [(x0, -76), (x0 - 8 - 10 * sw, -76 + ln * .45), (x0 - 24 - 24 * sw + 6 * i, -76 + ln * .8), (x0 - 30 - 36 * sw, -76 + ln)]
+            body += line(pts, 9.0, INK, seed=8270 + i, taper=.2, wmin=.8) + line(pts, 6.0, "#efe8da", seed=8260 + i + seed, taper=.2, wmin=.8)
+    sx = -1 if flip else 1
+    return f'<g transform="translate({x:.2f} {y:.2f}) rotate({rot:.2f}) scale({k * sx:.4f} {k:.4f})">{body}</g>'
+
+
+def sandwich82(x, y, k=1.0, rot=0.0, flip=False, bite=True):
+    """Бутерброд: ломоть хлеба с сыром и листом салата, надкушен; (x, y) — середина, k — масштаб фигуры."""
+    o = shape([(-110, 10), (-100, -30), (-60, -44), (60, -44), (100, -30), (110, 10), (60, 24), (-60, 24)], "#e8b878",
+              blob([(-110, 6), (110, 6), (100, 24), (-100, 24)], "#c88f4c", .9), w=4.4, seed=8280)
+    o += shape([(-96, -32), (-40, -60), (30, -54), (98, -40), (80, -26), (20, -36), (-40, -30)], "#7fbf5a",
+               line([(-80, -36), (0, -50), (80, -38)], 2.0, "#5a9a3e", seed=8282, op=.9), w=3.6, seed=8281)
+    o += shape([(-84, -40), (84, -40), (90, -56), (-76, -62)], "#f2c64a", blob([(-80, -48), (84, -48), (84, -42), (-80, -42)], "#d9a838", .8), w=3.2, seed=8283)
+    o += shape([(-104, -50), (-90, -88), (-30, -100), (60, -100), (102, -84), (106, -56), (-100, -58)], "#f1cf96",
+               blob([(-100, -94), (106, -92), (106, -84), (-100, -86)], "#c88f4c", .85), w=4.4, seed=8284)
+    sx = -1 if flip else 1
+    return f'<g transform="translate({x:.2f} {y:.2f}) rotate({rot:.2f}) scale({k * .55 * sx:.4f} {k * .55:.4f})">{o}</g>'
+
+
+def toothbrush82(x, y, k=1.0, rot=0.0, t=0.0):
+    """Зубная щётка во рту: ручка наружу вправо, щетина во рту (x, y — рот)."""
+    o = shape(lib.rect_pts(-6, -10, 190, 10, 9), "#4fa0d8", blob(lib.rect_pts(-6, 2, 190, 10, 6), "#3a7fb0", .9), w=3.6, seed=8290)
+    o += shape(lib.rect_pts(-40, -8, 4, 8, 4), "#f4f1ea", w=3.0, seed=8291)
+    o += shape([(-30, -20), (0, -20), (0, -8), (-30, -8)], "#ffffff", w=2.4, seed=8292)
+    foam = "".join(shape(ellipse_pts(-20 + 12 * i, 14 + 4 * math.sin(t * 9 + i), 9, 7, 8), "#ffffff", w=2.0, seed=8293 + i) for i in range(3))
+    return f'<g transform="translate({x:.2f} {y:.2f}) rotate({rot:.2f}) scale({k * .7:.4f})">{o}{foam}</g>'
+
+
+def towel82(x, y, k=1.0, flip=False):
+    """Полотенце на шее: свисает двумя концами спереди (x, y — середина шеи)."""
+    T_, T_SH = "#e86f6f", "#c24f52"
+    o = shape([(-120, -40), (-60, -70), (40, -66), (110, -30), (120, 30), (90, 40), (40, 0), (-50, 4), (-100, 30), (-126, 10)], T_,
+              blob([(-120, 0), (120, 0), (120, 40), (-120, 40)], T_SH, .8), w=4.6, seed=8300)
+    for i, x0 in enumerate((60, 100)):
+        o += shape([(x0 - 26, 0), (x0 + 24, 6), (x0 + 22, 240), (x0 - 24, 236)], T_, blob([(x0 - 26, 180), (x0 + 24, 180), (x0 + 22, 240), (x0 - 24, 236)], T_SH, .7) +
+                   line([(x0 - 22, 200), (x0 + 20, 204)], 2.4, "#ffffff", seed=8303 + i, op=.8) + line([(x0 - 22, 214), (x0 + 20, 218)], 2.4, "#ffffff", seed=8305 + i, op=.8),
+                   w=4.0, seed=8301 + i)
+    sx = -1 if flip else 1
+    return f'<g transform="translate({x:.2f} {y:.2f}) scale({k * sx:.4f} {k:.4f})">{o}</g>'
+
+
+def mug82(x, y, k=1.0, t=0.0, steam=1.0, col="red", seed=0):
+    import props as _P
+    return _P.mug(x, y, k, col=col, coffee=True, steam=steam, t=t, seed=seed)
+
+
+# ─── бег ───
+def run82_kw(x, y, k, phase, stride=420.0, lift=250.0, who="dima"):
+    """Ноги бега (профиль вправо, как run/scene.py рилса 40): опора 36 % цикла на согнутой ноге, толчок носком, перенос по дуге с
+    захлёстом. (x, y) — таз в покое; вернёт dict(feet, hip (с подскоком), contact={'n','f'}: 0/1, bob)."""
+    sc = k * HEIGHT.get(who, 1.0)
+    ground = y + LEG_LEN * .9 * sc
+    out, cont = {}, {}
+    for side, off in (("n", 0.0), ("f", .5)):
+        u = (phase + off) % 1.0
+        if u < .36:
+            v = u / .36
+            ax, ay = x + (stride * .45 - stride * .9 * v) * sc, ground
+            phi = .2 * max(0.0, .25 - v) / .25 - .7 * lib.smooth(.55, 1.0, v)
+            cont[side] = 1
+        else:
+            v = (u - .36) / .64
+            ux = (1 - math.cos(math.pi * v ** 1.3)) / 2
+            ax = x + (-stride * .45 + stride * .9 * ux - 70 * math.sin(math.pi * min(1.0, v * 1.5))) * sc
+            ay = ground - lift * sc * math.sin(math.pi * min(1.0, v * 1.08)) ** 1.3
+            phi = (-.7 + 1.45 * lib.smooth(0, .3, v)) if v < .3 else (.75 - 1.01 * lib.smooth(.3, .85, v)) if v < .85 else -.26 * (1 - lib.smooth(.85, 1, v))
+            cont[side] = 0
+        out[side] = ((ax, ay), phi)
+    bob = 26 * math.cos(4 * math.pi * (phase - .18)) * sc
+    return {"feet": out, "hip": (x, y + bob), "contact": cont, "bob": bob}
+
+
+def dima82_run(x, y, k, phase, t=0.0, expr="rush82", lean=.3, boot=True, socks=("sock", "bare"), sandwich=True, inside_out=False, flip=False,
+               trip=0.0, lace=1.0):
+    """Дима бежит вправо. boot — кед в ближней руке (рука работает, кед болтается шнурком); trip 0…1 — спотыкается (корпус вперёд,
+    руки вперёд-вверх). Возвращает dima82() + "boot" (центр кеда в мире)."""
+    rk = run82_kw(x, y, k, phase)
+    psi = 2 * math.pi * phase
+    sw = -math.cos(psi)
+    arms = {s_: ("ang", .08 + .85 * (g * sw), 1.45 + .35 * max(0, g * sw) - .4 * max(0, -g * sw)) for s_, g in (("n", 1), ("f", -1))}
+    hands = {"f": dict(_FIST82), "n": dict(_GRIP) if boot else dict(_FIST82)}
+    if trip > 0:
+        arms = {"f": ("ang", (.08 - .85 * sw) * (1 - trip) + 2.3 * trip, 1.0),
+                "n": ("ang", (.08 + .85 * sw) * (1 - trip) + 2.0 * trip, .8)}
+        hands = {"f": {"dir": (1, -.3), "curl": (.05, .05, .08, .1), "spread": .4, "thumb": .1}, "n": dict(_GRIP)}
+    fig = dima82(rk["hip"][0], rk["hip"][1], k, expr, "d82_rest", t=t, feet=rk["feet"], flip=flip, socks=socks, sandwich=sandwich,
+                 inside_out=inside_out, lean_add=lean + .25 * trip, head_add=-.18 - .1 * trip, arms=arms, hands=hands)
+    if boot:
+        bx, by = fig["hold"]
+        sgn = -1 if flip else 1
+        bsvg = boot82(bx - sgn * 10 * fig["scale"], by + 70 * fig["scale"], fig["scale"], rot=sgn * (8 + 18 * sw), t=t, lace=lace, flip=flip)
+        # кед под пальцами: рисуем кед, затем ближнюю руку ещё раз поверх (кисть держит за пятку)
+        fig["svg"] += bsvg
+        fig["boot"] = (bx, by + 40 * fig["scale"])
+    fig["contact"] = rk["contact"]
+    return fig
+
+
+def dima82_walk(x, y, k, phase, t=0.0, expr="calm82", mug=True, flip=False, socks=None):
+    """Спокойная ходьба вправо в обоих кедах; кружка в ближней руке (mug). Возвращает dima82() + "mug"."""
+    wk = walk_kw(x, y, k, phase, "dima", stride=210.0, lift=50.0)
+    sw = math.sin(2 * math.pi * phase)
+    arms = {"f": ("ang", .18 + .3 * sw, .25), "n": ("ik", (x + 230 * k, y - 290 * k + wk["bob"]), -1) if mug else ("ang", -.1 - .3 * sw, .25)}
+    hands = {"f": dict(_HALF), "n": {"kind": "none"} if mug else dict(_HALF)}
+    fig = dima82(wk["hip"][0], wk["hip"][1], k, expr, "d82_rest", t=t, feet=wk["feet"], flip=flip, socks=socks, arms=arms, hands=hands,
+                 lean_add=.04, layers=("legs", "pelvis", "arm_f", "body") if mug else None)
+    if mug:
+        sgn = -1 if flip else 1
+        w = fig["wrist"]["n"]
+        mc = (w[0] + sgn * 70 * fig["scale"], w[1] + 10 * fig["scale"])
+        hb, hf = handle_grip("dima", (mc[0] - sgn * 62 * fig["scale"], mc[1]), fig["scale"], side=-sgn)
+        rest = dima82(wk["hip"][0], wk["hip"][1], k, expr, "d82_rest", t=t, feet=wk["feet"], flip=flip, arms=arms, hands=hands, lean_add=.04,
+                      layers=("arm_n",))
+        fig["svg"] += rest["svg"] + hb + mug82(mc[0], mc[1] + 40 * fig["scale"], fig["scale"] * 1.1, t=t) + hf
+        fig["mug"] = mc
+    return fig
+
+
+def dima82_temple(x, y, k, tap=1.0, t=0.0, expr="squint82", feet=None, flip=False, **kw):
+    """Указательный палец ближней руки у виска (tap 1 — касается, 0 — отведён на ~60·k). Двухпроходно: голова → цель руки."""
+    probe = dima82(x, y, k, expr, "d82_rest", t=t, feet=feet, flip=flip, **kw)
+    tx, ty = probe["temple"]
+    sgn = -1 if flip else 1
+    off = (1 - tap) * 60 * k
+    # кисть снизу-сзади от виска: предплечье идёт за ухом, палец смотрит вверх-вперёд в висок (лицо не закрыто)
+    tgt = (tx - sgn * (95 * k + off), ty + 175 * k + off * .5)
+    if flip:
+        tgt = (2 * x - tgt[0], tgt[1])
+    arms = {"f": ("ang", 0.16, 0.16), "n": ("ik", tgt, 1)}
+    hands = {"f": dict(_HALF), "n": {"dir": (.45, -1), "curl": (0, .9, .9, .9), "spread": .05, "thumb": .75}}
+    return dima82(x, y, k, expr, "d82_rest", t=t, feet=feet, flip=flip, arms=arms, hands=hands, **kw)
+
+
+def dima82_onefoot(x, y, k, t=0.0, expr="panic82", flip=False, socks=("shoe", "bare"), wob=0.0):
+    """Стоит на ближней ноге, дальняя поджата (стопа у колена), обе руки роются в карманах. wob — покачивание."""
+    sc = k * HEIGHT["dima"]
+    ground = y + (LEG_LEN - 12) * sc
+    feet = {"n": ((x + 10 * sc, ground), 0.0), "f": ((x + 60 * sc, ground - 280 * sc), -.4)}
+    return dima82(x + wob * 12 * sc, y, k, expr, "d82_pocket", t=t, feet=feet, flip=flip, socks=socks, lean_add=.06 * wob)
+
+
+# ─── люди рилса 82: учёные, испытуемый, горожане ───
+PAL["sci82a"] = dict(PAL["bob"], HAIR="#2b1d18", HAIR_SH="#160e0b", HAIR_HI="#4e3830", SKIN="#f1d0b6", SKIN_SH="#d9a88d", SKIN_SH2="#c2907a",
+                     TOP="#f4f2ee", TOP_SH="#d6d2ca", TOP_SH2="#b9b4aa", FOLD="#9a958c", STITCH="#8fb3d6",
+                     LEGS="#34445e", LEGS_SH="#253246", LEGS_SEAM="#4d5f7e", FRAME="#2a2228")
+PAL["sci82b"] = dict(PAL["cap"], HAIR="#9a4a22", HAIR_SH="#6e3214", HAIR_HI="#c26a3a", SKIN="#efc6a6", SKIN_SH="#d6a083", SKIN_SH2="#bd886c",
+                     TOP="#f4f2ee", TOP_SH="#d6d2ca", TOP_SH2="#b9b4aa", FOLD="#9a958c", STITCH="#c9c2b0",
+                     PLAID="#2f6a6a", PLAID2="#bfe0d6", LEGS="#3e3a36", LEGS_SH="#2c2926", LEGS_SEAM="#58534c")
+PAL["sci82c"] = dict(PAL["psych"], HAIR="#e2e0e6", HAIR_SH="#aeabb6", HAIR_HI="#f7f6fa", TOP="#8a5a3a", TOP_SH="#6c4429", TOP_SH2="#52321d",
+                     FOLD="#3a2214", STITCH="#d9b88e", FRAME="#3a2c2c")
+PAL["subj82"] = dict(PAL["youth"], TOP="#8d96a6", TOP_SH="#6d7686", TOP_SH2="#555d6b", FOLD="#3e4450", LEGS="#2f3a52", LEGS_SH="#222a3c")
+PAL["stud82"] = dict(PAL["girl"], HAIR="#3a2418", HAIR_SH="#20130b", HAIR_HI="#5c3a28", TOP="#e88aa0", TOP_SH="#c46a80", TOP_SH2="#a05066",
+                     FOLD="#7a3a4c", STITCH="#fbd6de", LEGS="#2f3e66", LEGS_SH="#21304f")
+PAL["elder82"] = dict(PAL["fnd_bald"], TOP="#6f6a8a", TOP_SH="#55506c", TOP_SH2="#423e54", FOLD="#2e2b3c", STITCH="#c9c4dc")
+PAL["mom82"] = dict(PAL["mama"], HAIR="#c79a5a", HAIR_SH="#9a7038", HAIR_HI="#e2bf84", TOP="#3f8f8a", TOP_SH="#2f6e6a", TOP_SH2="#235450",
+                    FOLD="#163c39", STITCH="#bfe6df")
+PAL["cour82"] = dict(PAL["cap"], CAP="#e6862e", CAP_SH="#b8661c", HAIR="#3a2a22", HAIR_SH="#241914", TOP="#3a9a52", TOP_SH="#2c7a40",
+                     TOP_SH2="#1f5c2e", FOLD="#174422", STITCH="#e6f2d8", LEGS="#2e3036", LEGS_SH="#1f2025")
+HEIGHT.update({"sci82a": .95, "sci82b": 1.04, "sci82c": 1.0, "subj82": 1.0, "stud82": .94, "elder82": .97, "mom82": .93, "cour82": 1.02})
+_NEW82 = ("sci82a", "sci82b", "sci82c", "subj82", "stud82", "elder82", "mom82", "cour82")
+HEADS64 = HEADS64 + _NEW82
+FRIENDLIKE = FRIENDLIKE + _NEW82
+FACES = FACES + _NEW82
+CLOTHES64.update({"sci82a": lambda: jacket_parts(cardigan=True), "sci82b": lambda: jacket_parts(cardigan=True), "sci82c": knit_cardigan_parts,
+                  "subj82": hoodie_parts, "stud82": sweater_parts, "elder82": knit_cardigan_parts, "mom82": lambda: jacket_parts(cardigan=False),
+                  "cour82": hoodie_parts})
+_E82 = {"focus": {"brows": "calm", "mouth": "flat", "lid": .7, "look": (.5, .3)},
+        "smile": {"brows": "calm", "mouth": "smile", "smile": .8, "lid": .65, "look": (.4, .1)},
+        "ah": {"brows": "up", "mouth": "o", "open": .4, "lid": 1.0, "look": (.4, -.1)},
+        "talk": {"brows": "calm", "mouth": "talk", "open": .45, "smile": .3, "lid": .8, "look": (.5, 0)},
+        "calm": {"brows": "calm", "mouth": "smile", "smile": .4, "lid": .72, "look": (.4, 0)},
+        "wow": {"brows": "up", "mouth": "o", "open": .45, "lid": 1.0, "look": (-.8, -.2)},
+        "proud": {"brows": "calm", "mouth": "smile", "smile": .9, "lid": .6, "look": (.3, -.4)}}
+for _w in _NEW82:
+    EXPR[_w] = {k_: dict(v_) for k_, v_ in _E82.items()}
+POSE.update({
+    "x82_rest": (0.0, 0.0, {"f": ("ang", 0.16, 0.16), "n": ("ang", -0.08, 0.22)}, {"f": dict(_HALF), "n": dict(_HALF)}),
+    "x82_show": (0.06, 0.15, {"f": ("ik", (240, -330), -1), "n": ("ik", (330, -300), -1)},
+                 {"f": dict(_GRIP, dir=(1, -.3)), "n": dict(_GRIP, dir=(1, 0))}),
+    "x82_point": (0.04, -0.05, {"f": ("ang", 0.16, 0.16), "n": ("ik", (420, -400), -1)},
+                  {"f": dict(_HALF), "n": {"dir": (1, -.3), "curl": (0, .85, .9, .9), "spread": .05, "thumb": .7}}),
+    "x82_talk": (0.02, 0.0, {"f": ("ang", 0.16, 0.16), "n": ("ik", (280, -300), -1)},
+                 {"f": dict(_HALF), "n": {"dir": (.8, -.6), "curl": (.05, .05, .08, .1), "spread": .35, "thumb": .1}}),
+    "x82_ribbon": (0.02, 0.0, {"f": ("ang", 0.16, 0.16), "n": ("ik", (230, -420), -1)}, {"f": dict(_HALF), "n": dict(_GRIP, dir=(.3, -1))}),
+    "x82_look_back": (-0.04, -0.2, {"f": ("ang", 0.3, 0.3), "n": ("ik", (230, -420), -1)}, {"f": dict(_HALF), "n": dict(_GRIP, dir=(.3, -1))}),
+})
+_head64_orig82 = head64
+
+
+def _ponytail82(sd=8320):
+    pts = [(-110, -110), (-170, -100), (-214, -50), (-226, 20), (-206, 90), (-180, 120), (-168, 80), (-176, 20), (-160, -40), (-120, -80)]
+    o = shape(pts, C["HAIR"], blob([(-230, 0), (-170, 0), (-170, 130), (-230, 130)], C["HAIR_SH"], .85) +
+              line([(-190, -60), (-206, 20), (-190, 100)], 2.6, C["HAIR_HI"], seed=sd + 1, op=.7), w=5.0, seed=sd)
+    o += shape(ellipse_pts(-128, -96, 18, 14, 10), "#d9483c", w=3.2, seed=sd + 2)
+    return o
+
+
+def head64(expr, style):        # noqa: F811 — плюс люди рилса 82
+    if style == "sci82a":
+        h = person_head(expr, "bob")
+        gl = (ring(ellipse_pts(20, -10, 32, 30, 14), 4.6, 8311) + ring(ellipse_pts(94, -8, 26, 26, 14), 4.0, 8312)
+              + line([(52, -12), (68, -12)], 4, C["FRAME"], taper=0, wmin=1, seed=8313) + line([(-12, -14), (-80, -26)], 3.6, C["FRAME"], seed=8314))
+        return _ponytail82() + h + gl
+    if style == "sci82b":
+        return person_head(dict(expr, nocap=True), "cap")
+    if style == "sci82c":
+        return _head64_orig82(expr, "fnd_glasses")
+    if style == "subj82":
+        return _head64_orig82(expr, "youth")
+    if style == "stud82":
+        return person_head(expr, "girl")
+    if style == "elder82":
+        return _head64_orig82(expr, "fnd_bald")
+    if style == "mom82":
+        return person_head(expr, "mama")
+    if style == "cour82":
+        return person_head(expr, "cap")
+    return _head64_orig82(expr, style)
+
+
+def _fig82(who, x, y, k, pose, t, expr, feet, flip, kw):
+    pn = pose if pose in POSE else "x82_" + pose
+    pk = pose_kw(pn, x, y, k, who)
+    ex = dict(EXPR[who][expr]) if isinstance(expr, str) else dict(expr)
+    ex.setdefault("bags", False)
+    ft = stand_kw(x, y, k, who)["feet"] if feet == "stand" else (sit_kw(x, y, k, who)["feet"] if feet == "sit" else feet)
+    br = .01 * math.sin(t * 2 * math.pi / 3.1 + hash(who) % 7)
+    fig = figure(who, x, y, k, ex, lean=pk["lean"] + kw.pop("lean_add", 0.0) + br, head_ang=pk["head_ang"] + kw.pop("head_add", 0.0),
+                 arms=dict(pk["arms"], **kw.pop("arms", {})), hands=dict(pk["hands"], **kw.pop("hands", {})), feet=ft, flip=flip, **kw)
+    fig["hold"] = hand_pos(fig, "n", 70)
+    fig["hold_f"] = hand_pos(fig, "f", 70)
+    fig["finger"] = hand_pos(fig, "n", 120)
+    return fig
+
+
+def scientist82(kind, x, y, k, pose="rest", t=0.0, expr="focus", feet="stand", flip=False, **kw):
+    """Учёные рилса 82: kind "a" | "b" | "c" (см. шапку); халат у a и b, кардиган у c."""
+    return _fig82("sci82" + kind, x, y, k, pose, t, expr, feet, flip, kw)
+
+
+def subject82(x, y, k, pose="rest", t=0.0, expr="focus", feet="stand", flip=False, **kw):
+    return _fig82("subj82", x, y, k, pose, t, expr, feet, flip, kw)
+
+
+_TOWN = {"student": "stud82", "elder": "elder82", "mom": "mom82", "courier": "cour82"}
+
+
+def backpack82(x, y, k=1.0, col="#5a6fb0", seed=0):
+    """Рюкзак (вид сбоку, за спиной): (x, y) — середина спинки, k — масштаб фигуры."""
+    sh = lib.mul(col, (.78, .78, .82))
+    o = shape([(-70, -150), (40, -160), (70, -110), (74, 120), (40, 150), (-60, 150), (-90, 110), (-92, -110)], col,
+              blob([(-92, 40), (74, 40), (40, 150), (-60, 150)], sh, .85) + shape([(-100, 10), (-60, 0), (-56, 120), (-96, 120)], sh, w=3.4, seed=seed + 1),
+              w=4.6, seed=8330 + seed)
+    return f'<g transform="translate({x:.2f} {y:.2f}) scale({k:.4f})">{o}</g>'
+
+
+def courier_box82(x, y, k=1.0, seed=0):
+    """Короб курьера за спиной (без надписей): (x, y) — середина."""
+    o = shape(lib.rect_pts(-130, -160, 110, 150, 14), "#e6862e", blob(lib.rect_pts(-130, 60, 110, 150, 10), "#b8661c", .85) +
+              line([(-130, -100), (110, -100)], 2.6, "#9a5414", seed=8341, op=.9), w=5.0, seed=8340 + seed)
+    return f'<g transform="translate({x:.2f} {y:.2f}) scale({k:.4f})">{o}</g>'
+
+
+def newspaper82(x, y, k=1.0, rot=0.0, seed=0):
+    """Сложенная газета без букв: серые блоки вместо строк, (x, y) — середина."""
+    o = shape(lib.rect_pts(-120, -80, 120, 80, 4), "#ece8de", blob(lib.rect_pts(-120, 40, 120, 80, 4), "#d4cfc2", .8), w=4.0, seed=8350 + seed)
+    o += shape(lib.rect_pts(-100, -64, -10, -6, 2), "#bdb7aa", w=2.0, seed=8351)
+    for i in range(4):
+        o += f'<rect x="10" y="{-62 + i * 16}" width="{84 - 12 * (i % 2)}" height="7" fill="#cfc9bb"/>'
+        o += f'<rect x="-100" y="{8 + i * 16}" width="{88 - 14 * (i % 3)}" height="7" fill="#cfc9bb"/>'
+    return f'<g transform="translate({x:.2f} {y:.2f}) rotate({rot:.2f}) scale({k:.4f})">{o}</g>'
+
+
+def shopping_bag82(x, y, k=1.0, rot=0.0, seed=0):
+    """Пакет с багетом и зеленью: (x, y) — точка хвата (ручки)."""
+    o = shape([(-80, 40), (80, 40), (96, 260), (-96, 260)], "#f0e2c4", blob([(-96, 180), (96, 180), (96, 260), (-96, 260)], "#d8c69e", .85), w=4.4, seed=8360 + seed)
+    o += shape([(10, 60), (40, -60), (58, -56), (34, 64)], "#e0a85a", line([(36, -40), (46, -30)], 2.0, "#a8742c", seed=8362), w=3.6, seed=8361)
+    o += shape([(-50, 50), (-70, -10), (-40, -20), (-30, 20), (-10, -30), (0, 48)], "#6fb04a", w=3.4, seed=8363)
+    o += line([(-60, 44), (-40, -6), (0, -14), (40, -6), (60, 44)], 4.2, "#c9b48a", seed=8364)
+    return f'<g transform="translate({x:.2f} {y:.2f}) rotate({rot:.2f}) scale({k:.4f})">{o}</g>'
+
+
+def townsman82(kind, x, y, k, pose="rest", t=0.0, expr="calm", feet="stand", flip=False, **kw):
+    """Горожане рилса 82 (см. шапку). Предмет у каждого рисуется сам: рюкзак/короб за спиной, газета под мышкой, пакет в дальней руке."""
+    who = _TOWN[kind]
+    fig = _fig82(who, x, y, k, pose, t, expr, feet, flip, kw)
+    sc = fig["scale"]
+    sgn = -1 if flip else 1
+    hx, hy = fig["head"]
+    back = front = ""
+    if kind == "student":
+        back = backpack82(hx - sgn * 150 * sc, hy + 330 * sc, sc * (1 if not flip else 1))
+    elif kind == "courier":
+        back = courier_box82(hx - sgn * 190 * sc, hy + 300 * sc, sc)
+    elif kind == "elder":
+        w = fig["wrist"]["f"]
+        front = newspaper82(w[0] + sgn * 10 * sc, w[1] - 90 * sc, sc * .9, rot=sgn * 70)
+    elif kind == "mom":
+        w = fig["wrist"]["f"]
+        back = shopping_bag82(w[0], w[1] + 20 * sc, sc * .95, rot=-4 * sgn)
+    fig["svg"] = back + fig["svg"] + front
+    return fig
+
+
+def townsman82_walk(kind, x, y, k, phase, t=0.0, expr="calm", flip=False, hold_ribbon=True):
+    """Горожанин идёт вправо (x двигает вызывающий); hold_ribbon — ближняя рука держит ленту у бедра (конец в fig["hold"])."""
+    who = _TOWN[kind]
+    wk = walk_kw(x, y, k, phase, who)
+    sw = math.sin(2 * math.pi * phase)
+    arms = {"f": ("ang", .18 + .3 * sw, .22), "n": ("ang", -.1 - .3 * sw, .25) if not hold_ribbon else ("ang", .25, .35)}
+    hands = {"f": dict(_HALF), "n": dict(_GRIP) if hold_ribbon else dict(_HALF)}
+    return townsman82(kind, wk["hip"][0], wk["hip"][1], k, "rest", t, expr, wk["feet"], flip, arms=arms, hands=hands, lean_add=.05)
+
+
+# ─── кот рилса 82 ───
+CAT_ST.update({
+    "boot82": {"look": (.3, .1), "perk": .8, "smile": 0.0, "flame_e": 1.4},
+    "watch82": {"look": (.6, .5), "turn": .3, "perk": .9, "flame_e": 1.2},
+    "proud82": {"tilt": -6, "look": (0, -.3), "blink": .5, "smile": 1.0, "flame_e": 1.5},
+})
+
+
+def cat_boot82(x, y, k, st=None, t=0.0, lace=1.0, rot=-6.0):
+    """Кот с кедом Димы в зубах (лапы на земле, кед поперёк рта, шнурок болтается). Ходьба/галоп — st["walk"], st["rot"], x/y вызывающего."""
+    st = dict(CAT_ST["boot82"], **(st or {}))
+    FX = 22 * st.get("turn", 0.0)
+    st["mouth_item"] = boot82(836 + FX - 75, 1162, .62, rot=rot, t=t, lace=lace)
+    return cat_svg(x, y, k, st, t)
+
+
+def cat_bench82(x, y, k, t=0.0, nod=0.0, squint=0.0, st=None):
+    """Кот сидит (на скамейке): squint 0…1 — довольно жмурится, nod 0…1 — фаза кивка (cat_nod), огонёк ярче при squint."""
+    st = dict(CAT_ST["proud82"] if squint > .5 else {"look": (-.4, 0), "smile": .6, "flame_e": 1.2}, **(st or {}))
+    st["blink"] = max(st.get("blink", 0.0), 1.0 if squint > .5 else .6 * squint)
+    st["drop"] = st.get("drop", 0.0) + .25 * math.sin(math.pi * lib.clamp(nod))
+    st["flame_e"] = st.get("flame_e", 1.2) + .5 * squint
+    return cat_svg(x, y, k, st, t)
