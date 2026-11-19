@@ -1080,10 +1080,10 @@ def frame_s17(t):
         o.append(blob(ellipse_pts((WIN[0] + WIN[2]) / 2 + 20, WIN[1] + 40 + (SILL - WIN[1] - 40) * su, 120, 30, 20), "#ffe58a", .9))
     pu = smooth(W(79) - .1, W(79) + .15, t) * (1 - smooth(h + .3, h + .6, t))
     cx_ = (WIN[0] + WIN[2]) / 2 + 30
+    if pu > .05:                                                  # табличка за котом: ручка уходит за тело к лапе, диск над ухом
+        o.append(paddle(cx_ - 40, SILL - 50 - 100 * pu, .45, -22 * pu))
     o.append(cat(cx_, SILL, .48, t, look=(-.3, -.6) if t < h else (0, .3), paw=pu, paw_dx=-30, smile=su, squint=su * .8, tail=10 * math.sin(t * 3),
                  flame_e=1.0 + .4 * su))
-    if pu > .05:
-        o.append(paddle(cx_ - 60, SILL - 70 - 50 * pu, .45, -8))
     o.append(PR.sparkles(cx_, SILL - 120, 1.2, bump(t, h + .1, .06, .5), t, seed=14))
     z = 2.0 + .15 * ease_io(ramp(t, a, T1("s17") - a)) + .08 * bump(t, h)
     dx, dy = shake(t, h, 8)
@@ -1095,19 +1095,19 @@ def frame_s18(t):
     a = T0("s18")
     cx_ = (WIN[0] + WIN[2]) / 2 + 30
     stretch = bump(t, W(85), .25, .6)
-    catsvg = cat(cx_, SILL, .4, t, look=(0, .3), smile=1.0, squint=.8, sy=1 + .12 * stretch, sx=1 - .05 * stretch, flame_e=1.3)
-    catsvg += tag(cx_ + 40, SILL - 120, .45, 18 + 10 * math.sin(t * 2.4))
-    sc = .66
-    x = 560.0
+    catsvg = cat(cx_, SILL, .5, t, look=(0, .3), smile=1.0, squint=.8, sy=1 + .12 * stretch, sx=1 - .05 * stretch, flame_e=1.3)
+    catsvg += tag(cx_ + 50, SILL - 150, .55, 18 + 10 * math.sin(t * 2.4))
+    sc = .74
+    x = 600.0                                                     # место и рост Димы из хука s01: петля к тому же ракурсу
     chest = (x - 30, stand_y(sc) - 300 * sc)
-    g, _ = hug_dima(x, sc, t, "bliss", chest, PR.clock(chest[0], chest[1], 62, (t * 18) % 360, (t * 150) % 360, seed=7, rim=DIMA_RIM), r=62)
-    g = f'<g transform="translate(0 90)">{g}</g>'
+    g, _ = hug_dima(x, sc, t, "bliss", chest, PR.clock(chest[0], chest[1], 66, (t * 18) % 360, (t * 150) % 360, seed=7, rim=DIMA_RIM), r=66)
+    g = f'<g transform="translate(0 {470 + 590 * sc - 0:.1f})">{g}</g>'
     ru = lambda n: .1
     cr = crowd(t, ru, look=(-.2, -.3))
     o = [hall_bg(t), sun_patch(1.0, t), catsvg, PR.pedestal(PED[0], PED[1], PED[2], seed=1)]
     ag, _ = auctioneer(t, [], expr="calm", look=(.5, .4))
     o.append(ag)
-    fg = sorted([(yb, s_) for s_, yb, _ in cr] + [(FL + 90, g)], key=lambda z: z[0])
+    fg = sorted([(yb, s_) for s_, yb, _ in cr] + [(FL + 900, g)], key=lambda z: z[0])
     o += [s_ for _, s_ in fg]
     u = ease_io(ramp(t, a, T1("s18") - a))
     cx, cy, s_ = 560 + 60 * u, 1000 + 150 * u, .8 - .18 * u
