@@ -52,6 +52,22 @@ def apply(scene, **over):
     return scene
 
 
+TURBO = dict(samples=4, res=(540, 960), max_bounces=2, diffuse=1, glossy=1, transmission=2, adaptive_threshold=0.08)
+
+
+def apply_turbo(scene):
+    """Профиль «как three.js по времени» (замер 20.11, 4 ядра, кадр рилса 98): 5,9 с на кадр против 35 с у FAST,
+    с шумодавом и быстрым GI картинка на глаз почти та же; 540×960 → lanczos до 1080×1920."""
+    apply(scene, **TURBO)
+    cy = scene.cycles
+    cy.use_fast_gi = True
+    cy.fast_gi_method = "REPLACE"
+    cy.ao_bounces_render = 1
+    cy.transparent_max_bounces = 4
+    cy.light_sampling_threshold = 0.05
+    return scene
+
+
 UPSCALE = "ffmpeg -framerate 30 -i frames/%04d.jpg -vf scale=1080:1920:flags=lanczos -c:v libx264 -crf 18 -pix_fmt yuv420p out.mp4"
 
 if __name__ == "__main__":
