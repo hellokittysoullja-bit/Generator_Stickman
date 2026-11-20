@@ -242,6 +242,17 @@ def notebook(x, y, k=1.0, rot=0.0, open_=1.0, lines_=0.0, seed=0, t=0.0):
     return tf("".join(o), x, y, k * (1.0 if open_ >= 1 else .6 + .4 * open_), rot)
 
 
+LEAF_COLS = ("#e07a2e", "#c9502a", "#e8a33a", "#b5452a", "#d99a2b")
+
+
+def leaf(x, y, k=1.0, rot=0.0, i=0):
+    """Осенний лист: остроконечный овал с прожилкой."""
+    pts = [(-30, 0, 1)] + [(-30 + 60 * j / 8, -16 * math.sin(math.pi * j / 8)) for j in range(1, 8)] + [(30, 0, 1)] + \
+          [(30 - 60 * j / 8, 14 * math.sin(math.pi * j / 8)) for j in range(1, 8)]
+    o = shape(pts, LEAF_COLS[i % len(LEAF_COLS)], line([(-34, 0), (26, 0)], 2.2, "#7a3a1a", seed=140 + i % 5), w=2.8, seed=141 + i % 7)
+    return tf(o, x, y, k, rot)
+
+
 def lamp_warm(x, y, k=1.0, on=1.0, t=0.0):
     return PR.night_lamp(x, y, k, on_u=on, t=t)
 
@@ -639,3 +650,120 @@ def frame_s07(t):
     u = ease_io(ramp(t, a, b - a))
     dx, dy = shake(t, out, 12)
     return view("".join(o), 520 + dx, 860 + dy + 60 * u, 1.25 + .1 * u, -1 + 2 * u, over=steps(t), bg="#2a2030")
+
+
+# ═════════════════════════ s08: призыв ═════════════════════════
+def frame_s08(t):
+    import story_cta_tg as tg
+    press = W(38) + 0.12
+    return tg.frame(t, t0=press - 1.10, press=press, common=os.path.join(STORY, "common"))
+
+
+# ═════════════════════════ s09: ритуал картинкой ═════════════════════════
+def ritual_card(x, y, k=1.0, t=0.0, lit=4):
+    """Картинка-ритуал без букв: четыре плитки — тёплая лампа, блокнот, телефон с молнией зарядки, приоткрытое окно с листом."""
+    o = [shape(lib.rrect(-260, -320, 260, 320, 26), "#fff8e6", blob(lib.rrect(-260, 250, 260, 320, 22), "#f1e2bf", .8), w=5, seed=110)]
+    for i in range(4):
+        cx, cy = -122 + 244 * (i % 2), -150 + 280 * (i // 2)
+        on = i < lit
+        o.append(shape(lib.rrect(cx - 105, cy - 115, cx + 105, cy + 115, 18), "#ffe7b0" if on else "#e9e2d2", "", w=3.6, seed=111 + i))
+        if i == 0:
+            o.append(PR.glow(cx, cy - 30, 110, .8, "#ffb347") + PR.night_lamp(cx, cy + 95, .62, on_u=1.0, t=t))
+        elif i == 1:
+            o.append(notebook(cx, cy, .4, -8, open_=1.0, lines_=.7) + PR.pencil(cx + 40, cy + 40, .7, -40))
+        elif i == 2:
+            o.append(phone_up(cx, cy, .65, 0, glow=0.0, charge=1.0) + line([(cx, cy + 78), (cx + 10, cy + 105)], 5, "#9aa0aa", seed=118))
+        else:
+            o.append(shape(lib.rect_pts(cx - 70, cy - 80, cx + 70, cy + 80), "#9fc4e8", line([(cx, cy - 80), (cx, cy + 80)], 5, "#fff8e6",
+                                                                                                taper=0, wmin=1, seed=119), w=4, seed=120))
+            o.append(leaf(cx + 30, cy + 20, 1.4, 30, 0))
+            o.append(PR.wind_lines(cx - 40, cy - 20, .6, 1.0, t, seed=3, n=3))
+        o.append(tf(shape(ellipse_pts(0, 0, 22, 22, 14), "#ffc24a", "", w=3, seed=121 + i), cx - 82, cy - 92))
+        for j in range(i + 1):
+            o.append(blob(ellipse_pts(cx - 92 + 7 * j, cy - 92, 2.6, 2.6, 6), INK) if False else "")
+    return tf("".join(o), x, y, k)
+
+
+def frame_s09(t):
+    """«картинкой, чтобы сохранить»: кот в маске вытаскивает из мешка картинку-ритуал (4 плитки), разворачивает её к нам;
+    на «сохранить» сверху падает закладка-флажок, картинка мигает искрами."""
+    a, b = T0("s09"), T1("s09")
+    o = [room(t, x0=-600, x1=2000, warm=.7, win=False)]
+    o.append(PR.glow(540, 760, 600, .5, "#ffcf8a"))
+    rise = pop(t, a - .05, .35)
+    sv = W(46)
+    o.append(PR.glow(540, 760, 420, .6 * bump(t, sv + .1, .05, .5), "#fff3b0"))
+    o.append(ritual_card(540, 1220 - 360 * rise, 1.12 * (.5 + .5 * rise) + .05 * bump(t, sv + .12, .05, .3), t))
+    drop = lib.ease_in(ramp(t, sv - .15, .25))
+    if t > sv - .15:
+        rx, ry = 540 + 200, 560 - 700 * (1 - drop)
+        o.append(shape([(rx - 34, ry - 60), (rx + 34, ry - 60), (rx + 34, ry + 60), (rx, ry + 34), (rx - 34, ry + 60)], "#e2574c", "", w=4, seed=130))
+    o.append(PR.sparkles(540, 760, 3.0, bump(t, sv + .1, .05, .5), t, seed=9, n=7, r=300))
+    o.append(sack(200, FL + 60, .8, t, open_=1.0))
+    o.append(cat(860, FL + 60, .85, t, dict(paw=.8, paw_dx=-40, look=(-.6, -.8), smile=1.0), mask=1.0))
+    u = ease_io(ramp(t, a, b - a))
+    dx, dy = shake(t, sv + .12, 9)
+    return view("".join(o) + tint(warm=.5), 540 + dx, 930 + dy, 1.12 + .08 * u, 1 - 2 * u, over=steps(t), bg="#5a3020")
+
+
+# ═════════════════════════ s10–s11: шаг 2 — пять минут на бумаге ═════════════════════════
+def write_scene(t, a, lines_, open_=1.0, into=None, expr="write"):
+    bx = 560.0
+    o = [room(t, x0=-600, x1=2000, warm=.65, win=False)]
+    o.append(window(620, 380, 960, 820, "#2a2a55", t, moon=(900, 470)))
+    o.append(nightstand(bx - 480, 1.2))
+    o.append(PR.glow(bx - 480, FL - 380, 360, .8, "#ff9a3c"))
+    o.append(PR.night_lamp(bx - 480, FL - 252, 1.0, on_u=1.0, t=t))
+    g, d = dima_sleep(bx, t, expr, sit=1.0, arm="out")
+    o.append(g)
+    wn, wf = d["wrist"]["n"], d["wrist"]["f"]
+    nx, ny = (wn[0] + wf[0]) / 2 + 10, (wn[1] + wf[1]) / 2 + 10
+    return o, d, (nx, ny)
+
+
+def frame_s10(t):
+    """«Второе: пять минут пишу на бумаге»: огонёк 2; кот кидает блокнот из мешка, Дима садится в кровати с блокнотом
+    на коленях и пишет каракули без букв; маленькие часы проходят сектор пяти минут."""
+    a, b = T0("s10"), T1("s10")
+    lines_ = ramp(t, W(50), WE(52) + .3 - W(50))
+    o, d, (nx, ny) = write_scene(t, a, lines_)
+    fly = ramp(t, a - .05, W(48) - a + .05)
+    if fly < 1:                              # блокнот летит из мешка по дуге к коленям
+        sx, sy = 1050, FL - 200
+        e = ease_out(fly)
+        x, y = sx + (nx - sx) * e, sy + (ny - sy) * e - 380 * math.sin(math.pi * e)
+        o.append(tf(notebook(0, 0, .45, 0, open_=0.0), x, y, 1.0, 540 * (1 - e)))
+    else:
+        o.append(notebook(nx, ny, .7, -6, open_=1.0, lines_=lines_))
+        px = nx - 60 + 160 * ((lines_ * 4) % 1.0)
+        o.append(PR.pencil(px + 30, ny - 40 + 8 * math.sin(t * 30), .8, -50))
+    o.append(sack(1080, FL + 60, .8, t, open_=1.0))
+    o.append(cat(1300, FL + 60, .85, t, dict(paw=.9 * bump(t, a, .06, .3), paw_dx=-60, look=(-.9, -.3), smug=.6), mask=1.0))
+    pr = ramp(t, W(48), WE(49) - W(48))
+    if t > W(48) - .1:
+        o.append(tf(PR.stopwatch(0, 0, 1.0, hand_a=30 * ease_io(pr), sector_a=30 * ease_io(pr), click=bump(t, W(48), .04, .2), t=t),
+                    d["head"][0] + 420, d["head"][1] - 120, .5 * pop(t, W(48) - .1, .25)))
+    u = ease_io(ramp(t, a, b - a))
+    dx, dy = shake(t, W(47), 8)
+    cx = 760 + (nx - 760) * u
+    return view("".join(o) + tint(warm=.6), cx + dx, 900 + dy + 40 * u, 1.05 + .45 * u, 1 - 2 * u, over=steps(t), bg="#5a3020")
+
+
+def frame_s11(t):
+    """«что надо сделать завтра»: облачка-дела вылетают из головы и влетают в блокнот; на «завтра» блокнот захлопывается,
+    пух, Дима выдыхает."""
+    a, b = T0("s11"), T1("s11")
+    shut = W(56)
+    sh = ramp(t, shut - .05, .15)
+    o, d, (nx, ny) = write_scene(t, a, 1.0, expr="write" if t < shut else "relief")
+    hx, hy = d["head"]
+    q = ramp(t, a, shut - a)
+    o.append(notebook(nx, ny, .7, -6, open_=1 - sh, lines_=1.0))
+    if sh < 1:
+        o.append(carousel(hx + 40, hy - 300, t * 2.5, a, R=230, speed=1.0, u=ramp(t, a - .1, .2), into=(nx, ny, q)))
+    o.append(PR.dust_puff(nx, ny - 20, 2.0, clamp((t - shut) / .5), seed=4))
+    o.append(PR.sparkles(nx, ny - 60, 1.6, bump(t, shut + .05, .05, .4), t, seed=10, n=5, r=160))
+    u = ease_io(ramp(t, a, b - a))
+    dx, dy = shake(t, shut, 12)
+    return view("".join(o) + tint(warm=.6), (hx + nx) / 2 + 40 + dx, hy - 40 + dy, 1.5 + .15 * u + .06 * bump(t, shut, .04, .3), 0, over=steps(t),
+                bg="#5a3020")
