@@ -11,7 +11,7 @@
   "text": "POV: ТЫ ВЗЯЛ\nТЕЛЕФОН НА МИНУТКУ",
   "module": "common/big_title.py",
   "t_in": 0.0,
-  "t_out": 2.5,
+  "t_out": 2.15,
   "hits": [
    0,
    5,
