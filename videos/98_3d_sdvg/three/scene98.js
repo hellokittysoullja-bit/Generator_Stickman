@@ -643,3 +643,7 @@ window.renderFrame = (t) => {
 };
 window.debugView = (p, l, fov = 50, t = 1) => { window.renderFrame(t); camera.fov = fov; camera.updateProjectionMatrix(); camera.position.set(...p); camera.lookAt(...l); bokeh.uniforms.aperture.value = 0; dima.root.visible = true; composer.render(); camera.fov = 32; camera.updateProjectionMatrix(); bokeh.uniforms.aperture.value = 0.0012; };
 document.fonts.load('800 40px Onest').then(() => { window.ready = true; });
+import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
+window.exportGLB = (t) => new Promise((res, rej) => { window.renderFrame(t); scene.updateMatrixWorld(true);
+  const cam = camera.clone(); cam.name = 'ShotCam';
+  new GLTFExporter().parse([scene], (buf) => { const b = new Uint8Array(buf); let s = ''; for (let i = 0; i < b.length; i += 32768) s += String.fromCharCode.apply(null, b.subarray(i, i + 32768)); res({ glb: btoa(s), cam: { pos: camera.position.toArray(), quat: camera.quaternion.toArray(), fov: camera.fov } }); }, rej, { binary: true, onlyVisible: true, maxTextureSize: 2048 }); });

@@ -1,0 +1,12 @@
+import { chromium } from '/opt/node22/lib/node_modules/playwright/index.mjs';
+import fs from 'fs'; import http from 'http'; import path from 'path';
+const dir = process.cwd(); const t = +process.argv[2];
+const srv = http.createServer((q, s) => { const f = path.join(dir, decodeURIComponent(q.url.split('?')[0])); fs.readFile(f, (e, d) => { if (e) { s.writeHead(404); s.end(); return; } s.writeHead(200, { 'Content-Type': f.endsWith('.js') ? 'text/javascript' : f.endsWith('.html') ? 'text/html' : 'application/octet-stream' }); s.end(d); }); }).listen(8781);
+const b = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+const p = await b.newPage(); p.on('pageerror', e => console.log('PAGEERR', e.message));
+await p.goto('http://localhost:8781/index98.html'); await p.waitForFunction(() => window.ready, null, { timeout: 120000 });
+const r = await p.evaluate((t) => window.exportGLB(t), t);
+fs.writeFileSync(`scene_${t}.glb`, Buffer.from(r.glb, 'base64')); fs.writeFileSync(`cam_${t}.json`, JSON.stringify(r.cam));
+const url = await p.evaluate((t) => { window.renderFrame(t); return document.querySelector('canvas').toDataURL('image/jpeg', 0.93); }, t);
+fs.writeFileSync(`three_${t}.jpg`, Buffer.from(url.split(',')[1], 'base64'));
+await b.close(); srv.close(); console.log('ok');
