@@ -164,8 +164,10 @@ def sky(t, night):
             nt.append(f'<circle cx="{x}" cy="{y}" r="{2.2 + (j % 3)}" fill="#fff8d8" opacity="{tw:.2f}"/>')
         mg = lib.rad_grad([(0, "#fff4c0", .55), (1, "#fff4c0", 0)], 690, 230, 200)
         nt.append(f'<circle cx="690" cy="230" r="200" fill="url(#{mg})"/>')
-        nt.append(shape(ellipse_pts(690, 230, 78, 78, 30), "#fff1b0", blob(ellipse_pts(720, 205, 70, 74, 26), "#1a2348"), w=3.5, seed=942,
-                        ink_color="#c9b46a"))
+        mk = lib.uid("mo")
+        lib.DEFS.append(f'<mask id="{mk}" maskUnits="userSpaceOnUse" x="500" y="40" width="400" height="400"><rect x="500" y="40" width="400" '
+                        f'height="400" fill="#fff"/><circle cx="722" cy="203" r="72" fill="#000"/></mask>')
+        nt.append(f'<g mask="url(#{mk})">' + shape(ellipse_pts(690, 230, 78, 78, 30), "#fff1b0", "", w=3.5, seed=942, ink_color="#c9b46a") + "</g>")
         nt.append(blob([(WX0, 700), (260, 640), (330, 660), (420, 600), (520, 640), (640, 590), (760, 630), (WX1, 610), (WX1, WY1), (WX0, WY1)], "#1a2140"))
         for j, (x, y) in enumerate(((300, 650), (450, 610), (620, 640), (840, 625))):
             if (j + int(t * 1.3)) % 4:
