@@ -23,7 +23,8 @@ from lib import INK, blob, clamp, ease_io, ease_out, ellipse_pts, line, shape  #
 
 WORDS = json.load(open(os.path.join(STORY, "voice", "words.json")))
 SH = json.load(open(os.path.join(STORY, "shots.json")))
-SHOT = {s["id"]: s for s in SH["shots"]}
+SHOT = {s["scene"]: s for s in SH["shots"]}
+SID = {s["id"]: s["scene"] for s in SH["shots"]}
 END = SH["end"]
 NOCAM = bool(os.environ.get("NOCAM"))
 
@@ -80,7 +81,7 @@ def breath(t):
     return dx, dy, .45 * math.sin(2 * math.pi * t / 5.1)
 
 
-BLINKS = [2.02, 5.0, 9.98, 12.3, 15.3]          # не в хуке и не на склейках
+BLINKS = [3.4, 7.2, 10.5, 12.9, 15.5]          # не в хуке и не на склейках
 
 
 def blink_layer(t):
@@ -116,10 +117,11 @@ def view(body, t, cx, cy, s, rot=0.0, over="", bg="#efe2c8"):
 # ═════════════════════════ время суток ═════════════════════════
 def night_at(t):
     """0 — день, 1 — ночь: за время ленты комната темнеет (s03–s05), с подъёма головы — ночь; петля s10 — снова день."""
-    if t >= T0("s10"):
+    if t >= T0("put_down"):
         return 0.0
-    return clamp(.15 * ramp(t, T0("s03"), T1("s03") - T0("s03")) + .15 * ramp(t, T0("s04"), T1("s04") - T0("s04"))
-                 + .55 * ramp(t, T0("s05"), T1("s05") - T0("s05")) + .15 * ramp(t, T0("s06"), .4))
+    n = clamp(.15 * ramp(t, T0("lock_clock"), T1("lock_clock") - T0("lock_clock")) + .15 * ramp(t, T0("notif"), T1("notif") - T0("notif"))
+              + .55 * ramp(t, T0("video_ratchet"), T1("video_ratchet") - T0("video_ratchet")) + .15 * ramp(t, T0("look_up"), .4))
+    return n
 
 
 # ═════════════════════════ комната и окно ═════════════════════════
@@ -176,14 +178,14 @@ def sky(t, night):
     return "".join(o)
 
 
-def room(t, night):
+def room(t, night, sky_n=None):
     wall = mixc("#efe2c8", "#2a2742", night)
     o = [f'<rect x="-900" y="-1700" width="2900" height="4600" fill="{wall}"/>']
     if night < .99:      # солнечное пятно на стене
         o.append(blob([(-200, 300), (120, 260), (60, 980), (-260, 1040)], "#fff4d6", .5 * (1 - night)))
         o.append(blob([(960, 260), (1300, 300), (1360, 1040), (1020, 980)], "#fff4d6", .5 * (1 - night)))
     clip = lib.clip_rect(WX0, WY0, WX1 - WX0, WY1 - WY0)
-    o.append(f'<g clip-path="url(#{clip})">{sky(t, night)}</g>')
+    o.append(f'<g clip-path="url(#{clip})">{sky(t, night if sky_n is None else sky_n)}</g>')
     fr = mixc("#f7f1e6", "#5a5674", night)
     frs = mixc("#d8ccb6", "#3c3956", night)
     for (x0, y0, x1, y1) in ((WX0 - 26, WY0 - 26, WX1 + 26, WY0), (WX0 - 26, WY1, WX1 + 26, WY1 + 26), (WX0 - 26, WY0, WX0, WY1),
@@ -418,9 +420,11 @@ def video_stack(t, changes):
     """Ролики сменяются смахиванием вверх на моментах changes (0.13 с на смену)."""
     i = sum(1 for c in changes if t >= c)
     last = max([c for c in changes if t >= c], default=None)
-    if last is None or t - last > .13:
+    prev = max([c for c in changes if c < last], default=None) if last is not None else None
+    d = .13 if prev is None else min(.13, .85 * (last - prev))      # частые смены — короче смахивание
+    if last is None or t - last > d:
         return video(i, t)
-    u = ease_out((t - last) / .13, 2)
+    u = ease_out((t - last) / d, 2)
     return (f'<g transform="translate(0 {-SH_ * u:.1f})">{video(i - 1, t)}</g>'
             f'<g transform="translate(0 {SH_ * (1 - u):.1f})">{video(i, t)}</g>')
 
@@ -477,7 +481,7 @@ def thumb(base, tip, press=0.0, seed=0):
     return shape(pts, SKIN, inner, w=3.6, seed=seed)
 
 
-def phone_rig(t, screen, px=540.0, py=850.0, rot=0.0, tip=None, press=0.0, night=0.0, glow=.6, cat=""):
+def phone_rig(t, screen, px=540.0, py=850.0, rot=0.0, tip=None, press=0.0, night=0.0, glow=.6, cat="", flip=0.0, k=1.0, ky=1.0):
     """Колени, рукава, ладони, телефон с экраном, пальцы на краях и большой палец (tip — точка экрана, None — палец у края).
     Ночью всё, кроме экрана, темнеет, руки подсвечены экраном."""
     o = [lap(night)]
@@ -489,20 +493,30 @@ def phone_rig(t, screen, px=540.0, py=850.0, rot=0.0, tip=None, press=0.0, night
     ph.append(shape(ellipse_pts(-250, 360, 95, 190, 22, rot=12), SKIN, blob(ellipse_pts(-275, 420, 60, 130, 16), SKIN_SH, .6), w=3.8, seed=1001))
     ph.append(shape(ellipse_pts(258, 360, 95, 190, 22, rot=-12), SKIN, blob(ellipse_pts(283, 420, 60, 130, 16), SKIN_SH, .6), w=3.8, seed=1002))
     # корпус
-    ph.append(shape(lib.rrect(-250, -490, 250, 490, 62), "#24262e", blob(lib.rrect(-246, -486, 246, 486, 58), "#3a3d48", .9)
-                    + blob(lib.rrect(-236, -476, 236, 476, 50), "#101116"), w=4.6, seed=1003))
-    ph.append(f'<rect x="250" y="-260" width="8" height="90" rx="4" fill="#3a3d48"/><rect x="-258" y="-300" width="8" height="60" rx="4" fill="#3a3d48"/>')
-    c = lib.clip_rect(-SW / 2, -SH_ / 2, SW, SH_, 44)
-    ph.append(f'<g clip-path="url(#{c})"><g transform="translate({-SW / 2} {-SH_ / 2})">{screen}</g></g>')
+    cy_ = math.cos(math.pi * clamp(flip))
+    pb = [f'<rect x="250" y="-260" width="8" height="90" rx="4" fill="#3a3d48"/><rect x="-258" y="-300" width="8" height="60" rx="4" fill="#3a3d48"/>']
+    if cy_ >= 0:
+        pb.append(shape(lib.rrect(-250, -490, 250, 490, 62), "#24262e", blob(lib.rrect(-246, -486, 246, 486, 58), "#3a3d48", .9)
+                        + blob(lib.rrect(-236, -476, 236, 476, 50), "#101116"), w=4.6, seed=1003))
+        c = lib.clip_rect(-SW / 2, -SH_ / 2, SW, SH_, 44)
+        pb.append(f'<g clip-path="url(#{c})"><g transform="translate({-SW / 2} {-SH_ / 2})">{screen}</g></g>')
+    else:                                               # экраном вниз: видна задняя крышка с камерой
+        pb.append(shape(lib.rrect(-250, -490, 250, 490, 62), "#5d6f8f", blob(lib.rrect(-250, 150, 250, 490, 62), "#4d5e7d", .6), w=4.6, seed=1004))
+        pb.append(shape(lib.rrect(-210, -450, -40, -270, 40), "#3e4a63", "", w=3.6, seed=1005))
+        for (ax, ay) in ((-160, -400), (-90, -400), (-160, -320)):
+            pb.append(f'<circle cx="{ax}" cy="{ay}" r="26" fill="#14161c" stroke="#0d0d10" stroke-width="4"/>'
+                      f'<circle cx="{ax - 7}" cy="{ay - 7}" r="7" fill="#7a8aa8"/>')
+    ph.append(f'<g transform="scale(1 {max(.02, abs(cy_)):.4f})">{"".join(pb)}</g>')
     for j, y in enumerate((170, 260, 350)):
         ph.append(fingertip(-238, y - 60, -1, 1.15, seed=1010 + j * 3))
     for j, y in enumerate((150, 240)):
         ph.append(fingertip(238, y - 60, 1, 1.15, seed=1020 + j * 3))
-    ph.append(thumb((-262, 470), (-200, 400), 0, seed=1030))           # левый большой — на нижней рамке
-    if tip is None:
-        tip = (410, 800)
-    ph.append(thumb((262, 440), (tip[0] - SW / 2, tip[1] - SH_ / 2), press, seed=1040))
-    o.append(tf("".join(ph), px, py, 1.0, rot))
+    if flip < .5:
+        ph.append(thumb((-262, 470), (-200, 400), 0, seed=1030))           # левый большой — на нижней рамке
+        if tip is None:
+            tip = (410, 800)
+        ph.append(thumb((262, 440), (tip[0] - SW / 2, tip[1] - SH_ / 2), press, seed=1040))
+    o.append(f'<g transform="translate({px:.2f} {py:.2f}) rotate({rot:.2f}) scale({k:.4f} {k * ky:.4f})">{"".join(ph)}</g>')
     body = "".join(o)
     if night < .01:
         return body
@@ -602,7 +616,7 @@ def hook_wrap(body, t, hit, bg="#efe2c8"):
 HOOK_VIEW = (540.0, 900.0, 1.12)
 
 
-def frame_s01(t):
+def frame_hook_scroll(t):
     body = hook_scene(t)
     cx, cy, s = HOOK_VIEW
     dx, dy = shake(t, HIT01, 12)
@@ -613,8 +627,8 @@ def frame_s01(t):
     return lib.svg(hook_wrap(v, t, HIT01) + title(t))
 
 
-def frame_s02(t):
-    a, b = T0("s02"), T1("s02")
+def frame_scroll_close(t):
+    a, b = T0("scroll_close"), T1("scroll_close")
     off = W(7) + .35                     # «минутку»: экран гаснет
     u = ease_io(ramp(t, a, b - a))
     if t < off:
@@ -630,27 +644,27 @@ def frame_s02(t):
     return view(body, t, 540 + dx, 860 + dy, s, -1.2 * u, over=title(t))
 
 
-def frame_s03(t):
-    a, b = T0("s03"), T1("s03")
-    on = W(8)
+def frame_lock_clock(t):
+    a, b = T0("lock_clock"), T1("lock_clock")
+    on = W(20)
     n = night_at(t)
     wake = ease_out(ramp(t, on, .16))
     scr = black(t) if wake <= 0 else (black(t) + f'<g opacity="{wake:.3f}">{lock(t)}</g>')
-    push = ease_io(ramp(t, on + .15, W(11) - on - .1))
-    hit = bump(t, W(11) + .05, .06, .22)
+    push = ease_io(ramp(t, on + .15, W(22) - on - .1))
+    hit = bump(t, W(22) + .05, .06, .22)
     tip = (330, 830) if t < on + .1 else (330 + 60 * ease_io(ramp(t, on + .1, .3)), 830 + 140 * ease_io(ramp(t, on + .1, .3)))
     body = room(t, n) + phone_rig(t, scr, 540, 850, 0, tip, press=1 - ramp(t, on, .15), night=n, cat=cat(800, 1650, .95, t, rub=.0, look=(-.3, -.8)))
     clock_y = 850 - SH_ / 2 + 290
     s = 1.15 + .75 * push + .12 * hit
-    dx, dy = shake(t, W(11) + .05, 9)
+    dx, dy = shake(t, W(22) + .05, 9)
     return view(body, t, 540 + dx, 870 + (clock_y - 870) * push + dy, s, 0)
 
 
-def frame_s04(t):
-    a, b = T0("s04"), T1("s04")
+def frame_notif(t):
+    a, b = T0("notif"), T1("notif")
     n = night_at(t)
-    dr = lib.back_out(ramp(t, W(13) + .02, .28), 1.6) if t > W(13) else 0.0
-    press_t = W(14) + .02
+    dr = lib.back_out(ramp(t, W(24) + .02, .28), 1.6) if t > W(24) else 0.0
+    press_t = WE(24) + .08
     pr = bump(t, press_t, .05, .15)
     op_ = ease_io(ramp(t, press_t + .1, b - press_t - .1))
     scr = lock(t, notif=(dr, pr, op_))
@@ -662,17 +676,18 @@ def frame_s04(t):
         tip = (390 - 160 * v, 840 - 250 * v)
     body = room(t, n) + phone_rig(t, scr, 540, 850, 0, tip, press=pr, night=n, cat=cat(800, 1650, .95, t, rub=0, look=(-.3, -.8)))
     u = ease_io(ramp(t, a, b - a))
-    dx, dy = shake(t, W(13) + .2, 7)
-    s = 1.42 - .12 * u + .05 * bump(t, W(13) + .2)
+    dx, dy = shake(t, W(24) + .2, 7)
+    s = 1.42 - .12 * u + .05 * bump(t, W(24) + .2)
     return view(body, t, 540 + dx, 720 + (ty_ - 720) * .3 * u + dy, s, .6 * u)
 
 
 def ratchet_times():
-    return [W(15), W(16) + .05, W(17), W(18) + .02, W(19) + .05, W(19) + .3]
+    b = W(30)
+    return [W(25), W(26) + .05, W(27), W(28) + .02, W(29), b, b + .22, b + .38, b + .5, b + .6]
 
 
-def frame_s05(t):
-    a, b = T0("s05"), T1("s05")
+def frame_video_ratchet(t):
+    a, b = T0("video_ratchet"), T1("video_ratchet")
     n = night_at(t)
     ch = ratchet_times()
     scr = video_stack(t, ch)
@@ -690,17 +705,17 @@ def look_up_scene(t, up, n):
     return f'<g transform="translate(0 {460 * up:.1f})">{room(t, n)}</g>' + fg
 
 
-def frame_s06(t):
-    a, b = T0("s06"), T1("s06")
+def frame_look_up(t):
+    a, b = T0("look_up"), T1("look_up")
     n = night_at(t)
-    up = ease_io(ramp(t, W(20), WE(21) - W(20) + .1))
-    up = up + .04 * math.sin(math.pi * clamp((t - WE(21) - .1) / .5)) if t > WE(21) + .1 else up
-    s = 1.12 - .06 * up + .04 * ease_io(ramp(t, WE(21), b - WE(21)))
+    up = ease_io(ramp(t, W(31), WE(32) - W(31) + .1))
+    up = up + .04 * math.sin(math.pi * clamp((t - WE(32) - .1) / .5)) if t > WE(32) + .1 else up
+    s = 1.12 - .06 * up + .04 * ease_io(ramp(t, WE(32), b - WE(32)))
     return view(look_up_scene(t, up, n), t, 540, 900 - 30 * up, s, 0)
 
 
-def frame_s07(t):
-    a, b = T0("s07"), T1("s07")
+def frame_old_cat(t):
+    a, b = T0("old_cat"), T1("old_cat")
     n = night_at(t)
     down = 1 - ease_out(ramp(t, a, .3))
     o = []
@@ -711,19 +726,19 @@ def frame_s07(t):
     # колени по бокам, кот между ними, рука с телефоном сверху
     for j, x in enumerate((-260, 1340)):
         o.append(shape(ellipse_pts(x, 900, 300, 1100, 24), mixc(LEGS, "#1c2238", .7 * n), "", w=5, seed=1120 + j))
-    sigh = bump(t, W(26) + .05, .1, .4)
+    sigh = bump(t, W(37) + .05, .1, .4)
     o.append(cat(560, 1600, 2.3, t, rub=0, age=1.0, look=(0, -.85), blink=.35 + .5 * sigh, tilt=-4 - 4 * sigh))
     o.append(f'<g transform="translate(120 800) rotate(18) scale(.8)">{phone_rig_small(t)}</g>')
     gg = lib.rad_grad([(0, "#9fd0ff", .3), (1, "#9fd0ff", 0)], 170, 780, 900)
     o.append(f'<rect x="-900" y="-1700" width="2900" height="4600" fill="#0a0818" opacity="{.18 * n:.3f}"/>')
     o.append(f'<circle cx="170" cy="780" r="900" fill="url(#{gg})"/>')
     hx, hy = CT.head_world(560, 1600, 2.3, {})
-    if t > W(26):     # блик на очках на «темно»
-        g = bump(t, W(26) + .05, .08, .3)
+    if t > W(37):     # блик на очках на «темно»
+        g = bump(t, W(37) + .05, .08, .3)
         o.append(f'<path d="M{hx - 70} {hy - 40} l12 -30 l12 30 l30 12 l-30 12 l-12 30 l-12 -30 l-30 -12Z" fill="#ffffff" opacity="{g:.3f}" '
                  f'transform="translate({-6} {-8})"/>')
     s = 1.0 + .1 * ease_io(ramp(t, a + .2, b - a)) + .05 * sigh
-    dx, dy = shake(t, W(26) + .05, 8)
+    dx, dy = shake(t, W(37) + .05, 8)
     return view("".join(o), t, 540 + dx, hy + 150 - 900 * down + dy, s, 0)
 
 
@@ -739,61 +754,252 @@ def phone_rig_small(t):
     return "".join(o)
 
 
-def frame_s08(t):
-    a, b = T0("s08"), T1("s08")
+def frame_scroll_again(t):
+    a, b = T0("scroll_again"), T1("scroll_again")
     n = night_at(t)
     tt = t - a
     scr = feed(2000 + scroll_pos(tt, v0=600, amp=360), t)
     body = room(t, n) + phone_rig(t, scr, 540, 850, .6 * math.sin(t * 1.7), thumb_tip(tt), night=n, glow=1.0,
                                   cat=cat(800, 1650, .95, t, rub=0, age=1.0, look=(-.2, -.9), blink=.45))
     u = ease_io(ramp(t, a, b - a))
-    dx, dy = shake(t, W(35) + .05, 6)
+    dx, dy = shake(t, W(44) + .05, 6)
     return view(body, t, 540 + dx, 870 + dy, 1.16 + .1 * u, -.8 * u)
 
 
-def frame_s09(t):
-    a, b = T0("s09"), T1("s09")
+# ═════════════════════════ v2: цифра, призыв, петля ═════════════════════════
+import props as PR  # noqa: E402
+
+FONT = 'font-family="IDB" font-weight="900"'
+
+
+def frame_feed_fast(t):
+    """«А в среднем люди сидят в соцсетях»: экран снова горит, лента летит, камера отъезжает."""
+    a, b = T0("feed_fast"), T1("feed_fast")
+    tt = t - a
+    scr = feed(900 + scroll_pos(tt, v0=1100, amp=420, phase=.04), t)
+    fl = 1 - ramp(t, a, .14)
+    scr += f'<rect width="{SW}" height="{SH_}" fill="#ffffff" opacity="{.6 * fl:.3f}"/>' if fl > 0 else ""
+    body = room(t, 0) + phone_rig(t, scr, 540 + 4 * math.sin(t * 3.1), 850, .8 * math.sin(t * 1.7), thumb_tip(tt, phase=.04),
+                                  cat=cat(800, 1650, .95, t, rub=0, look=(-.3, -.8)))
+    u = ease_out(ramp(t, a, b - a), 2)
+    dx, dy = shake(t, W(14), 6)
+    return view(body, t, 540 + dx, 860 + dy, 1.42 - .3 * u, 1.5 * u)
+
+
+def stopwatch(t, a, land):
+    """Огромный секундомер: цифры бегут 0:00 → 2:23 (часы:минуты) и встают на land."""
+    m = int(round(143 * ease_out(ramp(t, a + .08, land - a - .08), 2.2)))
+    txt = f"{m // 60}:{m % 60:02d}"
+    hit = bump(t, land, .05, .3)
+    o = []
+    cx, cy, r = 540.0, 930.0, 370.0
+    o.append(shape(lib.rrect(cx - 60, cy - r - 95, cx + 60, cy - r - 20, 16), "#e2574c", "", w=4.4, seed=1201))
+    o.append(shape(lib.rrect(cx - 26, cy - r - 30, cx + 26, cy - r + 10, 6), "#9aa0aa", "", w=3.6, seed=1202))
+    o.append(f'<g transform="rotate(40 {cx} {cy})">' + shape(lib.rrect(cx - 30, cy - r - 60, cx + 30, cy - r - 4, 10), "#e2574c", "", w=3.6, seed=1203) + "</g>")
+    o.append(shape(ellipse_pts(cx, cy, r, r, 40), "#fffaf0", blob(ellipse_pts(cx + 30, cy + 40, r * .92, r * .9, 36), "#f1e6d2", .6), w=6, seed=1204))
+    for k_ in range(60):
+        an = math.radians(k_ * 6)
+        r0 = r - (46 if k_ % 5 == 0 else 26)
+        o.append(f'<line x1="{cx + r0 * math.sin(an):.1f}" y1="{cy - r0 * math.cos(an):.1f}" x2="{cx + (r - 14) * math.sin(an):.1f}" '
+                 f'y2="{cy - (r - 14) * math.cos(an):.1f}" stroke="#2a2a34" stroke-width="{6 if k_ % 5 == 0 else 3}" stroke-linecap="round"/>')
+    frac = (m % 60) / 60 + (m // 60)
+    an = 2 * math.pi * frac
+    rr = r - 70
+    if frac > 0:
+        large = 1 if (frac % 1) > .5 else 0
+        ex, ey = cx + rr * math.sin(an), cy - rr * math.cos(an)
+        full = int(frac)
+        for _ in range(min(full, 2)):
+            o.append(f'<circle cx="{cx}" cy="{cy}" r="{rr}" fill="none" stroke="#ff8a3d" stroke-width="30" opacity=".35"/>')
+        if frac % 1 > 1e-3:
+            o.append(f'<path d="M{cx} {cy - rr} A{rr} {rr} 0 {large} 1 {ex:.1f} {ey:.1f}" fill="none" stroke="#ff6a2a" stroke-width="30" stroke-linecap="round"/>')
+        o.append(f'<line x1="{cx}" y1="{cy}" x2="{cx + (rr - 30) * math.sin(an):.1f}" y2="{cy - (rr - 30) * math.cos(an):.1f}" stroke="#e2574c" '
+                 f'stroke-width="10" stroke-linecap="round"/>')
+    o.append(f'<circle cx="{cx}" cy="{cy}" r="16" fill="#2a2a34"/>')
+    ks = 1 + .12 * hit
+    o.append(f'<g transform="translate({cx} {cy + 95}) scale({ks:.4f})"><text x="0" y="0" text-anchor="middle" {FONT} font-size="230" '
+             f'fill="#1d2030" stroke="#fffaf0" stroke-width="14" paint-order="stroke">{txt}</text></g>')
+    return "".join(o)
+
+
+def frame_timer(t):
+    a, b = T0("timer"), T1("timer")
+    land = W(17) + .02
+    k = lib.back_out(ramp(t, a, .3), 1.5)
+    bg = room(t, .35) + f'<rect x="-900" y="-1700" width="2900" height="4600" fill="#1a1830" opacity=".55"/>'
+    sw = stopwatch(t, a, land)
+    dx, dy = shake(t, land, 14)
+    rot = -6 * (1 - ease_out(ramp(t, a, .35))) + 1.2 * math.sin(t * 2.3)
+    body = bg + f'<g transform="translate(540 1000) rotate({rot:.2f}) scale({max(.05, k) * 1.22:.4f}) translate(-540 -930)">{sw}</g>'
+    s = 1.0 + .05 * ease_io(ramp(t, a + .3, b - a - .3)) + .05 * bump(t, land, .05, .3)
+    return view(body, t, 540 + dx, 960 + dy, s, 0)
+
+
+def comment_sheet(t, up, typed="", send=0.0, posted=0.0, caret=True):
+    """Панель комментариев (экранные координаты): up 0..1 — выезжает снизу; typed — набранное; send — нажата отправка; posted — комментарий встал."""
+    y0 = SH_ * .30 + SH_ * .70 * (1 - up)
+    o = [f'<rect x="0" y="0" width="{SW}" height="{SH_}" fill="#000000" opacity="{.35 * up:.3f}"/>']
+    o.append(f'<rect x="0" y="{y0:.1f}" width="{SW}" height="{SH_ - y0 + 40:.1f}" rx="30" fill="#ffffff"/>')
+    o.append(f'<rect x="{SW / 2 - 34}" y="{y0 + 14:.1f}" width="68" height="8" rx="4" fill="#d6d6de"/>')
+    rows = [(0, 170), (1, 120), (2, 200), (3, 140)]
+    sh = 112 * ease_out(clamp(posted), 3)                    # новый комментарий сдвигает остальные вниз
+    for j, (c, wd) in enumerate(rows):
+        yy = y0 + 70 + j * 112 + sh
+        if yy > SH_ - 150:
+            continue
+        o.append(f'<circle cx="46" cy="{yy + 24:.1f}" r="24" fill="{PALS[c][0]}"/>')
+        o.append(f'<rect x="84" y="{yy + 6:.1f}" width="90" height="12" rx="6" fill="#b9b9c6"/>')
+        o.append(f'<rect x="84" y="{yy + 28:.1f}" width="{wd}" height="12" rx="6" fill="#dedee6"/>')
+        o.append(heart(SW - 40, yy + 26, .6, "#9a9aa8", sw=3))
+    if posted > 0:
+        yy = y0 + 70
+        op = clamp(posted * 3)
+        o.append(f'<g opacity="{op:.3f}"><rect x="12" y="{yy - 10:.1f}" width="{SW - 24}" height="96" rx="18" fill="#fff4d6" opacity="{(1 - posted) * .9:.3f}"/>'
+                 f'<circle cx="46" cy="{yy + 30:.1f}" r="24" fill="#f0a63a"/>'
+                 f'<text x="84" y="{yy + 50:.1f}" {FONT} font-size="44" fill="#1d2030">ВРЕМЯ</text>'
+                 + heart(SW - 40, yy + 30, .7, "#ff3b5c", "#ff3b5c" if posted > .5 else "none", sw=3) + "</g>")
+    # поле ввода
+    fy = SH_ - 118
+    o.append(f'<rect x="0" y="{fy - 16}" width="{SW}" height="140" fill="#ffffff"/>')
+    o.append(f'<line x1="0" y1="{fy - 16}" x2="{SW}" y2="{fy - 16}" stroke="#e4e4ea" stroke-width="2"/>')
+    o.append(f'<circle cx="40" cy="{fy + 36}" r="26" fill="#f0a63a"/>')
+    o.append(f'<rect x="78" y="{fy}" width="{SW - 92}" height="72" rx="36" fill="#f2f2f6" stroke="#dcdce4" stroke-width="3"/>')
+    if typed:
+        o.append(f'<text x="100" y="{fy + 54}" {FONT} font-size="50" fill="#1d2030">{typed}</text>')
+    if caret and not posted and int(t * 3) % 2 == 0:
+        import big_title as BT
+        cw = BT.text_w(typed, 50) if typed else 0
+        o.append(f'<rect x="{102 + cw:.1f}" y="{fy + 14}" width="4" height="46" fill="#2f8cff"/>')
+    if typed:
+        sc = 1 - .2 * bump_(send * 2) if send > 0 else 1
+        o.append(f'<g transform="translate({SW - 52} {fy + 36}) scale({sc:.3f})"><circle r="28" fill="#2f8cff"/>'
+                 f'<path d="M-11 0 L11 0 M2 -9 L11 0 L2 9" stroke="#ffffff" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>')
+    return "".join(o)
+
+
+def frame_comment_tap(t):
+    a, b = T0("comment_tap"), T1("comment_tap")
     n = night_at(t)
-    pt = W(36) + .15
-    pos = (SHARE_J * (CARD + GAP)) + 60 - 300           # карточка с самолётиком — посередине экрана
-    pos = pos + 160 * (1 - ease_out(ramp(t, a, .45), 3))
-    pr = bump(t, pt, .05, .12)
-    pp = ramp(t, pt + .06, .3)
-    scr = feed(pos, t, share=(pr, pp))
-    py_ = 60 + SHARE_J * (CARD + GAP) - pos + 356        # самолётик на экране
-    px_ = 168.0
-    if t < pt - .28:
-        tip = (330, 760)
-    elif t < pt + .25:
-        v = ease_io(ramp(t, pt - .28, .28))
-        tip = (330 + (px_ + 14 - 330) * v, 760 + (py_ + 40 - 760) * v)
+    pt = W(45) + .12
+    up = ease_out(ramp(t, pt + .2, .35), 3)
+    bx, by = SW - 50, SH_ - 270
+    if t < pt - .3:
+        tip = (300, 720)
+    elif t < pt + .15:
+        v = ease_io(ramp(t, pt - .3, .3))
+        tip = (300 + (bx - 300) * v, 720 + (by + 30 - 720) * v)
     else:
-        v = ease_io(ramp(t, pt + .25, .3))
-        tip = (px_ + 14 + 150 * v, py_ + 40 + 300 * v)
+        v = ease_io(ramp(t, pt + .15, .3))
+        tip = (bx - 120 * v, by + 30 + 360 * v)
+    pr = bump(t, pt, .05, .12)
+    scr = video(7, t)
+    if pr > 0 or t > pt:
+        g = ramp(t, pt, .25)
+        scr += f'<circle cx="{bx}" cy="{by}" r="{30 + 40 * g:.1f}" fill="#ffffff" opacity="{.4 * (1 - g):.3f}"/>'
+    scr += comment_sheet(t, up) if up > 0 else ""
+    body = room(t, n) + phone_rig(t, scr, 540, 850, 0, tip, press=pr, night=n, glow=1.0,
+                                  cat=cat(800, 1650, .95, t, rub=0, age=1.0, look=(-.2, -.9), blink=.4))
+    u = ease_io(ramp(t, a, b - a))
+    dx, dy = shake(t, pt, 6)
+    return view(body, t, 540 + dx, 870 + 140 * u + dy, 1.15 + .35 * u, 0)
+
+
+TYPE_T0 = None
+
+
+def type_times():
+    a = T0("comment_type")
+    return a + .17, .16                                   # начало набора, шаг на букву
+
+
+def frame_comment_type(t):
+    a, b = T0("comment_type"), T1("comment_type")
+    t0, st = type_times()
+    word = "ВРЕМЯ"
+    nch = int(clamp((t - t0) / st, 0, len(word)))
+    send_t = t0 + st * len(word) + .28
+    sent = t >= send_t + .06
+    typed = word[:nch] if not sent else ""
+    posted = ramp(t, send_t + .36, .35)
+    send = ramp(t, send_t, .12)
+    scr = video(7, t) + comment_sheet(t, 1.0, typed, send, posted)
+    light = ease_io(ramp(t, send_t + .2, .5))                # в комнате загорается лампа
+    n = 1.0 - .8 * light
     fly = ""
-    if t > pt + .08:      # самолётик улетает вверх-вправо со следом
-        u = ease_io(ramp(t, pt + .08, .6))
-        fx, fy = px_ + 360 * u, py_ - 420 * u - 120 * math.sin(math.pi * u)
-        trail = " ".join(f"{px_ + 360 * q:.1f},{py_ - 420 * q - 120 * math.sin(math.pi * q):.1f}" for q in [u * k / 8 for k in range(9)])
-        fly = (f'<polyline points="{trail}" fill="none" stroke="#2f8cff" stroke-width="5" stroke-dasharray="12 12" opacity="{.8 * (1 - u * .5):.2f}"/>'
-               + plane(fx, fy, 1.6, "#2f8cff", "#ffffff", 4.6, rot=-20 + 30 * u))
-    scr = scr + fly
-    body = room(t, n) + phone_rig(t, scr, 540, 850, 0, tip, press=pr, night=n, glow=1.0, cat=cat(800, 1650, .95, t, rub=0, age=1.0, look=(-.2, -.9), blink=.4))
-    wx = 540 - SW / 2 + px_
-    wy = 850 - SH_ / 2 + py_
-    u = ease_io(ramp(t, a, pt - a))
-    back = ease_io(ramp(t, pt + .2, b - pt - .2))
-    k = u * (1 - .5 * back)
-    s = 1.12 + .8 * k + .06 * bump(t, pt)
-    return view(body, t, 540 + (wx - 540) * k, 870 + (wy - 870) * k, s, 0)
+    if send_t < t < send_t + .4:                             # слово взлетает из поля в ленту
+        u = ease_io(ramp(t, send_t, .35))
+        fy = SH_ - 64 - (SH_ - 64 - (SH_ * .30 + 120)) * u
+        fly = f'<text x="{100 - 16 * u:.1f}" y="{fy:.1f}" {FONT} font-size="{50 - 6 * u:.1f}" fill="#1d2030" opacity="{1 - .7 * u:.2f}">ВРЕМЯ</text>'
+    scr += fly
+    lamp = PR.lamp_desk(250, WY1 + 22, 1.5, on=light) + PR.glow(275, WY1 - 150, 520 * (.5 + .5 * light), u=.9 * light)
+    rub = ramp(t, send_t + .3, .3)
+    body = (room(t, n, 1.0) + f'<g opacity="{.25 + .75 * light:.3f}">{lamp}</g>' + phone_rig(t, scr, 540, 850, 0, (SW - 52, SH_ - 82) if t < send_t + .25 else (330, 860),
+            press=bump(t, send_t, .05, .12), night=n, glow=1.0 - .6 * light, cat=cat(800, 1650, .95, t, rub=rub, age=1.0 - rub, look=(-.2, -.9))))
+    fy_w = 850 - SH_ / 2 + SH_ - 82                       # поле ввода в мире
+    zin = ease_out(ramp(t, a, .3), 3)
+    out = ease_io(ramp(t, send_t + .25, .75))
+    s = (2.25 * zin + 1.4 * (1 - zin)) * (1 - out) + 1.02 * out
+    cy = fy_w - 120 + (900 - (fy_w - 120)) * out
+    dx, dy = shake(t, send_t + .08, 7)
+    return view(body, t, 520 + dx, cy + dy, s, 0)
 
 
-def frame_s10(t):
-    a, b = T0("s10"), T1("s10")
+def frame_lamp_evening(t):
+    """«а вечер был твоим»: стол под лампой, рука ставит галочки, кот рядом довольный."""
+    a, b = T0("lamp_evening"), T1("lamp_evening")
+    o = [f'<rect x="-900" y="-1700" width="2900" height="4600" fill="#f3dcb0"/>']
+    o.append(PR.window(780, 360, 420, 520, mode="night", t=t, seed=3))
+    o.append(PR.desk(540, 1700, w=1500, depth=820, legs=False, seed=4))
+    o.append(PR.lamp_desk(210, 1180, 2.0, on=1.0))
+    o.append(PR.glow(240, 940, 700, u=.85))
+    cx_, cy_, kk = 520.0, 1290.0, 2.3
+    marks = [a + .15, W(55) + .05, W(57) + .02]
+    checks = sum(1 for m in marks if t >= m + .3)
+    cur = next((m for m in marks if m <= t < m + .3), None)
+    u = ramp(t, cur, .3) if cur is not None else 0.0
+    o.append(PR.checklist(cx_, cy_, kk, -4, checks=checks, u=u, seed=5))
+    j = min(checks, 3)
+    yy = -62 + 40 * j - 4
+    tx, ty = cx_ + (-38 + 28 * (u if cur else 0)) * kk, cy_ + (yy - 20 * (u if cur else 0)) * kk
+    tx += 6 * math.sin(t * 9) if cur is None else 0
+    ang = math.radians(125)
+    pcx, pcy = tx - 75 * 1.6 * math.cos(ang), ty - 75 * 1.6 * math.sin(ang)
+    o.append(sleeve((1160, 2200), (pcx + 120, pcy + 230), 260, 170, 1300, 0))
+    o.append(PR.pencil(pcx, pcy, 1.6, 125))
+    o.append(shape(ellipse_pts(pcx + 40, pcy + 60, 95, 80, 22, rot=30), SKIN, blob(ellipse_pts(pcx + 70, pcy + 90, 60, 45, 14), SKIN_SH, .6), w=3.8, seed=1310))
+    o.append(fingertip(pcx - 10, pcy + 10, -1, 1.2, seed=1312))
+    o.append(cat(860, 1450, 1.05, t, rub=.0, look=(-.6, .2), blink=None, tilt=6 * math.sin(t * 2)))
+    for m in marks[1:]:
+        if t > m + .25:
+            g = bump(t, m + .3, .06, .35)
+            o.append(PR.glow(cx_ - 38 * kk, cy_ + (-62 + 40 * marks.index(m) - 4) * kk, 120, u=g))
+    s = 1.0 + .06 * ease_io(ramp(t, a, b - a))
+    dx, dy = shake(t, W(57) + .3, 5)
+    return view("".join(o), t, 560 + dx, 1050 + dy, s, -.6)
+
+
+def frame_put_down(t):
+    """«А пока положи телефон»: телефон переворачивается экраном вниз и опускается на колени."""
+    a, b = T0("put_down"), T1("put_down")
+    pt = W(60)
+    fl = ease_io(ramp(t, pt, .4))
+    low = ease_io(ramp(t, pt + .1, .55))
+    scr = video(2, t)
+    tip = (300, 700)
+    rub = ramp(t, pt + .5, .3)
+    body = room(t, 0) + phone_rig(t, scr, 540, 850 + 640 * low, -6 * fl * (1 - low), tip, flip=fl, k=1 - .1 * low, ky=1 - .5 * low,
+                                  cat=cat(800, 1650, .95, t, rub=rub, look=(-.3, -.8)))
+    dx, dy = shake(t, pt + .55, 9)
+    s = 1.25 - .13 * ease_io(ramp(t, a, b - a)) + .04 * bump(t, pt + .55)
+    return view(body, t, 540 + dx, 900 + 120 * low + dy, s, 0)
+
+
+def frame_loop(t):
+    a, b = T0("loop"), T1("loop")
     tt = t - END                         # петля: лента, палец и кот в той же фазе, что на кадре 0
     sway = 4 * math.sin(tt * 3.1)
     scr = feed(scroll_pos(tt), tt)
-    body = room(t, 0) + phone_rig(t, scr, 540 + sway, 850 + 3 * math.sin(tt * 2.3), .8 * math.sin(tt * 1.7), thumb_tip(tt),
+    body = room(t, 0) + phone_rig(t, scr, 540 + sway, 1490 + 3 * math.sin(tt * 2.3), .8 * math.sin(tt * 1.7), None, flip=1.0, k=.9, ky=.5,
                                   cat=cat(800, 1650, .95, tt, rub=1.0))
     cx, cy, s = HOOK_VIEW
     out = ease_io(ramp(t, b - .7, .7))               # к концу — к виду кадра 0 (влёт начинается издалека)
@@ -801,9 +1007,9 @@ def frame_s10(t):
     return view(body, t, cx, cy + 40 * out, s, -3.0 * out)
 
 
-FRAMES = {k[6:]: v for k, v in dict(globals()).items() if k.startswith("frame_s")}
+FRAMES = {k[6:]: v for k, v in dict(globals()).items() if k.startswith("frame_")}
 
 
 def frame(sid, t):
     lib.DEFS.clear()
-    return FRAMES[sid](t)
+    return FRAMES[SID[sid]](t)
