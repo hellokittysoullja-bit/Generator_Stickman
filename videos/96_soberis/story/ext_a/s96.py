@@ -505,7 +505,7 @@ def frame_s08(t):
     o.append(PR.question_mark(540, 640, 1.3, ease_out(ramp(t, W(38) - .1, .35)) if t > W(38) - .1 else 0.0))
     u = ease_io(ramp(t, a, b - a))
     dx, dy = shake(t, W(37), 7)
-    return view("".join(o), 550 + dx, 850 + dy, 1.28 + .08 * u, 0)
+    return view("".join(o), 550 + dx, 850 + dy, 1.18 + .06 * u, 0)
 
 
 def frame_s09(t):
@@ -529,7 +529,7 @@ def frame_s09(t):
     o.append(badge(bx, by, .85 * (1 + .12 * bump(t, W(43), .05, .3)), "bolt", lit, t, seed=1))
     u = ease_io(ramp(t, a, b - a))
     dx, dy = shake(t, W(43), 9)
-    return view("".join(o), 550 + dx, 880 + dy, 1.32 + .06 * u, 0)
+    return view("".join(o), 550 + dx, 880 + dy, 1.22 + .04 * u, 0)
 
 
 # ═════════════════════════ s10: главный вопрос ═════════════════════════
@@ -699,7 +699,7 @@ def frame_s14(t):
     o.append(PR.sparkles(640, FL - 400, 1.4, bump(t, W(66), .05, .5), t, seed=14, n=5, r=160))
     nod = .1 * math.sin(t * 9) * bump(t, W(66), .1, .6)
     sci = people.scientist82("a", 900, stand_hip(k), k, "rest", t=t, expr="smile", feet="stand", flip=True, head_add=nod,
-                             arms={"n": ("ik", (900 + 100, stand_hip(k) - 150), 1)},
+                             arms={"n": ("ik", (900 + 130, stand_hip(k) - 40), 1)},
                              hands={"n": {"dir": (-.3, -1), "curl": (.8, .8, .8, .8), "thumb": .6}})
     o.append(sci["svg"])
     o.append(clipboard(sci["hold"][0] - 20, sci["hold"][1] - 60, .7, 10, 1.0))
@@ -741,7 +741,12 @@ def frame_s15(t):
 
 def finger(x, y, k=1.0):
     """Палец сверху-справа жмёт клавишу: (x, y) — кончик указательного."""
-    return people.hand_svg("dima", (x + 120 * k, y - 170 * k), (-.55, .85), 1.6 * k, curl=(0, .9, .9, .9), spread=.05, thumb=.75, seed=780)
+    wx, wy = x + 120 * k, y - 170 * k
+    ex, ey = wx + .55 * 900 * k, wy - .85 * 900 * k        # рукав худи Димы уходит за край кадра — рука не висит обрубком
+    sleeve = (line([(wx + 20 * k, wy - 30 * k), (ex, ey)], 118 * k, INK, taper=0, wmin=1, seed=781)
+              + line([(wx + 20 * k, wy - 30 * k), (ex, ey)], 104 * k, "#d4a23e", taper=0, wmin=1, seed=782)
+              + line([(wx + 34 * k, wy - 52 * k), (wx + 4 * k, wy - 6 * k)], 10 * k, "#a97b25", taper=0, wmin=1, seed=783))
+    return sleeve + people.hand_svg("dima", (wx, wy), (-.55, .85), 1.6 * k, curl=(0, .9, .9, .9), spread=.05, thumb=.75, seed=780)
 
 
 def frame_s16(t):
@@ -770,7 +775,7 @@ def frame_s16(t):
     keyx, keyy = 640, FL - 400
     show = ramp(t, W(74) - .4, .25)
     if show > .01:
-        o.append(finger(keyx + 200 * (1 - show), keyy - 60 * (1 - pr) - 200 * (1 - show), 1.0))
+        o.append(finger(keyx + 500 * (1 - show), keyy - 60 * (1 - pr) - 760 * (1 - show), 1.0))
         o.append(PR.tap_rings(keyx, keyy, 1.0, pr, t) if hasattr(PR, "tap_rings") else "")
     u = ease_io(ramp(t, a, b - a))
     dx, dy = shake(t, W(76), 8)
@@ -794,8 +799,8 @@ def frame_s17(t):
     a, b = T0("s17"), T1("s17")
     o = [room(t, x0=-1400, x1=2400)]
     prog = ease_io(ramp(t, a - .3, W(81) - a + .3)) * (2.9 / 3)
-    o.append(PR.glow(760, 520, 220, .4, "#d8f0c8"))
-    o.append(minute_dial(760, 540, .7, prog, t, lit_n=1 + (t > W(78)) + 0))
+    o.append(PR.glow(690, 520, 220, .4, "#d8f0c8"))
+    o.append(minute_dial(690, 540, .7, prog, t, lit_n=1 + (t > W(78)) + 0))
     o.append(chair(DX - 40, FL - 240, 1.0))
     o.append(PR.desk(DESK[0], DESK[1], w=520, depth=100, leg_h=260, seed=7))
     f = dima_sit(DX, DHIP, DK, "type73", t, pose="sit_desk", lean=.12 + .03 * math.sin(t * 9))
@@ -827,4 +832,4 @@ def frame_s18(t):
     dx, dy = shake(t, a + .35, 7)
     cx = 470 + (530 - 470) * u
     cy = 760 + (770 - 760) * u
-    return view(o[0] + "".join(o[1:]), cx + dx, cy + dy, 1.9 - .18 * u, 0)
+    return view(o[0] + "".join(o[1:]), cx + dx, cy + dy, 1.55 - .12 * u, 0)
