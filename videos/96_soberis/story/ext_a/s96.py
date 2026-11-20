@@ -360,3 +360,470 @@ def frame(sid, t):
     if sid != "s06":
         lib.DEFS.clear()
     return globals()["frame_" + sid](t)
+
+
+# ═════════════════════════ s04–s05, s07: ждёт у двери, как на вокзале ═════════════════════════
+DOOR_X = 860.0
+BENCH_X = 380.0
+
+
+def dima_bench(t, expr, lift=1.0, rot=0.0, lit=0.0, lean=0.0, sag=0.0, sign=True, face=0.0, sad=0.0):
+    """Дима сидит на скамейке и держит над головой табличку-облачко на палке (встречающий на вокзале)."""
+    sx, sy = PR.bench_seat(BENCH_X, FL, 1.0)
+    hip = sy - 12
+    feet = people.sit_kw(BENCH_X - 20, hip, .5)["feet"]
+    hand = (BENCH_X + 70 - 40 * sag, hip - 330 * lift + 90 * sag)
+    arms = {"n": ("ik", hand, -1)} if sign else None
+    hands = {"n": {"dir": (.1, -1), "curl": (.8, .85, .85, .85), "thumb": .6}} if sign else None
+    f = people.dima82(BENCH_X - 20, hip, .5, expr, "d82_rest", t=t, feet=feet, lean_add=lean + .1 * sag, head_add=.12 * sag,
+                      arms=arms, hands=hands)
+    o = [PR.bench(BENCH_X, FL, 1.0), f["svg"]]
+    if sign:
+        o.append(sign_stick(hand[0], hand[1], hand[1] - 330, .72, lit, t, rot=rot, seed=2, face=face, sad=sad))
+        o.append(people.hand_svg("dima", (hand[0] - 2, hand[1] + 6), (.1, -1), .5, curl=(.8, .85, .85, .85), thumb=.6, seed=771))
+    return "".join(o), f
+
+
+def station_world(t, web=0.0, spin=3.0):
+    o = [room(t, x0=-800, x1=2000)]
+    o.append(PR.door(DOOR_X, FL, .92, 0.0, seed=1))
+    o.append(spin_clock(DOOR_X, 300, 82, t, spin, seed=3))
+    o.append(PR.speed_arcs(DOOR_X + 115, 300, .8, 1.0, t, seed=4, n=3, ang=0))
+    if web > .01:
+        o.append(PR.cobweb(DOOR_X - 236 * .92 + 4, FL - 960 * .92 + 4, 1.4 * web, t=t, ang=0, span=90, L=170, seed=1))
+        o.append(PR.cobweb(BENCH_X - 236, FL - 330, 1.0 * web, t=t, ang=-90, span=90, L=150, seed=2))
+    return "".join(o)
+
+
+def frame_s04(t):
+    """«правда. Ты ждёшь мотивацию, чтобы начать»: Дима на скамейке у закрытой двери держит над головой табличку-облачко,
+    как встречающий на вокзале; часы над дверью несутся, паутина растёт; на «мотивацию» табличка подпрыгивает (с надеждой)."""
+    a, b = T0("s04"), T1("s04")
+    web = ease_io(ramp(t, W(11), b - W(11)))
+    hope = bump(t, W(10), .08, .35)
+    o = [station_world(t, web)]
+    g, f = dima_bench(t, "hope" if t < W(11) else "look82", lift=1 + .15 * hope + .04 * math.sin(t * 5), rot=4 * math.sin(t * 4))
+    o.append(g)
+    o.append(PR.cobweb(f["head"][0] - 10, f["head"][1] - 70, .55 * web, t=t, ang=200, span=80, L=140, seed=3))
+    u = ease_io(ramp(t, a, b - a))
+    dx, dy = shake(t, W(10), 7)
+    return view("".join(o), 600 - 40 * u + dx, 860 + dy, 1.12 + .14 * u, -1.5 + 2.5 * u)
+
+
+def frame_s05(t):
+    """«она всё не приходит, и ты злишься на себя»: дверь стоит закрытой, Дима хмурится, на «злишься» краснеет, из ушей пар,
+    он трясёт табличку."""
+    a, b = T0("s05"), T1("s05")
+    mad = ease_out(ramp(t, W(20) - .05, .3))
+    o = [station_world(t, 1.0, spin=3.0)]
+    shake_r = (14 * math.sin(t * 26)) * mad
+    g, f = dima_bench(t, "frowny" if t < W(20) else "shout78", lift=1.0 + .05 * math.sin(t * 20) * mad, rot=shake_r, lean=.05 * mad)
+    o.append(g)
+    hx, hy = f["head"]
+    o.append(PR.cobweb(hx - 10, hy - 70, .55, t=t, ang=200, span=80, L=140, seed=3, tremble=mad, torn=.6 * mad))
+    o.append(flush(hx, hy, .5, mad))
+    o.append(steam(hx, hy, .5, t, mad))
+    door_look = ease_io(ramp(t, a, W(17) - a))
+    u = ease_io(ramp(t, a, b - a))
+    cx = 700 - 260 * door_look
+    dx, dy = shake(t, W(20), 11)
+    s = 1.35 + .35 * door_look + .12 * u + .1 * bump(t, W(20), .05, .3)
+    return view("".join(o), cx + dx, 820 - 40 * door_look + dy, s, 1 - 2 * u)
+
+
+def frame_s06(t):
+    import story_cta_tg as tg
+    press = W(26) + 0.12
+    return tg.frame(t, t0=press - 1.10, press=press, common=os.path.join(STORY, "common"))
+
+
+def frame_s07(t):
+    """«ждать мотивацию»: Дима оплыл на скамейке, весь в паутине, табличка повисла, часы всё несутся."""
+    a, b = T0("s07"), T1("s07")
+    sag = ease_io(ramp(t, a, .6))
+    o = [station_world(t, 1.0)]
+    g, f = dima_bench(t, "glum", lift=.85, rot=-18 * sag + 2 * math.sin(t * 3), sag=sag)
+    o.append(g)
+    hx, hy = f["head"]
+    o.append(PR.cobweb(hx - 20, hy - 60, .75, t=t, ang=190, span=100, L=150, seed=3))
+    o.append(PR.cobweb(hx + 60, hy + 160, .6, t=t, ang=-30, span=90, L=130, seed=5))
+    o.append(PR.spider(hx + 40, hy - 150 + 60 * ease_io(ramp(t, a + .2, .7)), .5, t=t) if hasattr(PR, "spider") else "")
+    u = ease_io(ramp(t, a, b - a))
+    dx, dy = shake(t, W(31), 6)
+    return view("".join(o), hx + 60 + dx, hy + 60 + dy, 1.9 + .2 * u, 0)
+
+
+# ═════════════════════════ s08–s09: схема «действие → мотивация» ═════════════════════════
+def sole(k=1.0, col="#6a5848"):
+    o = blob(ellipse_pts(0, -34, 34, 50, 18), col) + blob(ellipse_pts(4, 52, 26, 30, 16), col)
+    for j, (dx, dy, r) in enumerate(((-26, -98, 11), (-6, -108, 10), (14, -104, 9), (30, -92, 8))):
+        o += blob(ellipse_pts(dx, dy, r, r, 10), col)
+    return f'<g transform="scale({k:.3f}) rotate(14)">{o}</g>'
+
+
+def badge(x, y, k, kind, lit=0.0, t=0.0, seed=0):
+    o = []
+    if lit > .01:
+        o.append(PR.glow(0, 0, 260, .7 * lit, "#ffe58a"))
+    o.append(shape(ellipse_pts(0, 0, 170, 170, 30), lib.mix("#fffaf0", "#fff3c4", lit), "", w=6, seed=9700 + seed))
+    if kind == "bolt":
+        o.append(bolt_icon(1.35 * (1 + .06 * math.sin(t * 8) * lit), lib.mix("#cfd2d8", "#FFD23F", max(lit, .0) if lit > 0 else 1.0)))
+    else:
+        o.append(sole(1.05))
+    if lit > .3:
+        o.append(PR.sparkles(0, 0, 2.0, lit, t, seed=seed + 7, n=5, r=210))
+    return tf("".join(o), x, y, k)
+
+
+def big_arrow(x0, x1, y, u=1.0, pulse=0.0):
+    if u <= .01:
+        return ""
+    xe = x0 + (x1 - x0) * u
+    s = 1 + .15 * pulse
+    h = 46 * s
+    d = 1 if x1 >= x0 else -1
+    body = [(x0, y - h / 2, 1), (xe - d * 70, y - h / 2, 1), (xe - d * 70, y - h * 1.4, 1), (xe, y, 1), (xe - d * 70, y + h * 1.4, 1),
+            (xe - d * 70, y + h / 2, 1), (x0, y + h / 2, 1)]
+    return shape(body, "#e2574c", "", w=5, seed=9710)
+
+
+def scheme_bg():
+    return rect(-2000, -2000, 3000, 4000, "#f6efdf") + "".join(
+        line([(-600, 200 + 90 * j), (1700, 200 + 90 * j)], 2, "#e3d6bb", taper=0, wmin=1, seed=9720 + j) for j in range(20))
+
+
+def frame_s08(t):
+    """«Правда в том, что мотивация»: как думают все — сначала молния (мотивация), большая стрелка, потом шаг (дело)."""
+    a, b = T0("s08"), T1("s08")
+    o = [scheme_bg()]
+    p1 = pop(t, a + .05, .3)
+    p2 = pop(t, W(37) + .2, .3)
+    arr = ease_out(ramp(t, W(36), .5))
+    o.append(big_arrow(410, 690, 900, arr))
+    o.append(badge(250, 900, .85 * p1, "bolt", 0.0, t, seed=1))
+    o.append(badge(850, 900, .85 * p2, "step", 0.0, t, seed=2))
+    o.append(PR.question_mark(540, 640, 1.3, ease_out(ramp(t, W(38) - .1, .35)) if t > W(38) - .1 else 0.0))
+    u = ease_io(ramp(t, a, b - a))
+    dx, dy = shake(t, W(37), 7)
+    return view("".join(o), 540 + dx, 860 + dy, 1.05 + .1 * u, 0)
+
+
+def frame_s09(t):
+    """«приходит не до дела, а после»: кружки меняются местами (молния дугой над, шаг под), стрелка теперь от шага к молнии;
+    на «после» молния загорается и искрит."""
+    a, b = T0("s09"), T1("s09")
+    o = [scheme_bg()]
+    sw = ease_io(ramp(t, W(39), WE(41) - W(39)))
+    lit = ease_out(ramp(t, W(43), .3))
+    bx = 250 + 600 * sw
+    by = 900 - 330 * math.sin(math.pi * sw)
+    sx = 850 - 600 * sw
+    sy = 900 + 330 * math.sin(math.pi * sw)
+    cross = bump(t, W(39), .1, .5)
+    if sw < .05:
+        o.append(big_arrow(410, 690, 900, 1.0))
+        o.append(line([(470, 830), (630, 970)], 14, "#2b2b30", taper=.1, wmin=.6, seed=9730) if cross > .05 else "")
+    if sw > .95:
+        o.append(big_arrow(410, 690, 900, ease_out(ramp(t, WE(41), .3)), pulse=bump(t, W(43), .06, .3)))
+    o.append(badge(sx, sy, .85, "step", 0.0, t, seed=2))
+    o.append(badge(bx, by, .85 * (1 + .12 * bump(t, W(43), .05, .3)), "bolt", lit, t, seed=1))
+    u = ease_io(ramp(t, a, b - a))
+    dx, dy = shake(t, W(43), 9)
+    return view("".join(o), 540 + dx, 880 + dy, 1.12 + .08 * u, 0)
+
+
+# ═════════════════════════ s10: главный вопрос ═════════════════════════
+def cat(x, y, k, t, st=None):
+    st = dict(dict(look=(-.6, -.3), tail=8 * math.sin(t * 1.7), flame_e=1.0), **(st or {}))
+    return CT.draw(x, y, k, st, t)
+
+
+def stand_hip(k):
+    return FL - (people.LEG_LEN - 12) * k - 6
+
+
+def frame_s10(t):
+    """«А главное решение узнаешь к концу ролика»: Дима чешет висок, над ним выскакивает большой знак вопроса; кот на
+    столе смотрит на нас и подмигивает на «концу»."""
+    a, b = T0("s10"), T1("s10")
+    o = [room(t)]
+    o.append(chair(DX - 40, FL - 240, 1.0))
+    o.append(PR.desk(DESK[0] + 60, DESK[1], w=520, depth=100, leg_h=260, seed=7))
+    o.append(PR.laptop(LAP[0] + 60, LAP[1], .5, open_=.15, screen="dark", t=t))
+    k = .5
+    tap = .5 + .5 * math.sin(t * 14)
+    f = people.dima82_temple(300, stand_hip(k), k, tap=tap, t=t, expr="puzzled82", feet="stand")
+    o.append(f["svg"])
+    hx, hy = f["head"]
+    qp = pop(t, W(45), .3)
+    o.append(PR.glow(hx + 20, hy - 250, 200, .4 * qp, "#fff1b0"))
+    o.append(tf(PR.question_mark(0, 0, 1.0, 1.0, w=13), hx + 20, hy - 250 + 10 * math.sin(t * 4), 1.6 * qp, 8 * math.sin(t * 3)))
+    o.append(PR.sparkles(hx + 20, hy - 250, 1.6, bump(t, W(46), .05, .4), t, seed=8, n=5, r=150))
+    wink = 1.0 if abs(t - (W(49) + .12)) < .14 else 0.0
+    look = ramp(t, W(47), .3)
+    o.append(cat(830, DESK[1] - 100, .38, t, dict(look=(-.7 + 1.0 * look, -.3 + .5 * look), smug=.7 * look, blink_R=wink, tilt=-8 * look)))
+    u = ease_io(ramp(t, a, b - a))
+    zoom = ease_io(ramp(t, W(48), .4))
+    cx = 470 + 220 * zoom
+    dx, dy = shake(t, W(46), 7)
+    return view("".join(o), cx + dx, 800 + dy - 40 * u, 1.25 + .1 * u + .45 * zoom, 0)
+
+
+# ═════════════════════════ s11–s12: маленький шаг, за ним бежит мотивация ═════════════════════════
+def frame_s11(t):
+    """«Сначала маленькое действие»: облачко-табличка лежит на полу, Дима делает крошечный шажок — подошва-отпечаток
+    вспыхивает; молния лежащего облачка мигнула жёлтым."""
+    a, b = T0("s11"), T1("s11")
+    k = .5
+    st = ramp(t, W(52), WE(52) - W(52) + .1)
+    ph = .5 * ease_io(st)
+    x = 520 + 70 * ease_io(st)
+    o = [room(t)]
+    o.append(tf(sole(.55, "#b59a74"), 470, FL + 60, 1.0, -80))
+    glow_u = ease_out(ramp(t, W(53), .3))
+    if glow_u > 0:
+        o.append(PR.glow(615, FL + 70, 160, .8 * glow_u, "#ffe58a"))
+        o.append(tf(sole(.55, lib.mix("#b59a74", "#f2b21b", glow_u)), 615, FL + 70, 1.0, -80))
+        o.append(PR.sparkles(615, FL + 60, 1.2, bump(t, W(53), .05, .4), t, seed=11, n=4, r=100))
+    f = people.dima82_walk(x, stand_hip(k), k, ph, t=t, expr="squint82" if t < W(53) else "sure82", mug=False)
+    o.append(f["svg"])
+    flick = .6 * bump(t, W(53) + .1, .05, .25)
+    o.append(mot(170, FL - 70, .55, flick, t, rot=-12, seed=3))
+    u = ease_io(ramp(t, a, b - a))
+    dx, dy = shake(t, W(53), 7)
+    return view("".join(o), 470 + 60 * u + dx, 1080 + dy, 1.35 + .12 * u, 0)
+
+
+def run_cloud(t, t_on, x_fn, ground, k=.6, lit=1.0, seed=3):
+    """Облачко-мотивация бежит вприпрыжку: ножки, прыжки дугами по 0.32 с, сжатие на приземлении."""
+    ph = max(0.0, t - t_on) / .32
+    hop = abs(math.sin(math.pi * ph))
+    land = max(0.0, 1 - (ph % 1.0) / .25) if ph > 0 else 0.0
+    y = ground - 120 * k - 170 * k * hop
+    return mot(x_fn(t), y, k, lit, t, face=1.0, legs=1.0, run=ph * .5, squash=.6 * land * (1 - hop), rot=6 * math.sin(math.pi * ph), seed=seed)
+
+
+def frame_s12(t):
+    """«потом появляется желание»: Дима идёт вправо, за ним вприпрыжку бежит ожившее облачко с молнией; на «желание»
+    молния вспыхивает золотом."""
+    a, b = T0("s12"), T1("s12")
+    k = .5
+    x = 420 + 230 * (t - a)
+    o = [room(t, x0=-800, x1=2400)]
+    f = people.dima82_walk(x, stand_hip(k), k, (t - a) / .6, t=t, expr="calm82", mug=False)
+    lit = .45 + .55 * ease_out(ramp(t, W(56), .3))
+    o.append(run_cloud(t, a - .3, lambda tt: x - 330 + 60 * ease_out(ramp(tt, a, b - a)), FL, .55, lit))
+    o.append(f["svg"])
+    o.append(PR.sparkles(x - 300, FL - 300, 1.6, bump(t, W(56), .05, .45), t, seed=12, n=5, r=160))
+    dx, dy = shake(t, W(56), 8)
+    return view("".join(o), x - 140 + dx, 1000 + dy, 1.3, 0)
+
+
+# ═════════════════════════ s13–s14: кабинет психолога ═════════════════════════
+OFFICE = "#dfe6d6"
+
+
+def office_room(t):
+    o = [room(t, x0=-800, x1=2200, wall=OFFICE)]
+    o.append(shape(lib.rect_pts(560, 360, 900, 760), "#cfe3ef", line([(730, 360), (730, 760)], 6, "#f6f1e6", taper=0, wmin=1, seed=9740), w=4.4,
+                   seed=9741))
+    return "".join(o)
+
+
+def clipboard(x, y, k, rot=-8, tick=0.0):
+    o = shape(lib.rrect(-80, -110, 80, 110, 8), "#a8794a", "", w=4, seed=9900)
+    o += shape(lib.rect_pts(-66, -90, 66, 100), "#fbf8f0", "".join(line([(-50, -50 + 34 * j), (40, -50 + 34 * j)], 3, "#b9b2a4", seed=9901 + j)
+                                                                 for j in range(4)), w=3, seed=9905)
+    o += shape(lib.rrect(-34, -124, 34, -96, 6), "#9aa0aa", "", w=3, seed=9906)
+    if tick > .01:
+        o += PR.check_mark(10, 30, .7, tick, col="#2f9a4a")
+    return tf(o, x, y, k, rot)
+
+
+def sofa(x, y, k=1.0):
+    o = shape(lib.rrect(-260, -300, 260, -120, 40), "#8aa0c8", "", w=4.4, seed=9750)
+    o += shape(lib.rrect(-300, -170, 300, -40, 30), "#9db2d8", "", w=4.4, seed=9751)
+    for s in (-1, 1):
+        o += shape(lib.rrect(s * 300 - 50, -230, s * 300 + 50, -30, 30), "#7d93bb", "", w=4.4, seed=9752 + s)
+        o += line([(s * 240, -30), (s * 250, 0)], 10, INK, taper=0, wmin=1, seed=9754 + s)
+    return tf(o, x, y, k)
+
+
+def frame_s13(t):
+    """«Психологи называют это поведенческой активацией»: кабинет, психолог в кресле с планшетом (без букв) ставит галочку,
+    клиент на диване понурый, над ним серое облачко с грустной мордочкой."""
+    a, b = T0("s13"), T1("s13")
+    k = .5
+    o = [office_room(t)]
+    o.append(chair(760, FL - 240, 1.0))
+    tick = ease_out(ramp(t, W(61), .35))
+    hip = FL - 290
+    clip_at = (760 - 150, hip - 170)
+    sci = people.scientist82("a", 760, hip, k, "rest", t=t, expr="talk" if W(58) < t < WE(61) and int(t * 7) % 2 else "focus", feet="sit", flip=True,
+                             arms={"n": ("ik", clip_at, 1)}, hands={"n": {"dir": (-.3, -1), "curl": (.8, .8, .8, .8), "thumb": .6}})
+    o.append(sci["svg"])
+    o.append(clipboard(clip_at[0] - 10, clip_at[1] - 70, .75, 10, tick))
+    o.append(sofa(240, FL, .9))
+    c = people.subject82(250, FL - 150, k, "rest", t=t, expr="focus", feet="sit")
+    o.append(c["svg"])
+    hx, hy = c["head"]
+    o.append(mot(hx, hy - 230 + 8 * math.sin(t * 2.5), .55, 0.0, t, face=1.0, sad=1.0, seed=4))
+    o.append(PR.sparkles(clip_at[0], clip_at[1] - 60, 1.0, bump(t, W(61), .05, .4), t, seed=13, n=4, r=100))
+    u = ease_io(ramp(t, a, b - a))
+    dx, dy = shake(t, W(60), 6)
+    return view("".join(o), 500 + dx, 950 + dy - 20 * u, 1.05 + .15 * u, 0, bg=OFFICE)
+
+
+def frame_s14(t):
+    """«с этого начинают даже лечение депрессии»: клиент поднялся и поливает из кружки цветок — цветок выпрямляется,
+    серое облачко над ним светлеет и улыбается; психолог кивает."""
+    a, b = T0("s14"), T1("s14")
+    k = .5
+    o = [office_room(t)]
+    pour = ramp(t, W(63) - .1, .25)
+    perk = ease_io(ramp(t, W(64), 1.0))
+    light = ease_io(ramp(t, W(65), WE(67) - W(65)))
+    o.append(PR.houseplant(640, FL, 1.1, droop=1 - perk, perk=perk, t=t))
+    hip = stand_hip(k)
+    hold = (520, hip - 280)
+    c = people.subject82(380, hip, k, "rest", t=t, expr="focus", feet="stand",
+                         arms={"n": ("ik", hold, -1)}, hands={"n": {"dir": (1, .1), "curl": (.8, .8, .8, .8), "thumb": .6}})
+    o.append(c["svg"])
+    rot = 70 * pour
+    o.append(PR.mug(hold[0] + 30, hold[1] + 30, .9, rot=rot, col="blue", coffee=False))
+    if pour > .5:
+        o.append(PR.pour_stream(hold[0] + 75, hold[1] + 10, 640, FL - 200, t=t, w=12, col="#7fb8e6", seed=2))
+    hx, hy = c["head"]
+    o.append(mot(hx, hy - 230 + 8 * math.sin(t * 2.5), .55, light, t, face=1.0, sad=1.0 if light < .5 else 0.0, seed=4))
+    o.append(PR.sparkles(640, FL - 400, 1.4, bump(t, W(66), .05, .5), t, seed=14, n=5, r=160))
+    nod = .1 * math.sin(t * 9) * bump(t, W(66), .1, .6)
+    sci = people.scientist82("a", 900, stand_hip(k), k, "rest", t=t, expr="smile", feet="stand", flip=True, head_add=nod,
+                             arms={"n": ("ik", (900 - 120, stand_hip(k) - 230), 1)},
+                             hands={"n": {"dir": (-.3, -1), "curl": (.8, .8, .8, .8), "thumb": .6}})
+    o.append(sci["svg"])
+    o.append(clipboard(900 - 140, stand_hip(k) - 300, .7, 10, 1.0))
+    u = ease_io(ramp(t, a, b - a))
+    dx, dy = shake(t, W(67), 7)
+    return view("".join(o), 580 + dx, 900 + dy - 30 * u, 1.15 + .15 * u, 0, bg=OFFICE)
+
+
+# ═════════════════════════ s15–s16: не жди, открой файл ═════════════════════════
+def frame_s15(t):
+    """«Поэтому не жди настроения»: Дима у стола держит табличку-облачко на палке, на «жди» отшвыривает её — она улетает
+    за кадр, кружась, и он открывает ноутбук."""
+    a, b = T0("s15"), T1("s15")
+    k = .5
+    toss = W(70)
+    o = [room(t)]
+    o.append(chair(DX - 40, FL - 240, 1.0))
+    o.append(PR.desk(DESK[0], DESK[1], w=520, depth=100, leg_h=260, seed=7))
+    lid = .1 + .9 * ease_io(ramp(t, W(71) + .2, .4))
+    if t < toss:
+        hand = (DX + 60, DHIP - 330 - 30 * bump(t, W(69), .1, .3))
+        f = dima_sit(DX, DHIP, k, "frowny", t, pose="d82_rest", arms={"n": ("ik", hand, -1)},
+                     hands={"n": {"dir": (.1, -1), "curl": (.8, .85, .85, .85), "thumb": .6}})
+        o.append(f["svg"])
+        o.append(sign_stick(hand[0], hand[1], hand[1] - 330, .72, 0.0, t, rot=-6 * ramp(t, W(69), .3), seed=2))
+    else:
+        u = ramp(t, toss, .55)
+        typ = ramp(t, W(71) + .2, .3)
+        f = dima_sit(DX, DHIP, k, "sure82" if typ > .5 else "squint82", t, pose=("d82_shrug", "sit_desk"), u=ease_io(clamp(u * 1.6)))
+        o.append(f["svg"])
+        sx, sy = DX + 60 - 900 * u, DHIP - 500 - 500 * math.sin(math.pi * min(u, .9)) + 300 * u
+        o.append(tf(sign_stick(0, 0, -330, .72, 0.0, t, seed=2), sx, sy, 1.0, -540 * u))
+        o.append(PR.speed_arcs(sx + 150, sy - 300, 1.2, 1 - u, t, seed=15, n=3, ang=0))
+    o.append(PR.laptop(LAP[0], LAP[1], .5, open_=lid, screen="dark", t=t))
+    u = ease_io(ramp(t, a, b - a))
+    dx, dy = shake(t, toss, 10)
+    return view("".join(o), 520 + dx, 900 + dy, 1.4 + .15 * u, 1 - 2 * u)
+
+
+def finger(x, y, k=1.0):
+    """Палец сверху-справа жмёт клавишу: (x, y) — кончик указательного."""
+    return people.hand_svg("dima", (x + 120 * k, y - 170 * k), (-.55, .85), 1.6 * k, curl=(0, .9, .9, .9), spread=.05, thumb=.75, seed=780)
+
+
+def frame_s16(t):
+    """«открой файл, напиши одно слово»: крупно ноутбук; на «открой» на пустом экране раскрывается лист-файл, мигает курсор;
+    палец жмёт клавишу на «напиши» и «одно», на «слово» на листе встаёт одна чёрточка-слово с искрой."""
+    a, b = T0("s16"), T1("s16")
+    o = [room(t)]
+    o.append(PR.desk(560, FL - 300, w=900, depth=140, leg_h=260, seed=8))
+    o.append(PR.laptop(560, FL - 340, 1.0, open_=1.0, screen="dark", t=t))
+    sx0, sy0, sx1, sy1 = 560 - 215, FL - 340 - 445, 560 + 215, FL - 340 - 120
+    op = ease_out(ramp(t, W(73) - .05, .35))
+    if op > .01:
+        cx, cy = (sx0 + sx1) / 2, (sy0 + sy1) / 2
+        w2, h2 = (sx1 - sx0) / 2 * .82 * op, (sy1 - sy0) / 2 * .86 * op
+        o.append(shape(lib.rect_pts(cx - w2, cy - h2, cx + w2, cy + h2), "#ffffff", "", w=3.4, seed=9760))
+        word = ease_out(ramp(t, W(76), .25))
+        lx = cx - w2 + 40
+        if word > .01:
+            o.append(line([(lx, cy - h2 + 60), (lx + 110 * word, cy - h2 + 60)], 12, INK, taper=0, wmin=1, seed=9761))
+        cur_x = lx + 110 * word + 18
+        if int(t * 3.2) % 2 == 0:
+            o.append(line([(cur_x, cy - h2 + 38), (cur_x, cy - h2 + 82)], 5, INK, taper=0, wmin=1, seed=9762))
+        o.append(PR.sparkles(lx + 60, cy - h2 + 60, 1.0, bump(t, W(76) + .1, .05, .45), t, seed=16, n=4, r=90))
+    presses = (stress(74, .2), stress(75, .2), stress(76, .15))
+    pr = max(bump(t, q - .06, .06, .12) for q in presses)
+    keyx, keyy = 640, FL - 400
+    show = ramp(t, W(74) - .4, .25)
+    if show > .01:
+        o.append(finger(keyx + 200 * (1 - show), keyy - 60 * (1 - pr) - 200 * (1 - show), 1.0))
+        o.append(PR.tap_rings(keyx, keyy, 1.0, pr, t) if hasattr(PR, "tap_rings") else "")
+    u = ease_io(ramp(t, a, b - a))
+    dx, dy = shake(t, W(76), 8)
+    cy_ = 820 + 120 * ease_io(ramp(t, W(74) - .5, .5)) - 140 * ease_io(ramp(t, W(76) - .1, .3))
+    return view("".join(o), 560 + dx, cy_ + dy, 1.35 + .15 * u, 0)
+
+
+# ═════════════════════════ s17–s18: желание догоняет на третьей минуте ═════════════════════════
+def minute_dial(x, y, k, prog, t, click=0.0, lit_n=0):
+    """Секундомер: сектор бежит по кругу (prog 0…1 — три минуты), три точки-минуты сверху загораются по одной."""
+    o = [PR.stopwatch(0, 0, 1.0, hand_a=360 * prog, sector_a=360 * prog, click=click, t=t)]
+    for j in range(3):
+        on = j < lit_n
+        o.append(shape(ellipse_pts(-70 + 70 * j, -260, 22, 22, 12), "#7cc46a" if on else "#e9e2d2", "", w=3.6, seed=9770 + j))
+    return tf("".join(o), x, y, k)
+
+
+def frame_s17(t):
+    """«Желание догонит тебя на»: Дима печатает за столом, на стене секундомер — сектор бежит, загораются две минуты;
+    слева вприпрыжку несётся облачко-мотивация и догоняет его."""
+    a, b = T0("s17"), T1("s17")
+    o = [room(t, x0=-1400, x1=2400)]
+    prog = ease_io(ramp(t, a - .3, W(81) - a + .3)) * (2.9 / 3)
+    o.append(PR.glow(760, 520, 220, .4, "#d8f0c8"))
+    o.append(minute_dial(760, 540, .7, prog, t, lit_n=1 + (t > W(78)) + 0))
+    o.append(chair(DX - 40, FL - 240, 1.0))
+    o.append(PR.desk(DESK[0], DESK[1], w=520, depth=100, leg_h=260, seed=7))
+    f = dima_sit(DX, DHIP, DK, "type73", t, pose="sit_desk", lean=.12 + .03 * math.sin(t * 9))
+    o.append(f["svg"])
+    o.append(PR.laptop(LAP[0], LAP[1], .5, open_=1.0, screen="on", lines=ramp(t, a, b - a), t=t))
+    o.append(run_cloud(t, a - .5, lambda tt: -300 + 420 * (tt - a), FL, .5, 1.0, seed=3))
+    o.append(PR.speed_arcs(-300 + 420 * (t - a) - 140, FL - 200, 1.0, 1.0, t, seed=17, n=3, ang=180))
+    u = ease_io(ramp(t, a, b - a))
+    dx, dy = shake(t, W(78), 7)
+    return view("".join(o), 380 + 80 * u + dx, 880 + dy, 1.2 + .1 * u, 0)
+
+
+def frame_s18(t):
+    """«третьей минуте»: третья точка загорается, облачко прыгает Диме на плечо и светится; он улыбается и печатает;
+    камера отходит к ракурсу хука — часы спокойны, табличка больше не висит."""
+    a, b = T0("s18"), T1("s18")
+    jump = ease_io(ramp(t, a - .1, .45))
+    hx_, hy_ = DX - 30, DHIP - 330
+    x0, y0 = 110, FL - 180
+    mx = x0 + (hx_ - x0) * jump
+    my = y0 + (hy_ - y0) * jump - 260 * math.sin(math.pi * jump)
+    land = bump(t, a + .35, .04, .2)
+    cl = mot(mx, my, .42, 1.0, t, face=1.0, legs=1.0 - jump, squash=.6 * land, rot=-8 * math.sin(math.pi * jump), seed=3)
+    body, f = desk_world(t, typing=True, screen="on", lines=.6 + .4 * ramp(t, a, b - a), clock_calm=1.0, mot_on=cl)
+    o = [body]
+    o.append(minute_dial(560, 560, .42, 1.0, t, lit_n=2 + (t > W(81)), click=bump(t, W(81), .04, .2)))
+    o.append(PR.sparkles(hx_, hy_, 1.4, bump(t, a + .35, .05, .5), t, seed=18, n=5, r=150))
+    u = ease_io(ramp(t, a + .3, b - a - .3))
+    dx, dy = shake(t, a + .35, 7)
+    cx = 470 + (530 - 470) * u
+    cy = 760 + (770 - 760) * u
+    return view(o[0] + "".join(o[1:]), cx + dx, cy + dy, 1.9 - .18 * u, 0)
