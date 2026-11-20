@@ -505,7 +505,7 @@ def frame_s08(t):
     o.append(PR.question_mark(540, 640, 1.3, ease_out(ramp(t, W(38) - .1, .35)) if t > W(38) - .1 else 0.0))
     u = ease_io(ramp(t, a, b - a))
     dx, dy = shake(t, W(37), 7)
-    return view("".join(o), 540 + dx, 860 + dy, 1.05 + .1 * u, 0)
+    return view("".join(o), 550 + dx, 850 + dy, 1.28 + .08 * u, 0)
 
 
 def frame_s09(t):
@@ -529,7 +529,7 @@ def frame_s09(t):
     o.append(badge(bx, by, .85 * (1 + .12 * bump(t, W(43), .05, .3)), "bolt", lit, t, seed=1))
     u = ease_io(ramp(t, a, b - a))
     dx, dy = shake(t, W(43), 9)
-    return view("".join(o), 540 + dx, 880 + dy, 1.12 + .08 * u, 0)
+    return view("".join(o), 550 + dx, 880 + dy, 1.32 + .06 * u, 0)
 
 
 # ═════════════════════════ s10: главный вопрос ═════════════════════════
@@ -555,7 +555,7 @@ def frame_s10(t):
     f = people.dima82_temple(300, stand_hip(k), k, tap=tap, t=t, expr="puzzled82", feet="stand")
     o.append(f["svg"])
     hx, hy = f["head"]
-    qp = pop(t, W(45), .3)
+    qp = pop(t, W(45), .3) * (1 - ease_io(ramp(t, W(48) - .05, .25)))
     o.append(PR.glow(hx + 20, hy - 250, 200, .4 * qp, "#fff1b0"))
     o.append(tf(PR.question_mark(0, 0, 1.0, 1.0, w=13), hx + 20, hy - 250 + 10 * math.sin(t * 4), 1.6 * qp, 8 * math.sin(t * 3)))
     o.append(PR.sparkles(hx + 20, hy - 250, 1.6, bump(t, W(46), .05, .4), t, seed=8, n=5, r=150))
@@ -564,7 +564,7 @@ def frame_s10(t):
     o.append(cat(830, DESK[1] - 100, .38, t, dict(look=(-.7 + 1.0 * look, -.3 + .5 * look), smug=.7 * look, blink_R=wink, tilt=-8 * look)))
     u = ease_io(ramp(t, a, b - a))
     zoom = ease_io(ramp(t, W(48), .4))
-    cx = 470 + 220 * zoom
+    cx = 470 + 255 * zoom
     dx, dy = shake(t, W(46), 7)
     return view("".join(o), cx + dx, 800 + dy - 40 * u, 1.25 + .1 * u + .45 * zoom, 0)
 
@@ -658,11 +658,12 @@ def frame_s13(t):
     o.append(chair(760, FL - 240, 1.0))
     tick = ease_out(ramp(t, W(61), .35))
     hip = FL - 290
-    clip_at = (760 - 150, hip - 170)
+    clip_at = (760 - 110, hip - 80)
     sci = people.scientist82("a", 760, hip, k, "rest", t=t, expr="talk" if W(58) < t < WE(61) and int(t * 7) % 2 else "focus", feet="sit", flip=True,
-                             arms={"n": ("ik", clip_at, 1)}, hands={"n": {"dir": (-.3, -1), "curl": (.8, .8, .8, .8), "thumb": .6}})
+                             arms={"n": ("ik", (2 * 760 - clip_at[0], clip_at[1]), 1)}, hands={"n": {"dir": (-.3, -1), "curl": (.8, .8, .8, .8), "thumb": .6}})
     o.append(sci["svg"])
-    o.append(clipboard(clip_at[0] - 10, clip_at[1] - 70, .75, 10, tick))
+    hx_, hy_ = sci["hold"]
+    o.append(clipboard(hx_ - 20, hy_ - 60, .75, 10, tick))
     o.append(sofa(240, FL, .9))
     c = people.subject82(250, FL - 150, k, "rest", t=t, expr="focus", feet="sit")
     o.append(c["svg"])
@@ -683,7 +684,7 @@ def frame_s14(t):
     pour = ramp(t, W(63) - .1, .25)
     perk = ease_io(ramp(t, W(64), 1.0))
     light = ease_io(ramp(t, W(65), WE(67) - W(65)))
-    o.append(PR.houseplant(640, FL, 1.1, droop=1 - perk, perk=perk, t=t))
+    o.append(PR.houseplant(650, FL, .85, droop=1 - perk, perk=perk, t=t))
     hip = stand_hip(k)
     hold = (520, hip - 280)
     c = people.subject82(380, hip, k, "rest", t=t, expr="focus", feet="stand",
@@ -692,16 +693,16 @@ def frame_s14(t):
     rot = 70 * pour
     o.append(PR.mug(hold[0] + 30, hold[1] + 30, .9, rot=rot, col="blue", coffee=False))
     if pour > .5:
-        o.append(PR.pour_stream(hold[0] + 75, hold[1] + 10, 640, FL - 200, t=t, w=12, col="#7fb8e6", seed=2))
+        o.append(PR.pour_stream(hold[0] + 75, hold[1] + 10, 650, FL - 160, t=t, w=12, col="#7fb8e6", seed=2))
     hx, hy = c["head"]
     o.append(mot(hx, hy - 230 + 8 * math.sin(t * 2.5), .55, light, t, face=1.0, sad=1.0 if light < .5 else 0.0, seed=4))
     o.append(PR.sparkles(640, FL - 400, 1.4, bump(t, W(66), .05, .5), t, seed=14, n=5, r=160))
     nod = .1 * math.sin(t * 9) * bump(t, W(66), .1, .6)
     sci = people.scientist82("a", 900, stand_hip(k), k, "rest", t=t, expr="smile", feet="stand", flip=True, head_add=nod,
-                             arms={"n": ("ik", (900 - 120, stand_hip(k) - 230), 1)},
+                             arms={"n": ("ik", (900 + 100, stand_hip(k) - 150), 1)},
                              hands={"n": {"dir": (-.3, -1), "curl": (.8, .8, .8, .8), "thumb": .6}})
     o.append(sci["svg"])
-    o.append(clipboard(900 - 140, stand_hip(k) - 300, .7, 10, 1.0))
+    o.append(clipboard(sci["hold"][0] - 20, sci["hold"][1] - 60, .7, 10, 1.0))
     u = ease_io(ramp(t, a, b - a))
     dx, dy = shake(t, W(67), 7)
     return view("".join(o), 580 + dx, 900 + dy - 30 * u, 1.15 + .15 * u, 0, bg=OFFICE)
