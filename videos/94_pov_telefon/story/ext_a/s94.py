@@ -704,27 +704,27 @@ def frame_s07(t):
     n = night_at(t)
     down = 1 - ease_out(ramp(t, a, .3))
     o = []
-    floor = mixc("#b98a5a", "#3a2c38", n)
+    floor = mixc("#b98a5a", "#5a4048", n)
     o.append(f'<rect x="-900" y="-1700" width="2900" height="4600" fill="{floor}"/>')
     for j in range(-6, 14):
-        o.append(line([(-600, j * 150 + 40), (1700, j * 150 + 20)], 3, mixc("#8a6440", "#251c26", n), seed=1100 + j, op=.7))
+        o.append(line([(-600, j * 150 + 40), (1700, j * 150 + 20)], 3, mixc("#8a6440", "#3a2a32", n), seed=1100 + j, op=.7))
     # колени по бокам, кот между ними, рука с телефоном сверху
-    for j, x in enumerate((-60, 1140)):
+    for j, x in enumerate((-260, 1340)):
         o.append(shape(ellipse_pts(x, 900, 300, 1100, 24), mixc(LEGS, "#1c2238", .7 * n), "", w=5, seed=1120 + j))
     sigh = bump(t, W(26) + .05, .1, .4)
-    o.append(cat(540, 1560, 1.55, t, rub=0, age=1.0, look=(0, -.85), blink=.35 + .5 * sigh, tilt=-4 - 4 * sigh))
-    o.append(f'<g transform="translate(250 220) rotate(28)">{phone_rig_small(t)}</g>')
-    gg = lib.rad_grad([(0, "#9fd0ff", .3), (1, "#9fd0ff", 0)], 250, 220, 900)
-    o.append(f'<rect x="-900" y="-1700" width="2900" height="4600" fill="#0a0818" opacity="{.35 * n:.3f}"/>')
-    o.append(f'<circle cx="250" cy="220" r="900" fill="url(#{gg})"/>')
-    hx, hy = CT.head_world(540, 1560, 1.55, {})
+    o.append(cat(560, 1600, 2.3, t, rub=0, age=1.0, look=(0, -.85), blink=.35 + .5 * sigh, tilt=-4 - 4 * sigh))
+    o.append(f'<g transform="translate(120 800) rotate(18) scale(.8)">{phone_rig_small(t)}</g>')
+    gg = lib.rad_grad([(0, "#9fd0ff", .3), (1, "#9fd0ff", 0)], 170, 780, 900)
+    o.append(f'<rect x="-900" y="-1700" width="2900" height="4600" fill="#0a0818" opacity="{.18 * n:.3f}"/>')
+    o.append(f'<circle cx="170" cy="780" r="900" fill="url(#{gg})"/>')
+    hx, hy = CT.head_world(560, 1600, 2.3, {})
     if t > W(26):     # блик на очках на «темно»
         g = bump(t, W(26) + .05, .08, .3)
         o.append(f'<path d="M{hx - 70} {hy - 40} l12 -30 l12 30 l30 12 l-30 12 l-12 30 l-12 -30 l-30 -12Z" fill="#ffffff" opacity="{g:.3f}" '
                  f'transform="translate({-6} {-8})"/>')
-    s = 1.0 + .12 * ease_io(ramp(t, a + .2, b - a)) + .05 * sigh
+    s = 1.0 + .1 * ease_io(ramp(t, a + .2, b - a)) + .05 * sigh
     dx, dy = shake(t, W(26) + .05, 8)
-    return view("".join(o), t, 540 + dx, hy + 160 - 900 * down + dy, s, 0)
+    return view("".join(o), t, 540 + dx, hy + 150 - 900 * down + dy, s, 0)
 
 
 def phone_rig_small(t):
