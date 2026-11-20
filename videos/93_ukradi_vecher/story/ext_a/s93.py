@@ -926,3 +926,110 @@ def frame_s15(t):
     u = ease_io(ramp(t, a, b - a))
     dx, dy = shake(t, W(75), 8)
     return view("".join(o) + tint(warm=.4), (sx + hx) / 2 - 90 + dx, ty - 60 + dy, 1.55 + .15 * u, 0, over=steps(t), bg="#5a3020")
+
+
+# ═════════════════════════ s16–s18: шаг 4 — прохладно, финал ═════════════════════════
+def thermometer(x, y, k, level):
+    o = shape(lib.rrect(-22, -200, 22, 40, 20), "#f6efdd", "", w=4, seed=230)
+    o += blob(ellipse_pts(0, 50, 34, 34, 16), lib.mix("#e2574c", "#4aa3e0", 1 - level))
+    o += blob(lib.rrect(-10, 40 - 220 * level, 10, 50, 6), lib.mix("#e2574c", "#4aa3e0", 1 - level))
+    for j in range(5):
+        o += line([(12, -160 + 40 * j), (22, -160 + 40 * j)], 3, INK, seed=231 + j)
+    return tf(o, x, y, k)
+
+
+def flying_leaves(t, a, n, src, dst_fn, seed=0, dur=1.2):
+    """Листья влетают из окна src и кружат к точкам dst_fn(i) (по очереди, синусом в стороны)."""
+    o = []
+    for i in range(n):
+        st = a + (i * .13 + .05 * ((i * 7) % 3)) % (n * .13)
+        u = (t - st) / dur
+        if u <= 0:
+            continue
+        dx, dy = dst_fn(i)
+        e = clamp(u)
+        x = src[0] + (dx - src[0]) * e + 90 * math.sin(e * 7 + i) * (1 - e)
+        y = src[1] + (dy - src[1]) * e - 120 * math.sin(math.pi * e)
+        rot = 200 * e + i * 40 + (0 if e < 1 else 0)
+        o.append(leaf(x, y, 1.4 - .2 * (i % 3), rot, i))
+    return "".join(o)
+
+
+def frame_s16(t):
+    """«Четвёртое: в комнате прохладно»: огонёк 4; кот на подоконнике распахивает створку, синий ветер, градусник
+    опускается к синему, Дима натягивает одеяло до носа."""
+    a, b = T0("s16"), T1("s16")
+    op = ease_out(ramp(t, W(76) + .1, .4))
+    cool = ease_io(ramp(t, W(78), WE(79) - W(78)))
+    bx = 560.0
+    o = [room(t, x0=-600, x1=2000, warm=.5 * (1 - cool), win=False)]
+    o.append(window(560, 360, 900, 800, "#141a3e", t, moon=(860, 450), open_=op))
+    o.append(thermometer(1010, 620, 1.1, 1 - .8 * cool))
+    g, d = dima_sleep(bx + 160, t, "bliss" if t < W(79) else "relief", cover=.0 + 1.0 * ease_io(ramp(t, W(79), .4)))
+    o.append(g)
+    o.append(shape(lib.rect_pts(540, 800, 920, 830), "#e9e1d0", "", w=4, seed=232))
+    o.append(cat(720, 800, .55, t, dict(paw=.8 * (1 - op) + .5 * bump(t, W(76) + .1, .05, .3), paw_dx=70, look=(.7, -.5), smug=.6), mask=1.0))
+    o.append(PR.wind_lines(560, 600, 1.6, op, t, seed=4, n=5))
+    o.append(PR.wind_lines(300, 900, 1.3, cool, t + .4, seed=5, n=4))
+    o.append(tint() + (f'<rect x="-3000" y="-3000" width="7000" height="7000" fill="#7fb8ff" opacity="{.22 * cool:.3f}"/>'))
+    u = ease_io(ramp(t, a, b - a))
+    dx, dy = shake(t, W(76) + .15, 9)
+    return view("".join(o), 560 + dx, 880 + dy - 30 * u, 1.3 + .1 * u, 1 - 2 * u, over=steps(t), bg="#3a3050")
+
+
+def frame_s17(t):
+    """«как в осеннем лесу. Укради»: за окном осенний лес, листья кружат по комнате и ложатся на одеяло; на «Укради» кот
+    поворачивается к нам и подмигивает."""
+    a, b = T0("s17"), T1("s17")
+    bx = 560.0
+    o = [room(t, x0=-600, x1=2000, warm=.0, win=False)]
+    o.append(window(560, 360, 900, 800, "#2a2f55", t, moon=None, open_=1.0, trees=ease_io(ramp(t, a - .2, .5))))
+    g, d = dima_sleep(bx + 160, t, "relief", cover=1.0)
+    o.append(g)
+    o.append(shape(lib.rect_pts(540, 800, 920, 830), "#e9e1d0", "", w=4, seed=232))
+    wink = 1.0 if abs(t - (W(84) + .25)) < .14 else 0.0
+    turn = ramp(t, W(84) - .1, .25)
+    o.append(cat(720, 800, .55 + .1 * turn, t, dict(look=(.7 - .7 * turn, -.5 + .5 * turn), smug=.4 + .5 * turn, blink_R=wink, tilt=-8 * turn), mask=1.0))
+    o.append(flying_leaves(t, a - .3, 14, (760, 560), lambda i: (bx - 120 + 50 * i, FL - 190 - 20 * (i % 3)), seed=1, dur=1.3))
+    o.append(PR.wind_lines(560, 600, 1.6, 1.0, t, seed=4, n=5))
+    o.append(f'<rect x="-3000" y="-3000" width="7000" height="7000" fill="#7fb8ff" opacity=".18"/>')
+    zoom = ease_io(ramp(t, W(84) - .1, .35))
+    cx = 520 + (720 - 520) * zoom
+    cy = 900 + (700 - 900) * zoom
+    dx, dy = shake(t, W(84), 8)
+    return view("".join(o), cx + dx, cy + dy, 1.2 + .9 * zoom, 0, over=steps(t), bg="#3a3050")
+
+
+def frame_s18(t):
+    """«и попробуй сегодня, а кот уже спит»: кот снимает маску на «попробуй» (маска улетает), на «кот» сворачивается
+    клубком рядом с Димой, Z; камера отъезжает к ракурсу хука — вся ночная комната, тёплый ночник, листья на полу."""
+    a, b = T0("s18"), T1("s18")
+    bx = 560.0
+    o = [room(t, x0=-1200, x1=2400, warm=.3, win=False)]
+    o.append(window(560, 360, 900, 800, "#2a2f55", t, moon=(860, 450), open_=.6, trees=1.0))
+    o.append(nightstand(bx - 600, 1.2, notebook(bx - 600, FL - 270, .35, -4, open_=0.0)))
+    o.append(PR.glow(bx - 760, FL - 380, 360, .8, "#ff9a3c"))
+    o.append(PR.night_lamp(bx - 760, FL - 40, 1.0, on_u=1.0, t=t))
+    for i in range(9):
+        o.append(leaf(bx - 100 + 70 * i, FL + 30 + 25 * (i % 3), 1.3, i * 50, i))
+    g, d = dima_sleep(bx + 160, t, "bliss", cover=1.0)
+    o.append(g)
+    hx, hy = d["head"]
+    off = ramp(t, W(86), .45)
+    curl_t = W(89) - .1
+    cx_, cy_ = hx + 330, FL - 118 * 1.3 - 30
+    if t < curl_t:
+        o.append(cat(cx_, cy_ + 30, .55, t, dict(look=(-.3, .1), smile=1.0, paw=.9 * bump(t, W(86) - .05, .08, .3), paw_dx=-20), mask=1 - off))
+    else:
+        o.append(CT.curl(cx_ - 20, cy_ + 30, .5, dict(squint=1.0, breath=1.2), t))
+        o.append(PR.zzz(cx_ - 120, cy_ - 90, .9, t, ramp(t, curl_t + .2, .3)))
+    o.append(PR.zzz(hx + 40, hy - 140, 1.0, t, 1.0))
+    if 0 < off < 1:
+        mx, my = cx_ + 300 * off, cy_ - 200 - 300 * math.sin(math.pi * off)
+        o.append(tf(f'<g transform="translate(-836 -1072)">{mask_art(0, t * 9)}</g>', mx, my, .55, 400 * off))
+    o.append(PR.dust_puff(cx_, cy_ + 20, 1.0, clamp((t - curl_t) / .4), seed=7))
+    o.append(tint(dark=.3))
+    u = ease_io(ramp(t, W(88), b - W(88)))
+    cx = hx + 170 + 80 * u
+    cy = cy_ - 60 + (FL - 300 - cy_ + 60) * u
+    return view("".join(o), cx, cy, 1.8 + (1.15 - 1.8) * u, 0, bg="#2a2440")
