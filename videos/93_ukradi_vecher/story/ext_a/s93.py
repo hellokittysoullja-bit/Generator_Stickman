@@ -767,3 +767,162 @@ def frame_s11(t):
     dx, dy = shake(t, shut, 12)
     return view("".join(o) + tint(warm=.6), (hx + nx) / 2 + 40 + dx, hy - 40 + dy, 1.5 + .15 * u + .06 * bump(t, shut, .04, .3), 0, over=steps(t),
                 bg="#5a3020")
+
+
+# ═════════════════════════ s12–s13: Бейлор ═════════════════════════
+def campus(t, lit=1.0):
+    """Университетский корпус без букв: ступени, шесть колонн, фронтон, купол, окна светятся; ночь, деревья."""
+    o = [rect(-1500, -1500, 2600, FL, "#141a3e")]
+    for i, (sx, sy) in enumerate(((60, 160), (300, 80), (880, 140), (1000, 360), (120, 420), (700, 40), (460, 260))):
+        o.append(PR.star4(sx, sy, 9 + 4 * math.sin(t * 4 + i), 1.0))
+    o.append(PR.glow(900, 200, 140, .6, "#f4f0dc") + '<circle cx="900" cy="200" r="40" fill="#f4f0dc"/><circle cx="917" cy="190" r="34" fill="#141a3e"/>')
+    o.append(rect(-1500, FL, 2600, FL + 1500, "#2c3a2c"))
+    o.append(shape(lib.rect_pts(80, 900, 1000, 1240), "#e9dcc0", "", w=5, seed=150))            # корпус
+    for j in range(2):
+        for i in range(7):
+            wx, wy = 130 + i * 125, 960 + j * 140
+            o.append(shape(lib.rrect(wx, wy, wx + 60, wy + 90, 6), lib.mix("#3a4378", "#ffd27a", lit), "", w=3, seed=151 + i + 7 * j))
+    o.append(shape([(40, 900), (540, 640), (1040, 900)], "#efe4cc", line([(140, 880), (540, 680), (940, 880)], 3, "#c9b894", seed=160), w=5, seed=161))
+    o.append(shape(lib.rect_pts(400, 520, 680, 660), "#e3d4b4", "", w=4.4, seed=162))
+    dome = [(380, 530)] + [(540 - 170 * math.cos(math.pi * j / 16), 530 - 190 * math.sin(math.pi * j / 16)) for j in range(1, 16)] + [(700, 530)]
+    o.append(shape(dome, "#7fa7b8", line([(470, 360), (500, 520)], 3, "#5d8596", seed=163) + line([(610, 360), (580, 520)], 3, "#5d8596", seed=164),
+                   w=5, seed=165))
+    o.append(line([(540, 340), (540, 270)], 6, INK, seed=166) + blob(ellipse_pts(540, 262, 12, 12, 10), "#e8b84a"))
+    for i in range(6):                                                                            # колонны перед фасадом
+        cx = 160 + i * 152
+        o.append(shape(lib.rect_pts(cx - 26, 910, cx + 26, 1250), "#f6efdd", line([(cx - 8, 920), (cx - 8, 1240)], 2.4, "#cfc2a2", seed=170 + i),
+                       w=4, seed=176 + i))
+    for k in range(3):
+        o.append(shape(lib.rect_pts(40 - 30 * k, 1250 + 18 * k, 1040 + 30 * k, 1268 + 18 * k), "#d8cbb0", "", w=3.4, seed=182 + k))
+    for tx in (-120, 1180):
+        o.append(rect(tx - 14, FL - 200, tx + 14, FL + 40, "#3b2a24"))
+        o.append(blob(ellipse_pts(tx, FL - 300, 140, 160, 16), "#2f5a3a") + blob(ellipse_pts(tx + 40, FL - 340, 80, 90, 14), "#3d7048", .9))
+    return "".join(o)
+
+
+def frame_s12(t):
+    """«В Бейлоре проверили»: ночной университетский корпус без букв, окна вспыхивают тёплым по очереди; камера
+    поднимается к куполу; на «проверили» над куполом галочка-печать."""
+    a, b = T0("s12"), T1("s12")
+    o = [campus(t, lit=.4 + .6 * ramp(t, a + .1, .5))]
+    ck = W(59) + .1
+    o.append(PR.glow(540, 420, 260, .7 * bump(t, ck, .05, .6), "#fff3b0"))
+    o.append(PR.check_mark(540, 400, 3.2, ramp(t, ck, .25), col="#5fd16a", w=14, seed=1))
+    o.append(PR.sparkles(540, 400, 2.4, bump(t, ck + .1, .05, .5), t, seed=11, n=6, r=220))
+    u = ease_io(ramp(t, a, b - a))
+    dx, dy = shake(t, ck + .1, 10)
+    return view("".join(o), 540 + dx, 980 - 300 * u + dy, 1.05 + .2 * u, 0, over=steps(t))
+
+
+ROOM_COLS = ("blue", "green", "quilt")
+
+
+def dorm_room(i, t, dark):
+    """Комната общежития (своя система: окно 0…900 × 0…700): спящий под одеялом, тумбочка с блокнотом, ночник."""
+    o = [rect(-50, -50, 950, 760, lib.mix("#c98a52", "#2b3360", dark))]
+    o.append(rect(-50, 560, 950, 760, lib.mix("#8a5a3a", "#3a2c40", dark)))
+    o.append(tf(shape(lib.rrect(-85, -210, 85, 0, 8), "#7a5638", "", w=4.4, seed=190) + notebook(0, -236, .32, -4, open_=0.0), 140, 560, 1.0))
+    if dark < .9:
+        o.append(PR.glow(140, 330, 260, .8 * (1 - dark), "#ffb347"))
+    bx = 560
+    o.append(PR.bed(bx, 560, 1.0, seed=i))
+    d = people.dima_bed(bx - 50, 560 - 118 - 25, .46, expr="bliss", t=t + i, cover="nose", seed=i, col=ROOM_COLS[i])
+    o.append(d["svg"])
+    if dark > .5:
+        o.append(PR.zzz(d["head"][0] + 110, d["head"][1] + 10, .9, t + .6 * i, ramp(dark, .5, .4)))
+    return "".join(o)
+
+
+def frame_s13(t):
+    """«кто так делал перед сном, засыпал быстрее»: разрез общежития — три окна-комнаты, в каждой спящий под одеялом и
+    блокнот на тумбочке; на «засыпал быстрее» свет гаснет по очереди, появляются Z."""
+    a, b = T0("s13"), T1("s13")
+    o = [rect(-800, -800, 1900, 2800, "#e3d4b4")]
+    offs = [(60, 520), (60, 1000), (60, 1480)]
+    for i, (ox, oy) in enumerate(offs):
+        dk = ease_io(ramp(t, W(65) + .18 * i, .25))
+        c = lib.clip_rect(ox, oy, 900 * 1.07, 700 * .62)
+        o.append(shape(lib.rect_pts(ox - 14, oy - 14, ox + 963 + 14, oy + 434 + 14), "#f6efdd", "", w=5, seed=200 + i))
+        o.append(f'<g clip-path="url(#{c})"><g transform="translate({ox} {oy - 270}) scale(1.07)">{dorm_room(i, t, dk)}</g></g>')
+        o.append(f'<path d="{lib.ink_closed(lib.rect_pts(ox, oy, ox + 963, oy + 434), 4.0, seed=210 + i)}" fill="{INK}"/>')
+        o.append(PR.glow(ox + 900, oy + 60, 80, bump(t, W(65) + .18 * i, .04, .3), "#fff3b0"))
+    u = ease_io(ramp(t, a, b - a))
+    return view("".join(o), 540, 1000 + 60 * u, .92 + .06 * u, 0, over=steps(t), bg="#e3d4b4")
+
+
+# ═════════════════════════ s14–s15: шаг 3 — телефон на кухне ═════════════════════════
+DOOR_X = 900.0
+
+
+def kitchen(t):
+    """Справа от двери — кухня: плитка, шкафчик-столешница, розетка с зарядкой; слева — спальня."""
+    o = [room(t, x0=-800, x1=DOOR_X, win=False)]
+    o.append(rect(DOOR_X, -1500, 2800, FL, "#3c4a6a"))
+    for i in range(int(DOOR_X // 90), 32):
+        for j in range(-4, 15):
+            o.append(f'<rect x="{i * 90 + 4}" y="{j * 90 + 4}" width="82" height="82" fill="#47587c" rx="6"/>')
+    o.append(rect(DOOR_X, FL, 2800, FL + 1500, "#4a4048"))
+    o.append(shape(lib.rect_pts(DOOR_X - 40, -1500, DOOR_X + 40, FL), "#e9e1d0", "", w=4.4, seed=220))
+    o.append(shape(lib.rect_pts(1300, FL - 340, 2100, FL), "#c8d8e8", line([(1700, FL - 300), (1700, FL - 20)], 3, "#9aaabb", seed=221) +
+                   blob(ellipse_pts(1650, FL - 170, 8, 30, 8), "#7a8a9a") + blob(ellipse_pts(1750, FL - 170, 8, 30, 8), "#7a8a9a"), w=4.4, seed=222))
+    o.append(shape(lib.rect_pts(1280, FL - 370, 2120, FL - 330), "#e9dcc0", "", w=4.4, seed=223))
+    o.append(shape(lib.rrect(1560, FL - 560, 1620, FL - 480, 8), "#f3f0e8", blob(ellipse_pts(1580, FL - 520, 5, 9, 6), INK) +
+                   blob(ellipse_pts(1600, FL - 520, 5, 9, 6), INK), w=3.4, seed=224))
+    o.append(PR.charger(1590, FL - 500, 1.0))
+    o.append(PR.cable([(1590, FL - 472), (1600, FL - 420), (1640, FL - 380), (1660, FL - 372)], w=7, seed=3))
+    o.append(tf(PR.cable([(0, 0)], w=1) if False else "", 0, 0))
+    o.append(shape(lib.rrect(1840, FL - 470, 1980, FL - 370, 18), "#d65a48", blob(lib.rrect(1850, FL - 470, 1970, FL - 450, 8), "#b8423a"), w=4, seed=225))
+    return "".join(o)
+
+
+def frame_s14(t):
+    """«Третье: телефон заряжается на кухне»: огонёк 3; кот в маске уносит светящийся телефон в зубах из спальни на кухню,
+    запрыгивает на столешницу и кладёт его на зарядку; на «кухне» — зелёная молния и искры."""
+    a, b = T0("s14"), T1("s14")
+    jump0, put = W(69) - .1, W(71) + .05
+    ph_y = FL - 372
+    o = [kitchen(t), tint(dark=.35)]
+    if t < put:
+        phone = f'<g transform="translate(836 1150) rotate(90) scale(.5)">{phone_up(0, 0, 1.0, 0, glow=1.0, scroll=t)}</g>'
+        st = dict(mouth_item=mask_art(-.2, t * 9) + phone, smug=.7, look=(.8, -.1), turn=.3)
+        if t < jump0:
+            x = 250 + (1250 - 250) * ramp(t, a, jump0 - a)
+            o.append(cat_sneak(x, FL + 60, .9, t, st=st, mask=0.0, sack_on=False))
+        else:
+            o.append(people.cat_jump((1250, FL + 60), (1400, FL - 370), .9, ramp(t, jump0, put - jump0 - .05), t, st=st, height=260))
+    else:
+        o.append(cat(1400, FL - 370, .9, t, dict(paw=.8 * bump(t, put, .06, .3), paw_dx=70, smile=1.0, look=(.6, .4)), mask=1.0))
+        o.append(phone_up(1590, ph_y - 30, .55, 90, glow=1.0, charge=ramp(t, put, .2)))
+        o.append(PR.sparkles(1590, ph_y - 40, 1.6, bump(t, put + .05, .05, .5), t, seed=12, n=5, r=140))
+    track = clamp((t - a) / (put - a))
+    cx = 600 + (1450 - 600) * ease_io(track)
+    dx, dy = shake(t, put, 9)
+    return view("".join(o), cx + dx, FL - 330 + dy, 1.5, 0, over=steps(t))
+
+
+def frame_s15(t):
+    """«а не у подушки»: крупно подушка и тумбочка — на тумбочке пусто (пунктир телефона тает), кот хлопает лапой по
+    пустому месту, Дима спит."""
+    a, b = T0("s15"), T1("s15")
+    bx = 560.0
+    o = [room(t, x0=-600, x1=2000, warm=.5, win=False)]
+    g, d = dima_sleep(bx, t, "bliss")
+    sx = bx - 640
+    o.append(nightstand(sx, 1.2))
+    o.append(PR.glow(sx, FL - 380, 300, .6, "#ff9a3c"))
+    o.append(g)
+    hx, hy = d["head"]
+    o.append(PR.zzz(hx + 40, hy - 140, 1.0, t, 1.0))
+    fade = 1 - ramp(t, W(75), .4)
+    ty = FL - 252
+    if fade > .02:
+        o.append(f'<rect x="{sx - 70}" y="{ty - 34}" width="140" height="30" rx="8" fill="none" stroke="#fff3cf" stroke-width="5" '
+                 f'stroke-dasharray="14 10" opacity="{fade:.3f}"/>')
+    pats = [W(73), W(75)]
+    p = max(bump(t, q - .08, .06, .14) for q in pats)
+    o.append(cat(sx - 190, FL + 40, .75, t, dict(paw=.8 * p, paw_dx=90, look=(-.9, .3), smile=1.0), mask=1.0))
+    o.append(PR.dust_puff(sx, ty - 20, 1.0, clamp((t - W(75)) / .4), seed=6))
+    o.append(PR.sparkles(sx, ty - 40, 1.0, bump(t, W(75) + .1, .05, .4), t, seed=13, n=4, r=90))
+    u = ease_io(ramp(t, a, b - a))
+    dx, dy = shake(t, W(75), 8)
+    return view("".join(o) + tint(warm=.4), (sx + hx) / 2 - 90 + dx, ty - 60 + dy, 1.55 + .15 * u, 0, over=steps(t), bg="#5a3020")
