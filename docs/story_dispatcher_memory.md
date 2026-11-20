@@ -135,5 +135,5 @@ trig_01YYY2DmaUy4A5vAcFuP24pr (:03) и запасная trig_012jwscUZi3X1QtVeZ9
   владельца). Любой рендер Blender — через `scripts/blender_fast.py` (Cycles CPU, все потоки, 48 сэмплов + адаптивные,
   шумодав OIDN, 4 отскока, persistent data, 720×1280 → ffmpeg lanczos до 1080×1920, simplify, тайл 2048).
 - three.js-сцены (папки `videos/9x_3d_*/three/`) — рендер параллельно двумя рабочими
-  (`scripts/three_render_parallel.sh`, порт из PORT): 4 ядра загружены ~на 90 % вместо 60 %.
+  (`scripts/three_render_parallel.sh`, порт из PORT): 4 ядра загружены ~на 90 % вместо 60 %, но выигрыш по замеру всего ≈1,1× (9 с на кадр у каждого из двух против 5 с у одного).
 - Пока идёт рендер, ничего тяжёлого параллельно не запускать.
