@@ -709,10 +709,10 @@ def frame_s15(t):
         o.append(tf(PR.cobweb(0, 0, 1.2, tremble=1, torn=tear, t=t, ang=ang, span=sp, L=L, seed=sd, col=WEB), x + 200 * tear, y - 500 * tear, 1 - .5 * tear,
                     90 * tear))
     o.append(PR.sparkles(560, FL - 500, 2.2, bump(t, a + .3, .1, .5) + bump(t, WE(68) - .2, .1, .4), t, seed=7, n=6, r=300))
-    f = dima(900, FL + 60, .5, "proud82", ("d82_rest", "d82_one"), t, u=ramp(t, W(68), .25), flip=True)
+    f = dima(975, FL + 60, .5, "proud82", ("d82_rest", "d82_one"), t, u=ramp(t, W(68), .25), flip=True)
     o.append(f["svg"])
     u = ease_io(ramp(t, a, b - a))
-    return view("".join(o), 520 + 60 * u, 980 - 120 * u, 1.18 - .12 * u, 0)
+    return view("".join(o), 590 + 40 * u, 980 - 120 * u, 1.18 - .12 * u, 0)
 
 
 # ═════════════════════════ s16: дверь картонная ═════════════════════════
