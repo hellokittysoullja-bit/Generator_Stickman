@@ -392,14 +392,14 @@ const knit = G(); { const yM = M('#d94f70', { roughness: 0.95 }); mesh(new THREE
   const sc = mesh(roundBox(0.16, 0.012, 0.12, 0.005), yM, 0.13, 0.01, 0.08, knit); sc.rotation.y = 0.4; }
 const D = (x, y, z) => [x, y, z];
 //        объект    из шкафа (x,y,z)          куда (x,y,z)             старт  полёт  дуга  вращение          итоговый поворот
-item(guitar, D(-0.3, 1.0, -2.5), D(0.45, 0.33, -0.78), -0.06, 0.62, 0.55, [4, 1.5, 3], [-Math.PI / 2, 0, 2.6]);
-item(db1, D(0.3, 0.4, -2.5), D(0.24, 0.39, -0.22), 0.1, 0.62, 0.7, [5, 2, 6], [0, 0.6, 0], 0.03);
-item(db2, D(0.35, 0.7, -2.5), D(0.5, 0.39, -0.02), 0.18, 0.6, 0.6, [-4, 3, 5], [0, -0.4, 0], 0.03);
-item(easel, D(-0.35, 0.3, -2.5), D(-1.2, 0.04, -0.9), 0.02, 0.7, 0.5, [2, 0, 3], [-Math.PI / 2, 0.4, 0], 0.04);
+item(guitar, D(-0.3, 1.0, -2.5), D(0.42, 0.3, -1.12), -0.06, 0.62, 0.55, [4, 1.5, 3], [-Math.PI / 2, 0, 2.6]);
+item(db1, D(0.3, 0.4, -2.5), D(0.6, 0.39, -0.68), 0.1, 0.62, 0.7, [5, 2, 6], [0, 0.6, 0], 0.03);
+item(db2, D(0.35, 0.7, -2.5), D(0.82, 0.39, -0.48), 0.18, 0.6, 0.6, [-4, 3, 5], [0, -0.4, 0], 0.03);
+item(easel, D(-0.35, 0.3, -2.5), D(-1.15, 0.04, -0.6), 0.02, 0.7, 0.5, [2, 0, 3], [-Math.PI / 2, 0.4, 0], 0.04);
 item(skate, D(0.3, 1.2, -2.5), D(1.0, 0.0, 0.55), 0.06, 0.68, 0.6, [6, 3, 2], [0, 0.5, 0], 0.08);
 item(rubik, D(0.2, 1.75, -2.5), D(-0.15, 0.053, 0.45), 0.0, 0.75, 0.9, [9, 7, 5], [0.3, 0.6, 0], 0.12);
-item(racket, D(-0.25, 1.3, -2.5), D(-0.55, 0.02, -0.15), 0.12, 0.62, 0.6, [6, 2, 4], [-Math.PI / 2, 0, 0.8]);
-item(puzzle, D(-0.25, 1.65, -2.5), D(-0.45, 0.0, -1.45), 0.08, 0.5, 0.35, [2, 4, 1], [0, 0.3, 0], 0.05);
+item(racket, D(-0.25, 1.3, -2.5), D(-0.45, 0.02, -0.1), 0.12, 0.62, 0.6, [6, 2, 4], [-Math.PI / 2, 0, 0.8]);
+item(puzzle, D(-0.25, 1.65, -2.5), D(-0.75, 0.0, -1.0), 0.08, 0.5, 0.35, [2, 4, 1], [0, 0.3, 0], 0.05);
 item(rl1, D(0.25, 1.6, -2.5), D(-0.95, 0.0, 0.2), 0.04, 0.72, 0.7, [5, 5, 3], [0, -0.9, 0], 0.07);
 item(rl2, D(-0.2, 0.7, -2.5), D(-0.7, 0.0, 0.45), 0.14, 0.7, 0.6, [-5, 4, 2], [0, 0.4, 1.4], 0.06);
 item(knit, D(0.15, 0.25, -2.5), D(0.05, 0.0, 0.9), 0.2, 0.75, 0.45, [8, 0, 0], [0, 0.2, 0], 0.09);
@@ -408,8 +408,8 @@ item(knit, D(0.15, 0.25, -2.5), D(0.05, 0.0, 0.9), 0.2, 0.75, 0.45, [8, 0, 0], [
 const standing = (p) => { for (const a of p.arms) { a.elbow.set(a.sx * 0.24, 0.22, 0.03); a.wrist.set(a.sx * 0.22, -0.02, 0.08); } };
 const mom = makePerson({ cloth: '#2c6e6a', curly: true, glasses: true, earrings: true, watch: true, hair: '#1b1615', skin: '#dcb592', pants: '#33302e',
   face: { iris: '#6b8aa6', brow: '#151010', lashes: true, lid: 0.22 } });
-mom.root.position.set(-1.05, 0, -1.6); scene.add(mom.root);
-const dadHold = new THREE.Group(); dadHold.position.set(0.35, 0, -1.25); dadHold.rotation.y = Math.PI; scene.add(dadHold);
+mom.root.position.set(-0.3, 0, -1.45); scene.add(mom.root);
+const dadHold = new THREE.Group(); dadHold.position.set(0.2, 0, -1.55); dadHold.rotation.y = -2.67; scene.add(dadHold);
 const dad = makePerson({ cloth: '#d99cbc', flatHair: true, hair: '#6b7562', collar: '#e8afc9', ring: true, skin: '#d9b08c', pants: '#4a4f5a',
   face: { iris: '#6a8a6a', brow: '#2a2420', mustache: true, lid: 0.3, browW: 13 } });
 dadHold.add(dad.root);
@@ -453,18 +453,18 @@ const back2 = (x) => { x = cl(x); const c = 1.7; return 1 + (c + 1) * Math.pow(x
 const mouthOf = (sp, t) => { const m = V.mouth[sp], i = t * FPS, a = Math.floor(i); return (m[a] || 0) * (1 - (i - a)) + (m[a + 1] || 0) * (i - a); };
 const blinkAt = (t, times) => { for (const b of times) { const d = (t - b) / 0.15; if (d >= 0 && d <= 1) return Math.sin(d * Math.PI); } return 0; };
 const v3 = (a) => new THREE.Vector3(...a);
-const L = V.lines; const W = (li, wi) => L[li].words[wi].start;   // время слова
-const T_DIMA1 = L[1].start, T_DAD = L[2].start, T_MOM2 = L[3].start, T_DIMA2 = L[4].start, T_CTA = L[5].start, T_END = L[5].end;
-const T_WORD = W(5, 1), T_WORD_END = L[5].words[1].end, T_SENT = W(5, 2) + 0.05;
+const LN = V.lines; const WT = (li, wi) => LN[li].words[wi].start;   // время слова
+const T_DIMA1 = LN[1].start, T_DAD = LN[2].start, T_MOM2 = LN[3].start, T_DIMA2 = LN[4].start, T_CTA = LN[5].start, T_END = LN[5].end;
+const T_WORD = WT(5, 1), T_WORD_END = LN[5].words[1].end, T_SENT = WT(5, 2) + 0.05;
 const SHOTS = [
-  { t0: 0, t1: T_DIMA1, p: [0.15, 1.3, 1.25], l: [0.0, 0.95, -1.7], fov: 40, hook: true, push: 0.06 },
-  { t0: T_DIMA1, t1: W(1, 4) - 0.05, p: [0.62, 1.55, -0.3], l: [1.35, 1.48, 0.35], push: 0.1 },
-  { t0: W(1, 4) - 0.05, t1: T_DAD, p: [1.05, 1.25, 1.1], l: [-0.1, 0.25, -0.75], fov: 40, push: 0.12 },
-  { t0: T_DAD, t1: T_MOM2, p: [0.62, 1.0, 1.05], l: [0.35, 0.22, 0.12], push: 0.12, dad: true },
-  { t0: T_MOM2, t1: T_DIMA2, p: [-0.35, 1.5, -0.75], l: [-1.05, 1.42, -1.6], push: 0.1 },
-  { t0: T_DIMA2, t1: T_CTA, p: [0.3, 1.45, -0.55], l: [1.35, 1.3, 0.35], push: 0.08 },
-  { t0: T_CTA, t1: T_END + 0.25, p: [0.95, 1.5, 1.95], l: [1.3, 1.36, 0.35], push: 0.12, cta: true },
-  { t0: T_END + 0.25, t1: 99, p: [-0.15, 1.05, 0.35], l: [0.25, 0.55, -2.35], fov: 38, push: 0.07 },
+  { t0: 0, t1: T_DIMA1, p: [0.2, 1.5, 2.4], l: [0.25, 0.95, -1.6], fov: 44, hook: true, push: 0.08 },
+  { t0: T_DIMA1, t1: WT(1, 4) - 0.05, p: [0.33, 1.5, -0.76], l: [1.35, 1.4, 0.35], push: 0.1 },
+  { t0: WT(1, 4) - 0.05, t1: T_DAD, p: [1.35, 1.45, 0.95], l: [0.35, 0.3, -0.65], fov: 42, noDima: true, push: 0.12 },
+  { t0: T_DAD, t1: T_MOM2, p: [0.5, 0.98, -0.9], l: [0.86, 0.22, -0.22], push: 0.12, dad: true },
+  { t0: T_MOM2, t1: T_DIMA2, p: [0.75, 1.48, -0.45], l: [-0.3, 1.38, -1.45], push: 0.1 },
+  { t0: T_DIMA2, t1: T_CTA, p: [0.1, 1.48, -0.55], l: [1.35, 1.35, 0.35], push: 0.08 },
+  { t0: T_CTA, t1: T_END + 0.25, p: [0.95, 1.45, 1.95], l: [1.3, 1.6, 0.35], push: 0.1, cta: true },
+  { t0: T_END + 0.25, t1: 99, p: [-0.05, 1.55, 0.3], l: [0.3, 0.55, -2.35], fov: 36, push: 0.07 },
 ];
 const blinks = { dad: [2.4, 7.0, 9.9, 13.1, 17.0], mom: [2.9, 6.6, 11.2, 15.8], dima: [1.4, 4.9, 9.5, 12.7, 16.6, 18.2] };
 function toLocal(obj, w) { return obj.worldToLocal(w.clone()); }
@@ -475,7 +475,7 @@ window.renderFrame = (t) => {
   const si = SHOTS.findIndex((s) => t >= s.t0 && t < s.t1); const sh = SHOTS[si < 0 ? SHOTS.length - 1 : si];
   const u = (t - sh.t0) / Math.max(0.01, sh.t1 - sh.t0);
   // двери
-  const aL = 0.45 + 1.5 * eout(t / 0.28); doorL.rotation.y = -(aL + (t > 0.28 ? Math.sin((t - 0.28) * 14) * Math.exp(-(t - 0.28) * 5) * 0.1 : 0));
+  const aL = 0.45 + 1.25 * eout(t / 0.28); doorL.rotation.y = -(aL + (t > 0.28 ? Math.sin((t - 0.28) * 14) * Math.exp(-(t - 0.28) * 5) * 0.1 : 0));
   let aR = 0.1 + 1.65 * back2((t - 0.04) / 0.22);
   const tc = T_END + 0.25; const closeK = ease((t - (tc + 1.0)) / 0.7); aR *= 1 - closeK; if (closeK >= 1) aR = Math.sin((t - tc - 1.7) * 30) * Math.exp(-(t - tc - 1.7) * 9) * 0.03;
   doorR.rotation.y = aR;
@@ -487,7 +487,7 @@ window.renderFrame = (t) => {
     it.g.position.copy(p); const r = 1 - eout(kk); it.g.rotation.set(it.endRot[0] - it.spin[0] * r, it.endRot[1] - it.spin[1] * r, it.endRot[2] - it.spin[2] * r); }
   { const lt = t - 0.08 - 0.5; const sk = lt > 0 ? Math.max(0, 0.5 - lt) * 1.4 : 0; skate.position.x += lt > 0 ? (1 - Math.exp(-lt * 2)) * 0.35 : 0; skate.position.z += lt > 0 ? (1 - Math.exp(-lt * 2)) * 0.12 : 0; skate.rotation.y += sk * 0.1; }
   { const lt = t - 0.2 - 0.75; if (lt > 0) { const d = (1 - Math.exp(-lt * 1.6)) * 0.5; knit.position.x -= d * 0.55; knit.position.z += d * 0.25; knit.rotation.x += d * 9; } }
-  { const lt = t - 0.58; for (const pc of pieces) { if (lt < 0) { pc.m.position.set(0, -5, 0); continue; } const k = cl(lt / 0.45); pc.m.position.set(-0.45 + Math.cos(pc.a) * pc.r * k, 0.005 + pc.h * 4 * k * (1 - k), -1.45 + Math.sin(pc.a) * pc.r * k); pc.m.rotation.set(0, pc.rot + k * 4, 0); } }
+  { const lt = t - 0.58; for (const pc of pieces) { if (lt < 0) { pc.m.position.set(0, -5, 0); continue; } const k = cl(lt / 0.45); pc.m.position.set(-0.75 + Math.cos(pc.a) * pc.r * k, 0.005 + pc.h * 4 * k * (1 - k), -1.0 + Math.sin(pc.a) * pc.r * k); pc.m.rotation.set(0, pc.rot + k * 4, 0); } }
   // камера
   const P = v3(sh.p), Lk = v3(sh.l); const dir = P.clone().sub(Lk);
   let k = 1 - (sh.push || 0) * u; let roll = 0;
@@ -499,6 +499,7 @@ window.renderFrame = (t) => {
   camera.fov = sh.fov || 32; camera.updateProjectionMatrix(); camera.lookAt(Lk); camera.rotateZ(roll);
   fill.intensity = 1.0;
 
+  dima.root.visible = !sh.noDima;
   // --- лица ---
   for (const [name, p] of Object.entries(PEOPLE)) {
     const m = mouthOf(name, t); const s = p.face.st; s.mouth = m; s.blink = blinkAt(t, blinks[name]);
@@ -507,10 +508,10 @@ window.renderFrame = (t) => {
     s.look = [0, 0]; s.brow = 0; s.frown = 0; s.smile = 0.3; s.eyesWide = 0; s.round = 0; s.sleepy = 0; standing(p);
   }
   // мама: открывает шкаф, потом к Диме, потом вниз к папе
-  { const s = mom.face.st; let ry = Math.atan2(-0.35 + 1.05, -2.2 + 1.6);
+  { const s = mom.face.st; let ry = Math.atan2(0.23, -0.7);
     if (t > 0.35) ry = angLerp(ry, faceTo(mom, 1.35, 0.35), ease((t - 0.35) / 0.3));
-    if (t > T_DAD - 0.2) ry = angLerp(faceTo(mom, 1.35, 0.35), faceTo(mom, 0.35, 0.1), ease((t - T_DAD + 0.2) / 0.4));
-    if (t > T_DIMA2) ry = angLerp(faceTo(mom, 0.35, 0.1), faceTo(mom, 1.35, 0.35), ease((t - T_DIMA2) / 0.4));
+    if (t > T_DAD - 0.2) ry = angLerp(faceTo(mom, 1.35, 0.35), faceTo(mom, 0.89, -0.19), ease((t - T_DAD + 0.2) / 0.4));
+    if (t > T_DIMA2) ry = angLerp(faceTo(mom, 0.89, -0.19), faceTo(mom, 1.35, 0.35), ease((t - T_DIMA2) / 0.4));
     mom.root.rotation.y = ry;
     if (t < 0.6) { s.eyesWide = 1; s.round = t > 0.15 ? 0.6 : 0; s.brow = 0.8; }
     else if (t < T_DIMA1) { s.frown = 0.7; s.smile = -0.3; s.brow = 0.2; s.look = [0, 0]; }
@@ -538,15 +539,15 @@ window.renderFrame = (t) => {
     dad.headPivot.rotation.x += t > 0.45 ? 0.15 : 0;
   }
   // Дима
-  { const s = dima.face.st; let ry = faceTo(dima, -1.05, -1.6);
+  { const s = dima.face.st; let ry = faceTo(dima, -0.3, -1.45);
     if (sh.cta) ry = angLerp(ry, Math.atan2(camera.position.x - dima.root.position.x, camera.position.z - dima.root.position.z), ease((t - T_CTA + 0.1) / 0.35));
     dima.root.rotation.y = ry;
     if (t < T_DIMA1) { s.eyesWide = 0.6; s.round = t > 0.4 && t < 1.6 ? 0.4 : 0; s.brow = 0.6; }
     else if (t < T_DAD) { s.smile = 0.45; s.brow = 0.5; s.look = [0.4, 0];
-      const pt = [W(1, 0), W(1, 4), W(1, 7)]; const pk = Math.max(...pt.map((q) => Math.max(0, 1 - Math.abs(t - q - 0.35) / 0.55)));
+      const pt = [WT(1, 0), WT(1, 4), WT(1, 7)]; const pk = Math.max(...pt.map((q) => Math.max(0, 1 - Math.abs(t - q - 0.35) / 0.55)));
       const a = dima.arms[1]; const k2 = ease(pk * 1.6); a.wrist.lerp(new THREE.Vector3(0.14, 0.42, 0.46), k2); a.elbow.lerp(new THREE.Vector3(0.25, 0.32, 0.2), k2); }
     else if (t < T_DIMA2) { s.look = [-0.3, 0.6]; s.smile = 0.2; s.brow = 0.3; }
-    else if (t < T_CTA) { s.smile = 0.4; s.sleepy = 0.15; s.brow = 0.35; const k2 = ease((t - T_DIMA2 - 0.1) / 0.3) * (1 - ease((t - W(4, 3)) / 0.3));
+    else if (t < T_CTA) { s.smile = 0.4; s.sleepy = 0.15; s.brow = 0.35; const k2 = ease((t - T_DIMA2 - 0.1) / 0.3) * (1 - ease((t - WT(4, 3)) / 0.3));
       dima.torso.position.y += k2 * 0.02; for (const a of dima.arms) { a.wrist.lerp(new THREE.Vector3(a.sx * 0.4, 0.22, 0.24), k2); a.elbow.lerp(new THREE.Vector3(a.sx * 0.32, 0.2, 0.06), k2); } dima.headPivot.rotation.z += k2 * 0.12; }
     else { s.smile = 0.55; s.brow = 0.35; s.look = [0, 0];
       const k2 = ease((t - T_CTA) / 0.3) * (1 - ease((t - T_WORD_END - 0.6) / 0.35)); const a = dima.arms[1]; a.wrist.lerp(new THREE.Vector3(0.1, 0.4, 0.48), k2); a.elbow.lerp(new THREE.Vector3(0.24, 0.3, 0.2), k2);
@@ -557,7 +558,7 @@ window.renderFrame = (t) => {
   lids(blinkAt(t, [3.3, 8.0, 12.4, 16.9]) * 2.9); cat.setPaw(null); cat.g.scale.set(1, 1, 1);
   if (t < tc) { const hop = Math.max(0, Math.sin(cl((t - 0.15) / 0.4) * Math.PI)) * 0.22; cat.g.position.set(-0.32, hop, 1.0); cat.g.rotation.set(0, t < 1.2 ? Math.PI * 0.85 : angLerp(Math.PI * 0.85, 2.3, ease((t - 1.2) / 0.4)), 0);
     cat.headPivot.rotation.set(0.1 + Math.sin(t * 1.1) * 0.03, Math.sin(t * 0.7) * 0.15, 0); cat.earR.rotation.x = 0.5 + (t < 0.6 ? 0.4 : 0); }
-  else { const j = cl((t - tc - 0.05) / 0.55); const from = v3([0.7, 0, -1.25]), to = v3([0.3, 0.06, -2.43]); const pos = from.clone().lerp(to, eout(j)); pos.y += Math.sin(j * Math.PI) * 0.38; cat.g.position.copy(pos);
+  else { const j = cl((t - tc - 0.05) / 0.55); const from = v3([0.88, 0, -1.15]), to = v3([0.3, 0.06, -2.43]); const pos = from.clone().lerp(to, eout(j)); pos.y += Math.sin(j * Math.PI) * 0.38; cat.g.position.copy(pos);
     const land = (t - tc - 0.6) / 0.22; const sq = land > 0 && land < 1 ? Math.sin(land * Math.PI) * 0.16 : 0; cat.g.scale.set(1 + sq * 0.5, 1 - sq, 1 + sq * 0.5);
     cat.g.rotation.set(0, angLerp(Math.PI + 0.3, 0.15, ease((t - tc - 0.75) / 0.3)), 0);
     cat.headPivot.rotation.set(0.05, 0.25 * ease((t - tc - 1.0) / 0.3), 0);
@@ -567,7 +568,7 @@ window.renderFrame = (t) => {
   cat.setTail(t);
   // поле комментария
   { const pop = back2((t - T_CTA - 0.05) / 0.35); cmt.visible = sh.cta && pop > 0.02;
-    if (cmt.visible) { scene.updateMatrixWorld(true); cmt.position.copy(camera.localToWorld(new THREE.Vector3(-0.012, 0.135, -0.9))); cmt.quaternion.copy(camera.quaternion); cmt.rotateY(0.22); cmt.rotateX(-0.08);
+    if (cmt.visible) { scene.updateMatrixWorld(true); cmt.position.copy(camera.localToWorld(new THREE.Vector3(-0.01, 0.113, -0.9))); cmt.quaternion.copy(camera.quaternion); cmt.rotateY(0.22); cmt.rotateX(-0.08);
       const wob = t > T_SENT ? Math.sin((t - T_SENT) * 22) * Math.exp(-(t - T_SENT) * 5) : 0; const sc = pop * (1 + wob * 0.06); cmt.scale.set(sc, sc, sc); cmt.rotateZ(wob * 0.05);
       const n = Math.round(8 * cl((t - T_WORD) / Math.max(0.2, T_WORD_END - T_WORD))); drawComment(n, Math.floor(t * 3) % 2 === 0, t > T_SENT); } }
   for (const p of Object.values(PEOPLE)) { p.setArms(); p.face.draw(); }
@@ -578,4 +579,4 @@ window.debugView = (p, l, fov = 50, t = 1) => { window.renderFrame(t); camera.fo
 document.fonts.load('800 40px Onest').then(() => document.fonts.load('900 40px Onest')).then(() => { window.ready = true; });
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 window.exportGLB = (t) => new Promise((res, rej) => { window.renderFrame(t); scene.updateMatrixWorld(true);
-  new GLTFExporter().parse([scene], (buf) => { const b = new Uint8Array(buf); let s = ''; for (let i = 0; i < b.length; i += 32768) s += String.fromCharCode.apply(null, b.subarray(i, i + 32768)); res({ glb: btoa(s), cam: { pos: camera.position.toArray(), quat: camera.quaternion.toArray(), fov: camera.fov } }); }, rej, { binary: true, onlyVisible: true, maxTextureSize: 1024 }); });
+  new GLTFExporter().parse([scene], (buf) => { const b = new Uint8Array(buf); let s = ''; for (let i = 0; i < b.length; i += 32768) s += String.fromCharCode.apply(null, b.subarray(i, i + 32768)); let fl = null; cat.g.traverse((o) => { if (o.isPointLight) { const w = o.getWorldPosition(new THREE.Vector3()); fl = [w.x, -w.z, w.y]; } }); res({ glb: btoa(s), cam: { pos: camera.position.toArray(), quat: camera.quaternion.toArray(), fov: camera.fov }, flame: fl }); }, rej, { binary: true, onlyVisible: true, maxTextureSize: 1024 }); });
