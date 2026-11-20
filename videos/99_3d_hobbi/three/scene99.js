@@ -491,12 +491,12 @@ window.renderFrame = (t) => {
   // камера
   const P = v3(sh.p), Lk = v3(sh.l); const dir = P.clone().sub(Lk);
   let k = 1 - (sh.push || 0) * u; let roll = 0;
-  if (sh.hook) { const f = eout(t / 0.22); k *= 1.62 - 0.62 * f + (t > 0.22 && t < 0.45 ? -0.05 * Math.sin((t - 0.22) / 0.23 * Math.PI) : 0); roll = (1 - f) * 0.065;
+  if (sh.hook) { const f = eout(t / 0.22); k *= 1 + (t > 0.22 && t < 0.45 ? -0.05 * Math.sin((t - 0.22) / 0.23 * Math.PI) : 0); roll = (1 - f) * 0.065;
     const hit = Math.max(0, 1 - Math.abs(t - 0.62) / 0.12); k *= 1 - 0.09 * hit; }
   camera.position.copy(Lk).addScaledVector(dir, k);
   const shake = (t0, a) => (t > t0 ? Math.exp(-(t - t0) * 9) * a : 0); const sa = shake(0.6, 0.03) + shake(0.75, 0.025) + shake(tc + 1.7, 0.012);
   camera.position.x += Math.sin(t * 1.3) * 0.004 + Math.sin(t * 61) * sa; camera.position.y += Math.sin(t * 1.7 + 1) * 0.003 + Math.cos(t * 53) * sa;
-  camera.fov = sh.fov || 32; camera.updateProjectionMatrix(); camera.lookAt(Lk); camera.rotateZ(roll);
+  camera.fov = (sh.fov || 32) * (sh.hook ? 1 + 0.75 * (1 - eout(t / 0.22)) : 1); camera.updateProjectionMatrix(); camera.lookAt(Lk); camera.rotateZ(roll);
   fill.intensity = 1.0;
 
   dima.root.visible = !sh.noDima;
