@@ -907,7 +907,7 @@ def frame_s14(t):
         lft.append(blob([(10 + 86 * j, 300), (96 + 86 * j, 300), (96 + 86 * j, 380), (10 + 86 * j, 380)], "#e05a5a" if j % 2 else "#fbf5ea"))
     lft.append(line([(10, 300), (530, 300)], 5, INK, seed=10002))
     sh = bump(t, W(77), .06, .5)
-    lft.append(cake(275, 1080, 1.05 + .06 * sh, t))
+    lft.append(cake(275, 1120, 1.35 + .08 * sh, t))
     lft.append(PR.sparkles(275, 760, 1.4, .6 + .4 * sh, t, seed=3, col="#ffffff"))
     lft.append(line([(80, 420), (180, 560)], 8, "#ffffff", seed=10003, op=.5) + line([(110, 420), (240, 620)], 5, "#ffffff", seed=10004, op=.35))
     lft.append(rect(-200, 1260, 560, 2200, "#3b3f52"))
@@ -917,10 +917,11 @@ def frame_s14(t):
         rgt.append(line([(540 + 70 * j, 700), (540 + 70 * j, 1150)], 2, "#9c987f", seed=10010 + j, op=.6))
     rgt.append(shape(lib.rect_pts(520, 1150, 1300, 1260), "#8a7a6a", "", w=5, seed=10020))
     wob = bump(t, W(74), .05, .6)
-    rgt.append(dishes(820, 1150, 1.0, t, wob))
+    rgt.append(dishes(680, 1150, 1.1, t, wob))
     e = ex_(brows="worry", mouth="flat", smile=0, lid=.7, look=(-1, -.2), bags=True)
-    d = waist("dima", 1010, 1520, .5, e, flip=True, head_ang=.1)
+    d = waist("dima", 905, 1440, .6, e, flip=True, head_ang=.1)
     rgt.append(d["svg"])
+    rgt.append(shape(lib.rect_pts(520, 1330, 1320, 2300), "#8a7a6a", line([(540, 1350), (1300, 1350)], 4, "#6a5a4a", seed=10021), w=5, seed=10022))
     cl_l = lib.clip_rect(-400, -400, 940 + 0, 2800)
     cl_r = lib.clip_rect(540, -400, 1200, 2800)
     dxl = -600 * (1 - u)
@@ -944,12 +945,12 @@ def frame_s15(t):
         o.append(framed(i * 520, 760, .6, t, PICS[ROW[i % 4]], seed=i % 9))
     turn = ease_io(ramp(t, a + .15, .3))
     k = .56
-    d = people.dima82(560, dima_hip(FLY, k), k, "calm82", "d82_rest", t=t, feet="stand", flip=turn < .5, head_add=-.05)
+    d = people.dima82(640, dima_hip(FLY, k), k, "calm82", "d82_rest", t=t, feet="stand", flip=turn < .5, head_add=-.05)
     gp = ease_out(ramp(t, W(81) - .2, .5))
     if gp > .01:
-        g = people.dima82(330, dima_hip(FLY, k), k, "downcast", "d80_slump", t=t, feet="stand")
+        g = people.dima82(220, dima_hip(FLY, k), k, "downcast", "d80_slump", t=t, feet="stand")
         o.append(ghost(g["svg"], .45 * gp))
-        o.append(PR.sparkles(330, FLY - 600, 1.0, gp, t, seed=2, col="#ffffff"))
+        o.append(PR.sparkles(220, FLY - 600, 1.0, gp, t, seed=2, col="#ffffff"))
     o.append(d["svg"])
     u = ease_io(ramp(t, a, b - a))
     return view("".join(o), 470 - 40 * u, 1030, 1.0 + .1 * u, 0)
@@ -985,7 +986,7 @@ def frame_s17(t):
     a, b = T0("s17"), T1("s17")
     o = [gallery_bg(t, -800, 1900, top=-1200)]
     o.append(PR.glow(540, 900, 700, .8, "#fff1c4"))
-    o.append(framed(540, 760, .95, t, PICS["wedding"], BACKS["wedding"], flip=1.0, rot=0, seed=1, wire=False))      # спинка трона
+    o.append(framed(540, 760, .95, t, PICS["sea"], rot=0, seed=1, wire=False, glow=.5))      # спинка трона
     for j, (x, y, rot, nm) in enumerate(((330, 1180, -14, "car"), (750, 1170, 12, "sea"), (540, 1330, 0, "smile"), (380, 1420, 6, "sea"),
                                           (700, 1430, -5, "wedding"))):
         o.append(framed(x, y, .62, t, PICS[nm], BACKS[nm], flip=1.0 if j % 2 else 0.0, rot=rot, seed=j + 2, wire=False))
@@ -993,7 +994,7 @@ def frame_s17(t):
     st = dict(look=(.6, -.3), tail=10 * math.sin(t * 1.6), flame_e=1.0, smile=1.0, blink=1.0, tilt=8 + 4 * math.sin(t * 2), paw=.6 * fix)
     o.append(CT.draw(540, 1170, 1.05, st, t))
     hx, hy = CT.head_world(540, 1170, 1.05, st)
-    o.append(PR.crown(540 + 10 * math.sin(t * 2), hy - 200 - 20 * fix, .9, rot=12 - 10 * fix, bounce=fix))
+    o.append(PR.crown(hx + 6 * math.sin(t * 2), hy - 125 - 20 * fix, .9, rot=12 - 10 * fix, bounce=fix))
     o.append(PR.sparkles(540, hy - 260, 1.4, .7, t, seed=6))
     u = ease_io(ramp(t, a, b - a))
     return view("".join(o), 540, 1000 - 40 * u, .95 + .07 * u, 0)
