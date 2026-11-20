@@ -6,7 +6,7 @@ FR = sys.argv[1]  # папка кадров fNNNN.jpg
 T = json.load(open(f'{B}/timeline.json')); LN = T['lines']
 def font(sz, w):
     f = ImageFont.truetype(f'{S}/onest.ttf', sz); f.set_variation_by_axes([w]); return f
-FS, FT, FH = font(66, 750), font(38, 650), font(84, 850)
+FS, FT, FH = font(66, 750), font(38, 650), font(76, 850)
 chunks = []
 for l in LN:
     ws = l['words']; i = 0
@@ -21,7 +21,7 @@ def text(img, txt, y, f, stroke, fill='white'):
         sh = Image.new('RGBA', img.size, 0); ImageDraw.Draw(sh).text((x, yy + 4), ln, font=f, fill=(0, 0, 0, 170), stroke_width=stroke + 3, stroke_fill=(0, 0, 0, 170))
         img.alpha_composite(sh.filter(ImageFilter.GaussianBlur(5)))
         d.text((x, yy), ln, font=f, fill=fill, stroke_width=stroke, stroke_fill=(15, 15, 15))
-HOOK = 'СКОЛЬКО ХОББИ ТЫ\nБРОСИЛ НА ВТОРОЙ\nДЕНЬ? У ДИМЫ ДЕВЯТЬ.'
+HOOK = 'СКОЛЬКО ХОББИ\nТЫ БРОСИЛ\nНА ВТОРОЙ ДЕНЬ?\nУ ДИМЫ ДЕВЯТЬ.'
 def clean(w): return w.upper().replace('«', '').replace('»', '').rstrip(',.')
 files = sorted(glob.glob(f'{FR}/f*.jpg'))
 # звук
