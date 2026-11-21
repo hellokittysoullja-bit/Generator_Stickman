@@ -299,17 +299,18 @@ def calendar30(x, y, t, crossed=30, t0=None, t1=None, w=520.0, h=560.0, pulse=0.
     o = []
     paper_c = lib.mix("#fffdf6", "#c9cbe0", night)
     o.append(shape(lib.rrect(x - w / 2, y - h / 2, x + w / 2, y + h / 2, 16), paper_c,
-                   blob(lib.rect_pts(x - w / 2, y - h / 2, x + w / 2, y - h / 2 + 92), lib.mix("#E9576A", "#8a4a62", night)), w=5, seed=2001 + seed))
+                   blob(lib.rect_pts(x - w / 2, y - h / 2, x + w / 2, y - h / 2 + 92 * h / 450), lib.mix("#E9576A", "#8a4a62", night)), w=5, seed=2001 + seed))
     for j in range(5):
         rx = x - w / 2 + 80 + j * (w - 160) / 4
         o.append(line([(rx, y - h / 2 - 30), (rx, y - h / 2 + 20)], 11, "#8a8f99", taper=0, wmin=1, seed=2002 + j))
-    cw, ch = (w - 50) / 6, (h - 130) / 5
+    kk = h / 450
+    cw, ch = (w - 50 * kk) / 6, (h - 130 * kk) / 5
     n = 0
     for r in range(5):
         for c in range(6):
-            cx = x - w / 2 + 25 + cw * (c + .5)
-            cy = y - h / 2 + 110 + ch * (r + .5)
-            o.append(shape(lib.rrect(cx - cw / 2 + 5, cy - ch / 2 + 5, cx + cw / 2 - 5, cy + ch / 2 - 5, 7), lib.mix("#f3eee2", "#b9bbd2", night), "",
+            cx = x - w / 2 + 25 * kk + cw * (c + .5)
+            cy = y - h / 2 + 110 * kk + ch * (r + .5)
+            o.append(shape(lib.rrect(cx - cw / 2 + 5 * kk, cy - ch / 2 + 5 * kk, cx + cw / 2 - 5 * kk, cy + ch / 2 - 5 * kk, 7 * kk), lib.mix("#f3eee2", "#b9bbd2", night), "",
                            w=2.4, seed=2010 + n))
             if t0 is not None:
                 ta = t0 + (t1 - t0) * n / 29
@@ -319,8 +320,8 @@ def calendar30(x, y, t, crossed=30, t0=None, t1=None, w=520.0, h=560.0, pulse=0.
             if u > 0:
                 s = 1 + .5 * bump(t, ta, .03, .12) if t0 is not None else 1.0
                 s *= 1 + .18 * pulse
-                q = cw * .32 * s
-                o.append(PR.cross_stroke((cx - q, cy - q), (cx + q, cy + q), (cx - q, cy + q), (cx + q, cy - q), u, w=9, seed=n + 7 * seed, col="#d5302a"))
+                q = min(cw, ch) * .3 * s
+                o.append(PR.cross_stroke((cx - q, cy - q), (cx + q, cy + q), (cx - q, cy + q), (cx + q, cy - q), u, w=max(4.0, 9 * kk), seed=n + 7 * seed, col="#d5302a"))
             n += 1
     return "".join(o)
 
@@ -376,8 +377,10 @@ def desk_world(t, dima="type", clock=(10, 0), cat_st=None, cat_dy=0.0, cat_x=Non
     """Комната со столом. dima — готовая фигура (dict), "type" — печатает, None — нет; fold — kwargs папки или None (нет)."""
     o = [room(t, dusk=.6 * phase, night=night)]
     o.append(sky_window(WIN[0], WIN[1], 300, 420, t, phase, night))
-    if cal is None:
+    if cal is None and t < T0("s12"):         # календарь с крестами — только в болях; после призыва его нет
         o.append(calendar30(CAL[0], CAL[1], t, 30, w=420, h=450, night=night))
+    elif cal is None:
+        o.append(PR.bookshelf(CAL[0], CAL[1] + 200, 440, 400, shelves=2, seed=4))
     elif cal:
         o.append(cal)
     if clock is not None:
@@ -408,8 +411,10 @@ def desk_world(t, dima="type", clock=(10, 0), cat_st=None, cat_dy=0.0, cat_x=Non
 HIT = stress(2, .35)          # «мотиВАцию»: последний, тридцатый крест бьёт по календарю
 
 
-HCAL = (600.0, 585.0)
-HFOLD = (770.0, DESK[1] - 20)
+HCAL = (470.0, 590.0)
+HCW, HCH = 280.0, 266.0
+HFOLD = (720.0, DESK[1] - 20)
+HFK = 1.22                # папка в хуке крупнее календаря
 
 
 def hook_world(t, tt):
@@ -418,23 +423,23 @@ def hook_world(t, tt):
     o = [room(t)]
     o.append(sky_window(WIN[0] - 60, WIN[1] + 40, 300, 420, t, 0.0))
     t_a = -1.3
-    o.append(calendar30(HCAL[0], HCAL[1], tt, t0=t_a, t1=HIT, w=400, h=380, pulse=bump(tt, HIT, .04, .3)))
+    o.append(calendar30(HCAL[0], HCAL[1], tt, t0=t_a, t1=HIT, w=HCW, h=HCH, pulse=bump(tt, HIT, .04, .3)))
     o.append(PR.desk(DESK[0], DESK[1], w=860, depth=100, leg_h=260, seed=7))
-    o.append(folder(HFOLD[0], HFOLD[1], 1.0, tt, dust=1.0, web=1.0, tremble=.6 + 1.4 * bump(tt, HIT, .04, .3)))
-    sx = HFOLD[0] + 170
+    o.append(folder(HFOLD[0], HFOLD[1], HFK, tt, dust=1.0, web=1.0, tremble=.6 + 1.4 * bump(tt, HIT, .04, .3)))
+    sx = HFOLD[0] + 205
     sp_drop = 120 + 60 * math.sin(tt * 3.1) + 50 * bump(tt, HIT, .05, .3)
-    o.append(line([(sx, HFOLD[1] - 210), (sx, -400)], 1.8, WEB_C, taper=0, wmin=1, seed=31100))
-    o.append(PR.spider(sx, HFOLD[1] - 210, 1.1, drop=sp_drop, t=tt, seed=1, look=.3 * math.sin(tt * 4)))
+    o.append(line([(sx, HFOLD[1] - 262), (sx, -400)], 1.8, WEB_C, taper=0, wmin=1, seed=31100))
+    o.append(PR.spider(sx, HFOLD[1] - 262, 1.1, drop=sp_drop, t=tt, seed=1, look=.3 * math.sin(tt * 4)))
     o.append(cat(CAT_AT[0] - 10, CAT_AT[1] - 18 * bump(tt, HIT, .05, .2), .44, tt,
                  dict(look=(-.9, -.6), perk=bump(tt, HIT, .04, .5), tail=24 * math.sin(tt * 7), ear=.6 * math.sin(tt * 9))))
     o.append(dust_motes(250, 560, 1100, 1000, tt, n=26, seed=1, gust=bump(tt, HIT, .05, .4)))
-    o.append(PR.sparkles(HCAL[0], HCAL[1] + 100, 1.3, bump(tt, HIT, .04, .4), tt, seed=3, n=5, r=170, col="#d5302a"))
+    o.append(PR.sparkles(HCAL[0], HCAL[1] + 60, 1.0, bump(tt, HIT, .04, .4), tt, seed=3, n=5, r=130, col="#d5302a"))
     return "".join(o)
 
 
 def hook_cam_scene(t):
     u = ease_io(clamp((t + .2) / 1.7))
-    return 730 - 25 * u, 740 + 10 * u + 6 * math.sin(t * 6), 1.3 + .07 * u
+    return 700 - 25 * u, 740 + 10 * u + 6 * math.sin(t * 6), 1.3 + .07 * u
 
 
 def hook_wrap(body, t, hit, bg=BG):
@@ -498,13 +503,13 @@ def frame_s02(t):
     a, b = T0("s02"), T1("s02")
     t_sp = W(3)
     o = [room(t)]
-    o.append(calendar30(HCAL[0], HCAL[1], t, 30, w=400, h=380))
+    o.append(calendar30(HCAL[0], HCAL[1], t, 30, w=HCW, h=HCH))
     o.append(PR.desk(DESK[0], DESK[1], w=860, depth=100, leg_h=260, seed=7))
-    o.append(folder(HFOLD[0], HFOLD[1], 1.0, t, dust=1.0, web=1.0, tremble=.5 + 1.5 * bump(t, t_sp, .05, .4)))
+    o.append(folder(HFOLD[0], HFOLD[1], HFK, t, dust=1.0, web=1.0, tremble=.5 + 1.5 * bump(t, t_sp, .05, .4)))
     sx = HFOLD[0] - 60
     drop = 20 + 105 * ease_out(ramp(t, t_sp, .3)) + 25 * math.sin(t * 5) * ramp(t, t_sp + .3, .2)
-    o.append(line([(sx, HFOLD[1] - 420), (sx, -400)], 1.8, WEB_C, taper=0, wmin=1, seed=31101))
-    o.append(PR.spider(sx, HFOLD[1] - 420, 1.5, drop=drop, t=t, seed=2, look=.5))
+    o.append(line([(sx, HFOLD[1] - 470), (sx, -400)], 1.8, WEB_C, taper=0, wmin=1, seed=31101))
+    o.append(PR.spider(sx, HFOLD[1] - 470, 1.5, drop=drop, t=t, seed=2, look=.5))
     o.append(falling_specks(HFOLD[0] - 260, HFOLD[0] + 260, HFOLD[1] - 420, HFOLD[1] - 40, t, n=22, seed=2))
     o.append(dust_motes(HFOLD[0] - 300, HFOLD[1] - 500, HFOLD[0] + 300, HFOLD[1], t, n=14, seed=4))
     o.append(cat(CAT_AT[0] - 10, CAT_AT[1], .44, t, dict(look=(-.9, .2), squint=.5, tail=10 * math.sin(t * 3))))
@@ -521,20 +526,20 @@ def frame_s03(t):
     t30 = W(7)
     o = [room(t)]
     pulse = bump(t, t30, .05, .35)
-    o.append(calendar30(HCAL[0], HCAL[1], t, 30, w=400, h=380, pulse=pulse))
+    o.append(calendar30(HCAL[0], HCAL[1], t, 30, w=HCW, h=HCH, pulse=pulse))
     circ = ease_out(ramp(t, t30 - .05, .45))
     if circ > .01:
         n = 48
-        pts = [(HCAL[0] + 250 * math.cos(-2.2 + 2 * math.pi * 1.06 * j / n * circ), HCAL[1] + 20 + 235 * math.sin(-2.2 + 2 * math.pi * 1.06 * j / n * circ))
+        pts = [(HCAL[0] + 180 * math.cos(-2.2 + 2 * math.pi * 1.06 * j / n * circ), HCAL[1] + 14 + 168 * math.sin(-2.2 + 2 * math.pi * 1.06 * j / n * circ))
                for j in range(n + 1)]
         o.append(line(pts, 14, "#d5302a", taper=.3, wmin=.5, seed=3301))
-    o.append(PR.sparkles(HCAL[0], HCAL[1], 2.2, bump(t, t30 + .3, .05, .4), t, seed=33, n=6, r=300, col="#d5302a"))
+    o.append(PR.sparkles(HCAL[0], HCAL[1], 1.6, bump(t, t30 + .3, .05, .4), t, seed=33, n=6, r=220, col="#d5302a"))
     o.append(PR.desk(DESK[0], DESK[1], w=860, depth=100, leg_h=260, seed=7))
-    o.append(folder(HFOLD[0], HFOLD[1], 1.0, t, dust=1.0, web=1.0, tremble=.5))
+    o.append(folder(HFOLD[0], HFOLD[1], HFK, t, dust=1.0, web=1.0, tremble=.5))
     o.append(dust_motes(HCAL[0] - 260, HCAL[1] - 200, HCAL[0] + 260, HCAL[1] + 240, t, n=16, seed=5))
     u = ease_io(ramp(t, a, b - a))
     dx, dy = shake(t, t30, 10)
-    return view("".join(o), HCAL[0] + dx, HCAL[1] + 40 + dy, 1.75 + .25 * u + .08 * pulse, 1.5 - 3 * u, t=t)
+    return view("".join(o), HCAL[0] + dx, HCAL[1] + 30 + dy, 2.4 + .3 * u + .08 * pulse, 1.5 - 3 * u, t=t)
 
 
 # ═════════════════════════ s04: штамп «СДАН» ═════════════════════════
@@ -545,7 +550,7 @@ def frame_s04(t):
     """«сдан без неё»: красный штамп падает сверху на папку, на «сдан» удар — пыль разлетается, паутина рвётся, кот
     подпрыгивает; штамп отскакивает вверх — на папке красный оттиск СДАН."""
     a, b = T0("s04"), T1("s04")
-    fx, fy = HFOLD[0] + STAMP_DX, HFOLD[1] - 80          # место оттиска (мир)
+    fx, fy = HFOLD[0] + STAMP_DX * HFK, HFOLD[1] - 80 * HFK          # место оттиска (мир)
     fall = ease_in(ramp(t, a - .1, HS - a + .1))
     lift = ease_in(ramp(t, HS + .28, .25))
     sq = bump(t, HS, .03, .12)
@@ -556,13 +561,13 @@ def frame_s04(t):
     hit_u = ramp(t, HS, .7)
     dust = 1 - .75 * ease_out(ramp(t, HS, .35))
     o = [room(t)]
-    o.append(calendar30(HCAL[0], HCAL[1], t, 30, w=400, h=380))
+    o.append(calendar30(HCAL[0], HCAL[1], t, 30, w=HCW, h=HCH))
     o.append(PR.desk(DESK[0], DESK[1], w=860, depth=100, leg_h=260, seed=7))
-    o.append(folder(HFOLD[0], HFOLD[1], 1.0, t, dust=dust, web=1.0 - .4 * ramp(t, HS, .3), tremble=2 * bump(t, HS, .03, .3),
+    o.append(folder(HFOLD[0], HFOLD[1], HFK, t, dust=dust, web=1.0 - .4 * ramp(t, HS, .3), tremble=2 * bump(t, HS, .03, .3),
                     stamp=ramp(t, HS + .02, .05) if t > HS else 0.0, torn=ease_out(ramp(t, HS, .2))))
     if t < HS:      # тень штампа растёт на папке
         o.append(blob(ellipse_pts(fx, fy + 30, 140 * (.4 + .6 * fall), 22 * (.4 + .6 * fall), 18), "#3a2a20", .28 * fall))
-    o.append(stamp(fx, sy + 50, .85, -9 + 6 * (1 - fall), sq))
+    o.append(stamp(fx, sy + 50 * HFK, .85 * HFK, -9 + 6 * (1 - fall), sq))
     if t < HS:
         o.append(PR.speed_arcs(fx, sy - 260, 1.2, fall, t, seed=41, n=3, ang=270))
     o.append(dust_burst(fx, fy + 40, 1.3, hit_u, seed=4))
@@ -572,7 +577,7 @@ def frame_s04(t):
                                                                        smile=ramp(t, HS + .4, .2), tail=30 * math.sin(t * 9))))
     u = ease_io(ramp(t, a, b - a))
     dx, dy = shake(t, HS, 18)
-    return view("".join(o), HFOLD[0] + 70 + dx, HFOLD[1] - 260 + dy, 1.45 + .12 * u + .1 * bump(t, HS, .03, .3), 0, t=t)
+    return view("".join(o), HFOLD[0] + 70 + dx, HFOLD[1] - 260 + dy, 1.35 + .12 * u + .1 * bump(t, HS, .03, .3), 0, t=t)
 
 
 # ═════════════════════════ s05–s06: ждал настроения с утра до вечера ═════════════════════════
