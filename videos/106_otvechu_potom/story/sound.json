@@ -1,0 +1,296 @@
+{
+ "_": "Звуки рилса 106 (plan.py). t — пик звука; word — индекс voice/words.json. Только assets/sfx/reels/library.json.",
+ "keys": [
+  2,
+  3,
+  9,
+  12,
+  15,
+  20,
+  22,
+  25,
+  31,
+  35,
+  39,
+  43,
+  48,
+  51
+ ],
+ "sfx": [
+  {
+   "name": "fast_whoosh",
+   "why": "удар хука: влёт камеры к телефону",
+   "t": 0.1
+  },
+  {
+   "name": "riser",
+   "why": "нарастание хука",
+   "t": 0.2
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "счётчик «40» дёргается",
+   "word": 1,
+   "offset": 0.05,
+   "gain_db": -2,
+   "word_text": "отвечать"
+  },
+  {
+   "name": "shock",
+   "why": "«потом»: палец жмёт иконку, счётчик тает",
+   "word": 2,
+   "offset": 0.12,
+   "word_text": "потом."
+  },
+  {
+   "name": "typing",
+   "why": "пузыри вылетают с галочками",
+   "word": 2,
+   "offset": 0.3,
+   "gain_db": -3,
+   "word_text": "потом."
+  },
+  {
+   "name": "swoosh",
+   "why": "первая склейка: список чатов",
+   "t": 2.12
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«сообщений»: кружки становятся галочками",
+   "word": 4,
+   "word_text": "сообщений"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к столу",
+   "t": 3.32
+  },
+  {
+   "name": "level_up",
+   "why": "«двадцать минут»: секундомер заполнен",
+   "word": 9,
+   "offset": 0.1,
+   "word_text": "минут."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к телефону",
+   "t": 4.76
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«Читал»: палец открывает чат",
+   "word": 10,
+   "offset": 0.05,
+   "word_text": "Читал"
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "«закрывал»: чат смахнут",
+   "word": 12,
+   "offset": 0.1,
+   "word_text": "закрывал."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к Диме",
+   "t": 6.247
+  },
+  {
+   "name": "oof",
+   "why": "«неделю»: бирка «неделю назад»",
+   "word": 14,
+   "offset": 0.1,
+   "word_text": "неделю"
+  },
+  {
+   "name": "fast_glitch",
+   "why": "«стыдно»: Дима прячет лицо",
+   "word": 15,
+   "gain_db": -3,
+   "word_text": "стыдно"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к групповому чату",
+   "t": 7.98
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«друзья»: «идём в бар?»",
+   "word": 18,
+   "word_text": "друзья"
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«я за!»",
+   "word": 19,
+   "offset": 0.1,
+   "gain_db": 1,
+   "word_text": "перестали"
+  },
+  {
+   "name": "shock",
+   "why": "«звать»: фото друзей без Димы",
+   "word": 20,
+   "offset": 0.05,
+   "word_text": "звать."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к призыву",
+   "t": 9.88
+  },
+  {
+   "name": "typing",
+   "why": "печатается КОТ",
+   "word": 22,
+   "offset": -0.05,
+   "gain_db": -4,
+   "word_text": "«КОТ»,"
+  },
+  {
+   "name": "level_up",
+   "why": "«КОТ» напечатан",
+   "word": 22,
+   "offset": 0.2,
+   "word_text": "«КОТ»,"
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "кот прыгает к Диме",
+   "t": 10.88
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка к висящему чату",
+   "t": 11.573
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«висящее»: часики у сообщения",
+   "word": 25,
+   "word_text": "висящее"
+  },
+  {
+   "name": "fast_glitch",
+   "why": "«сообщение»: пузырь дрожит",
+   "word": 26,
+   "gain_db": -4,
+   "word_text": "сообщение"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "склейка к полю ввода",
+   "t": 13.573
+  },
+  {
+   "name": "typing",
+   "why": "строка печатается",
+   "word": 28,
+   "gain_db": -4,
+   "word_text": "ответом"
+  },
+  {
+   "name": "level_up",
+   "why": "«строку»: строка готова",
+   "word": 31,
+   "offset": 0.05,
+   "word_text": "строку,"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка к отправке",
+   "t": 15.01
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«страшно»: палец жмёт «отправить»",
+   "word": 34,
+   "word_text": "страшно"
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "«отправить»: строка улетает",
+   "word": 35,
+   "word_text": "отправить."
+  },
+  {
+   "name": "level_up",
+   "why": "две галочки",
+   "word": 35,
+   "offset": 0.4,
+   "word_text": "отправить."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к решению, надпись",
+   "t": 16.76
+  },
+  {
+   "name": "level_up",
+   "why": "«Вот»: лампочка",
+   "word": 36,
+   "offset": 0.15,
+   "word_text": "Вот"
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«поменял»: кот садится рядом",
+   "word": 39,
+   "word_text": "поменял."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к телефону",
+   "t": 18.773
+  },
+  {
+   "name": "typing",
+   "why": "«одной строкой»: строка печатается",
+   "word": 41,
+   "gain_db": -4,
+   "word_text": "одной"
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "«сразу»: строка улетает",
+   "word": 43,
+   "word_text": "сразу,"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка к списку",
+   "t": 20.912
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«открыл»: следующий чат с галочкой",
+   "word": 45,
+   "word_text": "открыл."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к итогу",
+   "t": 21.92
+  },
+  {
+   "name": "level_up",
+   "why": "«снова»: уведомление «Ты с нами сегодня?»",
+   "word": 48,
+   "word_text": "снова"
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«бар»: кот машет хвостом",
+   "word": 51,
+   "word_text": "бар."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст в петлю к хуку",
+   "t": 23.82
+  }
+ ]
+}
