@@ -148,6 +148,8 @@ def kot_small(t):
     k = SH["kot"]
     if t < T1("s07") - .01 or t > k["t_out"]:
         return ""
+    if T0("s09") <= t < T1("s09"):              # крупный план телефона: место наверху занято чатом
+        return ""
     return kot_print(t, -9.0, 300, 330, 140)
 
 
@@ -575,7 +577,7 @@ def frame_s12(t):
         o.append(PR.sparkles(540, PY0 + 400, 1.8, bump(t, t_send + .35, .05, .4), t, seed=7, n=5, r=200))
     u = ease_io(ramp(t, a, b - a))
     dx, dy = shake(t, t_send, 8)
-    return view("".join(o), 560 + dx, 1000 + dy, 1.04 + .08 * u, -1 + 2 * u, bg=PH_BG, t=t)
+    return view("".join(o), 560 + dx, 1130 + dy, 1.02 + .06 * u, -1 + 2 * u, bg=PH_BG, t=t)
 
 
 def frame_s13(t):
