@@ -148,7 +148,7 @@ def kot_small(t):
     k = SH["kot"]
     if t < T1("s12") - .01 or t > k["t_out"]:
         return ""
-    return kot_print(t, -9.0, 540, 330, 150)
+    return kot_print(t, -9.0, 300, 330, 140)
 
 
 def over(t):
@@ -292,8 +292,8 @@ def paw(t, t_hit):
     tip = (tip0[0] + (BTN[0] + 18 - tip0[0]) * e, tip0[1] + (BTN[1] - 14 - tip0[1]) * e)
     press = bump(t, t_hit, .04, .12)
     tip = (tip[0] - 6 * press, tip[1] + 14 * press)
-    base = (tip[0] + 560, tip[1] - 520)
-    return people.cat_forearm(base, tip, k=2.1, claw=0.0, seed=3)
+    base = (tip[0] + 430, tip[1] - 330)
+    return people.cat_forearm(base, tip, k=3.2, claw=0.0, seed=3)
 
 
 def frame_s01(t):
@@ -315,8 +315,8 @@ def frame_s01(t):
         o.append(PR.sweat(PX1 + 150, PY1 + 160, 1.4, 20))
     dx, dy = shake(t, HIT01, 14)
     cx = 560 + 20 * math.sin(t * 1.3)
-    cy = 1020 + 60 * ease_io(ramp(t, 0, T1("s01")))
-    s = .9 + .06 * ease_io(ramp(t, 0, T1("s01")))
+    cy = 1010 + 50 * ease_io(ramp(t, 0, T1("s01")))
+    s = 1.04 + .06 * ease_io(ramp(t, 0, T1("s01")))
     v = f'<g transform="{lib.cam(cx + dx, cy + dy, s, 0)}">{"".join(o)}</g>'
     if NOCAM:
         return lib.svg(f'<rect width="1080" height="1920" fill="{PH_BG}"/>' + v)
@@ -331,8 +331,8 @@ def frame_s16(t):
     u = ease_io(ramp(t, a, b - a))
     o = [phone_hand(t, call_screen(t), shake_u=1.0, thumb_to=thumb_hover(t, a))]
     o.append(PR.sweat(PX1 + 150, PY1 + 160, 1.4, 20))
-    s = .9 * (1 + (hc["zoom"] - 1) * u)
-    return view("".join(o), 560, 1020, s, hc["rot"] * u, bg=PH_BG, t=t)
+    s = 1.04 * (1 + (hc["zoom"] - 1) * u)
+    return view("".join(o), 560, 1010, s, hc["rot"] * u, bg=PH_BG, t=t)
 
 
 def frame_s05(t):
@@ -431,7 +431,7 @@ def dima_call(t, expr="proud82", head_add=0.0):
     probe = people.dima82(360, DHIP, .5, expr, "sit_desk", t=t, feet=feet, lean_add=.1, head_add=head_add)
     tx, ty = probe["temple"]
     tgt = (tx - 70 * .5, ty + 150 * .5)
-    arms = {"f": ("ik", (190, -200), -1), "n": ("ik", tgt, 1)}
+    arms = {"f": ("ang", 0.16, 0.16), "n": ("ik", tgt, 1)}
     hands = {"f": {"curl": (.4, .4, .45, .5), "thumb": .4}, "n": {"dir": (.3, -1), "curl": (.7, .75, .8, .8), "thumb": .6}}
     f = people.dima82(360, DHIP, .5, expr, "sit_desk", t=t, feet=feet, lean_add=.1, head_add=head_add, arms=arms, hands=hands)
     hx, hy = f["head"]
@@ -453,7 +453,7 @@ def frame_s02(t):
     o.append(PR.sparkles(LIST_C[0], LIST_C[1], 1.6, bump(t, W(4), .05, .4), t, seed=5, n=5, r=230))
     u = ease_io(ramp(t, a, b - a))
     dx, dy = shake(t, W(4), 7)
-    return view("".join(o), 640 + dx, 900 + dy, 1.32 + .08 * u, 0, t=t)
+    return view("".join(o), 640 + dx, 790 + dy, 1.3 + .06 * u, 0, t=t)
 
 
 def frame_s03(t):
@@ -558,7 +558,7 @@ def frame_s06(t):
     up = (hx + 150, hy + 130)
     down = (600, DESK_Y - 30)
     tgt = (up[0] + (down[0] - up[0]) * u, up[1] + (down[1] - up[1]) * u)
-    arms = {"f": ("ik", (190, -200), -1), "n": ("ik", tgt, -1)}
+    arms = {"f": ("ang", 0.16, 0.16), "n": ("ik", tgt, -1)}
     hands = {"f": {"curl": (.4, .4, .45, .5), "thumb": .4}, "n": {"curl": (.6, .65, .7, .7), "thumb": .5}}
     sad = t > t_put + .1
     o = desk_room(t, strikes=(), mode="day", sun=.5)
@@ -657,7 +657,7 @@ def frame_s08(t):
 
 
 # ═════════════════════════ s09–s11: решение — первая фраза на бумажке ═════════════════════════
-def slip(x, y, k, t, t0=None, dur=1.6, rot=-4, pen=True):
+def slip(x, y, k, t, t0=None, dur=1.6, rot=-4, pen=True, blank=False):
     """Бумажка с фразой «Здравствуйте, / хочу записаться...»: пишется буква за буквой с t0 за dur; ручка в руке идёт за последней буквой."""
     L1, L2 = "Здравствуйте,", "хочу записаться..."
     o = [blob(lib.rrect(-322, -150, 338, 172), "#000000", .14)]
@@ -666,6 +666,8 @@ def slip(x, y, k, t, t0=None, dur=1.6, rot=-4, pen=True):
         o.append(line([(-300, -60 + 92 * j), (300, -60 + 92 * j)], 2, "#d7e3f1", taper=0, wmin=1, seed=8301 + j))
     n_all = len(L1) + len(L2)
     n = n_all if t0 is None else int(n_all * clamp((t - t0) / dur))
+    if blank:
+        n = 0
     s1, s2 = L1[:min(n, len(L1))], L2[:max(0, n - len(L1))]
     size = 58
     o.append(plain(s1, -290, -72, size, fill="#1d2448"))
@@ -742,14 +744,15 @@ def frame_s11(t):
     thumb = (rest[0] + (tgt[0] - rest[0]) * reach, rest[1] + (tgt[1] - rest[1]) * reach)
     flip = ease_io(ramp(t, W(42), .3))
     body = phone_hand(t, call_screen(t, t_press), thumb_to=thumb, bg=DESK_TOP)
-    sl = f'<g transform="translate(-120 1650) scale(1 {1 - 2 * flip:.3f}) translate(0 0)">{slip(0, 0, 1.0, t)}</g>'
+    sy = abs(1 - 2 * flip)
+    sl = f'<g transform="translate(540 250) scale(.85 {.85 * max(sy, .02):.3f})">{slip(0, 0, 1.0, t, rot=3, blank=flip > .5)}</g>'
     o = [desk_top_bg(), sl, body.replace(rect(-900, -1400, 2200, 2600, DESK_TOP), "", 1)]
     if t > t_press:
         o.append(PR.tap_rings(BTN[0], BTN[1], ramp(t, t_press, .3), 1.4, col="#FFD23F"))
         o.append(PR.sparkles(BTN[0], BTN[1], 1.8, bump(t, t_press, .05, .4), t, seed=9, n=5, r=200))
     u = ease_io(ramp(t, a, b - a))
     dx, dy = shake(t, t_press, 9)
-    return view("".join(o), 520 + dx, 1180 + dy, .78 + .06 * u, 2 - 3 * u, bg=DESK_TOP, t=t)
+    return view("".join(o), 540 + dx, 1000 + dy, .78 + .05 * u, 2 - 3 * u, bg=DESK_TOP, t=t)
 
 
 # ═════════════════════════ s12: призыв «КОТ» ═════════════════════════
@@ -766,9 +769,18 @@ def frame_s12(t):
     a, b = T0("s12"), T1("s12")
     t_k = W(46) - .05
     o = [paper_bg()]
+    cb = pop(t, a + .02, .25)
+    if cb > .01:
+        box = (f'<rect x="-420" y="-200" width="840" height="400" rx="40" fill="#ffffff" stroke="#111" stroke-width="7"/>'
+               + f'<path d="M-260 196 l-40 90 l120 -90 z" fill="#ffffff" stroke="#111" stroke-width="7" stroke-linejoin="round"/>'
+               + f'<rect x="-416" y="150" width="832" height="40" fill="#ffffff"/>'
+               + plain("комментарий", -370, -130, 40, fill="#9aa0aa"))
+        if t < t_k and int(t * 3) % 2 == 0:
+            box += rect(-6, -60, 6, 60, "#2f6fd1")
+        o.append(tf(box, 540, 590, cb, -1.5))
     o.append(PR.glow(540, 700, 420, .5 * ramp(t, t_k + .2, .3), "#ffe9a8"))
-    o.append(kot_print(t, t_k, 540, 760, 300))
-    o.append(PR.sparkles(540, 700, 2.4, bump(t, t_k + .3, .05, .5), t, seed=91, n=6, r=380))
+    o.append(kot_print(t, t_k, 540, 680, 300))
+    o.append(PR.sparkles(540, 600, 2.4, bump(t, t_k + .3, .05, .5), t, seed=91, n=6, r=380))
     k = .62
     hip = 1640 - (people.LEG_LEN - 12) * k - 6
     f = people.dima82(330, hip, k, "proud82", "d82_rest", t=t, feet="stand", head_add=.05 * math.sin(t * 3))
