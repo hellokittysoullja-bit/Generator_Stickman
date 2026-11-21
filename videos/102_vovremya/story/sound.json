@@ -1,0 +1,314 @@
+{
+ "_": "Звуки рилса 102. t — пик звука; word — индекс voice/words.json + offset. Только assets/sfx/reels/library.json.",
+ "keys": [
+  0,
+  5,
+  12,
+  18,
+  23,
+  27,
+  30,
+  31,
+  39,
+  43,
+  47,
+  50,
+  56,
+  60,
+  62,
+  65,
+  69,
+  76
+ ],
+ "sfx": [
+  {
+   "name": "fast_whoosh",
+   "why": "удар хука: влёт камеры к празднику",
+   "t": 0.1
+  },
+  {
+   "name": "riser",
+   "why": "нарастание хука",
+   "t": 0.2
+  },
+  {
+   "name": "shock",
+   "why": "«подряд»: дверь распахивается, Дима влетает",
+   "word": 2,
+   "offset": 0.33,
+   "word_text": "подряд"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к календарю",
+   "t": 1.25
+  },
+  {
+   "name": "typing",
+   "why": "галочки ставятся одна за другой",
+   "t": 1.35,
+   "gain_db": -4
+  },
+  {
+   "name": "level_up",
+   "why": "«вовремя»: все 30 клеток с галочками",
+   "word": 5,
+   "offset": 0.05,
+   "word_text": "вовремя."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст обратно на праздник",
+   "t": 2.55
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "«опаздывал»: Дима влетает в дверь",
+   "word": 7,
+   "offset": 0,
+   "word_text": "опаздывал"
+  },
+  {
+   "name": "oof",
+   "why": "«рождения»: последняя свеча гаснет",
+   "word": 12,
+   "offset": 0.2,
+   "word_text": "рождения."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст в прихожую",
+   "t": 4.9
+  },
+  {
+   "name": "fast_glitch",
+   "why": "«Выйти»: стрелки часов летят",
+   "word": 13,
+   "offset": 0,
+   "word_text": "Выйти"
+  },
+  {
+   "name": "shock",
+   "why": "«выйти»: дверь распахнута",
+   "word": 18,
+   "offset": 0,
+   "word_text": "выйти,"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст на улицу",
+   "t": 7.4
+  },
+  {
+   "name": "shock",
+   "why": "«пора»: уличные часы бьют срок",
+   "word": 21,
+   "offset": 0,
+   "word_text": "пора"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст в ванную",
+   "t": 9.05
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«пять»: таймер подпрыгивает",
+   "word": 26,
+   "offset": 0,
+   "word_text": "пять"
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "наезд на таймер",
+   "t": 10.4
+  },
+  {
+   "name": "shock",
+   "why": "«двадцать»: таймер прыгает 5 → 25",
+   "word": 30,
+   "offset": 0,
+   "word_text": "двадцать"
+  },
+  {
+   "name": "oof",
+   "why": "«пять»: Дима в панике",
+   "word": 31,
+   "offset": 0.1,
+   "word_text": "пять."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к телефону",
+   "t": 12.35
+  },
+  {
+   "name": "typing",
+   "why": "большой палец печатает",
+   "t": 12.5,
+   "gain_db": -4
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "«сообщение»: пузырь отправлен",
+   "word": 39,
+   "offset": 0,
+   "word_text": "сообщение:"
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "новый такой же пузырь",
+   "word": 40,
+   "offset": 0,
+   "word_text": "„буду"
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "ещё пузырь",
+   "word": 41,
+   "offset": 0,
+   "word_text": "через"
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "ещё пузырь",
+   "word": 42,
+   "offset": 0,
+   "word_text": "пять"
+  },
+  {
+   "name": "fast_glitch",
+   "why": "«минут»: телефон дрожит",
+   "word": 43,
+   "offset": 0,
+   "word_text": "минут“."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст в вечернюю прихожую",
+   "t": 16.15
+  },
+  {
+   "name": "level_up",
+   "why": "«Вот»: лампочка-идея",
+   "word": 44,
+   "offset": 0.1,
+   "word_text": "Вот"
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "кот запрыгивает на табурет",
+   "word": 46,
+   "offset": 0,
+   "word_text": "я"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к сборам",
+   "t": 17.85
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«засёк»: кот жмёт секундомер",
+   "word": 50,
+   "offset": -0.03,
+   "word_text": "засёк,"
+  },
+  {
+   "name": "typing",
+   "why": "ускоренные сборы",
+   "t": 19.0,
+   "gain_db": -5
+  },
+  {
+   "name": "level_up",
+   "why": "«сборы»: стоп, плашка 40 МИН",
+   "word": 56,
+   "offset": 0.1,
+   "word_text": "сборы,"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к схеме",
+   "t": 20.75
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "«назад»: стрелка растёт от двери",
+   "word": 60,
+   "offset": 0,
+   "word_text": "назад"
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«двери»: стрелка встала, искры",
+   "word": 62,
+   "offset": 0.3,
+   "word_text": "двери,"
+  },
+  {
+   "name": "swoosh",
+   "why": "камера к будильнику",
+   "t": 22.45
+  },
+  {
+   "name": "fast_glitch",
+   "why": "«вперёд»: стрелку перечёркивает",
+   "word": 65,
+   "offset": 0.15,
+   "word_text": "вперёд"
+  },
+  {
+   "name": "oof",
+   "why": "«будильника»: будильник обиделся",
+   "word": 67,
+   "offset": 0,
+   "word_text": "будильника."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к призыву",
+   "t": 23.9
+  },
+  {
+   "name": "typing",
+   "why": "пишется КОТ",
+   "word": 68,
+   "offset": 0,
+   "gain_db": -4,
+   "word_text": "Напиши"
+  },
+  {
+   "name": "level_up",
+   "why": "«КОТ» дописан",
+   "word": 69,
+   "offset": 0.1,
+   "word_text": "«КОТ»,"
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "прилетает пузырь «буду через 5 минут»",
+   "word": 71,
+   "offset": -0.1,
+   "word_text": "„через"
+  },
+  {
+   "name": "fast_glitch",
+   "why": "кот лопает пузырь",
+   "word": 74,
+   "offset": 0.05,
+   "word_text": "тоже"
+  },
+  {
+   "name": "swoosh",
+   "why": "петля: обратно на праздник",
+   "t": 27.35
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "дверь вот-вот откроется",
+   "t": 28.4,
+   "gain_db": -3
+  }
+ ]
+}
