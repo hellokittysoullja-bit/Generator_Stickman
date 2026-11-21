@@ -336,7 +336,7 @@ def frame_s01(t):
     for j, dx in enumerate((-260, 260)):
         o.append(PR.dust_puff(LDOOR[0] + dx, LDOOR[1] - 20, 1.0, ramp(t, .07, .5), seed=j) if hasattr(PR, "dust_puff") else "")
     if t > HIT01 - .1:
-        o.append(PR.question_mark(hx + 30, hy - 230, 1.2 * pop(t, HIT01 - .1, .25), 1.0, col="#e2574c"))
+        o.append(PR.question_mark(hx - 190, hy - 40, 1.0 * pop(t, HIT01 - .1, .25), 1.0, col="#e2574c"))
         o.append(PR.sweat(hx - 70, hy - 40, 1.1, -20))
     cx, cy, s = hook_cam_scene(t)
     dive = lib.ease_in(ramp(t, 1.02, T1("s01") - 1.02), 3)
