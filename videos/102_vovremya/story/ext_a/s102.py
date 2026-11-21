@@ -721,15 +721,18 @@ def phone_chat(t, bubbles, typing=0.0, shake_u=0.0, typed=0.0):
     x0, y0, x1, y1 = PR.phone_frame_rect(cx, cy, 1.0)
     c = lib.clip_rect(x0, y0, x1 - x0, y1 - y0)
     scr = [rect(x0, y0, x1, y1, "#ECE5DD")]
-    scr.append(rect(x0, y0, x1, y0 + 120, "#2f7d6a"))
-    scr.append(shape(ellipse_pts(x0 + 70, y0 + 60, 34, 34, 16), "#f2c5a0", "", w=3, seed=5010))
-    scr.append(f'<text x="{x0 + 124}" y="{y0 + 74}" font-family="IDB" font-size="40" fill="#ffffff">Друзья</text>')
+    tops = [y1 - 190 - yo - 59 * s for (yo, s, op, tm) in bubbles]
+    lift = max(0.0, (y0 + 406) - min(tops)) if tops else 0.0       # входящие уезжают вверх, а не прячутся под исходящими
     for j, (txt, yy) in enumerate((("ты где?", 220), ("мы уже все тут", 340))):
         w_ = 40 + 25 * len(txt)
+        yy -= lift
         scr.append(f'<rect x="{x0 + 24}" y="{y0 + yy - 50}" width="{w_}" height="96" rx="30" fill="#ffffff" stroke="#2a2a30" stroke-width="4"/>'
                    f'<text x="{x0 + 52}" y="{y0 + yy + 12}" font-family="IDB" font-size="42" fill="#1d2448">{txt}</text>')
     for (yo, s, op, tm) in bubbles:
         scr.append(msg_bubble(x1 - 24, y1 - 190 - yo, s, op=op, tm=tm))
+    scr.append(rect(x0, y0, x1, y0 + 120, "#2f7d6a"))
+    scr.append(shape(ellipse_pts(x0 + 70, y0 + 60, 34, 34, 16), "#f2c5a0", "", w=3, seed=5010))
+    scr.append(f'<text x="{x0 + 124}" y="{y0 + 74}" font-family="IDB" font-size="40" fill="#ffffff">Друзья</text>')
     scr.append(rect(x0, y1 - 110, x1, y1, "#f7f7f7"))
     scr.append(f'<rect x="{x0 + 20}" y="{y1 - 92}" width="{x1 - x0 - 130}" height="74" rx="37" fill="#ffffff" stroke="#c9c9c9" stroke-width="3"/>')
     if typed > .01:
@@ -838,11 +841,11 @@ def scheme_world(t, back_u=0.0, fwd_u=0.0, cross_u=0.0, ring=0.0, cat_st=None, s
     o = [scheme_bg()]
     o.append(timeline(-560, 980, LINE_Y, TICKS))
     o.append(door_open(DOOR_S[0], LINE_Y, .62, .0, t))
-    o.append(text("ВЫХОД 8:20", DOOR_S[0] - 40, LINE_Y - 640, 60, fill="#e2574c", stroke=PAPER, sw=6))
+    o.append(text("ВЫХОД 8:20", DOOR_S[0] - 60, LINE_Y - 640, 52, fill="#e2574c", stroke=PAPER, sw=6))
     o.append(red_arrow(DOOR_S[0] - 160, -380, 500, back_u))
     if back_u > .9:
         s_ = pop(t, 0, 1) if False else 1.0
-        o.append(text("40 МИН НАЗАД", 220, 420, 72, fill="#e2574c", stroke=PAPER, sw=8))
+        o.append(text("40 МИН НАЗАД", 20, 640, 60, fill="#e2574c", stroke=PAPER, sw=8))
     c_st = dict(dict(look=(.6, -.5), paw=1.0, smile=.6), **(cat_st or {}))
     o.append(cat(430, LINE_Y - 10, 1.05, t, c_st))
     o.append(stopwatch_held(640, 820, .55, t, .92))
@@ -862,7 +865,7 @@ def frame_s12(t):
     o += PR.sparkles(-380, 560, 1.8, bump(t, WE(62), .05, .5), t, seed=81, n=5, r=180)
     u = ease_io(ramp(t, a, b - a))
     dx, dy = shake(t, W(62), 8)
-    return view(o, 470 - 160 * u + dx, 880 + dy, .92 - .04 * u, 0, over=changed_label(t), bg=PAPER)
+    return view(o, 470 - 100 * u + dx, 880 + dy, .92 - .04 * u, 0, over=changed_label(t), bg=PAPER)
 
 
 def frame_s13(t):
@@ -879,12 +882,33 @@ def frame_s13(t):
 
 
 # ═════════════════════════ s14–s15: призыв «КОТ» ═════════════════════════
+def kot_print(t, t0, x, y, size):
+    """Кодовое слово печатными: жирный IDB, жёлтый с чёрной обводкой и тенью (как «КОТ» в рилсе 101); буквы выскакивают по одной
+    с t0 (по 0.09 с), y — базовая линия, x — центр слова."""
+    if t < t0:
+        return ""
+    o = []
+    w = size * .74
+    for j, ch in enumerate("КОТ"):
+        u = clamp((t - t0 - .09 * j) / .2)
+        if u <= 0:
+            continue
+        s = lib.back_out(u, 2.6) if u < 1 else 1.0
+        cx = x + (j - 1) * w
+        letter = (f'<text x="0" y="10" font-family="IDB" font-size="{size:.1f}" text-anchor="middle" fill="#000" opacity=".35" '
+                  f'stroke="#000" stroke-width="{size * .12:.1f}" stroke-linejoin="round">{ch}</text>'
+                  + text(ch, 0, 0, size, fill="#FFD23F", stroke="#111", sw=size * .11))
+        o.append(f'<g transform="translate({cx:.1f} {y:.1f}) rotate({-3 + 2 * j}) scale({s:.4f})">{letter}</g>')
+    return "".join(o)
+
+
+
 def frame_s14(t):
     """«Напиши «КОТ»»: на бумаге крупно пишется КОТ, кот рядом показывает на слово лапой."""
     a, b = T0("s14"), T1("s14")
     o = [scheme_bg()]
     o.append(PR.glow(540, 820, 420, .5 * ramp(t, W(69), .3), "#ffe9a8"))
-    o.append(hand_kot.kot(t, W(68) - .05, .75, 160, 760, size=3.9, col="#1d2448"))
+    o.append(kot_print(t, W(68) - .02, 540, 820, 300))
     o.append(PR.sparkles(540, 800, 2.4, bump(t, W(68) + .75, .05, .5), t, seed=91, n=6, r=380))
     o.append(cat(760, 1560, 1.25, t, dict(look=(-.6, -.6), paw=ease_out(ramp(t, W(69) - .2, .3)), smile=1.0, tail=10 * math.sin(t * 3))))
     u = ease_io(ramp(t, a, b - a))
@@ -898,7 +922,8 @@ def frame_s15(t):
     a, b = T0("s15"), T1("s15")
     o = [scheme_bg()]
     o.append(PR.glow(540, 820, 420, .5, "#ffe9a8"))
-    o.append(hand_kot.kot(t, 0.0, .01, 160 + 110 * ease_io(ramp(t, T0("s15"), .4)), 760 - 200 * ease_io(ramp(t, T0("s15"), .4)), size=3.9 - 1.2 * ease_io(ramp(t, T0("s15"), .4)), col="#1d2448", pen=False))
+    mv = ease_io(ramp(t, T0("s15"), .4))
+    o.append(kot_print(t, -9.0, 540, 820 - 240 * mv, 300 - 70 * mv))
     t_in, t_pop = W(71) - .1, W(74) + .05
     fly = ease_out(ramp(t, t_in, .35))
     if t < t_pop:
