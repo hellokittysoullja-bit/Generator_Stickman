@@ -42,7 +42,11 @@ SOURCES = {
 }
 
 
-def paper_bg(rgb: np.ndarray, tol: int = 26, holes: bool = False) -> np.ndarray:
+# рисунки карусели Б (формат 2): без каймы, в _img/cut/
+CUT = {"curtain", "wednesday", "list", "envelope", "night", "rush", "paw", "wave"}
+
+
+def paper_bg(rgb: np.ndarray, tol: int = 26, holes: bool = False, min_frac: float = 0.004) -> np.ndarray:
     """Маска фона: бумага, до которой можно дойти от края картинки."""
     h, w, _ = rgb.shape
     border = np.concatenate([rgb[0], rgb[-1], rgb[:, 0], rgb[:, -1]])
@@ -63,7 +67,7 @@ def paper_bg(rgb: np.ndarray, tol: int = 26, holes: bool = False) -> np.ndarray:
     # крупные замкнутые просветы (между хвостом и телом) — тоже фон, иначе внутри наклейки белое пятно;
     # только для одиночного кота: у сцены так же пропали бы белые листы, циферблаты и экраны
     a = np.array(m)
-    min_area = 0.004 * h * w
+    min_area = min_frac * h * w
     ys, xs = np.nonzero(a == 255)
     for y, x in zip(ys[::97], xs[::97]):
         if m.getpixel((int(x), int(y))) != 255:
@@ -130,17 +134,56 @@ def sticker(src: Path, mode: str, crop=None, border_px: int = 18) -> Image.Image
     return out.crop(out.getbbox())
 
 
-def main(names=None):
+def cutout(src: Path, mode: str, crop=None) -> Image.Image:
+    """Без каймы (формат 2, владелец 21.11): рисунок по своему контуру. Край: альфа по удалённости от бумаги
+    в полосе у контура, цвет края очищен от бумаги — на тёмном фоне нет светлого ореола. Пиксели внутри
+    контура — оригинал."""
+    im = Image.open(src)
+    if crop:
+        im = im.crop(crop)
+    if im.mode == "RGBA":
+        return im.crop(im.getbbox())
+    rgb = np.array(im.convert("RGB")).astype(float)
+    if mode == "oval":
+        return sticker(src, mode, crop)
+    fg = ~paper_bg(rgb.astype(np.uint8), holes=(mode == "cut_holes"), min_frac=0.0003)
+    if mode == "cut_main":
+        fg = largest(fg)
+    h, w = fg.shape
+    border = np.concatenate([rgb[0], rgb[-1], rgb[:, 0], rgb[:, -1]])
+    paper = np.median(border, axis=0)
+    m = Image.fromarray((fg * 255).astype(np.uint8))
+    m = m.filter(ImageFilter.GaussianBlur(2)).point(lambda v: 255 if v > 128 else 0)
+    inner = np.asarray(m.filter(ImageFilter.MinFilter(7))) > 0
+    soft = np.asarray(m.filter(ImageFilter.GaussianBlur(1.2))).astype(float) / 255
+    dist = np.abs(rgb - paper).max(axis=2)
+    a_col = np.clip((dist - 6) / 70, 0, 1)
+    alpha = np.where(inner, 1.0, np.minimum(soft, a_col))
+    a = np.maximum(alpha, 1e-3)[..., None]
+    clean = np.clip((rgb - (1 - a) * paper) / a, 0, 255)
+    out = np.dstack([np.where(alpha[..., None] > 0.02, clean, 0), alpha * 255]).astype(np.uint8)
+    img = Image.fromarray(out, "RGBA")
+    return img.crop(img.getbbox())
+
+
+def main(names=None, cut_only=False):
     OUT.mkdir(parents=True, exist_ok=True)
     for name, (src, crop, mode) in SOURCES.items():
         if names and name not in names:
             continue
-        s = sticker(ROOT / src, mode, crop)
-        s.thumbnail((1100, 1100))
-        s.save(OUT / f"{name}.png", optimize=True)
-        print(name, s.size)
+        if not cut_only:
+            s = sticker(ROOT / src, mode, crop)
+            s.thumbnail((1100, 1100))
+            s.save(OUT / f"{name}.png", optimize=True)
+        if name in CUT:
+            c = cutout(ROOT / src, mode, crop)
+            c.thumbnail((1100, 1100))
+            (OUT / "cut").mkdir(exist_ok=True)
+            c.save(OUT / "cut" / f"{name}.png", optimize=True)
+        print(name)
 
 
 if __name__ == "__main__":
     import sys
-    main(sys.argv[1:])
+    args = sys.argv[1:]
+    main([a for a in args if a != "--cut"], cut_only="--cut" in args)

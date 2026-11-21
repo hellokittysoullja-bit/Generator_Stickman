@@ -6,7 +6,7 @@ let pw;
 try { pw = require('playwright'); } catch { pw = require('/opt/node22/lib/node_modules/playwright'); }
 const exe = process.env.CHROMIUM || '/opt/pw-browsers/chromium';
 const browser = await pw.chromium.launch({ executablePath: exe });
-const page = await browser.newPage({ viewport: { width: 1080, height: 1350 }, deviceScaleFactor: 1 });
+const page = await browser.newPage({ viewport: { width: 1080, height: +(process.env.SHOT_H || 1350) }, deviceScaleFactor: 1 });
 const out = {};
 for (const file of process.argv.slice(2)) {
   await page.goto('file://' + file);
@@ -25,14 +25,21 @@ for (const file of process.argv.slice(2)) {
       r.selectNodeContents(n);
       for (const b of r.getClientRects()) {
         if (b.width < 4 || b.height < 4) continue;
-        res.push({ text: t, box: [b.left, b.top, b.right, b.bottom] });
+        res.push({ text: t, box: [b.left, b.top, b.right, b.bottom],
+          fs: parseFloat(getComputedStyle(n.parentElement).fontSize), head: !!n.parentElement.closest('.h') });
       }
     }
     const imgs = [...document.images].map((i) => {
       const b = i.getBoundingClientRect();
       return { src: decodeURIComponent(i.src), box: [b.left, b.top, b.right, b.bottom] };
     });
-    return { text: res, imgs };
+    const keys = [...document.querySelectorAll('.key-t')].map((k) => {
+      const r = document.createRange(); r.selectNodeContents(k);
+      const tops = new Set([...r.getClientRects()].map((b) => Math.round(b.top)));
+      const kb = k.getBoundingClientRect();
+      return { text: k.textContent, lines: tops.size, right: kb.right };
+    });
+    return { text: res, imgs, keys };
   });
   const png = file.replace(/\.html$/, '.png');
   await page.screenshot({ path: png });

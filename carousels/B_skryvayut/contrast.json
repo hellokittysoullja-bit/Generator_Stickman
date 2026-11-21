@@ -1,11 +1,23 @@
 {
- "min": [
-  "slide_07.png",
-  "Перешли тому, кто думает, что ты просто ",
-  8.24
+ "contrast_min": [
+  "slide_01.png",
+  "СДВГ | Напарник",
+  8.6
  ],
- "below_4_5": [],
- "lines": 93,
- "text_under_sticker": [],
- "text_near_edge": []
+ "contrast_below_4_5": [],
+ "small_font": [],
+ "outside_safe": [],
+ "text_cover": [],
+ "head_cover_max": 0.072,
+ "key_lines": [],
+ "head_cover": {
+  "slide_01.png": 0.032,
+  "slide_02.png": 0.026,
+  "slide_03.png": 0.019,
+  "slide_04.png": 0.033,
+  "slide_05.png": 0.017,
+  "slide_06.png": 0.072,
+  "slide_07.png": 0,
+  "slide_08.png": 0
+ }
 }

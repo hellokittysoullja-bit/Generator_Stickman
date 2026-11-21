@@ -295,7 +295,7 @@ def preview(folder: Path, n: int):
 
 def main():
     from content import CAROUSELS
-    keys = sys.argv[1:] or list(CAROUSELS)
+    keys = sys.argv[1:] or [k for k, c in CAROUSELS.items() if c.get("format") != 2]  # формат 2 — build_v2.py
     for k in keys:
         folder = CAR / CAROUSELS[k]["dir"]
         boxes = render(folder, CAROUSELS[k]["slides"])
