@@ -1,0 +1,423 @@
+{
+ "_": "Звуки рилса 104. t — пик звука; word — индекс voice/words.json + offset. Только assets/sfx/reels/library.json.",
+ "keys": [
+  2,
+  9,
+  14,
+  18,
+  30,
+  34,
+  36,
+  40,
+  42,
+  47,
+  51,
+  55,
+  63,
+  66,
+  72,
+  77,
+  80,
+  84,
+  86,
+  88
+ ],
+ "sfx": [
+  {
+   "name": "fast_whoosh",
+   "why": "влёт камеры к папке в паутине",
+   "t": 0.1
+  },
+  {
+   "name": "riser",
+   "why": "нарастание хука",
+   "t": 0.2
+  },
+  {
+   "name": "shock",
+   "why": "«мотивацию»: тридцатый крест бьёт по календарю",
+   "word": 2,
+   "offset": 0.21,
+   "word_text": "мотивацию."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к папке крупно",
+   "t": 1.45
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "«Отчёт»: паук падает на нитке",
+   "word": 3,
+   "offset": 0.0,
+   "word_text": "Отчёт,"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к календарю",
+   "t": 2.85
+  },
+  {
+   "name": "fast_glitch",
+   "why": "«тридцать»: кресты вздрагивают, круг маркером",
+   "word": 7,
+   "offset": 0.0,
+   "word_text": "тридцать"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к штампу, штамп летит",
+   "t": 4.1
+  },
+  {
+   "name": "shock",
+   "why": "«сдан»: удар штампа, пыль разлетается",
+   "word": 9,
+   "offset": 0.06,
+   "word_text": "сдан"
+  },
+  {
+   "name": "level_up",
+   "why": "оттиск СДАН проявлен, кот радуется",
+   "word": 10,
+   "offset": 0.1,
+   "word_text": "без"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к столу, утро",
+   "t": 5.2
+  },
+  {
+   "name": "oof",
+   "why": "«настроения»: вздох",
+   "word": 14,
+   "offset": 0.0,
+   "word_text": "настроения"
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "солнце летит к закату",
+   "t": 6.55
+  },
+  {
+   "name": "fast_glitch",
+   "why": "«вечера»: часы встали на вечер",
+   "word": 18,
+   "offset": 0.15,
+   "word_text": "вечера."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к раковине",
+   "t": 7.5
+  },
+  {
+   "name": "typing",
+   "why": "«Мыл кружку»: губка трёт",
+   "word": 19,
+   "offset": 0.0,
+   "word_text": "Мыл",
+   "gain_db": -4
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст: протирал стол",
+   "t": 8.25
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«протирал»: тряпка скрипит",
+   "word": 21,
+   "offset": 0.0,
+   "word_text": "протирал"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к ноутбуку",
+   "t": 9.1
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«видео»: щелчок по ▶",
+   "word": 24,
+   "offset": 0.0,
+   "word_text": "видео"
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "«фона»: папку отодвинул",
+   "word": 26,
+   "offset": -0.1,
+   "word_text": "фона“."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст в ночь",
+   "t": 10.6
+  },
+  {
+   "name": "shock",
+   "why": "«ночь»: часы встали на 3:00",
+   "word": 30,
+   "offset": 0.0,
+   "word_text": "ночь"
+  },
+  {
+   "name": "typing",
+   "why": "паника: строчит",
+   "t": 11.8,
+   "gain_db": -2
+  },
+  {
+   "name": "fast_glitch",
+   "why": "«панике»: клавиатура дымится",
+   "word": 34,
+   "offset": 0.0,
+   "word_text": "панике."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к призыву",
+   "t": 12.9
+  },
+  {
+   "name": "level_up",
+   "why": "«КОТ» выскочил",
+   "word": 36,
+   "offset": 0.0,
+   "word_text": "«КОТ»,"
+  },
+  {
+   "name": "swoosh",
+   "why": "гора-дело растёт",
+   "t": 14.0
+  },
+  {
+   "name": "shock",
+   "why": "«тяжёлое»: гора бухает",
+   "word": 40,
+   "offset": 0.126,
+   "word_text": "тяжёлое"
+  },
+  {
+   "name": "fast_glitch",
+   "why": "«разбилось»: гора трескается",
+   "word": 42,
+   "offset": 0.0,
+   "word_text": "разбилось"
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "ступенька 1 выскочила",
+   "t": 15.732
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "ступенька 3 выскочила",
+   "t": 16.227
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "ступенька 5 выскочила",
+   "t": 16.722
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "«первый»: шаг на ступеньку",
+   "word": 49,
+   "offset": 0.0,
+   "word_text": "первый"
+  },
+  {
+   "name": "level_up",
+   "why": "«сделал»: галочка",
+   "word": 51,
+   "offset": 0.0,
+   "word_text": "сделал,"
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "«кот»: прыжок кота",
+   "word": 53,
+   "offset": -0.1,
+   "word_text": "кот"
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«рядом»: кот сел",
+   "word": 55,
+   "offset": 0.0,
+   "word_text": "рядом.",
+   "gain_db": -3
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст: вот что я поменял",
+   "t": 19.75
+  },
+  {
+   "name": "level_up",
+   "why": "«Вот»: лампочка",
+   "word": 56,
+   "offset": 0.05,
+   "word_text": "Вот"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к стулу",
+   "t": 21.55
+  },
+  {
+   "name": "oof",
+   "why": "«Сажусь»: плюхнулся",
+   "word": 60,
+   "offset": 0.05,
+   "word_text": "Сажусь"
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«две»: таймер выскочил",
+   "word": 62,
+   "offset": 0.0,
+   "word_text": "две"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к лицу",
+   "t": 23.05
+  },
+  {
+   "name": "oof",
+   "why": "«желания»: пожал плечами",
+   "word": 66,
+   "offset": 0.0,
+   "word_text": "желания:"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к таймеру",
+   "t": 24.3
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«таймер»: нажал, пошёл отсчёт",
+   "t": 24.412
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "«кот»: кот запрыгнул",
+   "word": 68,
+   "offset": -0.1,
+   "word_text": "кот"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к экрану",
+   "t": 25.5
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«открыть»: файл раскрылся",
+   "word": 71,
+   "offset": 0.0,
+   "word_text": "открыть"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст: печатает",
+   "t": 26.75
+  },
+  {
+   "name": "fast_glitch",
+   "why": "таймер звенит 0:00",
+   "t": 27.002
+  },
+  {
+   "name": "level_up",
+   "why": "«приходит»: огонёк загорелся",
+   "word": 74,
+   "offset": 0.0,
+   "word_text": "приходит"
+  },
+  {
+   "name": "swoosh",
+   "why": "к таймеру и минутам",
+   "t": 28.2
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«третьей»: третья точка вспыхнула",
+   "word": 77,
+   "offset": 0.0,
+   "word_text": "третьей"
+  },
+  {
+   "name": "typing",
+   "why": "строки растут",
+   "t": 28.5,
+   "gain_db": -4
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к письму",
+   "t": 29.15
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«ушёл»: клик «Отправить»",
+   "word": 80,
+   "offset": 0.0,
+   "word_text": "ушёл"
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "самолётик улетает",
+   "word": 80,
+   "offset": 0.15,
+   "word_text": "ушёл"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к часам",
+   "t": 30.15
+  },
+  {
+   "name": "level_up",
+   "why": "«четыре»: 16:00",
+   "word": 84,
+   "offset": 0.0,
+   "word_text": "четыре,"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к дивану",
+   "t": 31.25
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "«выходные»: надпись влетает",
+   "word": 86,
+   "offset": 0.0,
+   "word_text": "выходные"
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«мои»: сердечко",
+   "word": 88,
+   "offset": 0.0,
+   "word_text": "мои."
+  },
+  {
+   "name": "swoosh",
+   "why": "петля: обратно к папке",
+   "t": 32.75
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "петля: снова влёт",
+   "t": 33.95,
+   "gain_db": -4
+  }
+ ]
+}
