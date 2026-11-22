@@ -621,7 +621,7 @@ def frame_s05(t):
     o.append(PR.z_mark(2470, RM.SOFA_SEAT - 160 - 30 * ((t * .8) % 1), .8, 1 - ((t * .8) % 1)))
     u = ease_io(ramp(t, a, b - a))
     dx, dy = shake(t, W(11), 5)
-    return view("".join(o), 2200 + dx, 1330 + dy, 1.55 + .12 * u, 0, t=t)
+    return view("".join(o), 2200 + dx, 1230 + dy, 1.5 + .1 * u, 0, t=t)
 
 
 # ═════════════════════════ s06: корзина наполняется ═════════════════════════
@@ -865,11 +865,11 @@ def frame_s12(t):
     yc = 1000
     ty, by = yc - 140 - 170 * gap, yc + 140 + 170 * gap
     kb = 1 - .06 * bump(t, t_p + .05, .04, .2)
-    if t > W(33) - .05:
-        k = pop(t, W(33) - .05, .22)
+    if t > a:
+        k = pop(t, a, .22) * (1 + .1 * bump(t, W(33), .05, .25))
         o.append(tf(big_button(0, 0, 1.0, "ХОЧУ", "#ff7a3d", w=560), 540 + 8 * math.sin(t * 3), ty, 1.05 * k * kb, -3))
-    if t > W(35) - .05:
-        k = pop(t, W(35) - .05, .22)
+    if t > a + .25:
+        k = pop(t, a + .25, .22) * (1 + .1 * bump(t, W(35), .05, .25))
         o.append(tf(big_button(0, 0, 1.0, "ОПЛАТИТЬ", GREEN, w=600), 540 + 8 * math.sin(t * 3 + 1), by, 1.05 * k * kb, 3))
     if gap > .05:
         for s in (-1, 1):
