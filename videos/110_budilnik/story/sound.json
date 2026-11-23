@@ -1,0 +1,288 @@
+{
+ "_": "Звуки рилса 110 (plan.py). t — пик звука; word — индекс voice/words.json. Только assets/sfx/reels/library.json.",
+ "keys": [
+  1,
+  2,
+  5,
+  10,
+  14,
+  20,
+  21,
+  26,
+  32,
+  36,
+  38,
+  42,
+  48,
+  51,
+  56,
+  59,
+  65,
+  69,
+  73,
+  77,
+  82
+ ],
+ "sfx": [
+  {
+   "name": "fast_whoosh",
+   "why": "удар хука: влёт камеры",
+   "t": 0.1
+  },
+  {
+   "name": "riser",
+   "why": "нарастание хука: будильник звенит",
+   "t": 0.2
+  },
+  {
+   "name": "typing",
+   "why": "звон будильника",
+   "t": 0.3,
+   "gain_db": -3
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "глаза открываются",
+   "word": 1,
+   "offset": 0.1,
+   "word_text": "наконец-то"
+  },
+  {
+   "name": "swoosh",
+   "why": "первая склейка: одеяло летит",
+   "t": 0.94
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "одеяло откинуто",
+   "word": 3,
+   "word_text": "с"
+  },
+  {
+   "name": "level_up",
+   "why": "«будильника»: встал",
+   "word": 5,
+   "offset": 0.2,
+   "word_text": "будильника."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к руке на кнопке",
+   "t": 2.76
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "жмёт «отложить»",
+   "word": 8,
+   "offset": 0.1,
+   "word_text": "переставлял"
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "ещё раз",
+   "word": 9,
+   "word_text": "его"
+  },
+  {
+   "name": "shock",
+   "why": "«пять раз»: ×5",
+   "word": 10,
+   "word_text": "пять"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к бегу",
+   "t": 4.713
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "бежит по коридору",
+   "word": 13,
+   "word_text": "на"
+  },
+  {
+   "name": "oof",
+   "why": "дверь закрыта",
+   "word": 14,
+   "offset": 0.1,
+   "word_text": "пары,"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к парте",
+   "t": 5.9
+  },
+  {
+   "name": "oof",
+   "why": "«разбитым»: клюёт носом",
+   "word": 20,
+   "word_text": "разбитым."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к решению",
+   "t": 7.6
+  },
+  {
+   "name": "level_up",
+   "why": "«Вот»: лампочка",
+   "word": 21,
+   "offset": 0.15,
+   "word_text": "Вот"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст: будильник у двери",
+   "t": 9.61
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "будильник встаёт на тумбу",
+   "word": 26,
+   "word_text": "стоит"
+  },
+  {
+   "name": "shock",
+   "why": "«не у кровати»: крестик",
+   "word": 32,
+   "word_text": "кровати."
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка: идёт к двери",
+   "t": 11.793
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "жмёт кнопку",
+   "word": 36,
+   "word_text": "встать."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к вечеру",
+   "t": 14.16
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "шторы раздвигаются",
+   "word": 38,
+   "word_text": "открыты"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка к утру",
+   "t": 15.58
+  },
+  {
+   "name": "level_up",
+   "why": "«свет»: солнце",
+   "word": 42,
+   "word_text": "свет"
+  },
+  {
+   "name": "typing",
+   "why": "звон со светом",
+   "word": 46,
+   "gain_db": -4,
+   "word_text": "звонком."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст: кот прыгает",
+   "t": 17.58
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "кот в прыжке",
+   "word": 49,
+   "word_text": "садится"
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "кот плюхается на подушку",
+   "word": 51,
+   "word_text": "подушку,"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка: Дима у кровати",
+   "t": 19.1
+  },
+  {
+   "name": "oof",
+   "why": "«некуда»",
+   "word": 56,
+   "word_text": "некуда."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к призыву",
+   "t": 20.98
+  },
+  {
+   "name": "typing",
+   "why": "печатается КОТ",
+   "t": 21.080000000000002,
+   "gain_db": -4
+  },
+  {
+   "name": "level_up",
+   "why": "«КОТ» напечатан",
+   "word": 59,
+   "offset": 0.05,
+   "word_text": "«КОТ»,"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка: встаёт с первого раза",
+   "t": 22.3
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "встаёт",
+   "word": 64,
+   "word_text": "первого"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к аудитории",
+   "t": 23.82
+  },
+  {
+   "name": "level_up",
+   "why": "«первой паре»: вовремя",
+   "word": 69,
+   "word_text": "первой"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст на кухню",
+   "t": 25.58
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "кружка ставится",
+   "word": 73,
+   "offset": 0.1,
+   "word_text": "восемь"
+  },
+  {
+   "name": "level_up",
+   "why": "«кофе»",
+   "word": 77,
+   "word_text": "кофе,"
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "автобус за окном",
+   "word": 80,
+   "word_text": "бежал"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст в петлю к хуку",
+   "t": 28.8
+  }
+ ]
+}
