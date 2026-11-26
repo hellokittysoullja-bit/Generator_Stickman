@@ -1,0 +1,221 @@
+{
+ "_": "Звуки рилса 136 «Кот-фитнес-тренер» (plan.py). t — пик звука; word — индекс voice/words.json. Только assets/sfx/reels/library.json.",
+ "keys": [
+  0,
+  2,
+  3,
+  7,
+  10,
+  12,
+  16,
+  20,
+  24,
+  26,
+  30,
+  32,
+  36,
+  39,
+  43,
+  47,
+  54
+ ],
+ "sfx": [
+  {
+   "name": "fast_whoosh",
+   "why": "удар хука: штанга вверх",
+   "t": 0.1
+  },
+  {
+   "name": "riser",
+   "why": "нарастание хука",
+   "t": 0.2
+  },
+  {
+   "name": "shock",
+   "why": "свисток «Ещё»",
+   "word": 0,
+   "word_text": "Ещё"
+  },
+  {
+   "name": "oof",
+   "why": "«письмо»: тяжело",
+   "word": 2,
+   "word_text": "письмо!"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к жиму",
+   "t": 0.62
+  },
+  {
+   "name": "level_up",
+   "why": "«Давай-давай»: штанга вверх",
+   "word": 3,
+   "offset": 0.3,
+   "word_text": "Давай-давай!"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к коврику",
+   "t": 2.53
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "кот подпрыгивает",
+   "word": 7,
+   "word_text": "фитнес-тренером."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к разминке",
+   "t": 4.86
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "почта открылась",
+   "word": 10,
+   "word_text": "почту."
+  },
+  {
+   "name": "shock",
+   "why": "свисток «Не филонить»",
+   "word": 11,
+   "word_text": "Не"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к подходу",
+   "t": 8.06
+  },
+  {
+   "name": "oof",
+   "why": "гантель-письмо",
+   "word": 16,
+   "word_text": "письмо."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к экрану",
+   "t": 9.82
+  },
+  {
+   "name": "typing",
+   "why": "одна строка",
+   "word": 17,
+   "gain_db": -4,
+   "word_text": "Отвечаем"
+  },
+  {
+   "name": "level_up",
+   "why": "«строку»",
+   "word": 20,
+   "word_text": "строку!"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к раковине",
+   "t": 11.82
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "кружка",
+   "word": 24,
+   "word_text": "кружка."
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "бег на месте",
+   "t": 13.78
+  },
+  {
+   "name": "shock",
+   "why": "свисток «темп»",
+   "word": 26,
+   "word_text": "темп!"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к последнему",
+   "t": 15.17
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "файл открыт",
+   "word": 30,
+   "word_text": "файл."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к секундомеру",
+   "t": 17.21
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "щелчок секундомера",
+   "word": 32,
+   "word_text": "минуты!"
+  },
+  {
+   "name": "level_up",
+   "why": "«верю»",
+   "word": 36,
+   "word_text": "верю!"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к итогу",
+   "t": 19.56
+  },
+  {
+   "name": "level_up",
+   "why": "«минуты»: готово",
+   "word": 39,
+   "word_text": "минуты"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к «ещё»",
+   "t": 20.825
+  },
+  {
+   "name": "shock",
+   "why": "«ещё подход»",
+   "word": 43,
+   "word_text": "ещё"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к призыву",
+   "t": 22.033
+  },
+  {
+   "name": "typing",
+   "why": "печатается КОТ",
+   "t": 22.083000000000002,
+   "gain_db": -4
+  },
+  {
+   "name": "level_up",
+   "why": "«КОТ» напечатано",
+   "word": 47,
+   "offset": 0.05,
+   "word_text": "«КОТ»,"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к тренеру",
+   "t": 23.873
+  },
+  {
+   "name": "shock",
+   "why": "свисток тренера",
+   "word": 54,
+   "word_text": "тренер."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст в петлю к хуку",
+   "t": 25.053
+  }
+ ]
+}
