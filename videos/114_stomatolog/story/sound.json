@@ -1,0 +1,217 @@
+{
+ "_": "Звуки рилса 114 «Стоматолог» (plan.py). t — пик звука; word — индекс voice/words.json. Только assets/sfx/reels/library.json.",
+ "keys": [
+  1,
+  4,
+  7,
+  8,
+  11,
+  13,
+  15,
+  17,
+  20,
+  21,
+  25,
+  27,
+  29,
+  35,
+  39,
+  45,
+  50,
+  52,
+  54
+ ],
+ "sfx": [
+  {
+   "name": "fast_whoosh",
+   "why": "удар хука: влёт камеры",
+   "t": 0.1
+  },
+  {
+   "name": "riser",
+   "why": "нарастание хука: месяцы летят",
+   "t": 0.2
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "лист календаря",
+   "word": 1,
+   "word_text": "наконец-то"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка к креслу",
+   "t": 0.948
+  },
+  {
+   "name": "level_up",
+   "why": "«стоматологу»: лампа",
+   "word": 4,
+   "offset": 0.1,
+   "word_text": "стоматологу,"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка к месяцам",
+   "t": 2.136
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "листы летят",
+   "word": 6,
+   "word_text": "откладывал"
+  },
+  {
+   "name": "shock",
+   "why": "«год»: декабрь",
+   "word": 8,
+   "word_text": "год."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к телефону",
+   "t": 4.06
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«записывался»",
+   "word": 11,
+   "word_text": "записывался"
+  },
+  {
+   "name": "oof",
+   "why": "«отменял»",
+   "word": 13,
+   "word_text": "отменял,"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к таблетке",
+   "t": 5.9
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "таблетка",
+   "word": 15,
+   "word_text": "обезболивающее,"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к боли",
+   "t": 7.18
+  },
+  {
+   "name": "shock",
+   "why": "«болел»: молния",
+   "word": 18,
+   "word_text": "болел"
+  },
+  {
+   "name": "fast_glitch",
+   "why": "«сильнее»: щека раздувается",
+   "word": 20,
+   "word_text": "сильнее."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к решению",
+   "t": 8.82
+  },
+  {
+   "name": "level_up",
+   "why": "«Вот»: лампочка",
+   "word": 21,
+   "offset": 0.15,
+   "word_text": "Вот"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к записи",
+   "t": 10.02
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«Записаться»",
+   "word": 27,
+   "word_text": "сейчас,"
+  },
+  {
+   "name": "level_up",
+   "why": "галочка",
+   "word": 27,
+   "offset": 0.3,
+   "word_text": "сейчас,"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка к окошкам",
+   "t": 11.647
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "выбрано окошко",
+   "word": 29,
+   "offset": 0.2,
+   "word_text": "ближайшее"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к «когда удобно»",
+   "t": 12.7
+  },
+  {
+   "name": "shock",
+   "why": "красный крест",
+   "word": 35,
+   "word_text": "удобно."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к призыву",
+   "t": 14.18
+  },
+  {
+   "name": "level_up",
+   "why": "кот жмёт «Подписаться»",
+   "t": 15.524000000000001
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка к кнопке",
+   "t": 15.988
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«страшные дела»",
+   "word": 45,
+   "word_text": "страшные"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка: подписан",
+   "t": 17.887
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к улыбке",
+   "t": 18.96
+  },
+  {
+   "name": "level_up",
+   "why": "«улыбаюсь»: блеск зуба",
+   "word": 52,
+   "word_text": "улыбаюсь"
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "хруст яблока",
+   "word": 54,
+   "word_text": "боли."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст в петлю к хуку",
+   "t": 20.8
+  }
+ ]
+}
