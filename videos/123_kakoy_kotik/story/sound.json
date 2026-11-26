@@ -1,0 +1,257 @@
+{
+ "_": "Звуки рилса 123 «Какой ты котик?» (plan.py). t — пик звука; word — индекс voice/words.json. Только assets/sfx/reels/library.json.",
+ "keys": [
+  2,
+  4,
+  7,
+  9,
+  15,
+  17,
+  19,
+  21,
+  25,
+  27,
+  31,
+  34,
+  36,
+  38,
+  44,
+  48,
+  50,
+  55
+ ],
+ "sfx": [
+  {
+   "name": "fast_whoosh",
+   "why": "удар хука: влёт камеры",
+   "t": 0.1
+  },
+  {
+   "name": "riser",
+   "why": "нарастание хука: котики выпрыгивают",
+   "t": 0.2
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "котик 1",
+   "t": 0.35
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "котик 3",
+   "word": 2,
+   "word_text": "котик,"
+  },
+  {
+   "name": "level_up",
+   "why": "«откладываешь»: котик 4",
+   "word": 4,
+   "word_text": "откладываешь"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка: прожектор",
+   "t": 1.0
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к Спящему",
+   "t": 2.58
+  },
+  {
+   "name": "level_up",
+   "why": "«Спящий»: номер 1",
+   "word": 7,
+   "word_text": "Спящий."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к делу",
+   "t": 3.98
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "папка постукивает",
+   "word": 9,
+   "word_text": "ждёт,"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст ко сну",
+   "t": 4.68
+  },
+  {
+   "name": "oof",
+   "why": "«желание» спит",
+   "word": 15,
+   "word_text": "желание."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к Суетливому",
+   "t": 6.88
+  },
+  {
+   "name": "level_up",
+   "why": "«Суетливый»: номер 2",
+   "word": 17,
+   "word_text": "Суетливый."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к кружкам",
+   "t": 8.4
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "скрип кружки",
+   "word": 19,
+   "word_text": "кружки,"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к полке",
+   "t": 9.14
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "книги летят",
+   "word": 21,
+   "word_text": "полку,"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к «кроме дела»",
+   "t": 10.04
+  },
+  {
+   "name": "oof",
+   "why": "«кроме дела»: паутина",
+   "word": 25,
+   "word_text": "дела."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к Ждуну",
+   "t": 11.6
+  },
+  {
+   "name": "level_up",
+   "why": "«Ждун»: номер 3",
+   "word": 27,
+   "word_text": "Ждун."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к календарю",
+   "t": 13.16
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "листы отрываются",
+   "word": 29,
+   "word_text": "ровно"
+  },
+  {
+   "name": "shock",
+   "why": "«понедельник»",
+   "word": 31,
+   "word_text": "понедельник,"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к часам",
+   "t": 14.7
+  },
+  {
+   "name": "typing",
+   "why": "часы тикают",
+   "word": 33,
+   "gain_db": -6,
+   "word_text": "девять"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к Перфекционисту",
+   "t": 16.2
+  },
+  {
+   "name": "level_up",
+   "why": "«Перфекционист»: номер 4",
+   "word": 36,
+   "word_text": "Перфекционист."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к листу",
+   "t": 17.76
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "линейка",
+   "word": 38,
+   "word_text": "начинает,"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к «идеально»",
+   "t": 18.933
+  },
+  {
+   "name": "shock",
+   "why": "красный крест",
+   "word": 43,
+   "word_text": "получится"
+  },
+  {
+   "name": "oof",
+   "why": "лист в комок",
+   "word": 44,
+   "word_text": "идеально."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к призыву",
+   "t": 20.8
+  },
+  {
+   "name": "typing",
+   "why": "цифра печатается",
+   "t": 20.85,
+   "gain_db": -4
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка к цифрам",
+   "t": 22.12
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«номер»",
+   "word": 48,
+   "word_text": "номер"
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«котика»",
+   "word": 50,
+   "word_text": "котика."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к «я второй»",
+   "t": 23.36
+  },
+  {
+   "name": "level_up",
+   "why": "«второй»: котик 2 прыгает",
+   "word": 55,
+   "word_text": "второй."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст в петлю к хуку",
+   "t": 24.86
+  }
+ ]
+}
