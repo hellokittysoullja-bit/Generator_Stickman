@@ -1,0 +1,249 @@
+{
+ "_": "Звуки рилса 119 «Я телефон» (plan.py). t — пик звука; word — индекс voice/words.json. Только assets/sfx/reels/library.json.",
+ "keys": [
+  1,
+  4,
+  8,
+  14,
+  16,
+  23,
+  25,
+  29,
+  33,
+  37,
+  44,
+  47,
+  50,
+  57,
+  59,
+  63,
+  69,
+  73,
+  74
+ ],
+ "sfx": [
+  {
+   "name": "fast_whoosh",
+   "why": "удар хука: влёт камеры, рука хватает",
+   "t": 0.1
+  },
+  {
+   "name": "riser",
+   "why": "нарастание хука",
+   "t": 0.2
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "хвать",
+   "word": 1,
+   "word_text": "телефон,"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка: руки",
+   "t": 1.04
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "руки тянутся",
+   "word": 4,
+   "word_text": "берут"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка к часам",
+   "t": 2.08
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "стрелка прыгает",
+   "word": 8,
+   "word_text": "пять"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к утру",
+   "t": 3.44
+  },
+  {
+   "name": "typing",
+   "why": "звон будильника",
+   "word": 12,
+   "gain_db": -5,
+   "word_text": "хватают"
+  },
+  {
+   "name": "shock",
+   "why": "хвать вместо будильника",
+   "word": 14,
+   "word_text": "будильника"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка к кровати",
+   "t": 5.32
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "листают",
+   "word": 16,
+   "word_text": "листают"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к парте",
+   "t": 6.72
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "под парту",
+   "word": 23,
+   "word_text": "партой"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка: «на секундочку»",
+   "t": 8.427
+  },
+  {
+   "name": "oof",
+   "why": "телефон закатывает глаза",
+   "word": 25,
+   "word_text": "секундочку“."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к ночи",
+   "t": 9.44
+  },
+  {
+   "name": "fast_glitch",
+   "why": "свет в лицо",
+   "word": 29,
+   "word_text": "светят"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка к часам",
+   "t": 10.64
+  },
+  {
+   "name": "shock",
+   "why": "«трёх»",
+   "word": 33,
+   "word_text": "трёх."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст: несут",
+   "t": 11.84
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "«унесли»",
+   "word": 37,
+   "word_text": "унесли"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка к полке",
+   "t": 13.787
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "экраном вниз",
+   "word": 44,
+   "word_text": "вниз."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст: ожидание",
+   "t": 15.44
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "тик часов",
+   "word": 47,
+   "word_text": "час."
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка: никого",
+   "t": 16.56
+  },
+  {
+   "name": "oof",
+   "why": "«не пришёл»",
+   "word": 50,
+   "word_text": "пришёл."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к двери",
+   "t": 17.813
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст за дверь",
+   "t": 19.64
+  },
+  {
+   "name": "typing",
+   "why": "печатает",
+   "word": 57,
+   "gain_db": -4,
+   "word_text": "печатает"
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "мурлычет кот",
+   "word": 59,
+   "word_text": "мурлычет"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к призыву",
+   "t": 21.2
+  },
+  {
+   "name": "typing",
+   "why": "печатается КОТ",
+   "t": 21.25,
+   "gain_db": -4
+  },
+  {
+   "name": "level_up",
+   "why": "«КОТ» напечатан",
+   "word": 63,
+   "offset": 0.05,
+   "word_text": "«КОТ»,"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к отдыху",
+   "t": 22.4
+  },
+  {
+   "name": "level_up",
+   "why": "«отдохнул»",
+   "word": 69,
+   "word_text": "отдохнул."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к ночи",
+   "t": 24.64
+  },
+  {
+   "name": "level_up",
+   "why": "«выспался»",
+   "word": 74,
+   "word_text": "выспался."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст в петлю к хуку",
+   "t": 26.86
+  }
+ ]
+}
