@@ -1,0 +1,276 @@
+{
+ "_": "Звуки рилса 117 «Суд над „потом“» (plan.py). t — пик звука; word — индекс voice/words.json. Только assets/sfx/reels/library.json.",
+ "keys": [
+  3,
+  6,
+  10,
+  17,
+  20,
+  22,
+  27,
+  31,
+  36,
+  38,
+  43,
+  45,
+  47,
+  50,
+  52,
+  55,
+  58,
+  61,
+  63,
+  71,
+  74,
+  76
+ ],
+ "sfx": [
+  {
+   "name": "fast_whoosh",
+   "why": "удар хука: влёт камеры",
+   "t": 0.1
+  },
+  {
+   "name": "riser",
+   "why": "нарастание хука",
+   "t": 0.2
+  },
+  {
+   "name": "shock",
+   "why": "удар молотка",
+   "t": 0.38
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка к клетке",
+   "t": 0.62
+  },
+  {
+   "name": "shock",
+   "why": "молоток на «потом»",
+   "word": 6,
+   "offset": 0.1,
+   "word_text": "„потом“."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к свидетелю",
+   "t": 2.272
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "тарелки звякают",
+   "word": 9,
+   "word_text": "вышла"
+  },
+  {
+   "name": "oof",
+   "why": "«посуды»",
+   "word": 11,
+   "word_text": "посуды."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к раковине",
+   "t": 4.51
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "листки дней",
+   "word": 15,
+   "word_text": "раковине"
+  },
+  {
+   "name": "shock",
+   "why": "«понедельника»",
+   "word": 17,
+   "word_text": "понедельника."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к дедлайну",
+   "t": 6.64
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "дедлайн входит",
+   "word": 19,
+   "word_text": "пришёл"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к огню",
+   "t": 8.053
+  },
+  {
+   "name": "fast_glitch",
+   "why": "«сгорел»: вспышка",
+   "word": 22,
+   "word_text": "сгорел,"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка к дивану",
+   "t": 9.44
+  },
+  {
+   "name": "oof",
+   "why": "«потом сделаю»",
+   "word": 27,
+   "word_text": "сделаю“."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к маме",
+   "t": 10.68
+  },
+  {
+   "name": "typing",
+   "why": "телефон звонит",
+   "word": 30,
+   "gain_db": -5,
+   "word_text": "позвонила"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к пропущенным",
+   "t": 12.22
+  },
+  {
+   "name": "shock",
+   "why": "«×5»",
+   "word": 36,
+   "word_text": "перезвонить"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к судье",
+   "t": 14.44
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "кот кивает",
+   "word": 40,
+   "word_text": "выслушал"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка к молотку",
+   "t": 16.133
+  },
+  {
+   "name": "shock",
+   "why": "удар молотка",
+   "word": 44,
+   "word_text": "молотком."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к приговору",
+   "t": 17.34
+  },
+  {
+   "name": "level_up",
+   "why": "«Приговор»: свиток",
+   "word": 45,
+   "offset": 0.1,
+   "word_text": "Приговор:"
+  },
+  {
+   "name": "oof",
+   "why": "«потом» перечёркнуто",
+   "word": 47,
+   "word_text": "„потом“"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка: таймер",
+   "t": 19.4
+  },
+  {
+   "name": "level_up",
+   "why": "«сейчас»",
+   "word": 52,
+   "word_text": "сейчас."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к призыву",
+   "t": 20.68
+  },
+  {
+   "name": "typing",
+   "why": "печатается КОТ",
+   "t": 20.73,
+   "gain_db": -4
+  },
+  {
+   "name": "level_up",
+   "why": "«КОТ» напечатан",
+   "word": 55,
+   "offset": 0.05,
+   "word_text": "«КОТ»,"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к клетке",
+   "t": 21.98
+  },
+  {
+   "name": "shock",
+   "why": "молоток: «ВИНОВНО»",
+   "word": 61,
+   "word_text": "приговор."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст на кухню",
+   "t": 24.52
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "вода из крана",
+   "word": 64,
+   "word_text": "кран,"
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "тарелки моются",
+   "word": 69,
+   "word_text": "посуды"
+  },
+  {
+   "name": "level_up",
+   "why": "«вдвое меньше»",
+   "word": 72,
+   "word_text": "меньше."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к делу",
+   "t": 27.8
+  },
+  {
+   "name": "shock",
+   "why": "«закрыто»: молоток",
+   "word": 74,
+   "word_text": "закрыто."
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка к шкафу",
+   "t": 28.94
+  },
+  {
+   "name": "level_up",
+   "why": "«посуда тоже»",
+   "word": 77,
+   "word_text": "тоже."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст в петлю к хуку",
+   "t": 29.82
+  }
+ ]
+}
