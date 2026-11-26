@@ -1,0 +1,214 @@
+{
+ "_": "Звуки рилса 116 «Вкладки» (plan.py). t — пик звука; word — индекс voice/words.json. Только assets/sfx/reels/library.json.",
+ "keys": [
+  1,
+  3,
+  5,
+  7,
+  12,
+  16,
+  18,
+  24,
+  25,
+  32,
+  33,
+  36,
+  38,
+  43,
+  46,
+  49,
+  53,
+  56,
+  60,
+  65
+ ],
+ "sfx": [
+  {
+   "name": "fast_whoosh",
+   "why": "удар хука: влёт камеры",
+   "t": 0.1
+  },
+  {
+   "name": "riser",
+   "why": "нарастание хука: вкладки множатся",
+   "t": 0.2
+  },
+  {
+   "name": "typing",
+   "why": "вкладки щёлкают",
+   "t": 0.3,
+   "gain_db": -5
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка",
+   "t": 0.773
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "вкладки схлопываются",
+   "word": 3,
+   "word_text": "два"
+  },
+  {
+   "name": "level_up",
+   "why": "«вкладок»: одна",
+   "word": 7,
+   "word_text": "вкладок."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к одной вкладке",
+   "t": 3.0
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "клик: вкладка",
+   "word": 12,
+   "word_text": "вкладку"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к сорока",
+   "t": 5.0
+  },
+  {
+   "name": "typing",
+   "why": "вкладки взрываются",
+   "word": 16,
+   "gain_db": -4,
+   "word_text": "минуту"
+  },
+  {
+   "name": "shock",
+   "why": "«сорок»",
+   "word": 18,
+   "word_text": "сорок,"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к вечеру",
+   "t": 6.28
+  },
+  {
+   "name": "oof",
+   "why": "«не сдвинулась»",
+   "word": 24,
+   "word_text": "сдвинулась."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к решению",
+   "t": 8.04
+  },
+  {
+   "name": "level_up",
+   "why": "«Вот»: лампочка",
+   "word": 25,
+   "offset": 0.15,
+   "word_text": "Вот"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к желаниям",
+   "t": 9.173
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "выскакивают",
+   "word": 32,
+   "word_text": "глянуть"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка к бумажке",
+   "t": 10.587
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "пишу",
+   "word": 36,
+   "word_text": "бумажку,"
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "курсор тянется",
+   "word": 38,
+   "word_text": "вкладку"
+  },
+  {
+   "name": "shock",
+   "why": "кот закрывает «+»",
+   "word": 40,
+   "word_text": "открываю."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к призыву",
+   "t": 12.96
+  },
+  {
+   "name": "typing",
+   "why": "печатается КОТ",
+   "t": 13.010000000000002,
+   "gain_db": -4
+  },
+  {
+   "name": "level_up",
+   "why": "«КОТ» напечатан",
+   "word": 43,
+   "offset": 0.05,
+   "word_text": "«КОТ»,"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к полосе",
+   "t": 14.04
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "полоса растёт",
+   "word": 46,
+   "word_text": "двигалась,"
+  },
+  {
+   "name": "oof",
+   "why": "«тонула»",
+   "word": 49,
+   "word_text": "тонула"
+  },
+  {
+   "name": "level_up",
+   "why": "кот вытащил",
+   "word": 51,
+   "word_text": "вкладках."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к итогу",
+   "t": 16.48
+  },
+  {
+   "name": "shock",
+   "why": "«сдана»: штамп",
+   "word": 56,
+   "word_text": "сдана,"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка к бумажке",
+   "t": 18.12
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«открыл»: кот мурчит",
+   "word": 65,
+   "word_text": "открыл."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст в петлю к хуку",
+   "t": 19.98
+  }
+ ]
+}
