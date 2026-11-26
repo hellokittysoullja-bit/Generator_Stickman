@@ -1,0 +1,237 @@
+{
+ "_": "Звуки рилса 118 «Офис в голове» (plan.py). t — пик звука; word — индекс voice/words.json. Только assets/sfx/reels/library.json.",
+ "keys": [
+  2,
+  5,
+  7,
+  12,
+  13,
+  18,
+  19,
+  23,
+  27,
+  32,
+  37,
+  41,
+  42,
+  49,
+  54,
+  55,
+  56,
+  59,
+  61,
+  65,
+  77,
+  80,
+  81
+ ],
+ "sfx": [
+  {
+   "name": "fast_whoosh",
+   "why": "удар хука: влёт в голову",
+   "t": 0.1
+  },
+  {
+   "name": "riser",
+   "why": "нарастание хука",
+   "t": 0.2
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "влёт сквозь лоб",
+   "t": 0.52
+  },
+  {
+   "name": "fast_glitch",
+   "why": "мигалка, хаос",
+   "word": 4,
+   "word_text": "целый"
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "бумаги летят",
+   "word": 5,
+   "word_text": "офис,"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка: пусто",
+   "t": 1.88
+  },
+  {
+   "name": "oof",
+   "why": "«не работает»",
+   "word": 10,
+   "word_text": "не"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к «Срочному»",
+   "t": 3.52
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "храп",
+   "word": 13,
+   "word_text": "спит"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к «Интересному»",
+   "t": 5.76
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "носится",
+   "word": 19,
+   "word_text": "носится"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка к папкам",
+   "t": 7.24
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "папка",
+   "word": 23,
+   "word_text": "открывает"
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "ещё папка",
+   "word": 24,
+   "word_text": "новые"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к «Тревоге»",
+   "t": 8.6
+  },
+  {
+   "name": "shock",
+   "why": "на стуле",
+   "word": 30,
+   "word_text": "стуле"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка к крику",
+   "t": 10.187
+  },
+  {
+   "name": "fast_glitch",
+   "why": "«горит»",
+   "word": 37,
+   "word_text": "горит."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к двери",
+   "t": 11.88
+  },
+  {
+   "name": "level_up",
+   "why": "входит кот-менеджер",
+   "word": 42,
+   "word_text": "менеджера."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к задачам",
+   "t": 13.68
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "карточка",
+   "word": 45,
+   "word_text": "каждому"
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "карточка",
+   "word": 49,
+   "word_text": "две"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка: сел",
+   "t": 15.82
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст: проснулось",
+   "t": 16.88
+  },
+  {
+   "name": "level_up",
+   "why": "«проснулось»",
+   "word": 55,
+   "word_text": "проснулось,"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка: село",
+   "t": 18.24
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«село»",
+   "word": 57,
+   "word_text": "село,"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка: тишина",
+   "t": 19.5
+  },
+  {
+   "name": "level_up",
+   "why": "«замолчала»",
+   "word": 61,
+   "word_text": "замолчала."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к призыву",
+   "t": 21.49
+  },
+  {
+   "name": "level_up",
+   "why": "кот жмёт «Подписаться»",
+   "t": 22.927999999999997
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка к карточке",
+   "t": 23.232
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к офису",
+   "t": 25.48
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "все работают",
+   "word": 78,
+   "word_text": "впервые"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка к отчёту",
+   "t": 26.92
+  },
+  {
+   "name": "shock",
+   "why": "штамп «ВОВРЕМЯ»",
+   "word": 81,
+   "word_text": "вовремя."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст в петлю к хуку",
+   "t": 27.98
+  }
+ ]
+}
