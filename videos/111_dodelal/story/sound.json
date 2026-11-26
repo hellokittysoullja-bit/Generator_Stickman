@@ -1,0 +1,229 @@
+{
+ "_": "Звуки рилса 111 «Доделал» (plan.py). t — пик звука; word — индекс voice/words.json. Только assets/sfx/reels/library.json.",
+ "keys": [
+  1,
+  2,
+  5,
+  10,
+  13,
+  16,
+  19,
+  20,
+  24,
+  30,
+  32,
+  34,
+  38,
+  41,
+  44,
+  47,
+  51,
+  52,
+  57
+ ],
+ "sfx": [
+  {
+   "name": "fast_whoosh",
+   "why": "удар хука: влёт камеры",
+   "t": 0.1
+  },
+  {
+   "name": "riser",
+   "why": "нарастание хука",
+   "t": 0.2
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "маркер ставит галочку",
+   "word": 1,
+   "offset": 0.05,
+   "word_text": "наконец-то"
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "вторая галочка",
+   "word": 2,
+   "offset": 0.1,
+   "word_text": "закончил"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка: Дима у листа",
+   "t": 0.873
+  },
+  {
+   "name": "level_up",
+   "why": "«начал»: третья галочка",
+   "word": 5,
+   "offset": 0.1,
+   "word_text": "начал."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к полке",
+   "t": 2.22
+  },
+  {
+   "name": "oof",
+   "why": "«середине»: отвёртка брошена",
+   "word": 10,
+   "offset": 0.1,
+   "word_text": "середине,"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к начатым делам",
+   "t": 3.74
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "дела выскакивают",
+   "word": 12,
+   "word_text": "десять"
+  },
+  {
+   "name": "shock",
+   "why": "«начатых»: десять",
+   "word": 13,
+   "word_text": "начатых,"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к ночи",
+   "t": 4.94
+  },
+  {
+   "name": "oof",
+   "why": "«грыз»",
+   "word": 16,
+   "word_text": "грыз"
+  },
+  {
+   "name": "fast_glitch",
+   "why": "туча вспыхивает",
+   "word": 19,
+   "word_text": "каждое."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к решению",
+   "t": 6.82
+  },
+  {
+   "name": "level_up",
+   "why": "«Вот»: лампочка",
+   "word": 20,
+   "offset": 0.15,
+   "word_text": "Вот"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст: новое ждёт",
+   "t": 8.06
+  },
+  {
+   "name": "shock",
+   "why": "шлагбаум опущен",
+   "word": 26,
+   "word_text": "только"
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "маркер: галочка на старом",
+   "word": 30,
+   "word_text": "закрыл"
+  },
+  {
+   "name": "level_up",
+   "why": "«старое»: шлагбаум поднят",
+   "word": 32,
+   "word_text": "старое."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к стене",
+   "t": 11.54
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "кнопка в стену",
+   "word": 36,
+   "word_text": "висит"
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "вторая кнопка",
+   "word": 38,
+   "word_text": "стене."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к призыву",
+   "t": 13.58
+  },
+  {
+   "name": "typing",
+   "why": "печатается НАЧАТЬ",
+   "t": 13.63,
+   "gain_db": -4
+  },
+  {
+   "name": "level_up",
+   "why": "«НАЧАТЬ» напечатано",
+   "word": 41,
+   "offset": 0.05,
+   "word_text": "«НАЧАТЬ»,"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка к листу",
+   "t": 14.927
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "галочка",
+   "word": 44,
+   "word_text": "начатые"
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "галочка",
+   "word": 45,
+   "word_text": "дела"
+  },
+  {
+   "name": "level_up",
+   "why": "«закрывались»: пять",
+   "word": 47,
+   "word_text": "закрывались."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к трём галочкам",
+   "t": 17.38
+  },
+  {
+   "name": "shock",
+   "why": "«три»",
+   "word": 51,
+   "word_text": "три"
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "стикер «ПОТОМ» летит",
+   "word": 55,
+   "word_text": "одного"
+  },
+  {
+   "name": "oof",
+   "why": "кот отбивает «потом»",
+   "word": 57,
+   "word_text": "„потом“."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст в петлю к хуку",
+   "t": 20.32
+  }
+ ]
+}
