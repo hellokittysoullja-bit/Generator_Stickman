@@ -1,0 +1,214 @@
+{
+ "_": "Звуки рилса 126 «Кот-психолог принимает» (plan.py). t — пик звука; word — индекс voice/words.json. Только assets/sfx/reels/library.json.",
+ "keys": [
+  3,
+  6,
+  9,
+  13,
+  17,
+  21,
+  23,
+  29,
+  32,
+  33,
+  35,
+  38,
+  42,
+  46,
+  49,
+  52,
+  55
+ ],
+ "sfx": [
+  {
+   "name": "fast_whoosh",
+   "why": "удар хука: дверь распахивается",
+   "t": 0.1
+  },
+  {
+   "name": "riser",
+   "why": "нарастание хука",
+   "t": 0.2
+  },
+  {
+   "name": "shock",
+   "why": "«психологу»: кот в кресле",
+   "word": 3,
+   "word_text": "психологу,"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка к коту",
+   "t": 0.511
+  },
+  {
+   "name": "oof",
+   "why": "«кот»: челюсть отвисла",
+   "word": 6,
+   "word_text": "кот."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к вопросу",
+   "t": 2.303
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "ручка по блокноту",
+   "word": 9,
+   "word_text": "жалуемся?"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к кушетке",
+   "t": 3.903
+  },
+  {
+   "name": "oof",
+   "why": "«дела»",
+   "word": 13,
+   "word_text": "дела."
+  },
+  {
+   "name": "fast_glitch",
+   "why": "лента бежит",
+   "word": 17,
+   "word_text": "листаю"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к блокноту",
+   "t": 7.043
+  },
+  {
+   "name": "typing",
+   "why": "кот пишет",
+   "word": 21,
+   "gain_db": -5,
+   "word_text": "двух"
+  },
+  {
+   "name": "shock",
+   "why": "звонок «Следующий!»",
+   "word": 23,
+   "offset": 0.05,
+   "word_text": "Следующий!"
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "Дима слетает",
+   "word": 23,
+   "offset": 0.3,
+   "word_text": "Следующий!"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к пациентке",
+   "t": 9.773
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«понедельник»",
+   "word": 29,
+   "word_text": "понедельник."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к листку",
+   "t": 12.169
+  },
+  {
+   "name": "level_up",
+   "why": "«сегодня»",
+   "word": 32,
+   "word_text": "сегодня."
+  },
+  {
+   "name": "shock",
+   "why": "звонок «Следующий!»",
+   "word": 33,
+   "offset": 0.05,
+   "word_text": "Следующий!"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к третьей",
+   "t": 14.749
+  },
+  {
+   "name": "oof",
+   "why": "лапа: стоп",
+   "word": 35,
+   "word_text": "я…"
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "листок",
+   "word": 36,
+   "word_text": "Две"
+  },
+  {
+   "name": "shock",
+   "why": "звонок «Следующий!»",
+   "word": 38,
+   "offset": 0.05,
+   "word_text": "Следующий!"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст домой",
+   "t": 17.987
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "смешок",
+   "word": 42,
+   "word_text": "шутка."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к столу",
+   "t": 19.08
+  },
+  {
+   "name": "level_up",
+   "why": "«начал»",
+   "word": 49,
+   "word_text": "начал."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к призыву",
+   "t": 21.257
+  },
+  {
+   "name": "typing",
+   "why": "печатается КОТИК",
+   "t": 21.307000000000002,
+   "gain_db": -4
+  },
+  {
+   "name": "level_up",
+   "why": "«КОТИК» напечатано",
+   "word": 52,
+   "offset": 0.05,
+   "word_text": "«КОТИК»,"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к листку",
+   "t": 22.817
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "таймер стартует",
+   "word": 57,
+   "word_text": "начались"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст в петлю к хуку",
+   "t": 24.677
+  }
+ ]
+}
