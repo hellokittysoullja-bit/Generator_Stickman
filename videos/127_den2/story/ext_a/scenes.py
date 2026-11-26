@@ -89,13 +89,13 @@ def frame_s01(t):
     c2 = cell(2)
     px, py = 600 + c2[0] + 26, 1000 + c2[1] - 10
     j = ease_out(ramp(t, -.25, tl + .25))
-    ex, ey = 150.0, py + 130
+    ex, ey = px + 170, py + 130            # кот справа от клетки «2», лапа тянется влево — клетки «1» и «2» открыты
     if t < tl + .15:
         cx_, cy_ = 980 + (ex - 980) * j, 1720 + (ey - 1720) * j - 180 * math.sin(math.pi * j)
-    else:
+    else:                                     # после удара отскакивает вправо на пол — не стоит поверх клеток «1» и «2»
         g = t - tl - .15
-        cx_, cy_ = ex - 20 * g, min(RFL, ey + 2400 * g * g)
-    o.append(cat(cx_, cy_, .8, t, dict(look=(.8, -.4), smile=.8, paw=1.0 if j > .6 and t < tl + .35 else .2, paw_dx=110,
+        cx_, cy_ = ex + min(1.0, g / .45) * (950 - ex), min(RFL, ey - 260 * g + 2600 * g * g)
+    o.append(cat(cx_, cy_, .8, t, dict(look=(-.8, -.4), smile=.8, paw=1.0 if j > .6 and t < tl + .35 else .2, paw_dx=-110,
                                        legs=1.0 if cy_ < RFL - 5 else 0.0, perk=1.0)))
     o.append(PR.sparkles(px, py, 1.6, bump(t, tl, .05, .5), t, seed=11, n=6, r=150))
     dx, dy = shake(t, tl, 12)

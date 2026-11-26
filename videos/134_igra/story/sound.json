@@ -1,0 +1,210 @@
+{
+ "_": "Звуки рилса 134 «Если бы мой день был игрой» (plan.py). t — пик звука; word — индекс voice/words.json. Только assets/sfx/reels/library.json.",
+ "keys": [
+  3,
+  5,
+  7,
+  10,
+  13,
+  16,
+  21,
+  24,
+  28,
+  32,
+  35,
+  42,
+  45,
+  48,
+  54,
+  56,
+  58
+ ],
+ "sfx": [
+  {
+   "name": "fast_whoosh",
+   "why": "удар хука: влёт камеры",
+   "t": 0.1
+  },
+  {
+   "name": "riser",
+   "why": "нарастание хука",
+   "t": 0.2
+  },
+  {
+   "name": "shock",
+   "why": "босс подпрыгивает на «день»",
+   "word": 3,
+   "word_text": "день"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к уровню",
+   "t": 0.8
+  },
+  {
+   "name": "level_up",
+   "why": "энергия загорается",
+   "word": 5,
+   "word_text": "игрой!"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к квесту",
+   "t": 2.342
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "окно квеста",
+   "word": 7,
+   "word_text": "квест:"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к заданию",
+   "t": 3.19
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к боссу",
+   "t": 4.51
+  },
+  {
+   "name": "shock",
+   "why": "«босс»",
+   "word": 13,
+   "word_text": "босс."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к энергии",
+   "t": 6.74
+  },
+  {
+   "name": "oof",
+   "why": "«кончилась»",
+   "word": 16,
+   "word_text": "кончилась"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к крану",
+   "t": 7.867
+  },
+  {
+   "name": "oof",
+   "why": "«кран»",
+   "word": 21,
+   "word_text": "кран."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к сбою",
+   "t": 9.837
+  },
+  {
+   "name": "fast_glitch",
+   "why": "«не удалось»",
+   "word": 24,
+   "word_text": "удалось."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к кровати",
+   "t": 11.36
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«с утра»",
+   "word": 28,
+   "word_text": "утра."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к бонусу",
+   "t": 13.22
+  },
+  {
+   "name": "level_up",
+   "why": "«бонус»",
+   "word": 32,
+   "word_text": "бонус:"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к «+2»",
+   "t": 14.59
+  },
+  {
+   "name": "level_up",
+   "why": "«две минуты»",
+   "word": 35,
+   "word_text": "минуты."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к удару",
+   "t": 15.64
+  },
+  {
+   "name": "shock",
+   "why": "«удара»",
+   "word": 42,
+   "word_text": "удара,"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к кружке",
+   "t": 17.24
+  },
+  {
+   "name": "level_up",
+   "why": "«чистая»",
+   "word": 45,
+   "word_text": "чистая."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к призыву",
+   "t": 18.85
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "шкала",
+   "word": 48,
+   "word_text": "комментах,"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к горе посуды",
+   "t": 19.793
+  },
+  {
+   "name": "oof",
+   "why": "«посуды»",
+   "word": 54,
+   "word_text": "посуды,"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к шкале",
+   "t": 21.84
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«одного»",
+   "word": 56,
+   "word_text": "одного"
+  },
+  {
+   "name": "level_up",
+   "why": "«десяти»",
+   "word": 58,
+   "word_text": "десяти."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст в петлю к хуку",
+   "t": 22.94
+  }
+ ]
+}
