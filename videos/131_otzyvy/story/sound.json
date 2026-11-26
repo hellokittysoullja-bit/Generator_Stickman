@@ -1,0 +1,242 @@
+{
+ "_": "Звуки рилса 131 «Отзывы о моём мозге» (plan.py). t — пик звука; word — индекс voice/words.json. Только assets/sfx/reels/library.json.",
+ "keys": [
+  0,
+  1,
+  4,
+  5,
+  8,
+  10,
+  14,
+  19,
+  25,
+  29,
+  36,
+  39,
+  44,
+  45,
+  49,
+  51,
+  54,
+  60
+ ],
+ "sfx": [
+  {
+   "name": "fast_whoosh",
+   "why": "удар хука: влёт камеры",
+   "t": 0.1
+  },
+  {
+   "name": "riser",
+   "why": "нарастание хука",
+   "t": 0.2
+  },
+  {
+   "name": "shock",
+   "why": "одна звезда в хуке",
+   "word": 1,
+   "word_text": "отзывы"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к карточке товара",
+   "t": 1.03
+  },
+  {
+   "name": "oof",
+   "why": "«мозге»",
+   "word": 4,
+   "word_text": "мозге!"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к отзыву",
+   "t": 2.31
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "звезда",
+   "word": 5,
+   "word_text": "Одна"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к столу",
+   "t": 3.433
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к полке",
+   "t": 4.364
+  },
+  {
+   "name": "shock",
+   "why": "«полку»",
+   "word": 10,
+   "word_text": "полку."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к отзыву",
+   "t": 5.866
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "звезда",
+   "word": 11,
+   "word_text": "Одна"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к ежедневнику",
+   "t": 7.05
+  },
+  {
+   "name": "level_up",
+   "why": "«ежедневник»",
+   "word": 14,
+   "word_text": "ежедневник"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к пыли",
+   "t": 8.023
+  },
+  {
+   "name": "oof",
+   "why": "«не открыл»",
+   "word": 19,
+   "word_text": "открыл."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к отзыву",
+   "t": 9.606
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "звезда",
+   "word": 20,
+   "word_text": "Одна"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к столу",
+   "t": 10.667
+  },
+  {
+   "name": "shock",
+   "why": "«секундочку»: пузырь",
+   "word": 25,
+   "word_text": "секундочку“,"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к часам",
+   "t": 12.49
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "стрелки летят",
+   "word": 26,
+   "offset": 0.1,
+   "word_text": "вернулся"
+  },
+  {
+   "name": "oof",
+   "why": "«два часа»",
+   "word": 29,
+   "word_text": "часа."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к таймеру",
+   "t": 14.68
+  },
+  {
+   "name": "level_up",
+   "why": "«двух минут»",
+   "word": 36,
+   "word_text": "двух"
+  },
+  {
+   "name": "typing",
+   "why": "печатает",
+   "word": 37,
+   "gain_db": -4,
+   "word_text": "минут,"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст: кот прыгает",
+   "t": 16.52
+  },
+  {
+   "name": "level_up",
+   "why": "«рядом»",
+   "word": 41,
+   "word_text": "рядом."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к новому отзыву",
+   "t": 18.26
+  },
+  {
+   "name": "level_up",
+   "why": "«пять звёзд»",
+   "word": 44,
+   "word_text": "пять"
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«быстро»: галочка",
+   "word": 47,
+   "word_text": "быстро,"
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«закрывает»: галочка",
+   "word": 49,
+   "word_text": "закрывает,"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к печати",
+   "t": 22.33
+  },
+  {
+   "name": "shock",
+   "why": "печать «рекомендует»",
+   "word": 51,
+   "word_text": "рекомендует."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к призыву",
+   "t": 23.8
+  },
+  {
+   "name": "shock",
+   "why": "«КОТ»",
+   "word": 54,
+   "word_text": "«КОТ»,"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к пяти звёздам",
+   "t": 24.84
+  },
+  {
+   "name": "level_up",
+   "why": "«пять звёзд»",
+   "word": 60,
+   "word_text": "пять"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст в петлю к хуку",
+   "t": 26.94
+  }
+ ]
+}
