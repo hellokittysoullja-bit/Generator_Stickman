@@ -1,0 +1,236 @@
+{
+ "_": "Звуки рилса 135 «Квест-комната» (plan.py). t — пик звука; word — индекс voice/words.json. Только assets/sfx/reels/library.json.",
+ "keys": [
+  1,
+  3,
+  5,
+  9,
+  11,
+  15,
+  18,
+  22,
+  25,
+  29,
+  31,
+  34,
+  38,
+  41,
+  47,
+  50,
+  53
+ ],
+ "sfx": [
+  {
+   "name": "fast_whoosh",
+   "why": "удар хука: дверь дёрнули",
+   "t": 0.1
+  },
+  {
+   "name": "riser",
+   "why": "нарастание хука",
+   "t": 0.2
+  },
+  {
+   "name": "shock",
+   "why": "«заперли»: замок лязгнул",
+   "word": 1,
+   "word_text": "заперли"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к комнате",
+   "t": 1.015
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "табло «2:00»",
+   "word": 3,
+   "offset": 0.4,
+   "word_text": "квест-комнате!"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к ведущему",
+   "t": 2.41
+  },
+  {
+   "name": "level_up",
+   "why": "ключ поднят",
+   "word": 5,
+   "word_text": "можно,"
+  },
+  {
+   "name": "shock",
+   "why": "ключ стучит по замку",
+   "word": 9,
+   "word_text": "дело."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к отговорке",
+   "t": 5.6
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "табличка «1»",
+   "word": 11,
+   "word_text": "отговорка:"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "плюхнулся в мешок",
+   "t": 6.878
+  },
+  {
+   "name": "oof",
+   "why": "«настроение»",
+   "word": 15,
+   "word_text": "настроение."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к замку",
+   "t": 8.701
+  },
+  {
+   "name": "fast_glitch",
+   "why": "красный сигнал замка",
+   "word": 18,
+   "word_text": "открылся."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к столу",
+   "t": 10.18
+  },
+  {
+   "name": "typing",
+   "why": "уборка суетой",
+   "word": 21,
+   "gain_db": -6,
+   "word_text": "уберу"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к замку",
+   "t": 12.133
+  },
+  {
+   "name": "fast_glitch",
+   "why": "красный сигнал",
+   "word": 25,
+   "word_text": "открылся."
+  },
+  {
+   "name": "oof",
+   "why": "падает на стол",
+   "word": 25,
+   "offset": 0.3,
+   "word_text": "открылся."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к «завтра»",
+   "t": 13.74
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«завтра»",
+   "word": 29,
+   "word_text": "завтра."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к замку",
+   "t": 16.044
+  },
+  {
+   "name": "oof",
+   "why": "толкает замок",
+   "word": 31,
+   "word_text": "даже"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к подсказке",
+   "t": 17.99
+  },
+  {
+   "name": "level_up",
+   "why": "лампочка",
+   "word": 34,
+   "offset": 0.2,
+   "word_text": "Подсказка:"
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "карточка «2 минуты»",
+   "word": 38,
+   "word_text": "две"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к ноутбуку",
+   "t": 21.264
+  },
+  {
+   "name": "typing",
+   "why": "строка",
+   "word": 43,
+   "gain_db": -4,
+   "word_text": "написал"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к двери",
+   "t": 23.07
+  },
+  {
+   "name": "shock",
+   "why": "«щёлкнула»",
+   "word": 47,
+   "word_text": "щёлкнула."
+  },
+  {
+   "name": "level_up",
+   "why": "дверь открыта",
+   "word": 47,
+   "offset": 0.25,
+   "word_text": "щёлкнула."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к призыву",
+   "t": 24.494
+  },
+  {
+   "name": "typing",
+   "why": "печатается КОТ",
+   "t": 24.544,
+   "gain_db": -4
+  },
+  {
+   "name": "level_up",
+   "why": "«КОТ» напечатано",
+   "word": 50,
+   "offset": 0.05,
+   "word_text": "«КОТ»,"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к ключу",
+   "t": 26.332
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "ключ протянут",
+   "word": 53,
+   "word_text": "ключ"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст в петлю к хуку",
+   "t": 27.314
+  }
+ ]
+}
