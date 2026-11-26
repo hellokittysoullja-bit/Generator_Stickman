@@ -1,0 +1,232 @@
+{
+ "_": "Звуки рилса 112 «Реферат» (plan.py). t — пик звука; word — индекс voice/words.json. Только assets/sfx/reels/library.json.",
+ "keys": [
+  1,
+  2,
+  3,
+  5,
+  10,
+  14,
+  19,
+  24,
+  26,
+  31,
+  34,
+  36,
+  38,
+  40,
+  43,
+  44,
+  48,
+  54,
+  56,
+  61,
+  66
+ ],
+ "sfx": [
+  {
+   "name": "fast_whoosh",
+   "why": "удар хука: влёт камеры",
+   "t": 0.1
+  },
+  {
+   "name": "riser",
+   "why": "нарастание хука",
+   "t": 0.2
+  },
+  {
+   "name": "shock",
+   "why": "штамп «СДАН» шлёпается",
+   "word": 1,
+   "offset": 0.05,
+   "word_text": "наконец-то"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка к реферату",
+   "t": 0.76
+  },
+  {
+   "name": "shock",
+   "why": "второй удар штампа",
+   "word": 3,
+   "offset": 0.1,
+   "word_text": "реферат"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка к луне",
+   "t": 1.42
+  },
+  {
+   "name": "level_up",
+   "why": "«ночи»: сладкий сон",
+   "word": 5,
+   "word_text": "ночи"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к пустому файлу",
+   "t": 2.731
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "курсор мигает",
+   "word": 11,
+   "word_text": "смотрел"
+  },
+  {
+   "name": "oof",
+   "why": "«пустой файл»",
+   "word": 14,
+   "word_text": "файл,"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к ночи",
+   "t": 4.84
+  },
+  {
+   "name": "typing",
+   "why": "бешено печатает",
+   "word": 16,
+   "gain_db": -3,
+   "word_text": "всё"
+  },
+  {
+   "name": "fast_glitch",
+   "why": "«ночь»: часы 3:00",
+   "word": 19,
+   "word_text": "ночь,"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к утру",
+   "t": 6.2
+  },
+  {
+   "name": "shock",
+   "why": "руки трясутся",
+   "word": 24,
+   "word_text": "трясущимися"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к решению",
+   "t": 8.35
+  },
+  {
+   "name": "level_up",
+   "why": "«Вот»: лампочка",
+   "word": 26,
+   "offset": 0.15,
+   "word_text": "Вот"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к листкам дней",
+   "t": 9.6
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "абзац появляется",
+   "word": 32,
+   "word_text": "пишу"
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "ещё абзац",
+   "word": 34,
+   "word_text": "абзац,"
+  },
+  {
+   "name": "oof",
+   "why": "«кривой»",
+   "word": 36,
+   "word_text": "кривой."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к правке",
+   "t": 12.38
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "ручка правит",
+   "word": 39,
+   "word_text": "можно"
+  },
+  {
+   "name": "level_up",
+   "why": "«исправить»: абзац ровный",
+   "word": 40,
+   "offset": 0.1,
+   "word_text": "исправить,"
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "пустой лист",
+   "word": 42,
+   "word_text": "пустой"
+  },
+  {
+   "name": "oof",
+   "why": "«нельзя»",
+   "word": 44,
+   "word_text": "нельзя."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к призыву",
+   "t": 15.42
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка к кнопке",
+   "t": 17.072
+  },
+  {
+   "name": "level_up",
+   "why": "кот жмёт «Подписаться»",
+   "t": 17.131999999999998
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка: подписан",
+   "t": 18.28
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "следы лап",
+   "word": 56,
+   "word_text": "спать"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к календарю",
+   "t": 19.72
+  },
+  {
+   "name": "shock",
+   "why": "штамп «СДАН» за два дня",
+   "word": 61,
+   "word_text": "два"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к утру",
+   "t": 21.08
+  },
+  {
+   "name": "level_up",
+   "why": "«выспался»",
+   "word": 66,
+   "word_text": "выспался."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст в петлю к хуку",
+   "t": 21.74
+  }
+ ]
+}
