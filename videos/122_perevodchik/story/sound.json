@@ -1,0 +1,267 @@
+{
+ "_": "Звуки рилса 122 «Переводчик с СДВГ» (plan.py). t — пик звука; word — индекс voice/words.json. Только assets/sfx/reels/library.json.",
+ "keys": [
+  0,
+  2,
+  4,
+  7,
+  9,
+  12,
+  15,
+  19,
+  23,
+  26,
+  29,
+  33,
+  36,
+  41,
+  44,
+  46,
+  52,
+  55,
+  58,
+  61
+ ],
+ "sfx": [
+  {
+   "name": "fast_whoosh",
+   "why": "удар хука: влёт камеры",
+   "t": 0.1
+  },
+  {
+   "name": "riser",
+   "why": "нарастание хука: страницы летят",
+   "t": 0.2
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "страница",
+   "word": 0,
+   "word_text": "Перевожу"
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "страница",
+   "word": 2,
+   "word_text": "СДВГ"
+  },
+  {
+   "name": "swoosh",
+   "why": "карточка выскакивает",
+   "t": 1.44
+  },
+  {
+   "name": "level_up",
+   "why": "«русский»: перевод готов",
+   "word": 4,
+   "word_text": "русский!"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к двери",
+   "t": 2.7
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "пузырь",
+   "word": 7,
+   "word_text": "секундочку“"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к карточке",
+   "t": 3.749
+  },
+  {
+   "name": "shock",
+   "why": "«увидимся»: перевод",
+   "word": 9,
+   "word_text": "„увидимся"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к часам",
+   "t": 5.024
+  },
+  {
+   "name": "typing",
+   "why": "стрелки крутятся",
+   "word": 12,
+   "gain_db": -5,
+   "word_text": "часа“."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к столу",
+   "t": 6.4
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "пузырь",
+   "word": 15,
+   "word_text": "начну“"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к карточке",
+   "t": 7.349
+  },
+  {
+   "name": "shock",
+   "why": "«думать»: перевод",
+   "word": 18,
+   "word_text": "буду"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к дивану",
+   "t": 8.672
+  },
+  {
+   "name": "oof",
+   "why": "«до вечера»",
+   "word": 23,
+   "word_text": "вечера“."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к телефону",
+   "t": 10.4
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "пузырь",
+   "word": 26,
+   "word_text": "забыл“"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к карточке",
+   "t": 11.097
+  },
+  {
+   "name": "shock",
+   "why": "«забыл»: перевод",
+   "word": 29,
+   "word_text": "забыл,"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к стыду",
+   "t": 12.373
+  },
+  {
+   "name": "oof",
+   "why": "«стыдно»",
+   "word": 33,
+   "word_text": "стыдно“."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к дивану",
+   "t": 14.08
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "пузырь",
+   "word": 36,
+   "word_text": "устал“"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к карточке",
+   "t": 15.029
+  },
+  {
+   "name": "shock",
+   "why": "«весь день»: перевод",
+   "word": 39,
+   "word_text": "весь"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к голове",
+   "t": 16.6
+  },
+  {
+   "name": "typing",
+   "why": "стикеры кружат",
+   "word": 43,
+   "gain_db": -4,
+   "word_text": "голове"
+  },
+  {
+   "name": "shock",
+   "why": "«сорок»",
+   "word": 44,
+   "word_text": "сорок"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к телефону",
+   "t": 18.42
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "самолётик улетает",
+   "word": 48,
+   "word_text": "тому,"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка к словарю",
+   "t": 19.72
+  },
+  {
+   "name": "level_up",
+   "why": "«словарь»",
+   "word": 52,
+   "word_text": "словарь."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к призыву",
+   "t": 20.98
+  },
+  {
+   "name": "typing",
+   "why": "печатается КОТ",
+   "t": 21.03,
+   "gain_db": -4
+  },
+  {
+   "name": "level_up",
+   "why": "«КОТ» напечатан",
+   "word": 55,
+   "offset": 0.05,
+   "word_text": "«КОТ»,"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к карточке",
+   "t": 22.213
+  },
+  {
+   "name": "shock",
+   "why": "штамп «НАЧАЛ»",
+   "word": 59,
+   "word_text": "наконец"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к столу",
+   "t": 23.824
+  },
+  {
+   "name": "level_up",
+   "why": "«начал»: галочка",
+   "word": 61,
+   "word_text": "„начал“."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст в петлю к хуку",
+   "t": 24.86
+  }
+ ]
+}
