@@ -1,0 +1,197 @@
+{
+ "_": "Звуки рилса 125 «СДВГ-бинго» (plan.py). t — пик звука; word — индекс voice/words.json. Только assets/sfx/reels/library.json.",
+ "keys": [
+  0,
+  2,
+  5,
+  8,
+  11,
+  17,
+  22,
+  30,
+  33,
+  37,
+  44,
+  49,
+  52,
+  55,
+  60
+ ],
+ "sfx": [
+  {
+   "name": "fast_whoosh",
+   "why": "удар хука: влёт камеры",
+   "t": 0.1
+  },
+  {
+   "name": "riser",
+   "why": "нарастание хука: клетки прыгают",
+   "t": 0.2
+  },
+  {
+   "name": "level_up",
+   "why": "«бинго!»",
+   "word": 0,
+   "offset": 0.6,
+   "word_text": "СДВГ-бинго!"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка к «посмотрим»",
+   "t": 1.68
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "маркер наготове",
+   "word": 5,
+   "word_text": "совпадёт."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к клетке 1",
+   "t": 3.56
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "отметка в клетке 1",
+   "word": 8,
+   "offset": 0.05,
+   "word_text": "вкладок."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к клетке 2",
+   "t": 5.28
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "отметка в клетке 2",
+   "word": 11,
+   "offset": 0.05,
+   "word_text": "трижды."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к клетке 3",
+   "t": 6.7
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "отметка в клетке 3",
+   "word": 17,
+   "offset": 0.05,
+   "word_text": "зачем."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к клетке 4",
+   "t": 8.88
+  },
+  {
+   "name": "shock",
+   "why": "отметка в клетке 4",
+   "word": 22,
+   "offset": 0.05,
+   "word_text": "ноль."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к клетке 5",
+   "t": 11.013
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "отметка в клетке 5",
+   "word": 30,
+   "offset": 0.05,
+   "word_text": "отправил."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к клетке 6",
+   "t": 13.48
+  },
+  {
+   "name": "shock",
+   "why": "отметка в клетке 6",
+   "word": 33,
+   "offset": 0.05,
+   "word_text": "холодильнике."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к клетке 7",
+   "t": 15.2
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "отметка в клетке 7",
+   "word": 37,
+   "offset": 0.05,
+   "word_text": "продуктивным."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к клетке 8",
+   "t": 17.08
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "отметка в клетке 8",
+   "word": 44,
+   "offset": 0.05,
+   "word_text": "час."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к клетке 9",
+   "t": 19.48
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "отметка в клетке 9",
+   "word": 49,
+   "offset": 0.05,
+   "word_text": "открыл."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к бинго",
+   "t": 21.82
+  },
+  {
+   "name": "shock",
+   "why": "«бинго»: вспышка",
+   "word": 52,
+   "word_text": "бинго"
+  },
+  {
+   "name": "level_up",
+   "why": "«девяти»",
+   "word": 55,
+   "word_text": "девяти."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к призыву",
+   "t": 23.78
+  },
+  {
+   "name": "typing",
+   "why": "цифра печатается",
+   "t": 23.830000000000002,
+   "gain_db": -4
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«совпало»",
+   "word": 60,
+   "word_text": "совпало"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст в петлю к хуку",
+   "t": 25.82
+  }
+ ]
+}
