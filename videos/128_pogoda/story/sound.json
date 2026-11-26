@@ -1,0 +1,239 @@
+{
+ "_": "Звуки рилса 128 «Прогноз погоды в голове» (plan.py). t — пик звука; word — индекс voice/words.json. Только assets/sfx/reels/library.json.",
+ "keys": [
+  0,
+  1,
+  4,
+  9,
+  12,
+  16,
+  19,
+  21,
+  26,
+  31,
+  37,
+  44,
+  45,
+  47,
+  53,
+  57,
+  58,
+  67,
+  74
+ ],
+ "sfx": [
+  {
+   "name": "fast_whoosh",
+   "why": "удар хука: влёт камеры",
+   "t": 0.1
+  },
+  {
+   "name": "riser",
+   "why": "нарастание хука",
+   "t": 0.2
+  },
+  {
+   "name": "shock",
+   "why": "молния на «погоды»",
+   "word": 1,
+   "offset": 0.1,
+   "word_text": "погоды"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к экрану",
+   "t": 0.96
+  },
+  {
+   "name": "fast_glitch",
+   "why": "молния «голове»",
+   "word": 4,
+   "word_text": "голове"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к коту",
+   "t": 1.68
+  },
+  {
+   "name": "level_up",
+   "why": "«сегодня»",
+   "word": 6,
+   "word_text": "сегодня!"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к туману",
+   "t": 2.8
+  },
+  {
+   "name": "oof",
+   "why": "«туман»",
+   "word": 9,
+   "word_text": "туман."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к Диме",
+   "t": 4.24
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«одна мысль»",
+   "word": 11,
+   "word_text": "одна"
+  },
+  {
+   "name": "level_up",
+   "why": "«кофе»",
+   "word": 16,
+   "word_text": "кофе."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к урагану",
+   "t": 6.773
+  },
+  {
+   "name": "shock",
+   "why": "«сорока дел»",
+   "word": 21,
+   "word_text": "сорока"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к ноутбуку",
+   "t": 8.86
+  },
+  {
+   "name": "typing",
+   "why": "вкладки множатся",
+   "word": 24,
+   "gain_db": -4,
+   "word_text": "до"
+  },
+  {
+   "name": "oof",
+   "why": "«минуту»",
+   "word": 28,
+   "word_text": "минуту."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к штилю",
+   "t": 11.093
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к дивану",
+   "t": 13.04
+  },
+  {
+   "name": "oof",
+   "why": "«на месте»",
+   "word": 37,
+   "word_text": "месте."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к ночи",
+   "t": 14.48
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«два часа»",
+   "word": 40,
+   "word_text": "два"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к ливню",
+   "t": 15.52
+  },
+  {
+   "name": "shock",
+   "why": "«ливень»: молния",
+   "word": 44,
+   "word_text": "ливень"
+  },
+  {
+   "name": "typing",
+   "why": "печатает",
+   "word": 45,
+   "gain_db": -4,
+   "word_text": "продуктивности."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к совету",
+   "t": 17.68
+  },
+  {
+   "name": "level_up",
+   "why": "«синоптика»",
+   "word": 47,
+   "word_text": "синоптика:"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к таймеру",
+   "t": 18.773
+  },
+  {
+   "name": "level_up",
+   "why": "«двух минут»",
+   "word": 52,
+   "word_text": "двух"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к урагану",
+   "t": 20.56
+  },
+  {
+   "name": "level_up",
+   "why": "«стихает»",
+   "word": 57,
+   "word_text": "стихает."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к телефону",
+   "t": 22.16
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "самолётик улетает",
+   "word": 58,
+   "offset": 0.3,
+   "word_text": "Отправь"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к призыву",
+   "t": 24.48
+  },
+  {
+   "name": "shock",
+   "why": "«КОТ»",
+   "word": 67,
+   "word_text": "«КОТ»,"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к ясной голове",
+   "t": 25.6
+  },
+  {
+   "name": "level_up",
+   "why": "«ясно»",
+   "word": 74,
+   "word_text": "ясно."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст в петлю к хуку",
+   "t": 27.74
+  }
+ ]
+}
