@@ -1,0 +1,470 @@
+[
+ {
+  "word": "Устали",
+  "start": 0.04,
+  "end": 0.48,
+  "speaker": "host"
+ },
+ {
+  "word": "от",
+  "start": 0.52,
+  "end": 0.56,
+  "speaker": "host"
+ },
+ {
+  "word": "десяти",
+  "start": 0.64,
+  "end": 0.88,
+  "speaker": "host"
+ },
+ {
+  "word": "начатых",
+  "start": 0.96,
+  "end": 1.36,
+  "speaker": "host"
+ },
+ {
+  "word": "дел?",
+  "start": 1.44,
+  "end": 1.68,
+  "speaker": "host"
+ },
+ {
+  "word": "Тогда",
+  "start": 2.0,
+  "end": 2.4,
+  "speaker": "host"
+ },
+ {
+  "word": "это",
+  "start": 2.48,
+  "end": 2.64,
+  "speaker": "host"
+ },
+ {
+  "word": "для",
+  "start": 2.68,
+  "end": 2.8,
+  "speaker": "host"
+ },
+ {
+  "word": "вас!",
+  "start": 2.88,
+  "end": 3.2,
+  "speaker": "host"
+ },
+ {
+  "word": "Садитесь",
+  "start": 3.44,
+  "end": 3.84,
+  "speaker": "host"
+ },
+ {
+  "word": "за",
+  "start": 3.92,
+  "end": 4.0,
+  "speaker": "host"
+ },
+ {
+  "word": "дело",
+  "start": 4.08,
+  "end": 4.32,
+  "speaker": "host"
+ },
+ {
+  "word": "и",
+  "start": 4.36,
+  "end": 4.4,
+  "speaker": "host"
+ },
+ {
+  "word": "через",
+  "start": 4.48,
+  "end": 4.64,
+  "speaker": "host"
+ },
+ {
+  "word": "минуту",
+  "start": 4.72,
+  "end": 5.04,
+  "speaker": "host"
+ },
+ {
+  "word": "листаете",
+  "start": 5.12,
+  "end": 5.44,
+  "speaker": "host"
+ },
+ {
+  "word": "ленту?",
+  "start": 5.52,
+  "end": 5.84,
+  "speaker": "host"
+ },
+ {
+  "word": "Дедлайн",
+  "start": 6.16,
+  "end": 6.56,
+  "speaker": "host"
+ },
+ {
+  "word": "горит,",
+  "start": 6.64,
+  "end": 6.96,
+  "speaker": "host"
+ },
+ {
+  "word": "а",
+  "start": 7.04,
+  "end": 7.12,
+  "speaker": "host"
+ },
+ {
+  "word": "вы",
+  "start": 7.2,
+  "end": 7.28,
+  "speaker": "host"
+ },
+ {
+  "word": "моете",
+  "start": 7.36,
+  "end": 7.6,
+  "speaker": "host"
+ },
+ {
+  "word": "кружки?",
+  "start": 7.68,
+  "end": 8.08,
+  "speaker": "host"
+ },
+ {
+  "word": "Обещаете",
+  "start": 8.4,
+  "end": 8.88,
+  "speaker": "host"
+ },
+ {
+  "word": "себе",
+  "start": 8.92,
+  "end": 9.28,
+  "speaker": "host"
+ },
+ {
+  "word": "„с",
+  "start": 9.333,
+  "end": 9.36,
+  "speaker": "host"
+ },
+ {
+  "word": "понедельника“",
+  "start": 9.44,
+  "end": 10.24,
+  "speaker": "host"
+ },
+ {
+  "word": "уже",
+  "start": 10.4,
+  "end": 10.64,
+  "speaker": "host"
+ },
+ {
+  "word": "третий",
+  "start": 10.72,
+  "end": 11.04,
+  "speaker": "host"
+ },
+ {
+  "word": "год?",
+  "start": 11.16,
+  "end": 11.28,
+  "speaker": "host"
+ },
+ {
+  "word": "Встречайте!",
+  "start": 11.6,
+  "end": 12.4,
+  "speaker": "host"
+ },
+ {
+  "word": "Две",
+  "start": 12.64,
+  "end": 12.8,
+  "speaker": "host"
+ },
+ {
+  "word": "минуты!",
+  "start": 12.88,
+  "end": 13.6,
+  "speaker": "host"
+ },
+ {
+  "word": "Просто",
+  "start": 13.68,
+  "end": 13.96,
+  "speaker": "host"
+ },
+ {
+  "word": "откройте",
+  "start": 14.0,
+  "end": 14.4,
+  "speaker": "host"
+ },
+ {
+  "word": "дело",
+  "start": 14.48,
+  "end": 14.8,
+  "speaker": "host"
+ },
+ {
+  "word": "и",
+  "start": 14.88,
+  "end": 14.96,
+  "speaker": "host"
+ },
+ {
+  "word": "поработайте",
+  "start": 15.04,
+  "end": 15.6,
+  "speaker": "host"
+ },
+ {
+  "word": "две",
+  "start": 15.68,
+  "end": 15.76,
+  "speaker": "host"
+ },
+ {
+  "word": "минуты.",
+  "start": 15.92,
+  "end": 16.56,
+  "speaker": "host"
+ },
+ {
+  "word": "Я",
+  "start": 16.76,
+  "end": 16.84,
+  "speaker": "dima"
+ },
+ {
+  "word": "не",
+  "start": 16.893,
+  "end": 17.0,
+  "speaker": "dima"
+ },
+ {
+  "word": "верил.",
+  "start": 17.06,
+  "end": 17.4,
+  "speaker": "dima"
+ },
+ {
+  "word": "Но",
+  "start": 17.72,
+  "end": 17.88,
+  "speaker": "dima"
+ },
+ {
+  "word": "через",
+  "start": 17.92,
+  "end": 18.12,
+  "speaker": "dima"
+ },
+ {
+  "word": "две",
+  "start": 18.14,
+  "end": 18.2,
+  "speaker": "dima"
+ },
+ {
+  "word": "минуты",
+  "start": 18.28,
+  "end": 18.84,
+  "speaker": "dima"
+ },
+ {
+  "word": "я",
+  "start": 18.92,
+  "end": 19.0,
+  "speaker": "dima"
+ },
+ {
+  "word": "просто",
+  "start": 19.057,
+  "end": 19.4,
+  "speaker": "dima"
+ },
+ {
+  "word": "не",
+  "start": 19.453,
+  "end": 19.56,
+  "speaker": "dima"
+ },
+ {
+  "word": "смог",
+  "start": 19.608,
+  "end": 19.8,
+  "speaker": "dima"
+ },
+ {
+  "word": "остановиться.",
+  "start": 19.85,
+  "end": 20.52,
+  "speaker": "dima"
+ },
+ {
+  "word": "Но",
+  "start": 21.089,
+  "end": 21.196,
+  "speaker": "host"
+ },
+ {
+  "word": "подождите,",
+  "start": 21.276,
+  "end": 21.756,
+  "speaker": "host"
+ },
+ {
+  "word": "это",
+  "start": 21.996,
+  "end": 22.156,
+  "speaker": "host"
+ },
+ {
+  "word": "ещё",
+  "start": 22.236,
+  "end": 22.356,
+  "speaker": "host"
+ },
+ {
+  "word": "не",
+  "start": 22.396,
+  "end": 22.476,
+  "speaker": "host"
+ },
+ {
+  "word": "всё!",
+  "start": 22.556,
+  "end": 22.796,
+  "speaker": "host"
+ },
+ {
+  "word": "К",
+  "start": 23.036,
+  "end": 23.116,
+  "speaker": "host"
+ },
+ {
+  "word": "двум",
+  "start": 23.156,
+  "end": 23.356,
+  "speaker": "host"
+ },
+ {
+  "word": "минутам",
+  "start": 23.476,
+  "end": 23.756,
+  "speaker": "host"
+ },
+ {
+  "word": "вы",
+  "start": 23.836,
+  "end": 23.916,
+  "speaker": "host"
+ },
+ {
+  "word": "получаете",
+  "start": 23.996,
+  "end": 24.556,
+  "speaker": "host"
+ },
+ {
+  "word": "кота,",
+  "start": 24.596,
+  "end": 24.929,
+  "speaker": "host"
+ },
+ {
+  "word": "который",
+  "start": 25.036,
+  "end": 25.356,
+  "speaker": "host"
+ },
+ {
+  "word": "сидит",
+  "start": 25.436,
+  "end": 25.676,
+  "speaker": "host"
+ },
+ {
+  "word": "рядом!",
+  "start": 25.756,
+  "end": 26.316,
+  "speaker": "host"
+ },
+ {
+  "word": "Подпишитесь",
+  "start": 26.423,
+  "end": 26.876,
+  "speaker": "host"
+ },
+ {
+  "word": "на",
+  "start": 26.916,
+  "end": 26.956,
+  "speaker": "host"
+ },
+ {
+  "word": "Телеграм",
+  "start": 26.996,
+  "end": 27.356,
+  "speaker": "host"
+ },
+ {
+  "word": "в",
+  "start": 27.436,
+  "end": 27.476,
+  "speaker": "host"
+ },
+ {
+  "word": "профиле,",
+  "start": 27.516,
+  "end": 27.916,
+  "speaker": "host"
+ },
+ {
+  "word": "если",
+  "start": 27.996,
+  "end": 28.236,
+  "speaker": "host"
+ },
+ {
+  "word": "хотите",
+  "start": 28.316,
+  "end": 28.556,
+  "speaker": "host"
+ },
+ {
+  "word": "начинать",
+  "start": 28.636,
+  "end": 28.956,
+  "speaker": "host"
+ },
+ {
+  "word": "дела",
+  "start": 29.076,
+  "end": 29.356,
+  "speaker": "host"
+ },
+ {
+  "word": "без",
+  "start": 29.396,
+  "end": 29.596,
+  "speaker": "host"
+ },
+ {
+  "word": "мучений.",
+  "start": 29.636,
+  "end": 30.156,
+  "speaker": "host"
+ }
+]
