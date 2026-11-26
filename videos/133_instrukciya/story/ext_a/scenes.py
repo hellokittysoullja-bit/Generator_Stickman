@@ -303,7 +303,7 @@ def frame_s04(t):
         r = 300 + 40 * math.sin(j * 1.7)
         o.append(PR.flying_sheet(hx + r * math.cos(ang), hy + 30 + r * .55 * math.sin(ang), .55, rot=math.degrees(ang) * .5 + 20 * j, seed=j,
                                  kind="lines", flap=math.sin(t * 8 + j)))
-    cnt = int(round(12 + 28 * ease_out(ramp(t, a - .1, .5))))
+    cnt = 40      # правило 11: сразу число из фразы, без счётчика
     o.append(tf(shape(lib.rrect(-120, -80, 120, 80, 24), "#e2453a", text(str(cnt), 0, 34, 104, fill="#ffffff", stroke="#7a1a14", sw=6), w=5, seed=9300),
                 870, 520, 1.0 + .15 * bump(t, a + .45, .05, .25), 6))
     o.append(badge(1, 170, 500, 1.0))
@@ -391,8 +391,7 @@ def frame_s09(t):
     o = [sheet(t)]
     d = ease_in(ramp(t, a - .1, WE(23) - a))
     o.append(battery(660, 860, 1.3, .95 - .93 * d))
-    left = 60 * (1 - d)
-    o.append(timer_face(840, 560, .8, left, bump(t, W(23), .05, .3)))
+    o.append(timer_face(840, 560, .8, 60, bump(t, W(23), .05, .3)))
     f = dima(t, "slump", "d82_rest", x=260, head_add=-.12 * d, lean_add=.1 * d)
     o.append(f["svg"])
     o.append(badge(2, 170, 500, 1.0))
@@ -441,8 +440,8 @@ def frame_s12(t):
     a, b = T0("s12"), T1("s12")
     o = [sheet(t)]
     o.append(badge(3, 170, 500, 1.0))
-    o.append(shape(lib.rrect(170, RFL - 200, 760, RFL - 150, 14), "#c9a06a", "", w=4, seed=9400))
-    for x_ in (200, 730):
+    o.append(shape(lib.rrect(170, RFL - 200, 900, RFL - 150, 14), "#c9a06a", "", w=4, seed=9400))
+    for x_ in (200, 870):
         o.append(line([(x_, RFL - 150), (x_, RFL)], 12, "#8a6038", taper=0, wmin=1, seed=9401 + x_))
     k = .7
     hip = RFL - 230
@@ -453,11 +452,10 @@ def frame_s12(t):
     hx, hy = f["head"]
     o.append(spinner(hx, hy - 220, 56, t, op=1 - ease_io(ramp(t, W(35), .9))))
     j = ease_io(ramp(t, a - .15, .45))
-    cx_ = 980 + (600 - 980) * j
+    cx_ = 1080 + (800 - 1080) * j
     cy_ = RFL - 200 - 120 * math.sin(math.pi * j)
     o.append(master(t, x=cx_, y=cy_, k=.95, st=dict(look=(-.9, -.1), smile=1.0, legs=1 - j if j < 1 else 0.0, tilt=-8 * calm)))
-    left = 120 - 40 * clamp((t - W(34)) / 3.0)
-    o.append(timer_face(830, 600, .9, left, bump(t, W(35), .05, .3)))
+    o.append(timer_face(830, 560, .9, 120, bump(t, W(35), .05, .3)))
     if calm > .2:
         o.append(PR.heart(560, 860, .9 * calm, seed=2))
     u = ease_io(ramp(t, a, b - a))
