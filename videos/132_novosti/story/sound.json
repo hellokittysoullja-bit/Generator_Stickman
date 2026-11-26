@@ -1,0 +1,241 @@
+{
+ "_": "Звуки рилса 132 «Срочные новости» (plan.py). t — пик звука; word — индекс voice/words.json. Только assets/sfx/reels/library.json.",
+ "keys": [
+  1,
+  3,
+  6,
+  13,
+  19,
+  22,
+  30,
+  33,
+  36,
+  42,
+  46,
+  48,
+  53,
+  56,
+  62,
+  66,
+  69,
+  73,
+  77
+ ],
+ "sfx": [
+  {
+   "name": "fast_whoosh",
+   "why": "удар хука: влёт в студию",
+   "t": 0.1
+  },
+  {
+   "name": "riser",
+   "why": "нарастание хука, мигалки",
+   "t": 0.2
+  },
+  {
+   "name": "shock",
+   "why": "«Срочные новости»",
+   "word": 1,
+   "word_text": "новости:"
+  },
+  {
+   "name": "swoosh",
+   "why": "склейка к экрану",
+   "t": 1.34
+  },
+  {
+   "name": "level_up",
+   "why": "конверт открыт",
+   "word": 3,
+   "offset": 0.1,
+   "word_text": "открыл"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к календарю",
+   "t": 2.22
+  },
+  {
+   "name": "oof",
+   "why": "«четырнадцать дней»",
+   "word": 6,
+   "word_text": "четырнадцать"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к входящим",
+   "t": 4.37
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "«во входящих»",
+   "word": 11,
+   "word_text": "входящих"
+  },
+  {
+   "name": "oof",
+   "why": "пыль сыплется",
+   "word": 13,
+   "word_text": "недели."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к архиву",
+   "t": 7.01
+  },
+  {
+   "name": "shock",
+   "why": "ноутбук захлопнут",
+   "word": 15,
+   "word_text": "это"
+  },
+  {
+   "name": "oof",
+   "why": "«потом»",
+   "word": 19,
+   "word_text": "потом."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к раковине",
+   "t": 9.75
+  },
+  {
+   "name": "shock",
+   "why": "«в шоке»",
+   "word": 22,
+   "word_text": "шоке."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к кружкам",
+   "t": 11.163
+  },
+  {
+   "name": "fast_glitch",
+   "why": "кружки качают головами",
+   "word": 29,
+   "word_text": "не"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст в студию",
+   "t": 13.77
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст на улицу",
+   "t": 14.73
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "плашка «НАШ ГЕРОЙ»",
+   "word": 35,
+   "word_text": "наш"
+  },
+  {
+   "name": "level_up",
+   "why": "«две минуты»",
+   "word": 41,
+   "word_text": "две"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к ноутбуку",
+   "t": 18.237
+  },
+  {
+   "name": "typing",
+   "why": "пишется строка",
+   "word": 44,
+   "gain_db": -5,
+   "word_text": "написал"
+  },
+  {
+   "name": "fast_whoosh",
+   "why": "самолётик улетает",
+   "word": 48,
+   "word_text": "отправил."
+  },
+  {
+   "name": "level_up",
+   "why": "«Отправлено»",
+   "word": 48,
+   "offset": 0.35,
+   "word_text": "отправил."
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст на место событий",
+   "t": 21.643
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "кот поправляет галстук",
+   "word": 53,
+   "word_text": "кот."
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст к коту рядом",
+   "t": 23.563
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к призыву",
+   "t": 25.903
+  },
+  {
+   "name": "typing",
+   "why": "печатается КОТ",
+   "t": 25.953,
+   "gain_db": -4
+  },
+  {
+   "name": "level_up",
+   "why": "«КОТ» напечатано",
+   "word": 62,
+   "offset": 0.05,
+   "word_text": "«КОТ»,"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст в студию",
+   "t": 27.023
+  },
+  {
+   "name": "riser",
+   "why": "мигалки «про тебя»",
+   "word": 65,
+   "word_text": "срочная"
+  },
+  {
+   "name": "shock",
+   "why": "«про тебя»",
+   "word": 68,
+   "word_text": "про"
+  },
+  {
+   "name": "swoosh_deep",
+   "why": "хлёст к прощанию",
+   "t": 30.083
+  },
+  {
+   "name": "keyboard_soft",
+   "why": "листы о стол",
+   "word": 72,
+   "word_text": "был"
+  },
+  {
+   "name": "level_up",
+   "why": "карточка «2 минуты»",
+   "word": 76,
+   "word_text": "двух"
+  },
+  {
+   "name": "swoosh",
+   "why": "хлёст в петлю к хуку",
+   "t": 32.463
+  }
+ ]
+}
